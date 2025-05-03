@@ -1,103 +1,72 @@
-import Image from "next/image";
-
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 sm:p-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <main className="max-w-4xl w-full space-y-8">
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white">
+            Facundo Uferer
+          </h1>
+          <h2 className="text-2xl sm:text-3xl text-gray-600 dark:text-gray-300">
+            Senior Software Developer
+          </h2>
+        </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        <div className="mt-12 space-y-6">
+          <section className="prose dark:prose-invert max-w-none">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Sobre Mí</h3>
+            <p className="text-gray-600 dark:text-gray-300">
+              Desarrollador de software senior con experiencia en la creación de aplicaciones web modernas y escalables.
+              Apasionado por la tecnología y el desarrollo de soluciones innovadoras.
+            </p>
+          </section>
+
+          <section className="prose dark:prose-invert max-w-none">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Habilidades</h3>
+            <ul className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <li className="flex items-center space-x-2">
+                <span className="text-gray-600 dark:text-gray-300">JavaScript/TypeScript</span>
+              </li>
+              <li className="flex items-center space-x-2">
+                <span className="text-gray-600 dark:text-gray-300">React/Next.js</span>
+              </li>
+              <li className="flex items-center space-x-2">
+                <span className="text-gray-600 dark:text-gray-300">Node.js</span>
+              </li>
+              <li className="flex items-center space-x-2">
+                <span className="text-gray-600 dark:text-gray-300">AWS</span>
+              </li>
+              <li className="flex items-center space-x-2">
+                <span className="text-gray-600 dark:text-gray-300">Docker</span>
+              </li>
+              <li className="flex items-center space-x-2">
+                <span className="text-gray-600 dark:text-gray-300">SQL/NoSQL</span>
+              </li>
+            </ul>
+          </section>
+
+          <section className="prose dark:prose-invert max-w-none">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Contacto</h3>
+            <div className="flex flex-wrap gap-4">
+              <a
+                href="https://github.com/facundouferer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              >
+                <span>GitHub</span>
+              </a>
+              <a
+                href="https://linkedin.com/in/facundouferer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              >
+                <span>LinkedIn</span>
+              </a>
+            </div>
+          </section>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
