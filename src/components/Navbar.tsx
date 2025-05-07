@@ -2,10 +2,17 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function Navbar() {
 
   const [isOpen, setIsOpen] = useState(false);
+
+  const links = [
+    { text: "Inicio", href: "/" },
+    { text: "Cuentos", href: "https://sites.google.com/view/cuentosdelbarro/", target: "_blank" },
+    { text: "Contacto", href: "/contact" },
+  ]
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 shadow-md z-50">
@@ -14,29 +21,27 @@ export default function Navbar() {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" className="text-xl font-bold text-gray-800 dark:text-white">
-                Facundo Uferer
+                <div className="flex items-center space-x-2">
+                  <Image
+                    src="./logo.svg"
+                    alt="Logo"
+                    width={30}
+                    height={30}
+                  ></Image>
+                </div>
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <Link
-                href="/"
-                className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Inicio
-              </Link>
-              <Link
-                href="https://sites.google.com/view/cuentosdelbarro/"
-                target="new"
-                className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Cuentos
-              </Link>
-              <Link
-                href="/contact"
-                className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Contacto
-              </Link>
+              {links.map((link) => (
+                <Link
+                  key={link.text}
+                  href={link.href}
+                  target={link.target}
+                  className="text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium items-center flex"
+                >
+                  {link.text}
+                </Link>
+              ))}
             </div>
           </div>
           <div className="flex items-center sm:hidden">
@@ -87,20 +92,16 @@ export default function Navbar() {
       {/* Menú móvil */}
       <div className={`sm:hidden ${isOpen ? 'block' : 'hidden'}`}>
         <div className="pt-2 pb-3 space-y-1">
-          <Link
-            href="/"
-            className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
-            onClick={() => setIsOpen(false)}
-          >
-            Inicio
-          </Link>
-          <Link
-            href="/contact"
-            className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white"
-            onClick={() => setIsOpen(false)}
-          >
-            Contacto
-          </Link>
+          {links.map((link) => (
+            <Link
+              key={link.text}
+              href={link.href}
+              target={link.target}
+              className="text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+            >
+              {link.text}
+            </Link>
+          ))}
         </div>
       </div>
     </nav>
