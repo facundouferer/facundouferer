@@ -1,8 +1,8 @@
-export function typeWriterEffect(text: string, element: HTMLElement, delay: number = 0) {
+export function typeWriterEffect(element: HTMLElement) {
   let index = 0;
-  const speed = 100;
-
-  // Limpia el contenido del elemento antes de iniciar la escritura
+  const speed = 20;
+  const text = element.textContent || "";
+  const delay = text.length * speed
   element.textContent = "";
 
   const typeWriter = () => {

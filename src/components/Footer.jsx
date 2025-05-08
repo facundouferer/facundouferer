@@ -56,7 +56,7 @@ export default function Footer() {
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-white mx-2"
+              className="text-gray-50 hover:text-white mx-2"
             >
               <FontAwesomeIcon icon={link.icon} className="mr-1 w-5" />
             </a>

@@ -8,7 +8,6 @@ export default function Navbar() {
 
   const links = [
     { text: "Inicio", href: "/" },
-    { text: "Cuentos", href: "https://sites.google.com/view/cuentosdelbarro/", target: "_blank" },
     { text: "Contacto", href: "/contact" },
   ]
 
@@ -22,7 +21,6 @@ export default function Navbar() {
                 <Link
                   key={link.text}
                   href={link.href}
-                  target={link.target}
                   className="text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium items-center flex"
                 >
                   {link.text}
@@ -82,7 +80,6 @@ export default function Navbar() {
             <Link
               key={link.text}
               href={link.href}
-              target={link.target}
               className="text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white block px-3 py-2 rounded-md text-base font-medium"
             >
               {link.text}

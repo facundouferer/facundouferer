@@ -12,7 +12,7 @@
   font-style: normal;
 }
 
-.home {
+body {
   background-image: url('/pokemon/background_grass.svg');
 }
 
@@ -25,29 +25,95 @@ h1 {
 @keyframes zoomIn {
   from {
     transform: scale(0.5);
-    /* Comienza más pequeño */
     opacity: 0;
-    /* Comienza invisible */
   }
 
   to {
     transform: scale(1);
-    /* Termina en su tamaño normal */
     opacity: 1;
-    /* Termina completamente visible */
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 .title {
   font-family: 'PressStart2P', sans-serif;
   color: #ffffff;
-  text-shadow: 3px 3px 0px #5A6266;
   font-size: 2.5rem;
-  background-color: #64918C;
+  background-color: #24857F;
   padding: 1.5rem;
   border-radius: 10;
-  border: 4px solid #B33E40;
-  box-shadow: 4px 4px 0px #5A6266
+  border: 9px solid #ff797e;
+  box-shadow: 10px 10px 0px #5a6266aa
+}
+
+.title p {
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+
+.title ul {
+  font-family: 'Pokemon', sans-serif;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+}
+
+.title ul li {
+  margin-bottom: 0.5rem;
+  text-decoration: none;
+  background-color: #4B9FD9;
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: 2px solid #424F46;
+  box-shadow: 5px 5px 0px #5a6266aa;
+  text-shadow: 2px 2px 0px #5a6266aa;
+  /* Animación */
+  opacity: 0;
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.title ul li:hover {
+  border-color: #ffffff;
+  box-shadow: 5px 5px 0px #89969caa;
+  background-color: #90CADC;
+}
+
+.title ul li:nth-child(1) {
+  animation-delay: 1s;
+}
+
+.title ul li:nth-child(2) {
+  animation-delay: 1.5s;
+}
+
+.title ul li:nth-child(3) {
+  animation-delay: 2s;
+}
+
+.title ul li:nth-child(4) {
+  animation-delay: 2.5s;
+}
+
+.title ul li:nth-child(5) {
+  animation-delay: 3s;
+}
+
+.title ul li:nth-child(6) {
+  animation-delay: 3.5s;
+}
+
+.title ul li:nth-child(7) {
+  animation-delay: 4s;
 }
 
 h2 {
@@ -59,25 +125,27 @@ h3 {
 }
 
 section {
-  font-family: Pokemon, sans-serif;
+  font-family: 'Pokemon', sans-serif;
   background-color: #FAFCDF;
   border-radius: 10px;
   padding: 20px;
   color: #484927;
-  border: 6px solid #2F3C17;
-  box-shadow: 4px 4px 0px #5A6266;
+  border: 8px solid #A09A95;
+  box-shadow: 10px 10px 0px #5a6266b1;
+  z-index: 1000;
 }
 
 section h3 {
   font-family: 'PressStart2P', sans-serif;
   color: #555539;
   text-shadow: 2px 2px 0px #b6b6b6;
-  font-size: 1.5rem;
+  font-size: 1rem;
 }
 
-.title p {
-  margin-top: 1.5rem;
-  font-size: 1rem;
+section a {
+  text-decoration: none;
+  color: #dc0071;
+  font-weight: 900;
 }
 
 .image-zoom {
@@ -96,4 +164,5 @@ nav {
 
 footer {
   background-color: #248580;
+  font-family: 'PressStart2P', sans-serif;
 }
