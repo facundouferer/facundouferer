@@ -1,0 +1,99 @@
+@font-face {
+  font-family: 'PressStart2P';
+  src: url('/fonts/PressStart2P-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Pokemon';
+  src: url('/fonts/Pokemon_GB.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.home {
+  background-image: url('/pokemon/background_grass.svg');
+}
+
+h1 {
+  text-shadow: 4px 4px 0px #5A6266;
+  font-size: 2.5rem;
+}
+
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.5);
+    /* Comienza más pequeño */
+    opacity: 0;
+    /* Comienza invisible */
+  }
+
+  to {
+    transform: scale(1);
+    /* Termina en su tamaño normal */
+    opacity: 1;
+    /* Termina completamente visible */
+  }
+}
+
+.title {
+  font-family: 'PressStart2P', sans-serif;
+  color: #ffffff;
+  text-shadow: 3px 3px 0px #5A6266;
+  font-size: 2.5rem;
+  background-color: #64918C;
+  padding: 1.5rem;
+  border-radius: 10;
+  border: 4px solid #B33E40;
+  box-shadow: 4px 4px 0px #5A6266
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.2rem;
+}
+
+section {
+  font-family: Pokemon, sans-serif;
+  background-color: #FAFCDF;
+  border-radius: 10px;
+  padding: 20px;
+  color: #484927;
+  border: 6px solid #2F3C17;
+  box-shadow: 4px 4px 0px #5A6266;
+}
+
+section h3 {
+  font-family: 'PressStart2P', sans-serif;
+  color: #555539;
+  text-shadow: 2px 2px 0px #b6b6b6;
+  font-size: 1.5rem;
+}
+
+.title p {
+  margin-top: 1.5rem;
+  font-size: 1rem;
+}
+
+.image-zoom {
+  animation: zoomIn 1s ease-out;
+  transform-origin: center;
+  border-radius: 10px;
+  border: 4px solid #473F3E;
+  background-color: #FAFCDF;
+  padding: 7px;
+}
+
+nav {
+  background-color: #248580;
+  font-family: Pokemon, sans-serif;
+}
+
+footer {
+  background-color: #248580;
+}

@@ -1,33 +1,61 @@
+'use client';
+import { useEffect } from "react";
+import { typeWriterEffect } from "../utils/helpers";
+import Image from "next/image";
+
 export default function Home() {
+  useEffect(() => {
+    const titulo = document.getElementById("titulo");
+    const bajada = document.getElementById("bajada");
+
+    if (titulo && bajada) {
+      const speed = 100; // Velocidad de escritura (ms por letra)
+      const text1 = "Facundo Uferer";
+      const text2 = "Desarrollador Full Stack";
+
+      // Calcula el tiempo necesario para escribir el primer texto
+      const delayForSecondText = text1.length * speed;
+
+      typeWriterEffect(text1, titulo, 0);
+      typeWriterEffect(text2, bajada, delayForSecondText);
+    }
+  }, []);
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 sm:p-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+    <div className="home min-h-screen flex flex-col items-center p-8 sm:p-20">
       <main className="max-w-4xl w-full space-y-12">
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white">
-            Facundo Uferer
-          </h1>
-          <h2 className="text-2xl sm:text-3xl text-gray-600 dark:text-gray-300">
-            Senior Software Developer
-          </h2>
+
+        <div className="title flex items-center">
+          <Image
+            src="/pokemon/foto.png"
+            alt="Foto de Facundo Uferer"
+            width={150}
+            height={150}
+            className="image-zoom"
+          />
+          <div className="ml-4 flex flex-col justify-center">
+            <h1 id="titulo" className="typewriter" tabIndex={-1}></h1>
+            <h2 id="bajada" className="typewriter" tabIndex={-1}></h2>
+          </div>
         </div>
 
         <div className="space-y-12">
-          <section className="prose dark:prose-invert max-w-none">
-            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+          <section>
+            <h3 className="flex items-center gap-3">
               <span className="text-2xl">🧑‍💻</span>
               Perfil Profesional
             </h3>
-            <p className="text-gray-600 dark:text-gray-300 mt-4">
+            <p>
               Desarrollador Full Stack especializado en el ecosistema JavaScript, con amplia experiencia en el desarrollo de soluciones modernas, escalables e impulsadas por inteligencia artificial. Me defino como un profesional comprometido con la innovación, el aprendizaje constante y la creación de soluciones que integran tecnología, pensamiento crítico y creatividad.
             </p>
           </section>
 
           <section className="prose dark:prose-invert max-w-none">
-            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+            <h3 className="text-2xl font-bold  flex items-center gap-2">
               <span className="text-2xl">🚀</span>
               Tecnologías Front-end
             </h3>
-            <div className="mt-4 space-y-4 text-gray-600 dark:text-gray-300">
+            <div className="mt-4 space-y-4">
               <p className="font-medium">Lenguajes y frameworks:</p>
               <p>JavaScript, TypeScript, React, Next.js</p>
 
@@ -40,11 +68,11 @@ export default function Home() {
           </section>
 
           <section className="prose dark:prose-invert max-w-none">
-            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+            <h3 className="text-2xl font-bold flex items-center gap-2">
               <span className="text-2xl">🔧</span>
               Tecnologías Back-end y Base de Datos
             </h3>
-            <div className="mt-4 space-y-4 text-gray-600 dark:text-gray-300">
+            <div className="mt-4 space-y-4 ">
               <p className="font-medium">Back-end:</p>
               <p>Node.js, Express, Firebase</p>
 
@@ -61,7 +89,7 @@ export default function Home() {
               <span className="text-2xl">☁️</span>
               Infraestructura y Despliegue
             </h3>
-            <div className="mt-4 space-y-4 text-gray-600 dark:text-gray-300">
+            <div className="mt-4 space-y-4 ">
               <p className="font-medium">Plataformas:</p>
               <p>Vercel, AWS (EC2, S3, Lambda, RDS)</p>
 
@@ -78,7 +106,7 @@ export default function Home() {
               <span className="text-2xl">🤖</span>
               Integración con Inteligencia Artificial
             </h3>
-            <div className="mt-4 space-y-4 text-gray-600 dark:text-gray-300">
+            <div className="mt-4 space-y-4 ">
               <p>Implementación de soluciones basadas en IA para mejorar la experiencia de usuario, automatizar procesos y analizar datos</p>
               <p>Integración de APIs de IA generativa, procesamiento de lenguaje natural (NLP) y modelos adaptados a cada proyecto</p>
             </div>
@@ -89,7 +117,7 @@ export default function Home() {
               <span className="text-2xl">🎓</span>
               Docencia Universitaria
             </h3>
-            <div className="mt-4 space-y-4 text-gray-600 dark:text-gray-300">
+            <div className="mt-4 space-y-4 ">
               <p>Profesor de programación en la Universidad Tecnológica Nacional (UTN)</p>
               <p>Formación de estudiantes en fundamentos del desarrollo web, pensamiento lógico y buenas prácticas de programación</p>
             </div>
@@ -100,7 +128,7 @@ export default function Home() {
               <span className="text-2xl">🎙️</span>
               Divulgación y Creatividad
             </h3>
-            <div className="mt-4 space-y-4 text-gray-600 dark:text-gray-300">
+            <div className="mt-4 space-y-4 ">
               <p>Conductor de un podcast sobre ciencia y filosofía, donde exploro ideas complejas desde una perspectiva crítica y accesible</p>
               <p>Dedicación activa al arte y la escritura, con proyectos personales de dibujo y creación de relatos y cuentos</p>
             </div>
