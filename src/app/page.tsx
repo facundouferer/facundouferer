@@ -40,8 +40,8 @@ export default function Home() {
         </div>
 
         <div className="space-y-12">
-          <section>
-            <h3 className="flex items-center gap-3">
+          <section className="prose dark:prose-invert max-w-none">
+            <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
               <span className="text-2xl">🧑‍💻</span>
               Perfil Profesional
             </h3>
