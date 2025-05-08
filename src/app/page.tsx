@@ -22,20 +22,20 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="home min-h-screen flex flex-col items-center p-8 sm:p-20">
+    <div className="home min-h-screen flex flex-col items-center p-4 sm:p-8 lg:p-20">
       <main className="max-w-4xl w-full space-y-12">
 
-        <div className="title flex items-center">
+        <div className="title flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left">
           <Image
             src="/pokemon/foto.png"
             alt="Foto de Facundo Uferer"
             width={150}
             height={150}
-            className="image-zoom"
+            className="image-zoom w-24 h-24 sm:w-36 sm:h-36 lg:w-40 lg:h-40"
           />
-          <div className="ml-4 flex flex-col justify-center">
-            <h1 id="titulo" className="typewriter" tabIndex={-1}></h1>
-            <h2 id="bajada" className="typewriter" tabIndex={-1}></h2>
+          <div className="mt-4 sm:mt-0 sm:ml-4 flex flex-col justify-center">
+            <h1 id="titulo" className="typewriter text-xl sm:text-2xl lg:text-3xl" tabIndex={-1}></h1>
+            <h2 id="bajada" className="typewriter text-lg sm:text-xl lg:text-2xl" tabIndex={-1}></h2>
           </div>
         </div>
 
