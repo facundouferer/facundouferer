@@ -33,7 +33,7 @@ export default function Home() {
     },
     {
       "icon": "🔧",
-      "title": "Tecnologías Back-end y Base de Datos",
+      "title": "Back-end y Base de Datos",
       "content": "### Back-end\n- Node.js  \n- Express  \n- Firebase  \n\n### Bases de datos\n- MySQL (relacional)  \n- MongoDB (no relacional)  \n\n### Autenticación, APIs y seguridad\n- Diseño e integración de APIs REST  \n- Autenticación segura  \n- Gestión eficiente de datos"
     },
     {
@@ -43,7 +43,7 @@ export default function Home() {
     },
     {
       "icon": "🤖",
-      "title": "Integración con Inteligencia Artificial",
+      "title": "Integración con IA",
       "content": "Implementación de soluciones basadas en IA para mejorar la experiencia de usuario, automatizar procesos y analizar datos.\n\nIntegración de APIs de IA generativa, procesamiento de lenguaje natural (NLP) y modelos adaptados a cada proyecto"
     },
     {
@@ -54,7 +54,7 @@ export default function Home() {
     {
       "icon": "🎙️",
       "title": "Divulgación y Creatividad",
-      "content": "Conductor de un podcast sobre ciencia y filosofía, donde exploro ideas complejas desde una perspectiva crítica y accesible.\n\nDedicación activa al arte y la escritura, con proyectos personales de dibujo y creación de  [relatos y cuentos](https://sites.google.com/view/cuentosdelbarro/)."
+      "content": "Profesor de programación en la Universidad Tecnológica Nacional (UTN), donde formo estudiantes en los fundamentos del desarrollo web, el pensamiento lógico y las buenas prácticas de programación.\n\nAdemás, soy conductor de un podcast sobre ciencia y filosofía, en el que exploro ideas complejas desde una mirada crítica y accesible.\n\nMantengo una dedicación activa al arte y la escritura, con proyectos personales de dibujo y la creación de [relatos y cuentos](https://sites.google.com/view/cuentosdelbarro/). Conductor de un podcast sobre ciencia y filosofía, donde exploro ideas complejas desde una perspectiva crítica y accesible."
     }
   ]
 
