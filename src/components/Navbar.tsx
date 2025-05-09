@@ -21,7 +21,7 @@ export default function Navbar() {
                 <Link
                   key={link.text}
                   href={link.href}
-                  className="text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium items-center flex"
+                  className="text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white px-3 py-2  text-sm font-medium items-center flex"
                 >
                   {link.text}
                 </Link>

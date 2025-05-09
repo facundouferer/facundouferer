@@ -60,28 +60,34 @@ export default function Home() {
 
   return (
     <div className="home min-h-screen flex flex-col items-center p-4 sm:p-8 lg:p-20">
+
       <main className="max-w-4xl w-full space-y-12 flex items-center justify-center">
 
-        <div className="title flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left">
-          <Image
-            src="/pokemon/foto.png"
-            alt="Foto de Facundo Uferer"
-            width={150}
-            height={150}
-            className="image-zoom w-24 h-24 sm:w-36 sm:h-36 lg:w-40 lg:h-40"
-          />
-          <div className="mt-4 sm:mt-0 sm:ml-4 flex flex-col justify-center">
+        <div className="p-7 title flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left">
+          <div className="flex flex-col items-center sm:items-start">
+            <div className="rounded-2xl border-4 border-[#473F3E] bg-[#FAFCDF] mb-3">
+              <Image
+                src="/pokemon/foto.png"
+                alt="Foto de Facundo Uferer"
+                width={150}
+                height={150}
+                className="image-zoom w-24 h-24 sm:w-36 sm:h-36 lg:w-40 lg:h-40 p-2 rounded-2xl"
+              />
+            </div>
             <h1 id="titulo" className="typewriter text-xl sm:text-2xl lg:text-3xl mb-3" tabIndex={-1}>
               Facundo Uferer
             </h1>
-            <h2 id="bajada" className="typewriter text-lg sm:text-xl lg:text-2xl mb-3" tabIndex={-1}>
+            <h2 id="bajada" className="typewriter mb-3" tabIndex={-1}>
               Desarrollador Web Full Stack
             </h2>
+          </div>
+
+          <div className="mt-4 sm:mt-0 sm:ml-4 flex flex-col justify-center">
             <ul id="title-list">
               {sections.map((section) => (
                 <li
                   key={section.title}
-                  className="cursor-pointer"
+                  className="cursor-pointer p-2 text-sm"
                   onClick={() => setActiveSection(section.title)}
                 >
                   {section.icon} {section.title}
@@ -89,6 +95,7 @@ export default function Home() {
               ))}
             </ul>
           </div>
+
         </div>
 
         <div className="space-y-12">
