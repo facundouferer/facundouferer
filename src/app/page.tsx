@@ -99,7 +99,6 @@ export default function Home() {
         </div>
 
         <div className="space-y-12">
-
           {sections
             .filter((section) => section.title === activeSection)
             .map((section) => (

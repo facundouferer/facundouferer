@@ -9,7 +9,7 @@ interface SectionProps {
 
 export default function Section({ icon, title, content, onClose }: SectionProps) {
   return (
-    <div className="w-screen fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 p-5">
+    <div className="lg:w-1/2 w-screen  fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 p-5">
       <section className="bg-white p-4 rounded-lg shadow-lg">
         <button
           onClick={onClose}
