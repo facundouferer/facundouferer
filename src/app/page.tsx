@@ -27,7 +27,7 @@ export default function Home() {
 
           <div className=" rounded-2xl border-4 border-[#473F3E] bg-[#FAFCDF] mb-3">
             <Image
-              src="/pokemon/foto.png"
+              src="/img/foto.png"
               alt="Foto de Facundo Uferer"
               width={150}
               height={150}
