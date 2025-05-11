@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Facundo Uferer - Senior Software Developer",
-  description: "Desarrollador Full Stack especializado en el ecosistema JavaScript",
+  description: "Desarrollador Full Stack",
 };
 
 export default function RootLayout({

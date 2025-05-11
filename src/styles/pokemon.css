@@ -16,11 +16,6 @@ body {
   background-image: url('/img/background_grass.svg');
 }
 
-h1 {
-  text-shadow: 4px 4px 0px #5A6266;
-}
-
-
 @keyframes zoomIn {
   from {
     transform: scale(0.5);
@@ -31,6 +26,10 @@ h1 {
     transform: scale(1);
     opacity: 1;
   }
+}
+
+h1 {
+  font-family: 'PressStart2P', sans-serif;
 }
 
 @keyframes fadeIn {
@@ -53,6 +52,12 @@ h1 {
   border: 9px solid #ff797e;
   box-shadow: 10px 10px 0px #5a6266aa
 }
+
+.title h1 {
+  font-family: 'PressStart2P', sans-serif;
+  text-shadow: 4px 4px 0px #5A6266;
+}
+
 
 .title p {
   margin-top: 1rem;

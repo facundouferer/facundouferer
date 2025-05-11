@@ -1,0 +1,19 @@
+@font-face {
+  font-family: 'PressStart2P';
+  src: url('/fonts/PressStart2P-Regular.ttf') format('truetype');
+}
+
+.cuentos {
+  background-color: bisque;
+  color: darkslategrey;
+  padding: 2rem;
+  max-width: 1024px;
+  margin: auto;
+
+}
+
+@media (min-width: 1024px) {
+  .cuentos {
+    max-width: 1024px;
+  }
+}
