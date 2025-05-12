@@ -21,7 +21,7 @@ export default function Home() {
   return (
     <div className="home grid place-items-center min-h-screen">
 
-      <div className="p-7 m-4 title flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left">
+      <div className="lg:w-3xl p-7 m-4 title flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left">
 
         <div className="flex flex-col items-center sm:items-start sm:w-1/3">
 
@@ -43,14 +43,19 @@ export default function Home() {
         </div>
 
         <div className="mt-4 sm:mt-0 sm:ml-4 flex flex-col justify-center sm:w-2/3">
-          <ul id="title-list">
+          <div className=" text-sm sm:text-base lg:text-lg mb-4">
+            Desarrollador Full Stack con sólida experiencia en tecnologías como JavaScript, TypeScript, React, Next.js, Node.js y . Me especializo en el desarrollo de aplicaciones web eficientes y escalables, especialmente orientadas a la administración y gestión de procesos, aunque disfruto trabajar en todo tipo de sistemas.
+
+
+          </div>
+          <ul className="flex flex-wrap justify-center">
             {sections.map((section) => (
               <li
                 key={section.title}
-                className="cursor-pointer p-2 text-sm"
+                className="text-4xl cursor-pointer p-2 hover:text-5xl transition-all duration-300"
                 onClick={() => setActiveSection(section.title)}
               >
-                {section.icon} {section.title}
+                {section.icon}
               </li>
             ))}
           </ul>

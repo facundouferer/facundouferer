@@ -45,7 +45,6 @@ h1 {
 }
 
 .title {
-  font-family: 'PressStart2P', sans-serif;
   color: #ffffff;
   background-color: #24857F;
   border-radius: 10;
@@ -69,21 +68,8 @@ h1 {
 }
 
 .title ul li {
-  margin-bottom: 0.5rem;
-  text-decoration: none;
-  background-color: #4B9FD9;
-  border-radius: 5px;
-  border: 2px solid #424F46;
-  box-shadow: 5px 5px 0px #5a6266aa;
-  /* Animación */
   opacity: 0;
   animation: fadeIn 0.5s ease-out forwards;
-}
-
-.title ul li:hover {
-  border-color: #ffffff;
-  box-shadow: 5px 5px 0px #89969caa;
-  background-color: #90CADC;
 }
 
 .title ul li:nth-child(1) {
@@ -149,11 +135,11 @@ section a {
 }
 
 nav {
-  background-color: #196b679b;
+  background-color: #196b67e2;
   font-family: Pokemon, sans-serif;
 }
 
 footer {
-  background-color: #248580;
+  background-color: #196b67e2;
   font-family: 'PressStart2P', sans-serif;
 }
