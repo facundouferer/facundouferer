@@ -9,7 +9,23 @@
   padding: 2rem;
   max-width: 1024px;
   margin: auto;
+}
 
+.cuentos h1 {
+  font-family: 'PressStart2P', cursive;
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.cuentos p {
+  margin-top: 1rem;
+  text-align: justify;
+}
+
+.cuentos i {
+  font-style: italic;
+  color: inherit;
 }
 
 @media (min-width: 1024px) {
