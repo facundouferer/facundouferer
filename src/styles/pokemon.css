@@ -30,6 +30,7 @@ body {
 
 h1 {
   font-family: 'PressStart2P', sans-serif;
+  text-shadow: 2px 2px 0px #0000009c;
 }
 
 @keyframes fadeIn {
@@ -137,9 +138,23 @@ section a {
 nav {
   background-color: #196b67e2;
   font-family: Pokemon, sans-serif;
+  z-index: 1000;
 }
 
 footer {
   background-color: #196b67e2;
   font-family: 'PressStart2P', sans-serif;
+}
+
+.texto-3d {
+  font-family: 'PressStart2P', sans-serif;
+  font-size: 1rem;
+  text-shadow: 3px 3px 0px #0000009c;
+  perspective: 800px;
+  transform: rotateX(30deg) rotateY(30deg);
+}
+
+.texto-3d:hover {
+  transform: rotateX(30deg) rotateY(30deg) scale(1.1);
+  transition: transform 0.5s ease;
 }

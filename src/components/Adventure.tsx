@@ -1,19 +1,22 @@
 
-import Image from "next/image";
-import Link from "next/link";
+import Building from "./Building";
 
 export default function Adventure() {
   return (
-    <div className="w-scree">
-      <Link
-        href="/cuentos">
-        <Image
-          src="/img/university.png"
-          alt="Universidad Nacional de La Plata"
-          width={100}
-          height={100}
-        ></Image>
-      </Link>
-    </div>
-  )
+    <>
+      <div className="grid grid-cols-3">
+
+        <div className="col-span-2"></div>
+
+        <div className="col-span-1">
+          <Building
+            href="/cuentos"
+            imgSrc="/img/university.png"
+            text="CUENTOS"
+          />
+        </div>
+
+      </div>
+    </>
+  );
 }
