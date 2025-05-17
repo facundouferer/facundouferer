@@ -1,14 +1,14 @@
-# <div align="center">👋 ¡Hola! Soy Facundo Uferer</div>
+# <div align="center">👋 Hi! I'm Facundo Uferer</div>
 
 <div align="center">
   <h2>Senior Software Developer 🧑‍💻</h2>
 </div>
 
-## 🚀 Sobre Mí
+## 🚀 About Me
 
-Soy un **Desarrollador Full Stack** especializado en el ecosistema JavaScript, con amplia experiencia en el desarrollo de soluciones modernas, escalables e impulsadas por inteligencia artificial. Me defino como un profesional comprometido con la innovación, el aprendizaje constante y la creación de soluciones que integran tecnología, pensamiento crítico y creatividad.
+I am a **Full Stack Developer** specialized in the JavaScript ecosystem, with extensive experience building modern, scalable, and AI-driven solutions. I consider myself a professional committed to innovation, continuous learning, and crafting solutions that integrate technology, critical thinking, and creativity.
 
-## 💻 Stack Tecnológico
+## 💻 Tech Stack
 
 ### Front-end
 <div align="center">
@@ -35,25 +35,25 @@ Soy un **Desarrollador Full Stack** especializado en el ecosistema JavaScript, c
   <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
 </div>
 
-## 🎓 Experiencia Académica
+## 🎓 Academic Experience
 
-- **Profesor de Programación** en la Universidad Tecnológica Nacional (UTN)
-- Formación en fundamentos del desarrollo web y buenas prácticas
-- Enfoque en pensamiento lógico y resolución de problemas
+- **Programming Instructor** at the National Technological University (UTN)
+- Training in web development fundamentals and best practices
+- Focus on logical thinking and problem-solving
 
-## 🎙️ Proyectos Personales
+## 🎙️ Personal Projects
 
-- **Podcast** sobre ciencia y filosofía
-- **Arte y Escritura**: Proyectos personales de dibujo y creación literaria
-- **Divulgación Tecnológica**: Compartiendo conocimiento y experiencias
+- **Podcast** on science and philosophy
+- **Art and Writing**: Personal projects in drawing and creative writing
+- **Tech Outreach**: Sharing knowledge and experience
 
-## 📫 Contacto
+## 📫 Contact
 
-¿Quieres ponerte en contacto conmigo?
+Want to get in touch with me?
 
-Puedes encontrarme en cualquiera de mis redes sociales o escuchar mi podcast. Estoy siempre abierto a nuevas oportunidades y colaboraciones.
+You can find me on any of my social networks or listen to my podcast. I'm always open to new opportunities and collaborations.
 
-Si tienes un proyecto en mente o quieres discutir ideas, no dudes en contactarme.
+If you have a project in mind or want to discuss ideas, don't hesitate to reach out.
 
 <div align="center">
   <a href="https://github.com/facundouferer" target="_blank">
