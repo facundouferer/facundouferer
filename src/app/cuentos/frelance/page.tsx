@@ -1,3 +1,6 @@
+import Image from "next/image"
+import fotoFrelance from "../../../../public/img/cuentos/freelance.png"
+
 export default function Page() {
   return (
     <div className="cuentos">
@@ -12,6 +15,13 @@ export default function Page() {
         preguntarle a ChatGPT cómo resolver un bug que me venía matando desde hacía
         horas.</span></p>
 
+      <Image
+        src={fotoFrelance}
+        alt="El Frelance"
+        blurDataURL="data:..."
+        placeholder="blur"
+      >
+      </Image>
       <p><span>Desesperado, salí a vender lo poco de
         mercadería que me quedaba. Fui hasta lo de Patricia y le ofrecí todo por una
         transferencia a mi cuenta de MercadoPago. No era solo para pagar el internet:

@@ -33,8 +33,27 @@ h1 {
   color: inherit;
 }
 
-@media (min-width: 1024px) {
+.cuentos img {
+  float: left;
+  margin: 1rem 2rem 2rem 0rem;
+  border: 0.8rem solid #008236;
+  max-width: 500px;
+  width: 50%;
+}
+
+@media (max-width: 640px) {
+  .cuentos img {
+    max-width: 100%;
+    margin: 1rem 1rem 1rem 1rem;
+  }
+}
+
+@media (min-width: 641px) {
   .cuentos {
     max-width: 1024px;
+  }
+
+  .cuentos img {
+    box-shadow: 1rem 1rem 0rem #0000008b;
   }
 }
