@@ -1,7 +1,16 @@
-'use client'
 import React from 'react';
 import Link from 'next/link';
 import "../../styles/cuentos.css"
+
+export const metadata = {
+  title: "Cuentos - Facundo Uferer",
+  description: "Cuentos de un barrio en Argentina",
+  openGraph: {
+    title: "Cuentos - Facundo Uferer",
+    description: "Portfolio de proyectos recientes",
+    images: ["https://www.facundouferer.ar/img/foto.png"],
+  },
+};
 
 export default function Layout({ children }: { children: React.ReactNode }) {
 
