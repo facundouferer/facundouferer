@@ -4,10 +4,10 @@ import "../../styles/cuentos.css"
 
 export const metadata = {
   title: "Cuentos - Facundo Uferer",
-  description: "Cuentos de un barrio en Argentina",
+  description: "Historias de un barrio argentino, contadas y dibujadas por mí!",
   openGraph: {
     title: "Cuentos - Facundo Uferer",
-    description: "Portfolio de proyectos recientes",
+    description: "Historias de un barrio argentino, contadas y dibujadas por mí!",
     images: ["https://www.facundouferer.ar/img/foto.png"],
   },
 };
