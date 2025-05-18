@@ -1,7 +1,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-
+import { useState } from "react";
 interface BuildingProps {
   href: string;
   imgSrc: string;
@@ -10,22 +10,30 @@ interface BuildingProps {
 
 export default function Building(BuildingProps: BuildingProps) {
   const { href, imgSrc, text } = BuildingProps;
+  const [hovered, setHoverred] = useState(false)
   return (
-    <div className="flex flex-col items-center justify-center building">
+    <div
+      className="flex flex-col items-center justify-center"
+    >
+
       <Link
         href={href}
-        className="texto-3d absolute opacity-0 transition-opacity duration-600 hover:opacity-100 transform"
+        onMouseEnter={() => setHoverred(true)}
+        onMouseLeave={() => setHoverred(false)}
       >
-        {text}
-      </Link>
-      <Link href={href}>
         <Image
           src={imgSrc}
           alt={text}
           width={100}
           height={100}
         />
+        <div
+          className={`relative top-[-110px] buildingText ${hovered ? "buildingTextHover" : ""}`}
+        >
+          {text}
+        </div>
       </Link>
+
     </div>
   )
 }

@@ -146,10 +146,17 @@ footer {
   font-family: 'PressStart2P', sans-serif;
 }
 
-.texto-3d {
+.buildingText {
   font-family: 'PressStart2P', sans-serif;
-  font-size: 1rem;
+  font-size: 0.8rem;
   text-shadow: 3px 3px 0px #0000009c;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.buildingTextHover {
+  opacity: 1;
 }
 
 .texto-3d:hover {

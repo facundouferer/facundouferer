@@ -45,7 +45,7 @@ export default function Home() {
           </div>
 
           <div className="mt-4 sm:mt-0 sm:ml-4 flex flex-col justify-center sm:w-2/3">
-            <div className=" text-sm sm:text-base lg:text-lg mb-4">
+            <div className="text-sm sm:text-base lg:text-lg mb-4">
               Desarrollador Full Stack con sólida experiencia en tecnologías como JavaScript, TypeScript, React, Next.js, Node.js y . Me especializo en el desarrollo de aplicaciones web eficientes y escalables, especialmente orientadas a la administración y gestión de procesos, aunque disfruto trabajar en todo tipo de sistemas.
             </div>
             <ul className="flex flex-wrap justify-center">
@@ -76,7 +76,7 @@ export default function Home() {
             ))}
         </div>
 
-        <div className="w-full mb-10">
+        <div className="mb-10 sm:w-1xl lg:w-4xl">
           <Adventure />
         </div>
 
