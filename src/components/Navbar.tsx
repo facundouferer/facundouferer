@@ -13,34 +13,35 @@ export default function Navbar() {
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="text-gray-500 dark:text-gray-300 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 
+      px-3 py-2 text-sm font-medium flex items-center space-x-1">
               <Image
                 src="/img/logo.png"
                 alt="Logo"
                 width={30}
                 height={30}
-                className="rounded-full"
+                className="mr-2"
               />
+              <span className="mt-2">Home</span>
             </Link>
           </div>
 
           {/* Links para pantallas grandes */}
-          <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+          <div className="hidden sm:ml-6 sm:flex sm:space-x-1">
             {links.map((link) => (
               <Link
                 key={link.text}
                 href={link.href}
                 className="text-gray-500 dark:text-gray-300 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 
-      px-3 py-2 text-sm font-medium flex items-center space-x-2"
+      px-3 py-2 text-sm font-medium flex items-center space-x-1"
               >
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
                   <Image
                     src={link.img}
                     alt={link.text}
                     width={25}
                     height={25}
                   />
-                  <span className="mt-2">{link.text}</span>
                 </div>
               </Link>
             ))}
@@ -99,9 +100,15 @@ export default function Navbar() {
             <Link
               key={link.text}
               href={link.href}
-              className="text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+              className="text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white block px-3 py-2 rounded-md text-base font-medium flex"
             >
-              {link.text}
+              <Image
+                src={link.img}
+                alt={link.text}
+                width={25}
+                height={25}
+              />
+              <span className="ml-2 mt-2">{link.text}</span>
             </Link>
           ))}
         </div>
