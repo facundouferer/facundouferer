@@ -5,9 +5,9 @@ import Tree from "./Tree";
 export default function Adventure() {
   return (
     <div className="w-full">
-      <div className="grid grid-cols-3">
+      <div className="grid grid-cols-4">
 
-        <div className="col-span-3">
+        <div className="col-span-4">
           <Tree arboles={4} />
         </div>
 
@@ -18,7 +18,7 @@ export default function Adventure() {
         <div className="col-span-1">
           <Building
             href="/cuentos"
-            imgSrc="/img/university.png"
+            imgSrc="/img/cuentos.png"
             text="CUENTOS"
           />
         </div>
@@ -27,8 +27,16 @@ export default function Adventure() {
           <Tree arboles={1} />
         </div>
 
-        <div className="col-span-3">
-          <Tree arboles={6} />
+        <div className="col-span-1">
+          <Building
+            href="/university"
+            imgSrc="/img/university.png"
+            text="APRENDER"
+          />
+        </div>
+
+        <div className="col-span-4">
+          <Tree arboles={4} />
         </div>
 
       </div>
