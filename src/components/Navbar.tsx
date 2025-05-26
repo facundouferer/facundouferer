@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import Image from "next/image";
 import links from "@/data/links.json";
+import logo from "../../public/img/logo.png"
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,7 +17,7 @@ export default function Navbar() {
             <Link href="/" className="text-gray-500 dark:text-gray-300 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 
       px-3 py-2 text-sm font-medium flex items-center space-x-1">
               <Image
-                src="/img/logo.png"
+                src={logo}
                 alt="Logo"
                 width={30}
                 height={30}

@@ -3,16 +3,7 @@ import Post, { IPost } from "@/models/post" // Importamos IPost
 import mongoose from "mongoose"; // Importamos mongoose para sus tipos de error
 import { NextRequest, NextResponse } from "next/server"
 import slugify from 'slugify';
-const SERVER_API_KEY = process.env.API_SECRET_KEY;
-
-function validateApiKey(request: NextRequest): boolean {
-  if (!SERVER_API_KEY) {
-    console.error("CRITICAL: API_SECRET_KEY no está configurada en el servidor.");
-    return false;
-  }
-  const clientApiKey = request.headers.get("X-API-KEY");
-  return clientApiKey === SERVER_API_KEY;
-}
+import { validateApiKey } from "@/libs/validations"
 
 export async function GET(request: NextRequest) {
   if (!validateApiKey(request)) {
@@ -54,9 +45,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Definimos un tipo para los datos del nuevo post.
-    // Podríamos usar Partial<IPost> si algunos campos requeridos de IPost se generan después,
-    // pero aquí estamos creando los campos principales.
     const newPostData: Pick<IPost, 'title' | 'content' | 'slug'> & Partial<Pick<IPost, 'tags' | 'featuredImage'>> = {
       title,
       content,

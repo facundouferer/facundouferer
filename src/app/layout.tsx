@@ -39,7 +39,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={inter.className}>
         <Navbar />
-        <main className="pt-16">
+        <main className="pt-16 min-h-screen">
           {children}
         </main>
         <Footer />
