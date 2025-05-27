@@ -18,7 +18,7 @@ export default function Adventure() {
         <div className="col-span-1">
           <Building
             href="/cuentos"
-            imgSrc="/img/cuentos.png"
+            imgSrc="/img/buildings/cuentos.png"
             text="CUENTOS"
           />
         </div>
@@ -30,7 +30,7 @@ export default function Adventure() {
         <div className="col-span-1">
           <Building
             href="/university"
-            imgSrc="/img/university.png"
+            imgSrc="/img/buildings/university.png"
             text="APRENDER"
           />
         </div>
