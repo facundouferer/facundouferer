@@ -2,6 +2,8 @@
 "use client"; // Indicar que es un Componente de Cliente si usas App Router
 
 import React, { useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown'; // Importar ReactMarkdown
+import Link from 'next/link';
 
 // Define una interfaz para la estructura de un post
 // Ajústala según la estructura real de tus datos de post
@@ -10,7 +12,7 @@ interface Post {
   title: string;
   content: string;
   slug?: string;
-  // Agrega otros campos que tus posts puedan tener
+  tags: string[];
 }
 
 const PostList: React.FC = () => {
@@ -96,17 +98,28 @@ const PostList: React.FC = () => {
   }
 
   return (
-    <div>
-      <h1>Listado de Posts</h1>
-      <ul>
-        {posts.map((post) => (
-          <li key={post._id}>
-            <h2>{post.title}</h2>
-            <p>{post.content}</p>
-            {post.slug && <small>Slug: {post.slug}</small>}
-          </li>
-        ))}
-      </ul>
+    <div className='max-w-7xl mx-auto py-7 px-4 sm:px-6 lg:px-8'>
+      {posts.map((post) => (
+        <div
+          key={post._id}
+          className=''
+        >
+          <Link href={`/posts/${post.slug}`}>
+            <h1 className='mb-3'>{post.title}</h1>
+          </Link>
+          <div className="bg-white mt-7 rounded-2xl p-5 text-gray-700 cuentos">
+            <ReactMarkdown>{post.content}</ReactMarkdown>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-4">
+            {post.tags.map((tag) => (
+              <span
+                key={tag}
+                className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs mb-3"
+              >{tag}</span>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
