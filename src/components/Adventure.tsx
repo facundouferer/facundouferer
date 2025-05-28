@@ -4,7 +4,7 @@ import Tree from "./Tree";
 
 export default function Adventure() {
   return (
-    <div className="w-full">
+    <div className="w-full p-4">
       <div className="grid grid-cols-4">
 
         <div className="col-span-4">

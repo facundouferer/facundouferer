@@ -1,4 +1,4 @@
-import arbol from "../../public/img/universe/arbol.png"
+import arbol from "../../public/img/arbol.png"
 import Image from "next/image"
 
 interface TreeProps {

@@ -13,7 +13,7 @@
 }
 
 body {
-  background-image: url('/img/universe/background_grass.svg');
+  background-image: url('/img/background_grass.svg');
 }
 
 @keyframes zoomIn {
@@ -30,7 +30,14 @@ body {
 
 h1 {
   font-family: 'PressStart2P', sans-serif;
-  text-shadow: 2px 2px 0px #0000009c;
+  color: white;
+  text-shadow:
+    /* Contorno simulado */
+    -1px -1px 0 black,
+    1px -1px 0 black,
+    -1px 1px 0 black,
+    1px 1px 0 black,
+    5px 5px 0px rgba(0, 0, 0, 0.605);
 }
 
 @keyframes fadeIn {
@@ -46,60 +53,18 @@ h1 {
 }
 
 .title {
-  color: #ffffff;
   background-color: #24857F;
-  border-radius: 10;
   border: 9px solid #ff797e;
-  box-shadow: 10px 10px 0px #5a6266aa
+  box-shadow: 10px 10px 0px #5a6266aa;
+  padding: 15px;
 }
-
-.title h1 {
-  font-family: 'PressStart2P', sans-serif;
-  text-shadow: 4px 4px 0px #5A6266;
-}
-
 
 .title p {
   margin-top: 1rem;
   font-size: 1rem;
 }
 
-.title ul {
-  font-family: 'Pokemon', sans-serif;
-}
 
-.title ul li {
-  opacity: 0;
-  animation: fadeIn 0.5s ease-out forwards;
-}
-
-.title ul li:nth-child(1) {
-  animation-delay: 1s;
-}
-
-.title ul li:nth-child(2) {
-  animation-delay: 1.5s;
-}
-
-.title ul li:nth-child(3) {
-  animation-delay: 2s;
-}
-
-.title ul li:nth-child(4) {
-  animation-delay: 2.5s;
-}
-
-.title ul li:nth-child(5) {
-  animation-delay: 3s;
-}
-
-.title ul li:nth-child(6) {
-  animation-delay: 3.5s;
-}
-
-.title ul li:nth-child(7) {
-  animation-delay: 4s;
-}
 
 section {
   background-color: #FAFCDF;
@@ -168,4 +133,24 @@ footer {
   background-image: url("/img/universearbol.png");
   background-size: 100px 100px;
   background-repeat: repeat;
+}
+
+.madera {
+  background-image: url("/img/madera.png");
+  background-size: 100px 100px;
+  background-repeat: repeat;
+}
+
+.biblioteca {
+  background-image: url("/img/biblioteca.png");
+  background-size: 264px 100px;
+  background-repeat: repeat;
+  height: 100px;
+}
+
+.escritorio {
+  background-image: url("/img/escritorios.png");
+  background-size: 634px 100px;
+  background-repeat: repeat;
+  height: 100px;
 }

@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown'; // Importar ReactMarkdown
 import Link from 'next/link';
-
+import Loading from '@/components/Loading';
 // Define una interfaz para la estructura de un post
 // Ajústala según la estructura real de tus datos de post
 interface Post {
@@ -86,7 +86,7 @@ const PostList: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <p>Cargando posts...</p>;
+    return <Loading />;
   }
 
   if (error) {
@@ -98,23 +98,23 @@ const PostList: React.FC = () => {
   }
 
   return (
-    <div className='max-w-7xl mx-auto py-7 px-4 sm:px-6 lg:px-8'>
+    <div className='max-w-4xl mx-auto py-7 px-4 sm:px-6 lg:px-8'>
       {posts.map((post) => (
         <div
           key={post._id}
           className=''
         >
           <Link href={`/posts/${post.slug}`}>
-            <h1 className='mb-3'>{post.title}</h1>
+            <h1 className='mb-2 text-3xl'>{post.title}</h1>
           </Link>
-          <div className="bg-white mt-7 rounded-2xl p-5 text-gray-700 cuentos">
+          <div className="bg-white p-5 text-gray-700 cuentos">
             <ReactMarkdown>{post.content}</ReactMarkdown>
           </div>
-          <div className="flex flex-wrap gap-2 mt-4">
+          <div className="flex flex-wrap gap-2 mt-2">
             {post.tags.map((tag) => (
               <span
                 key={tag}
-                className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs mb-3"
+                className="bg-gray-200 text-gray-700 px-2 py-1 text-xs mb-3"
               >{tag}</span>
             ))}
           </div>
