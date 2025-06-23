@@ -1,10 +1,12 @@
 'use client';
 import { useEffect, useState } from "react";
 import { typeWriterEffect } from "../utils/helpers";
-import Section from "@/components/Section";
+import Cuadrado from "@/components/Cuadrado";
 import sections from "@/data/sections.json";
 import Adventure from "@/components/Adventure";
 import ImagePixel from "@/components/ImagePixel";
+import Link from "next/link";
+
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
@@ -66,13 +68,20 @@ export default function Home() {
           {sections
             .filter((section) => section.title === activeSection)
             .map((section) => (
-              <Section
+              <Cuadrado
                 key={section.title}
                 icon={section.icon}
                 title={section.title}
-                content={section.content}
-                onClose={() => setActiveSection(null)}
-              />
+                cols={1}
+                estado="max"
+              >
+                <p>
+                  {section.content}
+                </p>
+                <Link href="/about" className="hover:underline w-full text-right mt-3">
+                  SABER MÁS
+                </Link>
+              </Cuadrado>
             ))}
         </div>
 
