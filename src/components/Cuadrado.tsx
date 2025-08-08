@@ -58,7 +58,7 @@ const Cuadrado = ({ children, title, icon, cols, estado = "min" }: CuadroProprs)
           <div className="flex">
             {maximizado ? (
               <button
-                className="bg-lime-950 w-12 flex justify-center items-center text-white cursor-pointer"
+                className="bg-lime-950 hover:bg-lime-700 w-12 flex justify-center items-center text-white cursor-pointer"
                 onClick={handleMinimizar}
                 aria-label="Minimizar"
                 title="Minimizar"
@@ -67,7 +67,7 @@ const Cuadrado = ({ children, title, icon, cols, estado = "min" }: CuadroProprs)
               </button>
             ) : (
               <button
-                className="bg-lime-950 w-12 flex justify-center items-center text-white cursor-pointer"
+                className="bg-lime-950 hover:bg-lime-700 w-12 flex justify-center items-center text-white cursor-pointer"
                 onClick={handleMaximizar}
                 aria-label="Maximizar"
                 title="Maximizar"
@@ -76,7 +76,7 @@ const Cuadrado = ({ children, title, icon, cols, estado = "min" }: CuadroProprs)
               </button>
             )}
             <button
-              className="bg-lime-950 w-12 flex justify-center items-center text-white cursor-pointer"
+              className="bg-rose-900 hover:bg-rose-700 w-12 flex justify-center items-center text-white cursor-pointer"
               onClick={handleClose}
               aria-label="Cerrar"
               title="Cerrar"
@@ -86,7 +86,9 @@ const Cuadrado = ({ children, title, icon, cols, estado = "min" }: CuadroProprs)
           </div>
         </div>
       </div>
-      <div className={`grid ${defineColumnas(cols ?? 1)} p-3`}>{children}</div>
+      <div className={`grid ${defineColumnas(cols ?? 1)} p-3`}>
+        {children}
+      </div>
     </div>
   );
 };

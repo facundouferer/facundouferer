@@ -78,9 +78,12 @@ export default function Home() {
                 <p>
                   {section.content}
                 </p>
-                <Link href="/about" className="hover:underline w-full text-right mt-3">
-                  SABER MÁS
-                </Link>
+                <div className="w-full flex justify-end">
+                  <Link href="/about" className="p-2 bg-rose-800 hover:bg-rose-600">
+                    SABER MÁS
+                  </Link>
+                </div>
+
               </Cuadrado>
             ))}
         </div>
