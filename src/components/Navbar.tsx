@@ -1,6 +1,6 @@
 'use client';
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import linksData from "@/data/links.json";
 import logo from "../../public/img/home.svg"
@@ -23,6 +23,22 @@ const navLinks: NavLinkItem[] = linksData;
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [openMobileSubmenus, setOpenMobileSubmenus] = useState<Record<string, boolean>>({});
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/me', { cache: 'no-store' });
+        if (!res.ok) return; // 401 => no logueado
+        const data = await res.json();
+        if (!cancelled && data.role === 'admin') setIsAdmin(true);
+      } catch { /* ignorar errores de red */ }
+      finally { if (!cancelled) setIsLoadingUser(false); }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const toggleMobileSubmenu = (text: string) => {
     setOpenMobileSubmenus(prev => ({
@@ -83,7 +99,7 @@ export default function Navbar() {
                         <Link
                           key={sublink.text}
                           href={sublink.href}
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white flex items-center space-x-2"
+                          className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white flex items-center space-x-2"
                           role="menuitem"
                         >
                           {sublink.img && <Image src={sublink.img} alt={sublink.text} width={18} height={18} />}
@@ -95,6 +111,17 @@ export default function Navbar() {
                 )}
               </div>
             ))}
+            {(!isLoadingUser && isAdmin) && (
+              <div className="relative group">
+                <Link
+                  href="/admin"
+                  className="text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2"
+                >
+                  <Image src="/img/files.png" alt="Administración" width={20} height={20} className="pb-2" />
+                  <span>Admin</span>
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Botón del menú móvil */}
@@ -152,7 +179,7 @@ export default function Navbar() {
                 <>
                   <button
                     onClick={() => toggleMobileSubmenu(link.text)}
-                    className="w-full text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white block px-3 py-2 rounded-md text-base font-medium flex items-center justify-between"
+                    className="w-full text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-base font-medium flex items-center justify-between"
                     aria-expanded={!!openMobileSubmenus[link.text]}
                     aria-controls={`mobile-submenu-${link.text.replace(/\s+/g, '-').toLowerCase()}`}
                   >
@@ -176,7 +203,7 @@ export default function Navbar() {
                         <Link
                           key={sublink.text}
                           href={sublink.href}
-                          className="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-white block pl-3 pr-3 py-2 rounded-md text-base font-medium flex items-center space-x-2"
+                          className="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-white pl-3 pr-3 py-2 rounded-md text-base font-medium flex items-center space-x-2"
                           onClick={() => { setIsOpen(false); setOpenMobileSubmenus({}); }}
                         >
                           {sublink.img && <Image src={sublink.img} alt={sublink.text} width={18} height={18} />}
@@ -189,7 +216,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   href={link.href}
-                  className="text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white block px-3 py-2 rounded-md text-base font-medium flex items-center space-x-2"
+                  className="text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-base font-medium flex items-center space-x-2"
                   onClick={() => { setIsOpen(false); setOpenMobileSubmenus({}); }}
                 >
                   <Image src={link.img} alt={link.text} width={22} height={22} />
@@ -198,6 +225,16 @@ export default function Navbar() {
               )}
             </div>
           ))}
+          {(!isLoadingUser && isAdmin) && (
+            <Link
+              href="/admin"
+              className="text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-base font-medium flex items-center space-x-2"
+              onClick={() => { setIsOpen(false); setOpenMobileSubmenus({}); }}
+            >
+              <Image src="/img/files.png" alt="Administración" width={22} height={22} />
+              <span>Administración</span>
+            </Link>
+          )}
         </div>
       </div>
     </nav>
