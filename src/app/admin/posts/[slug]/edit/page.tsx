@@ -6,25 +6,24 @@ import { conectionDB } from '@/libs/mongodb';
 import Post, { IPost } from '@/models/post';
 import slugify from 'slugify';
 
-interface PageProps { params: { slug: string } }
-
 async function fetchPost(slug: string): Promise<IPost | null> {
   await conectionDB();
   const doc = await Post.findOne({ slug }).lean<IPost>();
   return doc || null;
 }
 
-export default async function EditPostPage({ params }: PageProps) {
+export default async function EditPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const user = await getCurrentUser();
   if (!user || user.role !== 'admin') redirect('/login');
-  const post = await fetchPost(params.slug);
+  const { slug } = await params;
+  const post = await fetchPost(slug);
   if (!post) redirect('/admin/posts');
   return (
     <div style={{ maxWidth: 700, margin: '40px auto', fontFamily: 'monospace' }}>
       <h1>Editar Post</h1>
       <Link href='/admin/posts' className='underline'>Volver</Link>
       <PostEditorForm
-        action={updatePost.bind(null, params.slug)}
+        action={updatePost.bind(null, slug)}
         initialTitle={post.title}
         initialContent={post.content}
         initialTags={post.tags || []}

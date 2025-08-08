@@ -4,18 +4,18 @@ import Post, { IPost } from '@/models/post';
 import ReactMarkdown from 'react-markdown';
 import Link from 'next/link';
 
-interface PageProps { params: { slug: string } }
-
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   await conectionDB();
-  const post = await Post.findOne({ slug: params.slug }, 'title').lean<IPost>();
+  const { slug } = await params;
+  const post = await Post.findOne({ slug }, 'title').lean<IPost>();
   if (!post) return { title: 'Post no encontrado' };
   return { title: post.title };
 }
 
-export default async function PostDetailPage({ params }: PageProps) {
+export default async function PostDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   await conectionDB();
-  const post = await Post.findOne({ slug: params.slug }).lean<IPost>();
+  const { slug } = await params;
+  const post = await Post.findOne({ slug }).lean<IPost>();
   if (!post) return notFound();
   return (
     <div className='max-w-3xl mx-auto py-8 px-4'>

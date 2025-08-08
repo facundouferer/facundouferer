@@ -4,15 +4,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/libs/validations";
 
 type RouteContext = {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function GET(request: NextRequest, context: any) {
   const { params } = context as RouteContext;
-  const { slug } = params;
+  const { slug } = await params;
 
   if (!validateApiKey(request)) {
     return NextResponse.json(
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest, context: any) {
 
 export async function PUT(request: NextRequest, context: RouteContext) {
   const { params } = context;
-  const { slug } = params;
+  const { slug } = await params;
   if (!validateApiKey(request)) {
     return NextResponse.json({ message: 'Acceso no autorizado. API Key inválida o faltante.' }, { status: 401 });
   }
@@ -82,7 +82,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
   const { params } = context;
-  const { slug } = params;
+  const { slug } = await params;
   if (!validateApiKey(request)) {
     return NextResponse.json({ message: 'Acceso no autorizado. API Key inválida o faltante.' }, { status: 401 });
   }

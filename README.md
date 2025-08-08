@@ -79,29 +79,3 @@ If you have a project in mind or want to discuss ideas, don't hesitate to reach 
   <img src="https://github-readme-stats.vercel.app/api?username=facundouferer&show_icons=true&theme=radical" />
 </div>
 
-## 🔐 Autenticación (Nuevo)
-
-Se agregó un sistema básico de autenticación con JWT + cookies HttpOnly.
-
-Endpoints:
-- POST `/api/auth/register` { email, password, name?, role? }
-- POST `/api/auth/login` { email, password }
-- POST `/api/auth/logout`
-- GET `/api/auth/me`
-- GET `/api/users` (Sólo admin)
-
-Páginas:
-- `/login` formulario de ingreso.
-- `/admin` panel protegido (middleware redirige si no hay token válido).
-
-Variables de entorno requeridas:
-```
-MONGODB_URI=...
-JWT_SECRET=una_clave_segura_larga
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
-```
-
-Notas:
-- El primer usuario creado puede forzarse como admin enviando `role: "admin"` en register (controlar esto en producción manualmente).
-- Middleware protege rutas que comienzan con `/admin`.
-- Para hardening: rotar JWT_SECRET, agregar límite de intentos y CSRF para operaciones sensibles.

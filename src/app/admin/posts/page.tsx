@@ -1,11 +1,15 @@
 import { getCurrentUser } from '@/libs/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { conectionDB } from '@/libs/mongodb';
+import Post, { IPost } from '@/models/post';
 
-async function fetchPosts() {
-  const res = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/posts', { headers: { 'X-API-KEY': process.env.API_SECRET_KEY || '' }, cache: 'no-store' });
-  if (!res.ok) return [];
-  return res.json();
+type AdminPost = { _id: string; title: string; slug: string };
+
+async function fetchPosts(): Promise<AdminPost[]> {
+  await conectionDB();
+  const docs = await Post.find({}, 'title slug').sort({ createdAt: -1 }).lean<IPost[]>();
+  return docs.map(d => ({ _id: String(d._id), title: d.title, slug: d.slug }));
 }
 
 export default async function AdminPostsPage() {
@@ -28,7 +32,7 @@ export default async function AdminPostsPage() {
           </tr>
         </thead>
         <tbody>
-          {posts.map((p: any) => (
+          {posts.map((p) => (
             <tr key={p._id} className='hover:bg-gray-50 dark:hover:bg-gray-800'>
               <td className='border p-2'>{p.title}</td>
               <td className='border p-2'>{p.slug}</td>
