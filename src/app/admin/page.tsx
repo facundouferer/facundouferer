@@ -18,6 +18,11 @@ export default async function AdminPage() {
         <h2>Gestión de Usuarios (sencilla)</h2>
         <UserList />
       </section>
+      <section style={{ marginTop: 32 }}>
+        <h2>Gestión de Posts</h2>
+        <p className='mb-2'>Crear, editar o eliminar publicaciones.</p>
+        <a href='/admin/posts' className='border px-3 py-1 inline-block'>Ir al administrador de posts</a>
+      </section>
     </div>
   );
 }
