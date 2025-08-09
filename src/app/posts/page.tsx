@@ -48,7 +48,13 @@ export default function PostsPageClient() {
           {p.tags.length > 0 && (
             <div className='flex flex-wrap gap-2 mt-3'>
               {p.tags.map(t => (
-                <span key={t} className='bg-gray-200 text-gray-700 px-2 py-1 text-xs rounded'>{t}</span>
+                <Link
+                  key={t}
+                  href={`/tags/${encodeURIComponent(t)}`}
+                  className='bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 text-xs rounded transition-colors'
+                >
+                  {t}
+                </Link>
               ))}
             </div>
           )}

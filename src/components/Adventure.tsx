@@ -17,7 +17,7 @@ export default function Adventure() {
 
         <div className="col-span-1">
           <Building
-            href="/posts"
+            href="/tags/cuentos"
             imgSrc="/img/buildings/cuentos.png"
             text="CUENTOS"
           />
