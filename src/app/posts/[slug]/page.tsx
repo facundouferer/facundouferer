@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { conectionDB } from '@/libs/mongodb';
 import Post, { IPost } from '@/models/post';
 import ReactMarkdown from 'react-markdown';
+import Image from 'next/image';
 import Link from 'next/link';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -23,9 +24,11 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
       <h1 className='text-3xl font-bold mt-2 mb-6'>{post.title}</h1>
       {post.featuredImage && (
         <div className='mb-6'>
-          <img
-            src={`${process.env.NEXT_PUBLIC_BASE_URL}${post.featuredImage}`}
+          <Image
+            src={post.featuredImage.startsWith('http') ? post.featuredImage : post.featuredImage}
             alt={post.title}
+            width={1280}
+            height={540}
             className='w-full max-h-96 object-cover rounded-lg shadow-md'
           />
         </div>

@@ -42,7 +42,7 @@ export default function PostEditorForm({
       </div>
       <ImageUploader
         onImageUploaded={setFeaturedImage}
-        currentImage={initialFeaturedImage ? `${process.env.NEXT_PUBLIC_BASE_URL}${initialFeaturedImage}` : undefined}
+        currentImage={initialFeaturedImage || undefined}
         label='Imagen destacada'
       />
       <input type='hidden' name='featuredImage' value={featuredImage} />

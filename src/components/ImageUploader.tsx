@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import Image from 'next/image';
 
 interface ImageUploaderProps {
   onImageUploaded: (url: string) => void;
@@ -55,10 +56,9 @@ export default function ImageUploader({ onImageUploaded, currentImage, label = '
       }
 
       const data = await response.json();
-      const fullUrl = `${baseUrl}${data.url}`;
-
-      setPreview(fullUrl);
-      onImageUploaded(data.url); // Pasamos la URL relativa para guardar en DB
+      // data.url puede ser absoluta (Vercel Blob) o relativa (desarrollo). Ambas funcionan como preview tal cual.
+      setPreview(data.url);
+      onImageUploaded(data.url); // Guardar absoluta o relativa según entorno
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -78,9 +78,11 @@ export default function ImageUploader({ onImageUploaded, currentImage, label = '
 
       {preview && (
         <div className='relative inline-block'>
-          <img
+          <Image
             src={preview}
             alt='Preview'
+            width={320}
+            height={192}
             className='max-w-xs max-h-48 object-cover border rounded'
           />
           <button

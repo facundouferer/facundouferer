@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { validateApiKey } from '@/libs/validations';
+import { put } from '@vercel/blob';
 
 // Tipos de archivo permitidos
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
@@ -34,33 +35,46 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Generar nombre único
-    const timestamp = Date.now();
-    const extension = path.extname(file.name);
-    const baseName = path.basename(file.name, extension).replace(/[^a-zA-Z0-9]/g, '-');
-    const fileName = `${timestamp}-${baseName}${extension}`;
+    // En producción, usar Vercel Blob. En desarrollo, usar filesystem local.
+    const isProd = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
 
-    // Crear directorio si no existe
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch {
-      // Directorio ya existe, continuar
+    if (isProd) {
+      const bytes = await file.arrayBuffer();
+      const { url } = await put(file.name, Buffer.from(bytes), { access: 'public' });
+      return NextResponse.json({
+        message: 'Imagen subida exitosamente.',
+        url, // URL absoluta
+        fileName: path.basename(url)
+      }, { status: 201 });
+    } else {
+      // Generar nombre único
+      const timestamp = Date.now();
+      const extension = path.extname(file.name);
+      const baseName = path.basename(file.name, extension).replace(/[^a-zA-Z0-9]/g, '-');
+      const fileName = `${timestamp}-${baseName}${extension}`;
+
+      // Crear directorio si no existe
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+      try {
+        await mkdir(uploadDir, { recursive: true });
+      } catch {
+        // Directorio ya existe, continuar
+      }
+
+      // Guardar archivo
+      const filePath = path.join(uploadDir, fileName);
+      const bytes = await file.arrayBuffer();
+      await writeFile(filePath, Buffer.from(bytes));
+
+      // Retornar URL relativa (sin dominio para que sea dinámico)
+      const imageUrl = `/uploads/${fileName}`;
+
+      return NextResponse.json({
+        message: 'Imagen subida exitosamente.',
+        url: imageUrl,
+        fileName
+      }, { status: 201 });
     }
-
-    // Guardar archivo
-    const filePath = path.join(uploadDir, fileName);
-    const bytes = await file.arrayBuffer();
-    await writeFile(filePath, Buffer.from(bytes));
-
-    // Retornar URL relativa (sin dominio para que sea dinámico)
-    const imageUrl = `/uploads/${fileName}`;
-
-    return NextResponse.json({
-      message: 'Imagen subida exitosamente.',
-      url: imageUrl,
-      fileName
-    }, { status: 201 });
 
   } catch (error) {
     console.error('Error al subir imagen:', error);
