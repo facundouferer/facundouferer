@@ -1,17 +1,28 @@
 "use client";
 import React, { useState } from 'react';
 import MarkdownEditor from '@/components/MarkdownEditor';
+import ImageUploader from '@/components/ImageUploader';
 
 interface PostEditorFormProps {
   action: (formData: FormData) => void; // server action passed from parent
   initialTitle?: string;
   initialContent?: string;
   initialTags?: string[];
+  initialFeaturedImage?: string;
   submitLabel?: string;
 }
 
-export default function PostEditorForm({ action, initialTitle = '', initialContent = '', initialTags = [], submitLabel = 'Guardar' }: PostEditorFormProps) {
+export default function PostEditorForm({
+  action,
+  initialTitle = '',
+  initialContent = '',
+  initialTags = [],
+  initialFeaturedImage = '',
+  submitLabel = 'Guardar'
+}: PostEditorFormProps) {
   const [tagsInput, setTagsInput] = useState(initialTags.join(', '));
+  const [featuredImage, setFeaturedImage] = useState(initialFeaturedImage);
+
   return (
     <form action={action} className='space-y-4 mt-6'>
       <div>
@@ -29,6 +40,12 @@ export default function PostEditorForm({ action, initialTitle = '', initialConte
           placeholder='blog, personal'
         />
       </div>
+      <ImageUploader
+        onImageUploaded={setFeaturedImage}
+        currentImage={initialFeaturedImage ? `${process.env.NEXT_PUBLIC_BASE_URL}${initialFeaturedImage}` : undefined}
+        label='Imagen destacada'
+      />
+      <input type='hidden' name='featuredImage' value={featuredImage} />
       <button className='border px-4 py-2'>{submitLabel}</button>
     </form>
   );

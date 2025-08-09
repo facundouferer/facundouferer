@@ -22,6 +22,7 @@ async function createPost(formData: FormData) {
   'use server';
   const title = String(formData.get('title') || '').trim();
   const content = String(formData.get('content') || '').trim();
+  const featuredImage = String(formData.get('featuredImage') || '').trim();
   const tags = String(formData.get('tags') || '')
     .split(',')
     .map(t => t.trim())
@@ -32,7 +33,8 @@ async function createPost(formData: FormData) {
     title,
     content,
     slug: slugify(title, { lower: true, strict: true, trim: true }),
-    tags
+    tags,
+    featuredImage: featuredImage || undefined
   });
   await doc.save();
   redirect('/admin/posts');

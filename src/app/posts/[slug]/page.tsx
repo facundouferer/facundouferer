@@ -21,6 +21,15 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
     <div className='max-w-3xl mx-auto py-8 px-4'>
       <Link href='/posts' className='text-sm text-blue-600'>&larr; Volver</Link>
       <h1 className='text-3xl font-bold mt-2 mb-6'>{post.title}</h1>
+      {post.featuredImage && (
+        <div className='mb-6'>
+          <img
+            src={`${process.env.NEXT_PUBLIC_BASE_URL}${post.featuredImage}`}
+            alt={post.title}
+            className='w-full max-h-96 object-cover rounded-lg shadow-md'
+          />
+        </div>
+      )}
       <div className='prose prose-sm max-w-none cuentos'>
         <ReactMarkdown>{post.content}</ReactMarkdown>
       </div>

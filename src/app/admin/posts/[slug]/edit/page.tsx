@@ -27,6 +27,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ slug:
         initialTitle={post.title}
         initialContent={post.content}
         initialTags={post.tags || []}
+        initialFeaturedImage={post.featuredImage || ''}
         submitLabel='Actualizar'
       />
     </div>
@@ -37,6 +38,7 @@ async function updatePost(slug: string, formData: FormData) {
   'use server';
   const title = String(formData.get('title') || '').trim();
   const content = String(formData.get('content') || '').trim();
+  const featuredImage = String(formData.get('featuredImage') || '').trim();
   const tags = String(formData.get('tags') || '')
     .split(',')
     .map(t => t.trim())
@@ -44,6 +46,12 @@ async function updatePost(slug: string, formData: FormData) {
   if (!title || !content) redirect('/admin/posts');
   await conectionDB();
   const newSlug = slugify(title, { lower: true, strict: true, trim: true });
-  await Post.findOneAndUpdate({ slug }, { title, content, tags, slug: newSlug });
+  await Post.findOneAndUpdate({ slug }, {
+    title,
+    content,
+    tags,
+    slug: newSlug,
+    featuredImage: featuredImage || undefined
+  });
   redirect('/admin/posts');
 }
