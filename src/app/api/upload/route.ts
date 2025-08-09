@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { validateApiKey } from '@/libs/validations';
 import { put } from '@vercel/blob';
@@ -35,61 +34,32 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // En producción, usar Vercel Blob. En desarrollo, usar filesystem local.
-    const isProd = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
-
-    if (isProd) {
-      try {
-        if (!process.env.BLOB_READ_WRITE_TOKEN) {
-          throw new Error('BLOB_READ_WRITE_TOKEN not configured');
-        }
-        const bytes = await file.arrayBuffer();
-        const timestamp = Date.now();
-        const uniqueFileName = `${timestamp}-${file.name}`;
-        const { url } = await put(uniqueFileName, Buffer.from(bytes), {
-          access: 'public',
-          token: process.env.BLOB_READ_WRITE_TOKEN
-        });
-        return NextResponse.json({
-          message: 'Imagen subida exitosamente.',
-          url, // URL absoluta
-          fileName: path.basename(url)
-        }, { status: 201 });
-      } catch (blobError) {
-        console.error('Error with Vercel Blob:', blobError);
-        return NextResponse.json({
-          message: 'Error al configurar el almacenamiento de archivos. Por favor, contacte al administrador.',
-          error: blobError instanceof Error ? blobError.message : 'Unknown error'
-        }, { status: 500 });
-      }
-    } else {
-      // Generar nombre único
-      const timestamp = Date.now();
-      const extension = path.extname(file.name);
-      const baseName = path.basename(file.name, extension).replace(/[^a-zA-Z0-9]/g, '-');
-      const fileName = `${timestamp}-${baseName}${extension}`;
-
-      // Crear directorio si no existe
-      const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-      try {
-        await mkdir(uploadDir, { recursive: true });
-      } catch {
-        // Directorio ya existe, continuar
+    try {
+      if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        throw new Error('BLOB_READ_WRITE_TOKEN not configured');
       }
 
-      // Guardar archivo
-      const filePath = path.join(uploadDir, fileName);
       const bytes = await file.arrayBuffer();
-      await writeFile(filePath, Buffer.from(bytes));
+      const timestamp = Date.now();
+      const uniqueFileName = `${timestamp}-${file.name}`;
 
-      // Retornar URL relativa (sin dominio para que sea dinámico)
-      const imageUrl = `/uploads/${fileName}`;
+      const { url } = await put(uniqueFileName, Buffer.from(bytes), {
+        access: 'public',
+        token: process.env.BLOB_READ_WRITE_TOKEN
+      });
 
       return NextResponse.json({
         message: 'Imagen subida exitosamente.',
-        url: imageUrl,
-        fileName
+        url,
+        fileName: path.basename(url)
       }, { status: 201 });
+
+    } catch (blobError) {
+      console.error('Error with Vercel Blob:', blobError);
+      return NextResponse.json({
+        message: 'Error al subir la imagen. Por favor, contacte al administrador.',
+        error: blobError instanceof Error ? blobError.message : 'Unknown error'
+      }, { status: 500 });
     }
 
   } catch (error) {
