@@ -39,13 +39,24 @@ export async function POST(request: NextRequest) {
     const isProd = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
 
     if (isProd) {
-      const bytes = await file.arrayBuffer();
-      const { url } = await put(file.name, Buffer.from(bytes), { access: 'public' });
-      return NextResponse.json({
-        message: 'Imagen subida exitosamente.',
-        url, // URL absoluta
-        fileName: path.basename(url)
-      }, { status: 201 });
+      try {
+        if (!process.env.BLOB_READ_WRITE_TOKEN) {
+          throw new Error('BLOB_READ_WRITE_TOKEN not configured');
+        }
+        const bytes = await file.arrayBuffer();
+        const { url } = await put(file.name, Buffer.from(bytes), { access: 'public' });
+        return NextResponse.json({
+          message: 'Imagen subida exitosamente.',
+          url, // URL absoluta
+          fileName: path.basename(url)
+        }, { status: 201 });
+      } catch (blobError) {
+        console.error('Error with Vercel Blob:', blobError);
+        return NextResponse.json({
+          message: 'Error al configurar el almacenamiento de archivos. Por favor, contacte al administrador.',
+          error: blobError instanceof Error ? blobError.message : 'Unknown error'
+        }, { status: 500 });
+      }
     } else {
       // Generar nombre único
       const timestamp = Date.now();
