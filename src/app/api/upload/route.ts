@@ -44,7 +44,12 @@ export async function POST(request: NextRequest) {
           throw new Error('BLOB_READ_WRITE_TOKEN not configured');
         }
         const bytes = await file.arrayBuffer();
-        const { url } = await put(file.name, Buffer.from(bytes), { access: 'public' });
+        const timestamp = Date.now();
+        const uniqueFileName = `${timestamp}-${file.name}`;
+        const { url } = await put(uniqueFileName, Buffer.from(bytes), {
+          access: 'public',
+          token: process.env.BLOB_READ_WRITE_TOKEN
+        });
         return NextResponse.json({
           message: 'Imagen subida exitosamente.',
           url, // URL absoluta
