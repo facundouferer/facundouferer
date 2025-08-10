@@ -40,8 +40,8 @@ export default function PostsPageClient() {
   return (
     <div className='max-w-4xl mx-auto py-7 px-4 sm:px-6 lg:px-8 space-y-8'>
       {posts.map(p => (
-        <article key={p._id} className='border-b pb-4'>
-          <h2 className='mb-2 text-2xl font-bold'>
+        <article key={p._id} className='bg-white p-4 shadow-2xl border-green-800 border-8'>
+          <h2 className='mb-2 text-2xl font-bold text-gray-700'>
             <Link href={`/posts/${p.slug}`}>{p.title}</Link>
           </h2>
           <p className='text-gray-700 leading-relaxed'>{p.excerpt}</p>

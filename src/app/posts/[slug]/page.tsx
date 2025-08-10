@@ -20,12 +20,11 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
   if (!post) return notFound();
   return (
     <div className='max-w-3xl mx-auto py-8 px-4'>
-      <Link href='/posts' className='text-sm text-blue-600'>&larr; Volver</Link>
       <h1 className='text-3xl font-bold mt-2 mb-6'>{post.title}</h1>
       {post.featuredImage && (
         <div className='mb-6'>
           <Image
-            src={post.featuredImage.startsWith('http') ? post.featuredImage : post.featuredImage}
+            src={post.featuredImage.startsWith('http') ? post.featuredImage : `${process.env.NEXT_PUBLIC_BASE_URL}${post.featuredImage}`}
             alt={post.title}
             width={1280}
             height={540}
@@ -33,7 +32,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
           />
         </div>
       )}
-      <div className='prose prose-sm max-w-none cuentos'>
+      <div className='prose prose-sm max-w-none text-gray-700 bg-white rounded-lg shadow-md p-6'>
         <ReactMarkdown>{post.content}</ReactMarkdown>
       </div>
       {Array.isArray(post.tags) && post.tags.length > 0 && (

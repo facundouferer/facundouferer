@@ -62,14 +62,12 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
 
   return (
     <div className='max-w-4xl mx-auto py-7 px-4 sm:px-6 lg:px-8'>
-      <Link href='/posts' className='text-sm text-blue-600'>&larr; Volver a Posts</Link>
       <h1 className='text-3xl font-bold mt-4 mb-6'>{decodedTag}</h1>
-      <p className='text-gray-600 mb-8'>Se encontraron {posts.length} post{posts.length !== 1 ? 's' : ''} con este tag.</p>
 
       <div className='space-y-8'>
         {posts.map(post => (
-          <article key={post._id} className='border-b pb-4'>
-            <h2 className='mb-2 text-2xl font-bold'>
+          <article key={post._id} className='bg-white p-4 shadow-2xl border-green-800 border-8'>
+            <h2 className='mb-2 text-3xl font-bold text-gray-700'>
               <Link href={`/posts/${post.slug}`} className='hover:text-blue-600'>
                 {post.title}
               </Link>
