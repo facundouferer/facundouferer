@@ -4,34 +4,27 @@ import { useState, useEffect } from 'react';
 
 export default function Adventure() {
 
-  const [windowSize, setWindowSize] = useState({
-    width: typeof window !== 'undefined' ? window.innerWidth : 0,
-    height: typeof window !== 'undefined' ? window.innerHeight : 0,
-  });
+  const [showTrees, setShowTrees] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
+    const updateDimensions = () => {
+      setShowTrees(window.innerWidth > 412);
     };
 
-    window.addEventListener('resize', handleResize);
+    updateDimensions();
 
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('resize', updateDimensions);
+
+    return () => window.removeEventListener('resize', updateDimensions);
+
   }, []);
-
-  useEffect(() => {
-    console.log('Ancho:', windowSize.width, 'Alto:', windowSize.height);
-  }, [windowSize]);
 
   return (
     <div className="w-full pl-4 pr-4 mt-5 mb-24">
 
       <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
 
-        {windowSize.width > 375 &&
+        {showTrees && (
           <>
             <Tree />
             <Tree />
@@ -43,7 +36,7 @@ export default function Adventure() {
             <Tree />
             <Tree />
           </>
-        }
+        )}
 
         <Tree />
 
@@ -61,13 +54,13 @@ export default function Adventure() {
           text="PORTFOLIO"
         />
 
-        {windowSize.width > 375 &&
+        {showTrees && (
           <>
             <Tree />
             <Tree />
             <Tree />
           </>
-        }
+        )}
 
         <Building
           href="/tags/cuentos"
@@ -78,13 +71,13 @@ export default function Adventure() {
 
         <Tree />
 
-        {windowSize.width > 375 &&
+        {showTrees && (
           <>
             <Tree />
             <Tree />
             <Tree />
           </>
-        }
+        )}
 
         <Building
           href="/university"
@@ -94,14 +87,14 @@ export default function Adventure() {
 
         <Tree />
 
-        {windowSize.width > 375 &&
+        {showTrees && (
           <>
             <Tree />
             <Tree />
             <Tree />
             <Tree />
           </>
-        }
+        )}
 
         <Building
           href="/posts"
@@ -109,7 +102,7 @@ export default function Adventure() {
           text="BLOG"
         />
 
-        {windowSize.width > 375 &&
+        {showTrees && (
           <>
             <Tree />
             <Tree />
@@ -117,7 +110,7 @@ export default function Adventure() {
             <Tree />
             <Tree />
           </>
-        }
+        )}
 
         <Tree />
         <Tree />
@@ -132,7 +125,7 @@ export default function Adventure() {
         />
 
 
-        {windowSize.width > 375 &&
+        {showTrees && (
           <>
             <Tree />
             <Tree />
@@ -143,7 +136,7 @@ export default function Adventure() {
             <Tree />
             <Tree />
           </>
-        }
+        )}
 
         <Tree />
 
