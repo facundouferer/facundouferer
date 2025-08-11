@@ -1,24 +1,14 @@
 import arbol from "../../public/img/arbol.png"
 import Image from "next/image"
 
-interface TreeProps {
-  arboles: number
-}
+export default function Tree() {
 
-export default function Tree(TreeProps: TreeProps) {
-  const { arboles } = TreeProps
   return (
-    <div className={`col-span-${arboles}`}>
-      <div className="flex flex-wrap w-full h-full justify-around">
-        {Array.from({ length: arboles }).map((_, i) => (
-          <Image
-            alt="tree"
-            key={i}
-            src={arbol}
-            className="w-[100px] h-[100px]"
-          />
-        ))}
-      </div>
-    </div>
+    <Image
+      alt="tree"
+      src={arbol}
+      className="w-[100px] h-[100px]"
+    />
+
   )
 }

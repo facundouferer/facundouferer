@@ -38,28 +38,48 @@ export default function PostsPageClient() {
   if (!posts.length) return <p>No hay posts para mostrar.</p>;
 
   return (
-    <div className='max-w-4xl mx-auto py-7 px-4 sm:px-6 lg:px-8 space-y-8'>
-      {posts.map(p => (
-        <article key={p._id} className='bg-white p-4 shadow-2xl border-green-800 border-8'>
-          <h2 className='mb-2 text-2xl font-bold text-gray-700'>
-            <Link href={`/posts/${p.slug}`}>{p.title}</Link>
-          </h2>
-          <p className='text-gray-700 leading-relaxed'>{p.excerpt}</p>
-          {p.tags.length > 0 && (
-            <div className='flex flex-wrap gap-2 mt-3'>
-              {p.tags.map(t => (
-                <Link
-                  key={t}
-                  href={`/tags/${encodeURIComponent(t)}`}
-                  className='bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 text-xs rounded transition-colors'
-                >
-                  {t}
-                </Link>
-              ))}
-            </div>
-          )}
-        </article>
-      ))}
+    <div className='w-full min-h-screen pb-12' style={{
+      backgroundImage: 'url("/img/parque.png")',
+      backgroundRepeat: 'repeat',
+      width: 'auto',
+      objectFit: 'cover'
+    }}>
+
+      <div className='w-full h-[125px] mb-4 py-7 px-4 sm:px-6 lg:px-8' style={{
+        backgroundImage: 'url("/img/pared-verde.png")',
+        backgroundRepeat: 'repeat',
+      }}></div>
+      <div className='max-w-7xl mx-auto grid sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6'>
+        {posts.map(p => (
+          <article key={p._id} className='bg-white p-4 border-green-800 border-8 flex flex-col'>
+            <h2 className='mb-2 text-2xl font-bold text-gray-700 hover:text-green-700 hover:bg-green-50 transition-colors'>
+              <Link href={`/posts/${p.slug}`}>{p.title}</Link>
+            </h2>
+            <p className='text-gray-700 leading-relaxed flex-grow'>
+              {p.excerpt}
+              <Link
+                href={`/posts/${p.slug}`}
+                className='text-blue-500 block mt-2 hover:text-blue-700 transition-colors'
+              >
+                Leer más 🔻
+              </Link>
+            </p>
+            {p.tags.length > 0 && (
+              <div className='flex flex-wrap gap-2 mt-3'>
+                {p.tags.map(t => (
+                  <Link
+                    key={t}
+                    href={`/tags/${encodeURIComponent(t)}`}
+                    className='bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 text-xs rounded transition-colors'
+                  >
+                    {t}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
     </div>
   );
 }
