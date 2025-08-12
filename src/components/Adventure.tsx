@@ -30,11 +30,6 @@ export default function Adventure() {
             <Tree />
             <Tree />
             <Tree />
-            <Tree />
-            <Tree />
-            <Tree />
-            <Tree />
-            <Tree />
           </>
         )}
 
@@ -58,7 +53,6 @@ export default function Adventure() {
           <>
             <Tree />
             <Tree />
-            <Tree />
           </>
         )}
 
@@ -73,7 +67,6 @@ export default function Adventure() {
 
         {showTrees && (
           <>
-            <Tree />
             <Tree />
             <Tree />
           </>
@@ -91,8 +84,6 @@ export default function Adventure() {
           <>
             <Tree />
             <Tree />
-            <Tree />
-            <Tree />
           </>
         )}
 
@@ -104,8 +95,6 @@ export default function Adventure() {
 
         {showTrees && (
           <>
-            <Tree />
-            <Tree />
             <Tree />
             <Tree />
             <Tree />
@@ -127,11 +116,6 @@ export default function Adventure() {
 
         {showTrees && (
           <>
-            <Tree />
-            <Tree />
-            <Tree />
-            <Tree />
-            <Tree />
             <Tree />
             <Tree />
             <Tree />
