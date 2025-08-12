@@ -2,6 +2,8 @@ import React from 'react';
 import { getCurrentUser } from '@/libs/auth';
 import { redirect } from 'next/navigation';
 import LogoutButton from '@/components/LogoutButton';
+import BotonGrandeProps from '@/components/ButonGrande';
+
 
 export default async function AdminPage() {
   const user = await getCurrentUser();
@@ -14,31 +16,20 @@ export default async function AdminPage() {
       <h1>Panel de Administración</h1>
       <p>Bienvenido, {user.name || user.email}</p>
       <LogoutButton />
-      <section style={{ marginTop: 32 }}>
-        <h2>Gestión de Usuarios (sencilla)</h2>
-        <UserList />
-      </section>
-      <section style={{ marginTop: 32 }}>
-        <h2>Gestión de Posts</h2>
-        <p className='mb-2'>Crear, editar o eliminar publicaciones.</p>
-        <a href='/admin/posts' className='border px-3 py-1 inline-block'>Ir al administrador de posts</a>
-      </section>
+      <div className='flex flex-col 
+      bg-[#FFFFDE] 
+      p-5 
+      mt-3 
+      rounded-md 
+      border-7 
+      border-b-amber-900
+      border-r-amber-900
+      border-t-amber-300
+      border-l-amber-300'>
+        <BotonGrandeProps url='/admin/users' text='Usuarios' />
+        <BotonGrandeProps url='/admin/posts' text='Posts' />
+        <BotonGrandeProps url='/admin/portfolio' text='Portfolio' />
+      </div>
     </div>
-  );
-}
-
-async function fetchUsers() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/users`, { cache: 'no-store' });
-  if (!res.ok) return [];
-  return res.json();
-}
-
-interface AdminUser { _id: string; email: string; role: string; name?: string }
-async function UserList() {
-  const users: AdminUser[] = await fetchUsers();
-  return (
-    <ul style={{ listStyle: 'disc', paddingLeft: 24 }}>
-      {users.map((u) => (<li key={u._id}>{u.email} - {u.role}</li>))}
-    </ul>
   );
 }

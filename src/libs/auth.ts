@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 import User, { IUser } from '@/models/user';
 import { conectionDB } from './mongodb';
+import type { NextAuthConfig } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me';
 const JWT_EXPIRES = '7d';
@@ -63,3 +65,41 @@ export function clearAuthCookie() {
   const store = getCookieStore();
   if (store.delete) store.delete('auth_token');
 }
+
+export const authOptions = {
+  providers: [
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+
+        await conectionDB();
+        const user = await User.findOne({ email: credentials.email });
+
+        if (!user || !user.password) return null;
+
+        const isValid = await comparePassword(
+          credentials.password as string,
+          user.password
+        );
+        if (!isValid) return null;
+
+        return {
+          id: user._id.toString(),
+          email: user.email,
+          role: user.role
+        };
+      }
+    })
+  ],
+  session: {
+    strategy: "jwt"
+  },
+  pages: {
+    signIn: '/login'
+  }
+} satisfies NextAuthConfig;
