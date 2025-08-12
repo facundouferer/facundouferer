@@ -6,6 +6,7 @@ import ImageUploader from '@/components/ImageUploader';
 
 interface PortfolioFormProps {
   initialData?: {
+    _id?: string;
     title: string;
     description: string;
     imageUrl: string;
@@ -38,7 +39,11 @@ export default function PortfolioForm({ initialData, isEditing = false }: Portfo
     };
 
     try {
-      const res = await fetch('/api/portfolio', {
+      const url = isEditing && initialData?._id
+        ? `/api/portfolio/${initialData._id}`
+        : '/api/portfolio';
+
+      const res = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',

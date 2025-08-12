@@ -33,7 +33,7 @@ const PortfolioItem: React.FC<PortfolioItemProps> = ({
             className="object-cover rounded"
           />
         </div>
-        <p className="mb-4 font-pokemon text-sm">{description}</p>
+        <p className="mb-4 font-pokemon text-sm m-1">{description}</p>
         <div className="flex flex-wrap gap-2 m-1">
           {tags.map((tag, index) => (
             <span key={index} className="pokemon-tag">
@@ -41,12 +41,12 @@ const PortfolioItem: React.FC<PortfolioItemProps> = ({
             </span>
           ))}
         </div>
-        <div className="flex justify-between">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
           <Link href={codeUrl} className="pokemon-button-secondary" target='_blank'>
             Código
           </Link>
           <Link href={projectUrl} className="pokemon-button" target='_blank'>
-            Proyecto
+            Demo
           </Link>
         </div>
       </div>

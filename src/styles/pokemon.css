@@ -160,7 +160,7 @@ nav {
   background: #24857F;
   color: white;
   border: none;
-  padding: 1rem;
+  padding: 0.6rem;
   font-family: 'Pokemon', monospace;
   font-size: 1rem;
   cursor: pointer;
@@ -189,7 +189,7 @@ nav {
   background: #dc0071;
   color: white;
   border: none;
-  padding: 1rem;
+  padding: 0.6rem;
   font-family: 'Pokemon', monospace;
   font-size: 1rem;
   cursor: pointer;
@@ -227,6 +227,8 @@ nav {
   transform: translateY(0);
   box-shadow: 0 2px 0px #960049;
 }
+
+
 
 /* Estilo para campos deshabilitados */
 .pokemon-input:disabled {
