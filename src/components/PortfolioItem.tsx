@@ -22,7 +22,7 @@ const PortfolioItem: React.FC<PortfolioItemProps> = ({
   return (
     <div className="pokemon-window m-4">
       <div className="pokemon-window-header">
-        <h3 className="text-xl font-pokemon">{title}</h3>
+        <h2 className="text-xl">{title}</h2>
       </div>
       <div className="pokemon-window-content p-4">
         <div className="relative w-full h-48 mb-4">
@@ -34,7 +34,7 @@ const PortfolioItem: React.FC<PortfolioItemProps> = ({
           />
         </div>
         <p className="mb-4 font-pokemon text-sm">{description}</p>
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 m-1">
           {tags.map((tag, index) => (
             <span key={index} className="pokemon-tag">
               {tag}
@@ -42,11 +42,11 @@ const PortfolioItem: React.FC<PortfolioItemProps> = ({
           ))}
         </div>
         <div className="flex justify-between">
-          <Link href={codeUrl} className="pokemon-button">
-            Ver Código
+          <Link href={codeUrl} className="pokemon-button-secondary" target='_blank'>
+            Código
           </Link>
-          <Link href={projectUrl} className="pokemon-button">
-            Ver Proyecto
+          <Link href={projectUrl} className="pokemon-button" target='_blank'>
+            Proyecto
           </Link>
         </div>
       </div>

@@ -5,11 +5,13 @@ import { IPortfolio } from '@/types/portfolio';
 
 async function getPortfolioItem(id: string): Promise<IPortfolio | null> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/${id}`, {
-      cache: 'no-store',
-    });
-    if (!res.ok) return null;
-    return res.json();
+    // Directamente importamos desde la conexión a la base de datos
+    const { Portfolio } = await import('@/models/portfolio');
+    const { conectionDB } = await import('@/libs/mongodb');
+
+    await conectionDB();
+    const portfolio = await Portfolio.findById(id);
+    return portfolio ? JSON.parse(JSON.stringify(portfolio)) : null;
   } catch (error) {
     console.error('Error loading portfolio item:', error);
     return null;

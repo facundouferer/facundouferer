@@ -9,15 +9,13 @@ export const metadata: Metadata = {
 
 async function getPortfolioItems() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio`, {
-      cache: 'no-store',
-    });
+    // Directamente importamos desde la conexión a la base de datos
+    const { Portfolio } = await import('@/models/portfolio');
+    const { conectionDB } = await import('@/libs/mongodb');
 
-    if (!res.ok) {
-      throw new Error('Failed to fetch portfolio items');
-    }
-
-    return res.json();
+    await conectionDB();
+    const portfolios = await Portfolio.find().sort({ createdAt: -1 });
+    return JSON.parse(JSON.stringify(portfolios)); // Necesario para serializar los datos de MongoDB
   } catch (error) {
     console.error('Error loading portfolio items:', error);
     return [];

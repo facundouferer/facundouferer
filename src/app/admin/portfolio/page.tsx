@@ -2,13 +2,16 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getCurrentUser } from '@/libs/auth';
 import { IPortfolio } from '@/types/portfolio';
+import DeletePortfolioButton from '@/components/DeletePortfolioButton';
 
 async function getPortfolioItems() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio`, {
-      cache: 'no-store',
-    });
-    return res.json();
+    const { Portfolio } = await import('@/models/portfolio');
+    const { conectionDB } = await import('@/libs/mongodb');
+
+    await conectionDB();
+    const portfolios = await Portfolio.find().sort({ createdAt: -1 });
+    return JSON.parse(JSON.stringify(portfolios)); // Necesario para serializar los datos de MongoDB
   } catch (error) {
     console.error('Error loading portfolio items:', error);
     return [];
@@ -39,7 +42,7 @@ export default async function AdminPortfolioPage() {
         {portfolioItems.map((item: IPortfolio) => (
           <div key={item._id} className="pokemon-window p-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-pokemon">{item.title}</h2>
+              <h2 className="text-xl font-pokemon text-cyan-900">{item.title}</h2>
               <div className="flex gap-2">
                 <Link
                   href={`/admin/portfolio/${item._id}/edit`}
@@ -47,12 +50,7 @@ export default async function AdminPortfolioPage() {
                 >
                   Editar
                 </Link>
-                <button
-                  onClick={() => handleDelete(item._id)}
-                  className="pokemon-button pokemon-button-danger"
-                >
-                  Eliminar
-                </button>
+                <DeletePortfolioButton id={item._id} />
               </div>
             </div>
           </div>
@@ -60,20 +58,4 @@ export default async function AdminPortfolioPage() {
       </div>
     </div>
   );
-}
-
-async function handleDelete(id: string) {
-  try {
-    const res = await fetch(`/api/portfolio/${id}`, {
-      method: 'DELETE',
-    });
-
-    if (!res.ok) {
-      throw new Error('Error al eliminar el proyecto');
-    }
-
-    window.location.reload();
-  } catch (error) {
-    console.error('Error:', error);
-  }
 }

@@ -170,6 +170,9 @@ nav {
   text-shadow: 2px 2px 0px #196b67;
   border: 3px solid #196b67;
   box-shadow: 0 4px 0px #196b67;
+  width: 100%;
+  max-width: 20rem;
+  margin: 0.3rem;
 }
 
 .pokemon-button:hover {
@@ -196,7 +199,24 @@ nav {
   text-shadow: 2px 2px 0px #960049;
   border: 3px solid #960049;
   box-shadow: 0 4px 0px #960049;
+  width: 100%;
+  max-width: 20rem;
+  margin: 0.3rem;
 }
+
+.pokemon-button-danger {
+  background: #ff0004;
+  color: white;
+  border: 3px solid #96000c;
+  box-shadow: 0 4px 0px #960049;
+  text-shadow: 2px 2px 0px #960049;
+}
+
+.pokemon-button-danger:hover {
+  transform: translateY(-2px);
+  background: #ff0083;
+}
+
 
 .pokemon-button-secondary:hover {
   transform: translateY(-2px);
