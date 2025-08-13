@@ -34,18 +34,8 @@ export function verifyToken(token: string): AuthTokenPayload | null {
   }
 }
 
-interface CookieStoreLike {
-  get(name: string): { name: string; value: string } | undefined;
-  set?(name: string, value: string, options?: Record<string, unknown>): void;
-  delete?(name: string): void;
-}
-
-function getCookieStore(): CookieStoreLike {
-  return cookies() as unknown as CookieStoreLike;
-}
-
 export async function getCurrentUser(): Promise<IUser | null> {
-  const store = getCookieStore();
+  const store = await cookies();
   const token = store.get('auth_token')?.value;
   if (!token) return null;
   const payload = verifyToken(token);
@@ -54,16 +44,20 @@ export async function getCurrentUser(): Promise<IUser | null> {
   return User.findById(payload.id);
 }
 
-export function setAuthCookie(token: string) {
-  const store = getCookieStore();
-  if (store.set) {
-    store.set('auth_token', token, { httpOnly: true, sameSite: 'lax', path: '/', secure: process.env.NODE_ENV === 'production', maxAge: 60 * 60 * 24 * 7 });
-  }
+export async function setAuthCookie(token: string) {
+  const store = await cookies();
+  store.set('auth_token', token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7
+  });
 }
 
-export function clearAuthCookie() {
-  const store = getCookieStore();
-  if (store.delete) store.delete('auth_token');
+export async function clearAuthCookie() {
+  const store = await cookies();
+  store.delete('auth_token');
 }
 
 export const authOptions = {

@@ -11,6 +11,7 @@ async function getPortfolioItems() {
 
     await conectionDB();
     const portfolios = await Portfolio.find().sort({ createdAt: -1 });
+    console.log(`[Admin Portfolio Page] Found ${portfolios.length} portfolios`);
     return JSON.parse(JSON.stringify(portfolios)); // Necesario para serializar los datos de MongoDB
   } catch (error) {
     console.error('Error loading portfolio items:', error);

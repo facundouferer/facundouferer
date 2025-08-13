@@ -36,7 +36,7 @@ export default function Adventure() {
         <Tree />
 
         <Building
-          href="/yo"
+          href="/about"
           imgSrc="/img/buildings/casa-amarilla.png"
           text="SOBRE MI"
         />
