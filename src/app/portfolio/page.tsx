@@ -1,36 +1,34 @@
-import { Metadata } from 'next';
+"use client";
+import React, { useEffect, useState } from 'react';
 import PortfolioItem from '@/components/PortfolioItem';
+import Loading from '@/components/Loading';
 import { IPortfolio } from '@/types/portfolio';
 
-export const metadata: Metadata = {
-  title: 'Portfolio - Facundo Uferer',
-  description: 'Mi portfolio de proyectos',
-};
+export default function PortfolioPage() {
+  const [portfolioItems, setPortfolioItems] = useState<IPortfolio[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-// Configuración para forzar la regeneración en cada request
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/portfolio', {
+          cache: 'no-store' // Para forzar la recarga en cada request
+        });
+        if (!res.ok) throw new Error('Error ' + res.status);
+        const data = await res.json();
+        if (Array.isArray(data)) setPortfolioItems(data);
+        else setPortfolioItems([]);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Error desconocido');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
-async function getPortfolioItems() {
-  try {
-    // Directamente importamos desde la conexión a la base de datos
-    const { Portfolio } = await import('@/models/portfolio');
-    const { conectionDB } = await import('@/libs/mongodb');
-
-    await conectionDB();
-    const portfolios = await Portfolio.find().sort({ createdAt: -1 });
-    console.log(`[Portfolio Page] Found ${portfolios.length} portfolios`);
-    return JSON.parse(JSON.stringify(portfolios)); // Necesario para serializar los datos de MongoDB
-  } catch (error) {
-    console.error('Error loading portfolio items:', error);
-    return [];
-  }
-}
-
-export default async function PortfolioPage() {
-  const portfolioItems = await getPortfolioItems();
-
-  console.log(`[Portfolio Page] Rendering ${portfolioItems.length} items`);
+  if (loading) return <Loading />;
+  if (error) return <p>Error al cargar portfolio: {error}</p>;
 
   return (
     <section className="container mx-auto p-4 mt-4">
