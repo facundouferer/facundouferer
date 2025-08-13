@@ -33,7 +33,8 @@ const userSchema = new mongoose.Schema<IUser>({
   versionKey: false
 });
 
-userSchema.index({ email: 1 });
+// No necesitamos crear el índice manualmente ya que unique: true lo crea automáticamente
+// userSchema.index({ email: 1 }); // Comentado para evitar duplicados
 
 const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema);
 export default User;

@@ -1,7 +1,38 @@
+import { Metadata } from "next";
 import Biblioteca from "../../components/Biblioteca";
 import Escritorio from "@/components/Escritorio";
 import ImagePixel from "@/components/ImagePixel";
 import Cuadrado from "@/components/Cuadrado";
+
+export const metadata: Metadata = {
+  title: "Sobre Mí - Experiencia y Tecnologías de Facundo Uferer",
+  description: "Conoce más sobre Facundo Uferer, desarrollador Full Stack con experiencia en React, Next.js, Node.js, MongoDB y tecnologías modernas. Descubre mi trayectoria profesional y habilidades técnicas.",
+  keywords: [
+    "Sobre Facundo Uferer",
+    "Experiencia desarrollador",
+    "Habilidades técnicas",
+    "React",
+    "Next.js",
+    "Node.js",
+    "MongoDB",
+    "JavaScript",
+    "TypeScript",
+    "Full Stack Developer Argentina"
+  ],
+  openGraph: {
+    title: "Sobre Facundo Uferer - Desarrollador Full Stack",
+    description: "Conoce la experiencia, habilidades y trayectoria de Facundo Uferer como desarrollador Full Stack especializado en tecnologías modernas.",
+    url: "https://facundouferer.ar/about",
+    images: [
+      {
+        url: "/img/foto.png",
+        width: 1200,
+        height: 630,
+        alt: "Facundo Uferer - Desarrollador Full Stack",
+      },
+    ],
+  },
+};
 
 const page = () => {
   return (

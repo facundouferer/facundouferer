@@ -7,6 +7,8 @@ export interface IPost extends mongoose.Document {
   content: string;
   tags?: string[];
   featuredImage?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const postSchema = new mongoose.Schema<IPost>({
