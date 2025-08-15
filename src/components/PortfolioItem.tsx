@@ -20,7 +20,7 @@ const PortfolioItem: React.FC<PortfolioItemProps> = ({
   tags
 }) => {
   return (
-    <div className="pokemon-window m-4">
+    <div className="pokemon-window m-1">
       <div className="pokemon-window-header">
         <h2 className="text-xl">{title}</h2>
       </div>

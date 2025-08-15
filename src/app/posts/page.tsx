@@ -49,7 +49,7 @@ export default function PostsPageClient() {
         backgroundImage: 'url("/img/pared-verde.png")',
         backgroundRepeat: 'repeat',
       }}></div>
-      <div className='max-w-7xl mx-auto grid sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6'>
+      <div className='max-w-7xl mx-auto grid sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 px-3'>
         {posts.map(p => (
           <article key={p._id} className='bg-white p-4 border-green-800 border-8 flex flex-col'>
             <h2 className='mb-2 text-2xl font-bold text-gray-700 hover:text-green-700 hover:bg-green-50 transition-colors'>
