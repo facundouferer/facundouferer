@@ -12,7 +12,7 @@ export default function Building({ href, imgSrc, text }: BuildingProps) {
   const [hovered, setHovered] = useState(false);
 
   return (
-    <div className={`col-span-1 flex flex-col items-center`}>
+    <div className={`col-span-1 flex flex-col items-center mb-4`}>
 
       <div className={`w-30 h-18 rounded-full transition-all duration-300 -translate-y-[-35px] ${hovered && "bg-white/50 shadow-2xl shadow-white"}`}></div>
 
