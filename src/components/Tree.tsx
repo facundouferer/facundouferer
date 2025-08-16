@@ -7,7 +7,7 @@ export default function Tree() {
     <Image
       alt="tree"
       src={arbol}
-      className="z-50 contain-content"
+      className="z-50 contain-content mt-1 mb-1"
     />
 
   )
