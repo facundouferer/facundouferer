@@ -1,36 +1,18 @@
 import Building from "./Building";
 import Tree from "./Tree";
-import { useState, useEffect } from 'react';
 
 export default function Adventure() {
 
-  const [showTrees, setShowTrees] = useState(false);
-
-  useEffect(() => {
-    const updateDimensions = () => {
-      setShowTrees(window.innerWidth < 360);
-    };
-
-    updateDimensions();
-
-    window.addEventListener('resize', updateDimensions);
-
-    return () => window.removeEventListener('resize', updateDimensions);
-
-  }, []);
-
   return (
-    <div className="w-full pl-4 pr-4 mt-5 mb-24">
+    <div className="w-full pl-4 pr-4 mt-5 mb-24 items-center align-middle">
 
-      <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
+      <div className="grid grid-cols-4 md:grid-cols-8 gap-4 ">
 
-        {showTrees && (
-          <>
-            <Tree />
-            <Tree />
-            <Tree />
-          </>
-        )}
+        <div className="hidden lg:grid grid-cols-3 gap-4 col-span-3">
+          <Tree />
+          <Tree />
+          <Tree />
+        </div>
 
         <Tree />
 
@@ -48,12 +30,12 @@ export default function Adventure() {
           text="PORTFOLIO"
         />
 
-        {showTrees && (
-          <>
-            <Tree />
-            <Tree />
-          </>
-        )}
+
+        <div className="hidden lg:grid grid-cols-2 gap-4 col-span-2">
+          <Tree />
+          <Tree />
+        </div>
+
 
         <Building
           href="/tags/cuentos"
@@ -61,15 +43,13 @@ export default function Adventure() {
           text="CUENTOS"
         />
 
-
         <Tree />
 
-        {showTrees && (
-          <>
-            <Tree />
-            <Tree />
-          </>
-        )}
+        <div className="hidden lg:grid grid-cols-2 gap-4 col-span-2">
+          <Tree />
+          <Tree />
+        </div>
+
 
         <Building
           href="/university"
@@ -79,12 +59,10 @@ export default function Adventure() {
 
         <Tree />
 
-        {showTrees && (
-          <>
-            <Tree />
-            <Tree />
-          </>
-        )}
+        <div className="hidden lg:grid grid-cols-2 gap-4 col-span-2">
+          <Tree />
+          <Tree />
+        </div>
 
         <Building
           href="/posts"
@@ -92,14 +70,11 @@ export default function Adventure() {
           text="BLOG"
         />
 
-        {showTrees && (
-          <>
-            <Tree />
-            <Tree />
-          </>
-        )}
+        <div className="hidden lg:grid grid-cols-2 gap-4 col-span-2">
+          <Tree />
+          <Tree />
+        </div>
 
-        <Tree />
         <Tree />
 
         <Building
@@ -109,12 +84,11 @@ export default function Adventure() {
         />
 
 
-        {showTrees && (
-          <>
-            <Tree />
-            <Tree />
-          </>
-        )}
+
+        <div className="hidden lg:grid grid-cols-2 gap-4 col-span-2">
+          <Tree />
+          <Tree />
+        </div>
 
         <Tree />
 
