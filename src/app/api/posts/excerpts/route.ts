@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   }
   try {
     await conectionDB();
-    const posts = await Post.find({}, 'title slug content tags').sort({ createdAt: -1 }).lean();
+    const posts = await Post.find({}, 'title slug content tags featuredImage').sort({ createdAt: -1 }).lean();
     const data = posts.map(p => {
       const raw = typeof p.content === 'string' ? p.content : '';
       const simplified = raw.replace(/(```[\s\S]*?```)/g, '')
@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
         title: p.title,
         slug: p.slug,
         tags: Array.isArray(p.tags) ? p.tags : [],
+        featuredImage: p.featuredImage || null,
         excerpt
       };
     });

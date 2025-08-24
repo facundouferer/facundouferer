@@ -1,9 +1,10 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Loading from '@/components/Loading';
 
-interface ExcerptPost { _id: string; title: string; slug: string; excerpt: string; tags: string[] }
+interface ExcerptPost { _id: string; title: string; slug: string; excerpt: string; tags: string[]; featuredImage?: string | null }
 
 export default function PostsPageClient() {
   const [posts, setPosts] = useState<ExcerptPost[]>([]);
@@ -52,6 +53,16 @@ export default function PostsPageClient() {
       <div className='max-w-7xl mx-auto grid sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 px-3'>
         {posts.map(p => (
           <article key={p._id} className='bg-white p-4 border-green-800 border-8 flex flex-col'>
+            {p.featuredImage && (
+              <div className='mb-3 relative w-full h-48 overflow-hidden rounded'>
+                <Image
+                  src={p.featuredImage}
+                  alt={p.title}
+                  fill
+                  className='object-cover hover:scale-105 transition-transform duration-300'
+                />
+              </div>
+            )}
             <h2 className='mb-2 text-2xl font-bold text-gray-700 hover:text-green-700 hover:bg-green-50 transition-colors'>
               <Link href={`/posts/${p.slug}`}>{p.title}</Link>
             </h2>
