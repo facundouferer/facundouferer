@@ -5,6 +5,7 @@ import Post, { IPost } from '@/models/post';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
 import Link from 'next/link';
+import '@/styles/cuentos.css'
 
 // Función para generar un excerpt del contenido
 function generateExcerpt(content: string, maxLength: number = 160): string {
@@ -193,7 +194,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
             />
           </div>
         )}
-        <div className='prose prose-sm max-w-none text-gray-700 bg-white rounded-lg shadow-md p-6'>
+        <div className='parrafomark prose prose-sm max-w-none text-gray-700 bg-white rounded-lg shadow-md p-6'>
           <ReactMarkdown>{post.content}</ReactMarkdown>
         </div>
         {Array.isArray(post.tags) && post.tags.length > 0 && (
