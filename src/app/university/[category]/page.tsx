@@ -79,58 +79,73 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
       ) : (
         <div className='max-w-7xl mx-auto grid sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 px-3'>
           {apuntes.map(apunte => (
-            <article key={apunte._id} className='bg-white p-4 border-green-800 border-8 flex flex-col hover:shadow-xl transition-all duration-300'>
+            <article key={apunte._id} className='relative bg-white p-4 border-green-800 border-8 flex flex-col hover:shadow-xl transition-all duration-300 overflow-hidden'>
 
-              {/* Número de Apunte */}
-              <div className='bg-green-700 text-white px-3 py-1 rounded-full text-sm font-bold mb-3 self-start'>
-                Apunte #{apunte.nroApunte}
-              </div>
-
-              {/* Imagen del Apunte */}
+              {/* Fondo con imagen transparente */}
               {apunte.imagen && (
-                <div className='mb-3 relative w-full h-64 overflow-hidden rounded'>
+                <div className='absolute inset-0 z-0'>
                   <Image
                     src={apunte.imagen}
                     alt={apunte.titulo}
                     fill
-                    className='object-cover hover:scale-105 transition-transform duration-300'
+                    className='object-cover opacity-30 duration-300'
                   />
                 </div>
               )}
 
-              {/* Título */}
-              <h2 className='mb-2 text-xl font-bold text-gray-700'>
-                {apunte.titulo}
-              </h2>
-
-              {/* Descripción */}
-              <p className='text-gray-700 leading-relaxed flex-grow mb-4'>
-                {apunte.descripcion}
-              </p>
-
-              {/* Tags */}
-              {apunte.tags.length > 0 && (
-                <div className='flex flex-wrap gap-2 mb-4'>
-                  {apunte.tags.map(tag => (
-                    <span
-                      key={tag}
-                      className='bg-gray-200 text-gray-700 px-2 py-1 text-xs rounded'
-                    >
-                      {tag}
-                    </span>
-                  ))}
+              {/* Contenido por encima del fondo */}
+              <div className='relative z-10'>
+                {/* Número de Apunte */}
+                <div className='bg-green-700 text-white px-3 py-1 rounded-full text-sm font-bold mb-3 self-start'>
+                  Apunte #{apunte.nroApunte}
                 </div>
-              )}
 
-              {/* Botón para abrir el apunte */}
-              <a
-                href={apunte.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors text-center font-medium'
-              >
-                Abrir Apunte 📖
-              </a>
+                {/* Imagen del Apunte */}
+                {apunte.imagen && (
+                  <div className='mb-3 relative w-full h-64 overflow-hidden rounded'>
+                    <Image
+                      src={apunte.imagen}
+                      alt={apunte.titulo}
+                      fill
+                      className='object-cover hover:scale-105 transition-transform duration-300'
+                    />
+                  </div>
+                )}
+
+                {/* Título */}
+                <h2 className='mb-2 text-xl font-bold text-gray-700'>
+                  {apunte.titulo}
+                </h2>
+
+                {/* Descripción */}
+                <p className='text-gray-700 leading-relaxed flex-grow mb-4'>
+                  {apunte.descripcion}
+                </p>
+
+                {/* Tags */}
+                {apunte.tags.length > 0 && (
+                  <div className='flex flex-wrap gap-2 mb-4'>
+                    {apunte.tags.map(tag => (
+                      <span
+                        key={tag}
+                        className='bg-gray-200 text-gray-700 px-2 py-1 text-xs rounded'
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Botón para abrir el apunte */}
+                <a
+                  href={apunte.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors text-center font-medium'
+                >
+                  Abrir Apunte 📖
+                </a>
+              </div>
             </article>
           ))}
         </div>

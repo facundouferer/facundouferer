@@ -74,25 +74,40 @@ export default function UniversityPage() {
               href={`/university/${encodeURIComponent(category.nombre)}`}
               className='group'
             >
-              <article className='bg-white p-4 border-green-800 border-8 flex flex-col hover:shadow-xl transition-all duration-300 group-hover:scale-105'>
+              <article className='relative bg-white p-4 border-green-800 border-8 flex flex-col hover:shadow-xl transition-all duration-300 group-hover:scale-105 overflow-hidden'>
+                {/* Fondo con imagen transparente */}
                 {category.caratula && (
-                  <div className='mb-3 relative w-full h-48 overflow-hidden rounded'>
+                  <div className='absolute inset-0 z-0'>
                     <Image
                       src={category.caratula}
                       alt={category.nombre}
                       fill
-                      className='object-cover group-hover:scale-110 transition-transform duration-300'
+                      className='object-cover opacity-20 group-hover:opacity-40 transition-opacity duration-300'
                     />
                   </div>
                 )}
-                <h2 className='mb-2 text-2xl font-bold text-gray-700 group-hover:text-green-700 transition-colors'>
-                  {category.nombre}
-                </h2>
-                <p className='text-gray-700 leading-relaxed flex-grow'>
-                  {category.descripcion}
-                </p>
-                <div className='mt-3 text-blue-500 group-hover:text-blue-700 transition-colors font-medium'>
-                  Ver apuntes →
+
+                {/* Contenido por encima del fondo */}
+                <div className='relative z-10'>
+                  {category.caratula && (
+                    <div className='mb-3 relative w-full h-48 overflow-hidden rounded'>
+                      <Image
+                        src={category.caratula}
+                        alt={category.nombre}
+                        fill
+                        className='object-cover group-hover:scale-110 transition-transform duration-300'
+                      />
+                    </div>
+                  )}
+                  <h2 className='mb-2 text-2xl font-bold text-gray-700 group-hover:text-green-700 transition-colors'>
+                    {category.nombre}
+                  </h2>
+                  <p className='text-gray-700 leading-relaxed flex-grow'>
+                    {category.descripcion}
+                  </p>
+                  <div className='mt-3 text-blue-500 group-hover:text-blue-700 transition-colors font-medium'>
+                    Ver apuntes →
+                  </div>
                 </div>
               </article>
             </Link>
