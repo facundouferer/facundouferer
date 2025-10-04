@@ -1,0 +1,116 @@
+.sevieneContainer {
+  color: black;
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+.containterWatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 60px;
+}
+
+.containterWatch .clock {
+  display: flex;
+  height: 400px;
+  width: 400px;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  position: relative;
+  border: 20px solid #333;
+}
+
+.clock::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #333;
+  border-radius: 50%;
+  z-index: 10;
+}
+
+.clock label {
+  position: absolute;
+  inset: 30px;
+  text-align: center;
+  transform: rotate(calc(var(--i) * 30deg));
+  font-weight: bold;
+  font-size: 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.clock label span {
+  transform: rotate(calc(-1 * var(--i) * 30deg));
+  display: inline-block;
+}
+
+.idicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.hand {
+  position: absolute;
+  background: #333;
+  transform-origin: bottom center;
+  border-radius: 6px;
+  transition: transform 0.5s ease-in-out;
+}
+
+.hand.hour {
+  width: 6px;
+  height: 80px;
+  top: -80px;
+  left: -3px;
+  background: #333;
+}
+
+.hand.minute {
+  width: 4px;
+  height: 120px;
+  top: -120px;
+  left: -2px;
+  background: #666;
+}
+
+.hand.second {
+  width: 2px;
+  height: 140px;
+  top: -140px;
+  left: -1px;
+  background: #ff4444;
+  transition: transform 0.1s ease-in-out;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.digital-display {
+  background: linear-gradient(45deg, #2d3436, #636e72);
+  color: #00ff00;
+  padding: 15px 25px;
+  border-radius: 15px;
+  border: 3px solid #74b9ff;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 18px;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(0, 255, 0, 0.2);
+  text-shadow: 0 0 10px #00ff00;
+}
