@@ -6,7 +6,7 @@ export default function SeVieneLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="sevieneContainer">
+    <div className="sevieneContainer mt-12">
       {children}
     </div>
   )

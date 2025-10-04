@@ -78,39 +78,42 @@ export default function SevienometroAdmin() {
 
   if (loading) {
     return (
-      <div className="admin-container">
-        <h1>Configuración del Sevienómetro</h1>
-        <p>Cargando...</p>
+      <div className="max-w-4xl mx-auto p-5 font-sans">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">Configuración del Sevienómetro</h1>
+        <p className="text-gray-600">Cargando...</p>
       </div>
     )
   }
 
   return (
-    <div className="admin-container">
-      <div className="admin-header">
+    <div className="max-w-4xl mx-auto p-5 font-sans">
+      <div className="flex items-center gap-5 mb-8">
         <button
           onClick={() => router.back()}
-          className="back-button"
+          className="px-5 py-2.5 bg-gray-600 text-white border-none rounded-md cursor-pointer text-sm hover:bg-gray-700 transition-colors"
         >
           ← Volver
         </button>
-        <h1>⏰ Configuración del Sevienómetro</h1>
+        <h1 className="text-3xl font-bold text-gray-800">⏰ Configuración del Sevienómetro</h1>
       </div>
 
-      <div className="sevienometro-admin">
-        <div className="config-card">
-          <h2>Establecer Hora del Reloj</h2>
-          <p>Configura la hora que mostrará el sevienómetro</p>
+      <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
+        <div className="lg:col-span-2 bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">Establecer Hora del Reloj</h2>
+          <p className="text-gray-600 mb-6">Configura la hora que mostrará el sevienómetro</p>
 
-          <form onSubmit={handleSubmit} className="config-form">
-            <div className="time-inputs">
-              <div className="input-group">
-                <label htmlFor="hour">Hora (1-12):</label>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="hour" className="font-bold text-gray-700 text-sm">
+                  Hora (1-12):
+                </label>
                 <select
                   id="hour"
                   value={config.hour}
                   onChange={(e) => setConfig({ ...config, hour: Number(e.target.value) })}
                   required
+                  className="p-3 border-2 border-gray-300 rounded-lg text-base text-blue-900 bg-white focus:border-blue-500 focus:outline-none transition-colors"
                 >
                   {Array.from({ length: 12 }, (_, i) => (
                     <option key={i + 1} value={i + 1}>{i + 1}</option>
@@ -118,13 +121,16 @@ export default function SevienometroAdmin() {
                 </select>
               </div>
 
-              <div className="input-group">
-                <label htmlFor="minute">Minutos (0-59):</label>
+              <div className="flex flex-col gap-2">
+                <label htmlFor="minute" className="font-bold text-gray-700 text-sm">
+                  Minutos (0-59):
+                </label>
                 <select
                   id="minute"
                   value={config.minute}
                   onChange={(e) => setConfig({ ...config, minute: Number(e.target.value) })}
                   required
+                  className="p-3 border-2 border-gray-300 rounded-lg text-base text-blue-900 bg-white focus:border-blue-500 focus:outline-none transition-colors"
                 >
                   {Array.from({ length: 60 }, (_, i) => (
                     <option key={i} value={i}>{i.toString().padStart(2, '0')}</option>
@@ -132,13 +138,16 @@ export default function SevienometroAdmin() {
                 </select>
               </div>
 
-              <div className="input-group">
-                <label htmlFor="second">Segundos (0-59):</label>
+              <div className="flex flex-col gap-2">
+                <label htmlFor="second" className="font-bold text-gray-700 text-sm">
+                  Segundos (0-59):
+                </label>
                 <select
                   id="second"
                   value={config.second}
                   onChange={(e) => setConfig({ ...config, second: Number(e.target.value) })}
                   required
+                  className="p-3 border-2 border-gray-300 rounded-lg text-blue-900 text-base bg-white focus:border-blue-500 focus:outline-none transition-colors"
                 >
                   {Array.from({ length: 60 }, (_, i) => (
                     <option key={i} value={i}>{i.toString().padStart(2, '0')}</option>
@@ -147,11 +156,11 @@ export default function SevienometroAdmin() {
               </div>
             </div>
 
-            <div className="button-group">
+            <div className="flex flex-col md:flex-row gap-4 justify-center">
               <button
                 type="button"
                 onClick={setCurrentTime}
-                className="secondary-button"
+                className="px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white border-none rounded-lg text-base font-bold cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
               >
                 🕐 Usar Hora Actual
               </button>
@@ -159,7 +168,7 @@ export default function SevienometroAdmin() {
               <button
                 type="submit"
                 disabled={saving}
-                className="primary-button"
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white border-none rounded-lg text-base font-bold cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {saving ? 'Guardando...' : '💾 Guardar Configuración'}
               </button>
@@ -167,230 +176,40 @@ export default function SevienometroAdmin() {
           </form>
 
           {message && (
-            <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
+            <div className={`mt-5 p-4 rounded-lg font-bold text-center ${message.includes('Error')
+              ? 'bg-red-100 text-red-800 border border-red-300'
+              : 'bg-green-100 text-green-800 border border-green-300'
+              }`}>
               {message}
             </div>
           )}
 
-          <div className="preview">
-            <h3>Vista Previa:</h3>
-            <div className="time-display">
+          <div className="mt-8 text-center p-5 bg-gray-50 rounded-lg">
+            <h3 className="text-lg font-bold text-gray-700 mb-3">Vista Previa:</h3>
+            <div className="font-mono text-4xl font-bold text-blue-600">
               {config.hour}:{config.minute.toString().padStart(2, '0')}:{config.second.toString().padStart(2, '0')}
             </div>
           </div>
         </div>
 
-        <div className="info-card">
-          <h3>ℹ️ Información</h3>
-          <ul>
-            <li>Esta configuración establece la hora que mostrará el sevienómetro</li>
-            <li>El reloj mostrará esta hora fija, no se actualizará automáticamente</li>
-            <li>Usa el formato de 12 horas (1-12)</li>
-            <li>Los cambios se aplican inmediatamente</li>
+        <div className="bg-gray-50 p-8 rounded-xl shadow-lg border border-gray-200">
+          <h3 className="text-lg font-bold text-gray-700 mb-4">ℹ️ Información</h3>
+          <ul className="list-none p-0 space-y-3">
+            <li className="pb-2 border-b border-gray-300 text-gray-600 text-sm">
+              Esta configuración establece la hora que mostrará el sevienómetro
+            </li>
+            <li className="pb-2 border-b border-gray-300 text-gray-600 text-sm">
+              El reloj mostrará esta hora fija, no se actualizará automáticamente
+            </li>
+            <li className="pb-2 border-b border-gray-300 text-gray-600 text-sm">
+              Usa el formato de 12 horas (1-12)
+            </li>
+            <li className="text-gray-600 text-sm">
+              Los cambios se aplican inmediatamente
+            </li>
           </ul>
         </div>
       </div>
-
-      <style jsx>{`
-        .admin-container {
-          max-width: 800px;
-          margin: 0 auto;
-          padding: 20px;
-          font-family: Arial, sans-serif;
-        }
-
-        .admin-header {
-          display: flex;
-          align-items: center;
-          gap: 20px;
-          margin-bottom: 30px;
-        }
-
-        .back-button {
-          padding: 10px 20px;
-          background: #6c757d;
-          color: white;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          font-size: 14px;
-        }
-
-        .back-button:hover {
-          background: #5a6268;
-        }
-
-        .sevienometro-admin {
-          display: grid;
-          gap: 30px;
-          grid-template-columns: 2fr 1fr;
-        }
-
-        .config-card, .info-card {
-          background: white;
-          padding: 30px;
-          border-radius: 10px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-          border: 1px solid #ddd;
-        }
-
-        .config-card h2 {
-          color: #333;
-          margin-bottom: 10px;
-        }
-
-        .config-form {
-          margin-top: 20px;
-        }
-
-        .time-inputs {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 20px;
-          margin-bottom: 30px;
-        }
-
-        .input-group {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .input-group label {
-          font-weight: bold;
-          color: #555;
-          font-size: 14px;
-        }
-
-        .input-group select {
-          padding: 10px;
-          border: 2px solid #ddd;
-          border-radius: 5px;
-          font-size: 16px;
-          background: white;
-        }
-
-        .input-group select:focus {
-          border-color: #007bff;
-          outline: none;
-        }
-
-        .button-group {
-          display: flex;
-          gap: 15px;
-          justify-content: center;
-        }
-
-        .primary-button, .secondary-button {
-          padding: 12px 24px;
-          border: none;
-          border-radius: 5px;
-          font-size: 16px;
-          font-weight: bold;
-          cursor: pointer;
-          transition: all 0.3s;
-        }
-
-        .primary-button {
-          background: linear-gradient(45deg, #007bff, #0056b3);
-          color: white;
-        }
-
-        .primary-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0,123,255,0.3);
-        }
-
-        .primary-button:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .secondary-button {
-          background: linear-gradient(45deg, #6c757d, #495057);
-          color: white;
-        }
-
-        .secondary-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(108,117,125,0.3);
-        }
-
-        .message {
-          margin-top: 20px;
-          padding: 15px;
-          border-radius: 5px;
-          font-weight: bold;
-          text-align: center;
-        }
-
-        .message.success {
-          background: #d4edda;
-          color: #155724;
-          border: 1px solid #c3e6cb;
-        }
-
-        .message.error {
-          background: #f8d7da;
-          color: #721c24;
-          border: 1px solid #f5c6cb;
-        }
-
-        .preview {
-          margin-top: 30px;
-          text-align: center;
-          padding: 20px;
-          background: #f8f9fa;
-          border-radius: 5px;
-        }
-
-        .time-display {
-          font-family: 'Courier New', monospace;
-          font-size: 36px;
-          font-weight: bold;
-          color: #007bff;
-          margin-top: 10px;
-        }
-
-        .info-card {
-          background: #f8f9fa;
-        }
-
-        .info-card h3 {
-          color: #495057;
-          margin-bottom: 15px;
-        }
-
-        .info-card ul {
-          list-style: none;
-          padding: 0;
-        }
-
-        .info-card li {
-          padding: 8px 0;
-          border-bottom: 1px solid #dee2e6;
-          color: #6c757d;
-        }
-
-        .info-card li:last-child {
-          border-bottom: none;
-        }
-
-        @media (max-width: 768px) {
-          .sevienometro-admin {
-            grid-template-columns: 1fr;
-          }
-          
-          .time-inputs {
-            grid-template-columns: 1fr;
-          }
-          
-          .button-group {
-            flex-direction: column;
-          }
-        }
-      `}</style>
     </div>
   )
 }
