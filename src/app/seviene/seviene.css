@@ -1,10 +1,3 @@
-.sevieneContainer {
-  color: black;
-  display: flex;
-  min-height: 100vh;
-  justify-content: center;
-}
-
 .containterWatch {
   display: flex;
   flex-direction: column;
@@ -16,10 +9,9 @@
   display: flex;
   height: 400px;
   width: 400px;
-  border-radius: 50%;
   align-items: center;
   justify-content: center;
-  background-color: white;
+  background-color: #ffeb3b;
   position: relative;
   border: 20px solid #333;
 }
@@ -47,6 +39,7 @@
 }
 
 .clock label span {
+  color: black;
   transform: rotate(calc(-1 * var(--i) * 30deg));
   display: inline-block;
 }

@@ -1,5 +1,4 @@
 import { Metadata } from 'next'
-import './seviene.css'
 
 export const metadata: Metadata = {
   title: 'Sevienómetro - Oráculo de Tiempo Argentino | Facundo Uferer',
@@ -56,20 +55,11 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  verification: {
+    google: 'tu-codigo-de-verificacion-google',
+  },
   category: 'Cultura Argentina',
   alternates: {
     canonical: 'https://facundouferer.com/seviene',
   },
-}
-
-export default function SeVieneLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <div className="mt-12">
-      {children}
-    </div>
-  )
 }
