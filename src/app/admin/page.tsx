@@ -30,6 +30,7 @@ export default async function AdminPage() {
         <BotonGrandeProps url='/admin/posts' text='Posts' />
         <BotonGrandeProps url='/admin/portfolio' text='Portfolio' />
         <BotonGrandeProps url='/admin/university' text='Universidad' />
+        <BotonGrandeProps url='/admin/sevienometro' text='⏰ Sevienómetro' />
       </div>
     </div>
   );
