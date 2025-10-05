@@ -2,7 +2,27 @@ import { NextRequest, NextResponse } from 'next/server'
 import { conectionDB } from '@/libs/mongodb'
 import Sevienometro from '@/models/sevienometro'
 
+// Función para validar API Key
+function validateApiKey(request: NextRequest): boolean {
+  const apiKey = request.headers.get('x-api-key') || request.headers.get('authorization')?.replace('Bearer ', '')
+  const validApiKey = process.env.NEXT_PUBLIC_API_KEY || process.env.API_SECRET_KEY
+
+  return apiKey === validApiKey
+}
+
+// Función para respuesta de error de autenticación
+function unauthorizedResponse() {
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'API Key requerida. Incluye x-api-key en los headers o Authorization: Bearer <api-key>'
+    },
+    { status: 401 }
+  )
+}
+
 export async function GET() {
+  // GET es público - no requiere API Key para permitir que la página pública funcione
   try {
     await conectionDB()
 
@@ -37,6 +57,11 @@ export async function GET() {
 }
 
 export async function PUT(request: NextRequest) {
+  // Validar API Key para operaciones de escritura
+  if (!validateApiKey(request)) {
+    return unauthorizedResponse()
+  }
+
   try {
     await conectionDB()
 

@@ -28,6 +28,8 @@ export default function SevienometroAdmin() {
 
       if (result.success) {
         setConfig(result.data)
+      } else {
+        setMessage(`Error: ${result.error}`)
       }
     } catch (error) {
       console.error('Error loading config:', error)
@@ -47,6 +49,7 @@ export default function SevienometroAdmin() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'x-api-key': process.env.NEXT_PUBLIC_API_KEY || ''
         },
         body: JSON.stringify(config)
       })
