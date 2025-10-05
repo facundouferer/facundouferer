@@ -51,32 +51,46 @@ export default function SeViene() {
 
   const fetchSevienometroTime = async () => {
     try {
+      console.log('🕐 Iniciando carga de hora del sevienómetro...')
       const response = await fetch('/api/sevienometro')
       const result = await response.json()
 
       if (result.success) {
+        console.log('✅ Hora del sevienómetro cargada exitosamente:', result.data)
         setSevienometroTime(result.data)
         setError(null)
       } else {
-        setError('Error al cargar la hora del sevienómetro')
+        const errorMessage = 'Error al cargar la hora del sevienómetro'
+        console.error('❌ Error en respuesta de API:', result)
+        console.error('📋 Detalle del error:', result.error || 'No se especificó error')
+        setError(errorMessage)
+
         // Fallback a hora actual del sistema
         const now = new Date()
-        setSevienometroTime({
+        const fallbackTime = {
           hour: now.getHours() % 12 || 12,
           minute: now.getMinutes(),
           second: now.getSeconds()
-        })
+        }
+        console.warn('🔄 Usando hora del sistema como respaldo:', fallbackTime)
+        setSevienometroTime(fallbackTime)
       }
     } catch (error) {
-      console.error('Error fetching sevienometro time:', error)
-      setError('Error de conexión')
+      const errorMessage = 'Error de conexión'
+      console.error('💥 Error crítico al conectar con API sevienómetro:', error)
+      console.error('🔍 Stack trace:', error instanceof Error ? error.stack : 'No disponible')
+      console.error('📊 Tipo de error:', error instanceof Error ? error.name : typeof error)
+      setError(errorMessage)
+
       // Fallback a hora actual del sistema
       const now = new Date()
-      setSevienometroTime({
+      const fallbackTime = {
         hour: now.getHours() % 12 || 12,
         minute: now.getMinutes(),
         second: now.getSeconds()
-      })
+      }
+      console.warn('🔄 Usando hora del sistema como respaldo debido a error de conexión:', fallbackTime)
+      setSevienometroTime(fallbackTime)
     }
   }
 
@@ -103,6 +117,12 @@ export default function SeViene() {
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold animate-pulse">
             Analizando la situación del país
           </h1>
+          {error && (
+            <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              <p className="font-medium">Error:</p>
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
         </div>
       </div>
     )
@@ -117,6 +137,19 @@ export default function SeViene() {
       />
 
       <div className='flex flex-col lg:flex-row gap-8 lg:p-8 max-w-7xl mx-auto pl-5 pr-5 pb-10'>
+        {/* Mostrar error si existe */}
+        {error && (
+          <div className="w-full mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <span className="font-medium">Error: {error}</span>
+            </div>
+            <p className="mt-1 text-sm">Se está utilizando la hora del sistema como respaldo.</p>
+          </div>
+        )}
+
         <div className="containterWatch w-full lg:w-1/2 flex-shrink-0">
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-4">SEVIENÓMETRO</h1>
           {/* Reloj */}
