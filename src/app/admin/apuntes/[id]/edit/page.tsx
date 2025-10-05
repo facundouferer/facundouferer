@@ -27,7 +27,7 @@ export default function EditApuntePage({ params }: { params: Promise<{ id: strin
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [apunteId, setApunteId] = useState<string>('');
+  const [currentId, setCurrentId] = useState<string>('');
 
   const [formData, setFormData] = useState({
     nroApunte: 1,
@@ -40,14 +40,16 @@ export default function EditApuntePage({ params }: { params: Promise<{ id: strin
   });
 
   useEffect(() => {
-    (async () => {
+    const initPage = async () => {
       const resolvedParams = await params;
-      setApunteId(resolvedParams.id);
+      setCurrentId(resolvedParams.id);
       await Promise.all([
         loadCategories(),
         loadApunte(resolvedParams.id)
       ]);
-    })();
+    };
+
+    initPage();
   }, [params]);
 
   const loadCategories = async () => {
@@ -132,7 +134,7 @@ export default function EditApuntePage({ params }: { params: Promise<{ id: strin
         nroApunte: Number(formData.nroApunte)
       };
 
-      const res = await fetch(`${baseUrl}/api/apuntes/${apunteId}`, {
+      const res = await fetch(`${baseUrl}/api/apuntes/${currentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -170,7 +172,7 @@ export default function EditApuntePage({ params }: { params: Promise<{ id: strin
         throw new Error('Faltan variables de entorno');
       }
 
-      const res = await fetch(`${baseUrl}/api/apuntes/${apunteId}`, {
+      const res = await fetch(`${baseUrl}/api/apuntes/${currentId}`, {
         method: 'DELETE',
         headers: { 'X-API-KEY': apiKey }
       });

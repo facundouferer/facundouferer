@@ -22,7 +22,7 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
   const [categoryName, setCategoryName] = useState<string>('');
 
   useEffect(() => {
-    (async () => {
+    const initPage = async () => {
       const resolvedParams = await params;
       const decodedCategory = decodeURIComponent(resolvedParams.category);
       setCategoryName(decodedCategory);
@@ -36,22 +36,28 @@ export default function CategoryPage({ params }: { params: Promise<{ category: s
         return;
       }
 
-      try {
-        const res = await fetch(`${baseUrl}/api/apuntes?categoria=${encodeURIComponent(decodedCategory)}`, {
-          headers: { 'X-API-KEY': apiKey }
-        });
+      const fetchApuntes = async () => {
+        try {
+          const res = await fetch(`${baseUrl}/api/apuntes?categoria=${encodeURIComponent(decodedCategory)}`, {
+            headers: { 'X-API-KEY': apiKey }
+          });
 
-        if (!res.ok) throw new Error('Error ' + res.status);
+          if (!res.ok) throw new Error('Error ' + res.status);
 
-        const data = await res.json();
-        if (Array.isArray(data)) setApuntes(data);
-        else setApuntes([]);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Error desconocido');
-      } finally {
-        setLoading(false);
-      }
-    })();
+          const data = await res.json();
+          if (Array.isArray(data)) setApuntes(data);
+          else setApuntes([]);
+        } catch (e) {
+          setError(e instanceof Error ? e.message : 'Error desconocido');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      await fetchApuntes();
+    };
+
+    initPage();
   }, [params]);
 
   if (loading) return <Loading />;

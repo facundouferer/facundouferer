@@ -9,16 +9,36 @@ interface SevienometroConfig {
   second: number
 }
 
+interface VariablesEconomicas {
+  riesgoPais: number
+  valorDolar: number
+  ipc: number
+  reservasBCRA: number
+  tasaDeInteresBCRA: number
+  actosDeCorrupcionFamosos: number
+}
+
 export default function SevienometroAdmin() {
   const [config, setConfig] = useState<SevienometroConfig>({ hour: 12, minute: 0, second: 0 })
+  const [variables, setVariables] = useState<VariablesEconomicas>({
+    riesgoPais: 0,
+    valorDolar: 0,
+    ipc: 0,
+    reservasBCRA: 0,
+    tasaDeInteresBCRA: 0,
+    actosDeCorrupcionFamosos: 0
+  })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [savingVariables, setSavingVariables] = useState(false)
   const [message, setMessage] = useState('')
+  const [variablesMessage, setVariablesMessage] = useState('')
   const router = useRouter()
 
   // Cargar configuración actual
   useEffect(() => {
     fetchConfig()
+    fetchVariables()
   }, [])
 
   const fetchConfig = async () => {
@@ -36,6 +56,22 @@ export default function SevienometroAdmin() {
       setMessage('Error al cargar la configuración')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchVariables = async () => {
+    try {
+      const response = await fetch('/api/variables-economicas')
+      const result = await response.json()
+
+      if (result.success) {
+        setVariables(result.data)
+      } else {
+        setVariablesMessage(`Error: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error loading variables:', error)
+      setVariablesMessage('Error al cargar las variables económicas')
     }
   }
 
@@ -70,6 +106,37 @@ export default function SevienometroAdmin() {
     }
   }
 
+  const handleVariablesSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingVariables(true)
+    setVariablesMessage('')
+
+    try {
+      const response = await fetch('/api/variables-economicas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.NEXT_PUBLIC_API_KEY || ''
+        },
+        body: JSON.stringify(variables)
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setVariablesMessage('✅ Variables económicas actualizadas correctamente')
+        setTimeout(() => setVariablesMessage(''), 3000)
+      } else {
+        setVariablesMessage(`❌ Error: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error saving variables:', error)
+      setVariablesMessage('❌ Error al guardar las variables económicas')
+    } finally {
+      setSavingVariables(false)
+    }
+  }
+
   const setCurrentTime = () => {
     const now = new Date()
     setConfig({
@@ -100,9 +167,10 @@ export default function SevienometroAdmin() {
         <h1 className="text-3xl font-bold text-gray-800">⏰ Configuración del Sevienómetro</h1>
       </div>
 
-      <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
-        <div className="lg:col-span-2 bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800 mb-3">Establecer Hora del Reloj</h2>
+      <div className="grid gap-8 grid-cols-1 xl:grid-cols-2">
+        {/* Sección de Configuración del Reloj */}
+        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">⏰ Establecer Hora del Reloj</h2>
           <p className="text-gray-600 mb-6">Configura la hora que mostrará el sevienómetro</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -195,8 +263,134 @@ export default function SevienometroAdmin() {
           </div>
         </div>
 
-        <div className="bg-gray-50 p-8 rounded-xl shadow-lg border border-gray-200">
-          <h3 className="text-lg font-bold text-gray-700 mb-4">ℹ️ Información</h3>
+        {/* Sección de Variables Económicas */}
+        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">📊 Variables Económicas</h2>
+          <p className="text-gray-600 mb-6">Configura las variables económicas del sevienómetro</p>
+
+          <form onSubmit={handleVariablesSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="riesgoPais" className="font-bold text-gray-700 text-sm">
+                  Riesgo País (puntos básicos):
+                </label>
+                <input
+                  type="number"
+                  id="riesgoPais"
+                  value={variables.riesgoPais}
+                  onChange={(e) => setVariables({ ...variables, riesgoPais: Number(e.target.value) })}
+                  min="0"
+                  step="0.01"
+                  required
+                  className="p-3 border-2 border-gray-300 rounded-lg text-base text-blue-900 bg-white focus:border-blue-500 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label htmlFor="valorDolar" className="font-bold text-gray-700 text-sm">
+                  Valor Dólar (ARS):
+                </label>
+                <input
+                  type="number"
+                  id="valorDolar"
+                  value={variables.valorDolar}
+                  onChange={(e) => setVariables({ ...variables, valorDolar: Number(e.target.value) })}
+                  min="0"
+                  step="0.01"
+                  required
+                  className="p-3 border-2 border-gray-300 rounded-lg text-base text-blue-900 bg-white focus:border-blue-500 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label htmlFor="ipc" className="font-bold text-gray-700 text-sm">
+                  IPC (%):
+                </label>
+                <input
+                  type="number"
+                  id="ipc"
+                  value={variables.ipc}
+                  onChange={(e) => setVariables({ ...variables, ipc: Number(e.target.value) })}
+                  step="0.01"
+                  required
+                  className="p-3 border-2 border-gray-300 rounded-lg text-base text-blue-900 bg-white focus:border-blue-500 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label htmlFor="reservasBCRA" className="font-bold text-gray-700 text-sm">
+                  Reservas BCRA (millones USD):
+                </label>
+                <input
+                  type="number"
+                  id="reservasBCRA"
+                  value={variables.reservasBCRA}
+                  onChange={(e) => setVariables({ ...variables, reservasBCRA: Number(e.target.value) })}
+                  step="0.01"
+                  required
+                  className="p-3 border-2 border-gray-300 rounded-lg text-base text-blue-900 bg-white focus:border-blue-500 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label htmlFor="tasaDeInteresBCRA" className="font-bold text-gray-700 text-sm">
+                  Tasa de Interés BCRA (%):
+                </label>
+                <input
+                  type="number"
+                  id="tasaDeInteresBCRA"
+                  value={variables.tasaDeInteresBCRA}
+                  onChange={(e) => setVariables({ ...variables, tasaDeInteresBCRA: Number(e.target.value) })}
+                  min="0"
+                  step="0.01"
+                  required
+                  className="p-3 border-2 border-gray-300 rounded-lg text-base text-blue-900 bg-white focus:border-blue-500 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label htmlFor="actosDeCorrupcionFamosos" className="font-bold text-gray-700 text-sm">
+                  Actos de Corrupción Famosos:
+                </label>
+                <input
+                  type="number"
+                  id="actosDeCorrupcionFamosos"
+                  value={variables.actosDeCorrupcionFamosos}
+                  onChange={(e) => setVariables({ ...variables, actosDeCorrupcionFamosos: Number(e.target.value) })}
+                  min="0"
+                  step="1"
+                  required
+                  className="p-3 border-2 border-gray-300 rounded-lg text-base text-blue-900 bg-white focus:border-blue-500 focus:outline-none transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <button
+                type="submit"
+                disabled={savingVariables}
+                className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white border-none rounded-lg text-base font-bold cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {savingVariables ? 'Guardando...' : '💾 Guardar Variables Económicas'}
+              </button>
+            </div>
+          </form>
+
+          {variablesMessage && (
+            <div className={`mt-5 p-4 rounded-lg font-bold text-center ${variablesMessage.includes('Error')
+              ? 'bg-red-100 text-red-800 border border-red-300'
+              : 'bg-green-100 text-green-800 border border-green-300'
+              }`}>
+              {variablesMessage}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Sección de Información */}
+      <div className="mt-8 grid gap-8 grid-cols-1 lg:grid-cols-2">
+        <div className="bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+          <h3 className="text-lg font-bold text-gray-700 mb-4">ℹ️ Información del Reloj</h3>
           <ul className="list-none p-0 space-y-3">
             <li className="pb-2 border-b border-gray-300 text-gray-600 text-sm">
               Esta configuración establece la hora que mostrará el sevienómetro
@@ -209,6 +403,24 @@ export default function SevienometroAdmin() {
             </li>
             <li className="text-gray-600 text-sm">
               Los cambios se aplican inmediatamente
+            </li>
+          </ul>
+        </div>
+
+        <div className="bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+          <h3 className="text-lg font-bold text-gray-700 mb-4">📊 Información de Variables</h3>
+          <ul className="list-none p-0 space-y-3">
+            <li className="pb-2 border-b border-gray-300 text-gray-600 text-sm">
+              Las variables económicas afectan el cálculo del sevienómetro
+            </li>
+            <li className="pb-2 border-b border-gray-300 text-gray-600 text-sm">
+              Los valores se almacenan y muestran en tiempo real
+            </li>
+            <li className="pb-2 border-b border-gray-300 text-gray-600 text-sm">
+              Permite valores negativos para IPC y Reservas BCRA
+            </li>
+            <li className="text-gray-600 text-sm">
+              Según lo que Rebord diga en cada momento
             </li>
           </ul>
         </div>

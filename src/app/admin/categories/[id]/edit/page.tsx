@@ -17,7 +17,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [categoryId, setCategoryId] = useState<string>('');
+  const [currentId, setCurrentId] = useState<string>('');
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -26,11 +26,13 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
   });
 
   useEffect(() => {
-    (async () => {
+    const initPage = async () => {
       const resolvedParams = await params;
-      setCategoryId(resolvedParams.id);
+      setCurrentId(resolvedParams.id);
       await loadCategory(resolvedParams.id);
-    })();
+    };
+
+    initPage();
   }, [params]);
 
   const loadCategory = async (id: string) => {
@@ -79,7 +81,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
         throw new Error('Faltan variables de entorno');
       }
 
-      const res = await fetch(`${baseUrl}/api/categories/${categoryId}`, {
+      const res = await fetch(`${baseUrl}/api/categories/${currentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +119,7 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
         throw new Error('Faltan variables de entorno');
       }
 
-      const res = await fetch(`${baseUrl}/api/categories/${categoryId}`, {
+      const res = await fetch(`${baseUrl}/api/categories/${currentId}`, {
         method: 'DELETE',
         headers: { 'X-API-KEY': apiKey }
       });
