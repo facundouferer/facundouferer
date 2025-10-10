@@ -20,7 +20,7 @@ const PortfolioItem: React.FC<PortfolioItemProps> = ({
   tags
 }) => {
   return (
-    <div className="pokemon-window m-1">
+    <div className="pokemon-window m-3">
       <div className="pokemon-window-header">
         <h2 className="text-xl">{title}</h2>
       </div>
@@ -30,7 +30,7 @@ const PortfolioItem: React.FC<PortfolioItemProps> = ({
             src={imageUrl}
             alt={title}
             fill
-            className="object-cover rounded"
+            className="object-cover"
           />
         </div>
         <p className="mb-4 font-pokemon text-sm m-1">{description}</p>

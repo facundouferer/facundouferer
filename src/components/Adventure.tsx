@@ -1,20 +1,31 @@
 import Building from "./Building";
 import Tree from "./Tree";
+import Character from "./Character";
 
 export default function Adventure() {
 
   return (
     <div className="w-full pl-4 pr-4 mt-5 mb-24 items-center align-middle">
 
-      <div className="grid grid-cols-4 md:grid-cols-8 gap-4 ">
+      <div className="inline-grid grid-cols-4 md:grid-cols-8" style={{
+        gap: '0px',
+        gridTemplateRows: 'repeat(auto-fit, 100px)',
+        lineHeight: '0'
+      }}>
 
-        <div className="hidden lg:grid grid-cols-3 gap-4 col-span-3">
-          <Tree />
-          <Tree />
-          <Tree />
-        </div>
 
-        <Tree />
+
+        <Character
+          href="/about"
+          text="FACUNDO"
+          imgSrc="/img/characters/facu.png"
+        />
+
+        <Tree mobil={true} />
+        <Tree mobil={true} />
+        <Tree mobil={true} />
+
+        <Tree mobil={true} />
 
         <Building
           href="/about"
@@ -22,7 +33,7 @@ export default function Adventure() {
           text="YO"
         />
 
-        <Tree />
+        <Tree mobil={true} />
 
         <Building
           href="/portfolio"
@@ -31,10 +42,10 @@ export default function Adventure() {
         />
 
 
-        <div className="hidden lg:grid grid-cols-2 gap-4 col-span-2">
-          <Tree />
-          <Tree />
-        </div>
+
+        <Tree mobil={true} />
+        <Tree mobil={true} />
+
 
 
         <Building
@@ -43,13 +54,9 @@ export default function Adventure() {
           text="CUENTOS"
         />
 
-        <Tree />
-
-        <div className="hidden lg:grid grid-cols-2 gap-4 col-span-2">
-          <Tree />
-          <Tree />
-        </div>
-
+        <Tree mobil={false} />
+        <Tree mobil={false} />
+        <Tree mobil={false} />
 
         <Building
           href="/university"
@@ -57,12 +64,10 @@ export default function Adventure() {
           text="APRENDER"
         />
 
-        <Tree />
+        <Tree mobil={false} />
+        <Tree mobil={false} />
+        <Tree mobil={false} />
 
-        <div className="hidden lg:grid grid-cols-2 gap-4 col-span-2">
-          <Tree />
-          <Tree />
-        </div>
 
         <Building
           href="/posts"
@@ -70,30 +75,30 @@ export default function Adventure() {
           text="BLOG"
         />
 
-        <div className="hidden lg:grid grid-cols-2 gap-4 col-span-2">
-          <Tree />
-          <Tree />
-        </div>
 
-        <Tree />
+        <Tree mobil={false} />
+        <Tree mobil={false} />
 
-        <Building
+
+        <Tree mobil={true} />
+
+        <Character
           href="/contact"
-          imgSrc="/img/buildings/hospital.png"
+          imgSrc="/img/buildings/contact.png"
           text="CONTACTO"
         />
 
 
 
-        <div className="hidden lg:grid grid-cols-2 gap-4 col-span-2">
-          <Tree />
-          <Tree />
-        </div>
 
-        <Tree />
+        <Tree mobil={false} />
+        <Tree mobil={false} />
+
+
+        <Tree mobil={true} />
 
       </div>
 
-    </div>
+    </div >
   );
 }

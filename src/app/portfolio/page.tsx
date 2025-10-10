@@ -31,8 +31,8 @@ export default function PortfolioPage() {
   if (error) return <p>Error al cargar portfolio: {error}</p>;
 
   return (
-    <section className="container mx-auto p-3 mt-4">
-      <h1 className="text-4xl font-pokemon text-center">Mi Portfolio</h1>
+    <section className="container mx-auto p-3 mt-4 mb-10">
+      <h1 className="text-4xl font-pokemon text-center mb-2 mt-3">Mi Portfolio</h1>
       {portfolioItems.length === 0 ? (
         <div className="text-center mt-8">
           <p className="text-lg">No hay proyectos para mostrar.</p>
