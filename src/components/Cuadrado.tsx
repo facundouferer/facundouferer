@@ -16,11 +16,11 @@ const defineColumnas = (cols: number) => {
     case 1:
       return "grid-cols-1";
     case 2:
-      return "grid-cols-2";
+      return "grid-cols-1 md:grid-cols-2";
     case 3:
-      return "grid-cols-3";
+      return "grid-cols-1 md:grid-cols-3";
     case 4:
-      return "grid-cols-4";
+      return "grid-cols-1 md:grid-cols-4";
     default:
       return "grid-cols-1";
   }
@@ -52,9 +52,11 @@ const Cuadrado = ({ children, title, icon, cols, estado = "min" }: CuadroProprs)
       style={maximizado ? { margin: 0 } : {}}
     >
       <div className="flex">
-        <div className="flex justify-between items-stretch w-full bg-teal-800 h-12">
-          <div className="text-3xl p-2">{icon}</div>
-          <h2 className="text-xl font-semibold text-white p-2">{title}</h2>
+        <div className="flex justify-between items-stretch w-full bg-teal-800 h-16">
+          <div className="flex justify-center items-center">
+            <div className="text-3xl p-2">{icon}</div>
+            <h2 className=" font-semibold text-white p-2">{title}</h2>
+          </div>
           <div className="flex">
             {maximizado ? (
               <button

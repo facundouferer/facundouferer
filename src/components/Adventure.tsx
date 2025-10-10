@@ -9,12 +9,18 @@ export default function Adventure() {
   const [showStartMessage, setShowStartMessage] = useState(false);
 
   useEffect(() => {
-    // Mostrar el modal cuando el componente se monta por primera vez
-    setShowStartMessage(true);
+    // Verificar si el modal ya se mostró en esta sesión
+    const modalShown = sessionStorage.getItem('startMessageShown');
+
+    if (!modalShown) {
+      setShowStartMessage(true);
+    }
   }, []);
 
   const handleCloseModal = () => {
     setShowStartMessage(false);
+    // Marcar que el modal ya se mostró en esta sesión
+    sessionStorage.setItem('startMessageShown', 'true');
   };
 
   return (
