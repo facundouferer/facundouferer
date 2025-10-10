@@ -1,12 +1,11 @@
-import arbol from "../../public/img/arbol.png"
-import Image from "next/image"
+import Image from "next/image";
 
-interface TreeProps {
+interface SimpleElementProps {
   mobil?: boolean;
+  imgSrc: string;
 }
 
-export default function Tree({ mobil = false }: TreeProps) {
-  // Determinar las clases de visibilidad basadas en la prop mobil
+export default function SimpleElement({ mobil, imgSrc }: SimpleElementProps) {
   const visibilityClass = mobil
     ? "block" // Se ve en todos los dispositivos
     : "hidden md:block"; // Solo se ve en dispositivos medianos y grandes
@@ -18,7 +17,7 @@ export default function Tree({ mobil = false }: TreeProps) {
     >
       <Image
         alt="tree"
-        src={arbol}
+        src={imgSrc}
         width={100}
         height={100}
         className="w-full h-full object-contain block"

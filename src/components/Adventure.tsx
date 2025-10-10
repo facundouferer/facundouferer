@@ -1,104 +1,207 @@
-import Building from "./Building";
-import Tree from "./Tree";
-import Character from "./Character";
+"use client";
+
+import { useState, useEffect } from "react";
+import Element from "./Element";
+import SimpleElement from "./SimpleElement";
+import StartMessage from "./StartMessage";
 
 export default function Adventure() {
+  const [showStartMessage, setShowStartMessage] = useState(false);
+
+  useEffect(() => {
+    // Mostrar el modal cuando el componente se monta por primera vez
+    setShowStartMessage(true);
+  }, []);
+
+  const handleCloseModal = () => {
+    setShowStartMessage(false);
+  };
 
   return (
-    <div className="w-full pl-4 pr-4 mt-5 mb-24 items-center align-middle">
+    <>
+      <div className="w-full pl-4 pr-4 mt-5 mb-24 items-center align-middle">
 
-      <div className="inline-grid grid-cols-4 md:grid-cols-8" style={{
-        gap: '0px',
-        gridTemplateRows: 'repeat(auto-fit, 100px)',
-        lineHeight: '0'
-      }}>
+        <div className="inline-grid grid-cols-4 md:grid-cols-8" style={{
+          gap: '0px',
+          gridTemplateRows: 'repeat(auto-fit, 100px)',
+          lineHeight: '0'
+        }}>
 
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={true}
+          />
 
+          <Element
+            href="/about"
+            text="FACUNDO"
+            imgSrc="/img/characters/facu.png"
+            mobil={true}
+            showTitle={false}
+          />
 
-        <Character
-          href="/about"
-          text="FACUNDO"
-          imgSrc="/img/characters/facu.png"
-        />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={true}
+          />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={true}
+          />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={true}
+          />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={true}
+          />
 
-        <Tree mobil={true} />
-        <Tree mobil={true} />
-        <Tree mobil={true} />
+          <Element
+            href="/about"
+            imgSrc="/img/buildings/casa-amarilla.png"
+            text="YO"
+            mobil={true}
+            showTitle={true}
+          />
 
-        <Tree mobil={true} />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={true}
+          />
 
-        <Building
-          href="/about"
-          imgSrc="/img/buildings/casa-amarilla.png"
-          text="YO"
-        />
+          <Element
+            href="/portfolio"
+            imgSrc="/img/buildings/casa-chimenea.png"
+            text="PORTFOLIO"
+            mobil={true}
+            showTitle={true}
+          />
 
-        <Tree mobil={true} />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={true}
+          />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={true}
+          />
 
-        <Building
-          href="/portfolio"
-          imgSrc="/img/buildings/casa-chimenea.png"
-          text="PORTFOLIO"
-        />
-
-
-
-        <Tree mobil={true} />
-        <Tree mobil={true} />
-
-
-
-        <Building
-          href="/tags/cuentos"
-          imgSrc="/img/buildings/casa-umilde.png"
-          text="CUENTOS"
-        />
-
-        <Tree mobil={false} />
-        <Tree mobil={false} />
-        <Tree mobil={false} />
-
-        <Building
-          href="/university"
-          imgSrc="/img/buildings/university.png"
-          text="APRENDER"
-        />
-
-        <Tree mobil={false} />
-        <Tree mobil={false} />
-        <Tree mobil={false} />
-
-
-        <Building
-          href="/posts"
-          imgSrc="/img/buildings/castillo.png"
-          text="BLOG"
-        />
-
-
-        <Tree mobil={false} />
-        <Tree mobil={false} />
-
-
-        <Tree mobil={true} />
-
-        <Character
-          href="/contact"
-          imgSrc="/img/buildings/contact.png"
-          text="CONTACTO"
-        />
+          <Element
+            href="/tags/cuentos"
+            imgSrc="/img/buildings/casa-umilde.png"
+            text="CUENTOS"
+            mobil={true}
+            showTitle={true}
+          />
 
 
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
+
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
+
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
+
+          <Element
+            href="/university"
+            imgSrc="/img/buildings/university.png"
+            text="APRENDER"
+            mobil={false}
+            showTitle={true}
+          />
+
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
+
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
 
 
-        <Tree mobil={false} />
-        <Tree mobil={false} />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={true}
+          />
 
+          <Element
+            href="/contact"
+            imgSrc="/img/buildings/contact.png"
+            text="CONTACTO"
+            mobil={false}
+            showTitle={false}
+          />
 
-        <Tree mobil={true} />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={true}
+          />
+          <Element
+            href="/posts"
+            imgSrc="/img/buildings/castillo.png"
+            text="BLOG"
+            mobil={false}
+            showTitle={true}
+          />
+
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
+          <SimpleElement
+            imgSrc="/img/arbol.png"
+            mobil={false}
+          />
+
+        </div>
 
       </div>
 
-    </div >
+      {/* Modal de bienvenida */}
+      <StartMessage isOpen={showStartMessage} onClose={handleCloseModal} />
+    </>
   );
 }
