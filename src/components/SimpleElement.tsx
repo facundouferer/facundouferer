@@ -6,6 +6,7 @@ interface SimpleElementProps {
 }
 
 export default function SimpleElement({ mobil, imgSrc }: SimpleElementProps) {
+
   const visibilityClass = mobil
     ? "block" // Se ve en todos los dispositivos
     : "hidden md:block"; // Solo se ve en dispositivos medianos y grandes
@@ -20,7 +21,7 @@ export default function SimpleElement({ mobil, imgSrc }: SimpleElementProps) {
         src={imgSrc}
         width={100}
         height={100}
-        className="w-full h-full object-contain block"
+        className={`w-full h-full object-contain block`}
         style={{ margin: 0, padding: 0, display: 'block' }}
       />
     </div>

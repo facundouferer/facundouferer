@@ -118,7 +118,7 @@ export default function Element({ href, imgSrc, text, mobil, showTitle }: Elemen
             alt={text}
             width={100}
             height={100}
-            className="w-[100px] h-[100px] object-contain block"
+            className={`w-[100px] h-[100px] object-contain block transition-all duration-300 ${hovered ? "sepia" : ""}`}
             style={{ margin: 0, padding: 0, display: 'block' }}
           />
           {showTitle && (
