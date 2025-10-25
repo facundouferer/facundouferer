@@ -11,6 +11,39 @@ interface PortfolioItemProps {
   tags: string[];
 }
 
+// Componente para renderizar un tag individual
+const TagItem: React.FC<{ tag: string }> = ({ tag }) => {
+  const [imageError, setImageError] = React.useState(false);
+  const imagePath = `/img/logos/${tag.toLowerCase()}.png`;
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  return (
+    <>
+      {!imageError ? (
+        <span className="flex items-center">
+          <div className="flex items-center gap-1">
+            <Image
+              src={imagePath}
+              alt={tag}
+              width={30}
+              height={30}
+              className="object-contain"
+              onError={handleImageError}
+            />
+          </div>
+        </span>
+      ) : (
+        <span className="pokemon-tag flex items-center">
+          <span className="text-xs">{tag}</span>
+        </span>
+      )}
+    </>
+  );
+};
+
 const PortfolioItem: React.FC<PortfolioItemProps> = ({
   title,
   description,
@@ -36,9 +69,7 @@ const PortfolioItem: React.FC<PortfolioItemProps> = ({
         <p className="mb-4 font-pokemon text-sm m-1">{description}</p>
         <div className="flex flex-wrap gap-2 m-1">
           {tags.map((tag, index) => (
-            <span key={index} className="pokemon-tag">
-              {tag}
-            </span>
+            <TagItem key={index} tag={tag} />
           ))}
         </div>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
