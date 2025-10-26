@@ -11,27 +11,54 @@ interface PortfolioItemProps {
   tags: string[];
 }
 
+// Función para mapear tags a nombres de archivo reales
+const getImageFileName = (tag: string): string | null => {
+  const tagMap: { [key: string]: string | null } = {
+    'frontend': null, // No existe
+    'next.js': 'NextJS.png',
+    'nextjs': 'NextJS.png',
+    'wordpress': 'WordPress.png',
+    'gemini': 'Gemini.png',
+    'react': 'React.png',
+    '.net': 'net.png',
+    'google ai api': 'ai.png',
+    'figma': 'Figma.png',
+    'tailwindcss': 'TailwindCSS.png',
+    'tailwind css': 'TailwindCSS.png',
+    'mongodb': 'MongoDB.png',
+    'javascript': 'JavaScript.png',
+    'rest-api': 'Rest-Api.png',
+    'rest api': 'Rest-Api.png',
+    'vercel': 'Vercel.png',
+    'typescript': 'TypeScript.png',
+    'css': 'css.png',
+    'html': 'html.png',
+    'mysql': 'mysql.png',
+    'apache': 'apache.png',
+    'nginx': 'nginx.png',
+    'bot': 'bot.png'
+  };
+
+  const fileName = tagMap[tag.toLowerCase()];
+  return fileName || null;
+};
+
 // Componente para renderizar un tag individual
 const TagItem: React.FC<{ tag: string }> = ({ tag }) => {
-  const [imageError, setImageError] = React.useState(false);
-  const imagePath = `/img/logos/${tag.toLowerCase()}.png`;
-
-  const handleImageError = () => {
-    setImageError(true);
-  };
+  const fileName = getImageFileName(tag);
+  const imagePath = fileName ? `/img/logos/${fileName}` : null;
 
   return (
     <>
-      {!imageError ? (
+      {imagePath ? (
         <span className="flex items-center">
           <div className="flex items-center gap-1">
             <Image
               src={imagePath}
               alt={tag}
-              width={30}
-              height={30}
+              width={40}
+              height={40}
               className="object-contain"
-              onError={handleImageError}
             />
           </div>
         </span>
