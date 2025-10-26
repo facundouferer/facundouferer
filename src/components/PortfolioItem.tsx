@@ -21,7 +21,7 @@ const getImageFileName = (tag: string): string | null => {
     'gemini': 'Gemini.png',
     'react': 'React.png',
     '.net': 'net.png',
-    'google ai api': 'ai.png',
+    'google ai api': 'Gemini.png',
     'figma': 'Figma.png',
     'tailwindcss': 'TailwindCSS.png',
     'tailwind css': 'TailwindCSS.png',
@@ -49,9 +49,12 @@ const TagItem: React.FC<{ tag: string }> = ({ tag }) => {
   const imagePath = fileName ? `/img/logos/${fileName}` : null;
 
   return (
-    <>
+    <Link
+      href={`/portfolio/${encodeURIComponent(tag.toLowerCase())}`}
+      className="transition-transform duration-200 hover:scale-110 inline-block"
+    >
       {imagePath ? (
-        <span className="flex items-center">
+        <span className="flex items-center cursor-pointer">
           <div className="flex items-center gap-1">
             <Image
               src={imagePath}
@@ -63,11 +66,11 @@ const TagItem: React.FC<{ tag: string }> = ({ tag }) => {
           </div>
         </span>
       ) : (
-        <span className="pokemon-tag flex items-center">
+        <span className="pokemon-tag flex items-center cursor-pointer">
           <span className="text-xs">{tag}</span>
         </span>
       )}
-    </>
+    </Link>
   );
 };
 
