@@ -13,16 +13,17 @@
 }
 
 @font-face {
-  font-family: 'Pokemon';
-  src: url('/fonts/pokemon.woff2') format('woff2');
+  font-family: 'PressStartPixel';
+  src: url('/fonts/PressStart2P-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
 
 .font-pixel {
-  font-family: 'Pokemon', system-ui, sans-serif;
+  font-family: 'PressStartPixel', monospace, system-ui;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: none;
+  letter-spacing: 0.6px;
 }
 
 @media (prefers-color-scheme: dark) {

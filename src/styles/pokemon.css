@@ -129,28 +129,65 @@ nav {
   text-shadow: 1px 1px 0px #b6b6b6;
 }
 
-.pokemon-input {
-  width: 100%;
-  padding: 0.75rem;
-  background: white;
-  border: 3px solid #A09A95;
+ .pokemon-input {
+   width: 100%;
+   padding: 0.75rem;
+   background: white;
+   border: 3px solid #A09A95;
+   font-family: 'Pokemon', monospace;
+   font-size: 0.9rem;
+   color: #484927;
+   transition: all 0.2s;
+ }
+ 
+ .pokemon-input:focus {
+   outline: none;
+   border-color: #24857F;
+   box-shadow: 0 0 0 2px rgba(36, 133, 127, 0.3);
+ }
+ 
+ .pokemon-input-container {
+   background: white;
+   border: 3px solid #A09A95;
+   padding: 1rem;
+ }
+
+/* Textbox estilo Pokemon: pixelado y texto negro */
+.pokemon-textbox {
+  color: #000 !important;
   font-family: 'Pokemon', monospace;
-  font-size: 0.9rem;
-  color: #484927;
-  transition: all 0.2s;
+  font-size: 0.95rem;
+  line-height: 1.1;
+  letter-spacing: 0.5px;
+  background: #fff;
+  border: 3px solid #A09A95;
+  padding: 0.6rem;
+  resize: vertical;
 }
 
-.pokemon-input:focus {
+.pokemon-textbox:focus {
   outline: none;
   border-color: #24857F;
-  box-shadow: 0 0 0 2px rgba(36, 133, 127, 0.3);
+  box-shadow: 0 0 0 2px rgba(36, 133, 127, 0.15);
 }
 
-.pokemon-input-container {
-  background: white;
-  border: 3px solid #A09A95;
-  padding: 1rem;
+.pokemon-textbox::placeholder {
+  color: #000;
+  opacity: 0.6;
+  font-family: 'Pokemon', monospace;
 }
+
+/* Estilo del contenedor fijo inferior para el textbox */
+.pokemon-bottom-bar {
+  position: absolute;
+  left: 160px;
+  right: 40px;
+  bottom: 20px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
 
 .pokemon-button {
   background: #24857F;
