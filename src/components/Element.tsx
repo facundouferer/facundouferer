@@ -18,7 +18,7 @@ export default function Element({ href, imgSrc, text, mobil, showTitle }: Elemen
 
   // Función para renderizar texto con efecto neón secuencial en loop
   const renderNeonText = (text: string) => {
-    const displayText = text.length > 7 ? text.slice(0, 7) : text;
+    const displayText = text.length > 7 ? text.slice(0, 10) : text;
 
     return displayText.split('').map((char, index) => (
       <span

@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import PixelSpeechBubble from './PixelSpeechBubble'
 
-type Message = { role: 'user' | 'assistant', text: string }
+type Message = { id: string, role: 'user' | 'assistant', text: string }
 
 export default function ContratarGame() {
   const [messages, setMessages] = useState<Message[]>([])
@@ -14,9 +14,13 @@ export default function ContratarGame() {
 
   const avatar = '/img/facu_avatar.png'
 
+  const initialized = useRef(false)
   useEffect(() => {
-    // saludo inicial
-    handleAction('speak', '¡Hola! Soy Facundo. ¿Te gustaría que te cuente por qué contratarme?')
+    // saludo inicial (proteger contra doble ejecución en StrictMode)
+    if (!initialized.current) {
+      initialized.current = true
+      handleAction('speak', '¡Hola! Soy Facundo. ¿Te gustaría que te cuente por qué contratarme?')
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -57,7 +61,9 @@ export default function ContratarGame() {
   }
 
   async function handleAction(action: string, userInput?: string) {
-    const userMsg: Message = { role: 'user', text: userInput ?? (action === 'pitch' ? 'Convénceme' : action) }
+    const userMsg: Message = { id: String(Date.now()) + Math.random().toString(36).slice(2), role: 'user', text: userInput ?? (action === 'pitch' ? 'Convénceme' : action) }
+
+    // añadir mensaje del usuario inmediatamente
     setMessages(prev => [...prev, userMsg])
 
     let reply = ''
@@ -77,7 +83,9 @@ export default function ContratarGame() {
       reply = await callGemini(action, userInput)
     }
 
-    const assistantMsg: Message = { role: 'assistant', text: reply }
+    const assistantMsg: Message = { id: String(Date.now()) + Math.random().toString(36).slice(2), role: 'assistant', text: reply }
+
+    // añadir mensaje del assistant
     setMessages(prev => [...prev, assistantMsg])
     setLastAssistant(reply)
   }
@@ -98,13 +106,13 @@ export default function ContratarGame() {
         </div>
       </div>
 
-      <div style={{ position: 'absolute', left: 160, right: 160, top: 20, bottom: 80, overflowY: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {messages.map((m, idx) => (
-          <div key={idx} style={{ alignSelf: m.role === 'assistant' ? 'flex-start' : 'flex-end', maxWidth: '100%' }}>
-            {m.role === 'assistant'
-              ? <PixelSpeechBubble text={m.text} />
-              : <div style={{ background: '#eee', padding: '8px 12px', borderRadius: 8 }}>{m.text}</div>
-            }
+      <div style={{ position: 'absolute', left: 160, right: 160, top: 20, bottom: 80, padding: 12, display: 'flex', flexDirection: 'column', gap: 12, justifyContent: 'flex-end' }}>
+        {messages.map((m) => (
+          <div key={m.id} style={{ alignSelf: m.role === 'assistant' ? 'flex-start' : 'flex-end', maxWidth: '100%' }}>
+            <PixelSpeechBubble
+              text={m.text}
+              align={m.role === 'assistant' ? 'left' : 'right'}
+            />
           </div>
         ))}
       </div>

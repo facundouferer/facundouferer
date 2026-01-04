@@ -142,21 +142,24 @@ export default function Adventure() {
             imgSrc="/img/arbol.png"
             mobil={false}
           />
+
+          <Element
+            href="/contratar"
+            imgSrc="/img/buildings/shop-techo-rojo.png"
+            text="CONTRATA"
+            mobil={true}
+            showTitle={true}
+          />
+
           <SimpleElement
             imgSrc="/img/arbol.png"
             mobil={false}
           />
 
-
-          <SimpleElement
-            imgSrc="/img/arbol.png"
-            mobil={true}
-          />
-
           <Element
             href="/contact"
             imgSrc="/img/buildings/contact.png"
-            text="CONTACTO"
+            text="CONTACT"
             mobil={false}
             showTitle={false}
           />

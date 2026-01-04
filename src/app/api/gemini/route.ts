@@ -45,17 +45,47 @@ export async function POST(req: Request) {
       curriculum = ''
     }
 
-    // Preparar prompt simple
-    const system = `Eres Facundo, un desarrollador Full Stack. Objetivo: convencer al usuario que te contrate para proyectos de software. Usa un tono profesional y amable. RESPONDE SIEMPRE CON TEXTOS DE MÁXIMO 280 CARACTERES.`
+    // Preparar prompt que prioriza el último mensaje del usuario y usa el CV
+    const system = `Eres Facundo, un desarrollador Full Stack. Tu objetivo principal: convencer al usuario para que te contrate. Usa un tono profesional, amable y persuasivo. RESPONDE DE FORMA ÚTIL Y CONCISA (MÁXIMO 300 CARACTERES). PRIORIZA SIEMPRE EL ÚLTIMO MENSAJE DEL USUARIO AL FORMULAR TU RESPUESTA.`
     const context = `Curriculum:\n${curriculum.slice(0, 4000)}`
-    const user = `Acción: ${action} \nInput: ${input ?? ''}`
-    const prompt = `${system}\n${context}\n${user}`
+
+    // Construir historial y destacar el último mensaje del usuario
+    let historyText = ''
+    try {
+      const hist = Array.isArray(history) ? history : []
+      // incluir hasta 12 mensajes previos para contexto
+      const last = hist.slice(-12)
+      historyText = last.map((m: any) => `${m.role}: ${m.text}`).join('\n')
+    } catch (e) {
+      historyText = ''
+    }
+
+    // Determinar el último mensaje del usuario explícitamente (si existe en history, si no usar input)
+    let lastUser = ''
+    try {
+      if (Array.isArray(history) && history.length > 0) {
+        for (let i = history.length - 1; i >= 0; i--) {
+          if (history[i].role === 'user') { lastUser = history[i].text; break }
+        }
+      }
+    } catch (e) { lastUser = '' }
+    if (!lastUser) lastUser = input ?? ''
+
+    const user = `Acción: ${action} \nÚltimoUsuario: ${lastUser}`
+    const prompt = `${system}\n${context}\nHistorial:\n${historyText}\n${user}`
+
+    // helper para truncar respuestas a 300 caracteres
+    function truncate(text: string, max = 300) {
+      if (!text) return ''
+      const s = String(text)
+      return s.length > max ? s.slice(0, max - 3) + '...' : s
+    }
 
     // Verificar clave
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
       const mock = mockReply(action, input)
-      return NextResponse.json({ success: true, data: { text: mock } })
+      return NextResponse.json({ success: true, data: { text: truncate(mock) } })
     }
 
     // Intentar usar el SDK dinámicamente
@@ -66,7 +96,7 @@ export async function POST(req: Request) {
         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeoutMs)),
       ])
 
-      return NextResponse.json({ success: true, data: { text: String(result) } })
+      return NextResponse.json({ success: true, data: { text: truncate(String(result)) } })
     } catch (err: any) {
       console.error('gemini error:', err)
       // Si falla la importación porque no está instalado, devolvemos mensaje claro
@@ -86,7 +116,7 @@ export async function POST(req: Request) {
         console.warn(`Gemini quota exceeded, returning mock reply. Retry after ${retrySeconds}s`)
         const mock = mockReply(action, input)
         // Devolvemos una respuesta exitosa con el mock para mantener la UX
-        return NextResponse.json({ success: true, data: { text: mock } })
+        return NextResponse.json({ success: true, data: { text: truncate(mock) } })
       }
 
       const msg = `Error al invocar Gemini: ${String(err.message ?? err)}`
