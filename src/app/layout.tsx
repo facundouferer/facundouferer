@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import "../styles/globals.css";
 import "../styles/pokemon.css"
 import Navbar from "../components/Navbar";
@@ -129,6 +130,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <SpeedInsights />
       </body>
     </html>
   );
