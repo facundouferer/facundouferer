@@ -1,6 +1,7 @@
 "use client"
 
 import React from 'react'
+import Link from 'next/link'
 import ContratarGame from '@/components/ContratarGame'
 
 export default function Page() {
@@ -8,22 +9,60 @@ export default function Page() {
     <main className="pokemon-contratar-page">
       <style jsx>{`
         .pokemon-contratar-page {
-          min-height: 100vh;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 100;
           background-image: url('/img/fondo_contrato.png');
           background-size: cover;
           background-position: center;
-          background-attachment: fixed;
-          padding: 1rem;
           display: flex;
-          flex-direction: column;
           align-items: center;
           justify-content: center;
+          padding: 1rem;
         }
 
         .gameboy-container {
           max-width: 1000px;
           width: 100%;
           margin: 0 auto;
+          position: relative;
+        }
+
+        .close-button {
+          position: absolute;
+          top: -18px;
+          right: -18px;
+          z-index: 110;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: #2A2D2C;
+          border: 3px solid #8B8B8B;
+          color: #FAFCDF;
+          font-size: 1.2rem;
+          font-weight: bold;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+          transition: all 0.2s;
+          text-decoration: none;
+          line-height: 1;
+        }
+
+        .close-button:hover {
+          background: #e74c3c;
+          border-color: #c0392b;
+          transform: scale(1.1);
+          box-shadow: 0 4px 16px rgba(231, 76, 60, 0.4);
+        }
+
+        .close-button:active {
+          transform: scale(0.95);
         }
 
         .gameboy-screen-wrapper {
@@ -131,7 +170,7 @@ export default function Page() {
         /* Tablets */
         @media (max-width: 1024px) {
           .pokemon-contratar-page {
-            padding: 1rem 0.5rem;
+            padding: 0.5rem;
           }
           .gameboy-screen-wrapper {
             padding: 1rem;
@@ -142,7 +181,6 @@ export default function Page() {
         @media (max-width: 768px) {
           .pokemon-contratar-page {
             padding: 0.5rem;
-            background-attachment: scroll;
           }
           .gameboy-screen-wrapper {
             border-width: 8px;
@@ -176,13 +214,19 @@ export default function Page() {
           .screen-inner {
             border-width: 4px;
           }
+          .close-button {
+            top: -14px;
+            right: -10px;
+            width: 36px;
+            height: 36px;
+            font-size: 1rem;
+          }
         }
 
         /* Móviles pequeños */
         @media (max-width: 480px) {
           .pokemon-contratar-page {
             padding: 0.25rem;
-            min-height: 100dvh; /* dvh para móviles con barras */
           }
           .gameboy-screen-wrapper {
             border-width: 6px;
@@ -195,7 +239,15 @@ export default function Page() {
             font-size: 0.7rem;
           }
           .status-text {
-            display: none; /* Ocultar texto en pantallas muy pequeñas */
+            display: none;
+          }
+          .close-button {
+            top: -12px;
+            right: -6px;
+            width: 32px;
+            height: 32px;
+            font-size: 0.9rem;
+            border-width: 2px;
           }
         }
 
@@ -214,6 +266,9 @@ export default function Page() {
       `}</style>
 
       <div className="gameboy-container">
+        <Link href="/" className="close-button" aria-label="Cerrar chat">
+          ✕
+        </Link>
         <div className="gameboy-screen-wrapper">
           <div className="screen-header">
             <div className="screen-title">GEMELO DIGITAL</div>

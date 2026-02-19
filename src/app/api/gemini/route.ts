@@ -49,15 +49,8 @@ async function callGeminiWithSdk(apiKey: string, systemInstruction: string, hist
     const { GoogleGenAI } = await import('@google/genai')
     const ai = new GoogleGenAI({ apiKey })
 
-    // Obtener el modelo (evitar pasar propiedades no soportadas por los tipos)
-    const model = await ai.models.get({ model: 'gemini-2.0-flash-exp' })
-
-    // Construir el historial en el formato correcto de Gemini
+    // Construir el historial en el formato correcto de Gemini (sin system instruction en contents)
     const contents: any[] = []
-    // Agregar system instruction como primer mensaje si existe
-    if (systemInstruction) {
-      contents.push({ role: 'system', parts: [{ text: systemInstruction }] })
-    }
 
     // Agregar mensajes del historial (últimos 10 para no saturar)
     const recentHistory = Array.isArray(history) ? history.slice(-10) : []
@@ -76,11 +69,17 @@ async function callGeminiWithSdk(apiKey: string, systemInstruction: string, hist
       parts: [{ text: userMessage }]
     })
 
-    // Generar contenido con todo el contexto
-    const response = await (model as any).generateContent({ contents })
+    // Generar contenido con systemInstruction como parámetro separado (no en contents)
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash',
+      contents,
+      config: {
+        systemInstruction: systemInstruction || undefined,
+      },
+    })
 
     // Extraer el texto de la respuesta
-    const result = response.response?.text?.() || response.response?.candidates?.[0]?.content?.parts?.[0]?.text
+    const result = response?.text || response?.candidates?.[0]?.content?.parts?.[0]?.text
     if (result) return result
 
     // Fallback

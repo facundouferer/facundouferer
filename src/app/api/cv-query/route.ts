@@ -50,15 +50,8 @@ async function callGeminiWithSdk(apiKey: string, systemInstruction: string, ques
     const { GoogleGenAI } = await import('@google/genai')
     const ai = new GoogleGenAI({ apiKey })
 
-    // Obtener el modelo (no pasar propiedades no soportadas por los tipos)
-    const model = await ai.models.get({ model: 'gemini-2.0-flash-exp' })
-
-    // Construir el historial en formato Gemini
+    // Construir el historial en formato Gemini (sin system instruction en contents)
     const contents: any[] = []
-    // Agregar system instruction como primer mensaje (si existe)
-    if (systemInstruction) {
-      contents.push({ role: 'system', parts: [{ text: systemInstruction }] })
-    }
 
     const recentHistory = Array.isArray(history) ? history.slice(-10) : []
     for (const msg of recentHistory) {
@@ -73,12 +66,17 @@ async function callGeminiWithSdk(apiKey: string, systemInstruction: string, ques
     // Agregar pregunta actual
     contents.push({ role: 'user', parts: [{ text: question }] })
 
-    // Generar contenido con todo el contexto
-    // El SDK puede exponer distintos tipos; casteamos a any para evitar errores de tipos
-    const response = await (model as any).generateContent({ contents })
+    // Generar contenido con systemInstruction como parámetro separado (no en contents)
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash',
+      contents,
+      config: {
+        systemInstruction: systemInstruction || undefined,
+      },
+    })
 
     // Extraer el texto de la respuesta
-    const result = response.response?.text?.() || response.response?.candidates?.[0]?.content?.parts?.[0]?.text
+    const result = response?.text || response?.candidates?.[0]?.content?.parts?.[0]?.text
     if (result) return result
 
     // Fallback
@@ -197,19 +195,17 @@ function fallbackMock(question: string, history: any[]) {
     )
   }
 
-  // Respuestas sobre contratación/pitch (con variaciones)
+  // Respuestas sobre contratación/pitch (con variaciones) — SIN repetir saludo
   if (/convenc/i.test(q) || /contrat/i.test(q) || /pitch/i.test(q) || /diseñ|disen|web|sitio/i.test(q)) {
     const responses = [
-      'Hola — soy Facundo. Tengo +11 años construyendo aplicaciones con React, Next.js y Node.js. Puedo liderar tu proyecto desde la arquitectura hasta el despliegue. ¿Hablamos?',
+      'Tengo +11 años construyendo aplicaciones con React, Next.js y Node.js. Puedo liderar tu proyecto desde la arquitectura hasta el despliegue. ¿Hablamos?',
       '¡Claro! Especializado en React y Next.js. +11 años de experiencia, desde startups hasta gobierno. ¿Qué tipo de sitio necesitás?',
       'Absolutamente. He diseñado y desarrollado decenas de sitios web profesionales. ¿Querés ver mi portfolio en facundouferer.ar?',
       'Sí, estoy disponible. Full Stack con énfasis en frontend moderno. ¿Cuándo necesitarías arrancar? Te paso mi email: juanfacundouf@gmail.com'
     ]
-    // Buscar una respuesta que NO hayamos dado recientemente
     for (const resp of responses) {
       if (!alreadySaid(resp)) return resp
     }
-    // Si todas fueron usadas, rotar
     return responses[history.length % responses.length]
   }
 
@@ -239,6 +235,34 @@ function fallbackMock(question: string, history: any[]) {
     return responses[history.length % responses.length]
   }
 
+  // Respuestas sobre inteligencia artificial, IA, machine learning, LLMs
+  if (/inteligencia\s*artificial|\bia\b|machine\s*learning|llm|chatgpt|gpt|openai|deep\s*learning|modelo|prompting|automatizaci/i.test(q)) {
+    const responses = [
+      '¡Por supuesto! Trabajo con IA e integración de LLMs en aplicaciones. Uso GitHub Copilot, Cursor, n8n y prompting avanzado. De hecho, ¡este chat es una prueba de ello! 😄',
+      'Sí, integro IA en mis proyectos: automatización con n8n, prompting de LLMs, desarrollo asistido por IA. Este mismo chatbot es un ejemplo de mi trabajo con IA.',
+      'Absolutamente. Tengo experiencia integrando modelos de IA en aplicaciones web, automatización de workflows con n8n, y desarrollo asistido por IA. ¿Querés saber más?',
+      'Claro que sí. De hecho, estás hablando con una IA que diseñé y programé. Además trabajo con n8n, LLMs y herramientas de desarrollo asistido por IA.'
+    ]
+    for (const resp of responses) {
+      if (!alreadySaid(resp)) return resp
+    }
+    return responses[history.length % responses.length]
+  }
+
+  // Preguntas meta: ¿sos un bot?, ¿sos real?, ¿sos el verdadero Facundo?
+  if (/\b(bot|robot|real|verdadero|humano|person|ia|artificial|gemelo|digital|clon|crees que|sos vos|eres t[uú])\b/i.test(q)) {
+    const responses = [
+      'Soy el gemelo digital de Facundo, una IA que él diseñó para que puedas conocer su perfil. Si querés hablar con el real, ¡agendá una reunión! 😉 juanfacundouf@gmail.com',
+      '¡Buena pregunta! Soy una IA creada por Facundo. Él me programó con su experiencia y perfil profesional. Para el Facundo de carne y hueso: juanfacundouf@gmail.com',
+      'No te voy a mentir: soy su gemelo digital, una IA. Pero toda la info que te doy es real. ¿Querés hablar con el verdadero Facundo? Te paso su contacto.',
+      'Técnicamente soy una IA, pero represento fielmente a Facundo y su experiencia de +11 años. ¿Querés coordinar una llamada con el real? 🎯'
+    ]
+    for (const resp of responses) {
+      if (!alreadySaid(resp)) return resp
+    }
+    return responses[history.length % responses.length]
+  }
+
   // Respuestas sobre docencia
   if (/profesor|docente|enseñ|mentor/i.test(q)) {
     return 'Profesor titular de JAVA en UTN desde 2019. Ex-mentor técnico en Coderhouse. Experto en code reviews y formación de equipos.'
@@ -259,10 +283,28 @@ function fallbackMock(question: string, history: any[]) {
     return 'Estoy disponible para proyectos remotos. Puedo arrancar según tus tiempos. Contactame: juanfacundouf@gmail.com'
   }
 
-  // Pregunta abierta/inicial (con variación)
-  if (alreadySaid('¡Hola! Soy Facundo')) {
-    return '¿En qué puedo ayudarte? Puedo contarte sobre mi experiencia, stack técnico, o discutir tu proyecto. También podés ver mi portfolio en facundouferer.ar'
+  // Preguntas tipo "¿sabés X?" / "¿podés hacer X?" — cuando no matchea ninguna categoría conocida
+  // Lista las tecnologías que sí sabe + filosofía de IA y arquitectura
+  if (/sab[eé]s|pod[eé]s|hac[eé]s|conoc[eé]s|mane[jg]|usa[sr]?|trabaj/i.test(q)) {
+    const responses = [
+      'Mi stack principal incluye: React, Next.js, TypeScript, Node.js, Express, NestJS, MongoDB, MySQL, Docker, AWS, Vercel y herramientas de IA. Y lo que no domino aún, con IA y conocimiento sólido de arquitectura de software, lo aprendo rápido. ¿Hablamos de tu proyecto?',
+      'Domino React, Next.js, TypeScript, Node.js, bases de datos SQL/NoSQL, Docker y AWS. Pero aprendí que con IA como copiloto y entendiendo bien la arquitectura general, cualquier stack nuevo es cuestión de días, no meses. ¿Qué necesitás?',
+      'Trabajo con: React, Next.js, TypeScript, Node, NestJS, MongoDB, MySQL, Docker, AWS, Vercel, n8n y herramientas de IA. Y la realidad hoy es que dominando la arquitectura, la IA te ayuda a adaptarte a cualquier tecnología nueva rápidamente. ¿Contame tu proyecto!'
+    ]
+    for (const resp of responses) {
+      if (!alreadySaid(resp)) return resp
+    }
+    return responses[history.length % responses.length]
   }
 
-  return '¡Hola! Soy Facundo, Senior Full Stack Developer con +11 años de experiencia. ¿Qué te gustaría saber sobre mi experiencia o stack técnico?'
+  // Catch-all — invitar a agendar una llamada real
+  const fallbacks = [
+    'Para que no sigas hablando con un bot, ¿qué te parece si agendamos una llamada? Escribime a juanfacundouf@gmail.com y coordinamos 😉',
+    'Mejor hablemos en persona. Podés escribirme a juanfacundouf@gmail.com para agendar una reunión y charlar sobre tu proyecto. ¡Te espero!',
+    'Creo que esto se resuelve mejor en una conversación real. Agendemos una llamada: juanfacundouf@gmail.com. ¡Va a ser más productivo! 🚀'
+  ]
+  for (const resp of fallbacks) {
+    if (!alreadySaid(resp)) return resp
+  }
+  return fallbacks[history.length % fallbacks.length]
 }
