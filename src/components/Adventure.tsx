@@ -9,18 +9,24 @@ export default function Adventure() {
   const [showStartMessage, setShowStartMessage] = useState(false);
 
   useEffect(() => {
-    // Verificar si el modal ya se mostró en esta sesión
-    const modalShown = sessionStorage.getItem('startMessageShown');
-
-    if (!modalShown) {
+    // Verificar si el modal ya fue descartado (persistente)
+    try {
+      const dismissed = localStorage.getItem('startMessageDismissed');
+      if (!dismissed) setShowStartMessage(true);
+    } catch (e) {
+      // Si localStorage no está disponible, mostrar el modal por defecto
       setShowStartMessage(true);
     }
   }, []);
 
   const handleCloseModal = () => {
     setShowStartMessage(false);
-    // Marcar que el modal ya se mostró en esta sesión
-    sessionStorage.setItem('startMessageShown', 'true');
+    // Marcar que el modal fue descartado (persistente)
+    try {
+      localStorage.setItem('startMessageDismissed', 'true');
+    } catch (e) {
+      // ignore
+    }
   };
 
   return (
