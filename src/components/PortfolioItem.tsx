@@ -36,7 +36,13 @@ const getImageFileName = (tag: string): string | null => {
     'mysql': 'mysql.png',
     'apache': 'apache.png',
     'nginx': 'nginx.png',
-    'bot': 'bot.png'
+    'bot': 'bot.png',
+    'python': 'python.png',
+    'astro': 'astro.png',
+    'node.js': 'nodejs.png',
+    'nodejs': 'nodejs.png',
+    'github': 'github.png',
+    'googlecloud': 'googlecloud.png'
   };
 
   const fileName = tagMap[tag.toLowerCase()];
