@@ -28,18 +28,6 @@ const CONTACT_CHANNELS: ContactChannel[] = [
     icon: "📸",
     description: "Detras de escena",
   },
-  {
-    label: "X / TWITTER",
-    href: "https://x.com/facundouferer",
-    icon: "𝕏",
-    description: "Ideas y updates",
-  },
-  {
-    label: "PSICODELIA NERD",
-    href: "https://open.spotify.com/show/2CiWuSGhYr70Nwlanpoqzx",
-    icon: "🎙️",
-    description: "Podcast",
-  },
 ];
 
 export default function Contact() {
