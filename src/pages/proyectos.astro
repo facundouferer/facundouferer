@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectsCatalog from '../components/ProjectsCatalog.astro';
 ---
 
 <BaseLayout
@@ -10,9 +11,5 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 	enPath="/en/projects"
 	canonicalPath="/proyectos"
 >
-	<section class="section">
-		<div class="container">
-			<h1 class="section-title">Todos los Proyectos</h1>
-		</div>
-	</section>
+	<ProjectsCatalog locale="es" />
 </BaseLayout>
