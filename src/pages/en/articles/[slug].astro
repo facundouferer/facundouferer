@@ -37,6 +37,7 @@ const availabilityNotice =
 	article={entry.data}
 	href={`/en/articles/${entry.data.slug}`}
 	contentDescription={entry.data.excerpt_en}
+	ocImage={`/og/${entry.data.slug}.svg`}
 	availabilityNotice={availabilityNotice}
 	prev={previous
 		? { title: previous.data.title_en, href: `/en/articles/${previous.data.slug}` }

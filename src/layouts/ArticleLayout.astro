@@ -24,9 +24,10 @@ type Props = {
 	next: LinkInfo;
 	contentDescription: string;
 	availabilityNotice?: string;
+	ocImage?: string;
 };
 
-const { locale, article, href, prev, next, contentDescription, availabilityNotice } = Astro.props;
+const { locale, article, href, prev, next, contentDescription, availabilityNotice, ocImage } = Astro.props;
 const title = locale === 'es' ? article.title : article.title_en;
 const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en-US');
@@ -40,6 +41,7 @@ const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en
 	enPath={locale === 'en' ? href : href.replace('/articulos/', '/en/articles/')}
 	canonicalPath={href}
 	ogType="article"
+	ocImage={ocImage}
 >
 	<article class="section article-wrap">
 		<div class="container article-shell">
