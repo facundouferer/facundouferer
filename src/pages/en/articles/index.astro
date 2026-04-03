@@ -1,11 +1,12 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import ArticlesCatalog from '../../../components/ArticlesCatalog.astro';
+import { SEO } from '../../../seo/meta';
 ---
 
 <BaseLayout
-	title="Technical Articles — Facundo Uferer"
-	description="Research and applied thinking on AI engineering and software design."
+	title={SEO.en.articles.title}
+	description={SEO.en.articles.description}
 	locale="en"
 	esPath="/articulos"
 	enPath="/en/articles"

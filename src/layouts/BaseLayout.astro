@@ -11,6 +11,7 @@ type Props = {
 	enPath?: string;
 	ocImage?: string;
 	canonicalPath?: string;
+	ogType?: 'website' | 'article';
 };
 
 const {
@@ -21,6 +22,7 @@ const {
 	enPath = '/en/',
 	ocImage = '/favicon.png',
 	canonicalPath,
+	ogType = 'website',
 } = Astro.props;
 
 const canonicalUrl = new URL(canonicalPath ?? (locale === 'es' ? esPath : enPath), SITE_URL).toString();
@@ -48,7 +50,7 @@ const enUrl = new URL(enPath, SITE_URL).toString();
 		<link rel="alternate" hreflang="es" href={esUrl} />
 		<link rel="alternate" hreflang="en" href={enUrl} />
 		<link rel="alternate" hreflang="x-default" href={esUrl} />
-		<meta property="og:type" content="website" />
+		<meta property="og:type" content={ogType} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:url" content={canonicalUrl} />
