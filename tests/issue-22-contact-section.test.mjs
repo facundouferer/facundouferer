@@ -7,7 +7,7 @@ test('contact component includes required fields and mailto strategy', async () 
 	assert.match(content, /name="name"/);
 	assert.match(content, /name="email"/);
 	assert.match(content, /name="project"/);
-	assert.match(content, /action="mailto:juanfacundouf@gmail.com"/);
+	assert.match(content, /action=\{`mailto:\$\{SOCIAL_LINKS\.email\.replace/);
 });
 
 test('contact component exposes social links', async () => {

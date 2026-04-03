@@ -135,6 +135,20 @@ img {
 	-webkit-background-clip: text;
 	background-clip: text;
 	color: transparent;
+	filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-magenta) 45%, transparent))
+	        drop-shadow(0 0 20px color-mix(in srgb, var(--color-cyan) 25%, transparent));
+	animation: gradient-pulse-global 3s ease-in-out infinite alternate;
+}
+
+@keyframes gradient-pulse-global {
+	from {
+		filter: drop-shadow(0 0 8px color-mix(in srgb, var(--color-magenta) 35%, transparent))
+		        drop-shadow(0 0 15px color-mix(in srgb, var(--color-cyan) 15%, transparent));
+	}
+	to {
+		filter: drop-shadow(0 0 14px color-mix(in srgb, var(--color-magenta) 60%, transparent))
+		        drop-shadow(0 0 28px color-mix(in srgb, var(--color-cyan) 40%, transparent));
+	}
 }
 
 .pill {

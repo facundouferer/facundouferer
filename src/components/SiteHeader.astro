@@ -68,7 +68,30 @@ const hireLabel = locale === 'es' ? 'Contratame' : 'Hire Me';
 	}
 
 	.brand-dim {
-		color: var(--color-muted);
+		color: var(--color-magenta);
+		text-shadow:
+			0 0 7px var(--color-magenta),
+			0 0 14px var(--color-magenta),
+			0 0 28px var(--color-magenta),
+			0 0 56px color-mix(in srgb, var(--color-magenta) 60%, transparent);
+		animation: neon-pulse 2.5s ease-in-out infinite alternate;
+	}
+
+	@keyframes neon-pulse {
+		from {
+			text-shadow:
+				0 0 7px var(--color-magenta),
+				0 0 14px var(--color-magenta),
+				0 0 28px var(--color-magenta),
+				0 0 56px color-mix(in srgb, var(--color-magenta) 60%, transparent);
+		}
+		to {
+			text-shadow:
+				0 0 4px var(--color-magenta),
+				0 0 10px var(--color-magenta),
+				0 0 20px color-mix(in srgb, var(--color-magenta) 40%, transparent),
+				0 0 40px color-mix(in srgb, var(--color-magenta) 20%, transparent);
+		}
 	}
 
 	nav ul {

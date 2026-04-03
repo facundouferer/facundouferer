@@ -9,4 +9,7 @@ test('hero component follows centered visual direction with gradient title', asy
 	assert.match(hero, /hero-gradient/);
 	assert.match(hero, /hero-underline/);
 	assert.match(hero, /hero-actions/);
+	assert.doesNotMatch(hero, /Years of Experience/);
+	assert.doesNotMatch(hero, /Projects Delivered/);
+	assert.doesNotMatch(hero, /Stacks Mastered/);
 });

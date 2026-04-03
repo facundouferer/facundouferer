@@ -13,11 +13,6 @@ const content = {
 		secondary: 'Hablemos',
 		badge: 'Disponible para nuevos proyectos',
 		projectsHref: '/proyectos',
-		stats: [
-			{ value: '10+', label: 'Años de experiencia' },
-			{ value: '20+', label: 'Proyectos entregados' },
-			{ value: '5+', label: 'Stacks dominados' },
-		],
 	},
 	en: {
 		titleStart: 'Building production-ready',
@@ -29,11 +24,6 @@ const content = {
 		secondary: "Let's Talk",
 		badge: 'Available for new projects',
 		projectsHref: '/en/projects',
-		stats: [
-			{ value: '10+', label: 'Years of Experience' },
-			{ value: '20+', label: 'Projects Delivered' },
-			{ value: '5+', label: 'Stacks Mastered' },
-		],
 	},
 }[locale];
 
@@ -55,22 +45,12 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 			<a class="hero-cta hero-cta-secondary" href={contactHref}>{content.secondary}</a>
 		</div>
 	</div>
-	<div class="container stats-row">
-		{
-			content.stats.map((stat) => (
-				<div class="stat-item">
-					<span class="stat-value">{stat.value}</span>
-					<span class="stat-label">{stat.label}</span>
-				</div>
-			))
-		}
-	</div>
 	<span class="hero-underline" aria-hidden="true"></span>
 </section>
 
 <style>
 	.hero-section {
-		padding-top: clamp(4rem, 10vw, 9rem);
+		padding-top: clamp(2.4rem, 6vw, 5rem);
 		padding-bottom: clamp(2rem, 5vw, 4rem);
 		overflow: hidden;
 	}
@@ -134,6 +114,20 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 		background-clip: text;
 		color: transparent;
 		position: relative;
+		filter: drop-shadow(0 0 12px color-mix(in srgb, var(--color-magenta) 50%, transparent))
+		        drop-shadow(0 0 25px color-mix(in srgb, var(--color-cyan) 30%, transparent));
+		animation: gradient-pulse 3s ease-in-out infinite alternate;
+	}
+
+	@keyframes gradient-pulse {
+		from {
+			filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-magenta) 40%, transparent))
+			        drop-shadow(0 0 20px color-mix(in srgb, var(--color-cyan) 20%, transparent));
+		}
+		to {
+			filter: drop-shadow(0 0 16px color-mix(in srgb, var(--color-magenta) 70%, transparent))
+			        drop-shadow(0 0 32px color-mix(in srgb, var(--color-cyan) 50%, transparent));
+		}
 	}
 
 	.hero-gradient::after {
@@ -202,42 +196,6 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 		background: rgb(255 255 255 / 8%);
 	}
 
-	.stats-row {
-		display: flex;
-		justify-content: center;
-		gap: clamp(2rem, 6vw, 5rem);
-		margin-top: clamp(2.5rem, 5vw, 4rem);
-		padding-top: clamp(2rem, 4vw, 3rem);
-		border-top: 1px solid var(--color-border);
-		animation: fadeInUp 600ms ease 500ms both;
-	}
-
-	.stat-item {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.3rem;
-	}
-
-	.stat-value {
-		font-family: var(--font-display);
-		font-size: clamp(2rem, 4vw, 3.2rem);
-		font-weight: 800;
-		letter-spacing: -0.03em;
-		background: var(--grad-primary);
-		-webkit-background-clip: text;
-		background-clip: text;
-		color: transparent;
-	}
-
-	.stat-label {
-		font-size: 0.78rem;
-		color: var(--color-muted);
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		font-family: var(--font-mono);
-	}
-
 	.hero-underline {
 		display: block;
 		width: min(50vw, 480px);
@@ -248,13 +206,4 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 		opacity: 0.6;
 	}
 
-	@media (width < 600px) {
-		.stats-row {
-			gap: 1.5rem;
-		}
-
-		.stat-label {
-			font-size: 0.68rem;
-		}
-	}
 </style>
