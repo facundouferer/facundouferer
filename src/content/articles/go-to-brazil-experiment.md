@@ -9,7 +9,7 @@ tags: ['Case Study', 'AI', 'Tourism']
 excerpt: 'Caso real sobre herramientas, orden de ejecucion y decisiones que permitieron entregar un producto funcional.'
 excerpt_en: 'Real case study about tooling order and decisions that enabled a functional delivery.'
 readingTime: 10
-lang: 'both'
+lang: 'es'
 published: true
 featured: true
 ---
@@ -21,3 +21,14 @@ Este proyecto fue una prueba de metodo bajo condiciones reales de entrega.
 ## Resultados
 
 La asistencia IA acelero iteraciones, pero las decisiones de arquitectura siguieron siendo humanas.
+
+## Herramientas y orden
+
+- Definicion de alcance y narrativa.
+- Diseno visual inicial asistido.
+- Implementacion HTML/CSS y ajustes de accesibilidad.
+- Verificacion de contenido y despliegue.
+
+## Aprendizajes
+
+El resultado mejora cuando se combina exploracion creativa con revisiones tecnicas sistematicas.

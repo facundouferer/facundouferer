@@ -18,6 +18,18 @@ featured: false
 
 La IA amplifica al desarrollador que entiende fundamentos y limita al que no comprende sistemas.
 
+## Argumento central
+
+Quien no comprende estructuras de datos, contratos de API o modelos de concurrencia no puede validar resultados de IA en produccion.
+
+```ts
+type Decision = {
+	constraint: string;
+	tradeoff: string;
+	risk: string;
+};
+```
+
 ## Cierre
 
 El rol del developer evoluciona hacia arquitectura, criterio y validacion continua.

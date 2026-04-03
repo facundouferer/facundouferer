@@ -21,3 +21,16 @@ La diferencia entre usar IA y liderar IA es una diferencia de arquitectura.
 ## Desarrollo
 
 Cuando orquestas multiples agentes, el foco cambia de escribir linea por linea a tomar decisiones de sistema.
+
+## Flujo practico
+
+1. Definir restricciones funcionales y no funcionales.
+2. Delegar borradores en paralelo para frontend, backend y pruebas.
+3. Consolidar decisiones en un diseno unico.
+4. Validar con pruebas y revisiones cruzadas.
+
+> La velocidad sin criterio produce deuda tecnica.
+
+## Conclusion
+
+La ventaja competitiva real no es pedir codigo mas rapido, es decidir mejor.
