@@ -1,0 +1,121 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+type ArticleData = {
+	title: string;
+	title_en: string;
+	category: string;
+	author: string;
+	tags: string[];
+	date: Date;
+	readingTime: number;
+};
+
+type LinkInfo = {
+	title: string;
+	href: string;
+} | null;
+
+type Props = {
+	locale: 'es' | 'en';
+	article: ArticleData;
+	href: string;
+	prev: LinkInfo;
+	next: LinkInfo;
+	contentDescription: string;
+};
+
+const { locale, article, href, prev, next, contentDescription } = Astro.props;
+const title = locale === 'es' ? article.title : article.title_en;
+const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
+const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en-US');
+---
+
+<BaseLayout
+	title={title}
+	description={contentDescription}
+	locale={locale}
+	esPath={locale === 'es' ? href : href.replace('/en/articles/', '/articulos/')}
+	enPath={locale === 'en' ? href : href.replace('/articulos/', '/en/articles/')}
+	canonicalPath={href}
+>
+	<article class="section article-wrap">
+		<div class="container article-shell">
+			<header>
+				<p class="category">{article.category}</p>
+				<h1 class="section-title">{title}</h1>
+				<p class="meta">
+					{article.author} · {dateText} · {article.readingTime} min
+				</p>
+				<p class="meta">Tags: {article.tags.join(' · ')}</p>
+			</header>
+			<div class="article-body">
+				<slot />
+			</div>
+			<footer class="article-footer">
+				<nav class="pager" aria-label="Article navigation">
+					{prev && <a href={prev.href}>← {prev.title}</a>}
+					{next && <a href={next.href}>{next.title} →</a>}
+				</nav>
+				<p>
+					<a href={contactHref}>{locale === 'es' ? 'Queres trabajar juntos?' : 'Want to work together?'}</a>
+				</p>
+			</footer>
+		</div>
+	</article>
+</BaseLayout>
+
+<style>
+	.article-shell {
+		max-width: 860px;
+	}
+
+	.category,
+	.meta {
+		margin: 0;
+		color: var(--color-muted);
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+	}
+
+	.article-body {
+		font-family: var(--font-article);
+		font-size: 1.1rem;
+		line-height: 1.85;
+		margin-top: 1.4rem;
+	}
+
+	.article-body :global(pre) {
+		overflow-x: auto;
+		padding: 1rem;
+		border-radius: 0.8rem;
+		background: rgb(255 255 255 / 4%);
+		border: 1px solid var(--color-border);
+	}
+
+	.article-body :global(blockquote) {
+		margin: 0;
+		padding-left: 1rem;
+		border-left: 3px solid var(--color-cyan);
+		color: var(--color-muted);
+	}
+
+	.article-footer {
+		margin-top: 2rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.pager {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.6rem;
+		flex-wrap: wrap;
+	}
+
+	.pager a,
+	.article-footer p a {
+		color: var(--color-cyan);
+		text-decoration: none;
+	}
+</style>

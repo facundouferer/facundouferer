@@ -1,19 +1,42 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-const { slug } = Astro.params;
+import { getCollection, getEntry, render } from 'astro:content';
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+
+export async function getStaticPaths() {
+	const entries = await getCollection('articles');
+	return entries.map((entry) => ({ params: { slug: entry.data.slug } }));
+}
+
+const slug = Astro.params.slug;
+if (!slug) {
+	throw new Error('Missing article slug');
+}
+
+const entry = await getEntry('articles', `${slug}.md`);
+if (!entry || !entry.data.published) {
+	return Astro.redirect('/articulos');
+}
+
+const allArticles = (await getCollection('articles'))
+	.filter((item) => item.data.published)
+	.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const currentIndex = allArticles.findIndex((item) => item.id === entry.id);
+const previous = allArticles[currentIndex + 1];
+const next = allArticles[currentIndex - 1];
+
+const { Content } = await render(entry);
 ---
 
-<BaseLayout
-	title={`Articulo: ${slug ?? ''}`}
-	description="Vista de articulo"
+<ArticleLayout
 	locale="es"
-	esPath={`/articulos/${slug ?? ''}`}
-	enPath={`/en/articles/${slug ?? ''}`}
-	canonicalPath={`/articulos/${slug ?? ''}`}
+	article={entry.data}
+	href={`/articulos/${entry.data.slug}`}
+	contentDescription={entry.data.excerpt}
+	prev={previous
+		? { title: previous.data.title, href: `/articulos/${previous.data.slug}` }
+		: null}
+	next={next ? { title: next.data.title, href: `/articulos/${next.data.slug}` } : null}
 >
-	<section class="section">
-		<div class="container">
-			<h1 class="section-title">Articulo</h1>
-		</div>
-	</section>
-</BaseLayout>
+	<Content />
+</ArticleLayout>
