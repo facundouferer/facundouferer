@@ -26,6 +26,10 @@ const previous = allArticles[currentIndex + 1];
 const next = allArticles[currentIndex - 1];
 
 const { Content } = await render(entry);
+const availabilityNotice =
+	entry.data.lang === 'es'
+		? 'This article is available in Spanish only / Este articulo esta disponible solo en espanol'
+		: undefined;
 ---
 
 <ArticleLayout
@@ -33,6 +37,7 @@ const { Content } = await render(entry);
 	article={entry.data}
 	href={`/en/articles/${entry.data.slug}`}
 	contentDescription={entry.data.excerpt_en}
+	availabilityNotice={availabilityNotice}
 	prev={previous
 		? { title: previous.data.title_en, href: `/en/articles/${previous.data.slug}` }
 		: null}

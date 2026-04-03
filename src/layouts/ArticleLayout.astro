@@ -23,9 +23,10 @@ type Props = {
 	prev: LinkInfo;
 	next: LinkInfo;
 	contentDescription: string;
+	availabilityNotice?: string;
 };
 
-const { locale, article, href, prev, next, contentDescription } = Astro.props;
+const { locale, article, href, prev, next, contentDescription, availabilityNotice } = Astro.props;
 const title = locale === 'es' ? article.title : article.title_en;
 const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en-US');
@@ -51,6 +52,7 @@ const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en
 				<p class="meta">Tags: {article.tags.join(' · ')}</p>
 			</header>
 			<div class="article-body">
+				{availabilityNotice && <p class="availability">{availabilityNotice}</p>}
 				<slot />
 			</div>
 			<footer class="article-footer">
@@ -84,6 +86,15 @@ const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en
 		font-size: 1.1rem;
 		line-height: 1.85;
 		margin-top: 1.4rem;
+	}
+
+	.availability {
+		padding: 0.75rem;
+		border-radius: 0.6rem;
+		border: 1px solid var(--color-border);
+		background: rgb(168 85 247 / 14%);
+		font-family: var(--font-body);
+		color: var(--color-text);
 	}
 
 	.article-body :global(pre) {
