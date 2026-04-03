@@ -1,5 +1,6 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import { withBase } from '../utils/withBase';
 
 type ArticleData = {
 	title: string;
@@ -59,18 +60,18 @@ const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en
 			</div>
 			<footer class="article-footer">
 				<div class="author-box glass">
-					<img src="/foto_facundo_02.png" alt="Facundo Uferer" loading="lazy" />
+					<img src={withBase('/foto_facundo_02.png')} alt="Facundo Uferer" loading="lazy" />
 					<div>
 						<strong>Facundo Uferer</strong>
 						<p>{locale === 'es' ? 'Senior Full Stack Engineer y AI Orchestrator' : 'Senior Full Stack Engineer and AI Orchestrator'}</p>
 					</div>
 				</div>
 				<nav class="pager" aria-label="Article navigation">
-					{prev && <a href={prev.href}>← {prev.title}</a>}
-					{next && <a href={next.href}>{next.title} →</a>}
+					{prev && <a href={withBase(prev.href)}>← {prev.title}</a>}
+					{next && <a href={withBase(next.href)}>{next.title} →</a>}
 				</nav>
 				<p>
-					<a href={contactHref}>{locale === 'es' ? 'Queres trabajar juntos?' : 'Want to work together?'}</a>
+					<a href={withBase(contactHref)}>{locale === 'es' ? 'Queres trabajar juntos?' : 'Want to work together?'}</a>
 				</p>
 			</footer>
 		</div>

@@ -1,6 +1,7 @@
 ---
 import { getCollection, getEntry, render } from 'astro:content';
 import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { withBase } from '../../utils/withBase';
 
 export async function getStaticPaths() {
 	const entries = await getCollection('articles');
@@ -14,7 +15,7 @@ if (!slug) {
 
 const entry = await getEntry('articles', `${slug}.md`);
 if (!entry || !entry.data.published) {
-	return Astro.redirect('/articulos');
+	return Astro.redirect(withBase('/articulos'));
 }
 
 const allArticles = (await getCollection('articles'))

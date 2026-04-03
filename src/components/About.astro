@@ -1,4 +1,6 @@
 ---
+import { withBase } from '../utils/withBase';
+
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
 
@@ -31,7 +33,7 @@ const content = {
 <section class="section" id="about">
 	<div class="container about-shell">
 		<div class="about-image-wrapper">
-			<img src="/foto_facundo_01.png" alt="Facundo Uferer" loading="lazy" />
+			<img src={withBase('/foto_facundo_01.png')} alt="Facundo Uferer" loading="lazy" />
 			<div class="image-glow" aria-hidden="true"></div>
 		</div>
 		<div class="about-content">

@@ -1,4 +1,6 @@
 ---
+import { withBase } from '../utils/withBase';
+
 type Article = {
 	title: string;
 	title_en: string;
@@ -29,7 +31,7 @@ const dateLabel = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'e
 		<span class="category-pill">{article.category}</span>
 		<span class="reading-time">{article.readingTime} min</span>
 	</div>
-	<h3><a href={href}>{title}</a></h3>
+	<h3><a href={withBase(href)}>{title}</a></h3>
 	<p class="excerpt">{excerpt}</p>
 	<div class="card-footer">
 		<span class="date">{dateLabel}</span>

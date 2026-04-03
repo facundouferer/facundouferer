@@ -1,5 +1,6 @@
 ---
 import { SOCIAL_LINKS } from '../config/site';
+import { withBase } from '../utils/withBase';
 
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
@@ -73,7 +74,7 @@ const copy = {
 
 <footer class="site-footer">
 	<div class="container footer-inner">
-		<a href={locale === 'es' ? '/' : '/en/'} class="footer-brand">
+		<a href={withBase(locale === 'es' ? '/' : '/en/')} class="footer-brand">
 			<span class="fb-accent">FACUNDO</span><span class="fb-dim">UFERER</span>
 		</a>
 		<p class="footer-copy">© {new Date().getFullYear()} Facundo Uferer. {locale === 'es' ? 'Hecho con precision.' : 'Built with precision.'}</p>
