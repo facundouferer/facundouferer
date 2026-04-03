@@ -21,7 +21,11 @@ const cta = locale === 'es' ? 'Ver todos los articulos' : 'Read all articles';
 
 <section class="section">
 	<div class="container">
-		<h2 class="section-title">{title}</h2>
+		<p class="section-tag">{locale === 'es' ? 'ESCRITURA' : 'WRITING'}</p>
+		<h2 class="section-title">
+			{title.split(' ').slice(0, -1).join(' ')}{' '}
+			<span class="gradient-text">{title.split(' ').at(-1)}</span>
+		</h2>
 		<p class="section-subtitle">{subtitle}</p>
 		<div class="articles-grid">
 			{articles.map((item) => <ArticleCard article={item.data} locale={locale} />)}
@@ -31,20 +35,35 @@ const cta = locale === 'es' ? 'Ver todos los articulos' : 'Read all articles';
 </section>
 
 <style>
+	.section-tag {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--color-cyan);
+		margin: 0 0 0.6rem;
+	}
+
 	.articles-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-		gap: 1rem;
-		margin-top: 1rem;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 1.2rem;
+		margin-top: 1.8rem;
 	}
 
 	.more {
-		margin-top: 1rem;
+		margin-top: 1.5rem;
 	}
 
 	.more a {
 		color: var(--color-cyan);
 		text-decoration: none;
 		font-weight: 700;
+		font-size: 0.9rem;
+		transition: color 200ms ease;
+	}
+
+	.more a:hover {
+		color: var(--color-accent);
 	}
 </style>

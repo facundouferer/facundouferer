@@ -4,22 +4,158 @@ const { locale } = Astro.props;
 
 const content = {
 	es: {
-		title: 'Excelencia en ingenieria con un toque de IA',
-		p1: 'No solo escribo codigo: diseno ecosistemas que escalan sin romperse.',
-		p2: 'Futurismo pragmatico. Tecnologia de vanguardia con foco en impacto real.',
+		tag: 'SOBRE MI',
+		title: 'Excelencia en Ingenieria',
+		titleAccent: 'con un toque de IA.',
+		p1: 'No solo escribo codigo — diseno ecosistemas que escalan sin romperse. Con mas de 10 años de experiencia, combino arquitectura robusta con ingenieria asistida por IA.',
+		p2: 'Mi filosofia es el futurismo pragmatico: tecnologia de vanguardia aplicada con foco en impacto real, escalabilidad y mantenibilidad.',
+		stats: [
+			{ value: '99.99%', label: 'Uptime promedio' },
+			{ value: '150+', label: 'Pull requests al mes' },
+		],
 	},
 	en: {
-		title: 'Engineering excellence with an AI touch',
-		p1: 'I do not just write code. I architect ecosystems that scale safely.',
-		p2: 'Pragmatic futurism: modern AI tools applied with business impact in mind.',
+		tag: 'ABOUT',
+		title: 'Engineering Excellence',
+		titleAccent: 'with a Cyber Touch.',
+		p1: 'I do not just write code — I architect ecosystems that scale safely. With over 10 years of experience, I combine robust architecture with AI-assisted engineering.',
+		p2: 'My philosophy is pragmatic futurism: cutting-edge technology applied with real impact, scalability, and maintainability in mind.',
+		stats: [
+			{ value: '99.99%', label: 'Average Uptime' },
+			{ value: '150+', label: 'Monthly Pull Requests' },
+		],
 	},
 }[locale];
 ---
 
 <section class="section" id="about">
-	<div class="container glass" style="padding:1.2rem;">
-		<h2 class="section-title">{content.title}</h2>
-		<p class="section-subtitle">{content.p1}</p>
-		<p class="section-subtitle">{content.p2}</p>
+	<div class="container about-shell">
+		<div class="about-image-wrapper">
+			<img src="/foto_facundo_01.png" alt="Facundo Uferer" loading="lazy" />
+			<div class="image-glow" aria-hidden="true"></div>
+		</div>
+		<div class="about-content">
+			<p class="about-tag">{content.tag}</p>
+			<h2 class="section-title">
+				{content.title}
+				<br />
+				<span class="gradient-text">{content.titleAccent}</span>
+			</h2>
+			<p class="about-text">{content.p1}</p>
+			<p class="about-text">{content.p2}</p>
+			<div class="about-stats">
+				{
+					content.stats.map((stat) => (
+						<div class="about-stat">
+							<span class="about-stat-value">{stat.value}</span>
+							<span class="about-stat-label">{stat.label}</span>
+						</div>
+					))
+				}
+			</div>
+		</div>
 	</div>
 </section>
+
+<style>
+	.about-shell {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 3rem;
+		align-items: center;
+	}
+
+	.about-image-wrapper {
+		position: relative;
+	}
+
+	.about-image-wrapper img {
+		width: 100%;
+		aspect-ratio: 3 / 4;
+		border-radius: 1.2rem;
+		object-fit: cover;
+		border: 1px solid var(--color-border);
+		position: relative;
+		z-index: 1;
+	}
+
+	.image-glow {
+		position: absolute;
+		bottom: -20px;
+		left: -20px;
+		right: -20px;
+		height: 60%;
+		background: radial-gradient(ellipse at center bottom, rgb(168 85 247 / 18%), transparent 70%);
+		z-index: 0;
+		filter: blur(30px);
+	}
+
+	.about-content {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.about-tag {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--color-cyan);
+		margin: 0;
+	}
+
+	.about-text {
+		color: var(--color-muted);
+		margin: 0;
+		font-size: 1rem;
+		line-height: 1.7;
+	}
+
+	.about-stats {
+		display: flex;
+		gap: 3rem;
+		margin-top: 1rem;
+		padding-top: 1.2rem;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.about-stat {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+
+	.about-stat-value {
+		font-family: var(--font-display);
+		font-size: clamp(1.8rem, 3vw, 2.6rem);
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		background: var(--grad-primary);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+
+	.about-stat-label {
+		font-size: 0.78rem;
+		color: var(--color-muted);
+		font-family: var(--font-mono);
+		letter-spacing: 0.04em;
+	}
+
+	@media (width < 760px) {
+		.about-shell {
+			grid-template-columns: 1fr;
+			gap: 2rem;
+		}
+
+		.about-image-wrapper img {
+			max-width: 280px;
+			aspect-ratio: 1;
+		}
+
+		.about-stats {
+			gap: 2rem;
+		}
+	}
+</style>

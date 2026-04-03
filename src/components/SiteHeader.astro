@@ -16,7 +16,9 @@ const hireLabel = locale === 'es' ? 'Contratame' : 'Hire Me';
 
 <header class="site-header">
 	<div class="header-inner container">
-		<a href={locale === 'es' ? '/' : '/en/'} class="brand">Facundo Uferer</a>
+		<a href={locale === 'es' ? '/' : '/en/'} class="brand">
+			<span class="brand-accent">FACUNDO</span><span class="brand-dim">UFERER</span>
+		</a>
 		<nav aria-label="Primary">
 			<ul>
 				{
@@ -40,8 +42,8 @@ const hireLabel = locale === 'es' ? 'Contratame' : 'Hire Me';
 		position: sticky;
 		top: 0;
 		z-index: 10;
-		backdrop-filter: blur(10px);
-		background: rgb(5 5 16 / 78%);
+		backdrop-filter: blur(16px);
+		background: rgb(3 0 20 / 82%);
 		border-bottom: 1px solid var(--color-border);
 	}
 
@@ -50,15 +52,23 @@ const hireLabel = locale === 'es' ? 'Contratame' : 'Hire Me';
 		align-items: center;
 		justify-content: space-between;
 		gap: 1rem;
-		min-height: 4.5rem;
+		min-height: 4.2rem;
 	}
 
 	.brand {
 		font-family: var(--font-display);
 		font-weight: 800;
-		font-size: 1.1rem;
+		font-size: 1rem;
+		letter-spacing: 0.06em;
 		text-decoration: none;
-		color: var(--color-text);
+	}
+
+	.brand-accent {
+		color: var(--color-cyan);
+	}
+
+	.brand-dim {
+		color: var(--color-muted);
 	}
 
 	nav ul {
@@ -66,13 +76,15 @@ const hireLabel = locale === 'es' ? 'Contratame' : 'Hire Me';
 		list-style: none;
 		padding: 0;
 		margin: 0;
-		gap: 1.2rem;
+		gap: 1.5rem;
 	}
 
 	nav a {
-		font-size: 0.9rem;
+		font-size: 0.85rem;
 		text-decoration: none;
 		color: var(--color-muted);
+		transition: color 200ms ease;
+		letter-spacing: 0.02em;
 	}
 
 	nav a:hover {
@@ -86,15 +98,21 @@ const hireLabel = locale === 'es' ? 'Contratame' : 'Hire Me';
 	}
 
 	.hire-cta {
-		padding: 0.45rem 0.9rem;
+		padding: 0.45rem 1rem;
 		border-radius: 999px;
 		text-decoration: none;
-		font-size: 0.75rem;
+		font-size: 0.72rem;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		font-weight: 700;
-		background: linear-gradient(90deg, var(--color-accent), var(--color-cyan));
-		color: var(--color-text);
+		background: var(--grad-accent);
+		color: #fff;
+		transition: transform 180ms ease, box-shadow 180ms ease;
+	}
+
+	.hire-cta:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 4px 20px rgb(168 85 247 / 30%);
 	}
 
 	@media (width >= 960px) {

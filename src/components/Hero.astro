@@ -4,75 +4,257 @@ const { locale } = Astro.props;
 
 const content = {
 	es: {
-		title: 'Software listo para produccion a la velocidad del pensamiento.',
+		titleStart: 'Software listo para',
+		titleAccent: 'produccion',
+		titleEnd: 'a la velocidad del pensamiento.',
 		subtitle:
-			'Ingeniero Full Stack Senior. Orquestador de IA. Utilizo sistemas multi-agente para llevar un producto de idea a deploy.',
+			'Ingeniero Full Stack Senior. Orquestador de IA. Utilizo sistemas multi-agente para llevar un producto de idea a deploy con precision de ingenieria y velocidad sobrehumana.',
 		primary: 'Ver Proyectos',
 		secondary: 'Hablemos',
 		badge: 'Disponible para nuevos proyectos',
 		projectsHref: '/proyectos',
+		stats: [
+			{ value: '10+', label: 'Años de experiencia' },
+			{ value: '20+', label: 'Proyectos entregados' },
+			{ value: '5+', label: 'Stacks dominados' },
+		],
 	},
 	en: {
-		title: 'Building production-ready software at the speed of thought.',
+		titleStart: 'Building production-ready',
+		titleAccent: 'software',
+		titleEnd: 'at the speed of thought.',
 		subtitle:
-			'Senior Full Stack Engineer. AI Orchestrator. I use multi-agent systems to take products from idea to deployment.',
+			'Senior Full Stack Engineer. AI Orchestrator. I use multi-agent systems to take products from idea to deployment with surgical precision and superhuman speed.',
 		primary: 'View Projects',
 		secondary: "Let's Talk",
 		badge: 'Available for new projects',
 		projectsHref: '/en/projects',
+		stats: [
+			{ value: '10+', label: 'Years of Experience' },
+			{ value: '20+', label: 'Projects Delivered' },
+			{ value: '5+', label: 'Stacks Mastered' },
+		],
 	},
 }[locale];
 
 const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 ---
 
-<section class="section">
-	<div class="container hero glass">
-		<img class="author-photo" src="/foto_facundo_01.png" alt="Facundo Uferer" loading="eager" />
-		<p class="pill">{content.badge}</p>
-		<h1 class="section-title">{content.title}</h1>
-		<p class="section-subtitle">{content.subtitle}</p>
-		<div class="actions">
-			<a class="cta primary" href={content.projectsHref}>{content.primary}</a>
-			<a class="cta" href={contactHref}>{content.secondary}</a>
+<section class="section hero-section">
+	<div class="hero-glow" aria-hidden="true"></div>
+	<div class="container hero-shell">
+		<p class="hero-pill">{content.badge}</p>
+		<h1 class="hero-title">
+			{content.titleStart}
+			<span class="hero-gradient"> {content.titleAccent} </span>
+			{content.titleEnd}
+		</h1>
+		<p class="hero-subtitle">{content.subtitle}</p>
+		<div class="hero-actions">
+			<a class="hero-cta hero-cta-primary" href={content.projectsHref}>{content.primary}</a>
+			<a class="hero-cta hero-cta-secondary" href={contactHref}>{content.secondary}</a>
 		</div>
 	</div>
+	<div class="container stats-row">
+		{
+			content.stats.map((stat) => (
+				<div class="stat-item">
+					<span class="stat-value">{stat.value}</span>
+					<span class="stat-label">{stat.label}</span>
+				</div>
+			))
+		}
+	</div>
+	<span class="hero-underline" aria-hidden="true"></span>
 </section>
 
 <style>
-	.hero {
-		padding: clamp(1.5rem, 5vw, 4rem);
+	.hero-section {
+		padding-top: clamp(4rem, 10vw, 9rem);
+		padding-bottom: clamp(2rem, 5vw, 4rem);
+		overflow: hidden;
+	}
+
+	.hero-section::after {
+		display: none;
+	}
+
+	.hero-glow {
+		position: absolute;
+		top: -20%;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 800px;
+		height: 500px;
+		background: radial-gradient(
+			ellipse,
+			rgb(168 85 247 / 15%) 0%,
+			rgb(6 182 212 / 8%) 40%,
+			transparent 70%
+		);
+		pointer-events: none;
+		animation: pulse-glow 6s ease-in-out infinite;
+	}
+
+	.hero-shell {
+		position: relative;
+		text-align: center;
 		display: grid;
-		gap: 1rem;
-		justify-items: start;
+		gap: 1.4rem;
+		justify-items: center;
 	}
 
-	.author-photo {
-		width: 92px;
-		height: 92px;
-		object-fit: cover;
+	.hero-pill {
+		margin: 0;
+		padding: 0.4rem 1rem;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: #59d6f5;
+		border: 1px solid rgb(89 214 245 / 30%);
+		background: rgb(89 214 245 / 8%);
 		border-radius: 999px;
-		border: 1px solid var(--color-border);
+		animation: fadeInUp 600ms ease both;
 	}
 
-	.actions {
+	.hero-title {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: clamp(2.6rem, 7.5vw, 6.2rem);
+		line-height: 1.02;
+		letter-spacing: -0.035em;
+		max-width: 18ch;
+		animation: fadeInUp 600ms ease 100ms both;
+	}
+
+	.hero-gradient {
+		background: var(--grad-primary);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		position: relative;
+	}
+
+	.hero-gradient::after {
+		content: '';
+		position: absolute;
+		bottom: 0.05em;
+		left: 0;
+		right: 0;
+		height: 3px;
+		background: var(--grad-primary);
+		border-radius: 999px;
+		opacity: 0.5;
+	}
+
+	.hero-subtitle {
+		margin: 0;
+		max-width: 52ch;
+		font-size: clamp(1rem, 2vw, 1.25rem);
+		color: var(--color-muted);
+		line-height: 1.7;
+		animation: fadeInUp 600ms ease 200ms both;
+	}
+
+	.hero-actions {
 		display: flex;
-		gap: 0.8rem;
+		gap: 1rem;
 		flex-wrap: wrap;
+		justify-content: center;
+		animation: fadeInUp 600ms ease 300ms both;
 	}
 
-	.cta {
-		padding: 0.7rem 1rem;
-		border-radius: 0.75rem;
+	.hero-cta {
+		padding: 0.9rem 1.8rem;
+		border-radius: 999px;
 		text-decoration: none;
-		font-size: 0.9rem;
+		font-size: 0.8rem;
+		font-family: var(--font-mono);
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
 		border: 1px solid var(--color-border);
-		background: rgb(255 255 255 / 2%);
+		transition: transform 200ms ease, box-shadow 200ms ease;
 	}
 
-	.cta.primary {
-		background: linear-gradient(90deg, var(--color-accent), var(--color-cyan));
-		color: var(--color-text);
+	.hero-cta:hover {
+		transform: translateY(-2px);
+	}
+
+	.hero-cta-primary {
+		background: var(--grad-accent);
+		color: #fff;
 		border: none;
+		box-shadow: 0 4px 24px rgb(168 85 247 / 20%);
+	}
+
+	.hero-cta-primary:hover {
+		box-shadow: 0 6px 32px rgb(168 85 247 / 35%);
+	}
+
+	.hero-cta-secondary {
+		background: rgb(255 255 255 / 4%);
+		color: var(--color-text);
+		backdrop-filter: blur(8px);
+	}
+
+	.hero-cta-secondary:hover {
+		background: rgb(255 255 255 / 8%);
+	}
+
+	.stats-row {
+		display: flex;
+		justify-content: center;
+		gap: clamp(2rem, 6vw, 5rem);
+		margin-top: clamp(2.5rem, 5vw, 4rem);
+		padding-top: clamp(2rem, 4vw, 3rem);
+		border-top: 1px solid var(--color-border);
+		animation: fadeInUp 600ms ease 500ms both;
+	}
+
+	.stat-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.3rem;
+	}
+
+	.stat-value {
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 4vw, 3.2rem);
+		font-weight: 800;
+		letter-spacing: -0.03em;
+		background: var(--grad-primary);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+
+	.stat-label {
+		font-size: 0.78rem;
+		color: var(--color-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		font-family: var(--font-mono);
+	}
+
+	.hero-underline {
+		display: block;
+		width: min(50vw, 480px);
+		height: 3px;
+		margin: 1.5rem auto 0;
+		border-radius: 999px;
+		background: linear-gradient(90deg, transparent, var(--color-cyan), var(--color-accent), transparent);
+		opacity: 0.6;
+	}
+
+	@media (width < 600px) {
+		.stats-row {
+			gap: 1.5rem;
+		}
+
+		.stat-label {
+			font-size: 0.68rem;
+		}
 	}
 </style>

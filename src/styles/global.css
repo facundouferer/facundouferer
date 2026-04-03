@@ -3,53 +3,99 @@
 @tailwind utilities;
 
 :root {
-	--color-bg: #050510;
-	--color-surface: rgb(255 255 255 / 4%);
-	--color-text: #ffffff;
-	--color-muted: rgb(255 255 255 / 58%);
+	--color-bg: #030014;
+	--color-bg-alt: #060825;
+	--color-surface: rgb(255 255 255 / 3%);
+	--color-surface-elevated: rgb(255 255 255 / 6%);
+	--color-text: #f0f2ff;
+	--color-muted: rgb(255 255 255 / 52%);
 	--color-accent: #a855f7;
+	--color-magenta: #f918d6;
 	--color-cyan: #06b6d4;
-	--color-border: rgb(255 255 255 / 11%);
+	--color-border: rgb(255 255 255 / 8%);
+	--color-border-accent: rgb(168 85 247 / 25%);
 	--font-display: 'Syne', sans-serif;
 	--font-body: 'DM Sans', sans-serif;
 	--font-mono: 'JetBrains Mono', monospace;
 	--font-article: 'Lora', serif;
+	--grad-primary: linear-gradient(135deg, #f918d6 0%, #a855f7 42%, #06b6d4 100%);
+	--grad-accent: linear-gradient(90deg, var(--color-accent), var(--color-cyan));
+	--grad-magenta: linear-gradient(135deg, #f918d6, #a855f7);
+	--container-max: 1140px;
 }
 
 * {
 	box-sizing: border-box;
 }
 
+html {
+	scroll-behavior: smooth;
+}
+
 html,
 body {
 	margin: 0;
 	padding: 0;
-	background: radial-gradient(circle at 10% 10%, rgb(168 85 247 / 20%), transparent 32%),
-		radial-gradient(circle at 90% 0%, rgb(6 182 212 / 16%), transparent 30%),
-		var(--color-bg);
+	background: var(--color-bg);
 	color: var(--color-text);
 	font-family: var(--font-body);
 	line-height: 1.6;
+}
+
+body::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	background:
+		radial-gradient(ellipse at 15% 5%, rgb(168 85 247 / 18%), transparent 40%),
+		radial-gradient(ellipse at 85% 0%, rgb(6 182 212 / 14%), transparent 35%),
+		radial-gradient(ellipse at 50% 50%, rgb(249 24 214 / 6%), transparent 50%);
+	pointer-events: none;
+	z-index: 0;
+}
+
+body::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	background-image:
+		linear-gradient(rgb(255 255 255 / 3%) 1px, transparent 1px),
+		linear-gradient(90deg, rgb(255 255 255 / 3%) 1px, transparent 1px);
+	background-size: 80px 80px;
+	mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+	-webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+	pointer-events: none;
+	z-index: 0;
+}
+
+body > * {
+	position: relative;
+	z-index: 1;
 }
 
 a {
 	color: inherit;
 }
 
+img {
+	max-width: 100%;
+	height: auto;
+}
+
 .container {
-	width: min(1120px, 92vw);
+	width: min(var(--container-max), 90vw);
 	margin-inline: auto;
 }
 
 .section {
-	padding-block: clamp(2.5rem, 6vw, 6rem);
+	padding-block: clamp(3.5rem, 8vw, 7rem);
 	position: relative;
 }
 
 .section::after {
 	content: '';
 	position: absolute;
-	inset-inline: 0;
+	inset-inline: 5%;
 	bottom: 0;
 	height: 1px;
 	background: linear-gradient(90deg, transparent, var(--color-border), transparent);
@@ -58,22 +104,37 @@ a {
 .glass {
 	background: var(--color-surface);
 	border: 1px solid var(--color-border);
-	backdrop-filter: blur(10px);
+	backdrop-filter: blur(12px);
 	border-radius: 1rem;
+}
+
+.glass-elevated {
+	background: var(--color-surface-elevated);
+	border: 1px solid rgb(255 255 255 / 10%);
+	backdrop-filter: blur(16px);
+	border-radius: 1.2rem;
 }
 
 .section-title {
 	font-family: var(--font-display);
-	font-size: clamp(1.8rem, 4vw, 3.2rem);
-	line-height: 1.1;
-	letter-spacing: -0.02em;
+	font-size: clamp(2rem, 5vw, 3.6rem);
+	line-height: 1.08;
+	letter-spacing: -0.025em;
 	margin: 0;
 }
 
 .section-subtitle {
 	color: var(--color-muted);
-	max-width: 62ch;
+	max-width: 58ch;
 	margin-top: 0.8rem;
+	font-size: clamp(0.95rem, 1.5vw, 1.15rem);
+}
+
+.gradient-text {
+	background: var(--grad-primary);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
 }
 
 .pill {
@@ -84,4 +145,25 @@ a {
 	line-height: 1;
 	border: 1px solid var(--color-border);
 	background: rgb(255 255 255 / 3%);
+}
+
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes shimmer {
+	0% { background-position: -200% center; }
+	100% { background-position: 200% center; }
+}
+
+@keyframes pulse-glow {
+	0%, 100% { opacity: 0.4; }
+	50% { opacity: 0.8; }
 }

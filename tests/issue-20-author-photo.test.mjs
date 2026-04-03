@@ -11,8 +11,8 @@ test('author photos exist in public directory', async () => {
 });
 
 test('hero and article layout reference author photos', async () => {
-	const hero = await readFile('src/components/Hero.astro', 'utf8');
+	const about = await readFile('src/components/About.astro', 'utf8');
 	const article = await readFile('src/layouts/ArticleLayout.astro', 'utf8');
-	assert.match(hero, /foto_facundo_01\.png/);
+	assert.match(about, /foto_facundo_01\.png/);
 	assert.match(article, /foto_facundo_02\.png/);
 });
