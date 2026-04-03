@@ -44,23 +44,14 @@ Run all commands from repository root.
 
 ### Tests
 
-- There is currently no test runner configured (no Vitest/Jest/Playwright scripts).
-- There is no `npm test` script.
-- For now, validation is via `npm run astro -- check` plus manual smoke testing in dev.
+- Test runner: Node built-in test runner (`node --test`).
+- Run all tests: `npm test`
+- Validation baseline for every change: `npm test` + `npm run astro -- check`.
 
 ### Running a single test (important)
 
-Because no test framework is configured yet, single-test execution is currently unavailable.
-
-If Vitest is added, use:
-
-- File: `npx vitest run path/to/file.test.ts`
-- Single test name: `npx vitest run path/to/file.test.ts -t "test name"`
-
-If Playwright is added, use:
-
-- File: `npx playwright test tests/example.spec.ts`
-- Single test name: `npx playwright test tests/example.spec.ts --grep "test name"`
+- File-level test execution: `node --test tests/path/to/file.test.mjs`
+- Name-filtered execution: `node --test --test-name-pattern "name" tests/path/to/file.test.mjs`
 
 ## 5) Mandatory Agent Workflow
 
@@ -69,6 +60,8 @@ If Playwright is added, use:
 3. Do not invent scripts in instructions; either use existing commands or add scripts explicitly.
 4. After changing behavior/UI, run at least one verification command.
 5. When adding a new tool (lint/test), update this AGENTS.md immediately.
+6. Enforce TDD for all agent work: write/update failing tests first, implement, then make tests pass.
+7. Add error-reduction mechanisms in each task: input validation, safe defaults, and explicit failure handling where relevant.
 
 ## 6) Code Style Guidelines
 

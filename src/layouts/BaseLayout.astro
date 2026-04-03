@@ -1,0 +1,67 @@
+---
+import '../styles/global.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import { SITE_URL } from '../config/site';
+
+type Props = {
+	title: string;
+	description: string;
+	locale: 'es' | 'en';
+	esPath?: string;
+	enPath?: string;
+	ocImage?: string;
+	canonicalPath?: string;
+};
+
+const {
+	title,
+	description,
+	locale,
+	esPath = '/',
+	enPath = '/en/',
+	ocImage = '/favicon.png',
+	canonicalPath,
+} = Astro.props;
+
+const canonicalUrl = new URL(canonicalPath ?? (locale === 'es' ? esPath : enPath), SITE_URL).toString();
+const esUrl = new URL(esPath, SITE_URL).toString();
+const enUrl = new URL(enPath, SITE_URL).toString();
+---
+
+<!doctype html>
+<html lang={locale}>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="generator" content={Astro.generator} />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&family=Lora:wght@400;500;700&family=Syne:wght@700;800&display=swap"
+			rel="stylesheet"
+		/>
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalUrl} />
+		<link rel="alternate" hreflang="es" href={esUrl} />
+		<link rel="alternate" hreflang="en" href={enUrl} />
+		<link rel="alternate" hreflang="x-default" href={esUrl} />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalUrl} />
+		<meta property="og:image" content={new URL(ocImage, SITE_URL).toString()} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={new URL(ocImage, SITE_URL).toString()} />
+	</head>
+	<body>
+		<SiteHeader locale={locale} esPath={esPath} enPath={enPath} />
+		<main>
+			<slot />
+		</main>
+	</body>
+</html>
