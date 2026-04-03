@@ -11,6 +11,7 @@ type Project = {
 	tags: string[];
 	image: string;
 	liveUrl: string;
+	archived?: boolean;
 };
 
 type Props = {
@@ -31,6 +32,7 @@ const aiRole = locale === 'es' ? project.aiRole : project.aiRole_en;
 			{project.tags.map((tag) => <li>{tag}</li>)}
 		</ul>
 		<h3>{title}</h3>
+		{project.archived && <p class="archive-tag">[archived]</p>}
 		<p><strong>{locale === 'es' ? 'Desafio:' : 'Challenge:'}</strong> {challenge}</p>
 		<p><strong>AI Role:</strong> {aiRole}</p>
 		<a href={project.liveUrl} target="_blank" rel="noreferrer">{locale === 'es' ? 'Ver sitio' : 'View live site'}</a>
@@ -86,5 +88,12 @@ const aiRole = locale === 'es' ? project.aiRole : project.aiRole_en;
 		font-weight: 700;
 		color: var(--color-cyan);
 		text-decoration: none;
+	}
+
+	.archive-tag {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		color: var(--color-cyan);
 	}
 </style>

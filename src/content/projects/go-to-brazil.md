@@ -18,3 +18,5 @@ archived: false
 ---
 
 Proyecto de validacion sobre desarrollo asistido por IA con alcance completo y entrega real.
+
+Estado del enlace: URL valida con redireccion 301 a la version con slash final y respuesta 200 estable.
