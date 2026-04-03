@@ -1,0 +1,80 @@
+---
+type Article = {
+	title: string;
+	title_en: string;
+	slug: string;
+	date: Date;
+	category: string;
+	tags: string[];
+	excerpt: string;
+	excerpt_en: string;
+	readingTime: number;
+	lang: 'es' | 'en' | 'both';
+};
+
+type Props = {
+	article: Article;
+	locale: 'es' | 'en';
+};
+
+const { article, locale } = Astro.props;
+const title = locale === 'es' ? article.title : article.title_en;
+const excerpt = locale === 'es' ? article.excerpt : article.excerpt_en;
+const href = locale === 'es' ? `/articulos/${article.slug}` : `/en/articles/${article.slug}`;
+const dateLabel = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en-US');
+---
+
+<article class="glass article-card" data-category={article.category} data-tags={article.tags.join(',')}>
+	<h3><a href={href}>{title}</a></h3>
+	<p class="meta">{article.category} · {dateLabel} · {article.readingTime} min</p>
+	<p>{excerpt}</p>
+	<ul class="tags">
+		{article.tags.map((tag) => <li>{tag}</li>)}
+	</ul>
+	{article.lang !== 'both' && <p class="lang-tag">{locale === 'es' ? `Idioma: ${article.lang}` : `Language: ${article.lang}`}</p>}
+</article>
+
+<style>
+	.article-card {
+		padding: 1rem;
+		display: grid;
+		gap: 0.6rem;
+	}
+
+	h3 {
+		margin: 0;
+		font-family: var(--font-display);
+	}
+
+	h3 a {
+		text-decoration: none;
+	}
+
+	.meta,
+	p {
+		margin: 0;
+		color: var(--color-muted);
+	}
+
+	.tags {
+		display: flex;
+		gap: 0.4rem;
+		padding: 0;
+		margin: 0;
+		list-style: none;
+		flex-wrap: wrap;
+	}
+
+	.tags li {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		padding: 0.2rem 0.4rem;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+	}
+
+	.lang-tag {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+	}
+</style>

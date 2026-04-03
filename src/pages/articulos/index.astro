@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticlesCatalog from '../../components/ArticlesCatalog.astro';
 ---
 
 <BaseLayout
@@ -10,9 +11,5 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 	enPath="/en/articles"
 	canonicalPath="/articulos"
 >
-	<section class="section">
-		<div class="container">
-			<h1 class="section-title">Articulos Tecnicos</h1>
-		</div>
-	</section>
+	<ArticlesCatalog locale="es" />
 </BaseLayout>
