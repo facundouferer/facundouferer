@@ -1,0 +1,56 @@
+---
+type Props = { locale: 'es' | 'en' };
+const { locale } = Astro.props;
+
+const content = {
+	es: {
+		title: 'De la idea a produccion',
+		subtitle: 'Proceso de desarrollo acelerado con IA.',
+		steps: ['Descubrir', 'Disenar', 'Construir', 'Desplegar e Iterar'],
+	},
+	en: {
+		title: 'From idea to production',
+		subtitle: 'AI-accelerated development process.',
+		steps: ['Discover', 'Design', 'Build', 'Deploy and Iterate'],
+	},
+}[locale];
+---
+
+<section class="section">
+	<div class="container">
+		<h2 class="section-title">{content.title}</h2>
+		<p class="section-subtitle">{content.subtitle}</p>
+		<ol class="steps">
+			{
+				content.steps.map((step, index) => (
+					<li class="glass step-item">
+						<span>{index + 1}</span>
+						<strong>{step}</strong>
+					</li>
+				))
+			}
+		</ol>
+	</div>
+</section>
+
+<style>
+	.steps {
+		list-style: none;
+		padding: 0;
+		margin: 1.2rem 0 0;
+		display: grid;
+		gap: 0.8rem;
+	}
+
+	.step-item {
+		display: flex;
+		gap: 0.8rem;
+		align-items: center;
+		padding: 0.9rem;
+	}
+
+	.step-item span {
+		font-family: var(--font-mono);
+		color: var(--color-cyan);
+	}
+</style>

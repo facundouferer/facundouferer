@@ -1,0 +1,67 @@
+---
+type Props = { locale: 'es' | 'en' };
+const { locale } = Astro.props;
+
+const content = {
+	es: {
+		title: 'Por que la Ingenieria Asistida por IA lo cambia todo',
+		intro:
+			'Los equipos tradicionales tardan meses. Yo tardo dias. La IA acelera la ejecucion, pero las decisiones arquitectonicas siguen siendo humanas.',
+		cards: [
+			{ title: 'Velocidad', body: 'Del concepto a produccion en tiempo record.' },
+			{ title: 'Calidad', body: 'Revisiones multi-agente para codigo limpio y robusto.' },
+			{ title: 'Ownership Full Stack', body: 'Arquitectura, frontend, backend, DevOps y UX.' },
+		],
+	},
+	en: {
+		title: 'Why AI-Assisted Engineering Changes Everything',
+		intro:
+			'Traditional teams take months. I take days. AI accelerates execution while architecture decisions remain human.',
+		cards: [
+			{ title: 'Speed', body: 'From concept to production in record time.' },
+			{ title: 'Quality', body: 'Multi-agent review cycles for cleaner and safer code.' },
+			{ title: 'Full Stack Ownership', body: 'Architecture, frontend, backend, DevOps, and UX.' },
+		],
+	},
+}[locale];
+---
+
+<section class="section">
+	<div class="container">
+		<h2 class="section-title">{content.title}</h2>
+		<p class="section-subtitle">{content.intro}</p>
+		<div class="cards">
+			{
+				content.cards.map((card) => (
+					<article class="glass card">
+						<h3>{card.title}</h3>
+						<p>{card.body}</p>
+					</article>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: 1rem;
+		margin-top: 1.4rem;
+	}
+
+	.card {
+		padding: 1rem;
+	}
+
+	.card h3 {
+		margin: 0;
+		font-family: var(--font-display);
+	}
+
+	.card p {
+		margin: 0.5rem 0 0;
+		color: var(--color-muted);
+	}
+</style>

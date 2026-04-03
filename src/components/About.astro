@@ -1,0 +1,25 @@
+---
+type Props = { locale: 'es' | 'en' };
+const { locale } = Astro.props;
+
+const content = {
+	es: {
+		title: 'Excelencia en ingenieria con un toque de IA',
+		p1: 'No solo escribo codigo: diseno ecosistemas que escalan sin romperse.',
+		p2: 'Futurismo pragmatico. Tecnologia de vanguardia con foco en impacto real.',
+	},
+	en: {
+		title: 'Engineering excellence with an AI touch',
+		p1: 'I do not just write code. I architect ecosystems that scale safely.',
+		p2: 'Pragmatic futurism: modern AI tools applied with business impact in mind.',
+	},
+}[locale];
+---
+
+<section class="section" id="about">
+	<div class="container glass" style="padding:1.2rem;">
+		<h2 class="section-title">{content.title}</h2>
+		<p class="section-subtitle">{content.p1}</p>
+		<p class="section-subtitle">{content.p2}</p>
+	</div>
+</section>

@@ -1,0 +1,93 @@
+---
+import { SOCIAL_LINKS } from '../config/site';
+
+type Props = { locale: 'es' | 'en' };
+const { locale } = Astro.props;
+const copy = {
+	es: {
+		title: 'Listo para construir el futuro?',
+		subtitle: 'Acepto proyectos de alto impacto. Hablemos de tu vision.',
+		name: 'Tu nombre',
+		email: 'Email',
+		project: 'Descripcion del proyecto',
+		submit: 'Enviar mensaje',
+	},
+	en: {
+		title: 'Ready to build the future?',
+		subtitle: 'Accepting high-impact projects. Let us discuss your vision.',
+		name: "Commander's Name",
+		email: 'Transmission Route',
+		project: 'Project Specs',
+		submit: 'Initialize Transmission',
+	},
+}[locale];
+---
+
+<section class="section" id="contact">
+	<div class="container">
+		<h2 class="section-title">{copy.title}</h2>
+		<p class="section-subtitle">{copy.subtitle}</p>
+		<form class="glass contact-form" method="post" action="mailto:juanfacundouf@gmail.com">
+			<label>
+				{copy.name}
+				<input required name="name" type="text" />
+			</label>
+			<label>
+				{copy.email}
+				<input required name="email" type="email" />
+			</label>
+			<label>
+				{copy.project}
+				<textarea required name="project" rows="4"></textarea>
+			</label>
+			<button type="submit">{copy.submit}</button>
+		</form>
+		<p class="links">
+			<a href={SOCIAL_LINKS.email}>Email</a> ·
+			<a href={SOCIAL_LINKS.linkedin}>LinkedIn</a> ·
+			<a href={SOCIAL_LINKS.github}>GitHub</a> ·
+			<a href={SOCIAL_LINKS.twitter}>Twitter/X</a>
+		</p>
+	</div>
+</section>
+
+<style>
+	.contact-form {
+		padding: 1rem;
+		display: grid;
+		gap: 0.8rem;
+		margin-top: 1rem;
+	}
+
+	label {
+		display: grid;
+		gap: 0.4rem;
+		font-size: 0.9rem;
+	}
+
+	input,
+	textarea {
+		width: 100%;
+		padding: 0.6rem;
+		background: rgb(255 255 255 / 3%);
+		border: 1px solid var(--color-border);
+		border-radius: 0.6rem;
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	button {
+		width: fit-content;
+		padding: 0.65rem 1.1rem;
+		border: none;
+		border-radius: 0.6rem;
+		font-weight: 700;
+		background: linear-gradient(90deg, var(--color-accent), var(--color-cyan));
+		color: var(--color-text);
+	}
+
+	.links {
+		margin-top: 1rem;
+		color: var(--color-muted);
+	}
+</style>

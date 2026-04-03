@@ -1,0 +1,57 @@
+---
+type Props = { locale: 'es' | 'en' };
+const { locale } = Astro.props;
+
+const title = locale === 'es' ? 'El Arsenal' : 'The Toolchain';
+const subtitle =
+	locale === 'es'
+		? 'Herramientas modernas para productos robustos y a prueba de futuro.'
+		: 'Leveraging modern primitives to build robust, future-proof products.';
+---
+
+<section class="section">
+	<div class="container">
+		<h2 class="section-title">{title}</h2>
+		<p class="section-subtitle">{subtitle}</p>
+		<div class="stack-grid">
+			<article class="glass stack-item">
+				<h3>AI Engineering</h3>
+				<p>Claude Code, Cursor, Copilot, Gemini, Codex, n8n</p>
+			</article>
+			<article class="glass stack-item">
+				<h3>Frontend</h3>
+				<p>React, Next.js, Svelte, Vue.js, Astro, TypeScript, Tailwind CSS</p>
+			</article>
+			<article class="glass stack-item">
+				<h3>Backend &amp; Core</h3>
+				<p>Node.js, NestJS, PostgreSQL, MongoDB, MySQL, REST, GraphQL</p>
+			</article>
+			<article class="glass stack-item">
+				<h3>Cloud &amp; DevOps</h3>
+				<p>AWS, Vercel, Cloud Run, Docker, Linux Servers, CI/CD</p>
+			</article>
+		</div>
+	</div>
+</section>
+
+<style>
+	.stack-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		gap: 1rem;
+		margin-top: 1.2rem;
+	}
+
+	.stack-item {
+		padding: 1rem;
+	}
+
+	.stack-item h3 {
+		margin: 0;
+	}
+
+	.stack-item p {
+		margin: 0.5rem 0 0;
+		color: var(--color-muted);
+	}
+</style>

@@ -1,0 +1,68 @@
+---
+type Props = { locale: 'es' | 'en' };
+const { locale } = Astro.props;
+
+const content = {
+	es: {
+		title: 'Software listo para produccion a la velocidad del pensamiento.',
+		subtitle:
+			'Ingeniero Full Stack Senior. Orquestador de IA. Utilizo sistemas multi-agente para llevar un producto de idea a deploy.',
+		primary: 'Ver Proyectos',
+		secondary: 'Hablemos',
+		badge: 'Disponible para nuevos proyectos',
+		projectsHref: '/proyectos',
+	},
+	en: {
+		title: 'Building production-ready software at the speed of thought.',
+		subtitle:
+			'Senior Full Stack Engineer. AI Orchestrator. I use multi-agent systems to take products from idea to deployment.',
+		primary: 'View Projects',
+		secondary: "Let's Talk",
+		badge: 'Available for new projects',
+		projectsHref: '/en/projects',
+	},
+}[locale];
+
+const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
+---
+
+<section class="section">
+	<div class="container hero glass">
+		<p class="pill">{content.badge}</p>
+		<h1 class="section-title">{content.title}</h1>
+		<p class="section-subtitle">{content.subtitle}</p>
+		<div class="actions">
+			<a class="cta primary" href={content.projectsHref}>{content.primary}</a>
+			<a class="cta" href={contactHref}>{content.secondary}</a>
+		</div>
+	</div>
+</section>
+
+<style>
+	.hero {
+		padding: clamp(1.5rem, 5vw, 4rem);
+		display: grid;
+		gap: 1rem;
+	}
+
+	.actions {
+		display: flex;
+		gap: 0.8rem;
+		flex-wrap: wrap;
+	}
+
+	.cta {
+		padding: 0.7rem 1rem;
+		border-radius: 0.75rem;
+		text-decoration: none;
+		font-size: 0.9rem;
+		border: 1px solid var(--color-border);
+		background: rgb(255 255 255 / 2%);
+	}
+
+	.cta.primary {
+		background: linear-gradient(90deg, var(--color-accent), var(--color-cyan));
+		color: var(--color-text);
+		border: none;
+	}
+</style>
