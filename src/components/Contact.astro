@@ -7,23 +7,15 @@ const { locale } = Astro.props;
 const copy = {
 	es: {
 		tag: 'CONTACTO',
-		title: 'Listo para construir',
-		titleAccent: 'el futuro?',
-		subtitle: 'Acepto proyectos de alto impacto para 2025. Hablemos de tu vision con ingenieria de precision.',
-		name: 'Tu nombre',
-		email: 'Email',
-		project: 'Descripcion del proyecto',
-		submit: 'Enviar mensaje',
+		title: 'Conectemos',
+		titleAccent: 'ahora',
+		subtitle: 'Elegi tu canal favorito y hablemos de tu proximo proyecto.',
 	},
 	en: {
 		tag: 'CONTACT',
-		title: 'Ready to build',
-		titleAccent: 'the future?',
-		subtitle: 'Accepting high-impact projects for 2025. Let us discuss your vision with precision engineering.',
-		name: 'Your Name',
-		email: 'Email',
-		project: 'Project description',
-		submit: 'Send Message',
+		title: 'Let us connect',
+		titleAccent: 'now',
+		subtitle: 'Pick your preferred channel and let us discuss your next project.',
 	},
 }[locale];
 ---
@@ -39,35 +31,27 @@ const copy = {
 			</h2>
 			<p class="section-subtitle">{copy.subtitle}</p>
 		</div>
-		<div class="contact-grid">
-			<form class="contact-form" method="post" action={`mailto:${SOCIAL_LINKS.email.replace('mailto:', '')}`}>
-				<div class="form-row">
-					<label>
-						<span>{copy.name}</span>
-						<input required name="name" type="text" />
-					</label>
-					<label>
-						<span>{copy.email}</span>
-						<input required name="email" type="email" />
-					</label>
-				</div>
-				<label>
-					<span>{copy.project}</span>
-					<textarea required name="project" rows="4"></textarea>
-				</label>
-				<button type="submit">{copy.submit}</button>
-			</form>
-			<div class="contact-info">
-				<div class="info-card">
-					<span class="info-icon">📧</span>
-					<a href={SOCIAL_LINKS.email}>{SOCIAL_LINKS.email.replace('mailto:', '')}</a>
-				</div>
-				<div class="social-links">
-					<a href={SOCIAL_LINKS.linkedin} target="_blank" rel="noreferrer">LinkedIn</a>
-					<a href={SOCIAL_LINKS.github} target="_blank" rel="noreferrer">GitHub</a>
-					<a href={SOCIAL_LINKS.twitter} target="_blank" rel="noreferrer">Twitter/X</a>
-				</div>
-			</div>
+		<div class="social-hub" role="navigation" aria-label="Social links">
+			<a class="social-orb" href={SOCIAL_LINKS.linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn">
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<path d="M4.98 3.5a2.5 2.5 0 1 1 0 5.001 2.5 2.5 0 0 1 0-5Zm-2 6.75h4v11h-4v-11Zm7 0h3.84v1.5h.05c.53-1 1.84-2.05 3.78-2.05 4.04 0 4.79 2.66 4.79 6.11v5.44h-4v-4.82c0-1.15-.02-2.63-1.6-2.63-1.61 0-1.86 1.26-1.86 2.55v4.9h-4v-11Z" />
+				</svg>
+			</a>
+			<a class="social-orb" href={SOCIAL_LINKS.github} target="_blank" rel="noreferrer" aria-label="GitHub">
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.61-3.37-1.19-3.37-1.19-.46-1.15-1.11-1.46-1.11-1.46-.91-.62.07-.6.07-.6 1 .07 1.54 1.04 1.54 1.04.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.64-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.28.1-2.67 0 0 .84-.27 2.75 1.03a9.6 9.6 0 0 1 5 0c1.9-1.3 2.74-1.03 2.74-1.03.55 1.39.2 2.42.1 2.67.65.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.69.92.69 1.86v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2Z" />
+				</svg>
+			</a>
+			<a class="social-orb" href={SOCIAL_LINKS.email} aria-label="Email">
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm0 2v.5l9 5.4 9-5.4V7l-9 5.4L3 7Zm18 10V9.8l-8.5 5.1a1 1 0 0 1-1 0L3 9.8V17h18Z" />
+				</svg>
+			</a>
+			<a class="social-orb" href={SOCIAL_LINKS.twitter} target="_blank" rel="noreferrer" aria-label="Twitter/X">
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<path d="M18.9 2H22l-6.77 7.74L23.2 22h-6.26l-4.9-6.4L6.4 22H3.3l7.25-8.29L1 2h6.42l4.43 5.85L18.9 2Zm-1.1 18h1.73L6.47 3.9H4.62L17.8 20Z" />
+				</svg>
+			</a>
 		</div>
 	</div>
 </section>
@@ -111,7 +95,7 @@ const copy = {
 
 	.contact-header {
 		text-align: center;
-		margin-bottom: 2.5rem;
+		margin-bottom: 2.2rem;
 	}
 
 	.contact-header .section-subtitle {
@@ -127,131 +111,48 @@ const copy = {
 		margin: 0 0 0.6rem;
 	}
 
-	.contact-grid {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		gap: 2rem;
-		align-items: start;
-	}
-
-	.contact-form {
-		padding: 1.6rem;
-		display: grid;
-		gap: 1rem;
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 1.2rem;
-		backdrop-filter: blur(12px);
-	}
-
-	.form-row {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 1rem;
-	}
-
-	label {
-		display: grid;
-		gap: 0.4rem;
-		font-size: 0.85rem;
-		color: var(--color-muted);
-	}
-
-	label span {
-		font-family: var(--font-mono);
-		font-size: 0.74rem;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-	}
-
-	input,
-	textarea {
-		width: 100%;
-		padding: 0.7rem 0.9rem;
-		background: rgb(255 255 255 / 3%);
-		border: 1px solid var(--color-border);
-		border-radius: 0.6rem;
-		color: var(--color-text);
-		font-family: var(--font-body);
-		font-size: 0.9rem;
-		transition: border-color 200ms ease;
-	}
-
-	input:focus,
-	textarea:focus {
-		outline: none;
-		border-color: var(--color-accent);
-	}
-
-	button {
-		width: 100%;
-		padding: 0.85rem;
-		border: none;
-		border-radius: 0.6rem;
-		font-weight: 700;
-		font-size: 0.88rem;
-		background: var(--grad-accent);
-		color: #fff;
-		cursor: pointer;
-		transition: transform 200ms ease, box-shadow 200ms ease;
-		letter-spacing: 0.02em;
-	}
-
-	button:hover {
-		transform: translateY(-1px);
-		box-shadow: 0 4px 20px rgb(168 85 247 / 30%);
-	}
-
-	.contact-info {
-		display: grid;
-		gap: 1.2rem;
-		align-content: start;
-	}
-
-	.info-card {
-		padding: 1.2rem;
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 1rem;
+	.social-hub {
 		display: flex;
+		justify-content: center;
 		align-items: center;
-		gap: 0.8rem;
-	}
-
-	.info-icon {
-		font-size: 1.2rem;
-	}
-
-	.info-card a {
-		color: var(--color-cyan);
-		text-decoration: none;
-		font-size: 0.88rem;
-		word-break: break-all;
-	}
-
-	.social-links {
-		display: flex;
-		gap: 0.8rem;
+		gap: 1rem;
 		flex-wrap: wrap;
+		margin-top: 1.8rem;
 	}
 
-	.social-links a {
-		padding: 0.5rem 1rem;
-		background: var(--color-surface);
+	.social-orb {
+		width: clamp(74px, 9vw, 98px);
+		height: clamp(74px, 9vw, 98px);
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		background: color-mix(in srgb, var(--color-surface) 88%, #f918d6 12%);
 		border: 1px solid var(--color-border);
-		border-radius: 999px;
+		border-radius: 1.25rem;
+		color: #f918d6;
 		text-decoration: none;
-		font-size: 0.8rem;
-		color: var(--color-muted);
-		transition: color 200ms ease, border-color 200ms ease;
+		box-shadow:
+			0 0 10px rgb(249 24 214 / 55%),
+			0 0 24px rgb(249 24 214 / 40%),
+			0 0 44px rgb(249 24 214 / 22%);
+		transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 	}
 
-	.social-links a:hover {
-		color: var(--color-text);
-		border-color: var(--color-accent);
+	.social-orb svg {
+		width: 44%;
+		height: 44%;
+		fill: currentColor;
 	}
 
-	/* Footer */
+	.social-orb:hover {
+		transform: translateY(-4px) scale(1.04);
+		border-color: rgb(249 24 214 / 70%);
+		box-shadow:
+			0 0 14px rgb(249 24 214 / 75%),
+			0 0 32px rgb(249 24 214 / 55%),
+			0 0 64px rgb(249 24 214 / 35%);
+	}
+
 	.site-footer {
 		padding: 2rem 0;
 		border-top: 1px solid var(--color-border);
@@ -288,12 +189,8 @@ const copy = {
 	}
 
 	@media (width < 760px) {
-		.contact-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.form-row {
-			grid-template-columns: 1fr;
+		.social-hub {
+			gap: 0.8rem;
 		}
 	}
 </style>
