@@ -1,0 +1,163 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+type ArticleData = {
+	title: string;
+	title_en: string;
+	category: string;
+	author: string;
+	tags: string[];
+	date: Date;
+	readingTime: number;
+};
+
+type LinkInfo = {
+	title: string;
+	href: string;
+} | null;
+
+type Props = {
+	locale: 'es' | 'en';
+	article: ArticleData;
+	href: string;
+	prev: LinkInfo;
+	next: LinkInfo;
+	contentDescription: string;
+	availabilityNotice?: string;
+	ocImage?: string;
+};
+
+const { locale, article, href, prev, next, contentDescription, availabilityNotice, ocImage } = Astro.props;
+const title = locale === 'es' ? article.title : article.title_en;
+const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
+const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en-US');
+---
+
+<BaseLayout
+	title={title}
+	description={contentDescription}
+	locale={locale}
+	esPath={locale === 'es' ? href : href.replace('/en/articles/', '/articulos/')}
+	enPath={locale === 'en' ? href : href.replace('/articulos/', '/en/articles/')}
+	canonicalPath={href}
+	ogType="article"
+	ocImage={ocImage}
+>
+	<article class="section article-wrap">
+		<div class="container article-shell">
+			<header>
+				<p class="category">{article.category}</p>
+				<h1 class="section-title">{title}</h1>
+				<p class="meta">
+					{article.author} · {dateText} · {article.readingTime} min
+				</p>
+				<p class="meta">Tags: {article.tags.join(' · ')}</p>
+			</header>
+			<div class="article-body">
+				{availabilityNotice && <p class="availability">{availabilityNotice}</p>}
+				<slot />
+			</div>
+			<footer class="article-footer">
+				<div class="author-box glass">
+					<img src="/foto_facundo_02.png" alt="Facundo Uferer" loading="lazy" />
+					<div>
+						<strong>Facundo Uferer</strong>
+						<p>{locale === 'es' ? 'Senior Full Stack Engineer y AI Orchestrator' : 'Senior Full Stack Engineer and AI Orchestrator'}</p>
+					</div>
+				</div>
+				<nav class="pager" aria-label="Article navigation">
+					{prev && <a href={prev.href}>← {prev.title}</a>}
+					{next && <a href={next.href}>{next.title} →</a>}
+				</nav>
+				<p>
+					<a href={contactHref}>{locale === 'es' ? 'Queres trabajar juntos?' : 'Want to work together?'}</a>
+				</p>
+			</footer>
+		</div>
+	</article>
+</BaseLayout>
+
+<style>
+	.article-shell {
+		max-width: 860px;
+	}
+
+	.category,
+	.meta {
+		margin: 0;
+		color: var(--color-muted);
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+	}
+
+	.article-body {
+		font-family: var(--font-article);
+		font-size: 1.1rem;
+		line-height: 1.85;
+		margin-top: 1.4rem;
+	}
+
+	.availability {
+		padding: 0.75rem;
+		border-radius: 0.6rem;
+		border: 1px solid var(--color-border);
+		background: rgb(168 85 247 / 14%);
+		font-family: var(--font-body);
+		color: var(--color-text);
+	}
+
+	.article-body :global(pre) {
+		overflow-x: auto;
+		padding: 1rem;
+		border-radius: 0.8rem;
+		background: rgb(255 255 255 / 4%);
+		border: 1px solid var(--color-border);
+	}
+
+	.article-body :global(blockquote) {
+		margin: 0;
+		padding-left: 1rem;
+		border-left: 3px solid var(--color-cyan);
+		color: var(--color-muted);
+	}
+
+	.article-footer {
+		margin-top: 2rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.author-box {
+		padding: 0.8rem;
+		display: flex;
+		gap: 0.8rem;
+		align-items: center;
+		margin-bottom: 1rem;
+	}
+
+	.author-box img {
+		width: 52px;
+		height: 52px;
+		border-radius: 999px;
+		object-fit: cover;
+	}
+
+	.author-box p {
+		margin: 0.2rem 0 0;
+		color: var(--color-muted);
+		font-size: 0.88rem;
+	}
+
+	.pager {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.6rem;
+		flex-wrap: wrap;
+	}
+
+	.pager a,
+	.article-footer p a {
+		color: var(--color-cyan);
+		text-decoration: none;
+	}
+</style>

@@ -1,0 +1,107 @@
+---
+type Props = { locale: 'es' | 'en' };
+const { locale } = Astro.props;
+
+const title = locale === 'es' ? 'Referencias' : 'Testimonials';
+const items =
+	locale === 'es'
+		? [
+			{
+				quote: 'Facundo convierte ideas complejas en productos reales con una velocidad impresionante.',
+				author: 'Directora de Producto, EdTech',
+			},
+			{
+				quote: 'Excelente criterio tecnico y gran capacidad para liderar decisiones de arquitectura.',
+				author: 'CTO, Startup SaaS',
+			},
+			{
+				quote: 'Una combinacion rara: rapidez, calidad y comunicacion clara con equipos no tecnicos.',
+				author: 'Coordinacion de Innovacion Publica',
+			},
+		]
+		: [
+			{
+				quote: 'Facundo turns complex ideas into production products at remarkable speed.',
+				author: 'Product Director, EdTech',
+			},
+			{
+				quote: 'Strong architecture judgment and excellent technical leadership.',
+				author: 'CTO, SaaS Startup',
+			},
+			{
+				quote: 'Rare combination of speed, quality, and communication with non-technical teams.',
+				author: 'Public Innovation Coordination',
+			},
+		];
+---
+
+<section class="section">
+	<div class="container">
+		<h2 class="section-title">{title}</h2>
+		<div class="grid">
+			{
+				items.map((item, index) => (
+					<blockquote class="testimonial-card" style={`--delay: ${index * 80}ms`}>
+						<div class="quote-mark" aria-hidden="true">"</div>
+						<p>{item.quote}</p>
+						<cite>{item.author}</cite>
+					</blockquote>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		gap: 1.2rem;
+		margin-top: 2rem;
+	}
+
+	.testimonial-card {
+		margin: 0;
+		padding: 1.6rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 1rem;
+		position: relative;
+		overflow: hidden;
+		transition: transform 250ms ease, border-color 250ms ease;
+	}
+
+	.testimonial-card:hover {
+		transform: translateY(-3px);
+		border-color: rgb(249 24 214 / 25%);
+	}
+
+	.quote-mark {
+		font-family: var(--font-display);
+		font-size: 3rem;
+		line-height: 1;
+		background: var(--grad-primary);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		margin-bottom: 0.4rem;
+		opacity: 0.6;
+	}
+
+	.testimonial-card p {
+		margin: 0;
+		font-size: 0.95rem;
+		line-height: 1.6;
+		color: var(--color-text);
+	}
+
+	.testimonial-card cite {
+		display: block;
+		margin-top: 1rem;
+		font-style: normal;
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		color: var(--color-muted);
+		letter-spacing: 0.02em;
+	}
+</style>

@@ -1,0 +1,78 @@
+---
+import { getCollection } from 'astro:content';
+import ProjectCard from './ProjectCard.astro';
+
+type Props = { locale: 'es' | 'en' };
+const { locale } = Astro.props;
+
+const projects = (await getCollection('projects')).filter((item) => item.data.published);
+const filters = ['All', 'Civic Tech', 'EdTech', 'Government', 'Tourism', 'Portfolio & Art'];
+
+const title = locale === 'es' ? 'Todos los Proyectos' : 'All Projects';
+const subtitle =
+	locale === 'es'
+		? 'Cada proyecto es construido con asistencia de IA en cada capa.'
+		: 'Every project is built with AI assistance at every layer.';
+---
+
+<section class="section">
+	<div class="container">
+		<h1 class="section-title">{title}</h1>
+		<p class="section-subtitle">{subtitle}</p>
+		<div class="filters" role="toolbar" aria-label="Project filters">
+			{filters.map((filter) => <button type="button" data-filter={filter}>{filter}</button>)}
+		</div>
+		<div class="project-grid" id="project-grid">
+			{
+				projects.map((project) => (
+					<div data-category={project.data.category}>
+						<ProjectCard project={project.data} locale={locale} />
+					</div>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<script>
+	const toolbar = document.querySelector('.filters');
+	if (toolbar) {
+		const cards = Array.from(document.querySelectorAll('[data-category]'));
+		toolbar.addEventListener('click', (event) => {
+			const button = event.target;
+			if (!(button instanceof HTMLButtonElement)) return;
+			const filter = button.dataset.filter ?? 'All';
+
+			for (const card of cards) {
+				const category = card.getAttribute('data-category');
+				const visible = filter === 'All' || category === filter;
+				card.toggleAttribute('hidden', !visible);
+			}
+		});
+	}
+</script>
+
+<style>
+	.filters {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+		margin: 1rem 0;
+	}
+
+	.filters button {
+		background: rgb(255 255 255 / 3%);
+		border: 1px solid var(--color-border);
+		padding: 0.35rem 0.65rem;
+		border-radius: 999px;
+		color: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+	}
+
+	.project-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 1rem;
+	}
+</style>

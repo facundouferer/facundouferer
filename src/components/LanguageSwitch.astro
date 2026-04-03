@@ -1,0 +1,42 @@
+---
+type Props = {
+	locale: 'es' | 'en';
+	esPath?: string;
+	enPath?: string;
+};
+
+const { locale, esPath = '/', enPath = '/en/' } = Astro.props;
+const isSpanish = locale === 'es';
+---
+
+<div class="language-switch" aria-label="Language selector">
+	<a href={esPath} class:list={{ active: isSpanish }} aria-label="Espanol (Argentina)">🇦🇷</a>
+	<span aria-hidden="true">|</span>
+	<a href={enPath} class:list={{ active: !isSpanish }} aria-label="English (United States)">🇺🇸</a>
+</div>
+
+<style>
+	.language-switch {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.75rem;
+		letter-spacing: 0.08em;
+		font-family: var(--font-mono);
+		text-transform: uppercase;
+	}
+
+	.language-switch a {
+		color: var(--color-muted);
+		text-decoration: none;
+	}
+
+	.language-switch a.active,
+	.language-switch a:hover {
+		color: var(--color-text);
+	}
+
+	.language-switch span {
+		color: var(--color-border);
+	}
+</style>

@@ -1,11 +1,32 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SEO } from '../seo/meta';
+import Hero from '../components/Hero.astro';
+import ValueProp from '../components/ValueProp.astro';
+import FeaturedProjects from '../components/FeaturedProjects.astro';
+import FeaturedArticles from '../components/FeaturedArticles.astro';
+import Toolchain from '../components/Toolchain.astro';
+import Process from '../components/Process.astro';
+import About from '../components/About.astro';
+import Testimonials from '../components/Testimonials.astro';
+import Contact from '../components/Contact.astro';
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<BaseLayout
+	title={SEO.es.home.title}
+	description={SEO.es.home.description}
+	locale="es"
+	esPath="/"
+	enPath="/en/"
+	canonicalPath="/"
+>
+	<Hero locale="es" />
+	<ValueProp locale="es" />
+	<FeaturedProjects locale="es" />
+	<Toolchain locale="es" />
+	<Process locale="es" />
+	<FeaturedArticles locale="es" />
+	<About locale="es" />
+	<Testimonials locale="es" />
+	<Contact locale="es" />
+</BaseLayout>

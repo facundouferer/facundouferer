@@ -1,0 +1,152 @@
+---
+import { getCollection } from 'astro:content';
+import ArticleCard from './ArticleCard.astro';
+
+type Props = { locale: 'es' | 'en' };
+const { locale } = Astro.props;
+
+const articles = (await getCollection('articles'))
+	.filter((item) => item.data.published)
+	.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const categories = ['All', ...new Set(articles.map((item) => item.data.category))];
+const tags = ['All', ...new Set(articles.flatMap((item) => item.data.tags))];
+
+const title = locale === 'es' ? 'Articulos Tecnicos' : 'Technical Articles';
+const subtitle =
+	locale === 'es'
+		? 'Publicacion tecnica y cientifica sobre software, IA y sistemas.'
+		: 'Technical-scientific publication about software, AI, and systems.';
+---
+
+<section class="section">
+	<div class="container">
+		<h1 class="section-title">{title}</h1>
+		<p class="section-subtitle">{subtitle}</p>
+		<div class="filters">
+			<label>
+				Category
+				<select id="category-filter">
+					{categories.map((category) => <option value={category}>{category}</option>)}
+				</select>
+			</label>
+			<label>
+				Tag
+				<select id="tag-filter">
+					{tags.map((tag) => <option value={tag}>{tag}</option>)}
+				</select>
+			</label>
+		</div>
+		<div class="articles-grid" id="articles-grid">
+			{articles.map((item) => <ArticleCard article={item.data} locale={locale} />)}
+		</div>
+		<div class="pager" id="articles-pager">
+			<button type="button" id="prev-page">← Prev</button>
+			<span id="page-indicator">1</span>
+			<button type="button" id="next-page">Next →</button>
+		</div>
+	</div>
+</section>
+
+<script>
+	const categoryFilter = document.querySelector('#category-filter');
+	const tagFilter = document.querySelector('#tag-filter');
+	const cards = Array.from(document.querySelectorAll('.article-card')) as HTMLElement[];
+	const prevButton = document.querySelector('#prev-page');
+	const nextButton = document.querySelector('#next-page');
+	const pageIndicator = document.querySelector('#page-indicator');
+	let currentPage = 1;
+	const pageSize = 9;
+
+	const applyPagination = () => {
+		const visibleCards = cards.filter((card) => !card.hasAttribute('hidden'));
+		const totalPages = Math.max(1, Math.ceil(visibleCards.length / pageSize));
+		if (currentPage > totalPages) currentPage = totalPages;
+
+		for (const [index, card] of visibleCards.entries()) {
+			const onPage = index >= (currentPage - 1) * pageSize && index < currentPage * pageSize;
+			card.toggleAttribute('data-page-hidden', !onPage);
+			card.style.display = onPage ? '' : 'none';
+		}
+
+		if (pageIndicator instanceof HTMLElement) {
+			pageIndicator.textContent = `${currentPage}/${totalPages}`;
+		}
+		if (prevButton instanceof HTMLButtonElement) prevButton.disabled = currentPage <= 1;
+		if (nextButton instanceof HTMLButtonElement) nextButton.disabled = currentPage >= totalPages;
+	};
+
+	const applyFilters = () => {
+		const categoryValue = categoryFilter instanceof HTMLSelectElement ? categoryFilter.value : 'All';
+		const tagValue = tagFilter instanceof HTMLSelectElement ? tagFilter.value : 'All';
+		currentPage = 1;
+
+		for (const card of cards) {
+			const cardCategory = card.getAttribute('data-category') ?? 'All';
+			const cardTags = card.getAttribute('data-tags')?.split(',') ?? [];
+			const categoryMatch = categoryValue === 'All' || cardCategory === categoryValue;
+			const tagMatch = tagValue === 'All' || cardTags.includes(tagValue);
+			card.toggleAttribute('hidden', !(categoryMatch && tagMatch));
+			card.style.display = '';
+		}
+
+		applyPagination();
+	};
+
+	categoryFilter?.addEventListener('change', applyFilters);
+	tagFilter?.addEventListener('change', applyFilters);
+	prevButton?.addEventListener('click', () => {
+		currentPage -= 1;
+		applyPagination();
+	});
+	nextButton?.addEventListener('click', () => {
+		currentPage += 1;
+		applyPagination();
+	});
+	applyFilters();
+</script>
+
+<style>
+	.filters {
+		display: flex;
+		gap: 1rem;
+		margin-block: 1rem;
+		flex-wrap: wrap;
+	}
+
+	label {
+		display: grid;
+		gap: 0.35rem;
+		font-size: 0.85rem;
+	}
+
+	select {
+		background: rgb(255 255 255 / 3%);
+		border: 1px solid var(--color-border);
+		border-radius: 0.45rem;
+		color: var(--color-text);
+		padding: 0.35rem;
+	}
+
+	.articles-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 1rem;
+	}
+
+	.pager {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 0.75rem;
+		margin-top: 1rem;
+	}
+
+	.pager button {
+		border: 1px solid var(--color-border);
+		background: rgb(255 255 255 / 3%);
+		color: var(--color-text);
+		padding: 0.35rem 0.65rem;
+		border-radius: 0.5rem;
+	}
+</style>

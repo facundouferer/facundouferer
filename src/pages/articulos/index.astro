@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticlesCatalog from '../../components/ArticlesCatalog.astro';
+import { SEO } from '../../seo/meta';
+---
+
+<BaseLayout
+	title={SEO.es.articles.title}
+	description={SEO.es.articles.description}
+	locale="es"
+	esPath="/articulos"
+	enPath="/en/articles"
+	canonicalPath="/articulos"
+>
+	<ArticlesCatalog locale="es" />
+</BaseLayout>

@@ -1,0 +1,114 @@
+---
+type Props = { locale: 'es' | 'en' };
+const { locale } = Astro.props;
+
+const content = {
+	es: {
+		title: 'Por que la Ingenieria Asistida por IA lo cambia todo',
+		intro:
+			'Los equipos tradicionales tardan meses. Yo tardo dias. La IA acelera la ejecucion, pero las decisiones arquitectonicas siguen siendo humanas.',
+		cards: [
+			{ icon: '⚡', title: 'Velocidad', body: 'Del concepto a produccion en tiempo record. Lo que otros logran en meses, lo entrego en dias.' },
+			{ icon: '🛡️', title: 'Calidad', body: 'Revisiones multi-agente para codigo limpio, testeado y robusto en cada delivery.' },
+			{ icon: '🏗️', title: 'Ownership Full Stack', body: 'Arquitectura, frontend, backend, DevOps y UX — todo bajo un mismo criterio de ingeniero.' },
+		],
+	},
+	en: {
+		title: 'Why AI-Assisted Engineering Changes Everything',
+		intro:
+			'Traditional teams take months. I take days. AI accelerates execution while architecture decisions remain human.',
+		cards: [
+			{ icon: '⚡', title: 'Speed', body: 'From concept to production in record time. What others achieve in months, I deliver in days.' },
+			{ icon: '🛡️', title: 'Quality', body: 'Multi-agent review cycles for cleaner, tested, and safer code in every delivery.' },
+			{ icon: '🏗️', title: 'Full Stack Ownership', body: 'Architecture, frontend, backend, DevOps, and UX — all under one engineering vision.' },
+		],
+	},
+}[locale];
+---
+
+<section class="section">
+	<div class="container">
+		<h2 class="section-title">
+			{content.title.split(' ').slice(0, -1).join(' ')}{' '}
+			<span class="gradient-text">{content.title.split(' ').at(-1)}</span>
+		</h2>
+		<p class="section-subtitle">{content.intro}</p>
+		<div class="cards">
+			{
+				content.cards.map((card) => (
+					<article class="vp-card">
+						<div class="card-icon">{card.icon}</div>
+						<h3>{card.title}</h3>
+						<p>{card.body}</p>
+					</article>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		gap: 1.2rem;
+		margin-top: 2rem;
+	}
+
+	.vp-card {
+		padding: 1.6rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 1rem;
+		backdrop-filter: blur(10px);
+		position: relative;
+		overflow: hidden;
+		transition: transform 250ms ease, border-color 250ms ease;
+	}
+
+	.vp-card::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 3px;
+		background: var(--grad-primary);
+		opacity: 0;
+		transition: opacity 250ms ease;
+	}
+
+	.vp-card:hover {
+		transform: translateY(-4px);
+		border-color: rgb(168 85 247 / 25%);
+	}
+
+	.vp-card:hover::before {
+		opacity: 1;
+	}
+
+	.card-icon {
+		font-size: 1.6rem;
+		margin-bottom: 0.8rem;
+		width: 2.8rem;
+		height: 2.8rem;
+		display: grid;
+		place-items: center;
+		border-radius: 0.6rem;
+		background: rgb(168 85 247 / 10%);
+		border: 1px solid rgb(168 85 247 / 15%);
+	}
+
+	.vp-card h3 {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: 1.15rem;
+	}
+
+	.vp-card p {
+		margin: 0.5rem 0 0;
+		color: var(--color-muted);
+		font-size: 0.92rem;
+		line-height: 1.6;
+	}
+</style>

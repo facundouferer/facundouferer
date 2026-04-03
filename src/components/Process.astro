@@ -1,0 +1,104 @@
+---
+type Props = { locale: 'es' | 'en' };
+const { locale } = Astro.props;
+
+const content = {
+	es: {
+		title: 'De la idea a produccion',
+		subtitle: 'Proceso de desarrollo acelerado con IA.',
+		steps: [
+			{ num: '01', name: 'Descubrir', desc: 'Entender el problema real detras del requerimiento.' },
+			{ num: '02', name: 'Disenar', desc: 'Arquitectura solida antes de escribir una linea.' },
+			{ num: '03', name: 'Construir', desc: 'Multi-agentes trabajando bajo tu direccion.' },
+			{ num: '04', name: 'Desplegar', desc: 'CI/CD, monitoreo y mejora continua.' },
+		],
+	},
+	en: {
+		title: 'From idea to production',
+		subtitle: 'AI-accelerated development process.',
+		steps: [
+			{ num: '01', name: 'Discover', desc: 'Understand the real problem behind the requirement.' },
+			{ num: '02', name: 'Design', desc: 'Solid architecture before writing a single line.' },
+			{ num: '03', name: 'Build', desc: 'Multi-agent systems working under your direction.' },
+			{ num: '04', name: 'Deploy', desc: 'CI/CD, monitoring, and continuous improvement.' },
+		],
+	},
+}[locale];
+---
+
+<section class="section">
+	<div class="container">
+		<h2 class="section-title">
+			{content.title.split(' ').slice(0, -1).join(' ')}{' '}
+			<span class="gradient-text">{content.title.split(' ').at(-1)}</span>
+		</h2>
+		<p class="section-subtitle">{content.subtitle}</p>
+		<ol class="steps">
+			{
+				content.steps.map((step, index) => (
+					<li class="step-item" style={`--delay: ${index * 60}ms`}>
+						<span class="step-num">{step.num}</span>
+						<div class="step-content">
+							<strong>{step.name}</strong>
+							<p>{step.desc}</p>
+						</div>
+					</li>
+				))
+			}
+		</ol>
+	</div>
+</section>
+
+<style>
+	.steps {
+		list-style: none;
+		padding: 0;
+		margin: 2rem 0 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		gap: 1rem;
+	}
+
+	.step-item {
+		display: flex;
+		gap: 1rem;
+		align-items: flex-start;
+		padding: 1.4rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 1rem;
+		transition: transform 250ms ease, border-color 250ms ease;
+	}
+
+	.step-item:hover {
+		transform: translateY(-3px);
+		border-color: rgb(6 182 212 / 30%);
+	}
+
+	.step-num {
+		font-family: var(--font-mono);
+		font-size: 1.4rem;
+		font-weight: 700;
+		color: var(--color-cyan);
+		min-width: 2rem;
+		line-height: 1;
+		padding-top: 0.2rem;
+	}
+
+	.step-content {
+		display: grid;
+		gap: 0.3rem;
+	}
+
+	.step-content strong {
+		font-family: var(--font-display);
+		font-size: 1.05rem;
+	}
+
+	.step-content p {
+		margin: 0;
+		color: var(--color-muted);
+		font-size: 0.88rem;
+		line-height: 1.5;
+	}
+</style>

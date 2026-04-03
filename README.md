@@ -1,46 +1,30 @@
-# Astro Starter Kit: Basics
+# Facundo Uferer
 
-```sh
-npm create astro@latest -- --template basics
-```
+Senior Full Stack Engineer | AI-Driven Architect and Orchestrator | Tech Lead
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Senior Full Stack Engineer with 13+ years building and scaling web applications, mainly in the JavaScript ecosystem. I design, coordinate, and supervise AI-assisted development workflows using multi-agent systems to accelerate delivery, improve quality, and support cross-language production development.
 
-## 🚀 Project Structure
+## Core Skills
 
-Inside of your Astro project, you'll see the following folders and files:
+- AI-Driven Architecture: multi-agent orchestration, AI-assisted system design, refactoring, and automation.
+- Automation: n8n, workflow design, integrations.
+- Backend: Node.js, Express, NestJS, REST and GraphQL APIs.
+- Frontend: React, Next.js, Svelte, Vue.js, Astro, TypeScript, Tailwind CSS, HTML, CSS.
+- Databases: MySQL, MongoDB, PostgreSQL.
+- DevOps and Cloud: Docker, AWS, Vercel, Ubuntu Server, Linux servers, CI/CD.
+- Practices: Clean Architecture, Agile/Scrum, performance optimization.
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
+## Languages
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+- Spanish: Native
+- English: Advanced (professional use)
 
-## 🧞 Commands
+## Education
 
-All commands are run from the root of the project, from a terminal:
+- Higher Technician in Programming — Universidad Tecnologica Nacional
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## Links
 
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- GitHub: https://github.com/facundouferer
+- LinkedIn: https://www.linkedin.com/in/facundouferer/
+- Personal Site: https://facundouferer.ar

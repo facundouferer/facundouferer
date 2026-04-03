@@ -1,0 +1,152 @@
+---
+type Project = {
+	title: string;
+	title_en: string;
+	description: string;
+	description_en: string;
+	challenge: string;
+	challenge_en: string;
+	aiRole: string;
+	aiRole_en: string;
+	tags: string[];
+	image: string;
+	liveUrl: string;
+	archived?: boolean;
+};
+
+type Props = {
+	project: Project;
+	locale: 'es' | 'en';
+};
+
+const { project, locale } = Astro.props;
+const title = locale === 'es' ? project.title : project.title_en;
+const description = locale === 'es' ? project.description : project.description_en;
+const challenge = locale === 'es' ? project.challenge : project.challenge_en;
+---
+
+<article class="project-card">
+	<div class="card-image">
+		<img src={project.image} alt={title} loading="lazy" />
+		<div class="card-overlay"></div>
+	</div>
+	<div class="project-content">
+		<ul class="tags">
+			{project.tags.slice(0, 4).map((tag) => <li>{tag}</li>)}
+		</ul>
+		<h3>{title}</h3>
+		{project.archived && <p class="archive-tag">[archived]</p>}
+		<p class="description">{description}</p>
+		<p class="challenge"><strong>{locale === 'es' ? 'Desafio:' : 'Challenge:'}</strong> {challenge}</p>
+		<a href={project.liveUrl} target="_blank" rel="noreferrer" class="card-link">
+			{locale === 'es' ? 'Ver sitio' : 'View live site'} →
+		</a>
+	</div>
+</article>
+
+<style>
+	.project-card {
+		overflow: hidden;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 1.2rem;
+		transition: transform 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+	}
+
+	.project-card:hover {
+		transform: translateY(-6px);
+		border-color: rgb(168 85 247 / 30%);
+		box-shadow: 0 12px 40px rgb(168 85 247 / 10%);
+	}
+
+	.card-image {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.project-card img {
+		width: 100%;
+		height: 220px;
+		object-fit: cover;
+		display: block;
+		transition: transform 400ms ease;
+	}
+
+	.project-card:hover img {
+		transform: scale(1.05);
+	}
+
+	.card-overlay {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			to bottom,
+			transparent 50%,
+			rgb(3 0 20 / 80%) 100%
+		);
+		pointer-events: none;
+	}
+
+	.project-content {
+		padding: 1.4rem;
+		display: grid;
+		gap: 0.6rem;
+	}
+
+	.tags {
+		list-style: none;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin: 0;
+		padding: 0;
+	}
+
+	.tags li {
+		font-size: 0.7rem;
+		padding: 0.2rem 0.55rem;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		font-family: var(--font-mono);
+		color: var(--color-muted);
+		letter-spacing: 0.02em;
+	}
+
+	h3 {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: 1.2rem;
+	}
+
+	.description {
+		margin: 0;
+		color: var(--color-muted);
+		font-size: 0.9rem;
+		line-height: 1.6;
+	}
+
+	.challenge {
+		margin: 0;
+		color: var(--color-muted);
+		font-size: 0.85rem;
+	}
+
+	.card-link {
+		font-weight: 700;
+		color: var(--color-cyan);
+		text-decoration: none;
+		font-size: 0.88rem;
+		transition: color 200ms ease;
+	}
+
+	.card-link:hover {
+		color: var(--color-accent);
+	}
+
+	.archive-tag {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		color: var(--color-cyan);
+	}
+</style>
