@@ -28,6 +28,7 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 
 <section class="section">
 	<div class="container hero glass">
+		<img class="author-photo" src="/foto_facundo_01.png" alt="Facundo Uferer" loading="eager" />
 		<p class="pill">{content.badge}</p>
 		<h1 class="section-title">{content.title}</h1>
 		<p class="section-subtitle">{content.subtitle}</p>
@@ -43,6 +44,15 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 		padding: clamp(1.5rem, 5vw, 4rem);
 		display: grid;
 		gap: 1rem;
+		justify-items: start;
+	}
+
+	.author-photo {
+		width: 92px;
+		height: 92px;
+		object-fit: cover;
+		border-radius: 999px;
+		border: 1px solid var(--color-border);
 	}
 
 	.actions {

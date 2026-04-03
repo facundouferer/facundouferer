@@ -56,6 +56,13 @@ const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en
 				<slot />
 			</div>
 			<footer class="article-footer">
+				<div class="author-box glass">
+					<img src="/foto_facundo_02.png" alt="Facundo Uferer" loading="lazy" />
+					<div>
+						<strong>Facundo Uferer</strong>
+						<p>{locale === 'es' ? 'Senior Full Stack Engineer y AI Orchestrator' : 'Senior Full Stack Engineer and AI Orchestrator'}</p>
+					</div>
+				</div>
 				<nav class="pager" aria-label="Article navigation">
 					{prev && <a href={prev.href}>← {prev.title}</a>}
 					{next && <a href={next.href}>{next.title} →</a>}
@@ -116,6 +123,27 @@ const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en
 		margin-top: 2rem;
 		padding-top: 1rem;
 		border-top: 1px solid var(--color-border);
+	}
+
+	.author-box {
+		padding: 0.8rem;
+		display: flex;
+		gap: 0.8rem;
+		align-items: center;
+		margin-bottom: 1rem;
+	}
+
+	.author-box img {
+		width: 52px;
+		height: 52px;
+		border-radius: 999px;
+		object-fit: cover;
+	}
+
+	.author-box p {
+		margin: 0.2rem 0 0;
+		color: var(--color-muted);
+		font-size: 0.88rem;
 	}
 
 	.pager {
