@@ -1,4 +1,4 @@
-export const SITE_URL = 'https://facundouferer.github.io/facundouferer';
+export const SITE_URL = 'https://facundouferer.ar';
 
 export const SOCIAL_LINKS = {
 	github: 'https://github.com/facundouferer',

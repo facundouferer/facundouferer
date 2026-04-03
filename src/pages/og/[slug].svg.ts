@@ -42,7 +42,7 @@ export async function GET({ params }: APIContext) {
 <circle cx="1010" cy="100" r="180" fill="#06B6D4" fill-opacity="0.2"/>
 <text x="80" y="120" fill="#06B6D4" font-size="32" font-family="JetBrains Mono, monospace">${category}</text>
 <text x="80" y="250" fill="#ffffff" font-size="62" font-family="Syne, sans-serif" font-weight="700">${title}</text>
-<text x="80" y="560" fill="#ffffff" font-size="30" font-family="DM Sans, sans-serif">facundouferer.github.io/facundouferer</text>
+<text x="80" y="560" fill="#ffffff" font-size="30" font-family="DM Sans, sans-serif">facundouferer.ar</text>
 </svg>`;
 
 	return new Response(svg, {

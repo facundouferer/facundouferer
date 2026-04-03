@@ -9,7 +9,7 @@ export async function GET(context) {
 	return rss({
 		title: 'Facundo Uferer — Technical Articles',
 		description: 'Research and applied thinking on software engineering and AI.',
-		site: context.site ?? 'https://facundouferer.github.io/facundouferer',
+		site: context.site ?? 'https://facundouferer.ar',
 		items: articles.map((article) => ({
 			title: article.data.title_en,
 			pubDate: article.data.date,
