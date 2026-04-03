@@ -1,4 +1,6 @@
 ---
+import { withBase } from '../utils/withBase';
+
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
 
@@ -41,8 +43,8 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 		</h1>
 		<p class="hero-subtitle">{content.subtitle}</p>
 		<div class="hero-actions">
-			<a class="hero-cta hero-cta-primary" href={content.projectsHref}>{content.primary}</a>
-			<a class="hero-cta hero-cta-secondary" href={contactHref}>{content.secondary}</a>
+			<a class="hero-cta hero-cta-primary" href={withBase(content.projectsHref)}>{content.primary}</a>
+			<a class="hero-cta hero-cta-secondary" href={withBase(contactHref)}>{content.secondary}</a>
 		</div>
 	</div>
 	<span class="hero-underline" aria-hidden="true"></span>

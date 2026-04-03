@@ -1,4 +1,6 @@
 ---
+import { withBase } from '../utils/withBase';
+
 type Props = {
 	locale: 'es' | 'en';
 	esPath?: string;
@@ -10,9 +12,9 @@ const isSpanish = locale === 'es';
 ---
 
 <div class="language-switch" aria-label="Language selector">
-	<a href={esPath} class:list={{ active: isSpanish }} aria-label="Espanol (Argentina)">🇦🇷</a>
+	<a href={withBase(esPath)} class:list={{ active: isSpanish }} aria-label="Espanol (Argentina)">🇦🇷</a>
 	<span aria-hidden="true">|</span>
-	<a href={enPath} class:list={{ active: !isSpanish }} aria-label="English (United States)">🇺🇸</a>
+	<a href={withBase(enPath)} class:list={{ active: !isSpanish }} aria-label="English (United States)">🇺🇸</a>
 </div>
 
 <style>

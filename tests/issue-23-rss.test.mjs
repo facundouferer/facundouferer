@@ -12,5 +12,5 @@ test('rss endpoint is defined with article collection source', async () => {
 test('base layout exposes rss link in head', async () => {
 	const layout = await readFile('src/layouts/BaseLayout.astro', 'utf8');
 	assert.match(layout, /application\/rss\+xml/);
-	assert.match(layout, /href="\/rss.xml"/);
+	assert.match(layout, /href=\{withBase\('\/rss.xml'\)\}/);
 });

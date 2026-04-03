@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import ArticleCard from './ArticleCard.astro';
+import { withBase } from '../utils/withBase';
 
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
@@ -30,7 +31,7 @@ const cta = locale === 'es' ? 'Ver todos los articulos' : 'Read all articles';
 		<div class="articles-grid">
 			{articles.map((item) => <ArticleCard article={item.data} locale={locale} />)}
 		</div>
-		<p class="more"><a href={href}>{cta} →</a></p>
+		<p class="more"><a href={withBase(href)}>{cta} →</a></p>
 	</div>
 </section>
 

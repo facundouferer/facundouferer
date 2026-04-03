@@ -1,6 +1,7 @@
 ---
 import LanguageSwitch from './LanguageSwitch.astro';
 import { NAVIGATION } from '../config/site';
+import { withBase } from '../utils/withBase';
 
 type Props = {
 	locale: 'es' | 'en';
@@ -12,11 +13,12 @@ const { locale, esPath, enPath } = Astro.props;
 const navItems = NAVIGATION[locale];
 const hireHref = locale === 'es' ? '/#contact' : '/en/#contact';
 const hireLabel = locale === 'es' ? 'Contratame' : 'Hire Me';
+const homeHref = locale === 'es' ? '/' : '/en/';
 ---
 
 <header class="site-header">
 	<div class="header-inner container">
-		<a href={locale === 'es' ? '/' : '/en/'} class="brand">
+		<a href={withBase(homeHref)} class="brand">
 			<span class="brand-accent">FACUNDO</span><span class="brand-dim">UFERER</span>
 		</a>
 		<nav aria-label="Primary">
@@ -24,7 +26,7 @@ const hireLabel = locale === 'es' ? 'Contratame' : 'Hire Me';
 				{
 					navItems.map((item) => (
 						<li>
-							<a href={item.href}>{item.label}</a>
+							<a href={withBase(item.href)}>{item.label}</a>
 						</li>
 					))
 				}
@@ -32,7 +34,7 @@ const hireLabel = locale === 'es' ? 'Contratame' : 'Hire Me';
 		</nav>
 		<div class="header-actions">
 			<LanguageSwitch locale={locale} esPath={esPath} enPath={enPath} />
-			<a class="hire-cta" href={hireHref}>{hireLabel}</a>
+			<a class="hire-cta" href={withBase(hireHref)}>{hireLabel}</a>
 		</div>
 	</div>
 </header>

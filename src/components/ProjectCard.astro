@@ -1,4 +1,6 @@
 ---
+import { withBase } from '../utils/withBase';
+
 type Project = {
 	title: string;
 	title_en: string;
@@ -23,11 +25,12 @@ const { project, locale } = Astro.props;
 const title = locale === 'es' ? project.title : project.title_en;
 const description = locale === 'es' ? project.description : project.description_en;
 const challenge = locale === 'es' ? project.challenge : project.challenge_en;
+const imageSrc = project.image.startsWith('/') ? withBase(project.image) : project.image;
 ---
 
 <article class="project-card">
 	<div class="card-image">
-		<img src={project.image} alt={title} loading="lazy" />
+		<img src={imageSrc} alt={title} loading="lazy" />
 		<div class="card-overlay"></div>
 	</div>
 	<div class="project-content">

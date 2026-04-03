@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import ProjectCard from './ProjectCard.astro';
+import { withBase } from '../utils/withBase';
 
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
@@ -29,7 +30,7 @@ const ctaLabel = locale === 'es' ? 'Ver todos los proyectos' : 'View all project
 		<div class="grid">
 			{projects.map((project) => <ProjectCard project={project.data} locale={locale} />)}
 		</div>
-		<p class="more"><a href={ctaHref}>{ctaLabel} →</a></p>
+		<p class="more"><a href={withBase(ctaHref)}>{ctaLabel} →</a></p>
 	</div>
 </section>
 
