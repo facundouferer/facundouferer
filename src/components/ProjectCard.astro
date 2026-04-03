@@ -1,0 +1,90 @@
+---
+type Project = {
+	title: string;
+	title_en: string;
+	description: string;
+	description_en: string;
+	challenge: string;
+	challenge_en: string;
+	aiRole: string;
+	aiRole_en: string;
+	tags: string[];
+	image: string;
+	liveUrl: string;
+};
+
+type Props = {
+	project: Project;
+	locale: 'es' | 'en';
+};
+
+const { project, locale } = Astro.props;
+const title = locale === 'es' ? project.title : project.title_en;
+const challenge = locale === 'es' ? project.challenge : project.challenge_en;
+const aiRole = locale === 'es' ? project.aiRole : project.aiRole_en;
+---
+
+<article class="project-card glass">
+	<img src={project.image} alt={title} loading="lazy" />
+	<div class="project-content">
+		<ul class="tags">
+			{project.tags.map((tag) => <li>{tag}</li>)}
+		</ul>
+		<h3>{title}</h3>
+		<p><strong>{locale === 'es' ? 'Desafio:' : 'Challenge:'}</strong> {challenge}</p>
+		<p><strong>AI Role:</strong> {aiRole}</p>
+		<a href={project.liveUrl} target="_blank" rel="noreferrer">{locale === 'es' ? 'Ver sitio' : 'View live site'}</a>
+	</div>
+</article>
+
+<style>
+	.project-card {
+		overflow: hidden;
+	}
+
+	.project-card img {
+		width: 100%;
+		height: 200px;
+		object-fit: cover;
+		display: block;
+	}
+
+	.project-content {
+		padding: 1rem;
+		display: grid;
+		gap: 0.7rem;
+	}
+
+	.tags {
+		list-style: none;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin: 0;
+		padding: 0;
+	}
+
+	.tags li {
+		font-size: 0.74rem;
+		padding: 0.2rem 0.5rem;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		font-family: var(--font-mono);
+	}
+
+	h3 {
+		margin: 0;
+		font-family: var(--font-display);
+	}
+
+	p {
+		margin: 0;
+		color: var(--color-muted);
+	}
+
+	a {
+		font-weight: 700;
+		color: var(--color-cyan);
+		text-decoration: none;
+	}
+</style>
