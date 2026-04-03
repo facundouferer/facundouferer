@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+const { slug } = Astro.params;
+---
+
+<BaseLayout
+	title={`Article: ${slug ?? ''}`}
+	description="Article page"
+	locale="en"
+	esPath={`/articulos/${slug ?? ''}`}
+	enPath={`/en/articles/${slug ?? ''}`}
+	canonicalPath={`/en/articles/${slug ?? ''}`}
+>
+	<section class="section">
+		<div class="container">
+			<h1 class="section-title">Article</h1>
+		</div>
+	</section>
+</BaseLayout>
