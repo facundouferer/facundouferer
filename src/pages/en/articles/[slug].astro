@@ -1,5 +1,5 @@
 ---
-import { getCollection, getEntry, render } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import ArticleLayout from '../../../layouts/ArticleLayout.astro';
 import { withBase } from '../../../utils/withBase';
 
@@ -13,12 +13,13 @@ if (!slug) {
 	throw new Error('Missing article slug');
 }
 
-const entry = await getEntry('articles', `${slug}.md`);
+const entries = await getCollection('articles');
+const entry = entries.find((item) => item.data.slug === slug);
 if (!entry || !entry.data.published) {
 	return Astro.redirect(withBase('/en/articles'));
 }
 
-const allArticles = (await getCollection('articles'))
+const allArticles = entries
 	.filter((item) => item.data.published)
 	.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 

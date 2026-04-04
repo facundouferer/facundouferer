@@ -98,6 +98,35 @@ const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en
 		margin-top: 1.4rem;
 	}
 
+	.article-body :global(h1),
+	.article-body :global(h2),
+	.article-body :global(h3),
+	.article-body :global(h4) {
+		font-family: var(--font-display);
+		line-height: 1.2;
+		letter-spacing: -0.015em;
+		margin: 1.5em 0 0.45em;
+		color: var(--color-text);
+	}
+
+	.article-body :global(h1) {
+		font-size: clamp(1.8rem, 4vw, 2.4rem);
+	}
+
+	.article-body :global(h2) {
+		font-size: clamp(1.55rem, 3.4vw, 2rem);
+	}
+
+	.article-body :global(h3) {
+		font-size: clamp(1.3rem, 2.8vw, 1.6rem);
+	}
+
+	.article-body :global(p),
+	.article-body :global(ul),
+	.article-body :global(ol) {
+		margin: 0 0 1rem;
+	}
+
 	.availability {
 		padding: 0.75rem;
 		border-radius: 0.6rem;
