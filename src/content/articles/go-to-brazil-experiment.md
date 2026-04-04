@@ -14,7 +14,7 @@ published: true
 featured: true
 ---
 
-## Contexto
+# Contexto
 
 Este proyecto fue una prueba de metodo bajo condiciones reales de entrega.
 
