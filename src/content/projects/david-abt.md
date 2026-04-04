@@ -10,7 +10,7 @@ challenge_en: 'Convey the weight and texture of physical art through a digital e
 aiRole: 'Asistencia en direccion visual, estructura de contenido e iteracion rapida.'
 aiRole_en: 'AI-assisted design direction, content structure, and rapid iteration.'
 tags: ['Custom Web', 'Design', 'Artist Portfolio', 'AI-Assisted']
-image: '/img/projects/proyecto05.png'
+image: '/img/projects/proyecto01.png'
 liveUrl: 'https://davidabt.ar/'
 featured: false
 published: true
