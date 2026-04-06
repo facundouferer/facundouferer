@@ -16,6 +16,6 @@ test('article routes render markdown content through content render helper', asy
 	assert.match(en, /render\(entry\)/);
 	assert.match(es, /getStaticPaths/);
 	assert.match(en, /getStaticPaths/);
-	assert.match(es, /item\.data\.slug === slug/);
-	assert.match(en, /item\.data\.slug === slug/);
+	assert.match(es, /resolveArticleEntry\(/);
+	assert.match(en, /resolveArticleEntry\(/);
 });

@@ -1,10 +1,9 @@
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
+import { getArticlesForLocale } from '../utils/articles';
 
 export async function GET(context) {
-	const articles = (await getCollection('articles'))
-		.filter((entry) => entry.data.published)
-		.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+	const articles = getArticlesForLocale(await getCollection('articles'), 'en', 'es');
 
 	return rss({
 		title: 'Facundo Uferer — Technical Articles',

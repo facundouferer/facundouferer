@@ -1,6 +1,13 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
+function generateArticleId({ data, entry }: { data: Record<string, unknown>; entry: string }): string {
+	const slug = typeof data.slug === 'string' ? data.slug : entry.replace(/\.md$/, '');
+	const lang = typeof data.lang === 'string' ? data.lang : 'es';
+
+	return lang === 'both' ? slug : `${slug}__${lang}`;
+}
+
 const projects = defineCollection({
 	loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
 	schema: z.object({
@@ -24,7 +31,11 @@ const projects = defineCollection({
 });
 
 const articles = defineCollection({
-	loader: glob({ pattern: '**/*.md', base: './src/content/articles' }),
+	loader: glob({
+		pattern: '**/*.md',
+		base: './src/content/articles',
+		generateId: generateArticleId,
+	}),
 	schema: z.object({
 		title: z.string(),
 		title_en: z.string(),

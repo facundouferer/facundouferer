@@ -11,6 +11,6 @@ test('language strategy is documented for article publication flow', async () =>
 test('article routes define fallback notices for single-language entries', async () => {
 	const esRoute = await readFile('src/pages/articulos/[slug].astro', 'utf8');
 	const enRoute = await readFile('src/pages/en/articles/[slug].astro', 'utf8');
-	assert.match(esRoute, /available only in ingles|English only/);
-	assert.match(enRoute, /available in Spanish only/);
+	assert.doesNotMatch(esRoute, /available only in ingles|English only/);
+	assert.doesNotMatch(enRoute, /available in Spanish only|espanol/);
 });

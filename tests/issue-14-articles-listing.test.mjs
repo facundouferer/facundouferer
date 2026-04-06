@@ -6,7 +6,7 @@ test('articles catalog includes category and tag filters', async () => {
 	const content = await readFile('src/components/ArticlesCatalog.astro', 'utf8');
 	assert.match(content, /category-filter/);
 	assert.match(content, /tag-filter/);
-	assert.match(content, /sort\(\(a, b\) => b.data.date.valueOf\(\) - a.data.date.valueOf\(\)\)/);
+	assert.match(content, /getArticlesForLocale\(/);
 });
 
 test('home pages include featured articles preview', async () => {

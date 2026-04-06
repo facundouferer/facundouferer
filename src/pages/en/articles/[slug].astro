@@ -1,11 +1,15 @@
 ---
 import { getCollection, render } from 'astro:content';
 import ArticleLayout from '../../../layouts/ArticleLayout.astro';
-import { withBase } from '../../../utils/withBase';
+import {
+	getArticlesForLocale,
+	getArticleSlugsForLocale,
+	resolveArticleEntry,
+} from '../../../utils/articles';
 
 export async function getStaticPaths() {
 	const entries = await getCollection('articles');
-	return entries.map((entry) => ({ params: { slug: entry.data.slug } }));
+	return getArticleSlugsForLocale(entries, 'en', 'es').map((slug) => ({ params: { slug } }));
 }
 
 const slug = Astro.params.slug;
@@ -14,24 +18,18 @@ if (!slug) {
 }
 
 const entries = await getCollection('articles');
-const entry = entries.find((item) => item.data.slug === slug);
+const entry = resolveArticleEntry(entries, slug, 'en', 'es');
 if (!entry || !entry.data.published) {
-	return Astro.redirect(withBase('/en/articles'));
+	return Astro.redirect('/en/articles');
 }
 
-const allArticles = entries
-	.filter((item) => item.data.published)
-	.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const allArticles = getArticlesForLocale(entries, 'en', 'es');
 
 const currentIndex = allArticles.findIndex((item) => item.id === entry.id);
 const previous = allArticles[currentIndex + 1];
 const next = allArticles[currentIndex - 1];
 
 const { Content } = await render(entry);
-const availabilityNotice =
-	entry.data.lang === 'es'
-		? 'This article is available in Spanish only / Este articulo esta disponible solo en espanol'
-		: undefined;
 ---
 
 <ArticleLayout
@@ -40,7 +38,6 @@ const availabilityNotice =
 	href={`/en/articles/${entry.data.slug}`}
 	contentDescription={entry.data.excerpt_en}
 	ocImage={`/og/${entry.data.slug}.svg`}
-	availabilityNotice={availabilityNotice}
 	prev={previous
 		? { title: previous.data.title_en, href: `/en/articles/${previous.data.slug}` }
 		: null}
