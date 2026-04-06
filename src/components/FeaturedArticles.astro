@@ -2,14 +2,12 @@
 import { getCollection } from 'astro:content';
 import ArticleCard from './ArticleCard.astro';
 import { withBase } from '../utils/withBase';
+import { getArticlesForLocale } from '../utils/articles';
 
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
 
-const articles = (await getCollection('articles'))
-	.filter((item) => item.data.published)
-	.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-	.slice(0, 3);
+const articles = getArticlesForLocale(await getCollection('articles'), locale, locale === 'es' ? 'en' : 'es').slice(0, 3);
 
 const title = locale === 'es' ? 'Articulos Tecnicos' : 'Technical Articles';
 const subtitle =

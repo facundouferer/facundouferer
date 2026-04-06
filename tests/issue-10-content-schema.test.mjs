@@ -8,11 +8,12 @@ test('content config defines projects and articles collections', async () => {
 	assert.match(content, /const articles = defineCollection/);
 	assert.match(content, /readingTime/);
 	assert.match(content, /lang: z.enum/);
+	assert.match(content, /generateId:/);
 });
 
 test('project and article seed files exist', async () => {
 	const projects = await readdir('src/content/projects');
 	const articles = await readdir('src/content/articles');
 	assert.equal(projects.length, 5);
-	assert.equal(articles.length, 3);
+	assert.equal(articles.length, 6);
 });
