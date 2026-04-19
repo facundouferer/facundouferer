@@ -19,8 +19,6 @@ featured: false
 ---
 ![Vibe Design](/img/articles/vivedesign.png)
 
-# Vibe Design
-
 Maybe the real bottleneck was never designing screens, but understanding what the hell the client actually needs. Anthropic’s launch of **Claude Design** pushes exactly in that direction: generating prototypes, presentations, one-pagers, and visual pieces from natural language, with the ability to learn the user’s brand and produce fast results in research preview mode. ([The Times of India](https://timesofindia.indiatimes.com/technology/tech-news/what-is-anthropics-claude-design-and-why-are-figma-and-adobe-stocks-dropping/articleshow/130341793.cms?utm_source=chatgpt.com "What is Anthropic's Claude Design, and why are Figma and Adobe stocks dropping"))
 
 The signal is clear. If an acceptable interface can appear in minutes, the value stops being in “drawing screens” and shifts toward defining problems, constraints, flows, business goals, compliance, brand tone, and real user needs. Put brutally: 90% of the process should be intelligent documentation and serious discovery; 10% should be rendering what was already well thought out. It is terrible news for people who confused Figma with strategy, and excellent news for people who know how to listen.

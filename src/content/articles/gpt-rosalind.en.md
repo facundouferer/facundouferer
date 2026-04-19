@@ -19,8 +19,6 @@ featured: false
 ---
 ![Default article image](/img/articles/imagenotfound.png)
 
-# GPT-Rosalind
-
 OpenAI introduced GPT-Rosalind, a model **specialized for life sciences research** with which it aims to enter one of the most promising businesses in applied AI: accelerating drug discovery without having to wait a decade for every breakthrough. The company defines it as a system oriented toward biology, chemistry, genomics, and translational medicine, capable of assisting with tasks such as literature review, hypothesis generation, experimental planning, and scientific data analysis. In other words: fewer hours navigating PDFs, more hours arguing about whether the model actually understood the paper. ([OpenAI](https://openai.com/index/introducing-gpt-rosalind/?utm_source=chatgpt.com "Introducing GPT-Rosalind for life sciences research"))
 
 The name is not accidental. GPT-Rosalind pays tribute to **Rosalind Franklin**, a key figure in the discovery of DNA structure. OpenAI is trying to combine historical branding with a clear market signal: this product is not meant to write slogans or answer awkward emails, but to insert itself into labs, pharmaceutical companies, and R&D teams where every week saved can be worth millions. ([OpenAI](https://openai.com/index/introducing-gpt-rosalind/?utm_source=chatgpt.com "Introducing GPT-Rosalind for life sciences research"))
