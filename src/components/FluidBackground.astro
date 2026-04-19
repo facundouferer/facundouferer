@@ -1,0 +1,350 @@
+---
+/**
+ * Site-wide interactive fluid background.
+ *
+ * Renders a fixed, full-viewport WebGL canvas behind all page content.
+ * - Reacts to mouse position (soft halo + field distortion)
+ * - Click / drag spawns propagating ripples
+ * - `pointer-events: none` so clicks pass through to real UI
+ * - Respects `prefers-reduced-motion` by falling back to a static gradient
+ */
+---
+
+<canvas id="fluid-bg" aria-hidden="true"></canvas>
+
+<style is:global>
+	/* The fluid canvas — fixed, site-wide, behind all content, click-through */
+	#fluid-bg {
+		position: fixed;
+		inset: 0;
+		width: 100vw;
+		height: 100vh;
+		display: block;
+		z-index: 0;
+		pointer-events: none;
+		background: var(--color-bg, #030014);
+	}
+
+	/* html keeps the dark fallback color (shows before canvas paints and
+	   as a backdrop the canvas renders on top of). body must be transparent
+	   so the fixed canvas is visible beneath content. */
+	html {
+		background: var(--color-bg, #030014) !important;
+	}
+	body {
+		background: transparent !important;
+	}
+
+	/* The pre-existing static radial-gradient / grid decorations are replaced
+	   by the animated fluid field. Hide them to keep the stacking clean. */
+	body::before,
+	body::after {
+		display: none !important;
+	}
+
+	/* Accessibility: flat gradient fallback when motion is reduced */
+	@media (prefers-reduced-motion: reduce) {
+		#fluid-bg {
+			background:
+				radial-gradient(ellipse at 30% 20%, rgba(168, 85, 247, 0.18), transparent 55%),
+				radial-gradient(ellipse at 70% 80%, rgba(6, 182, 212, 0.14), transparent 55%),
+				radial-gradient(ellipse at 50% 50%, rgba(249, 24, 214, 0.06), transparent 50%),
+				var(--color-bg, #030014);
+		}
+	}
+</style>
+
+<script is:inline>
+	(function () {
+		const canvas = document.getElementById("fluid-bg");
+		if (!canvas) return;
+
+		// Respect reduced-motion — static gradient is handled in CSS.
+		if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+			return;
+		}
+
+		const gl = canvas.getContext("webgl", { antialias: false, premultipliedAlpha: false, alpha: false });
+		if (!gl) return;
+
+		const VERT = `
+			attribute vec2 a_pos;
+			void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+		`;
+
+		const FRAG = `
+			precision highp float;
+
+			uniform vec2  u_res;
+			uniform float u_time;
+			uniform vec2  u_mouse;
+			uniform float u_mouseStrength;
+			uniform vec4  u_ripples[12];
+			uniform int   u_rippleCount;
+
+			float hash(vec2 p) {
+				p = fract(p * vec2(123.34, 456.21));
+				p += dot(p, p + 45.32);
+				return fract(p.x * p.y);
+			}
+			float noise(vec2 p) {
+				vec2 i = floor(p);
+				vec2 f = fract(p);
+				float a = hash(i);
+				float b = hash(i + vec2(1.0, 0.0));
+				float c = hash(i + vec2(0.0, 1.0));
+				float d = hash(i + vec2(1.0, 1.0));
+				vec2 u = f*f*(3.0 - 2.0*f);
+				return mix(a, b, u.x) + (c - a)*u.y*(1.0 - u.x) + (d - b)*u.x*u.y;
+			}
+			float fbm(vec2 p) {
+				float v = 0.0;
+				float a = 0.5;
+				mat2 rot = mat2(0.8, -0.6, 0.6, 0.8);
+				for (int i = 0; i < 5; i++) {
+					v += a * noise(p);
+					p = rot * p * 2.0 + 1.7;
+					a *= 0.5;
+				}
+				return v;
+			}
+
+			void main() {
+				vec2 p = (gl_FragCoord.xy - 0.5 * u_res) / min(u_res.x, u_res.y);
+
+				vec2 m = (u_mouse * u_res - 0.5 * u_res) / min(u_res.x, u_res.y);
+				vec2 toMouse = p - m;
+				float md = length(toMouse);
+				float mInf = exp(-md * 2.4) * (0.6 + 0.6 * u_mouseStrength);
+
+				float ripple = 0.0;
+				vec2 rippleDisp = vec2(0.0);
+				for (int i = 0; i < 12; i++) {
+					if (i >= u_rippleCount) break;
+					vec4 r = u_ripples[i];
+					vec2 rp = (r.xy * u_res - 0.5 * u_res) / min(u_res.x, u_res.y);
+					float age = u_time - r.z;
+					if (age < 0.0 || age > 4.0) continue;
+					vec2 d = p - rp;
+					float dist = length(d);
+					float wavefront = age * 0.9;
+					float ring = exp(-pow(dist - wavefront, 2.0) * 14.0);
+					float decay = exp(-age * 0.9);
+					float w = sin((dist - wavefront) * 22.0) * ring * decay * r.w;
+					ripple += w;
+					rippleDisp += normalize(d + 1e-5) * ring * decay * r.w * 0.18;
+				}
+
+				float t = u_time * 0.08;
+
+				vec2 q;
+				q.x = fbm(p * 1.6 + vec2(0.0,  t));
+				q.y = fbm(p * 1.6 + vec2(5.2,  t * 1.1));
+
+				vec2 warp = p + 1.4 * q + rippleDisp;
+				warp -= toMouse * mInf * 0.55;
+
+				vec2 r2;
+				r2.x = fbm(warp + vec2(1.7, 9.2) + t * 1.3);
+				r2.y = fbm(warp + vec2(8.3, 2.8) + t * 1.3);
+
+				float f = fbm(p + 2.4 * r2 + ripple * 0.4);
+				float h = fbm(p * 3.5 + r2 + t * 2.0);
+
+				// Dark palette tuned to the site's theme (#030014 base, violet + cyan accents)
+				vec3 cVoid   = vec3(0.010, 0.004, 0.030);  // matches --color-bg
+				vec3 cAbyss  = vec3(0.025, 0.015, 0.070);
+				vec3 cInk    = vec3(0.060, 0.030, 0.140);
+				vec3 cViolet = vec3(0.220, 0.080, 0.420);  // --color-accent vibe
+				vec3 cCyan   = vec3(0.050, 0.200, 0.320);  // --color-cyan vibe
+				vec3 cMagenta= vec3(0.350, 0.050, 0.280);  // --color-magenta vibe
+
+				vec3 col = cVoid;
+				col = mix(col, cAbyss,   smoothstep(-0.20, 0.40, f));
+				col = mix(col, cInk,     smoothstep( 0.30, 0.75, f));
+				col = mix(col, cViolet,  smoothstep( 0.55, 0.98, f) * 0.55);
+				col = mix(col, cCyan,    smoothstep( 0.50, 0.95, length(r2)) * 0.45);
+				col = mix(col, cMagenta, smoothstep( 0.80, 1.05, h + length(r2) * 0.4) * 0.5);
+
+				// Soft specular
+				float e = 0.002;
+				float fx = fbm(p + 2.4 * r2 + vec2(e, 0.0)) - fbm(p + 2.4 * r2 - vec2(e, 0.0));
+				float fy = fbm(p + 2.4 * r2 + vec2(0.0, e)) - fbm(p + 2.4 * r2 - vec2(0.0, e));
+				vec3 n = normalize(vec3(-fx, -fy, 0.06));
+				vec3 L = normalize(vec3(0.5, 0.6, 0.7));
+				float spec = pow(max(dot(n, L), 0.0), 26.0);
+				col += vec3(0.35, 0.30, 0.85) * spec * 0.30;
+
+				// Mouse halo — violet/cyan blend matching the site accent palette
+				col += vec3(0.30, 0.20, 0.70) * mInf * 0.55;
+
+				// Ripple shimmer
+				col += vec3(0.20, 0.50, 0.80) * abs(ripple) * 1.2;
+
+				// Dark vignette — pushes edges toward near-black
+				float vig = smoothstep(1.55, 0.25, length(p));
+				col *= 0.30 + 0.70 * vig;
+
+				// Keep base dark — 12% darker overall (0.80 * 0.88 = 0.704)
+				col *= 0.704;
+
+				// Lift pure black slightly
+				col = max(col, vec3(0.008, 0.004, 0.018));
+
+				// Tonemap + gamma
+				col = col / (1.0 + col);
+				col = pow(col, vec3(1.0 / 2.2));
+
+				gl_FragColor = vec4(col, 1.0);
+			}
+		`;
+
+		function compile(type, src) {
+			const s = gl.createShader(type);
+			gl.shaderSource(s, src);
+			gl.compileShader(s);
+			if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+				console.error(gl.getShaderInfoLog(s));
+				return null;
+			}
+			return s;
+		}
+		const vs = compile(gl.VERTEX_SHADER, VERT);
+		const fs = compile(gl.FRAGMENT_SHADER, FRAG);
+		if (!vs || !fs) return;
+
+		const prog = gl.createProgram();
+		gl.attachShader(prog, vs);
+		gl.attachShader(prog, fs);
+		gl.linkProgram(prog);
+		if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+			console.error(gl.getProgramInfoLog(prog));
+			return;
+		}
+		gl.useProgram(prog);
+
+		const buf = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+		gl.bufferData(
+			gl.ARRAY_BUFFER,
+			new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
+			gl.STATIC_DRAW
+		);
+		const aPos = gl.getAttribLocation(prog, "a_pos");
+		gl.enableVertexAttribArray(aPos);
+		gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+		const uRes = gl.getUniformLocation(prog, "u_res");
+		const uTime = gl.getUniformLocation(prog, "u_time");
+		const uMouse = gl.getUniformLocation(prog, "u_mouse");
+		const uMStrong = gl.getUniformLocation(prog, "u_mouseStrength");
+		const uRipples = gl.getUniformLocation(prog, "u_ripples");
+		const uRippleN = gl.getUniformLocation(prog, "u_rippleCount");
+
+		const state = {
+			mouse: { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 },
+			mouseStrength: 0,
+			ripples: [],
+			dragging: false,
+			startTime: performance.now(),
+			lastFrame: performance.now(),
+			visible: true,
+		};
+
+		function resize() {
+			const dpr = Math.min(window.devicePixelRatio || 1, 2);
+			const w = Math.floor(window.innerWidth * dpr);
+			const h = Math.floor(window.innerHeight * dpr);
+			if (canvas.width !== w || canvas.height !== h) {
+				canvas.width = w;
+				canvas.height = h;
+				gl.viewport(0, 0, w, h);
+			}
+		}
+		window.addEventListener("resize", resize);
+		resize();
+
+		// Use window listeners so we capture events even though the canvas has
+		// pointer-events: none (so it never blocks clicks on real UI).
+		window.addEventListener("pointermove", (e) => {
+			state.mouse.tx = e.clientX / window.innerWidth;
+			state.mouse.ty = 1.0 - e.clientY / window.innerHeight;
+			if (state.dragging) {
+				const now = performance.now();
+				if (now - lastDrag > 80) {
+					spawnRipple(state.mouse.tx, state.mouse.ty, 0.45);
+					lastDrag = now;
+				}
+			}
+		});
+		let lastDrag = 0;
+		window.addEventListener("pointerdown", (e) => {
+			state.dragging = true;
+			const x = e.clientX / window.innerWidth;
+			const y = 1.0 - e.clientY / window.innerHeight;
+			spawnRipple(x, y, 1.0);
+		});
+		window.addEventListener("pointerup", () => {
+			state.dragging = false;
+		});
+		window.addEventListener("pointercancel", () => {
+			state.dragging = false;
+		});
+		window.addEventListener("blur", () => {
+			state.dragging = false;
+		});
+
+		// Pause when tab hidden
+		document.addEventListener("visibilitychange", () => {
+			state.visible = !document.hidden;
+			if (state.visible) {
+				state.lastFrame = performance.now();
+				requestAnimationFrame(frame);
+			}
+		});
+
+		function spawnRipple(x, y, strength) {
+			const t0 = (performance.now() - state.startTime) / 1000.0;
+			state.ripples.push({ x, y, t0, strength });
+			if (state.ripples.length > 12) state.ripples.shift();
+		}
+
+		function frame(now) {
+			if (!state.visible) return;
+			resize();
+
+			const dt = Math.min(0.05, (now - state.lastFrame) / 1000.0);
+			state.lastFrame = now;
+
+			state.mouse.x += (state.mouse.tx - state.mouse.x) * Math.min(1, dt * 8);
+			state.mouse.y += (state.mouse.ty - state.mouse.y) * Math.min(1, dt * 8);
+
+			const target = state.dragging ? 1.0 : 0.0;
+			state.mouseStrength += (target - state.mouseStrength) * Math.min(1, dt * 4);
+
+			const t = (now - state.startTime) / 1000.0;
+			state.ripples = state.ripples.filter((r) => t - r.t0 < 4.0);
+
+			const flat = new Float32Array(12 * 4);
+			const n = Math.min(state.ripples.length, 12);
+			for (let i = 0; i < n; i++) {
+				const r = state.ripples[i];
+				flat[i * 4 + 0] = r.x;
+				flat[i * 4 + 1] = r.y;
+				flat[i * 4 + 2] = r.t0;
+				flat[i * 4 + 3] = r.strength;
+			}
+
+			gl.uniform2f(uRes, canvas.width, canvas.height);
+			gl.uniform1f(uTime, t);
+			gl.uniform2f(uMouse, state.mouse.x, state.mouse.y);
+			gl.uniform1f(uMStrong, state.mouseStrength);
+			gl.uniform4fv(uRipples, flat);
+			gl.uniform1i(uRippleN, n);
+
+			gl.drawArrays(gl.TRIANGLES, 0, 6);
+			requestAnimationFrame(frame);
+		}
+		requestAnimationFrame(frame);
+	})();
+</script>
