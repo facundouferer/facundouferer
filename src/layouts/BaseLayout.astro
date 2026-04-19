@@ -1,7 +1,16 @@
 ---
 import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
-import { SITE_URL } from '../config/site';
+import {
+	AUTHOR,
+	SITE_DEFAULT_OG_IMAGE,
+	SITE_LANGUAGES,
+	SITE_NAME,
+	SITE_URL,
+	SOCIAL_IDENTITIES,
+	TWITTER_HANDLE,
+} from '../config/site';
+import type { SchemaNode } from '../seo/schema';
 import { withBase } from '../utils/withBase';
 
 type Props = {
@@ -13,6 +22,11 @@ type Props = {
 	ocImage?: string;
 	canonicalPath?: string;
 	ogType?: 'website' | 'article';
+	schema?: SchemaNode | SchemaNode[];
+	publishedTime?: string;
+	modifiedTime?: string;
+	articleTags?: string[];
+	section?: string;
 };
 
 const {
@@ -21,25 +35,44 @@ const {
 	locale,
 	esPath = '/',
 	enPath = '/en/',
-	ocImage = '/favicon.png',
+	ocImage = SITE_DEFAULT_OG_IMAGE,
 	canonicalPath,
 	ogType = 'website',
+	schema,
+	publishedTime,
+	modifiedTime = publishedTime,
+	articleTags = [],
+	section,
 } = Astro.props;
 
+const localeMeta = SITE_LANGUAGES[locale];
+const alternateLocale = SITE_LANGUAGES[locale === 'es' ? 'en' : 'es'];
 const canonicalUrl = new URL(withBase(canonicalPath ?? (locale === 'es' ? esPath : enPath)), SITE_URL).toString();
 const esUrl = new URL(withBase(esPath), SITE_URL).toString();
 const enUrl = new URL(withBase(enPath), SITE_URL).toString();
 const ocImageUrl = new URL(withBase(ocImage), SITE_URL).toString();
+const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
 ---
 
 <!doctype html>
-<html lang={locale}>
+<html lang={localeMeta.htmlLang}>
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
-		<link rel="icon" href={withBase('/favicon.ico')} />
 		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content={description} />
+		<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+		<meta name="author" content={AUTHOR.name} />
+		<meta name="creator" content={AUTHOR.name} />
+		<meta name="publisher" content={SITE_NAME} />
+		<meta name="referrer" content="strict-origin-when-cross-origin" />
+		<link rel="canonical" href={canonicalUrl} />
+		<link rel="alternate" hreflang="es" href={esUrl} />
+		<link rel="alternate" hreflang="en" href={enUrl} />
+		<link rel="alternate" hreflang="x-default" href={esUrl} />
+		<link rel="alternate" type="application/rss+xml" title="Facundo Uferer RSS" href={withBase('/rss.xml')} />
+		{SOCIAL_IDENTITIES.map((profileUrl) => <link rel="me" href={profileUrl} />)}
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -47,21 +80,25 @@ const ocImageUrl = new URL(withBase(ocImage), SITE_URL).toString();
 			rel="stylesheet"
 		/>
 		<title>{title}</title>
-		<meta name="description" content={description} />
-		<link rel="canonical" href={canonicalUrl} />
-		<link rel="alternate" hreflang="es" href={esUrl} />
-		<link rel="alternate" hreflang="en" href={enUrl} />
-		<link rel="alternate" hreflang="x-default" href={esUrl} />
-		<link rel="alternate" type="application/rss+xml" title="Facundo Uferer RSS" href={withBase('/rss.xml')} />
 		<meta property="og:type" content={ogType} />
+		<meta property="og:site_name" content={SITE_NAME} />
+		<meta property="og:locale" content={localeMeta.ogLocale} />
+		<meta property="og:locale:alternate" content={alternateLocale.ogLocale} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:url" content={canonicalUrl} />
 		<meta property="og:image" content={ocImageUrl} />
 		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:site" content={TWITTER_HANDLE} />
+		<meta name="twitter:creator" content={TWITTER_HANDLE} />
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ocImageUrl} />
+		{publishedTime && <meta property="article:published_time" content={publishedTime} />}
+		{modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+		{section && <meta property="article:section" content={section} />}
+		{articleTags.map((tag) => <meta property="article:tag" content={tag} />)}
+		{schemas.map((item) => <script is:inline type="application/ld+json" set:html={JSON.stringify(item)} />)}
 	</head>
 	<body>
 		<SiteHeader locale={locale} esPath={esPath} enPath={enPath} />

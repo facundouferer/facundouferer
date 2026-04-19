@@ -2,6 +2,7 @@ import type { CollectionEntry } from 'astro:content';
 
 type Locale = 'es' | 'en';
 type ArticleEntry = CollectionEntry<'articles'>;
+const MARKDOWN_IMAGE_REGEX = /!\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/;
 
 function sortByDateDesc(entries: ArticleEntry[]): ArticleEntry[] {
 	return [...entries].sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
@@ -40,4 +41,17 @@ export function getArticleSlugsForLocale(
 	fallbackLang?: Locale,
 ): string[] {
 	return getArticlesForLocale(entries, preferredLang, fallbackLang).map((item) => item.data.slug);
+}
+
+export function getArticlePreviewImage(entry: ArticleEntry): string | undefined {
+	const frontmatterImage = 'image' in entry.data && typeof entry.data.image === 'string'
+		? entry.data.image
+		: undefined;
+
+	if (frontmatterImage) {
+		return frontmatterImage;
+	}
+
+	const match = entry.body?.match(MARKDOWN_IMAGE_REGEX);
+	return match?.[1];
 }

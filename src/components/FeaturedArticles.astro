@@ -2,12 +2,16 @@
 import { getCollection } from 'astro:content';
 import ArticleCard from './ArticleCard.astro';
 import { withBase } from '../utils/withBase';
-import { getArticlesForLocale } from '../utils/articles';
+import { getArticlePreviewImage, getArticlesForLocale } from '../utils/articles';
 
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
 
 const articles = getArticlesForLocale(await getCollection('articles'), locale, locale === 'es' ? 'en' : 'es').slice(0, 3);
+const articleCards = articles.map((item) => ({
+	...item.data,
+	image: getArticlePreviewImage(item),
+}));
 
 const title = locale === 'es' ? 'Articulos Tecnicos' : 'Technical Articles';
 const subtitle =
@@ -27,7 +31,7 @@ const cta = locale === 'es' ? 'Ver todos los articulos' : 'Read all articles';
 		</h2>
 		<p class="section-subtitle">{subtitle}</p>
 		<div class="articles-grid">
-			{articles.map((item) => <ArticleCard article={item.data} locale={locale} />)}
+			{articleCards.map((item) => <ArticleCard article={item} locale={locale} />)}
 		</div>
 		<p class="more"><a href={withBase(href)}>{cta} →</a></p>
 	</div>

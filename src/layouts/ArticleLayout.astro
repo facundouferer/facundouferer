@@ -1,5 +1,6 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import { buildArticleSchemas } from '../seo/schema';
 import { withBase } from '../utils/withBase';
 
 type ArticleData = {
@@ -10,6 +11,7 @@ type ArticleData = {
 	tags: string[];
 	date: Date;
 	readingTime: number;
+	image?: string;
 };
 
 type LinkInfo = {
@@ -31,6 +33,16 @@ const { locale, article, href, prev, next, contentDescription, ocImage } = Astro
 const title = locale === 'es' ? article.title : article.title_en;
 const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en-US');
+const schema = buildArticleSchemas({
+	locale,
+	path: href,
+	title,
+	description: contentDescription,
+	datePublished: article.date,
+	image: article.image ?? ocImage,
+	category: article.category,
+	tags: article.tags,
+});
 ---
 
 <BaseLayout
@@ -42,6 +54,11 @@ const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en
 	canonicalPath={href}
 	ogType="article"
 	ocImage={ocImage}
+	schema={schema}
+	publishedTime={article.date.toISOString()}
+	modifiedTime={article.date.toISOString()}
+	articleTags={article.tags}
+	section={article.category}
 >
 	<article class="section article-wrap">
 		<div class="container article-shell">
@@ -125,6 +142,56 @@ const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en
 		margin: 0 0 1rem;
 	}
 
+	.article-body :global(ul) {
+		list-style: disc;
+		padding-left: 1.5rem;
+	}
+
+	.article-body :global(ol) {
+		list-style: decimal;
+		padding-left: 1.5rem;
+	}
+
+	.article-body :global(li) {
+		margin: 0 0 0.45rem;
+	}
+
+	.article-body :global(a) {
+		color: var(--color-cyan);
+	}
+
+	.article-body :global(strong) {
+		color: #F52D98;
+		text-shadow:
+			0 0 8px rgb(245 45 152 / 0.45),
+			0 0 16px rgb(245 45 152 / 0.28);
+		font-weight: 700;
+	}
+
+	.article-body :global(img) {
+		display: block;
+		float: right;
+		width: min(48%, 320px);
+		height: auto;
+		margin: 0 0 1rem 1.5rem;
+		border-radius: 1rem;
+		border: 1px solid var(--color-border);
+		shape-margin: 1rem;
+	}
+
+	.article-body :global(p:has(> img)) {
+		margin: 0;
+	}
+
+	.article-body :global(h1),
+	.article-body :global(h2),
+	.article-body :global(h3),
+	.article-body :global(h4),
+	.article-body :global(pre),
+	.article-body :global(blockquote) {
+		clear: both;
+	}
+
 	.article-body :global(pre) {
 		overflow-x: auto;
 		padding: 1rem;
@@ -178,5 +245,17 @@ const dateText = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en
 	.article-footer p a {
 		color: var(--color-cyan);
 		text-decoration: none;
+	}
+
+	@media (width < 760px) {
+		.article-body :global(img) {
+			float: none;
+			width: 100%;
+			margin: 0 0 1.25rem;
+		}
+
+		.article-body :global(p:has(> img)) {
+			margin: 0 0 1rem;
+		}
 	}
 </style>

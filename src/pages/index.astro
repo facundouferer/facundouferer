@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SEO } from '../seo/meta';
 import Hero from '../components/Hero.astro';
 import ValueProp from '../components/ValueProp.astro';
 import FeaturedProjects from '../components/FeaturedProjects.astro';
@@ -10,6 +9,10 @@ import Process from '../components/Process.astro';
 import About from '../components/About.astro';
 import Testimonials from '../components/Testimonials.astro';
 import Contact from '../components/Contact.astro';
+import { SEO } from '../seo/meta';
+import { buildHomeSchemas } from '../seo/schema';
+
+const schema = buildHomeSchemas('es');
 ---
 
 <BaseLayout
@@ -19,6 +22,7 @@ import Contact from '../components/Contact.astro';
 	esPath="/"
 	enPath="/en/"
 	canonicalPath="/"
+	schema={schema}
 >
 	<Hero locale="es" />
 	<ValueProp locale="es" />
