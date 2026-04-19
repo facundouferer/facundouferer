@@ -19,8 +19,6 @@ featured: false
 ---
 ![Vibe Design](/img/articles/vivedesign.png)
 
-# Vibe Design
-
 Quizá el verdadero cuello de botella nunca fue diseñar pantallas, sino entender qué demonios necesita el cliente. El lanzamiento de Anthropic con **Claude Design** empuja justo en esa dirección: generar prototipos, presentaciones, one-pagers y piezas visuales desde lenguaje natural, con capacidad de aprender la marca del usuario y producir resultados rápidos en modo research preview. ([The Times of India](https://timesofindia.indiatimes.com/technology/tech-news/what-is-anthropics-claude-design-and-why-are-figma-and-adobe-stocks-dropping/articleshow/130341793.cms?utm_source=chatgpt.com "What is Anthropic's Claude Design, and why are Figma and Adobe stocks dropping"))
 
 La señal es clara. Si una interfaz aceptable puede aparecer en minutos, el valor deja de estar en “dibujar pantallas” y se desplaza hacia definir problemas, restricciones, flujos, objetivos comerciales, compliance, tono de marca y necesidades reales del usuario. Dicho brutalmente: el 90% del proceso debería ser documentación inteligente y descubrimiento serio; el 10%, renderizar lo que ya estaba bien pensado. Es una pésima noticia para quienes confundían Figma con estrategia, y una excelente noticia para quienes saben escuchar.
