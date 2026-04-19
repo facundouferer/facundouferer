@@ -7,6 +7,7 @@ test('articles catalog includes category and tag filters', async () => {
 	assert.match(content, /category-filter/);
 	assert.match(content, /tag-filter/);
 	assert.match(content, /getArticlesForLocale\(/);
+	assert.match(content, /getArticlePreviewImage\(/);
 });
 
 test('home pages include featured articles preview', async () => {
@@ -14,4 +15,11 @@ test('home pages include featured articles preview', async () => {
 	const enHome = await readFile('src/pages/en/index.astro', 'utf8');
 	assert.match(esHome, /<FeaturedArticles locale="es"/);
 	assert.match(enHome, /<FeaturedArticles locale="en"/);
+});
+
+test('article cards can render a preview image when the article has one', async () => {
+	const card = await readFile('src/components/ArticleCard.astro', 'utf8');
+	assert.match(card, /article\.image/);
+	assert.match(card, /<img/);
+	assert.match(card, /article-card-image/);
 });

@@ -1,7 +1,27 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
 import ArticlesCatalog from '../../../components/ArticlesCatalog.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { SEO } from '../../../seo/meta';
+import { buildCollectionPageSchemas } from '../../../seo/schema';
+import { getArticlesForLocale } from '../../../utils/articles';
+
+const articles = getArticlesForLocale(await getCollection('articles'), 'en', 'es');
+const schema = buildCollectionPageSchemas({
+	locale: 'en',
+	path: '/en/articles',
+	name: SEO.en.articles.title,
+	description: SEO.en.articles.description,
+	items: articles.map((article) => ({
+		name: article.data.title_en,
+		url: `/en/articles/${article.data.slug}`,
+		description: article.data.excerpt_en,
+	})),
+	breadcrumbs: [
+		{ name: 'Home', path: '/en/' },
+		{ name: 'Articles', path: '/en/articles' },
+	],
+});
 ---
 
 <BaseLayout
@@ -11,6 +31,7 @@ import { SEO } from '../../../seo/meta';
 	esPath="/articulos"
 	enPath="/en/articles"
 	canonicalPath="/en/articles"
+	schema={schema}
 >
 	<ArticlesCatalog locale="en" />
 </BaseLayout>

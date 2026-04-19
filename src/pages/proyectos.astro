@@ -1,15 +1,36 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
 import ProjectsCatalog from '../components/ProjectsCatalog.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SEO } from '../seo/meta';
+import { buildCollectionPageSchemas } from '../seo/schema';
+
+const projects = (await getCollection('projects')).filter((item) => item.data.published);
+const schema = buildCollectionPageSchemas({
+	locale: 'es',
+	path: '/proyectos',
+	name: SEO.es.projects.title,
+	description: SEO.es.projects.description,
+	items: projects.map((project) => ({
+		name: project.data.title,
+		url: project.data.liveUrl,
+		description: project.data.description,
+	})),
+	breadcrumbs: [
+		{ name: 'Inicio', path: '/' },
+		{ name: 'Proyectos', path: '/proyectos' },
+	],
+});
 ---
 
 <BaseLayout
-	title="Todos los Proyectos"
-	description="Cada proyecto es construido con asistencia de IA en cada capa."
+	title={SEO.es.projects.title}
+	description={SEO.es.projects.description}
 	locale="es"
 	esPath="/proyectos"
 	enPath="/en/projects"
 	canonicalPath="/proyectos"
+	schema={schema}
 >
 	<ProjectsCatalog locale="es" />
 </BaseLayout>

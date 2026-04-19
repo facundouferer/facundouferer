@@ -19,3 +19,26 @@ test('article routes render markdown content through content render helper', asy
 	assert.match(es, /resolveArticleEntry\(/);
 	assert.match(en, /resolveArticleEntry\(/);
 });
+
+test('article layout floats article images beside text on larger screens', async () => {
+	const layout = await readFile('src/layouts/ArticleLayout.astro', 'utf8');
+	assert.match(layout, /float: right/);
+	assert.match(layout, /width: min\(48%, 320px\)/);
+	assert.match(layout, /clear: both/);
+	assert.match(layout, /@media \(width < 760px\)/);
+});
+
+test('article layout restores list markers for markdown lists', async () => {
+	const layout = await readFile('src/layouts/ArticleLayout.astro', 'utf8');
+	assert.match(layout, /list-style: disc/);
+	assert.match(layout, /list-style: decimal/);
+	assert.match(layout, /padding-left: 1\.5rem/);
+	assert.match(layout, /:global\(li\)/);
+});
+
+test('article layout renders bold markdown text with neon accent styling', async () => {
+	const layout = await readFile('src/layouts/ArticleLayout.astro', 'utf8');
+	assert.match(layout, /:global\(strong\)/);
+	assert.match(layout, /#F52D98/);
+	assert.match(layout, /text-shadow/);
+});

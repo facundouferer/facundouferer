@@ -47,6 +47,7 @@ const articles = defineCollection({
 		excerpt: z.string(),
 		excerpt_en: z.string(),
 		readingTime: z.number().int().positive(),
+		image: z.string().optional(),
 		lang: z.enum(['es', 'en', 'both']).default('es'),
 		published: z.boolean().default(true),
 		featured: z.boolean().default(false),

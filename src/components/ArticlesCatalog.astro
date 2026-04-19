@@ -1,15 +1,19 @@
 ---
 import { getCollection } from 'astro:content';
 import ArticleCard from './ArticleCard.astro';
-import { getArticlesForLocale } from '../utils/articles';
+import { getArticlePreviewImage, getArticlesForLocale } from '../utils/articles';
 
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
 
 const articles = getArticlesForLocale(await getCollection('articles'), locale, locale === 'es' ? 'en' : 'es');
+const articleCards = articles.map((item) => ({
+	...item.data,
+	image: getArticlePreviewImage(item),
+}));
 
-const categories = ['All', ...new Set(articles.map((item) => item.data.category))];
-const tags = ['All', ...new Set(articles.flatMap((item) => item.data.tags))];
+const categories = ['All', ...new Set(articleCards.map((item) => item.category))];
+const tags = ['All', ...new Set(articleCards.flatMap((item) => item.tags))];
 
 const title = locale === 'es' ? 'Articulos Tecnicos' : 'Technical Articles';
 const subtitle =
@@ -37,7 +41,7 @@ const subtitle =
 			</label>
 		</div>
 		<div class="articles-grid" id="articles-grid">
-			{articles.map((item) => <ArticleCard article={item.data} locale={locale} />)}
+			{articleCards.map((item) => <ArticleCard article={item} locale={locale} />)}
 		</div>
 		<div class="pager" id="articles-pager">
 			<button type="button" id="prev-page">← Prev</button>
