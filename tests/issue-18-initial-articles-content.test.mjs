@@ -93,6 +93,36 @@ test('productividad sin demanda article is split into localized files and refere
 	assert.match(enFile, /!\[Productivity without demand\]\(\/img\/articles\/empresasia\.png\)/);
 });
 
+test('the final irony article is split into localized files and references the provided image', async () => {
+	await access('src/content/articles/the-final-irony.es.md');
+	await access('src/content/articles/the-final-irony.en.md');
+
+	const esFile = await readFile('src/content/articles/the-final-irony.es.md', 'utf8');
+	const enFile = await readFile('src/content/articles/the-final-irony.en.md', 'utf8');
+
+	assert.match(esFile, /lang: es|lang: 'es'|lang: "es"/);
+	assert.match(enFile, /lang: en|lang: 'en'|lang: "en"/);
+	assert.match(esFile, /published: true/);
+	assert.match(enFile, /published: true/);
+	assert.match(esFile, /!\[La ironía final\]\(\/img\/articles\/egocentriccamera\.png\)/);
+	assert.match(enFile, /!\[The Final Irony\]\(\/img\/articles\/egocentriccamera\.png\)/);
+});
+
+test('vibe design article is split into localized files and references the provided image', async () => {
+	await access('src/content/articles/vibe-design.es.md');
+	await access('src/content/articles/vibe-design.en.md');
+
+	const esFile = await readFile('src/content/articles/vibe-design.es.md', 'utf8');
+	const enFile = await readFile('src/content/articles/vibe-design.en.md', 'utf8');
+
+	assert.match(esFile, /lang: es|lang: 'es'|lang: "es"/);
+	assert.match(enFile, /lang: en|lang: 'en'|lang: "en"/);
+	assert.match(esFile, /published: true/);
+	assert.match(enFile, /published: true/);
+	assert.match(esFile, /!\[Vibe Design\]\(\/img\/articles\/vivedesign\.png\)/);
+	assert.match(enFile, /!\[Vibe Design\]\(\/img\/articles\/vivedesign\.png\)/);
+});
+
 test('all localized article files include an article image reference', async () => {
 	const files = [
 		'src/content/articles/ai-assisted-development-beyond-autocomplete.es.md',
@@ -105,6 +135,10 @@ test('all localized article files include an article image reference', async () 
 		'src/content/articles/ai-is-everywhere.en.md',
 		'src/content/articles/productivity-without-demand.es.md',
 		'src/content/articles/productivity-without-demand.en.md',
+		'src/content/articles/the-final-irony.es.md',
+		'src/content/articles/the-final-irony.en.md',
+		'src/content/articles/vibe-design.es.md',
+		'src/content/articles/vibe-design.en.md',
 	];
 
 	for (const filePath of files) {
