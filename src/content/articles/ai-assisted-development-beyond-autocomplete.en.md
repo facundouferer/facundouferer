@@ -16,42 +16,44 @@ lang: en
 published: true
 featured: true
 ---
-In recent years, a question has emerged that unsettles both computer science students and software professionals alike: **what is the point of learning to code if artificial intelligences can already write software?** The arrival of models capable of generating complete functions, web applications, or backend systems in a matter of seconds has transformed an activity that, for decades, depended on humans manually writing instructions for computers.
+![Default article image](/img/articles/imagenotfound.png)
+
+In recent years, a question has emerged that unsettles both computer science students and software professionals alike: **what is the point of learning to code if artificial intelligences can already write software?** The arrival of models capable of generating **complete functions, web applications, or backend systems in a matter of seconds** has transformed an activity that, for decades, depended on humans manually writing instructions for computers.
 
 Yet programming is not disappearing. What we are witnessing is a deep transformation. The shift is not simply that “AI now programs,” but that **the nature of the programmer’s work is changing**. Instead of writing every line by hand, developers are increasingly acting as designers, supervisors, and architects of systems that use AI agents as production tools.
 
-For a long time, learning to code meant mastering the syntax of a language: knowing how to write control structures, implement algorithms, or work with specific libraries. Productivity depended heavily on how quickly and accurately a developer could turn an idea into executable code. Today, that direct relationship between thought and keyboard is weakening. An AI agent can produce hundreds of lines of code in seconds, something that used to require hours or days of work.
+For a long time, learning to code meant **mastering the syntax of a language**: knowing how to write control structures, implement algorithms, or work with specific libraries. Productivity depended heavily on how quickly and accurately a developer could turn an idea into executable code. Today, **that direct relationship between thought and keyboard is weakening**. An AI agent can produce hundreds of lines of code in seconds, something that used to require hours or days of work.
 
 But speed does not mean complete autonomy. Artificial intelligences generate code from **human instructions**, and the quality of the result depends greatly on how clearly the problem is defined. In this new context, the most important skill is no longer necessarily writing code from scratch, but **describing precisely what the system must do**.
 
-That creates a fascinating change in the profession. The programmer begins to look more like a systems engineer or technology architect than a simple code author. Their role is to define goals, establish constraints, design the overall structure of the system, and then use automated tools to build each part.
+That creates a fascinating change in the profession. The programmer begins to look more like **a systems engineer or technology architect** than a simple code author. Their role is to define goals, establish constraints, design the overall structure of the system, and then use automated tools to build each part.
 
-Software development in an AI-dominated environment usually follows a different process from the traditional one. First, the problem must be defined with the highest possible level of precision: what features are needed, what data will be involved, what performance levels are expected, and what constraints exist in terms of security or infrastructure. From that specification, AI agents can generate initial implementations.
+Software development in an AI-dominated environment usually follows **a different process from the traditional one**. First, the problem must be defined with the highest possible level of precision: what features are needed, what data will be involved, what performance levels are expected, and what constraints exist in terms of security or infrastructure. From that specification, AI agents can generate initial implementations.
 
 # Iteration Manager
 
 At that point, the developer’s role becomes far more strategic. They must review the generated code, detect inconsistencies, improve the specifications, and repeat the process until the result reaches the required level of quality. The job is no longer about writing every detail, but about **directing an iterative process of automatic generation**.
 
-This transformation also changes which kinds of knowledge are truly valuable for people learning programming today. Memorizing the syntax of a specific language or practicing repetitive implementation exercises no longer seems to be the center of the profession. Instead, deeper and more durable skills become more important.
+This transformation also changes **which kinds of knowledge are truly valuable** for people learning programming today. Memorizing the syntax of a specific language or practicing repetitive implementation exercises no longer seems to be the center of the profession. Instead, **deeper and more durable skills** become more important.
 
 One of them is **software architecture**. Even if the code is generated automatically, someone still has to decide how the system is organized: what components exist, how they communicate with one another, what databases are used, and how scalability or fault tolerance are handled. Those decisions still depend on a human understanding of the problem and its context.
 
-Computational thinking also becomes more relevant. Understanding how algorithms, data structures, and computational complexity work allows developers to evaluate whether the code produced by an AI is actually efficient or merely functional on the surface. In other words, a deep knowledge of computer science remains essential, but the way it gets applied is changing.
+Computational thinking also becomes more relevant. Understanding how algorithms, data structures, and computational complexity work allows developers to evaluate whether the code produced by an AI is actually efficient or merely functional on the surface. In other words, **a deep knowledge of computer science remains essential**, but the way it gets applied is changing.
 
 Another increasingly important area is software verification. Systems generated by AI can contain subtle bugs or security vulnerabilities. For that reason, designing automated tests, validation mechanisms, and monitoring systems becomes critical. The programmer increasingly becomes **the guarantor of the system’s quality**.
 
-Cybersecurity is another field gaining weight. An AI agent may generate working code, but not necessarily secure code. Problems such as code injection, poor handling of sensitive data, or authentication flaws still require specialized knowledge in order to be detected and fixed.
+Cybersecurity is another field gaining weight. An AI agent may generate working code, but **not necessarily secure code**. Problems such as code injection, poor handling of sensitive data, or authentication flaws still require specialized knowledge in order to be detected and fixed.
 
 At the same time, a new skill has emerged that barely existed in software just a few years ago: **the ability to work with AI agents**. That means knowing how to formulate clear instructions, how to break complex problems into manageable parts, and how to guide a generative system so that it produces useful results.
 
 # Why Study Programming?
 
-The programmer of the future will probably spend less time typing code and more time **thinking about systems**. They will design architectures, evaluate technical decisions, supervise automated software generation processes, and coordinate intelligent tools that collaborate in the construction of applications.
+The programmer of the future will probably spend **less time typing code and more time thinking about systems**. They will design architectures, evaluate technical decisions, supervise automated software generation processes, and coordinate intelligent tools that collaborate in the construction of applications.
 
 For students who are beginning to learn programming today, the message is not that technical knowledge has become less important. Quite the opposite: deeply understanding how computer systems work will become even more valuable. What changes is the emphasis. Instead of learning only how to write code, it will be essential to learn how to **design, analyze, and direct complex systems where code can be produced automatically**.
 
 # A New Level of Abstraction
 
-The history of programming has always been marked by increasing levels of abstraction. First there was machine code, then assembly, later high-level languages, and eventually frameworks and libraries that simplified entire classes of tasks. Artificial intelligence appears to be the next step in that evolution: an even higher level of abstraction where the programmer describes the problem and the machine generates a large part of the implementation.
+The history of programming has always been marked by **increasing levels of abstraction**. First there was machine code, then assembly, later high-level languages, and eventually frameworks and libraries that simplified entire classes of tasks. Artificial intelligence appears to be the next step in that evolution: **an even higher level of abstraction** where the programmer describes the problem and the machine generates a large part of the implementation.
 
 Rather than signaling the end of programming, this change may redefine it. The challenge will no longer be writing instructions for a computer, but **designing intelligent systems capable of building software for us**. And in that process, programmers will remain indispensable, even if their role looks very different from the one we knew over the last few decades.

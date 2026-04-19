@@ -10,6 +10,11 @@ export const SEO = {
 			description:
 				'Investigacion y pensamiento aplicado sobre ingenieria de IA, diseno de software y desarrollo web.',
 		},
+		projects: {
+			title: 'Proyectos de Ingenieria Full Stack — Facundo Uferer',
+			description:
+				'Casos reales de productos, automatizacion, arquitectura y entregas aceleradas con IA en frontend, backend y despliegue.',
+		},
 	},
 	en: {
 		home: {
@@ -21,6 +26,11 @@ export const SEO = {
 			title: 'Technical Articles — Facundo Uferer',
 			description:
 				'Research and applied thinking on AI engineering, software design, and web development.',
+		},
+		projects: {
+			title: 'Full Stack Engineering Projects — Facundo Uferer',
+			description:
+				'Real-world product, automation, architecture, and delivery work accelerated with AI across frontend, backend, and deployment.',
 		},
 	},
 } as const;

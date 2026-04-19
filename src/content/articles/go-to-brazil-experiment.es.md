@@ -13,8 +13,9 @@ lang: 'es'
 published: true
 featured: true
 ---
+![IA escribiendo](/img/articles/iaescribiendo.png)
 
- **“Go to Brazil”** es un pequeño sitio web experimental que desarrollé para explorar hasta qué punto es posible construir un producto digital utilizando únicamente herramientas de inteligencia artificial. El resultado puede verse públicamente en:
+ **“Go to Brazil”** es un pequeño sitio web experimental que desarrollé para explorar **hasta qué punto es posible construir un producto digital utilizando únicamente herramientas de inteligencia artificial**. El resultado puede verse públicamente en:
 
 **[https://facundouferer.github.io/gotobrazil/en/](https://facundouferer.github.io/gotobrazil/en/)**
 
@@ -57,7 +58,7 @@ Sin embargo, como suele ocurrir con las interfaces generadas automáticamente, e
 
 Una vez definido el concepto visual, el siguiente paso fue **estructurar el proyecto completo**.
 
-Para eso utilicé **Claude**, que generó una planificación detallada del sitio:
+Para eso utilicé **Claude**, que generó **una planificación detallada del sitio**:
 
 - estructura de páginas
 - contenido esperado de cada sección
@@ -65,9 +66,9 @@ Para eso utilicé **Claude**, que generó una planificación detallada del sitio
 - tareas necesarias para el desarrollo
 - lista completa de issues de implementación
 
-En otras palabras, Claude actuó como **una especie de product manager y arquitecto de software**, transformando la idea inicial en un plan de trabajo estructurado.
+En otras palabras, Claude actuó como **una especie de product manager y arquitecto de software**, transformando la idea inicial en **un plan de trabajo estructurado**.
 
-Esta etapa resultó particularmente interesante porque permitió convertir un concepto difuso en **un roadmap de desarrollo concreto**, algo que normalmente requiere experiencia en gestión de proyectos de software.
+Esta etapa resultó particularmente interesante porque permitió convertir **un concepto difuso en un roadmap de desarrollo concreto**, algo que normalmente requiere experiencia en gestión de proyectos de software.
 
 ---
 
@@ -93,7 +94,7 @@ De esta manera, la inteligencia artificial no solo ayudó a generar código, sin
 
 El contenido visual del sitio fue generado utilizando **Nano Banana**, un generador de imágenes basado en inteligencia artificial.
 
-Todas las ilustraciones e imágenes utilizadas en el sitio fueron producidas con prompts relacionados con:
+Todas las ilustraciones e imágenes utilizadas en el sitio fueron producidas con **prompts relacionados con**:
 
 - paisajes de Brasil
 - turismo
@@ -117,7 +118,7 @@ El proceso consistió en:
 3. revisar el resultado
 4. ajustar instrucciones si era necesario
 
-Este proceso reproduce una dinámica interesante: en lugar de escribir código directamente, el desarrollador **describe lo que necesita y el agente lo implementa**.
+Este proceso reproduce una dinámica interesante: **en lugar de escribir código directamente, el desarrollador describe lo que necesita y el agente lo implementa**.
 
 En este sentido, el rol humano pasa de programador a **director del proceso de generación de software**.
 
@@ -133,7 +134,7 @@ Este fue prácticamente el único paso completamente manual del proceso: **reali
 
 ## El resultado
 
-El experimento demostró que hoy es posible construir un sitio web completo utilizando exclusivamente herramientas de inteligencia artificial para:
+El experimento demostró que hoy **es posible construir un sitio web completo utilizando exclusivamente herramientas de inteligencia artificial** para:
 
 - diseño
 - planificación
@@ -168,7 +169,7 @@ Cada herramienta puede resolver tareas individuales muy bien:
 
 Pero ninguna herramienta mantiene todavía **una visión integral persistente del proyecto**.
 
-Esto genera varios problemas:
+Esto genera **varios problemas**:
 
 - inconsistencias entre componentes
 - decisiones arquitectónicas contradictorias
@@ -200,7 +201,7 @@ El experimento “Go to Brazil” demuestra que **la programación asistida por 
 
 Un sitio completo puede construirse casi sin escribir código manualmente.
 
-Pero también muestra algo más importante: el mayor desafío ya no es generar código, sino **mantener la inteligencia estructural del proyecto**.
+Pero también muestra algo más importante: **el mayor desafío ya no es generar código, sino mantener la inteligencia estructural del proyecto**.
 
 Hasta que las herramientas puedan comprender y sostener esa visión global de manera autónoma, seguirá existiendo un espacio fundamental para el criterio humano.
 

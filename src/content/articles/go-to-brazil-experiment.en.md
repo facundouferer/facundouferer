@@ -13,6 +13,7 @@ lang: 'en'
 published: true
 featured: true
 ---
+![AI writing](/img/articles/iaescribiendo.png)
 
 **“Go to Brazil”** is a small experimental website I built to explore how far it is possible to create a digital product using only artificial intelligence tools. The result can be seen publicly here:
 
@@ -57,7 +58,7 @@ However, as often happens with automatically generated interfaces, the result wa
 
 Once the visual concept was defined, the next step was to **structure the whole project**.
 
-For that I used **Claude**, which generated a detailed plan for the site:
+For that I used **Claude**, which generated **a detailed plan for the site**:
 
 - page structure
 - expected content for each section
@@ -65,9 +66,9 @@ For that I used **Claude**, which generated a detailed plan for the site:
 - tasks required for development
 - a complete list of implementation issues
 
-In other words, Claude acted as **a kind of product manager and software architect**, transforming the initial idea into a structured work plan.
+In other words, Claude acted as **a kind of product manager and software architect**, transforming the initial idea into **a structured work plan**.
 
-This stage was particularly interesting because it turned a diffuse concept into **a concrete development roadmap**, something that normally requires experience in software project management.
+This stage was particularly interesting because it turned **a diffuse concept into a concrete development roadmap**, something that normally requires experience in software project management.
 
 ---
 
@@ -93,7 +94,7 @@ This way, artificial intelligence did not only help generate code, but also help
 
 The visual material of the site was generated using **Nano Banana**, an artificial-intelligence-based image generator.
 
-All illustrations and images used on the site were produced from prompts related to:
+All illustrations and images used on the site were produced from **prompts related to**:
 
 - Brazilian landscapes
 - tourism
@@ -117,7 +118,7 @@ The process consisted of:
 3. reviewing the result
 4. adjusting the instructions when necessary
 
-This process reproduces an interesting dynamic: instead of writing code directly, the developer **describes what is needed and the agent implements it**.
+This process reproduces an interesting dynamic: **instead of writing code directly, the developer describes what is needed and the agent implements it**.
 
 In that sense, the human role shifts from programmer to **director of the software generation process**.
 
@@ -133,7 +134,7 @@ This was practically the only fully manual step in the process: **executing the 
 
 ## The result
 
-The experiment showed that today it is possible to build a complete website using artificial intelligence tools exclusively for:
+The experiment showed that today **it is possible to build a complete website using artificial intelligence tools exclusively** for:
 
 - design
 - planning
@@ -168,7 +169,7 @@ Each tool can solve individual tasks very well:
 
 But no tool still maintains **a persistent, integral view of the whole project**.
 
-This creates several problems:
+This creates **several problems**:
 
 - inconsistencies between components
 - contradictory architectural decisions
@@ -200,7 +201,7 @@ The “Go to Brazil” experiment shows that **AI-assisted programming is alread
 
 A complete website can be built with almost no manual coding.
 
-But it also reveals something more important: the biggest challenge is no longer generating code, but **maintaining the structural intelligence of the project**.
+But it also reveals something more important: **the biggest challenge is no longer generating code, but maintaining the structural intelligence of the project**.
 
 Until tools can understand and sustain that global vision autonomously, there will continue to be a fundamental space for human judgment.
 
