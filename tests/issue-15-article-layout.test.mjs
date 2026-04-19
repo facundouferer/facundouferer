@@ -42,3 +42,9 @@ test('article layout renders bold markdown text with neon accent styling', async
 	assert.match(layout, /#F52D98/);
 	assert.match(layout, /text-shadow/);
 });
+
+test('article layout justifies article body text', async () => {
+	const layout = await readFile('src/layouts/ArticleLayout.astro', 'utf8');
+	assert.match(layout, /\.article-body\s*\{/);
+	assert.match(layout, /text-align: justify/);
+});
