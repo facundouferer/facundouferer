@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
+import FluidBackground from '../components/FluidBackground.astro';
 import {
 	AUTHOR,
 	SITE_DEFAULT_OG_IMAGE,
@@ -101,6 +102,7 @@ const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
 		{schemas.map((item) => <script is:inline type="application/ld+json" set:html={JSON.stringify(item)} />)}
 	</head>
 	<body>
+		<FluidBackground />
 		<SiteHeader locale={locale} esPath={esPath} enPath={enPath} />
 		<main>
 			<slot />
