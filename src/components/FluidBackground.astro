@@ -42,8 +42,11 @@
 		display: none !important;
 	}
 
-	/* Accessibility: flat gradient fallback when motion is reduced */
-	@media (prefers-reduced-motion: reduce) {
+	/* Flat gradient fallback — used on mobile/touch devices (WebGL fluid is
+	   too heavy for lower-end mobile GPUs) and when motion is reduced. */
+	@media (prefers-reduced-motion: reduce),
+	       (hover: none) and (pointer: coarse),
+	       (max-width: 768px) {
 		#fluid-bg {
 			background:
 				radial-gradient(ellipse at 30% 20%, rgba(168, 85, 247, 0.18), transparent 55%),
@@ -59,9 +62,14 @@
 		const canvas = document.getElementById("fluid-bg");
 		if (!canvas) return;
 
-		// Respect reduced-motion — static gradient is handled in CSS.
-		if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-			return;
+		// Skip WebGL on mobile / touch / small viewports — the CSS fallback
+		// gradient renders in its place. Also respect reduced-motion.
+		const mm = window.matchMedia;
+		if (mm) {
+			const reducedMotion = mm("(prefers-reduced-motion: reduce)").matches;
+			const isTouch       = mm("(hover: none) and (pointer: coarse)").matches;
+			const isSmall       = mm("(max-width: 768px)").matches;
+			if (reducedMotion || isTouch || isSmall) return;
 		}
 
 		const gl = canvas.getContext("webgl", { antialias: false, premultipliedAlpha: false, alpha: false });
