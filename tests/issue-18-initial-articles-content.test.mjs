@@ -123,6 +123,21 @@ test('vibe design article is split into localized files and references the provi
 	assert.match(enFile, /!\[Vibe Design\]\(\/img\/articles\/vivedesign\.png\)/);
 });
 
+test('gpt-rosalind article is split into localized files and uses the default article image', async () => {
+	await access('src/content/articles/gpt-rosalind.es.md');
+	await access('src/content/articles/gpt-rosalind.en.md');
+
+	const esFile = await readFile('src/content/articles/gpt-rosalind.es.md', 'utf8');
+	const enFile = await readFile('src/content/articles/gpt-rosalind.en.md', 'utf8');
+
+	assert.match(esFile, /lang: es|lang: 'es'|lang: "es"/);
+	assert.match(enFile, /lang: en|lang: 'en'|lang: "en"/);
+	assert.match(esFile, /published: true/);
+	assert.match(enFile, /published: true/);
+	assert.match(esFile, /!\[Imagen por defecto del articulo\]\(\/img\/articles\/imagenotfound\.png\)/);
+	assert.match(enFile, /!\[Default article image\]\(\/img\/articles\/imagenotfound\.png\)/);
+});
+
 test('all localized article files include an article image reference', async () => {
 	const files = [
 		'src/content/articles/ai-assisted-development-beyond-autocomplete.es.md',
@@ -139,6 +154,8 @@ test('all localized article files include an article image reference', async () 
 		'src/content/articles/the-final-irony.en.md',
 		'src/content/articles/vibe-design.es.md',
 		'src/content/articles/vibe-design.en.md',
+		'src/content/articles/gpt-rosalind.es.md',
+		'src/content/articles/gpt-rosalind.en.md',
 	];
 
 	for (const filePath of files) {
