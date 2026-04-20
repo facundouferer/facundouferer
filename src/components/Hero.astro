@@ -10,7 +10,7 @@ const content = {
 		titleAccent: 'produccion',
 		titleEnd: 'a la velocidad del pensamiento.',
 		subtitle:
-			'Ingeniero Full Stack Senior. Orquestador de IA. Utilizo sistemas multi-agente para llevar un producto de idea a deploy con precision de ingenieria y velocidad sobrehumana.',
+			'',
 		primary: 'Ver Proyectos',
 		secondary: 'Hablemos',
 		badge: 'Disponible para nuevos proyectos',
@@ -21,7 +21,7 @@ const content = {
 		titleAccent: 'software',
 		titleEnd: 'at the speed of thought.',
 		subtitle:
-			'Senior Full Stack Engineer. AI Orchestrator. I use multi-agent systems to take products from idea to deployment with surgical precision and superhuman speed.',
+			'',
 		primary: 'View Projects',
 		secondary: "Let's Talk",
 		badge: 'Available for new projects',
@@ -41,7 +41,7 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 			<span class="hero-gradient"> {content.titleAccent} </span>
 			{content.titleEnd}
 		</h1>
-		<p class="hero-subtitle">{content.subtitle}</p>
+		{content.subtitle && <p class="hero-subtitle">{content.subtitle}</p>}
 		<div class="hero-actions">
 			<a class="hero-cta hero-cta-primary" href={withBase(content.projectsHref)}>{content.primary}</a>
 			<a class="hero-cta hero-cta-secondary" href={withBase(contactHref)}>{content.secondary}</a>
