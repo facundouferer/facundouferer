@@ -15,5 +15,5 @@ test('project and article seed files exist', async () => {
 	const projects = await readdir('src/content/projects');
 	const articles = await readdir('src/content/articles');
 	assert.equal(projects.length, 6);
-	assert.equal(articles.length, 16);
+	assert.equal(articles.length, 22);
 });
