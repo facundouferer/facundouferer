@@ -131,6 +131,150 @@ Run all commands from repository root.
 - Keep heading hierarchy meaningful.
 - Ensure interactive elements are keyboard accessible.
 
+### 6.9 Content collection conventions (`articles` and `projects`)
+
+These rules are mandatory whenever an agent is asked to create or update portfolio content.
+Do not improvise fields, filenames, or locale strategy. Follow the existing content model exactly.
+
+#### Articles (`src/content/articles`)
+
+- Articles are **locale-split files**, not a single shared file:
+  - Spanish file: `src/content/articles/<slug>.es.md`
+  - English file: `src/content/articles/<slug>.en.md`
+- Both files must share the same public `slug`.
+- The filename suffix controls the locale convention, and frontmatter must also match it:
+  - `.es.md` → `lang: es`
+  - `.en.md` → `lang: en`
+- Unless the user explicitly requests a single-language publication, always create **both locales**.
+- Do **not** add fallback copy like “This article is available in English only” unless the user explicitly asks for it.
+- The Spanish route `/articulos/<slug>` must contain real Spanish body content.
+- The English route `/en/articles/<slug>` must contain real English body content.
+- Do not leave the Spanish article body in English or vice versa.
+
+Required article frontmatter fields:
+
+```md
+---
+title: 'Spanish title'
+title_en: 'English title'
+slug: 'article-slug'
+date: 2026-04-21
+author: 'Facundo Uferer'
+category: 'AI Strategy'
+tags:
+  - AI
+  - Strategy
+excerpt: 'Spanish excerpt'
+excerpt_en: 'English excerpt'
+readingTime: 6
+lang: 'es' # or 'en'
+published: true
+featured: false
+---
+```
+
+Article authoring rules:
+
+- Keep `slug` identical in both locale files.
+- Keep `date`, `category`, `tags`, `readingTime`, `published`, and `featured` aligned across both locales unless the user explicitly requests otherwise.
+- `title` and `excerpt` are Spanish fields; `title_en` and `excerpt_en` are English fields. Both must exist in both files.
+- Start the article body with a Markdown image right after frontmatter.
+- Use an article image under `/img/articles/*.png`.
+- If there is no specific image, use the default placeholder:
+  - Spanish: `![Imagen por defecto del articulo](/img/articles/imagenotfound.png)`
+  - English: `![Default article image](/img/articles/imagenotfound.png)`
+- Prefer the same image asset for both locale files, with localized alt text.
+- Write in Markdown, not raw HTML, unless there is a strong reason.
+- Use headings, lists, blockquotes, and links with valid Markdown syntax.
+- When adding emphasis with `**bold**`, highlight only core ideas, contrasts, or conclusions. Do not overuse bold.
+- Keep references as proper Markdown bullet lists:
+  - good: `- [Source name](https://...)`
+  - bad: broken links, half-written bullets, malformed list syntax
+- Preserve the editorial tone of the repository: concise, idea-driven, technical, and readable.
+
+Article verification checklist:
+
+- Confirm both locale files exist.
+- Confirm both files render real localized body copy.
+- Confirm both files include a top image reference.
+- Confirm the slug is shared and the locale suffix/frontmatter pairing is correct.
+- Update tests that hardcode article counts or file lists when adding/removing articles.
+
+Useful article verification commands:
+
+- `npm test -- tests/issue-10-content-schema.test.mjs`
+- `npm test -- tests/issue-14-articles-listing.test.mjs`
+- `npm test -- tests/issue-15-article-layout.test.mjs`
+- `npm test -- tests/issue-18-initial-articles-content.test.mjs`
+- `npm test -- tests/issue-28-localized-article-routing.test.mjs`
+- `npm run astro -- check`
+
+#### Projects (`src/content/projects`)
+
+- Projects are **single files with bilingual frontmatter**, not locale-split files.
+- Create one file per project:
+  - `src/content/projects/<slug>.md`
+- The filename should match the slug in kebab-case whenever possible.
+- Do not create separate `.es.md` / `.en.md` project files unless the schema changes first.
+
+Required project frontmatter fields:
+
+```md
+---
+slug: 'project-slug'
+title: 'Titulo en español'
+title_en: 'English title'
+category: 'AI Engineering'
+description: 'Descripcion corta en español'
+description_en: 'Short English description'
+challenge: 'Desafio principal en español'
+challenge_en: 'Main challenge in English'
+aiRole: 'Rol de la IA en español'
+aiRole_en: 'AI role in English'
+tags:
+  - Astro
+  - TypeScript
+image: '/img/projects/project-image.png'
+liveUrl: 'https://example.com/'
+featured: false
+published: true
+archived: false
+---
+```
+
+Project authoring rules:
+
+- `title` / `description` / `challenge` / `aiRole` are Spanish fields.
+- `title_en` / `description_en` / `challenge_en` / `aiRole_en` are English fields.
+- All bilingual fields are required. Do not leave English empty.
+- `liveUrl` must be a valid absolute URL.
+- `image` must point to an existing project asset under `/img/projects/`.
+- Add the corresponding image file in `public/img/projects/` if needed.
+- Keep tags concise and real; do not stuff keywords just to make the card look busy.
+- Use `featured: true` only when the user explicitly wants the project highlighted on the homepage or the project clearly belongs in the featured pair.
+- Use `archived: true` only for projects that should remain visible but marked as archived.
+- Body copy below frontmatter should be short and factual:
+  - one concise summary paragraph is enough
+  - add a verification note only if it adds real operational value (for example, redirect or status validation)
+- Do not invent extra frontmatter keys without updating `src/content.config.ts` and any affected tests/components.
+
+Project verification checklist:
+
+- Confirm the file matches the schema in `src/content.config.ts`.
+- Confirm the image asset exists.
+- Confirm `liveUrl` is syntactically valid.
+- Confirm bilingual fields are complete.
+- Update tests that hardcode project counts or asset lists when adding/removing projects.
+
+Useful project verification commands:
+
+- `npm test -- tests/issue-10-content-schema.test.mjs`
+- `npm test -- tests/issue-12-featured-projects.test.mjs`
+- `npm test -- tests/issue-13-projects-catalog.test.mjs`
+- `npm test -- tests/issue-19-project-assets.test.mjs`
+- `npm test -- tests/issue-21-go-to-brazil-link.test.mjs`
+- `npm run astro -- check`
+
 ## 7) Editing Guardrails for Agents
 
 - Make focused changes; avoid unrelated refactors.
