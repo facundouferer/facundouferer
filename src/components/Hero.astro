@@ -32,14 +32,17 @@ const content = {
 const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 ---
 
-<section class="section hero-section">
+<section class="hero-section">
 	<div class="hero-glow" aria-hidden="true"></div>
 	<div class="container hero-shell">
-		<p class="hero-pill">{content.badge}</p>
-		<h1 class="hero-title">
-			{content.titleStart}
-			<span class="hero-gradient"> {content.titleAccent} </span>
-			{content.titleEnd}
+		
+		<h1 class="hero-title" id="typewriter-target"
+			data-parts={JSON.stringify([
+				{ text: content.titleStart + ' ', gradient: false },
+				{ text: content.titleAccent + ' ', gradient: true },
+				{ text: content.titleEnd, gradient: false },
+			])}>
+			<span class="typewriter" id="typewriter-text"></span><span class="typewriter-cursor"></span>
 		</h1>
 		{content.subtitle && <p class="hero-subtitle">{content.subtitle}</p>}
 		<div class="hero-actions">
@@ -50,11 +53,54 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 	<span class="hero-underline" aria-hidden="true"></span>
 </section>
 
+<script>
+	const target = document.getElementById('typewriter-target');
+	const cursor = document.querySelector('.typewriter-cursor');
+	if (target) {
+		const parts = JSON.parse(target.dataset.parts ?? '[]');
+		let charIndex = 0;
+		const fullText = parts.map((p: { text: string }) => p.text).join('');
+
+		const step = () => {
+			if (charIndex <= fullText.length) {
+				let html = '';
+				let pos = 0;
+				for (const part of parts as { text: string; gradient: boolean }[]) {
+					const partText = part.text;
+					if (pos + partText.length <= charIndex) {
+						html += part.gradient
+							? `<span class="hero-gradient">${partText}</span>`
+							: partText;
+						pos += partText.length;
+					} else {
+						const remaining = charIndex - pos;
+						const partial = partText.slice(0, Math.max(0, remaining));
+						html += part.gradient
+							? `<span class="hero-gradient">${partial}</span>`
+							: partial;
+						pos = charIndex;
+					}
+				}
+				const text = document.getElementById('typewriter-text');
+				if (text) text.innerHTML = html;
+				charIndex++;
+				setTimeout(step, 60);
+			}
+		};
+		setTimeout(step, 600);
+	}
+</script>
+
 <style>
 	.hero-section {
-		padding-top: clamp(2.4rem, 6vw, 5rem);
+		padding-top: clamp(1rem, 3vw, 2.5rem);
 		padding-bottom: clamp(2rem, 5vw, 4rem);
 		overflow: hidden;
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.hero-section::after {
@@ -81,9 +127,11 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 	.hero-shell {
 		position: relative;
 		text-align: center;
-		display: grid;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
 		gap: 1.4rem;
-		justify-items: center;
 	}
 
 	.hero-pill {
@@ -103,7 +151,7 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 	.hero-title {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: clamp(2.6rem, 7.5vw, 6.2rem);
+		font-size: clamp(2.1rem, 6vw, 5rem);
 		line-height: 1.02;
 		letter-spacing: -0.035em;
 		max-width: 18ch;
@@ -142,6 +190,36 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 		background: var(--grad-primary);
 		border-radius: 999px;
 		opacity: 0.5;
+	}
+
+	.typewriter-cursor {
+		display: inline-block;
+		width: 8px;
+		height: 1em;
+		background: var(--color-cyan);
+		margin-left: 2px;
+		vertical-align: text-bottom;
+		border-radius: 2px;
+		box-shadow:
+			0 0 5px var(--color-cyan),
+			0 0 10px var(--color-cyan),
+			0 0 20px var(--color-cyan),
+			0 0 40px var(--color-magenta);
+		animation: cursor-blink 800ms ease-in-out infinite;
+	}
+
+	.typewriter-cursor.hidden {
+		display: none;
+	}
+
+	@keyframes cursor-blink {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0;
+		}
 	}
 
 	.hero-subtitle {
