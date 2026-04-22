@@ -29,22 +29,21 @@ const imageSrc = project.image.startsWith('/') ? withBase(project.image) : proje
 ---
 
 <article class="project-card">
-	<div class="card-image">
-		<img src={imageSrc} alt={title} loading="lazy" />
-		<div class="card-overlay"></div>
-	</div>
-	<div class="project-content">
-		<ul class="tags">
-			{project.tags.slice(0, 4).map((tag) => <li>{tag}</li>)}
-		</ul>
-		<h3>{title}</h3>
-		{project.archived && <p class="archive-tag">[archived]</p>}
-		<p class="description">{description}</p>
-		<p class="challenge"><strong>{locale === 'es' ? 'Desafio:' : 'Challenge:'}</strong> {challenge}</p>
-		<a href={project.liveUrl} target="_blank" rel="noreferrer" class="card-link">
-			{locale === 'es' ? 'Ver sitio' : 'View live site'} →
-		</a>
-	</div>
+	<a href={project.liveUrl} target="_blank" rel="noreferrer" class="card-link-wrapper">
+		<div class="card-image">
+			<img src={imageSrc} alt={title} loading="lazy" />
+			<div class="card-overlay"></div>
+		</div>
+		<div class="project-content">
+			<ul class="tags">
+				{project.tags.slice(0, 4).map((tag) => <li>{tag}</li>)}
+			</ul>
+			<h3>{title}</h3>
+			{project.archived && <p class="archive-tag">[archived]</p>}
+			<p class="description">{description}</p>
+			<p class="challenge"><strong>{locale === 'es' ? 'Desafio:' : 'Challenge:'}</strong> {challenge}</p>
+		</div>
+	</a>
 </article>
 
 <style>
@@ -60,6 +59,12 @@ const imageSrc = project.image.startsWith('/') ? withBase(project.image) : proje
 		transform: translateY(-6px);
 		border-color: rgb(168 85 247 / 30%);
 		box-shadow: 0 12px 40px rgb(168 85 247 / 10%);
+	}
+
+	.card-link-wrapper {
+		display: block;
+		text-decoration: none;
+		color: inherit;
 	}
 
 	.card-image {
@@ -140,9 +145,10 @@ const imageSrc = project.image.startsWith('/') ? withBase(project.image) : proje
 		text-decoration: none;
 		font-size: 0.88rem;
 		transition: color 200ms ease;
+		display: inline-block;
 	}
 
-	.card-link:hover {
+	.card-link-wrapper:hover .card-link {
 		color: var(--color-accent);
 	}
 
