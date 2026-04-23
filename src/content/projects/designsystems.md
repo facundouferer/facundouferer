@@ -1,7 +1,7 @@
 ---
 slug: designsystems
-title: Design Systems
-title_en: Design Systems
+title: Design Systems AI
+title_en: Design Systems AI
 category: Web Development
 description: Catálogo de design systems construido con Astro, con IA asistiendo cada etapa del desarrollo y del diseño de los sistemas.
 description_en: Design systems catalog built with Astro, with AI assisting every stage of development and design system creation.
