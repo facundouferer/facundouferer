@@ -156,6 +156,8 @@ test('all localized article files include an article image reference', async () 
 		'src/content/articles/vibe-design.en.md',
 		'src/content/articles/gpt-rosalind.es.md',
 		'src/content/articles/gpt-rosalind.en.md',
+		'src/content/articles/automatizacion-design-system.es.md',
+		'src/content/articles/automatizacion-design-system.en.md',
 	];
 
 	for (const filePath of files) {
