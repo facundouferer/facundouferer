@@ -138,6 +138,23 @@ test('gpt-rosalind article is split into localized files and uses the default ar
 	assert.match(enFile, /!\[Default article image\]\(\/img\/articles\/imagenotfound\.png\)/);
 });
 
+test('goal codex article is split into localized files and references the provided image', async () => {
+	await access('src/content/articles/guia-practica-goal-codex.es.md');
+	await access('src/content/articles/guia-practica-goal-codex.en.md');
+
+	const esFile = await readFile('src/content/articles/guia-practica-goal-codex.es.md', 'utf8');
+	const enFile = await readFile('src/content/articles/guia-practica-goal-codex.en.md', 'utf8');
+
+	assert.match(esFile, /slug: guia-practica-goal-codex|slug: 'guia-practica-goal-codex'|slug: "guia-practica-goal-codex"/);
+	assert.match(enFile, /slug: guia-practica-goal-codex|slug: 'guia-practica-goal-codex'|slug: "guia-practica-goal-codex"/);
+	assert.match(esFile, /lang: es|lang: 'es'|lang: "es"/);
+	assert.match(enFile, /lang: en|lang: 'en'|lang: "en"/);
+	assert.match(esFile, /published: true/);
+	assert.match(enFile, /published: true/);
+	assert.match(esFile, /!\[Guía práctica de goal en Codex\]\(\/img\/articles\/goal\.png\)/);
+	assert.match(enFile, /!\[Practical guide to goal in Codex\]\(\/img\/articles\/goal\.png\)/);
+});
+
 test('all localized article files include an article image reference', async () => {
 	const files = [
 		'src/content/articles/ai-assisted-development-beyond-autocomplete.es.md',
@@ -158,6 +175,8 @@ test('all localized article files include an article image reference', async () 
 		'src/content/articles/gpt-rosalind.en.md',
 		'src/content/articles/automatizacion-design-system.es.md',
 		'src/content/articles/automatizacion-design-system.en.md',
+		'src/content/articles/guia-practica-goal-codex.es.md',
+		'src/content/articles/guia-practica-goal-codex.en.md',
 	];
 
 	for (const filePath of files) {
