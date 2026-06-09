@@ -48,3 +48,10 @@ test('article layout justifies article body text', async () => {
 	assert.match(layout, /\.article-body\s*\{/);
 	assert.match(layout, /text-align: justify/);
 });
+
+test('article layout renders tables with default color #F52D98', async () => {
+	const layout = await readFile('src/layouts/ArticleLayout.astro', 'utf8');
+	assert.match(layout, /:global\(table\)/);
+	assert.match(layout, /#F52D98/i);
+});
+
