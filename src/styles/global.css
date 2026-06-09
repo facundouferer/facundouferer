@@ -82,6 +82,26 @@ img {
 	height: auto;
 }
 
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-block: 1.5rem;
+}
+
+th, td {
+	border: 1px solid var(--color-border);
+	padding: 0.75rem 1rem;
+	text-align: left;
+}
+
+th {
+	color: #F52D98;
+	border-bottom: 2px solid #F52D98;
+	font-family: var(--font-display);
+	background: rgb(245 45 152 / 5%);
+}
+
+
 .container {
 	width: min(var(--container-max), 90vw);
 	margin-inline: auto;

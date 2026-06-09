@@ -208,6 +208,27 @@ const schema = buildArticleSchemas({
 		color: var(--color-muted);
 	}
 
+	.article-body :global(table) {
+		width: 100%;
+		border-collapse: collapse;
+		margin: 1.5rem 0;
+	}
+
+	.article-body :global(th),
+	.article-body :global(td) {
+		border: 1px solid var(--color-border);
+		padding: 0.75rem 1rem;
+		text-align: left;
+	}
+
+	.article-body :global(th) {
+		color: #F52D98;
+		border-bottom: 2px solid #F52D98;
+		font-family: var(--font-display);
+		background: rgb(245 45 152 / 5%);
+	}
+
+
 	.article-footer {
 		margin-top: 2rem;
 		padding-top: 1rem;
