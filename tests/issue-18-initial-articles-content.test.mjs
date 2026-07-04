@@ -155,6 +155,23 @@ test('goal codex article is split into localized files and references the provid
 	assert.match(enFile, /!\[Practical guide to goal in Codex\]\(\/img\/articles\/goal\.png\)/);
 });
 
+test('graphify knowledge graph article is split into localized files and references the provided image', async () => {
+	await access('src/content/articles/un-grafo-de-conocimiento-para-la-ia.es.md');
+	await access('src/content/articles/un-grafo-de-conocimiento-para-la-ia.en.md');
+
+	const esFile = await readFile('src/content/articles/un-grafo-de-conocimiento-para-la-ia.es.md', 'utf8');
+	const enFile = await readFile('src/content/articles/un-grafo-de-conocimiento-para-la-ia.en.md', 'utf8');
+
+	assert.match(esFile, /slug: un-grafo-de-conocimiento-para-la-ia|slug: 'un-grafo-de-conocimiento-para-la-ia'|slug: "un-grafo-de-conocimiento-para-la-ia"/);
+	assert.match(enFile, /slug: un-grafo-de-conocimiento-para-la-ia|slug: 'un-grafo-de-conocimiento-para-la-ia'|slug: "un-grafo-de-conocimiento-para-la-ia"/);
+	assert.match(esFile, /lang: es|lang: 'es'|lang: "es"/);
+	assert.match(enFile, /lang: en|lang: 'en'|lang: "en"/);
+	assert.match(esFile, /published: true/);
+	assert.match(enFile, /published: true/);
+	assert.match(esFile, /!\[Grafo de conocimiento generado con Graphify\]\(\/img\/articles\/graphify\.png\)/);
+	assert.match(enFile, /!\[Knowledge graph generated with Graphify\]\(\/img\/articles\/graphify\.png\)/);
+});
+
 test('all localized article files include an article image reference', async () => {
 	const files = [
 		'src/content/articles/ai-assisted-development-beyond-autocomplete.es.md',
@@ -177,6 +194,8 @@ test('all localized article files include an article image reference', async () 
 		'src/content/articles/automatizacion-design-system.en.md',
 		'src/content/articles/guia-practica-goal-codex.es.md',
 		'src/content/articles/guia-practica-goal-codex.en.md',
+		'src/content/articles/un-grafo-de-conocimiento-para-la-ia.es.md',
+		'src/content/articles/un-grafo-de-conocimiento-para-la-ia.en.md',
 	];
 
 	for (const filePath of files) {
