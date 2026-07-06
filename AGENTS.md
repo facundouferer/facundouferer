@@ -290,6 +290,13 @@ Useful project verification commands:
 - No obvious type/import/runtime issues remain in touched files.
 - AGENTS.md is updated if tooling/conventions changed.
 
+## 10) Spec Lifecycle (`specs/`)
+
+- When implementing content that fulfills a spec from `specs/open/`, **move that spec file to `specs/closed/`** upon completion.
+- This applies whenever an article, project, or any deliverable directly satisfies a spec's requirements.
+- Verificar antes de mover que el deliverable realmente cumple lo especificado.
+- No mover specs que no se hayan completado.
+
 ## 9) Quick Reference
 
 - Dev server: `npm run dev`
