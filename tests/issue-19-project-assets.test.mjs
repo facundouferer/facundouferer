@@ -16,9 +16,10 @@ const assetPaths = [
 	'public/img/articles/imagenotfound.png',
 	'public/img/articles/designsystems.png',
 	'public/img/articles/vivedesign.png',
+	'public/img/articles/CodeGraph.png',
 ];
 
 test('project image assets exist for all project cards', async () => {
 	await Promise.all(assetPaths.map((assetPath) => access(assetPath)));
-	assert.equal(assetPaths.length, 13);
+	assert.equal(assetPaths.length, 14);
 });

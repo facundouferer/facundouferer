@@ -196,6 +196,8 @@ test('all localized article files include an article image reference', async () 
 		'src/content/articles/guia-practica-goal-codex.en.md',
 		'src/content/articles/un-grafo-de-conocimiento-para-la-ia.es.md',
 		'src/content/articles/un-grafo-de-conocimiento-para-la-ia.en.md',
+		'src/content/articles/codegraph.es.md',
+		'src/content/articles/codegraph.en.md',
 	];
 
 	for (const filePath of files) {
