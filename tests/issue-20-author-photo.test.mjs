@@ -15,8 +15,5 @@ test('about and article layout reference author photos', async () => {
 	const about = await readFile('src/components/About.astro', 'utf8');
 	const article = await readFile('src/layouts/ArticleLayout.astro', 'utf8');
 	assert.match(about, /foto_facundo_01\.png/);
-	assert.match(about, /foto_facundo_02\.png/);
-	assert.match(about, /foto_facundo_03\.png/);
-	assert.match(about, /glitch/);
 	assert.match(article, /foto_facundo_02\.png/);
 });

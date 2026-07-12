@@ -22,23 +22,23 @@ const isSpanish = locale === 'es';
 		display: inline-flex;
 		align-items: center;
 		gap: 0.4rem;
-		font-size: 0.75rem;
-		letter-spacing: 0.08em;
-		font-family: var(--font-mono);
-		text-transform: uppercase;
+		font-size: 0.85rem;
 	}
 
 	.language-switch a {
-		color: var(--color-muted);
 		text-decoration: none;
+		opacity: 0.55;
+		filter: grayscale(0.4);
+		transition: opacity 180ms ease, filter 180ms ease;
 	}
 
 	.language-switch a.active,
 	.language-switch a:hover {
-		color: var(--color-text);
+		opacity: 1;
+		filter: none;
 	}
 
 	.language-switch span {
-		color: var(--color-border);
+		color: var(--color-divider);
 	}
 </style>

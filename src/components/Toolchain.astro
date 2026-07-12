@@ -2,7 +2,6 @@
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
 
-const title = locale === 'es' ? 'El Arsenal' : 'The Toolchain';
 const subtitle =
 	locale === 'es'
 		? 'Herramientas modernas para productos robustos y a prueba de futuro.'
@@ -10,47 +9,56 @@ const subtitle =
 
 const stacks = [
 	{
-		icon: '🤖',
+		icon: 'bot',
 		title: locale === 'es' ? 'Ingenieria IA' : 'AI Engineering',
 		items: 'Claude Code, Cursor, Copilot, Gemini, Codex, n8n',
-		accent: 'var(--color-magenta)',
+		accent2: false,
 	},
 	{
-		icon: '🎨',
+		icon: 'palette',
 		title: 'Frontend',
 		items: 'React, Next.js, Svelte, Vue.js, Astro, TypeScript, Tailwind CSS',
-		accent: 'var(--color-accent)',
+		accent2: true,
 	},
 	{
-		icon: '⚙️',
+		icon: 'settings',
 		title: locale === 'es' ? 'Backend & Core' : 'Backend & Core',
 		items: 'Node.js, NestJS, PostgreSQL, MongoDB, MySQL, REST, GraphQL',
-		accent: 'var(--color-cyan)',
+		accent2: false,
 	},
 	{
-		icon: '☁️',
+		icon: 'cloud',
 		title: 'Cloud & DevOps',
 		items: 'AWS, Vercel, Cloud Run, Docker, Linux Servers, CI/CD',
-		accent: '#59d6f5',
+		accent2: true,
 	},
 ];
+
+const icons: Record<string, string> = {
+	bot: '<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
+	palette:
+		'<circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
+	settings:
+		'<path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>',
+	cloud: '<path d="M17.5 19H9a7 7 0 1 1 6.71-9h.79a4.5 4.5 0 1 1 0 9Z"/>',
+};
 ---
 
 <section class="section">
 	<div class="container">
-		<p class="section-tag">{locale === 'es' ? 'TECNOLOGIA' : 'TECHNOLOGY'}</p>
+		<p class="kicker">{locale === 'es' ? 'TECNOLOGIA' : 'TECHNOLOGY'}</p>
 		<h2 class="section-title">
 			{locale === 'es' ? 'El ' : 'The '}
-			<span class="gradient-text">{locale === 'es' ? 'Arsenal' : 'Toolchain'}</span>
+			<span class="accent-word">{locale === 'es' ? 'Arsenal' : 'Toolchain'}</span>
 		</h2>
 		<p class="section-subtitle">{subtitle}</p>
 		<div class="stack-grid">
 			{
 				stacks.map((stack) => (
-					<article class="stack-card" style={`--card-accent: ${stack.accent}`}>
-						<div class="stack-icon">{stack.icon}</div>
-						<h3>{stack.title}</h3>
-						<p>{stack.items}</p>
+					<article class="card card-hover">
+						<span class:list={['card-icon', { 'accent-2': stack.accent2 }]} set:html={icons[stack.icon]} />
+						<h3 class="card-title">{stack.title}</h3>
+						<p class="card-body">{stack.items}</p>
 					</article>
 				))
 			}
@@ -59,69 +67,20 @@ const stacks = [
 </section>
 
 <style>
-	.section-tag {
-		font-family: var(--font-mono);
-		font-size: 0.72rem;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		color: var(--color-cyan);
-		margin: 0 0 0.6rem;
-	}
-
 	.stack-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-		gap: 1.2rem;
-		margin-top: 2rem;
+		gap: var(--space-4);
+		margin-top: var(--space-6);
 	}
 
-	.stack-card {
-		padding: 1.6rem;
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 1rem;
-		position: relative;
-		overflow: hidden;
-		transition: transform 250ms ease, border-color 250ms ease;
-	}
-
-	.stack-card::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: 3px;
-		background: var(--card-accent);
-		opacity: 0.8;
-	}
-
-	.stack-card:hover {
-		transform: translateY(-4px);
-		border-color: var(--card-accent);
-	}
-
-	.stack-icon {
-		font-size: 1.5rem;
-		margin-bottom: 0.8rem;
-		width: 2.6rem;
-		height: 2.6rem;
-		display: grid;
-		place-items: center;
-		border-radius: 0.5rem;
-		background: rgb(255 255 255 / 4%);
-	}
-
-	.stack-card h3 {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: 1.05rem;
-	}
-
-	.stack-card p {
-		margin: 0.5rem 0 0;
-		color: var(--color-muted);
-		font-size: 0.88rem;
-		line-height: 1.6;
+	.card svg {
+		width: 20px;
+		height: 20px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2.75;
+		stroke-linecap: round;
+		stroke-linejoin: round;
 	}
 </style>

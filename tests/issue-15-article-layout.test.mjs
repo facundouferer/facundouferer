@@ -36,11 +36,10 @@ test('article layout restores list markers for markdown lists', async () => {
 	assert.match(layout, /:global\(li\)/);
 });
 
-test('article layout renders bold markdown text with neon accent styling', async () => {
+test('article layout renders bold markdown text with the Organic accent color', async () => {
 	const layout = await readFile('src/layouts/ArticleLayout.astro', 'utf8');
 	assert.match(layout, /:global\(strong\)/);
-	assert.match(layout, /#F52D98/);
-	assert.match(layout, /text-shadow/);
+	assert.match(layout, /color: var\(--color-accent-700\)/);
 });
 
 test('article layout justifies article body text', async () => {
@@ -49,9 +48,9 @@ test('article layout justifies article body text', async () => {
 	assert.match(layout, /text-align: justify/);
 });
 
-test('article layout renders tables with default color #F52D98', async () => {
+test('article layout renders table headers with the Organic accent color', async () => {
 	const layout = await readFile('src/layouts/ArticleLayout.astro', 'utf8');
-	assert.match(layout, /:global\(table\)/);
-	assert.match(layout, /#F52D98/i);
+	assert.match(layout, /:global\(th\)/);
+	assert.match(layout, /color: var\(--color-accent-700\)/);
 });
 

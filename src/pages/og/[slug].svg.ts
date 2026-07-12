@@ -31,18 +31,12 @@ export async function GET({ params }: APIContext) {
 	const category = escapeXml(article.data.category);
 
 	const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-<defs>
-  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0%" stop-color="#050510" />
-    <stop offset="100%" stop-color="#0f1130" />
-  </linearGradient>
-</defs>
-<rect width="1200" height="630" fill="url(#bg)" />
-<circle cx="180" cy="120" r="220" fill="#A855F7" fill-opacity="0.18"/>
-<circle cx="1010" cy="100" r="180" fill="#06B6D4" fill-opacity="0.2"/>
-<text x="80" y="120" fill="#06B6D4" font-size="32" font-family="JetBrains Mono, monospace">${category}</text>
-<text x="80" y="250" fill="#ffffff" font-size="62" font-family="Syne, sans-serif" font-weight="700">${title}</text>
-<text x="80" y="560" fill="#ffffff" font-size="30" font-family="DM Sans, sans-serif">facundouferer.ar</text>
+<rect width="1200" height="630" fill="#f5ead8" />
+<circle cx="1030" cy="90" r="200" fill="#c67139" fill-opacity="0.16"/>
+<circle cx="120" cy="560" r="180" fill="#7a8a5e" fill-opacity="0.18"/>
+<text x="80" y="120" fill="#8c491a" font-size="32" font-family="Figtree, sans-serif" font-weight="700">${category}</text>
+<text x="80" y="250" fill="#201e1d" font-size="62" font-family="Caprasimo, sans-serif" font-weight="400">${title}</text>
+<text x="80" y="560" fill="#474238" font-size="30" font-family="Figtree, sans-serif">facundouferer.ar</text>
 </svg>`;
 
 	return new Response(svg, {

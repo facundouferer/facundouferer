@@ -11,8 +11,9 @@ test('base layout defines hreflang alternates and metadata', async () => {
 
 test('global styles expose design tokens from spec', async () => {
 	const content = await readFile('src/styles/global.css', 'utf8');
-	assert.match(content, /--color-bg: #030014/);
-	assert.match(content, /--color-accent: #a855f7/);
-	assert.match(content, /--color-cyan: #06b6d4/);
-	assert.match(content, /--font-display: 'Syne'/);
+	assert.match(content, /--color-bg: #f5ead8/);
+	assert.match(content, /--color-accent: #c67139/);
+	assert.match(content, /--color-accent-2: #7a8a5e/);
+	assert.match(content, /--font-heading: 'Caprasimo'/);
+	assert.match(content, /--font-body: 'Figtree'/);
 });

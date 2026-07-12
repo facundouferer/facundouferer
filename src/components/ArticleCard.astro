@@ -27,22 +27,25 @@ const href = locale === 'es' ? `/articulos/${article.slug}` : `/en/articles/${ar
 const dateLabel = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en-US');
 ---
 
-<article class="article-card" data-category={article.category} data-tags={article.tags.join(',')}>
+<article class="article-card card card-hover" data-category={article.category} data-tags={article.tags.join(',')}>
 	{article.image && (
-		<a href={withBase(href)} class="article-card-image">
+		<a href={withBase(href)} class="article-card-image washed">
 			<img src={withBase(article.image)} alt={title} loading="lazy" />
 		</a>
 	)}
 	<div class="card-top">
-		<span class="category-pill">{article.category}</span>
-		<span class="reading-time">{article.readingTime} min</span>
+		<span class="tag tag-accent">{article.category}</span>
+		<span class="reading-time">
+			<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+			{article.readingTime} min
+		</span>
 	</div>
-	<h3><a href={withBase(href)}>{title}</a></h3>
-	<p class="excerpt">{excerpt}</p>
+	<h3 class="card-title"><a href={withBase(href)}>{title}</a></h3>
+	<p class="card-body">{excerpt}</p>
 	<div class="card-footer">
 		<span class="date">{dateLabel}</span>
 		<ul class="tags">
-			{article.tags.slice(0, 3).map((tag) => <li>{tag}</li>)}
+			{article.tags.slice(0, 3).map((tag) => <li class="tag tag-neutral">{tag}</li>)}
 		</ul>
 	</div>
 	{article.lang !== 'both' && <p class="lang-tag">{locale === 'es' ? `Idioma: ${article.lang}` : `Language: ${article.lang}`}</p>}
@@ -51,24 +54,15 @@ const dateLabel = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'e
 <style>
 	.article-card {
 		overflow: hidden;
+		padding: 0;
 		display: grid;
-		gap: 0.7rem;
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 1rem;
-		transition: transform 250ms ease, border-color 250ms ease;
-	}
-
-	.article-card:hover {
-		transform: translateY(-4px);
-		border-color: rgb(6 182 212 / 30%);
+		gap: var(--space-2);
 	}
 
 	.article-card-image {
 		display: block;
 		aspect-ratio: 16 / 9;
 		overflow: hidden;
-		border-bottom: 1px solid var(--color-border);
 	}
 
 	.article-card-image img {
@@ -76,7 +70,7 @@ const dateLabel = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'e
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		transition: transform 250ms ease;
+		transition: transform 300ms ease;
 	}
 
 	.article-card:hover .article-card-image img {
@@ -84,80 +78,69 @@ const dateLabel = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'e
 	}
 
 	.card-top,
-	h3,
-	.excerpt,
+	.card-title,
+	.card-body,
 	.card-footer,
 	.lang-tag {
-		padding-inline: 1.4rem;
+		padding-inline: var(--space-4);
 	}
 
 	.card-top {
-		padding-top: 0.7rem;
-	}
-
-	.lang-tag {
-		padding-bottom: 1.2rem;
-	}
-
-	.card-top {
+		padding-top: var(--space-4);
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 	}
 
-	.category-pill {
-		font-family: var(--font-mono);
-		font-size: 0.7rem;
-		padding: 0.2rem 0.6rem;
-		border-radius: 999px;
-		background: rgb(6 182 212 / 10%);
-		border: 1px solid rgb(6 182 212 / 20%);
-		color: var(--color-cyan);
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
+	.card-body {
+		font-size: 0.9rem;
+	}
+
+	.lang-tag {
+		padding-bottom: var(--space-4);
+		margin: 0;
+		font-size: 0.75rem;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
 	}
 
 	.reading-time {
-		font-family: var(--font-mono);
-		font-size: 0.72rem;
-		color: var(--color-muted);
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 0.75rem;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
 	}
 
-	h3 {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: 1.1rem;
+	.reading-time svg {
+		width: 13px;
+		height: 13px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2.75;
+		stroke-linecap: round;
+		stroke-linejoin: round;
 	}
 
-	h3 a {
+	.card-title a {
 		text-decoration: none;
 		color: var(--color-text);
-		transition: color 200ms ease;
 	}
 
-	h3 a:hover {
-		color: var(--color-cyan);
-	}
-
-	.excerpt {
-		margin: 0;
-		color: var(--color-muted);
-		font-size: 0.9rem;
-		line-height: 1.6;
+	.card-title a:hover {
+		color: var(--color-accent-700);
 	}
 
 	.card-footer {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 0.5rem;
+		gap: var(--space-2);
 		margin-top: 0.2rem;
 	}
 
 	.date {
-		font-family: var(--font-mono);
-		font-size: 0.72rem;
-		color: var(--color-muted);
+		font-size: 0.75rem;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
 	}
 
 	.tags {
@@ -167,21 +150,5 @@ const dateLabel = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'e
 		margin: 0;
 		list-style: none;
 		flex-wrap: wrap;
-	}
-
-	.tags li {
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
-		padding: 0.15rem 0.4rem;
-		border: 1px solid var(--color-border);
-		border-radius: 999px;
-		color: var(--color-muted);
-	}
-
-	.lang-tag {
-		margin: 0;
-		font-family: var(--font-mono);
-		font-size: 0.72rem;
-		color: var(--color-muted);
 	}
 </style>

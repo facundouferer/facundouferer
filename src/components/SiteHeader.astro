@@ -17,15 +17,12 @@ const homeHref = locale === "es" ? "/" : "/en/";
 ---
 
 <header class="site-header">
-	<div class="header-inner container">
-		<a href={withBase(homeHref)} class="brand">
-			<img
-				class="brand-logo"
-				src={withBase("/logos.svg")}
-				alt="Facundo Uferer"
-			/>
+	<div class="nav container">
+		<a href={withBase(homeHref)} class="nav-brand">
+			<img class="brand-logo" src={withBase("/logos.svg")} alt="" aria-hidden="true" />
+			Facundo Uferer
 		</a>
-		<nav aria-label="Primary">
+		<nav aria-label="Primary" class="nav-links">
 			<ul>
 				{
 					navItems.map((item) => (
@@ -38,7 +35,7 @@ const homeHref = locale === "es" ? "/" : "/en/";
 		</nav>
 		<div class="header-actions">
 			<LanguageSwitch locale={locale} esPath={esPath} enPath={enPath} />
-			<a class="hire-cta" href={withBase(hireHref)}>{hireLabel}</a>
+			<a class="btn btn-primary" href={withBase(hireHref)}>{hireLabel}</a>
 		</div>
 	</div>
 </header>
@@ -48,101 +45,37 @@ const homeHref = locale === "es" ? "/" : "/en/";
 		position: sticky;
 		top: 0;
 		z-index: 10;
-		backdrop-filter: blur(16px);
-		background: rgb(3 0 20 / 82%);
-		border-bottom: 1px solid var(--color-border);
+		background: var(--color-bg);
+		box-shadow: var(--shadow-sm);
 	}
 
-	.header-inner {
-		display: flex;
-		align-items: center;
+	.nav {
 		justify-content: space-between;
-		gap: 1rem;
 		min-height: 4.2rem;
-	}
-
-	.brand {
-		display: inline-flex;
-		align-items: center;
-		text-decoration: none;
 	}
 
 	.brand-logo {
 		height: auto;
-		max-height: 35px;
+		max-height: 26px;
 		width: auto;
-		text-shadow:
-			0 0 7px rgb(249 24 214 / 90%),
-			0 0 14px rgb(249 24 214 / 75%),
-			0 0 28px rgb(249 24 214 / 60%),
-			0 0 56px rgb(249 24 214 / 40%);
-		filter: drop-shadow(0 0 8px rgb(249 24 214 / 85%))
-			drop-shadow(0 0 18px rgb(249 24 214 / 70%))
-			drop-shadow(0 0 34px rgb(249 24 214 / 45%));
-		animation: neon-pulse 2.5s ease-in-out infinite alternate;
 	}
 
-	@keyframes neon-pulse {
-		from {
-			filter: drop-shadow(0 0 8px rgb(249 24 214 / 85%))
-				drop-shadow(0 0 18px rgb(249 24 214 / 70%))
-				drop-shadow(0 0 34px rgb(249 24 214 / 45%));
-		}
-		to {
-			filter: drop-shadow(0 0 5px rgb(249 24 214 / 65%))
-				drop-shadow(0 0 12px rgb(249 24 214 / 50%))
-				drop-shadow(0 0 22px rgb(249 24 214 / 30%));
-		}
-	}
-
-	nav ul {
+	.nav-links ul {
 		display: none;
 		list-style: none;
 		padding: 0;
 		margin: 0;
-		gap: 1.5rem;
-	}
-
-	nav a {
-		font-size: 0.85rem;
-		text-decoration: none;
-		color: var(--color-muted);
-		transition: color 200ms ease;
-		letter-spacing: 0.02em;
-	}
-
-	nav a:hover {
-		color: var(--color-text);
+		gap: var(--space-4);
 	}
 
 	.header-actions {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.8rem;
-	}
-
-	.hire-cta {
-		padding: 0.45rem 1rem;
-		border-radius: 999px;
-		text-decoration: none;
-		font-size: 0.72rem;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		font-weight: 700;
-		background: var(--grad-accent);
-		color: #fff;
-		transition:
-			transform 180ms ease,
-			box-shadow 180ms ease;
-	}
-
-	.hire-cta:hover {
-		transform: translateY(-1px);
-		box-shadow: 0 4px 20px rgb(168 85 247 / 30%);
+		gap: var(--space-3);
 	}
 
 	@media (width >= 960px) {
-		nav ul {
+		.nav-links ul {
 			display: inline-flex;
 		}
 	}

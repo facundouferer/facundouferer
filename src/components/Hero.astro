@@ -9,8 +9,7 @@ const content = {
 		titleStart: 'Software listo para',
 		titleAccent: 'produccion',
 		titleEnd: 'a la velocidad del pensamiento.',
-		subtitle:
-			'',
+		subtitle: '',
 		primary: 'Ver Proyectos',
 		secondary: 'Hablemos',
 		badge: 'Disponible para nuevos proyectos',
@@ -20,8 +19,7 @@ const content = {
 		titleStart: 'Building production-ready',
 		titleAccent: 'software',
 		titleEnd: 'at the speed of thought.',
-		subtitle:
-			'',
+		subtitle: '',
 		primary: 'View Projects',
 		secondary: "Let's Talk",
 		badge: 'Available for new projects',
@@ -32,258 +30,84 @@ const content = {
 const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 ---
 
-<section class="hero-section">
-	<div class="hero-glow" aria-hidden="true"></div>
+<section class="hero">
+	<div class="hero-decoration" aria-hidden="true"></div>
 	<div class="container hero-shell">
-		
-		<h1 class="hero-title" id="typewriter-target"
-			data-parts={JSON.stringify([
-				{ text: content.titleStart + ' ', gradient: false },
-				{ text: content.titleAccent + ' ', gradient: true },
-				{ text: content.titleEnd, gradient: false },
-			])}>
-			<span class="typewriter" id="typewriter-text"></span><span class="typewriter-cursor"></span>
+		<p class="badge"><span class="badge-dot"></span>{content.badge}</p>
+		<h1 class="hero-title">
+			{content.titleStart} <span class="accent-word">{content.titleAccent}</span> {content.titleEnd}
 		</h1>
 		{content.subtitle && <p class="hero-subtitle">{content.subtitle}</p>}
 		<div class="hero-actions">
-			<a class="hero-cta hero-cta-primary" href={withBase(content.projectsHref)}>{content.primary}</a>
-			<a class="hero-cta hero-cta-secondary" href={withBase(contactHref)}>{content.secondary}</a>
+			<a class="btn btn-primary" href={withBase(content.projectsHref)}>{content.primary}</a>
+			<a class="btn btn-ghost" href={withBase(contactHref)}>{content.secondary}</a>
 		</div>
 	</div>
-	<span class="hero-underline" aria-hidden="true"></span>
 </section>
 
-<script>
-	const target = document.getElementById('typewriter-target');
-	const cursor = document.querySelector('.typewriter-cursor');
-	if (target) {
-		const parts = JSON.parse(target.dataset.parts ?? '[]');
-		let charIndex = 0;
-		const fullText = parts.map((p: { text: string }) => p.text).join('');
-
-		const step = () => {
-			if (charIndex <= fullText.length) {
-				let html = '';
-				let pos = 0;
-				for (const part of parts as { text: string; gradient: boolean }[]) {
-					const partText = part.text;
-					if (pos + partText.length <= charIndex) {
-						html += part.gradient
-							? `<span class="hero-gradient">${partText}</span>`
-							: partText;
-						pos += partText.length;
-					} else {
-						const remaining = charIndex - pos;
-						const partial = partText.slice(0, Math.max(0, remaining));
-						html += part.gradient
-							? `<span class="hero-gradient">${partial}</span>`
-							: partial;
-						pos = charIndex;
-					}
-				}
-				const text = document.getElementById('typewriter-text');
-				if (text) text.innerHTML = html;
-				charIndex++;
-				setTimeout(step, 60);
-			}
-		};
-		setTimeout(step, 600);
-	}
-</script>
-
 <style>
-	.hero-section {
-		padding-top: clamp(1rem, 3vw, 2.5rem);
-		padding-bottom: clamp(2rem, 5vw, 4rem);
-		overflow: hidden;
-		min-height: 100vh;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
+	.hero {
+		position: relative;
+		padding-block: clamp(4rem, 10vw, 7rem);
+		overflow: clip;
 	}
 
-	.hero-section::after {
-		display: none;
-	}
-
-	.hero-glow {
+	.hero-decoration {
 		position: absolute;
-		top: -20%;
-		left: 50%;
-		transform: translateX(-50%);
-		width: 800px;
-		height: 500px;
-		background: radial-gradient(
-			ellipse,
-			rgb(168 85 247 / 15%) 0%,
-			rgb(6 182 212 / 8%) 40%,
-			transparent 70%
-		);
-		pointer-events: none;
-		animation: pulse-glow 6s ease-in-out infinite;
+		right: -140px;
+		top: -180px;
+		width: 360px;
+		height: 360px;
+		border-radius: 50%;
+		background: var(--color-accent-2-200);
+		z-index: -1;
+	}
+
+	@media (max-width: 720px) {
+		.hero-decoration {
+			width: 240px;
+			height: 240px;
+			top: -120px;
+			right: -100px;
+		}
 	}
 
 	.hero-shell {
 		position: relative;
-		text-align: center;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 1.4rem;
-	}
-
-	.hero-pill {
-		margin: 0;
-		padding: 0.4rem 1rem;
-		font-family: var(--font-mono);
-		font-size: 0.72rem;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: #59d6f5;
-		border: 1px solid rgb(89 214 245 / 30%);
-		background: rgb(89 214 245 / 8%);
-		border-radius: 999px;
-		animation: fadeInUp 600ms ease both;
+		align-items: flex-start;
+		gap: var(--space-4);
+		text-align: left;
 	}
 
 	.hero-title {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: clamp(2.1rem, 6vw, 5rem);
-		line-height: 1.02;
-		letter-spacing: -0.035em;
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: clamp(2.2rem, 5.5vw, 4.4rem);
+		line-height: 1.1;
+		letter-spacing: -0.01em;
 		max-width: 18ch;
-		animation: fadeInUp 600ms ease 100ms both;
-	}
-
-	.hero-gradient {
-		background: var(--grad-primary);
-		-webkit-background-clip: text;
-		background-clip: text;
-		color: transparent;
-		position: relative;
-		filter: drop-shadow(0 0 12px color-mix(in srgb, var(--color-magenta) 50%, transparent))
-		        drop-shadow(0 0 25px color-mix(in srgb, var(--color-cyan) 30%, transparent));
-		animation: gradient-pulse 3s ease-in-out infinite alternate;
-	}
-
-	@keyframes gradient-pulse {
-		from {
-			filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-magenta) 40%, transparent))
-			        drop-shadow(0 0 20px color-mix(in srgb, var(--color-cyan) 20%, transparent));
-		}
-		to {
-			filter: drop-shadow(0 0 16px color-mix(in srgb, var(--color-magenta) 70%, transparent))
-			        drop-shadow(0 0 32px color-mix(in srgb, var(--color-cyan) 50%, transparent));
-		}
-	}
-
-	.hero-gradient::after {
-		content: '';
-		position: absolute;
-		bottom: 0.05em;
-		left: 0;
-		right: 0;
-		height: 3px;
-		background: var(--grad-primary);
-		border-radius: 999px;
-		opacity: 0.5;
-	}
-
-	.typewriter-cursor {
-		display: inline-block;
-		width: 8px;
-		height: 1em;
-		background: var(--color-cyan);
-		margin-left: 2px;
-		vertical-align: text-bottom;
-		border-radius: 2px;
-		box-shadow:
-			0 0 5px var(--color-cyan),
-			0 0 10px var(--color-cyan),
-			0 0 20px var(--color-cyan),
-			0 0 40px var(--color-magenta);
-		animation: cursor-blink 800ms ease-in-out infinite;
-	}
-
-	.typewriter-cursor.hidden {
-		display: none;
-	}
-
-	@keyframes cursor-blink {
-		0%,
-		100% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 0;
-		}
+		margin: 0;
 	}
 
 	.hero-subtitle {
-		margin: 0;
+		font-size: clamp(1rem, 1.6vw, 1.15rem);
 		max-width: 52ch;
-		font-size: clamp(1rem, 2vw, 1.25rem);
-		color: var(--color-muted);
-		line-height: 1.7;
-		animation: fadeInUp 600ms ease 200ms both;
+		color: color-mix(in srgb, var(--color-text) 78%, transparent);
+		margin: 0;
+		line-height: 1.6;
 	}
 
 	.hero-actions {
 		display: flex;
-		gap: 1rem;
+		gap: var(--space-3);
 		flex-wrap: wrap;
-		justify-content: center;
-		animation: fadeInUp 600ms ease 300ms both;
+		margin-top: var(--space-2);
 	}
 
-	.hero-cta {
-		padding: 0.9rem 1.8rem;
-		border-radius: 999px;
-		text-decoration: none;
-		font-size: 0.8rem;
-		font-family: var(--font-mono);
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		border: 1px solid var(--color-border);
-		transition: transform 200ms ease, box-shadow 200ms ease;
+	.hero-actions .btn {
+		font-size: 14px;
+		padding: 12px 28px;
 	}
-
-	.hero-cta:hover {
-		transform: translateY(-2px);
-	}
-
-	.hero-cta-primary {
-		background: var(--grad-accent);
-		color: #fff;
-		border: none;
-		box-shadow: 0 4px 24px rgb(168 85 247 / 20%);
-	}
-
-	.hero-cta-primary:hover {
-		box-shadow: 0 6px 32px rgb(168 85 247 / 35%);
-	}
-
-	.hero-cta-secondary {
-		background: rgb(255 255 255 / 4%);
-		color: var(--color-text);
-		backdrop-filter: blur(8px);
-	}
-
-	.hero-cta-secondary:hover {
-		background: rgb(255 255 255 / 8%);
-	}
-
-	.hero-underline {
-		display: block;
-		width: min(50vw, 480px);
-		height: 3px;
-		margin: 1.5rem auto 0;
-		border-radius: 999px;
-		background: linear-gradient(90deg, transparent, var(--color-cyan), var(--color-accent), transparent);
-		opacity: 0.6;
-	}
-
 </style>

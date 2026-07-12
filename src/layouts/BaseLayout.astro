@@ -1,7 +1,6 @@
 ---
 import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
-import FluidBackground from '../components/FluidBackground.astro';
 import {
 	AUTHOR,
 	SITE_DEFAULT_OG_IMAGE,
@@ -77,7 +76,7 @@ const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&family=Lora:wght@400;500;700&family=Syne:wght@700;800&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;600;700&display=swap"
 			rel="stylesheet"
 		/>
 		<title>{title}</title>
@@ -102,7 +101,6 @@ const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
 		{schemas.map((item) => <script is:inline type="application/ld+json" set:html={JSON.stringify(item)} />)}
 	</head>
 	<body>
-		<FluidBackground />
 		<SiteHeader locale={locale} esPath={esPath} enPath={enPath} />
 		<main>
 			<slot />

@@ -63,7 +63,7 @@ const schema = buildArticleSchemas({
 	<article class="section article-wrap">
 		<div class="container article-shell">
 			<header>
-				<p class="category">{article.category}</p>
+				<p class="tag tag-accent">{article.category}</p>
 				<h1 class="section-title">{title}</h1>
 				<p class="meta">
 					{article.author} · {dateText} · {article.readingTime} min
@@ -74,7 +74,7 @@ const schema = buildArticleSchemas({
 				<slot />
 			</div>
 			<footer class="article-footer">
-				<div class="author-box glass">
+				<div class="author-box card">
 					<img src={withBase('/foto_facundo_02.png')} alt="Facundo Uferer" loading="lazy" />
 					<div>
 						<strong>Facundo Uferer</strong>
@@ -82,11 +82,11 @@ const schema = buildArticleSchemas({
 					</div>
 				</div>
 				<nav class="pager" aria-label="Article navigation">
-					{prev && <a href={withBase(prev.href)}>← {prev.title}</a>}
-					{next && <a href={withBase(next.href)}>{next.title} →</a>}
+					{prev && <a class="btn btn-secondary" href={withBase(prev.href)}>← {prev.title}</a>}
+					{next && <a class="btn btn-secondary" href={withBase(next.href)}>{next.title} →</a>}
 				</nav>
 				<p>
-					<a href={withBase(contactHref)}>{locale === 'es' ? 'Queres trabajar juntos?' : 'Want to work together?'}</a>
+					<a class="btn btn-ghost" href={withBase(contactHref)}>{locale === 'es' ? 'Queres trabajar juntos?' : 'Want to work together?'}</a>
 				</p>
 			</footer>
 		</div>
@@ -95,22 +95,19 @@ const schema = buildArticleSchemas({
 
 <style>
 	.article-shell {
-		max-width: 860px;
+		max-width: 1024px;
 	}
 
-	.category,
 	.meta {
 		margin: 0;
-		color: var(--color-muted);
-		font-family: var(--font-mono);
-		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+		font-size: 0.85rem;
 	}
 
 	.article-body {
-		font-family: var(--font-article);
-		font-size: 1.1rem;
-		line-height: 1.85;
-		margin-top: 1.4rem;
+		font-size: 1.05rem;
+		line-height: 1.8;
+		margin-top: var(--space-4);
 		text-align: justify;
 	}
 
@@ -118,7 +115,8 @@ const schema = buildArticleSchemas({
 	.article-body :global(h2),
 	.article-body :global(h3),
 	.article-body :global(h4) {
-		font-family: var(--font-display);
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
 		line-height: 1.2;
 		letter-spacing: -0.015em;
 		margin: 1.5em 0 0.45em;
@@ -158,14 +156,11 @@ const schema = buildArticleSchemas({
 	}
 
 	.article-body :global(a) {
-		color: var(--color-cyan);
+		color: var(--color-accent-700);
 	}
 
 	.article-body :global(strong) {
-		color: #F52D98;
-		text-shadow:
-			0 0 8px rgb(245 45 152 / 0.45),
-			0 0 16px rgb(245 45 152 / 0.28);
+		color: var(--color-accent-700);
 		font-weight: 700;
 	}
 
@@ -175,8 +170,7 @@ const schema = buildArticleSchemas({
 		width: min(48%, 320px);
 		height: auto;
 		margin: 0 0 1rem 1.5rem;
-		border-radius: 1rem;
-		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
 		shape-margin: 1rem;
 	}
 
@@ -195,17 +189,16 @@ const schema = buildArticleSchemas({
 
 	.article-body :global(pre) {
 		overflow-x: auto;
-		padding: 1rem;
-		border-radius: 0.8rem;
-		background: rgb(255 255 255 / 4%);
-		border: 1px solid var(--color-border);
+		padding: var(--space-4);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
 	}
 
 	.article-body :global(blockquote) {
 		margin: 0;
-		padding-left: 1rem;
-		border-left: 3px solid var(--color-cyan);
-		color: var(--color-muted);
+		padding-left: var(--space-4);
+		border-left: 3px solid var(--color-accent);
+		color: color-mix(in srgb, var(--color-text) 78%, transparent);
 	}
 
 	.article-body :global(table) {
@@ -216,31 +209,30 @@ const schema = buildArticleSchemas({
 
 	.article-body :global(th),
 	.article-body :global(td) {
-		border: 1px solid var(--color-border);
-		padding: 0.75rem 1rem;
+		border-bottom: 1px solid var(--color-divider);
+		padding: var(--space-2) var(--space-3);
 		text-align: left;
 	}
 
 	.article-body :global(th) {
-		color: #F52D98;
-		border-bottom: 2px solid #F52D98;
-		font-family: var(--font-display);
-		background: rgb(245 45 152 / 5%);
+		color: var(--color-accent-700);
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		border-bottom: 2px solid var(--color-accent);
 	}
 
-
 	.article-footer {
-		margin-top: 2rem;
-		padding-top: 1rem;
-		border-top: 1px solid var(--color-border);
+		margin-top: var(--space-8);
+		padding-top: var(--space-4);
 	}
 
 	.author-box {
-		padding: 0.8rem;
+		flex-direction: row;
+		padding: var(--space-3);
 		display: flex;
-		gap: 0.8rem;
+		gap: var(--space-3);
 		align-items: center;
-		margin-bottom: 1rem;
+		margin-bottom: var(--space-4);
 	}
 
 	.author-box img {
@@ -252,21 +244,15 @@ const schema = buildArticleSchemas({
 
 	.author-box p {
 		margin: 0.2rem 0 0;
-		color: var(--color-muted);
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
 		font-size: 0.88rem;
 	}
 
 	.pager {
 		display: flex;
 		justify-content: space-between;
-		gap: 0.6rem;
+		gap: var(--space-2);
 		flex-wrap: wrap;
-	}
-
-	.pager a,
-	.article-footer p a {
-		color: var(--color-cyan);
-		text-decoration: none;
 	}
 
 	@media (width < 760px) {

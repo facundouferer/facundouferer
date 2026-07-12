@@ -40,9 +40,9 @@ const items =
 		<h2 class="section-title">{title}</h2>
 		<div class="grid">
 			{
-				items.map((item, index) => (
-					<blockquote class="testimonial-card" style={`--delay: ${index * 80}ms`}>
-						<div class="quote-mark" aria-hidden="true">"</div>
+				items.map((item) => (
+					<blockquote class="testimonial-card card">
+						<div class="quote-mark" aria-hidden="true">“</div>
 						<p>{item.quote}</p>
 						<cite>{item.author}</cite>
 					</blockquote>
@@ -56,36 +56,21 @@ const items =
 	.grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-		gap: 1.2rem;
-		margin-top: 2rem;
+		gap: var(--space-4);
+		margin-top: var(--space-6);
 	}
 
 	.testimonial-card {
 		margin: 0;
-		padding: 1.6rem;
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 1rem;
-		position: relative;
-		overflow: hidden;
-		transition: transform 250ms ease, border-color 250ms ease;
-	}
-
-	.testimonial-card:hover {
-		transform: translateY(-3px);
-		border-color: rgb(249 24 214 / 25%);
 	}
 
 	.quote-mark {
-		font-family: var(--font-display);
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
 		font-size: 3rem;
 		line-height: 1;
-		background: var(--grad-primary);
-		-webkit-background-clip: text;
-		background-clip: text;
-		color: transparent;
-		margin-bottom: 0.4rem;
-		opacity: 0.6;
+		color: var(--color-accent-700);
+		margin-bottom: -0.6rem;
 	}
 
 	.testimonial-card p {
@@ -97,11 +82,9 @@ const items =
 
 	.testimonial-card cite {
 		display: block;
-		margin-top: 1rem;
+		margin-top: var(--space-2);
 		font-style: normal;
-		font-family: var(--font-mono);
-		font-size: 0.74rem;
-		color: var(--color-muted);
-		letter-spacing: 0.02em;
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
 	}
 </style>
