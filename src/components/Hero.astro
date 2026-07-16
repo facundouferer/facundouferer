@@ -12,7 +12,6 @@ const content = {
 		subtitle: '',
 		primary: 'Ver Proyectos',
 		secondary: 'Hablemos',
-		badge: 'Disponible para nuevos proyectos',
 		projectsHref: '/proyectos',
 	},
 	en: {
@@ -22,7 +21,6 @@ const content = {
 		subtitle: '',
 		primary: 'View Projects',
 		secondary: "Let's Talk",
-		badge: 'Available for new projects',
 		projectsHref: '/en/projects',
 	},
 }[locale];
@@ -33,7 +31,6 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 <section class="hero">
 	<div class="hero-decoration" aria-hidden="true"></div>
 	<div class="container hero-shell">
-		<p class="badge"><span class="badge-dot"></span>{content.badge}</p>
 		<h1 class="hero-title">
 			{content.titleStart} <span class="accent-word">{content.titleAccent}</span> {content.titleEnd}
 		</h1>
@@ -48,7 +45,11 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 <style>
 	.hero {
 		position: relative;
-		padding-block: clamp(4rem, 10vw, 7rem);
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		min-height: calc(100dvh - 4.2rem);
+		padding-block: clamp(2rem, 6vw, 4rem);
 		overflow: clip;
 	}
 

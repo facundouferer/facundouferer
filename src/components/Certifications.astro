@@ -1,0 +1,218 @@
+---
+import { withBase } from '../utils/withBase';
+
+type Props = { locale: 'es' | 'en' };
+const { locale } = Astro.props;
+
+type Cert = {
+	name: string;
+	issuer: string;
+	url: string;
+	logo?: 'anthropic' | 'openai' | 'html5' | 'javascript' | 'svg' | 'utn';
+	accent2?: boolean;
+};
+
+const certifications: Cert[] = [
+	{
+		name: 'AI Fluency for Builders',
+		issuer: 'Anthropic',
+		url: 'https://verify.skilljar.com/c/bwucgk53cgjh',
+		logo: 'anthropic',
+	},
+	{
+		name: 'AI Foundations',
+		issuer: 'OpenAI',
+		url: 'https://academy.openai.com/public/certificate/nhlkk3cr4y',
+		logo: 'openai',
+		accent2: true,
+	},
+	{
+		name: 'Claude Platform 101',
+		issuer: 'Anthropic',
+		url: 'https://verify.skilljar.com/c/r23sfpsjyto9',
+		logo: 'anthropic',
+	},
+	{
+		name: 'Claude Code 101',
+		issuer: 'Anthropic',
+		url: 'https://verify.skilljar.com/c/kvrwx2e3xjmu',
+		logo: 'anthropic',
+		accent2: true,
+	},
+	{
+		name: 'Claude 101',
+		issuer: 'Anthropic',
+		url: 'https://verify.skilljar.com/c/hnzz9jx2j4b4',
+		logo: 'anthropic',
+	},
+	{
+		name: 'Desarrollo Web Responsive con HTML y CSS',
+		issuer: 'Domestika',
+		url: 'https://www.domestika.org/es/certificates/6b4caefa4aaa1c598632764a26afb85b',
+		logo: 'html5',
+		accent2: true,
+	},
+	{
+		name: 'Programación en JavaScript',
+		issuer: 'Domestika',
+		url: 'https://www.domestika.org/es/certificates/a405c926db1eab07c3a7abe237143860',
+		logo: 'javascript',
+	},
+	{
+		name: 'Gráficos vectoriales SVG: ilustrar y animar con código',
+		issuer: 'Domestika',
+		url: 'https://www.domestika.org/es/certificates/fd7d92ed0581fbd50ae863d0b7000746',
+		logo: 'svg',
+		accent2: true,
+	},
+	{
+		name: 'Programador UTN',
+		issuer: 'UTN - Facultad Regional Resistencia',
+		url: 'https://www.frre.utn.edu.ar/',
+		logo: 'utn',
+	},
+];
+
+const logos: Record<string, string> = {
+	anthropic:
+		'<path d="M17.3041 3.541h-3.6718l6.696 16.918H24Zm-10.6082 0L0 20.459h3.7442l1.3693-3.5527h7.0052l1.3693 3.5528h3.7442L10.5363 3.5409Zm-.3712 10.2232 2.2914-5.9456 2.2914 5.9456Z"/>',
+	openai:
+		'<path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/>',
+	html5: '<path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z"/>',
+	javascript:
+		'<path d="M0 0h24v24H0V0zm22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"/>',
+	svg: '<path d="M12 0c-1.497 0-2.749.965-3.248 2.17a3.45 3.45 0 00-.238 1.416 3.459 3.459 0 00-1.168-.834 3.508 3.508 0 00-1.463-.256 3.513 3.513 0 00-2.367 1.02c-1.06 1.058-1.263 2.625-.764 3.83.179.432.47.82.82 1.154a3.49 3.49 0 00-1.402.252C.965 9.251 0 10.502 0 12c0 1.497.965 2.749 2.17 3.248.437.181.924.25 1.414.236-.357.338-.65.732-.832 1.17-.499 1.205-.295 2.772.764 3.83 1.058 1.06 2.625 1.263 3.83.764.437-.181.83-.476 1.168-.832-.014.49.057.977.238 1.414C9.251 23.035 10.502 24 12 24c1.497 0 2.749-.965 3.248-2.17a3.45 3.45 0 00.238-1.416c.338.356.73.653 1.168.834 1.205.499 2.772.295 3.83-.764 1.06-1.058 1.263-2.625.764-3.83a3.459 3.459 0 00-.834-1.168 3.45 3.45 0 001.416-.238C23.035 14.749 24 13.498 24 12c0-1.497-.965-2.749-2.17-3.248a3.455 3.455 0 00-1.414-.236c.357-.338.65-.732.832-1.17.499-1.205.295-2.772-.764-3.83a3.513 3.513 0 00-2.367-1.02 3.508 3.508 0 00-1.463.256c-.437.181-.83.475-1.168.832a3.45 3.45 0 00-.238-1.414C14.749.965 13.498 0 12 0zm-.041 1.613a1.902 1.902 0 011.387 3.246v3.893L16.098 6A1.902 1.902 0 1118 7.902l-2.752 2.752h3.893a1.902 1.902 0 110 2.692h-3.893L18 16.098A1.902 1.902 0 1116.098 18l-2.752-2.752v3.893a1.902 1.902 0 11-2.692 0v-3.893L7.902 18A1.902 1.902 0 116 16.098l2.752-2.752H4.859a1.902 1.902 0 110-2.692h3.893L6 7.902A1.902 1.902 0 117.902 6l2.752 2.752V4.859a1.902 1.902 0 011.305-3.246z"/>',
+};
+
+const shieldPath =
+	'M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z';
+---
+
+<section class="section" id="certifications">
+	<div class="container">
+		<p class="kicker">{locale === 'es' ? 'CREDENCIALES' : 'CREDENTIALS'}</p>
+		<h2 class="section-title">
+			{locale === 'es' ? 'Mis ' : 'My '}
+			<span class="accent-word">{locale === 'es' ? 'Certificaciones' : 'Certifications'}</span>
+		</h2>
+		<p class="section-subtitle">
+			{
+				locale === 'es'
+					? 'Formacion continua y validada en IA, desarrollo web y herramientas modernas.'
+					: 'Continuous, verified learning across AI, web development and modern tooling.'
+			}
+		</p>
+		<div class="cert-grid">
+			{
+				certifications.map((cert) => (
+					<a
+						class="cert-card card card-hover"
+						href={cert.url}
+						target="_blank"
+						rel="noreferrer"
+						aria-label={`${locale === 'es' ? 'Ver credencial de' : 'View credential for'} ${cert.name}`}
+					>
+						<span class:list={['cert-badge', { 'accent-2': cert.accent2 }]}>
+							<svg class="cert-badge-shield" viewBox="0 0 24 24" aria-hidden="true">
+								<path d={shieldPath} />
+							</svg>
+							<span class="cert-badge-logo">
+								{cert.logo === 'utn' ? (
+									<img src={withBase('/img/certifications/utn-logo.png')} alt="" aria-hidden="true" />
+								) : cert.logo ? (
+									<svg viewBox="0 0 24 24" aria-hidden="true" set:html={logos[cert.logo]} />
+								) : (
+									<span aria-hidden="true">{cert.issuer.charAt(0)}</span>
+								)}
+							</span>
+						</span>
+						<h3 class="card-title">{cert.name}</h3>
+						<p class="cert-issuer">{cert.issuer}</p>
+					</a>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.cert-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		gap: var(--space-4);
+		margin-top: var(--space-6);
+	}
+
+	.cert-card {
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.cert-badge {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 68px;
+		height: 68px;
+		margin-bottom: var(--space-2);
+	}
+
+	.cert-badge-shield {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.06));
+	}
+
+	.cert-badge-shield path {
+		fill: var(--color-accent-100);
+		stroke: var(--color-accent-600);
+		stroke-width: 1;
+	}
+
+	.cert-badge.accent-2 .cert-badge-shield path {
+		fill: var(--color-accent-2-100);
+		stroke: var(--color-accent-2-600);
+	}
+
+	.cert-badge-logo {
+		position: relative;
+		z-index: 1;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 30px;
+		height: 30px;
+		margin-top: -0.2em;
+		color: var(--color-accent-700);
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 1.1rem;
+	}
+
+	.cert-badge.accent-2 .cert-badge-logo {
+		color: var(--color-accent-2-700);
+	}
+
+	.cert-badge-logo svg {
+		width: 100%;
+		height: 100%;
+		fill: currentColor;
+	}
+
+	.cert-badge-logo img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
+
+	.cert-issuer {
+		margin: 0;
+		font-size: 13px;
+		font-weight: 600;
+		color: color-mix(in srgb, var(--color-text) 78%, transparent);
+	}
+
+</style>
