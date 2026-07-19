@@ -7,39 +7,39 @@ lang: 'en'
 published: true
 ---
 
-# Arrays (Arreglos)
+# Arrays
 
-Un Array es un objeto que permite almacenar múltiples valores en una sola variable. Los índices empiezan en `0`.
+An Array is an object that allows you to store multiple values in a single variable. Indices start at `0`.
 
-## Operaciones Básicas
+## Basic Operations
 
 ```javascript
 const frutas = ["Manzana", "Banana"];
 
-frutas.push("Naranja"); // Agrega al final
-frutas.pop(); // Elimina el último
-frutas.unshift("Pera"); // Agrega al principio
-frutas.shift(); // Elimina el primero
+frutas.push("Naranja"); // Adds to the end
+frutas.pop(); // Removes the last
+frutas.unshift("Pera"); // Adds to the beginning
+frutas.shift(); // Removes the first
 
-console.log(frutas.length); // Tamaño del array
+console.log(frutas.length); // Array size
 ```
 
-## Modificación y Copia
-- **`slice(inicio, fin)`**: Crea una copia de una parte del array sin modificar el original.
-- **`splice(inicio, cantidad, item1...)`**: Cambia el contenido eliminando, reemplazando o agregando elementos. **Modifica el original**.
+## Modification and Copy
+- **`slice(start, end)`**: Creates a copy of a portion of the array without modifying the original.
+- **`splice(start, deleteCount, item1...)`**: Changes the content by removing, replacing, or adding elements. **Modifies the original**.
 
-## Métodos Modernos (Orden Superior)
+## Modern Methods (Higher-Order)
 
-Son los más potentes para trabajar con datos:
+These are the most powerful for working with data:
 
-- **`map()`**: Transforma cada elemento y devuelve un nuevo array.
-- **`filter()`**: Crea un nuevo array con elementos que cumplan una condición.
-- **`reduce()`**: Reduce el array a un único valor (ej: sumar todo).
-- **`forEach()`**: Ejecuta una función para cada elemento.
-- **`join()`**: Une todos los elementos en una cadena de texto.
-- **`includes()`**: Verifica si un valor existe en el array.
+- **`map()`**: Transforms each element and returns a new array.
+- **`filter()`**: Creates a new array with elements that meet a condition.
+- **`reduce()`**: Reduces the array to a single value (e.g., sum everything).
+- **`forEach()`**: Executes a function for each element.
+- **`join()`**: Joins all elements into a text string.
+- **`includes()`**: Checks if a value exists in the array.
 
-### Ejemplo:
+### Example:
 ```javascript
 const numeros = [1, 2, 3, 4, 5];
 const pares = numeros.filter(n => n % 2 === 0); // [2, 4]

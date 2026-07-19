@@ -7,22 +7,22 @@ lang: 'en'
 published: true
 ---
 
-# Patrones de Diseño
+# Design Patterns
 
-Los patrones de diseño son soluciones probadas a problemas comunes en el desarrollo de software. No son reglas rígidas, sino guías.
+Design patterns are proven solutions to common problems in software development. They are not rigid rules, but guidelines.
 
-## Clasificación
+## Classification
 
-1. **Patrones de Creación:** Se enfocan en cómo se crean los objetos (ej: `Singleton`, `Factory`).
-2. **Patrones de Estructura:** Cómo se organizan y componen los objetos (ej: `Adapter`, `Composite`).
-3. **Patrones de Comportamiento:** Cómo interactúan y se comunican los objetos.
+1. **Creational Patterns:** Focus on how objects are created (e.g., `Singleton`, `Factory`).
+2. **Structural Patterns:** How objects are organized and composed (e.g., `Adapter`, `Composite`).
+3. **Behavioral Patterns:** How objects interact and communicate with each other.
 
-## Patrón State (Estado)
-Permite que un objeto cambie su comportamiento cuando su estado interno cambia. Ideal para evitar muchos `if/else` complejos.
+## State Pattern
+Allows an object to change its behavior when its internal state changes. Ideal for avoiding many complex `if/else` statements.
 
-**Ejemplo:** Un reproductor de música con estados `Reproduciendo`, `Pausado`, `Detenido`.
+**Example:** A music player with states `Playing`, `Paused`, `Stopped`.
 
-## Patrón Template Method
-Define la estructura de un algoritmo en una superclase, pero permite que las subclases sobrescriban pasos específicos sin cambiar la estructura global.
+## Template Method Pattern
+Defines the skeleton of an algorithm in a superclass, but lets subclasses override specific steps without changing the overall structure.
 
-**Ejemplo:** Un juego de mesa donde todos los juegos tienen los pasos `iniciar()`, `jugar()` y `finalizar()`, pero cada juego los implementa de forma distinta.
+**Example:** A board game where all games have the steps `start()`, `play()` and `end()`, but each game implements them differently.

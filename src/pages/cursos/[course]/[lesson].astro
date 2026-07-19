@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content';
 import { getLangFromUrl, useTranslations } from '../../../i18n/utils';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import CourseBreadcrumb from '../../../components/CourseBreadcrumb.astro';
+import LessonsList from '../../../components/LessonsList.astro';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -31,6 +32,10 @@ const allCourses = await getCollection('courses');
 const allLessons = await getCollection('lessons');
 const course = allCourses.find((c) => c.data.slug === courseSlug && c.data.published);
 
+const courseLessons = allLessons
+	.filter((l) => l.data.course === courseSlug && l.data.lang === 'es' && l.data.published)
+	.sort((a, b) => a.data.order - b.data.order);
+
 // Get the lesson: must match course AND slug AND locale
 const entry = allLessons.find(
 	(l) =>
@@ -45,6 +50,9 @@ if (!course || !entry) {
 }
 
 const { Content } = await render(entry);
+
+const prevLesson = courseLessons.find((l) => l.data.order === entry.data.order - 1);
+const nextLesson = courseLessons.find((l) => l.data.order === entry.data.order + 1);
 ---
 
 <BaseLayout
@@ -55,7 +63,7 @@ const { Content } = await render(entry);
 	enPath={`/en/courses/${courseSlug}/${lessonSlug}`}
 	canonicalPath={`/cursos/${courseSlug}/${lessonSlug}`}
 >
-	<div class="container">
+	<div class="container lesson-page">
 		<CourseBreadcrumb
 			courseSlug={courseSlug}
 			courseTitle={course.data.title}
@@ -63,37 +71,152 @@ const { Content } = await render(entry);
 			locale="es"
 		/>
 
-		<article class="lesson-content">
-			<h1>{entry.data.title}</h1>
-			<Content />
-		</article>
+		<div class="lesson-layout">
+			<aside class="lesson-sidebar">
+				<div class="sidebar-header">
+					<span class="sidebar-course-name">{course.data.title}</span>
+					<span class="sidebar-course-meta">{course.data.technology} · {course.data.difficulty}</span>
+				</div>
+				<nav aria-label="Lecciones">
+					<LessonsList
+						lessons={courseLessons.map((l) => ({
+							slug: l.data.slug,
+							title: l.data.title,
+							description: l.data.description,
+							order: l.data.order,
+						}))}
+						courseSlug={courseSlug}
+						locale="es"
+						currentSlug={lessonSlug}
+					/>
+				</nav>
+				<a href={`/cursos/${courseSlug}`} class="sidebar-back">
+					← {t('courses.backToCourse')}
+				</a>
+			</aside>
 
-		<a href={`/cursos/${courseSlug}`} class="back-link">
-			← {t('courses.backToCourse')}
-		</a>
+			<main class="lesson-main">
+				<article class="article-shell">
+					<header>
+						<p class="tag tag-accent">{course.data.technology}</p>
+						<h1 class="section-title">{entry.data.title}</h1>
+						<p class="meta">
+							{`${t('courses.lesson')} ${entry.data.order}${entry.data.description ? ` · ${entry.data.description}` : ''}`}
+						</p>
+					</header>
+					<div class="article-body">
+						<Content />
+					</div>
+					<footer class="lesson-footer">
+						<nav class="pager" aria-label="Navegación de lecciones">
+							{prevLesson && (
+								<a class="btn btn-secondary" href={`/cursos/${courseSlug}/${prevLesson.data.slug}`}>
+									← {prevLesson.data.title}
+								</a>
+							)}
+							{nextLesson && (
+								<a class="btn btn-secondary" href={`/cursos/${courseSlug}/${nextLesson.data.slug}`}>
+									{nextLesson.data.title} →
+								</a>
+							)}
+						</nav>
+					</footer>
+				</article>
+			</main>
+		</div>
 	</div>
 </BaseLayout>
 
 <style>
-	.lesson-content {
-		max-width: 720px;
-		margin-block: var(--space-4);
+	@import '../../../styles/article-body.css';
+
+	.lesson-page {
+		padding-block: var(--space-4);
 	}
 
-	.lesson-content h1 {
-		font-size: 1.8rem;
-		margin-block: 0 var(--space-4);
+	.lesson-layout {
+		display: grid;
+		gap: var(--space-6);
+		margin-top: var(--space-4);
 	}
 
-	.back-link {
-		display: inline-block;
-		margin-block: var(--space-6);
+	/* Sidebar */
+	.lesson-sidebar {
+		background: var(--color-surface);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+		border: 1px solid var(--color-divider);
+	}
+
+	.sidebar-header {
+		margin-bottom: var(--space-3);
+		padding-bottom: var(--space-3);
+		border-bottom: 1px solid var(--color-divider);
+	}
+
+	.sidebar-course-name {
+		display: block;
+		font-weight: 700;
+		font-size: 1rem;
+		font-family: var(--font-heading);
+	}
+
+	.sidebar-course-meta {
+		display: block;
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+		margin-top: 0.2rem;
+	}
+
+	.sidebar-back {
+		display: block;
+		margin-top: var(--space-3);
+		padding-top: var(--space-3);
+		border-top: 1px solid var(--color-divider);
 		color: var(--color-accent-700);
 		text-decoration: none;
-		font-size: 0.9rem;
+		font-size: 0.85rem;
 	}
 
-	.back-link:hover {
+	.sidebar-back:hover {
 		text-decoration: underline;
+	}
+
+	/* Main content */
+	.lesson-main {
+		min-width: 0;
+	}
+
+	.meta {
+		margin: 0;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+		font-size: 0.85rem;
+	}
+
+	.lesson-footer {
+		margin-top: var(--space-8);
+		padding-top: var(--space-4);
+	}
+
+	.pager {
+		display: flex;
+		justify-content: space-between;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	/* Desktop: sidebar left, content right */
+	@media (width >= 960px) {
+		.lesson-layout {
+			grid-template-columns: 300px 1fr;
+		}
+
+		.lesson-sidebar {
+			position: sticky;
+			top: 5.5rem;
+			align-self: start;
+			max-height: calc(100vh - 7rem);
+			overflow-y: auto;
+		}
 	}
 </style>

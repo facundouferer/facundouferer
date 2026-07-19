@@ -7,96 +7,96 @@ lang: 'en'
 published: true
 ---
 
-Ya viste secuencia, decisión e iteración. Ahora toca una idea más grande: **cómo pensar programas completos combinando esas estructuras sin perder claridad**.
+You've already seen sequence, decision, and iteration. Now comes a bigger idea: **how to think about complete programs combining these structures without losing clarity**.
 
-Eso conecta con la **programación esquemática** y con el uso controlado de **sentencias anidadas**.
+That connects with **schematic programming** and the controlled use of **nested statements**.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué es programación esquemática
-- cómo usar refinamiento sucesivo para diseñar programas
-- cómo combinar secuencia, decisión e iteración
-- qué son las sentencias anidadas
-- cuándo conviene anidar y cuándo empieza el desorden
+- what schematic programming is
+- how to use successive refinement to design programs
+- how to combine sequence, decision, and iteration
+- what nested statements are
+- when nesting is appropriate and when it starts getting messy
 
-## ¿Qué es programación esquemática?
+## What is schematic programming?
 
-La **programación esquemática** es una forma de diseñar programas a partir de esquemas de control bien conocidos.
+**Schematic programming** is a way of designing programs based on well-known control schemas.
 
-En vez de improvisar, pensás el problema usando estructuras base como:
+Instead of improvising, you think about the problem using base structures like:
 
-- secuencia
-- selección
-- iteración
+- sequence
+- selection
+- iteration
 
-O sea: no inventás la lógica desde cero cada vez. Reconocés patrones de construcción.
+In other words: you don't invent the logic from scratch every time. You recognize construction patterns.
 
-## Los tres grandes esquemas básicos
+## The three basic schemas
 
-### 1. Secuencia
+### 1. Sequence
 
-Una acción después de otra.
+One action after another.
 
-### 2. Selección
+### 2. Selection
 
-Elegir entre caminos posibles.
+Choosing between possible paths.
 
-### 3. Iteración
+### 3. Iteration
 
-Repetir acciones mientras una condición lo indique.
+Repeating actions while a condition indicates so.
 
-Toda una enorme cantidad de programas se puede pensar combinando estos tres esquemas.
+A huge number of programs can be thought of by combining these three schemas.
 
-## Ejemplo de pensamiento esquemático
+## Example of schematic thinking
 
-Supongamos que querés un programa que:
+Suppose you want a program that:
 
-1. lea números
-2. sume solo los positivos
-3. termine cuando el usuario ingrese 0
-4. muestre la suma final
+1. reads numbers
+2. sums only the positive ones
+3. ends when the user enters 0
+4. displays the final sum
 
-Si lo pensás esquemáticamente, podés ver:
+If you think schematically, you can see:
 
-- hay **iteración**: leer varias veces
-- hay **selección**: sumar solo si el número es positivo
-- hay **secuencia**: inicializar, leer, procesar, mostrar
+- there is **iteration**: reading several times
+- there is **selection**: summing only if the number is positive
+- there is **sequence**: initializing, reading, processing, displaying
 
-Eso ordena la mente antes de escribir código.
+That organizes the mind before writing code.
 
-## Refinamiento sucesivo aplicado al control de flujo
+## Successive refinement applied to flow control
 
-### Esquema general
+### General schema
 
-1. inicializar datos
-2. repetir lectura y procesamiento
-3. decidir qué hacer con cada dato
-4. terminar y mostrar resultado
+1. initialize data
+2. repeat reading and processing
+3. decide what to do with each piece of data
+4. finish and display result
 
-### Refinamiento más detallado
+### More detailed refinement
 
-1. declarar `numero` y `suma`
-2. inicializar `suma` en 0
-3. leer un número
-4. mientras el número no sea 0:
-   - si es positivo, acumularlo
-   - leer otro número
-5. mostrar la suma
+1. declare `numero` and `suma`
+2. initialize `suma` to 0
+3. read a number
+4. while the number is not 0:
+   - if it's positive, accumulate it
+   - read another number
+5. display the sum
 
-Recién después escribirías el código.
+Only then would you write the code.
 
-## Sentencias anidadas
+## Nested statements
 
-Una **sentencia anidada** es una estructura de control colocada dentro de otra.
+A **nested statement** is a control structure placed inside another.
 
-Puede ser:
+It can be:
 
-- un `if` dentro de otro `if`
-- un `if` dentro de un `while`
-- un `while` dentro de otro `while`
-- un `switch` dentro de un `if`
+- an `if` inside another `if`
+- an `if` inside a `while`
+- a `while` inside another `while`
+- a `switch` inside an `if`
 
-## Ejemplo: `if` dentro de `while`
+## Example: `if` inside `while`
 
 ```c
 #include <stdio.h>
@@ -105,7 +105,7 @@ int main() {
     int numero;
     int suma = 0;
 
-    printf("Ingrese un número (0 para terminar): ");
+    printf("Enter a number (0 to exit): ");
     scanf("%d", &numero);
 
     while (numero != 0) {
@@ -113,62 +113,62 @@ int main() {
             suma = suma + numero;
         }
 
-        printf("Ingrese un número (0 para terminar): ");
+        printf("Enter a number (0 to exit): ");
         scanf("%d", &numero);
     }
 
-    printf("La suma es %d\n", suma);
+    printf("The sum is %d\n", suma);
 
     return 0;
 }
 ```
 
-## ¿Por qué este ejemplo es importante?
+## Why is this example important?
 
-Porque muestra cómo se combinan esquemas:
+Because it shows how schemas are combined:
 
-- secuencia para inicializar y mostrar
-- iteración para repetir la lectura
-- selección para decidir si se suma o no
+- sequence to initialize and display
+- iteration to repeat reading
+- selection to decide whether to sum or not
 
-Eso es programación esquemática en acción.
+That's schematic programming in action.
 
-## ¿Cuándo la anidación es razonable?
+## When is nesting reasonable?
 
-Es razonable cuando realmente expresa dependencias lógicas claras.
+It's reasonable when it truly expresses clear logical dependencies.
 
-Por ejemplo:
+For example:
 
-- repetir varias veces una acción
-- y dentro de cada repetición decidir algo
+- repeating an action several times
+- and within each repetition deciding something
 
-Eso tiene sentido.
+That makes sense.
 
-## ¿Cuándo la anidación empieza a ser un problema?
+## When does nesting become a problem?
 
-Cuando acumulás demasiados niveles y ya no se entiende qué controla a qué.
+When you accumulate too many levels and you can no longer understand what controls what.
 
-Si al leer el código te perdés entre llaves, niveles y caminos, el diseño probablemente necesita simplificarse.
+If reading the code you get lost between braces, levels, and paths, the design probably needs simplification.
 
-## Buenas prácticas
+## Good practices
 
-- indentá correctamente
-- usá llaves siempre
-- mantené cada bloque con una intención clara
-- pensá primero el esquema antes del código
-- refiná la solución de lo general a lo particular
+- indent correctly
+- always use braces
+- keep each block with a clear intent
+- think of the schema before the code
+- refine the solution from general to specific
 
-## Resumen
+## Summary
 
-- la programación esquemática organiza soluciones usando secuencia, selección e iteración
-- el refinamiento sucesivo ayuda a pasar del problema al código
-- las sentencias anidadas permiten combinar estructuras de control
-- anidar está bien cuando mejora la lógica, pero mal usado vuelve el código confuso
+- schematic programming organizes solutions using sequence, selection, and iteration
+- successive refinement helps move from problem to code
+- nested statements allow combining control structures
+- nesting is good when it improves logic, but used poorly it makes code confusing
 
-## Idea final
+## Final thought
 
-Programar bien no es encadenar estructuras al azar.
+Programming well isn't about chaining structures randomly.
 
-Es reconocer esquemas, combinarlos con criterio y refinar la solución hasta que el código exprese claramente la lógica del problema.
+It's about recognizing schemas, combining them with judgment, and refining the solution until the code clearly expresses the logic of the problem.
 
-Ahí es donde dejás de “probar cosas” y empezás realmente a diseñar programas.
+That's where you stop "trying things out" and start really designing programs.

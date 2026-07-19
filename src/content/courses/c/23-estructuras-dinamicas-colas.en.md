@@ -7,39 +7,39 @@ lang: 'en'
 published: true
 ---
 
-Una **cola** es una estructura en la que el primero que entra es el primero que sale.
+A **queue** is a structure where the first one that enters is the first one that leaves.
 
-Eso se conoce como **FIFO**: *First In, First Out*.
+That's known as **FIFO**: *First In, First Out*.
 
-Pensalo como una fila real:
+Think of it like a real line:
 
-- la primera persona en llegar es la primera en ser atendida
-- las nuevas personas se agregan al final
-- nadie sale por el medio
+- the first person to arrive is the first to be served
+- new people join at the end
+- nobody cuts out from the middle
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué es una cola
-- recorrido en colas
-- búsqueda en colas
-- inserción en colas
-- extracción básica
+- what a queue is
+- queue traversal
+- search in queues
+- insertion in queues
+- basic extraction
 
-> Idea clave: una cola respeta estrictamente el orden de llegada.
+> Key idea: a queue strictly respects arrival order.
 
-## ¿Qué es una cola?
+## What is a queue?
 
-Una **cola** es una estructura dinámica donde normalmente se manejan dos extremos:
+A **queue** is a dynamic structure where typically two ends are managed:
 
-- el **frente**
-- el **final**
+- the **front**
+- the **rear**
 
-La inserción ocurre al final.
-La extracción ocurre desde el frente.
+Insertion happens at the rear.
+Extraction happens from the front.
 
-## Nodo de una cola enlazada
+## Node of a linked queue
 
-Una forma común de implementar una cola en C es mediante nodos enlazados.
+A common way to implement a queue in C is through linked nodes.
 
 ```c
 struct Nodo {
@@ -48,41 +48,41 @@ struct Nodo {
 };
 ```
 
-Cada nodo tiene:
+Each node has:
 
-- un dato
-- un puntero al siguiente nodo
+- a data value
+- a pointer to the next node
 
-## Variables principales de la cola
+## Main queue variables
 
-Para manejar la cola, normalmente se usan dos punteros:
+To manage the queue, two pointers are typically used:
 
 ```c
 struct Nodo* frente = NULL;
 struct Nodo* final = NULL;
 ```
 
-- `frente` apunta al primer nodo
-- `final` apunta al último nodo
+- `frente` points to the first node
+- `final` points to the last node
 
-Si ambos valen `NULL`, la cola está vacía.
+If both are `NULL`, the queue is empty.
 
-## Inserción en colas: encolar
+## Insertion in queues: enqueue
 
-Agregar un elemento al final de la cola se llama **encolar**.
+Adding an element to the end of the queue is called **enqueue**.
 
-### Idea general
+### General idea
 
-Si la cola está vacía:
+If the queue is empty:
 
-- el nuevo nodo pasa a ser frente y final
+- the new node becomes both front and rear
 
-Si la cola ya tiene elementos:
+If the queue already has elements:
 
-- el nodo actual final debe apuntar al nuevo nodo
-- luego `final` pasa a apuntar al nuevo nodo
+- the current rear node must point to the new node
+- then `final` points to the new node
 
-### Ejemplo de código
+### Code example
 
 ```c
 #include <stdlib.h>
@@ -103,26 +103,26 @@ void encolar(struct Nodo** frente, struct Nodo** final, int valor) {
 }
 ```
 
-### ¿Qué hace esta función?
+### What does this function do?
 
-1. crea un nuevo nodo
-2. guarda el valor en ese nodo
-3. si la cola está vacía, ese nodo pasa a ser el primero y el último
-4. si no está vacía, se enlaza al final actual y luego pasa a ser el nuevo final
+1. creates a new node
+2. stores the value in that node
+3. if the queue is empty, that node becomes both first and last
+4. if not empty, it links to the current rear and then becomes the new rear
 
-## Extracción básica: desencolar
+## Basic extraction: dequeue
 
-Quitar el elemento del frente se llama **desencolar**.
+Removing the element at the front is called **dequeue**.
 
-### Idea general
+### General idea
 
-Cuando desencolás:
+When you dequeue:
 
-- se toma el nodo del frente
-- el frente avanza al siguiente nodo
-- si la cola queda vacía, también hay que actualizar `final`
+- the front node is taken
+- front advances to the next node
+- if the queue becomes empty, `final` must also be updated
 
-### Ejemplo de código
+### Code example
 
 ```c
 #include <stdlib.h>
@@ -148,20 +148,20 @@ int desencolar(struct Nodo** frente, struct Nodo** final) {
 }
 ```
 
-### ¿Qué hace esta función?
+### What does this function do?
 
-1. verifica si la cola está vacía
-2. guarda el dato del frente
-3. mueve `frente` al siguiente nodo
-4. si ya no queda ningún nodo, también pone `final` en `NULL`
-5. libera memoria del nodo eliminado
-6. devuelve el valor extraído
+1. checks if the queue is empty
+2. saves the data from the front
+3. moves `frente` to the next node
+4. if there are no more nodes, also sets `final` to `NULL`
+5. frees the memory of the removed node
+6. returns the extracted value
 
-## Recorrido en colas
+## Queue traversal
 
-El **recorrido** visita los nodos desde el frente hasta el final.
+**Traversal** visits nodes from the front to the rear.
 
-### Ejemplo de código
+### Code example
 
 ```c
 #include <stdio.h>
@@ -176,19 +176,19 @@ void recorrerCola(struct Nodo* frente) {
 }
 ```
 
-### ¿Qué hace este recorrido?
+### What does this traversal do?
 
-- empieza en el frente
-- muestra el dato de cada nodo
-- avanza hasta llegar a `NULL`
+- starts at the front
+- prints each node's data
+- advances until reaching `NULL`
 
-Si la cola contiene:
+If the queue contains:
 
 ```text
 10, 20, 30
 ```
 
-el recorrido mostrará:
+the traversal will show:
 
 ```text
 10
@@ -196,11 +196,11 @@ el recorrido mostrará:
 30
 ```
 
-## Búsqueda en colas
+## Search in queues
 
-La **búsqueda** consiste en recorrer la cola hasta encontrar un valor.
+**Search** consists of traversing the queue until finding a value.
 
-### Ejemplo de código
+### Code example
 
 ```c
 int buscarEnCola(struct Nodo* frente, int buscado) {
@@ -217,13 +217,13 @@ int buscarEnCola(struct Nodo* frente, int buscado) {
 }
 ```
 
-### ¿Qué hace esta función?
+### What does this function do?
 
-- recorre nodo por nodo
-- si encuentra el valor, devuelve `1`
-- si llega al final sin encontrarlo, devuelve `0`
+- traverses node by node
+- if it finds the value, returns `1`
+- if it reaches the end without finding it, returns `0`
 
-## Ejemplo completo de uso
+## Complete usage example
 
 ```c
 #include <stdio.h>
@@ -300,36 +300,36 @@ int main() {
     encolar(&frente, &final, 20);
     encolar(&frente, &final, 30);
 
-    printf("Recorrido de la cola:\n");
+    printf("Queue traversal:\n");
     recorrerCola(frente);
 
     if (buscarEnCola(frente, 20) == 1) {
-        printf("Se encontró el valor 20\n");
+        printf("Value 20 was found\n");
     } else {
-        printf("No se encontró el valor 20\n");
+        printf("Value 20 was not found\n");
     }
 
     eliminado = desencolar(&frente, &final);
-    printf("Valor extraído: %d\n", eliminado);
+    printf("Extracted value: %d\n", eliminado);
 
-    printf("Cola luego de desencolar:\n");
+    printf("Queue after dequeue:\n");
     recorrerCola(frente);
 
     return 0;
 }
 ```
 
-## Resumen
+## Summary
 
-- una cola sigue la regla FIFO
-- insertar se llama **encolar**
-- extraer se llama **desencolar**
-- el recorrido va del frente al final
-- la búsqueda recorre nodo por nodo hasta encontrar el valor
-- al desencolar hay que actualizar correctamente `frente` y, si hace falta, también `final`
+- a queue follows the FIFO rule
+- inserting is called **enqueue**
+- extracting is called **dequeue**
+- traversal goes from front to rear
+- search traverses node by node until finding the value
+- when dequeuing you must correctly update `frente` and, if needed, also `final`
 
-## Idea final
+## Final thought
 
-La cola no solo sirve para entender una estructura dinámica: también enseña una idea de diseño muy importante.
+The queue not only helps you understand a dynamic structure: it also teaches a very important design idea.
 
-No siempre se puede acceder a los datos de cualquier manera. A veces la estructura define una disciplina de acceso. Y entender esa disciplina es parte de aprender a programar bien.
+You can't always access data any way you want. Sometimes the structure defines an access discipline. And understanding that discipline is part of learning to program well.

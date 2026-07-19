@@ -7,42 +7,42 @@ lang: 'en'
 published: true
 ---
 
-# Strings y Funciones
+# Strings and Functions
 
-## El tipo String
+## The String type
 
-A diferencia de los tipos primitivos, `String` es un objeto que representa una secuencia de caracteres.
+Unlike primitive types, `String` is an object that represents a sequence of characters.
 
-### Inmutabilidad
-Los Strings en Java son inmutables. Si cambias el valor de un String, Java crea un objeto nuevo en memoria.
+### Immutability
+Strings in Java are immutable. If you change a String value, Java creates a new object in memory.
 
 ```java
 String saludo = "Hola";
-saludo = saludo + " mundo"; // Se crea un nuevo objeto "Hola mundo"
+saludo = saludo + " mundo"; // A new object "Hola mundo" is created
 ```
 
-### Métodos útiles de String
-- `length()`: Tamaño del texto.
-- `toUpperCase()` / `toLowerCase()`: Cambiar a mayúsculas/minúsculas.
-- `contains("texto")`: Verifica si contiene una palabra.
-- `indexOf("a")`: Busca la posición de un carácter.
-- `equals("otro")`: Compara contenidos (¡no uses `==`!).
+### Useful String methods
+- `length()`: Returns the text length.
+- `toUpperCase()` / `toLowerCase()`: Converts to uppercase/lowercase.
+- `contains("text")`: Checks if it contains a substring.
+- `indexOf("a")`: Searches for the position of a character.
+- `equals("other")`: Compares contents (don't use `==`!).
 
-## Funciones (Métodos)
+## Functions (Methods)
 
-Una función es un bloque de código reutilizable que realiza una tarea específica.
+A function is a reusable block of code that performs a specific task.
 
 ```java
 public static int suma(int a, int b) {
     return a + b;
 }
 
-// Llamada:
+// Call:
 int resultado = suma(5, 3);
 ```
 
-### Estructura de una función:
-1. **Tipo de retorno:** El dato que devuelve (`int`, `String`, `void` si no devuelve nada).
-2. **Nombre:** Para identificarla.
-3. **Parámetros:** Datos que recibe para trabajar.
-4. **Cuerpo:** El código dentro de `{ }`.
+### Structure of a function:
+1. **Return type:** The data it returns (`int`, `String`, `void` if it returns nothing).
+2. **Name:** To identify it.
+3. **Parameters:** Data it receives to work with.
+4. **Body:** The code inside `{ }`.

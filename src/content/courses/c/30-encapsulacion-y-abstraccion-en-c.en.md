@@ -7,22 +7,22 @@ lang: 'en'
 published: true
 ---
 
-Dos ideas centrales de la POO son la **encapsulación** y la **abstracción**.
+Two central ideas of OOP are **encapsulation** and **abstraction**.
 
-En C no aparecen como palabras clave del lenguaje, pero sus ideas sí pueden aplicarse.
+They don't appear as language keywords in C, but their ideas can still be applied.
 
-En esta lección vas a aprender:
+In this lesson you will learn:
 
-- qué es encapsulación
-- qué es abstracción
-- cómo usar `struct` y funciones para aproximar estas ideas en C
-- por qué los módulos ayudan muchísimo
+- what encapsulation is
+- what abstraction is
+- how to use `struct` and functions to approximate these ideas in C
+- why modules help immensely
 
-## Encapsulación
+## Encapsulation
 
-La **encapsulación** consiste en agrupar datos y operaciones relacionadas.
+**Encapsulation** consists of grouping related data and operations together.
 
-### Ejemplo
+### Example
 
 ```c
 struct Cuenta {
@@ -34,33 +34,33 @@ void depositar(struct Cuenta* cuenta, float monto) {
 }
 ```
 
-Acá los datos de la cuenta y las operaciones que la afectan están conceptualmente relacionadas.
+Here the account data and the operations that affect it are conceptually related.
 
-## Abstracción
+## Abstraction
 
-La **abstracción** consiste en mostrar lo importante y ocultar detalles innecesarios.
+**Abstraction** consists of showing what matters and hiding unnecessary details.
 
-Por ejemplo, para usar una cuenta, tal vez te interese saber que podés depositar y extraer dinero, no exactamente cómo se almacena internamente cada dato.
+For example, to use an account you might care about knowing you can deposit and withdraw money, not exactly how each piece of data is stored internally.
 
-## Encapsulación y módulos
+## Encapsulation and modules
 
-En C, una forma muy útil de aproximar encapsulación es separar:
+In C, a very useful way to approximate encapsulation is to separate:
 
-- la interfaz en `.h`
-- la implementación en `.c`
+- the interface in `.h`
+- the implementation in `.c`
 
-Eso ayuda a que quien usa el módulo piense en “qué puede hacer” y no necesariamente en “cómo está implementado todo”.
+That helps the module user think about "what it can do" rather than "how everything is implemented."
 
-## Ejemplo conceptual
+## Conceptual example
 
-### En `cuenta.h`
+### In `cuenta.h`
 
 ```c
 struct Cuenta;
 void depositar(struct Cuenta* cuenta, float monto);
 ```
 
-### En `cuenta.c`
+### In `cuenta.c`
 
 ```c
 struct Cuenta {
@@ -68,12 +68,12 @@ struct Cuenta {
 };
 ```
 
-## Resumen
+## Summary
 
-- encapsulación agrupa datos y comportamiento relacionados
-- abstracción destaca lo importante y esconde detalles innecesarios
-- en C se aproximan usando `struct`, funciones y módulos
+- encapsulation groups related data and behavior together
+- abstraction highlights what's important and hides unnecessary details
+- in C they are approximated using `struct`, functions, and modules
 
-## Idea final
+## Final thought
 
-Aunque C no tenga encapsulación como mecanismo nativo de POO, sí permite diseñar programas donde los datos y las operaciones se mantengan organizados con mucha disciplina.
+Even though C doesn't have encapsulation as a native OOP mechanism, it does allow you to design programs where data and operations stay organized with great discipline.

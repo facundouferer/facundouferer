@@ -7,83 +7,83 @@ lang: 'en'
 published: true
 ---
 
-Hasta ahora, aprendiste a organizar tus datos en estructuras **lineales**: listas, pilas y colas. En ellas, cada elemento tiene un único sucesor (como una fila de supermercado). Pero el mundo real no siempre es una fila recta. A veces los datos se organizan de forma **jerárquica**, como el organigrama de una empresa, los archivos en tu computadora o las ramas de un árbol.
+So far, you've learned to organize your data in **linear** structures: lists, stacks, and queues. In these, each element has a single successor (like a supermarket line). But the real world isn't always a straight line. Sometimes data is organized **hierarchically**, like a company's org chart, the files on your computer, or the branches of a tree.
 
-Ahí es donde entra el **árbol binario**.
+That's where the **binary tree** comes in.
 
-En esta lección vas a aprender:
-- Qué es un árbol binario y por qué es tan poderoso.
-- La anatomía de un árbol (raíz, hojas, subárboles).
-- Cómo definir un nodo en C utilizando estructuras y punteros.
-- Qué es un Árbol Binario de Búsqueda (BST) y cómo organizar datos en él.
-- Cómo insertar, buscar y recorrer elementos utilizando la magia de la **recursividad**.
-
----
-
-## ¿Por qué necesitamos Árboles Binarios?
-
-Imaginá que tenés una lista enlazada con 1.000.000 de números ordenados de menor a mayor y querés buscar el número `999.999`. Vas a tener que recorrer casi todo el millón de nodos, uno por uno, para encontrarlo. ¡Eso es lento!
-
-Un **árbol binario de búsqueda** nos permite partir el problema a la mitad en cada paso. Es como buscar una palabra en el diccionario: si abrís el libro a la mitad y ves que la palabra empieza con 'Z', descartás toda la mitad izquierda inmediatamente. En lugar de hacer un millón de preguntas, en un árbol bien balanceado podés encontrar tu dato en aproximadamente **20 pasos**.
+In this lesson you'll learn:
+- What a binary tree is and why it's so powerful.
+- The anatomy of a tree (root, leaves, subtrees).
+- How to define a node in C using structures and pointers.
+- What a Binary Search Tree (BST) is and how to organize data in it.
+- How to insert, search, and traverse elements using the magic of **recursion**.
 
 ---
 
-## Anatomía de un Árbol
+## Why do we need Binary Trees?
 
-Visualizá un árbol al revés (con la raíz arriba y las ramas creciendo hacia abajo):
+Imagine you have a linked list with 1,000,000 sorted numbers and you want to find the number `999,999`. You'd have to traverse almost the entire million nodes, one by one, to find it. That's slow!
+
+A **binary search tree** lets us split the problem in half at each step. It's like looking up a word in a dictionary: if you open the book in the middle and see the word starts with 'Z', you discard the entire left half immediately. Instead of asking a million questions, in a well-balanced tree you can find your data in about **20 steps**.
+
+---
+
+## Anatomy of a Tree
+
+Picture a tree upside down (with the root at the top and branches growing downward):
 
 ```text
-       [ Raíz: 50 ]          <-- El nodo principal, donde todo empieza
+       [ Root: 50 ]          <-- The main node, where everything starts
        /          \
-  [ 30 ]          [ 70 ]     <-- Nodos internos (tienen padre e hijos)
+  [ 30 ]          [ 70 ]     <-- Internal nodes (have parent and children)
   /    \          /    \
-[20]  [40]      [60]  [80]   <-- Hojas (nodos finales, no tienen hijos)
+[20]  [40]      [60]  [80]   <-- Leaves (final nodes, have no children)
 ```
 
-Conceptos clave para recordar:
-- **Raíz (Root)**: El nodo superior del árbol. No tiene "padre".
-- **Hijo (Child)**: Nodo que cuelga de otro superior. En un árbol **binario**, cada nodo puede tener como máximo **dos hijos** (hijo izquierdo e hijo derecho).
-- **Padre (Parent)**: Nodo que tiene ramas hacia nodos inferiores.
-- **Hoja (Leaf)**: Nodos que no tienen hijos (sus punteros izquierdo y derecho apuntan a `NULL`).
-- **Subárbol (Subtree)**: Cada hijo de un nodo puede considerarse a su vez la raíz de su propio árbol más chico. ¡Esta es la base de la recursividad!
+Key concepts to remember:
+- **Root**: The top node of the tree. It has no "parent".
+- **Child**: Node that hangs from another above it. In a **binary** tree, each node can have at most **two children** (left child and right child).
+- **Parent**: Node that has branches to nodes below it.
+- **Leaf**: Nodes that have no children (their left and right pointers point to `NULL`).
+- **Subtree**: Each child of a node can itself be considered the root of its own smaller tree. This is the basis of recursion!
 
 ---
 
-## Definiendo un Nodo en C
+## Defining a Node in C
 
-Para construir esta estructura en C, necesitamos definir un `struct` que guarde el valor (el dato) y dos punteros: uno para el hijo izquierdo y otro para el hijo derecho.
+To build this structure in C, we need to define a `struct` that stores the value (the data) and two pointers: one for the left child and one for the right child.
 
 ```c
 #include <stdio.h>
-#include <stdlib.h> // Para usar malloc y free
+#include <stdlib.h> // For malloc and free
 
-// Definición de la estructura de un Nodo
+// Definition of a Node structure
 struct Nodo {
-    int dato;                  // El valor que almacena el nodo
-    struct Nodo* izquierdo;    // Puntero al subárbol izquierdo
-    struct Nodo* derecho;      // Puntero al subárbol derecho
+    int dato;                  // The value stored in the node
+    struct Nodo* izquierdo;    // Pointer to the left subtree
+    struct Nodo* derecho;      // Pointer to the right subtree
 };
 ```
 
 > [!NOTE]
-> Prestá atención a esto: `struct Nodo*` es un puntero a otro nodo del mismo tipo. Es una estructura autorreferenciada. Así es como logramos enlazar los nodos entre sí.
+> Pay attention to this: `struct Nodo*` is a pointer to another node of the same type. It's a self-referential structure. This is how we link nodes together.
 
 ---
 
-## Creación de un Nuevo Nodo
+## Creating a New Node
 
-Para agregar elementos al árbol, primero debemos poder crear nodos en la memoria del sistema (el *Heap*) usando `malloc`.
+To add elements to the tree, we first need to be able to create nodes in system memory (the *Heap*) using `malloc`.
 
 ```c
-// Función auxiliar para crear un nuevo nodo
+// Helper function to create a new node
 struct Nodo* crearNodo(int valor) {
-    // 1. Reservamos memoria para el nodo
+    // 1. Allocate memory for the node
     struct Nodo* nuevoNodo = (struct Nodo*)malloc(sizeof(struct Nodo));
     
-    // 2. Asignamos el valor
+    // 2. Assign the value
     nuevoNodo->dato = valor;
     
-    // 3. Inicializamos los hijos como vacíos (NULL)
+    // 3. Initialize children as empty (NULL)
     nuevoNodo->izquierdo = NULL;
     nuevoNodo->derecho = NULL;
     
@@ -93,94 +93,94 @@ struct Nodo* crearNodo(int valor) {
 
 ---
 
-## La Regla de Oro: Árbol Binario de Búsqueda (BST)
+## The Golden Rule: Binary Search Tree (BST)
 
-Un árbol binario común y corriente no tiene un orden establecido. Pero para buscar datos rápido, usamos el **Árbol Binario de Búsqueda (BST)**. Su regla es muy sencilla y estricta:
+An ordinary binary tree has no established order. But to search data quickly, we use the **Binary Search Tree (BST)**. Its rule is very simple and strict:
 
-Para cualquier nodo del árbol:
-1. Todos los valores en su **subárbol izquierdo** deben ser **menores** que el valor del nodo.
-2. Todos los valores en su **subárbol derecho** deben ser **mayores** que el valor del nodo.
+For any node in the tree:
+1. All values in its **left subtree** must be **less than** the node's value.
+2. All values in its **right subtree** must be **greater than** the node's value.
 
-### Inserción de Datos
+### Inserting Data
 
-Para insertar un elemento respetando esta regla, usamos **recursividad**:
+To insert an element respecting this rule, we use **recursion**:
 
 ```c
-// Función para insertar un valor en el árbol
+// Function to insert a value into the tree
 struct Nodo* insertar(struct Nodo* raiz, int valor) {
-    // Caso base: si el árbol (o subárbol) está vacío, creamos el nodo ahí
+    // Base case: if the tree (or subtree) is empty, create the node there
     if (raiz == NULL) {
         return crearNodo(valor);
     }
     
-    // Si el valor es menor, va al subárbol izquierdo
+    // If the value is smaller, go to the left subtree
     if (valor < raiz->dato) {
         raiz->izquierdo = insertar(raiz->izquierdo, valor);
     }
-    // Si el valor es mayor, va al subárbol derecho
+    // If the value is greater, go to the right subtree
     else if (valor > raiz->dato) {
         raiz->derecho = insertar(raiz->derecho, valor);
     }
     
-    // Devolvemos el puntero del nodo (sin cambios)
+    // Return the node pointer (unchanged)
     return raiz;
 }
 ```
 
 ---
 
-## Búsqueda de un Elemento
+## Searching for an Element
 
-Buscar en un BST es sumamente eficiente porque en cada nodo decidimos si ir a la izquierda o a la derecha, descartando la otra mitad del árbol.
+Searching in a BST is extremely efficient because at each node we decide whether to go left or right, discarding the other half of the tree.
 
 ```c
-// Función para buscar un valor en el árbol
+// Function to search for a value in the tree
 struct Nodo* buscar(struct Nodo* raiz, int valorBuscado) {
-    // Caso base: si el árbol está vacío o si encontramos el valor
+    // Base case: if the tree is empty or we found the value
     if (raiz == NULL || raiz->dato == valorBuscado) {
         return raiz;
     }
     
-    // Si el valor es menor, buscamos en la izquierda
+    // If the value is smaller, search on the left
     if (valorBuscado < raiz->dato) {
         return buscar(raiz->izquierdo, valorBuscado);
     }
     
-    // Si el valor es mayor, buscamos en la derecha
+    // If the value is greater, search on the right
     return buscar(raiz->derecho, valorBuscado);
 }
 ```
 
 ---
 
-## Recorridos (Cómo leer el árbol)
+## Traversals (How to read the tree)
 
-En una lista lineal, leés de principio a fin. En un árbol, tenés distintas formas de visitarlo. Las tres principales son recursivas:
+In a linear list, you read from start to finish. In a tree, you have different ways to visit it. The three main ones are recursive:
 
-1. **Preorden (Pre-order)**: Visita primero la raíz, luego el subárbol izquierdo y después el derecho. (Raíz -> Izquierda -> Derecha).
-2. **Inorden (In-order)**: Visita primero el subárbol izquierdo, luego la raíz y después el derecho. (Izquierda -> Raíz -> Derecha).
+1. **Pre-order**: Visits the root first, then the left subtree, then the right subtree. (Root -> Left -> Right).
+2. **In-order**: Visits the left subtree first, then the root, then the right subtree. (Left -> Root -> Right).
    > [!TIP]
-   > ¡En un BST, el recorrido **inorden** siempre te va a mostrar los números ordenados de menor a mayor!
-3. **Postorden (Post-order)**: Visita primero el subárbol izquierdo, luego el derecho y por último la raíz. (Izquierda -> Derecha -> Raíz).
+   > In a BST, the **in-order** traversal will always show the numbers sorted from smallest to largest!
+3. **Post-order**: Visits the left subtree first, then the right subtree, and finally the root. (Left -> Right -> Root).
 
-### Implementación del Recorrido Inorden en C
+### In-order Traversal Implementation in C
 
 ```c
-// Función para imprimir el árbol en inorden
+// Function to print the tree in-order
 void inorden(struct Nodo* raiz) {
     if (raiz != NULL) {
-        inorden(raiz->izquierdo);     // 1. Recorrer subárbol izquierdo
-        printf("%d ", raiz->dato);    // 2. Visitar el nodo actual (raíz)
-        inorden(raiz->derecho);       // 3. Recorrer subárbol derecho
+        inorden(raiz->izquierdo);     // 1. Traverse left subtree
+        printf("%d ", raiz->dato);    // 2. Visit current node (root)
+        inorden(raiz->derecho);       // 3. Traverse right subtree
     }
 }
 ```
 
 ---
 
-## Un Ejemplo Completo para Probar
+## A Complete Example to Try
 
-Aquí tenés un programa de C completo y funcional que podés compilar y ejecutar. Este programa crea un árbol, inserta algunos valores, los imprime ordenados y realiza una búsqueda:
+Here's a complete, functional C program you can compile and run. This program creates a tree, inserts some values, prints them sorted, and performs a search:
 
 ```c
 #include <stdio.h>
@@ -228,7 +228,7 @@ struct Nodo* buscar(struct Nodo* raiz, int valor) {
 int main() {
     struct Nodo* raiz = NULL;
     
-    // Insertamos elementos
+    // Insert elements
     raiz = insertar(raiz, 50);
     insertar(raiz, 30);
     insertar(raiz, 70);
@@ -237,18 +237,18 @@ int main() {
     insertar(raiz, 60);
     insertar(raiz, 80);
     
-    // Imprimimos el recorrido inorden (debe salir ordenado de menor a mayor)
-    printf("Elementos en el arbol (recorrido Inorden): ");
+    // Print in-order traversal (should be sorted from smallest to largest)
+    printf("Elements in the tree (In-order traversal): ");
     inorden(raiz);
     printf("\n");
     
-    // Buscamos un elemento
+    // Search for an element
     int numeroABuscar = 40;
     struct Nodo* encontrado = buscar(raiz, numeroABuscar);
     if (encontrado != NULL) {
-        printf("El numero %d fue encontrado en el arbol.\n", numeroABuscar);
+        printf("The number %d was found in the tree.\n", numeroABuscar);
     } else {
-        printf("El numero %d no existe en el arbol.\n", numeroABuscar);
+        printf("The number %d does not exist in the tree.\n", numeroABuscar);
     }
     
     return 0;
@@ -257,9 +257,9 @@ int main() {
 
 ---
 
-## Resumen de Aprendizajes
+## Summary of Learnings
 
-- El **árbol binario** organiza la información en jerarquías, no en filas.
-- Un nodo se compone de un valor y **dos punteros autorreferenciados** (`izquierdo` y `derecho`).
-- En un **BST**, los menores van a la izquierda del nodo y los mayores a la derecha, logrando búsquedas ultrarrápidas.
-- La **recursividad** es la herramienta natural para trabajar con árboles, ya que cada subárbol es a su vez un árbol independiente.
+- The **binary tree** organizes information in hierarchies, not rows.
+- A node consists of a value and **two self-referential pointers** (`izquierdo` and `derecho`).
+- In a **BST**, smaller values go to the left of the node and larger values to the right, enabling ultra-fast searches.
+- **Recursion** is the natural tool for working with trees, since each subtree is itself an independent tree.

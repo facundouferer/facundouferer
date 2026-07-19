@@ -7,13 +7,13 @@ lang: 'en'
 published: true
 ---
 
-# Lambdas e Interfaces Funcionales
+# Lambdas and Functional Interfaces
 
-Java permite el paradigma de programación funcional desde la versión 8.
+Java has supported the functional programming paradigm since version 8.
 
-## Interfaces Funcionales
+## Functional Interfaces
 
-Es una interfaz que tiene exactamente un método abstracto. Se suelen marcar con `@FunctionalInterface`.
+A functional interface is an interface that has exactly one abstract method. They are usually marked with `@FunctionalInterface`.
 
 ```java
 @FunctionalInterface
@@ -22,32 +22,32 @@ public interface Operacion {
 }
 ```
 
-## Expresiones Lambda
+## Lambda Expressions
 
-Son una forma concisa de implementar una interfaz funcional sin crear una clase completa.
+Lambdas are a concise way to implement a functional interface without creating a full class.
 
-**Sintaxis:** `(parámetros) -> expresión`
+**Syntax:** `(parameters) -> expression`
 
 ```java
-// Ejemplo de lambda para sumar
+// Example of a lambda for adding
 Operacion suma = (a, b) -> a + b;
 System.out.println(suma.ejecutar(5, 3)); // 8
 ```
 
-## Stream API y Aplicaciones
+## Stream API and Applications
 
-Las lambdas son muy potentes cuando se usan con colecciones:
+Lambdas are very powerful when used with collections:
 
-- `forEach`: Recorre elementos.
-- `filter`: Filtra elementos según una condición.
-- `map`: Transforma elementos.
-- `anyMatch` / `allMatch`: Verifica condiciones.
+- `forEach`: Iterates over elements.
+- `filter`: Filters elements based on a condition.
+- `map`: Transforms elements.
+- `anyMatch` / `allMatch`: Checks conditions.
 
-### Ejemplo:
+### Example:
 ```java
 List<Integer> numeros = Arrays.asList(1, 2, 3, 4, 5, 6);
 List<Integer> pares = numeros.stream()
     .filter(n -> n % 2 == 0)
     .collect(Collectors.toList());
-// Resultado: [2, 4, 6]
+// Result: [2, 4, 6]
 ```

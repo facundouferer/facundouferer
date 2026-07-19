@@ -7,19 +7,19 @@ lang: 'en'
 published: true
 ---
 
-Si querés pensar en estilo orientado a objetos dentro de C, hay una idea fundamental:
+If you want to think in an object-oriented style within C, there's a fundamental idea:
 
-> una `struct` puede representar el estado, y un conjunto de funciones puede representar los métodos.
+> a `struct` can represent the state, and a set of functions can represent the methods.
 
-En esta lección vas a aprender:
+In this lesson you will learn:
 
-- cómo pensar un “objeto” en C
-- cómo asociar comportamiento a una estructura
-- cómo diseñar mejor las funciones que operan sobre una entidad
+- how to think of an "object" in C
+- how to associate behavior with a structure
+- how to better design functions that operate on an entity
 
-## Estado + comportamiento
+## State + behavior
 
-### Estado
+### State
 
 ```c
 struct Rectangulo {
@@ -28,7 +28,7 @@ struct Rectangulo {
 };
 ```
 
-### Comportamiento
+### Behavior
 
 ```c
 float calcularArea(struct Rectangulo r) {
@@ -36,13 +36,13 @@ float calcularArea(struct Rectangulo r) {
 }
 ```
 
-## ¿Dónde estaría el “método” acá?
+## Where would the "method" be here?
 
-En C, el método no está metido dentro de la estructura como en lenguajes orientados a objetos nativos.
+In C, the method is not embedded inside the structure like in native object-oriented languages.
 
-Pero conceptualmente, `calcularArea` cumple un rol parecido: es una operación propia de `Rectangulo`.
+But conceptually, `calcularArea` plays a similar role: it's an operation belonging to `Rectangulo`.
 
-## Diseño más claro con punteros
+## Clearer design with pointers
 
 ```c
 void escalar(struct Rectangulo* r, float factor) {
@@ -51,14 +51,14 @@ void escalar(struct Rectangulo* r, float factor) {
 }
 ```
 
-Acá la función modifica directamente el estado de la estructura.
+Here the function directly modifies the structure's state.
 
-## Resumen
+## Summary
 
-- en C, una `struct` puede representar el estado de una entidad
-- las funciones relacionadas pueden pensarse como sus métodos conceptuales
-- este enfoque ayuda a diseñar software más claro y organizado
+- in C, a `struct` can represent the state of an entity
+- related functions can be thought of as its conceptual methods
+- this approach helps design clearer and more organized software
 
-## Idea final
+## Final thought
 
-La POO en C no se trata de imitar sintaxis ajena, sino de construir un diseño donde cada entidad tenga datos claros y operaciones coherentes sobre esos datos.
+OOP in C is not about imitating someone else's syntax, but about building a design where each entity has clear data and coherent operations on that data.

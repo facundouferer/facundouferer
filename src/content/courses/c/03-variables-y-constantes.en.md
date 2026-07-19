@@ -7,60 +7,60 @@ lang: 'en'
 published: true
 ---
 
-Las **variables** y las **constantes** son la base de casi todo programa. Antes de pedir datos al usuario, antes de tomar decisiones y antes de repetir tareas, un programa necesita **guardar información**.
+**Variables** and **constants** are the foundation of almost every program. Before asking the user for data, before making decisions, and before repeating tasks, a program needs to **store information**.
 
-En C, esa información se guarda en memoria usando nombres que nosotros elegimos.
+In C, that information is stored in memory using names that we choose.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué es una variable
-- qué significa declarar, inicializar y asignar
-- cómo nombrar variables correctamente en C
-- qué tipos de datos básicos se usan con más frecuencia
-- qué es una constante y cuándo conviene usarla
+- what a variable is
+- what it means to declare, initialize, and assign
+- how to name variables correctly in C
+- what basic data types are used most frequently
+- what a constant is and when to use it
 
-> Idea clave: si no entendés bien variables y constantes, todo lo que viene después se vuelve más difícil. Esta parte es FUNDAMENTAL.
+> Key idea: if you don't understand variables and constants well, everything that comes after gets much harder. This part is FUNDAMENTAL.
 
-## ¿Qué es una variable?
+## What is a variable?
 
-Una **variable** es un espacio de memoria que tiene:
+A **variable** is a memory space that has:
 
-1. un **tipo de dato**
-2. un **nombre**
-3. un **valor** que puede cambiar
+1. a **data type**
+2. a **name**
+3. a **value** that can change
 
-Pensalo así: una variable es como una caja con una etiqueta.
+Think of it this way: a variable is like a box with a label.
 
-- La **etiqueta** es el nombre de la variable.
-- El **contenido** de la caja es el valor guardado.
-- El **tipo de dato** indica qué clase de valor puede guardarse ahí.
+- The **label** is the name of the variable.
+- The **content** of the box is the stored value.
+- The **data type** indicates what kind of value can be stored there.
 
-Por ejemplo:
+For example:
 
 ```c
 int edad = 18;
 ```
 
-En esa línea:
+In that line:
 
-- `int` indica que la variable guardará un número entero
-- `edad` es el nombre de la variable
-- `18` es el valor inicial
+- `int` indicates the variable will store an integer number
+- `edad` is the name of the variable
+- `18` is the initial value
 
-## ¿Por qué necesitamos variables?
+## Why do we need variables?
 
-Porque los programas trabajan con datos.
+Because programs work with data.
 
-Por ejemplo, un programa puede necesitar guardar:
+For example, a program might need to store:
 
-- la edad de una persona
-- el precio de un producto
-- la inicial de un nombre
-- la cantidad de alumnos en un curso
+- a person's age
+- the price of a product
+- the initial of a name
+- the number of students in a course
 
-Si no pudiéramos guardar esos valores, el programa no tendría con qué trabajar.
+If we couldn't store those values, the program would have nothing to work with.
 
-Mirá este ejemplo:
+Look at this example:
 
 ```c
 int cantidadAlumnos = 30;
@@ -68,19 +68,19 @@ float precio = 1499.50;
 char inicial = 'F';
 ```
 
-Ahí el programa está guardando tres datos distintos:
+There the program is storing three different pieces of data:
 
-- `cantidadAlumnos` guarda un entero
-- `precio` guarda un número con decimales
-- `inicial` guarda un único carácter
+- `cantidadAlumnos` stores an integer
+- `precio` stores a decimal number
+- `inicial` stores a single character
 
-## Variables y memoria
+## Variables and memory
 
-Cuando un programa se ejecuta, usa memoria RAM.
+When a program runs, it uses RAM.
 
-Cada variable ocupa una parte de esa memoria. Vos no necesitás saber todavía la dirección exacta donde queda guardada, pero sí entender la idea general: **cada variable reserva un lugar para almacenar un dato**.
+Each variable occupies a part of that memory. You don't need to know the exact address where it's stored yet, but you should understand the general idea: **each variable reserves a place to store data**.
 
-Podemos imaginarlo así:
+We can imagine it like this:
 
 ```text
 edad              -> 18
@@ -88,103 +88,103 @@ precio            -> 1499.50
 inicial           -> F
 ```
 
-Esto NO significa que la memoria realmente se vea así, pero sirve como modelo mental para empezar.
+This does NOT mean memory actually looks like this, but it serves as a mental model to start.
 
-Lo importante es entender que el nombre de la variable le permite al programa encontrar el valor guardado.
+The important thing is to understand that the variable's name lets the program find the stored value.
 
-## Declarar una variable
+## Declaring a variable
 
-**Declarar** una variable significa informarle al compilador que esa variable va a existir y qué tipo de dato va a almacenar.
+**Declaring** a variable means informing the compiler that the variable will exist and what data type it will store.
 
-La forma general es:
+The general form is:
 
 ```c
 tipo nombreVariable;
 ```
 
-Ejemplo:
+Example:
 
 ```c
 int edad;
 ```
 
-Esta línea declara una variable llamada `edad` que podrá almacenar números enteros.
+This line declares a variable called `edad` that can store integers.
 
-Todavía no le dimos un valor. Solamente dijimos que esa variable existe.
+We haven't given it a value yet. We only said the variable exists.
 
-## Inicializar una variable
+## Initializing a variable
 
-**Inicializar** una variable significa darle un valor en el mismo momento en que se declara.
+**Initializing** a variable means giving it a value at the same time it's declared.
 
-Ejemplo:
+Example:
 
 ```c
 int edad = 18;
 ```
 
-Acá pasan dos cosas al mismo tiempo:
+Here two things happen at the same time:
 
-1. se declara la variable `edad`
-2. se le asigna el valor `18`
+1. the variable `edad` is declared
+2. the value `18` is assigned to it
 
-Inicializar suele ser una muy buena práctica, porque hace el código más claro y evita usar variables sin un valor válido.
+Initializing is usually a very good practice, because it makes the code clearer and avoids using variables without a valid value.
 
-## Asignar un valor
+## Assigning a value
 
-**Asignar** un valor significa guardar un dato dentro de una variable que ya existe.
+**Assigning** a value means storing data inside a variable that already exists.
 
-Ejemplo:
+Example:
 
 ```c
 int edad;
 edad = 18;
 ```
 
-Primero declaramos la variable.
-Después le asignamos un valor.
+First we declare the variable.
+Then we assign a value to it.
 
-Esto es distinto de inicializar, porque la inicialización ocurre en la misma línea de la declaración.
+This is different from initializing, because initialization happens on the same line as declaration.
 
-## Declarar, inicializar y asignar: diferencia importante
+## Declare, initialize, assign: important difference
 
-Estas tres ideas se parecen, pero NO son lo mismo.
+These three ideas seem similar, but they are NOT the same.
 
-### Solo declaración
+### Declaration only
 
 ```c
 int edad;
 ```
 
-La variable existe, pero todavía no recibe un valor por decisión nuestra.
+The variable exists, but it hasn't received a value by our decision yet.
 
-### Declaración con inicialización
+### Declaration with initialization
 
 ```c
 int edad = 18;
 ```
 
-La variable se crea y ya empieza con un valor.
+The variable is created and already starts with a value.
 
-### Asignación posterior
+### Later assignment
 
 ```c
 int edad;
 edad = 18;
 ```
 
-La variable se crea primero y recibe el valor después.
+The variable is created first and receives the value afterward.
 
-Entender esta diferencia es importantísimo, porque en programación el momento en que un valor aparece también importa.
+Understanding this difference is extremely important, because in programming the moment a value appears also matters.
 
-## Tipos de datos básicos que vas a usar al comenzar
+## Basic data types you'll use when starting
 
-En C, toda variable necesita un tipo. El tipo define qué clase de dato puede guardarse.
+In C, every variable needs a type. The type defines what kind of data can be stored.
 
-Por ahora, los más importantes para empezar son estos:
+For now, the most important ones to start with are these:
 
 ### `int`
 
-Se usa para números enteros, es decir, números sin parte decimal.
+Used for integers, that is, numbers without a decimal part.
 
 ```c
 int cantidad = 25;
@@ -194,7 +194,7 @@ int temperaturaMinima = 8;
 
 ### `float`
 
-Se usa para números con decimales.
+Used for numbers with decimals.
 
 ```c
 float altura = 1.75;
@@ -204,7 +204,7 @@ float promedio = 8.4;
 
 ### `char`
 
-Se usa para guardar **un solo carácter**.
+Used to store **a single character**.
 
 ```c
 char letra = 'A';
@@ -212,19 +212,19 @@ char inicial = 'F';
 char simbolo = '#';
 ```
 
-Fijate en algo importante: los valores `char` se escriben entre **comillas simples**.
+Notice something important: `char` values are written with **single quotes**.
 
 ```c
 char letra = 'A';
 ```
 
-Eso representa un solo carácter.
+That represents a single character.
 
-> Más adelante vas a ver cómo trabajar con texto completo. Por ahora alcanza con entender que `char` guarda un solo carácter.
+> Later you'll see how to work with full text. For now, it's enough to understand that `char` stores a single character.
 
-## Ejemplo completo y explicado
+## Complete explained example
 
-Mirá este programa simple:
+Look at this simple program:
 
 ```c
 int main() {
@@ -236,51 +236,51 @@ int main() {
 }
 ```
 
-¿Qué está pasando ahí?
+What's happening there?
 
-- `edad` guarda un número entero
-- `altura` guarda un número decimal
-- `inicial` guarda un carácter
+- `edad` stores an integer
+- `altura` stores a decimal number
+- `inicial` stores a character
 
-El programa no muestra nada en pantalla todavía. Y está perfecto. En esta lección el objetivo no es mostrar datos, sino entender cómo se guardan.
+The program doesn't display anything on the screen yet. And that's fine. The goal of this lesson isn't to display data, but to understand how it's stored.
 
-## El valor de una variable puede cambiar
+## A variable's value can change
 
-La palabra **variable** justamente indica que su valor puede variar.
+The word **variable** indicates precisely that its value can vary.
 
-Ejemplo:
+Example:
 
 ```c
 int edad = 18;
 edad = 19;
 ```
 
-Al final de ese fragmento, el valor guardado en `edad` es `19`.
+At the end of that fragment, the value stored in `edad` is `19`.
 
-La variable sigue siendo la misma, pero su contenido cambió.
+The variable is still the same, but its content changed.
 
-Otro ejemplo:
+Another example:
 
 ```c
 float precio = 1500.00;
 precio = 1750.00;
 ```
 
-Ahora `precio` ya no vale `1500.00`, sino `1750.00`.
+Now `precio` is no longer `1500.00`, but `1750.00`.
 
-## No uses variables sin darles un valor confiable
+## Don't use variables without giving them a reliable value
 
-Una de las malas costumbres más peligrosas al empezar es declarar una variable y usarla sin haberle asignado un valor claro.
+One of the most dangerous bad habits when starting is declaring a variable and using it without having assigned a clear value.
 
-Por ejemplo:
+For example:
 
 ```c
 int edad;
 ```
 
-Esa variable existe, sí. Pero si todavía no le diste un valor con una asignación, no deberías asumir que contiene un dato útil para tu programa.
+That variable exists, yes. But if you haven't given it a value through assignment, you shouldn't assume it contains useful data for your program.
 
-Por eso, cuando sea posible, conviene inicializar:
+That's why, when possible, it's better to initialize:
 
 ```c
 int edad = 0;
@@ -288,23 +288,23 @@ float precio = 0.0;
 char inicial = ' ';
 ```
 
-No siempre el valor inicial será cero o un espacio, pero la idea importante es esta: **el programa debe saber con qué valor empieza a trabajar**.
+The initial value won't always be zero or a space, but the important idea is this: **the program must know what value it starts working with**.
 
-## Reglas para nombrar variables en C
+## Rules for naming variables in C
 
-No se puede poner cualquier nombre. C tiene reglas.
+You can't just use any name. C has rules.
 
-Un nombre de variable:
+A variable name:
 
-- puede usar letras
-- puede usar números
-- puede usar guion bajo `_`
-- debe comenzar con una letra o con `_`
-- no puede comenzar con un número
-- no puede tener espacios
-- no puede ser una palabra reservada del lenguaje
+- can use letters
+- can use numbers
+- can use underscore `_`
+- must begin with a letter or `_`
+- cannot begin with a number
+- cannot contain spaces
+- cannot be a reserved word of the language
 
-### Ejemplos válidos
+### Valid examples
 
 ```c
 edad
@@ -314,7 +314,7 @@ _total
 precioFinal
 ```
 
-### Ejemplos inválidos
+### Invalid examples
 
 ```c
 1edad
@@ -323,18 +323,18 @@ float
 precio-final
 ```
 
-¿Por qué son inválidos?
+Why are they invalid?
 
-- `1edad` empieza con número
-- `mi edad` tiene espacio
-- `float` es una palabra reservada del lenguaje
-- `precio-final` tiene un guion medio, y eso no forma parte del nombre
+- `1edad` starts with a number
+- `mi edad` has a space
+- `float` is a reserved word of the language
+- `precio-final` has a hyphen, which isn't part of a name
 
-## Buenas prácticas al nombrar variables
+## Good practices when naming variables
 
-Una cosa es que un nombre sea válido y otra muy distinta es que sea claro.
+One thing is for a name to be valid, and another is for it to be clear.
 
-Mirá estos ejemplos:
+Look at these examples:
 
 ```c
 int x;
@@ -342,9 +342,9 @@ float a;
 char z;
 ```
 
-Eso puede compilar, pero comunica muy poco.
+That may compile, but it communicates very little.
 
-Ahora mirá esto:
+Now look at this:
 
 ```c
 int cantidadAlumnos;
@@ -352,38 +352,38 @@ float precioProducto;
 char inicialNombre;
 ```
 
-Mucho mejor.
+Much better.
 
-Un buen nombre ayuda a entender el programa sin tener que adivinar.
+A good name helps understand the program without having to guess.
 
-### Recomendaciones
+### Recommendations
 
-- usá nombres que describan el dato
-- evitá nombres demasiado cortos si no aportan claridad
-- mantené una forma de nombrar consistente
+- use names that describe the data
+- avoid names that are too short if they don't add clarity
+- keep a consistent naming style
 
-## ¿Qué es una constante?
+## What is a constant?
 
-Una **constante** es un dato cuyo valor no debe cambiar durante la ejecución del programa.
+A **constant** is data whose value should not change during program execution.
 
-Es decir:
+That is:
 
-- una variable puede cambiar
-- una constante debe permanecer igual
+- a variable can change
+- a constant must remain the same
 
-Esto sirve cuando hay valores fijos que tienen un significado importante en el programa.
+This is useful when there are fixed values that have an important meaning in the program.
 
-Por ejemplo:
+For example:
 
-- la cantidad de días de la semana
-- la cantidad de meses del año
-- el valor aproximado de PI
+- the number of days in a week
+- the number of months in a year
+- the approximate value of PI
 
-## Declarar constantes con `const`
+## Declaring constants with `const`
 
-En C, una constante se puede declarar usando la palabra clave `const`.
+In C, a constant can be declared using the keyword `const`.
 
-Ejemplo:
+Example:
 
 ```c
 const int diasSemana = 7;
@@ -391,75 +391,75 @@ const int mesesAnio = 12;
 const float PI = 3.14159;
 ```
 
-En estos casos, esos valores se definen para no ser modificados después.
+In these cases, those values are defined so they won't be modified later.
 
-## Diferencia entre variable y constante
+## Difference between variable and constant
 
-Mirá este ejemplo:
+Look at this example:
 
 ```c
 int edad = 18;
 const int diasSemana = 7;
 ```
 
-- `edad` puede cambiar
-- `diasSemana` no debería cambiar
+- `edad` can change
+- `diasSemana` should not change
 
-Si más adelante en el código escribís:
+If later in the code you write:
 
 ```c
 diasSemana = 8;
 ```
 
-eso está mal, porque contradice la idea de haber declarado ese dato como constante.
+that's wrong, because it contradicts the idea of having declared that data as constant.
 
-La enseñanza importante acá no es memorizar un error del compilador, sino entender el concepto: **si un valor no debe cambiar, declararlo como constante hace el programa más claro y más seguro**.
+The important lesson here isn't memorizing a compiler error, but understanding the concept: **if a value shouldn't change, declaring it as a constant makes the program clearer and safer**.
 
-## ¿Cuándo conviene usar una constante?
+## When should you use a constant?
 
-Conviene usar una constante cuando un valor:
+You should use a constant when a value:
 
-- representa una regla fija
-- tiene el mismo significado durante todo el programa
-- no debería modificarse accidentalmente
+- represents a fixed rule
+- has the same meaning throughout the program
+- should not be accidentally modified
 
-Ejemplo:
+Example:
 
 ```c
 const int cantidadRuedasBicicleta = 2;
 const int horasDia = 24;
 ```
 
-Si esos valores son parte de la lógica del programa, declararlos como constantes comunica mejor la intención.
+If those values are part of the program's logic, declaring them as constants communicates intent better.
 
-## Ejemplo comparando variables y constantes
+## Example comparing variables and constants
 
 ```c
 int edad = 18;
 const int mesesAnio = 12;
 ```
 
-En ese código:
+In that code:
 
-- `edad` representa un dato que podría cambiar
-- `mesesAnio` representa un dato fijo
+- `edad` represents data that could change
+- `mesesAnio` represents fixed data
 
-Esa diferencia conceptual es más importante que la sintaxis.
+That conceptual difference is more important than the syntax.
 
-## Errores comunes al empezar
+## Common mistakes when starting
 
-### 1. Confundir el nombre con el valor
+### 1. Confusing the name with the value
 
 ```c
 int edad = 18;
 ```
 
-- `edad` es el nombre
-- `18` es el valor
+- `edad` is the name
+- `18` is the value
 
-No son lo mismo.
+They're not the same.
 
-### 2. Creer que declarar es lo mismo que inicializar
+### 2. Believing declaring is the same as initializing
 
 No.
 
@@ -467,53 +467,53 @@ No.
 int edad;
 ```
 
-Eso solo declara.
+That only declares.
 
 ```c
 int edad = 18;
 ```
 
-Eso declara e inicializa.
+That declares and initializes.
 
-### 3. Usar nombres poco claros
+### 3. Using unclear names
 
 ```c
 int a;
 int dato;
 ```
 
-Eso dice muy poco.
+That says very little.
 
-Es mejor:
+Better:
 
 ```c
 int cantidadEstudiantes;
 ```
 
-### 4. Usar una variable sin haber decidido con qué valor empieza
+### 4. Using a variable without having decided what value it starts with
 
-Cuando recién empezás, conviene que cada variable importante tenga un valor inicial claro.
+When you're just starting, it's best that every important variable has a clear initial value.
 
-### 5. Declarar como variable algo que en realidad debería ser constante
+### 5. Declaring as a variable something that should actually be a constant
 
-Si un valor no va a cambiar, usar `const` hace que el código exprese mejor su intención.
+If a value won't change, using `const` makes the code express its intent better.
 
-## Resumen
+## Summary
 
-- una **variable** guarda un dato que puede cambiar
-- una **constante** guarda un dato que no debe cambiar
-- en C, toda variable necesita un **tipo** y un **nombre**
-- **declarar** es crear la variable
-- **inicializar** es darle un valor al declararla
-- **asignar** es darle un valor después de haberla declarado
-- `int`, `float` y `char` son tipos básicos muy usados al comenzar
-- un buen nombre hace el código mucho más entendible
-- `const` se usa para representar valores fijos
+- a **variable** stores data that can change
+- a **constant** stores data that should not change
+- in C, every variable needs a **type** and a **name**
+- **declaring** is creating the variable
+- **initializing** is giving it a value when declaring it
+- **assigning** is giving it a value after it's been declared
+- `int`, `float`, and `char` are basic types widely used when starting
+- a good name makes the code much more understandable
+- `const` is used to represent fixed values
 
-## Idea final
+## Final thought
 
-Cuando programás, no escribís código porque sí: le estás diciendo a la computadora **qué datos existen** y **cómo debe tratarlos**.
+When you program, you're not writing code for the sake of it: you're telling the computer **what data exists** and **how it should handle it**.
 
-Las variables y las constantes son la primera gran herramienta para modelar esa información.
+Variables and constants are the first great tool for modeling that information.
 
-Si esto te queda claro, el resto del camino empieza a tener sentido.
+If this is clear to you, the rest of the road starts to make sense.

@@ -7,47 +7,47 @@ lang: 'en'
 published: true
 ---
 
-# Estructuras de Control
+# Control Structures
 
-Las estructuras de control permiten que tu código tome decisiones basadas en condiciones.
+Control structures let your code make decisions based on conditions.
 
-## Condicionales
+## Conditionals
 
 ### if / else if / else
-Es la forma más común de ramificar el flujo del programa.
+This is the most common way to branch the program flow.
 
 ```javascript
 let edad = 18;
 
 if (edad >= 18) {
-    console.log("Podés pasar");
+    console.log("You can enter");
 } else if (edad >= 16) {
-    console.log("Pasás con tutor");
+    console.log("You can enter with a guardian");
 } else {
-    console.log("No podés pasar");
+    console.log("You cannot enter");
 }
 ```
 
-### Operador Ternario
-Una forma corta de escribir un `if/else` simple.
-`condicion ? valor_si_true : valor_si_false`
+### Ternary Operator
+A short way to write a simple `if/else`.
+`condition ? value_if_true : value_if_false`
 
 ```javascript
-const mensaje = edad >= 18 ? "Adulto" : "Menor";
+const mensaje = edad >= 18 ? "Adult" : "Minor";
 ```
 
 ### switch
-Ideal para comparar una variable contra múltiples valores fijos.
+Ideal for comparing a variable against multiple fixed values.
 
 ```javascript
 let dia = 1;
 switch(dia) {
-    case 1: console.log("Lunes"); break;
-    case 2: console.log("Martes"); break;
-    default: console.log("Otro día");
+    case 1: console.log("Monday"); break;
+    case 2: console.log("Tuesday"); break;
+    default: console.log("Other day");
 }
 ```
 
-## ¿Cuándo usar cada uno?
-- **`if`**: Cuando tenés condiciones complejas (`a > 10 && b < 5`) o rangos.
-- **`switch`**: Cuando comparás un solo valor contra muchas opciones específicas (ej: días de la semana, tipos de usuario).
+## When to use each?
+- **`if`**: When you have complex conditions (`a > 10 && b < 5`) or ranges.
+- **`switch`**: When comparing a single value against many specific options (e.g., days of the week, user types).

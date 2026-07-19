@@ -7,44 +7,44 @@ lang: 'en'
 published: true
 ---
 
-Una vez que empezás a trabajar con funciones, aparece una pregunta central:
+Once you start working with functions, a central question appears:
 
-> ¿qué datos conoce cada función y cómo se le pasan esos datos?
+> what data does each function know and how is that data passed to it?
 
-Acá entran en juego las variables locales, las variables globales y el pasaje de parámetros.
+That's where local variables, global variables, and parameter passing come into play.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué son variables locales y globales
-- qué son parámetros nominales y efectivos
-- qué es el pasaje por valor
-- qué es el pasaje por referencia
-- cómo cambian los datos dentro y fuera de una función
+- what local and global variables are
+- what formal and actual parameters are
+- what pass-by-value is
+- what pass-by-reference is
+- how data changes inside and outside a function
 
-## Variables locales
+## Local variables
 
-Una **variable local** es una variable declarada dentro de una función.
+A **local variable** is a variable declared inside a function.
 
-Solo existe dentro de esa función y solo ahí puede usarse directamente.
+It only exists within that function and can only be used directly there.
 
-### Ejemplo
+### Example
 
 ```c
 void saludar() {
     int veces = 1;
-    printf("Hola %d\n", veces);
+    printf("Hello %d\n", veces);
 }
 ```
 
-La variable `veces` es local a `saludar`.
+The variable `veces` is local to `saludar`.
 
-## Variables globales
+## Global variables
 
-Una **variable global** se declara fuera de todas las funciones.
+A **global variable** is declared outside all functions.
 
-Puede ser utilizada por varias funciones del programa.
+It can be used by multiple functions in the program.
 
-### Ejemplo
+### Example
 
 ```c
 int contador = 0;
@@ -54,26 +54,26 @@ void aumentar() {
 }
 ```
 
-## Diferencia conceptual
+## Conceptual difference
 
-- la variable local pertenece a una función
-- la variable global pertenece al programa completo o a una región mucho más amplia
+- the local variable belongs to a function
+- the global variable belongs to the entire program or a much wider scope
 
-## ¿Conviene usar variables globales?
+## Should you use global variables?
 
-Pueden ser útiles en algunos casos, pero hay que usarlas con criterio.
+They can be useful in some cases, but they must be used wisely.
 
-¿Por qué? Porque si muchas funciones modifican una misma variable global, el programa puede volverse más difícil de entender y controlar.
+Why? Because if many functions modify the same global variable, the program can become harder to understand and control.
 
-Para principiantes, una buena regla es esta:
+For beginners, a good rule is this:
 
-> preferí variables locales salvo que haya una razón clara para compartir el dato.
+> prefer local variables unless there's a clear reason to share the data.
 
-## ¿Qué es un parámetro?
+## What is a parameter?
 
-Un **parámetro** es un dato que una función recibe para poder trabajar.
+A **parameter** is a piece of data that a function receives to do its work.
 
-### Ejemplo
+### Example
 
 ```c
 int sumar(int a, int b) {
@@ -81,39 +81,39 @@ int sumar(int a, int b) {
 }
 ```
 
-Acá, `a` y `b` son parámetros de la función.
+Here, `a` and `b` are the function's parameters.
 
-## Parámetros nominales y efectivos
+## Formal and actual parameters
 
-Esta distinción es importantísima.
+This distinction is very important.
 
-### Parámetros nominales
+### Formal parameters
 
-Son los nombres que aparecen en la definición de la función.
+These are the names that appear in the function definition.
 
 ```c
 int sumar(int a, int b)
 ```
 
-Acá, `a` y `b` son parámetros nominales.
+Here, `a` and `b` are formal parameters.
 
-### Parámetros efectivos
+### Actual parameters
 
-Son los valores o variables reales que se pasan cuando la función se invoca.
+These are the real values or variables passed when the function is called.
 
 ```c
 resultado = sumar(5, 3);
 ```
 
-Acá, `5` y `3` son parámetros efectivos.
+Here, `5` and `3` are actual parameters.
 
-## Pasaje por valor
+## Pass-by-value
 
-En el **pasaje por valor**, la función recibe una copia del dato.
+In **pass-by-value**, the function receives a copy of the data.
 
-Eso significa que si la función modifica ese parámetro, el original no cambia.
+That means if the function modifies that parameter, the original does not change.
 
-### Ejemplo
+### Example
 
 ```c
 #include <stdio.h>
@@ -130,19 +130,19 @@ int main() {
 }
 ```
 
-El valor mostrado seguirá siendo `5`.
+The displayed value will still be `5`.
 
-¿Y por qué? Porque `cambiar` recibió una copia de `numero`, no el original.
+And why? Because `cambiar` received a copy of `numero`, not the original.
 
-## Pasaje por referencia
+## Pass-by-reference
 
-En C no existe “pasaje por referencia” nativo como en otros lenguajes, pero se puede lograr el mismo efecto práctico usando **punteros**.
+In C, there is no native "pass-by-reference" like in other languages, but the same practical effect can be achieved using **pointers**.
 
-Esto es importante decirlo bien para no enseñar mal.
+This is important to say correctly to avoid teaching it wrong.
 
-Cuando en cursos introductorios se habla de “pasaje por referencia” en C, normalmente se está hablando de pasar la dirección de una variable mediante punteros, para que la función pueda modificar el dato original.
+When introductory courses talk about "pass-by-reference" in C, they're usually talking about passing the address of a variable through pointers, so the function can modify the original data.
 
-### Ejemplo conceptual
+### Conceptual example
 
 ```c
 void cambiar(int *x) {
@@ -150,19 +150,19 @@ void cambiar(int *x) {
 }
 ```
 
-Y la llamada:
+And the call:
 
 ```c
 cambiar(&numero);
 ```
 
-## ¿Qué cambia acá?
+## What changes here?
 
-Ahora la función no trabaja sobre una simple copia del valor, sino sobre la dirección del dato original.
+Now the function doesn't work on a simple copy of the value, but on the address of the original data.
 
-Eso permite modificar la variable real.
+That allows modifying the actual variable.
 
-## Ejemplo completo
+## Complete example
 
 ```c
 #include <stdio.h>
@@ -179,55 +179,55 @@ int main() {
 }
 ```
 
-Ahora el valor mostrado será `100`.
+Now the displayed value will be `100`.
 
-## Comparación entre ambos pasajes
+## Comparison between both passing methods
 
-### Por valor
+### By value
 
-- la función recibe una copia
-- el original no cambia
+- the function receives a copy
+- the original does not change
 
-### Por referencia simulada con punteros
+### By reference simulated with pointers
 
-- la función trabaja sobre la dirección del dato
-- el original sí puede cambiar
+- the function works on the address of the data
+- the original can change
 
-## ¿Cuándo conviene cada uno?
+## When to use each one
 
-### Pasaje por valor
+### Pass-by-value
 
-Conviene cuando solo querés usar el dato para calcular o consultar algo.
+Use it when you only want to use the data to calculate or query something.
 
-### Pasaje por referencia con punteros
+### Pass-by-reference with pointers
 
-Conviene cuando querés que la función pueda modificar el dato original.
+Use it when you want the function to be able to modify the original data.
 
-## Errores comunes al empezar
+## Common mistakes when starting
 
-### 1. Creer que cambiar un parámetro por valor modifica el original
+### 1. Believing that changing a parameter by value modifies the original
 
-No. Si se pasó por valor, lo que se modifica es la copia.
+No. If it was passed by value, what gets modified is the copy.
 
-### 2. Usar demasiadas variables globales
+### 2. Using too many global variables
 
-Eso vuelve más difícil entender de dónde salen y quién modifica los datos.
+That makes it harder to understand where data comes from and who modifies it.
 
-### 3. Confundir parámetros nominales con efectivos
+### 3. Confusing formal and actual parameters
 
-Uno pertenece a la definición de la función. El otro pertenece a la llamada.
+One belongs to the function definition. The other belongs to the function call.
 
-## Resumen
+## Summary
 
-- una variable local vive dentro de una función
-- una variable global tiene alcance más amplio
-- los parámetros nominales aparecen en la definición
-- los parámetros efectivos aparecen en la invocación
-- por valor se pasa una copia
-- en C, el efecto de pasaje por referencia se logra usando punteros
+- a local variable lives inside a function
+- a global variable has a wider scope
+- formal parameters appear in the definition
+- actual parameters appear in the invocation
+- by value, a copy is passed
+- in C, the effect of pass-by-reference is achieved using pointers
 
-## Idea final
+## Final thought
 
-Entender alcance y pasaje de parámetros te cambia por completo la forma de leer funciones.
+Understanding scope and parameter passing completely changes the way you read functions.
 
-Porque a partir de acá ya no solo importa qué hace una función, sino también **con qué datos trabaja y qué datos puede llegar a modificar**.
+Because from now on, it's not just about what a function does, but also **what data it works with and what data it might modify**.

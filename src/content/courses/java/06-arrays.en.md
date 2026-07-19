@@ -7,46 +7,46 @@ lang: 'en'
 published: true
 ---
 
-# Arrays (Arreglos)
+# Arrays
 
-Un array es una estructura de datos que permite almacenar múltiples valores del mismo tipo en una sola variable.
+An array is a data structure that allows storing multiple values of the same type in a single variable.
 
-## Características
-- **Estáticos:** Su tamaño se define al crearlos y no puede cambiar.
-- **Homogéneos:** Todos los elementos deben ser del mismo tipo.
-- **Indexados:** Se accede a ellos mediante un índice que empieza en `0`.
+## Characteristics
+- **Fixed-size:** Its size is defined when created and cannot change.
+- **Homogeneous:** All elements must be of the same type.
+- **Indexed:** Accessed through an index that starts at `0`.
 
-## Cómo crear un Array
+## How to create an Array
 
 ```java
-// Forma 1: Valores directos
+// Form 1: Direct values
 int[] numeros = {1, 2, 3, 4, 5};
 
-// Forma 2: Con tamaño fijo
+// Form 2: With fixed size
 int[] otrosNumeros = new int[5];
 otrosNumeros[0] = 10;
 ```
 
-## Recorrer un Array
+## Iterating over an Array
 
-Usamos bucles para acceder a cada elemento:
+We use loops to access each element:
 
 ```java
 int[] numeros = {2, 4, 6, 8};
 for (int i = 0; i < numeros.length; i++) {
-    System.out.println("Posición " + i + ": " + numeros[i]);
+    System.out.println("Position " + i + ": " + numeros[i]);
 }
 ```
 
-## Arrays Multidimensionales
+## Multidimensional Arrays
 
-Podemos crear tablas (matrices) o estructuras de más dimensiones:
+We can create tables (matrices) or structures with more dimensions:
 
 ```java
-// Bidimensional (3x3)
+// Two-dimensional (3x3)
 int[][] matriz = new int[3][3];
 matriz[0][0] = 1;
 
-// Tridimensional (Cubo)
+// Three-dimensional (Cube)
 int[][][] cubo = new int[3][3][3];
 ```

@@ -7,35 +7,35 @@ lang: 'en'
 published: true
 ---
 
-Una **pila** es una estructura en la que el último elemento que entra es el primero que sale.
+A **stack** is a structure where the last element that enters is the first one that leaves.
 
-Eso se conoce como **LIFO**: Last In, First Out.
+That's known as **LIFO**: Last In, First Out.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué es una pila
-- recorrido en pilas
-- búsqueda en pilas
-- inserción en pilas
-- extracción básica
+- what a stack is
+- stack traversal
+- search in stacks
+- insertion in stacks
+- basic extraction
 
-## Inserción: push
+## Insertion: push
 
-Agregar un elemento a la pila se conoce como `push`.
+Adding an element to the stack is called `push`.
 
-## Extracción: pop
+## Extraction: pop
 
-Quitar el elemento superior se conoce como `pop`.
+Removing the top element is called `pop`.
 
-## Recorrido
+## Traversal
 
-El recorrido visita los elementos desde el tope hacia abajo.
+Traversal visits elements from the top down.
 
-## Búsqueda
+## Search
 
-La búsqueda se hace recorriendo la pila elemento por elemento.
+Search is done by traversing the stack element by element.
 
-## Ejemplo de nodo
+## Node example
 
 ```c
 struct Nodo {
@@ -44,13 +44,13 @@ struct Nodo {
 };
 ```
 
-## Resumen
+## Summary
 
-- una pila sigue la regla LIFO
-- insertar se llama `push`
-- extraer se llama `pop`
-- también puede recorrerse y buscarse
+- a stack follows the LIFO rule
+- inserting is called `push`
+- extracting is called `pop`
+- it can also be traversed and searched
 
-## Idea final
+## Final thought
 
-La pila es excelente para entender que no todas las estructuras permiten acceder a los datos de cualquier forma. Cada una tiene su propia lógica de uso.
+The stack is excellent for understanding that not all structures allow accessing data in any way. Each has its own usage logic.

@@ -7,21 +7,21 @@ lang: 'en'
 published: true
 ---
 
-Dos de las ideas más famosas de la POO son la **herencia** y el **polimorfismo**.
+Two of the most famous ideas in OOP are **inheritance** and **polymorphism**.
 
-C no las ofrece de forma nativa, pero sí se pueden simular ciertos comportamientos con diseño y punteros a función.
+C does not offer them natively, but certain behaviors can be simulated with design and function pointers.
 
-En esta lección vas a aprender:
+In this lesson you will learn:
 
-- por qué herencia y polimorfismo no son nativos en C
-- cómo pueden aproximarse conceptualmente
-- qué papel cumplen los punteros a función
+- why inheritance and polymorphism are not native in C
+- how they can be approximated conceptually
+- what role function pointers play
 
-## Herencia simulada
+## Simulated inheritance
 
-Una forma simple de aproximar herencia en C es componer estructuras relacionadas.
+A simple way to approximate inheritance in C is through composing related structures.
 
-### Ejemplo conceptual
+### Conceptual example
 
 ```c
 struct Persona {
@@ -34,40 +34,40 @@ struct Alumno {
 };
 ```
 
-Acá `Alumno` contiene una `Persona` y agrega más información.
+Here `Alumno` contains a `Persona` and adds more information.
 
-No es herencia nativa, pero se parece a una extensión de comportamiento o estructura.
+It's not native inheritance, but it resembles an extension of behavior or structure.
 
-## Polimorfismo simulado con punteros a función
+## Simulated polymorphism with function pointers
 
-Los punteros a función permiten elegir qué comportamiento ejecutar.
+Function pointers allow choosing which behavior to execute.
 
-### Ejemplo conceptual
+### Conceptual example
 
 ```c
 typedef void (*AccionSaludo)();
 ```
 
-Y luego distintas funciones podrían cumplir distintos comportamientos bajo una misma idea general.
+And then different functions could fulfill different behaviors under the same general idea.
 
-## ¿Por qué esto importa?
+## Why does this matter?
 
-Porque muestra que las ideas de diseño pueden sobrevivir aunque el lenguaje no tenga la sintaxis específica.
+Because it shows that design ideas can survive even when the language doesn't have the specific syntax.
 
-Pero también hay que ser honestos:
+But we also have to be honest:
 
-- no es lo mismo que POO nativa
-- exige más trabajo manual
-- requiere más disciplina de diseño
+- it's not the same as native OOP
+- it requires more manual work
+- it requires more design discipline
 
-## Resumen
+## Summary
 
-- C no tiene herencia ni polimorfismo nativos
-- algunas ideas pueden aproximarse con composición y punteros a función
-- esto permite construir diseños más flexibles dentro de los límites reales del lenguaje
+- C has no native inheritance or polymorphism
+- some ideas can be approximated with composition and function pointers
+- this allows building more flexible designs within the real limits of the language
 
-## Idea final
+## Final thought
 
-Aprender POO en C es aprender a separar el concepto de la sintaxis.
+Learning OOP in C is learning to separate the concept from the syntax.
 
-Y eso te hace mejor programador, porque dejás de depender de “palabras mágicas” del lenguaje y empezás a entender el diseño que hay detrás.
+And that makes you a better programmer, because you stop relying on "magic keywords" of the language and start understanding the design behind them.

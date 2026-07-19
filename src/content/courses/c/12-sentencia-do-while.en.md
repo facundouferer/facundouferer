@@ -7,32 +7,32 @@ lang: 'en'
 published: true
 ---
 
-La sentencia `do-while` también repite instrucciones, pero tiene una diferencia muy importante respecto de `while`.
+The `do-while` statement also repeats instructions, but it has a very important difference compared to `while`.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- cómo funciona `do-while`
-- en qué se diferencia de `while`
-- por qué se ejecuta al menos una vez
-- cuándo conviene usarlo
+- how `do-while` works
+- how it differs from `while`
+- why it executes at least once
+- when to use it
 
-## Sintaxis
+## Syntax
 
 ```c
 do {
-    instrucciones;
-} while (condicion);
+    instructions;
+} while (condition);
 ```
 
-## Diferencia fundamental con `while`
+## Fundamental difference from `while`
 
-En `while`, la condición se evalúa antes de entrar al bloque.
+In `while`, the condition is evaluated before entering the block.
 
-En `do-while`, la condición se evalúa después de ejecutar el bloque.
+In `do-while`, the condition is evaluated after executing the block.
 
-Eso significa que el bloque se ejecuta **al menos una vez**.
+That means the block executes **at least once**.
 
-## Ejemplo
+## Example
 
 ```c
 #include <stdio.h>
@@ -49,7 +49,7 @@ int main() {
 }
 ```
 
-## Ejemplo donde la diferencia importa
+## Example where the difference matters
 
 ```c
 #include <stdio.h>
@@ -58,39 +58,39 @@ int main() {
     int numero = 10;
 
     do {
-        printf("El número es %d\n", numero);
+        printf("The number is %d\n", numero);
     } while (numero < 5);
 
     return 0;
 }
 ```
 
-Aunque `numero < 5` es falso, el bloque se ejecuta una vez.
+Even though `numero < 5` is false, the block executes once.
 
-## ¿Cuándo conviene usar `do-while`?
+## When should you use `do-while`?
 
-Conviene cuando querés que el bloque se ejecute al menos una vez antes de verificar si debe repetirse.
+Use it when you want the block to execute at least once before checking whether to repeat.
 
-## Errores comunes
+## Common mistakes
 
-### 1. Creer que `while` y `do-while` son iguales
+### 1. Believing `while` and `do-while` are the same
 
-No lo son. La diferencia está en cuándo se evalúa la condición.
+They're not. The difference is in when the condition is evaluated.
 
-### 2. Olvidar el `;` final
+### 2. Forgetting the final `;`
 
 ```c
-} while (condicion);
+} while (condition);
 ```
 
-Ese punto y coma forma parte de la sintaxis.
+That semicolon is part of the syntax.
 
-## Resumen
+## Summary
 
-- `do-while` evalúa la condición al final
-- el bloque se ejecuta al menos una vez
-- es útil cuando necesitás garantizar una primera ejecución
+- `do-while` evaluates the condition at the end
+- the block executes at least once
+- it's useful when you need to guarantee a first execution
 
-## Idea final
+## Final thought
 
-`do-while` muestra que en programación no solo importa qué condición se evalúa, sino también **en qué momento** se evalúa.
+`do-while` shows that in programming, not only does the condition matter, but also **when** it's evaluated.

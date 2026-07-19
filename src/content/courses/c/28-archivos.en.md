@@ -7,89 +7,89 @@ lang: 'en'
 published: true
 ---
 
-Hasta ahora trabajaste principalmente con datos en memoria. Pero cuando el programa termina, esa información desaparece.
+So far you've worked mainly with data in memory. But when the program ends, that information disappears.
 
-Para conservar datos entre ejecuciones aparecen los **archivos**.
+To preserve data between executions, **files** come into play.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué es un archivo
-- qué es `FILE*`
-- cómo abrir, leer, escribir y cerrar archivos
-- modos de apertura comunes
-- por qué siempre hay que verificar y cerrar correctamente
+- what a file is
+- what `FILE*` is
+- how to open, read, write, and close files
+- common opening modes
+- why you should always check and close properly
 
-## ¿Qué es un archivo?
+## What is a file?
 
-Un archivo es una forma de guardar información en disco para que siga existiendo después de que el programa termine.
+A file is a way to store information on disk so that it continues to exist after the program ends.
 
-Eso permite, por ejemplo:
+This allows, for example:
 
-- guardar resultados
-- cargar datos previamente guardados
-- mantener información persistente
+- saving results
+- loading previously saved data
+- maintaining persistent information
 
-## Tipo `FILE*`
+## The `FILE*` type
 
-En C, los archivos se manejan mediante el tipo `FILE*`.
+In C, files are handled through the `FILE*` type.
 
-Ese tipo representa un archivo abierto sobre el que el programa puede operar.
+This type represents an open file that the program can operate on.
 
-## Abrir un archivo
+## Opening a file
 
-Se usa `fopen`.
+`fopen` is used.
 
 ```c
 FILE* archivo = fopen("datos.txt", "w");
 ```
 
-## Modos comunes
+## Common modes
 
-- `"r"` → abrir para leer
-- `"w"` → abrir para escribir
-- `"a"` → abrir para agregar al final
+- `"r"` → open for reading
+- `"w"` → open for writing
+- `"a"` → open for appending
 
-## Importante: verificar si se abrió correctamente
+## Important: check if it opened correctly
 
-No alcanza con llamar a `fopen`. Hay que verificar si el resultado es distinto de `NULL`.
+It's not enough to call `fopen`. You must check if the result is different from `NULL`.
 
 ```c
 if (archivo != NULL) {
-    /* usar archivo */
+    /* use file */
 }
 ```
 
-## Escribir en un archivo
+## Writing to a file
 
 ```c
-fprintf(archivo, "Hola Mundo!\n");
+fprintf(archivo, "Hello World!\n");
 ```
 
-## Leer desde un archivo
+## Reading from a file
 
-### Con `fscanf`
+### With `fscanf`
 
 ```c
 fscanf(archivo, "%d", &numero);
 ```
 
-### Con `fgets`
+### With `fgets`
 
 ```c
 fgets(linea, 100, archivo);
 ```
 
-## Cerrar el archivo
+## Closing the file
 
 ```c
 fclose(archivo);
 ```
 
-Cerrar el archivo es fundamental.
+Closing the file is essential.
 
-¿Por qué? Porque ayuda a asegurar que los datos se guarden correctamente y libera el recurso que el programa estaba usando.
+Why? Because it helps ensure the data is saved correctly and frees the resource the program was using.
 
-## Ejemplo completo de escritura
+## Complete writing example
 
 ```c
 #include <stdio.h>
@@ -98,7 +98,7 @@ int main() {
     FILE* archivo = fopen("saludo.txt", "w");
 
     if (archivo != NULL) {
-        fprintf(archivo, "Hola Mundo!\n");
+        fprintf(archivo, "Hello World!\n");
         fclose(archivo);
     }
 
@@ -106,7 +106,7 @@ int main() {
 }
 ```
 
-## Ejemplo conceptual de lectura
+## Conceptual reading example
 
 ```c
 #include <stdio.h>
@@ -117,7 +117,7 @@ int main() {
 
     if (archivo != NULL) {
         fscanf(archivo, "%d", &numero);
-        printf("Leído: %d\n", numero);
+        printf("Read: %d\n", numero);
         fclose(archivo);
     }
 
@@ -125,31 +125,31 @@ int main() {
 }
 ```
 
-## Errores comunes al empezar
+## Common mistakes when starting
 
-### 1. No verificar si `fopen` devolvió `NULL`
+### 1. Not checking if `fopen` returned `NULL`
 
-Eso puede hacer que el programa intente usar un archivo que en realidad no se abrió.
+This can cause the program to try using a file that wasn't actually opened.
 
-### 2. Olvidar `fclose`
+### 2. Forgetting `fclose`
 
-Es una muy mala práctica dejar archivos abiertos.
+Leaving files open is a very bad practice.
 
-### 3. Confundir leer con escribir
+### 3. Confusing reading with writing
 
-No es lo mismo abrir con `"r"` que con `"w"`.
+Opening with `"r"` is not the same as opening with `"w"`.
 
-## Resumen
+## Summary
 
-- un archivo permite guardar información de forma permanente
-- en C se maneja con `FILE*`
-- `fopen` abre el archivo
-- `fprintf`, `fscanf` y `fgets` permiten operar sobre él
-- `fclose` cierra el archivo
-- siempre conviene verificar si el archivo se abrió correctamente
+- a file allows storing information permanently
+- in C it's handled with `FILE*`
+- `fopen` opens the file
+- `fprintf`, `fscanf`, and `fgets` let you operate on it
+- `fclose` closes the file
+- always check if the file opened correctly
 
-## Idea final
+## Final thought
 
-Los archivos hacen que un programa deje de ser algo puramente momentáneo.
+Files make a program stop being purely momentary.
 
-Gracias a ellos, los datos pueden sobrevivir a la ejecución y el software empieza a comportarse de una forma mucho más realista.
+Thanks to them, data can survive execution and software starts behaving in a much more realistic way.

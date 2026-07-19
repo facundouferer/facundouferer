@@ -7,26 +7,26 @@ lang: 'en'
 published: true
 ---
 
-Las **listas enlazadas** son estructuras dinámicas. Eso significa que pueden crecer o cambiar durante la ejecución del programa.
+**Linked lists** are dynamic structures. That means they can grow or change during program execution.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué es una lista enlazada
-- qué es un nodo
-- recorrido en listas
-- búsqueda en listas
-- inserción en listas
+- what a linked list is
+- what a node is
+- list traversal
+- search in lists
+- insertion in lists
 
-## ¿Qué es una lista enlazada?
+## What is a linked list?
 
-Es una estructura formada por nodos.
+It's a structure made up of nodes.
 
-Cada nodo suele contener:
+Each node usually contains:
 
-- un dato
-- un puntero al siguiente nodo
+- a data value
+- a pointer to the next node
 
-## Nodo en C
+## Node in C
 
 ```c
 struct Nodo {
@@ -35,9 +35,9 @@ struct Nodo {
 };
 ```
 
-## Recorrido
+## Traversal
 
-Recorrer una lista significa visitar nodo por nodo hasta llegar al final.
+Traversing a list means visiting node by node until reaching the end.
 
 ```c
 actual = cabeza;
@@ -47,9 +47,9 @@ while (actual != NULL) {
 }
 ```
 
-## Búsqueda
+## Search
 
-Buscar en una lista implica recorrerla hasta encontrar el valor buscado.
+Searching in a list means traversing it until finding the target value.
 
 ```c
 while (actual != NULL) {
@@ -60,23 +60,23 @@ while (actual != NULL) {
 }
 ```
 
-## Inserción
+## Insertion
 
-Insertar puede hacerse al inicio, al final o en una posición intermedia.
+Insertion can be done at the beginning, at the end, or at an intermediate position.
 
-### Inserción al inicio
+### Insertion at the beginning
 
 ```c
 nuevo->siguiente = cabeza;
 cabeza = nuevo;
 ```
 
-## Resumen
+## Summary
 
-- una lista enlazada está formada por nodos
-- permite recorrido, búsqueda e inserción
-- es más flexible que un arreglo de tamaño fijo
+- a linked list is made up of nodes
+- it allows traversal, search, and insertion
+- it's more flexible than a fixed-size array
 
-## Idea final
+## Final thought
 
-La lista enlazada muestra un cambio de mentalidad muy fuerte: ya no pensás en posiciones fijas, sino en enlaces entre nodos.
+The linked list shows a very strong mindset shift: you no longer think in fixed positions, but in links between nodes.

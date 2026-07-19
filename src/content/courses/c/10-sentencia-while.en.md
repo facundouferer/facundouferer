@@ -7,49 +7,49 @@ lang: 'en'
 published: true
 ---
 
-Hasta ahora viste cómo un programa puede ejecutar acciones en secuencia y cómo puede elegir entre distintos caminos.
+So far you've seen how a program can execute actions in sequence and how it can choose between different paths.
 
-Ahora aparece otro problema fundamental: **repetir acciones**.
+Now another fundamental problem appears: **repeating actions**.
 
-Ahí entran en juego las sentencias de iteración. La primera que vas a estudiar es `while`.
+That's where iteration statements come in. The first one you'll study is `while`.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué significa iterar
-- cómo funciona `while`
-- cómo pensar un ciclo con estado inicial, condición y actualización
-- qué es un ciclo infinito
-- cómo usar `break` y `continue` dentro de un ciclo
+- what iteration means
+- how `while` works
+- how to think of a loop with initial state, condition, and update
+- what an infinite loop is
+- how to use `break` and `continue` inside a loop
 
-## ¿Qué es una iteración?
+## What is iteration?
 
-Una **iteración** es cada repetición de un conjunto de instrucciones.
+An **iteration** is each repetition of a set of instructions.
 
-Si un ciclo imprime cinco números, entonces hubo cinco iteraciones.
+If a loop prints five numbers, then there were five iterations.
 
-## ¿Qué hace `while`?
+## What does `while` do?
 
-La sentencia `while` repite un bloque de código **mientras una condición sea verdadera**.
+The `while` statement repeats a block of code **while a condition is true**.
 
-### Sintaxis
+### Syntax
 
 ```c
-while (condicion) {
-    instrucciones;
+while (condition) {
+    instructions;
 }
 ```
 
-## Idea mental correcta para leer un `while`
+## Correct mental model for reading a `while`
 
-Un ciclo `while` tiene tres elementos fundamentales:
+A `while` loop has three fundamental elements:
 
-1. **estado inicial**
-2. **condición de continuación**
-3. **actualización del estado**
+1. **initial state**
+2. **continuation condition**
+3. **state update**
 
-Si te olvidás de uno de esos tres, normalmente el ciclo queda mal pensado.
+If you forget one of these three, the loop is usually poorly designed.
 
-## Ejemplo básico
+## Basic example
 
 ```c
 #include <stdio.h>
@@ -66,35 +66,35 @@ int main() {
 }
 ```
 
-## Lectura paso a paso
+## Step-by-step breakdown
 
-- estado inicial: `i = 1`
-- condición: `i <= 5`
-- actualización: `i = i + 1`
+- initial state: `i = 1`
+- condition: `i <= 5`
+- update: `i = i + 1`
 
-Mientras la condición sea verdadera, el bloque sigue ejecutándose.
+As long as the condition is true, the block keeps executing.
 
-## ¿Qué pasa en cada iteración?
+## What happens in each iteration?
 
-### Iteración 1
+### Iteration 1
 
-- `i` vale `1`
-- se imprime `1`
-- `i` pasa a valer `2`
+- `i` is `1`
+- prints `1`
+- `i` becomes `2`
 
-### Iteración 2
+### Iteration 2
 
-- `i` vale `2`
-- se imprime `2`
-- `i` pasa a valer `3`
+- `i` is `2`
+- prints `2`
+- `i` becomes `3`
 
-Y así sucesivamente hasta que `i` deja de cumplir la condición.
+And so on until `i` no longer satisfies the condition.
 
-## Ciclo infinito
+## Infinite loop
 
-Un **ciclo infinito** ocurre cuando la condición nunca se vuelve falsa.
+An **infinite loop** occurs when the condition never becomes false.
 
-### Ejemplo incorrecto
+### Incorrect example
 
 ```c
 while (i <= 5) {
@@ -102,15 +102,15 @@ while (i <= 5) {
 }
 ```
 
-Si `i` no cambia, el ciclo puede repetirse para siempre.
+If `i` doesn't change, the loop could repeat forever.
 
-Por eso tenés que pensar siempre:
+That's why you should always think:
 
-> ¿qué acción dentro del ciclo acerca al programa al final del ciclo?
+> what action inside the loop brings the program closer to finishing the loop?
 
-## Uso de `break` en un `while`
+## Using `break` in a `while`
 
-`break` permite salir inmediatamente del ciclo.
+`break` allows you to immediately exit the loop.
 
 ```c
 while (i <= 10) {
@@ -122,11 +122,11 @@ while (i <= 10) {
 }
 ```
 
-Cuando `i` vale `5`, el ciclo se corta.
+When `i` is `5`, the loop is cut off.
 
-## Uso de `continue` en un `while`
+## Using `continue` in a `while`
 
-`continue` hace que el ciclo salte directamente a la siguiente iteración.
+`continue` makes the loop jump directly to the next iteration.
 
 ```c
 while (i <= 5) {
@@ -140,20 +140,20 @@ while (i <= 5) {
 }
 ```
 
-No hace falta dominarlo al detalle todavía, pero sí entender su idea general: altera el flujo normal del ciclo.
+No need to master it in detail yet, but understand its general idea: it alters the normal flow of the loop.
 
-## ¿Cuándo conviene usar `while`?
+## When should you use `while`?
 
-`while` conviene mucho cuando la repetición depende de una condición y no querés pensar primero en una cantidad exacta de repeticiones.
+`while` is very useful when repetition depends on a condition and you don't want to think about an exact number of repetitions first.
 
-## Resumen
+## Summary
 
-- `while` repite un bloque mientras una condición sea verdadera
-- para diseñar bien un `while` tenés que pensar estado inicial, condición y actualización
-- si la condición nunca se vuelve falsa, aparece un ciclo infinito
-- `break` corta el ciclo
-- `continue` salta a la siguiente iteración
+- `while` repeats a block while a condition is true
+- to design a `while` well, you need to think about initial state, condition, and update
+- if the condition never becomes false, an infinite loop occurs
+- `break` cuts the loop
+- `continue` jumps to the next iteration
 
-## Idea final
+## Final thought
 
-`while` te enseña una de las ideas más profundas de la programación: repetir no es copiar código muchas veces, sino controlar cómo evoluciona un estado mientras una condición siga cumpliéndose.
+`while` teaches you one of the deepest ideas in programming: repeating isn't about copying code many times, but about controlling how a state evolves while a condition keeps being true.

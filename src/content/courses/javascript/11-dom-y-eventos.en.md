@@ -7,50 +7,50 @@ lang: 'en'
 published: true
 ---
 
-# El DOM y Eventos
+# DOM and Events
 
-El DOM (Document Object Model) es el árbol de objetos que representa tu página HTML. JavaScript lo usa para interactuar con lo que el usuario ve.
+The DOM (Document Object Model) is the tree of objects that represents your HTML page. JavaScript uses it to interact with what the user sees.
 
-## Modificar el DOM
+## Modifying the DOM
 
-Podés seleccionar elementos por ID, clase o etiqueta y cambiar sus propiedades:
+You can select elements by ID, class, or tag and change their properties:
 
 ```javascript
 const titulo = document.getElementById("titulo");
-titulo.innerText = "¡Cambiado por JS!";
+titulo.innerText = "Changed by JS!";
 titulo.style.color = "green";
 
 const nuevoDiv = document.createElement("div");
 document.body.appendChild(nuevoDiv);
 ```
 
-## Eventos: La respuesta a la interacción
+## Events: The response to interaction
 
-Un evento es una acción que ocurre en el navegador (un click, una tecla presionada, el envío de un formulario).
+An event is an action that occurs in the browser (a click, a pressed key, a form submission).
 
-### Cómo escuchar eventos
-La forma moderna y recomendada es `addEventListener`:
+### How to listen for events
+The modern and recommended way is `addEventListener`:
 
 ```javascript
 const boton = document.querySelector("button");
 boton.addEventListener("click", (event) => {
-    console.log("Hiciste click en:", event.target);
+    console.log("You clicked on:", event.target);
 });
 ```
 
-### Tipos de Eventos comunes
+### Common Event Types
 
 1. **Mouse:** `click`, `mouseover`, `mouseout`, `mousedown`, `mouseup`.
-2. **Teclado:** `keydown`, `keyup`, `keypress`.
-3. **Formularios:**
-   - `change`: Cuando el valor cambia y se pierde el foco.
-   - `input`: Mientras el usuario escribe (en tiempo real).
-   - `submit`: Al enviar el formulario (usar `event.preventDefault()` para evitar que la página se recargue).
+2. **Keyboard:** `keydown`, `keyup`, `keypress`.
+3. **Forms:**
+   - `change`: When the value changes and focus is lost.
+   - `input`: While the user is typing (in real time).
+   - `submit`: When submitting the form (use `event.preventDefault()` to prevent the page from reloading).
 
-### Ejemplo de Input en tiempo real:
+### Real-time Input Example:
 ```javascript
 const input = document.getElementById("nombre");
 input.addEventListener("input", (e) => {
-    console.log("Escribiendo:", e.target.value);
+    console.log("Typing:", e.target.value);
 });
 ```

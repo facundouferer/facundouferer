@@ -7,258 +7,258 @@ lang: 'en'
 published: true
 ---
 
-Antes de aprender a escribir instrucciones en C, necesitás entender una idea mucho más importante: **qué es un programa y qué estamos haciendo realmente cuando programamos**.
+Before learning to write instructions in C, you need to understand a much more important idea: **what a program is and what we're really doing when we program**.
 
-Programar no es tipear código porque sí. Programar es **describir una solución paso a paso** para que una computadora pueda ejecutarla.
+Programming isn't just typing code for the sake of it. Programming is **describing a solution step by step** so a computer can execute it.
 
-En esta primera lección vas a aprender:
+In this first lesson you'll learn:
 
-- qué es un programa
-- qué es un lenguaje de programación
-- qué son los paradigmas de programación
-- cuáles son los paradigmas más conocidos
-- buenas prácticas básicas al empezar a programar
-- cómo es la estructura general de un programa en C
+- what a program is
+- what a programming language is
+- what programming paradigms are
+- what the most well-known paradigms are
+- basic good practices when starting to program
+- what the general structure of a C program looks like
 
-> Idea clave: antes de construir una casa, primero entendés los planos, los materiales y la lógica de la estructura. En programación pasa EXACTAMENTE lo mismo.
+> Key idea: before building a house, you first understand the blueprints, the materials, and the logic of the structure. In programming, it's EXACTLY the same.
 
-## ¿Qué es un programa?
+## What is a program?
 
-Un **programa** es un conjunto de instrucciones escritas de forma ordenada para que una computadora realice una tarea.
+A **program** is a set of instructions written in an orderly fashion so a computer can perform a task.
 
-Por ejemplo, un programa puede servir para:
+For example, a program can be used to:
 
-- mostrar un mensaje en pantalla
-- realizar cálculos
-- guardar información
-- controlar un dispositivo
-- resolver un problema paso a paso
+- display a message on the screen
+- perform calculations
+- save information
+- control a device
+- solve a problem step by step
 
-Lo importante no es solo que “haga algo”, sino que lo haga siguiendo una secuencia precisa de instrucciones.
+The important thing isn't just that it "does something," but that it does so following a precise sequence of instructions.
 
-Si una persona te dice:
+If someone tells you:
 
-> “prepará mate”
+> "make some mate"
 
-vos podés completar mentalmente los pasos que faltan.
+you can mentally fill in the missing steps.
 
-Pero una computadora no trabaja así. La computadora necesita instrucciones claras, concretas y ordenadas.
+But a computer doesn't work like that. The computer needs clear, concrete, and orderly instructions.
 
-Por eso un programa debe estar escrito con precisión.
+That's why a program must be written with precision.
 
-## ¿Qué significa programar?
+## What does programming mean?
 
-**Programar** es diseñar y escribir esas instrucciones para resolver un problema.
+**Programming** is designing and writing those instructions to solve a problem.
 
-Eso implica:
+That involves:
 
-1. entender el problema
-2. pensar una solución
-3. traducir esa solución a un lenguaje de programación
+1. understanding the problem
+2. thinking of a solution
+3. translating that solution into a programming language
 
-Acá está una de las primeras verdades importantes del curso: **primero está la lógica, después viene el código**.
+Here's one of the first important truths of the course: **logic comes first, then code**.
 
-Muchos principiantes quieren saltear esta parte y empezar a escribir cosas sin entender qué están resolviendo. Eso es un error.
+Many beginners want to skip this part and start writing things without understanding what they're solving. That's a mistake.
 
-Primero pensás.
-Después organizás.
-Recién al final escribís código.
+First you think.
+Then you organize.
+Only at the end do you write code.
 
-## ¿Qué es un lenguaje de programación?
+## What is a programming language?
 
-Un **lenguaje de programación** es un lenguaje formal que permite escribir instrucciones usando reglas precisas de sintaxis y significado.
+A **programming language** is a formal language that allows writing instructions using precise rules of syntax and meaning.
 
-Dicho más simple: es la forma en que nos comunicamos con la computadora para decirle qué queremos que haga.
+Put more simply: it's how we communicate with the computer to tell it what we want it to do.
 
-Así como los seres humanos usamos idiomas como español o inglés, en informática usamos lenguajes como C, Java, Python o JavaScript para expresar soluciones.
+Just as humans use languages like Spanish or English, in computing we use languages like C, Java, Python, or JavaScript to express solutions.
 
-Cada lenguaje tiene:
+Each language has:
 
-- su propia sintaxis
-- sus propias reglas
-- su propia forma de organizar los programas
+- its own syntax
+- its own rules
+- its own way of organizing programs
 
-## ¿Por qué usamos lenguajes de programación?
+## Why do we use programming languages?
 
-Porque la computadora, en su nivel más básico, no entiende frases humanas como:
+Because the computer, at its most basic level, doesn't understand human phrases like:
 
-> “sumá estos dos números y mostrálos en pantalla”
+> "add these two numbers and show them on the screen"
 
-La computadora trabaja con instrucciones muy precisas.
+The computer works with very precise instructions.
 
-Los lenguajes de programación existen para permitirnos escribir esas instrucciones de manera que:
+Programming languages exist to allow us to write those instructions in a way that:
 
-- nosotros podamos entenderlas y mantenerlas
-- una herramienta pueda traducirlas para que la máquina las ejecute
+- we can understand and maintain them
+- a tool can translate them for the machine to execute
 
-En el caso de C, el código fuente que escribimos se compila para transformarse en un programa ejecutable.
+In C's case, the source code we write is compiled to become an executable program.
 
-## ¿Qué es C y por qué aprenderlo?
+## What is C and why learn it?
 
-El lenguaje **C** es uno de los lenguajes más importantes de la historia de la programación.
+The **C** language is one of the most important languages in the history of programming.
 
-Fue diseñado para crear software eficiente, cercano al funcionamiento real de la máquina y con gran control sobre los recursos.
+It was designed to create efficient software, close to how the machine actually works, with great control over resources.
 
-Aprender C es valioso porque:
+Learning C is valuable because:
 
-- ayuda a entender mejor cómo piensa una computadora
-- obliga a ser preciso con los datos y las instrucciones
-- da una base muy sólida para aprender otros lenguajes después
+- it helps you better understand how a computer thinks
+- it forces you to be precise with data and instructions
+- it gives you a very solid foundation for learning other languages later
 
-C no “te esconde” tanto lo que pasa como otros lenguajes más modernos. Y eso, al aprender, es buenísimo.
+C doesn't "hide" as much from you as other more modern languages do. And that, when learning, is fantastic.
 
-Sí, al principio puede parecer más exigente. Pero justamente por eso enseña fundamentos de verdad.
+Yes, at first it may seem more demanding. But precisely because of that, it teaches real fundamentals.
 
-## ¿Qué es un paradigma de programación?
+## What is a programming paradigm?
 
-Acá aparece una palabra que al principio suena complicada, pero la idea no lo es tanto.
+Here comes a word that sounds complicated at first, but the idea really isn't.
 
-Un **paradigma de programación** es una forma de pensar y organizar la solución de un problema al programar.
+A **programming paradigm** is a way of thinking about and organizing the solution to a problem when programming.
 
-O sea: no habla solo del lenguaje, sino del **enfoque mental** con el que construís el programa.
+In other words: it's not just about the language, but about the **mental approach** you use to build the program.
 
-Dos personas pueden resolver un problema parecido usando estilos muy distintos de programación.
+Two people can solve a similar problem using very different programming styles.
 
-Eso tiene que ver con los paradigmas.
+That has to do with paradigms.
 
-Pensalo como estilos de construcción:
+Think of it like construction styles:
 
-- una casa se puede construir con distintos métodos
-- todos buscan resolver la necesidad de habitar un espacio
-- pero la forma de organizar materiales, tareas y estructura puede cambiar
+- a house can be built using different methods
+- they all aim to solve the need for shelter
+- but the way of organizing materials, tasks, and structure can change
 
-En programación pasa igual.
+The same goes for programming.
 
-## Tipos de paradigmas de programación
+## Types of programming paradigms
 
-Existen varios paradigmas. En esta etapa no hace falta dominarlos en profundidad, pero sí entender que existen.
+Several paradigms exist. At this stage you don't need to master them in depth, but you should understand they exist.
 
-### 1. Paradigma imperativo
+### 1. Imperative paradigm
 
-En el paradigma **imperativo**, el programa se construye indicando **paso a paso** qué debe hacer la computadora.
+In the **imperative** paradigm, the program is built by indicating **step by step** what the computer should do.
 
-La idea central es:
+The central idea is:
 
-- guardar datos
-- modificar datos
-- ejecutar instrucciones en cierto orden
+- store data
+- modify data
+- execute instructions in a certain order
 
-C trabaja principalmente con este paradigma.
+C primarily works with this paradigm.
 
-Por eso C es excelente para empezar a entender cómo se ejecuta un programa.
+That's why C is excellent for starting to understand how a program executes.
 
-### 2. Paradigma procedural
+### 2. Procedural paradigm
 
-El paradigma **procedural** es una forma de organizar programas imperativos en partes o bloques de tareas.
+The **procedural** paradigm is a way of organizing imperative programs into parts or blocks of tasks.
 
-En vez de poner todo junto sin estructura, el programa se divide en secciones que cumplen funciones concretas.
+Instead of putting everything together without structure, the program is divided into sections that fulfill concrete functions.
 
-C también se asocia fuertemente con este paradigma.
+C is also strongly associated with this paradigm.
 
-Más adelante en el curso lo vas a notar mejor cuando empieces a dividir programas en partes más organizadas.
+Later in the course you'll notice this better when you start dividing programs into more organized parts.
 
-### 3. Paradigma orientado a objetos
+### 3. Object-oriented paradigm
 
-En este paradigma, los programas se organizan alrededor de **objetos** que combinan datos y comportamiento.
+In this paradigm, programs are organized around **objects** that combine data and behavior.
 
-Lenguajes como Java o C# son muy conocidos por usar este enfoque.
+Languages like Java or C# are well known for using this approach.
 
-En este curso no vamos a empezar por ahí, porque primero necesitás una base más fundamental.
+In this course we won't start there, because you first need a more fundamental foundation.
 
-### 4. Paradigma funcional
+### 4. Functional paradigm
 
-En el paradigma funcional, se busca resolver problemas poniendo mucho foco en el uso de funciones y en transformar datos de manera controlada.
+In the functional paradigm, the goal is to solve problems by focusing heavily on the use of functions and transforming data in a controlled way.
 
-Es otro enfoque importante, pero no es el punto de partida en C inicial.
+It's another important approach, but it's not the starting point in beginner C.
 
-## Entonces, ¿qué paradigma usa C?
+## So, what paradigm does C use?
 
-C se enseña principalmente como un lenguaje de estilo:
+C is mainly taught as a language of style:
 
-- **imperativo**
+- **imperative**
 - **procedural**
 
-Y eso tiene muchísimo sentido para principiantes, porque te obliga a entender:
+And that makes a lot of sense for beginners, because it forces you to understand:
 
-- el orden de ejecución
-- la estructura del programa
-- cómo se representan los datos
-- cómo se expresa una solución paso a paso
+- the order of execution
+- the structure of the program
+- how data is represented
+- how to express a solution step by step
 
-En otras palabras: C es ideal para construir fundamentos.
+In other words: C is ideal for building foundations.
 
-## Buenas prácticas de programación desde el día uno
+## Good programming practices from day one
 
-Acá te voy a decir algo importante, loco: las buenas prácticas no se agregan al final. **Se aprenden desde el principio**.
+Here's something important I want to tell you: good practices aren't added at the end. **They're learned from the beginning**.
 
-Si desde la primera lección te acostumbrás a programar desordenado, después corregir eso cuesta muchísimo.
+If from the first lesson you get used to programming messy, fixing that later costs a LOT.
 
-### 1. Escribí código claro
+### 1. Write clear code
 
-Tu código tiene que ser entendible.
+Your code has to be understandable.
 
-No alcanza con que “funcione”. También tiene que poder leerse.
+It's not enough that it "works." It also has to be readable.
 
-### 2. Usá nombres descriptivos
+### 2. Use descriptive names
 
-Aunque más adelante veas más ejemplos, desde ahora tenés que incorporar esta idea:
+Even though you'll see more examples later, from now on you need to internalize this idea:
 
-- malos nombres confunden
-- buenos nombres explican la intención
+- bad names confuse
+- good names explain intent
 
-Por ejemplo, esto es pobre:
+For example, this is poor:
 
 ```c
 int x;
 ```
 
-Esto comunica mejor:
+This communicates better:
 
 ```c
 int edad;
 ```
 
-### 3. Mantené el código ordenado
+### 3. Keep your code organized
 
-El orden visual importa.
+Visual order matters.
 
-- usá sangría consistente
-- respetá los espacios
-- no pegues todo sin estructura
+- use consistent indentation
+- respect spaces
+- don't cram everything together without structure
 
-Código ordenado = código más fácil de entender.
+Organized code = easier to understand code.
 
-### 4. Comentá con criterio
+### 4. Comment with judgment
 
-Los comentarios sirven para explicar, pero no para reemplazar código claro.
+Comments serve to explain, but not to replace clear code.
 
-Un comentario útil aclara una intención.
+A useful comment clarifies intent.
 
-Un comentario inútil repite lo obvio.
+A useless comment repeats the obvious.
 
-### 5. No escribas cosas que todavía no entendés
+### 5. Don't write things you don't understand yet
 
-Esta práctica te ahorra muchísimos problemas.
+This practice will save you a LOT of problems.
 
-Si copiás estructuras sin entenderlas, no estás aprendiendo a programar: estás imitando símbolos.
+If you copy structures without understanding them, you're not learning to program: you're imitating symbols.
 
-Primero entendé el concepto.
-Después escribí el código.
+First understand the concept.
+Then write the code.
 
-### 6. Respetá la sintaxis
+### 6. Respect the syntax
 
-En C, los detalles importan mucho.
+In C, details matter a lot.
 
-- los paréntesis importan
-- las llaves importan
-- el punto y coma importa
-- las mayúsculas y minúsculas importan
+- parentheses matter
+- braces matter
+- the semicolon matters
+- uppercase and lowercase matter
 
-No es “casi igual”. En programación, casi igual suele significar incorrecto.
+It's not "almost the same." In programming, almost the same usually means incorrect.
 
-## Estructura de un programa en C
+## Structure of a C program
 
-Ahora sí: veamos cómo se organiza un programa básico en C.
+Now let's see how a basic C program is organized.
 
 ```c
 #include <stdio.h>
@@ -269,49 +269,49 @@ int main() {
 }
 ```
 
-Aunque todavía no entiendas cada detalle, vamos a desarmarlo parte por parte.
+Even if you don't understand every detail yet, let's break it down piece by piece.
 
-## Parte 1: directiva de preprocesador
+## Part 1: preprocessor directive
 
 ```c
 #include <stdio.h>
 ```
 
-Esta línea comienza con `#`, lo cual indica que es una **directiva de preprocesador**.
+This line begins with `#`, which indicates it's a **preprocessor directive**.
 
-En este caso, `#include` le dice al programa que incorpore lo necesario para poder usar ciertas herramientas de entrada y salida.
+In this case, `#include` tells the program to incorporate what's needed to use certain input and output tools.
 
-`stdio.h` es una biblioteca estándar muy usada en C.
+`stdio.h` is a standard library widely used in C.
 
-En esta etapa, lo importante es que reconozcas esta línea como parte habitual de programas sencillos que muestran información en pantalla.
+At this stage, the important thing is to recognize this line as a common part of simple programs that display information on the screen.
 
-## Parte 2: la función `main`
+## Part 2: the `main` function
 
 ```c
 int main() {
 ```
 
-La función `main` es el punto de entrada del programa.
+The `main` function is the program's entry point.
 
-Eso significa que cuando el programa empieza a ejecutarse, comienza por ahí.
+That means when the program starts executing, it begins there.
 
-Todavía no hace falta que entiendas profundamente qué es una función. Por ahora alcanza con esta idea:
+You don't need to deeply understand what a function is yet. For now, this idea is enough:
 
-> `main` es el lugar principal donde comienza la ejecución del programa.
+> `main` is the main place where program execution begins.
 
-### ¿Qué significa `int` antes de `main`?
+### What does `int` before `main` mean?
 
-Significa que `main` devuelve un valor entero al finalizar.
+It means `main` returns an integer value when it finishes.
 
-No hace falta profundizar demasiado todavía. Lo importante es reconocer que esa forma:
+No need to go too deep yet. The important thing is to recognize that this form:
 
 ```c
 int main()
 ```
 
-es la estructura habitual del programa principal en C.
+is the usual structure of the main program in C.
 
-## Parte 3: llaves `{}`
+## Part 3: braces `{}`
 
 ```c
 {
@@ -320,125 +320,125 @@ es la estructura habitual del programa principal en C.
 }
 ```
 
-Las llaves indican el bloque de instrucciones que pertenece a `main`.
+Braces indicate the block of instructions that belongs to `main`.
 
-Todo lo que está dentro de esas llaves forma parte del programa principal.
+Everything inside those braces is part of the main program.
 
-## Parte 4: sentencias
+## Part 4: statements
 
-Dentro de `main` aparecen estas líneas:
+Inside `main` appear these lines:
 
 ```c
 printf("Hola, mundo\n");
 return 0;
 ```
 
-Cada una es una **sentencia**, es decir, una instrucción que forma parte del programa.
+Each one is a **statement**, that is, an instruction that forms part of the program.
 
-En C, las sentencias normalmente terminan con `;`.
+In C, statements normally end with `;`.
 
-Ese punto y coma no es decorativo. Forma parte de la sintaxis.
+That semicolon isn't decorative. It's part of the syntax.
 
-## Parte 5: salida en pantalla con `printf`
+## Part 5: screen output with `printf`
 
 ```c
 printf("Hola, mundo\n");
 ```
 
-Esta instrucción muestra texto en pantalla.
+This instruction displays text on the screen.
 
-Por ahora no hace falta estudiar `printf` en profundidad, porque eso pertenece mejor a la lección de entrada y salida.
+For now you don't need to study `printf` in depth, since that belongs better in the input and output lesson.
 
-En esta primera lección solo nos interesa reconocer que:
+In this first lesson we're only interested in recognizing that:
 
-- es una instrucción escrita dentro de `main`
-- sirve para mostrar un mensaje
-- termina con `;`
+- it's an instruction written inside `main`
+- it serves to display a message
+- it ends with `;`
 
-## Parte 6: finalización del programa con `return 0`
+## Part 6: program termination with `return 0`
 
 ```c
 return 0;
 ```
 
-Esta línea indica que el programa principal terminó y devolvió el valor `0`.
+This line indicates that the main program finished and returned the value `0`.
 
-En programas básicos en C, se usa para señalar que la ejecución finalizó correctamente.
+In basic C programs, it's used to signal that execution completed successfully.
 
-No hace falta ir más lejos por ahora. Lo importante es reconocer que suele aparecer al final de `main`.
+No need to go further for now. The important thing is to recognize that it usually appears at the end of `main`.
 
-## Comentarios en C
+## Comments in C
 
-Los comentarios son textos que escribimos para explicar el código y que la computadora no ejecuta.
+Comments are text we write to explain code that the computer doesn't execute.
 
-Hay dos formas básicas:
+There are two basic forms:
 
-### Comentario de una línea
+### Single-line comment
 
 ```c
-// Este es un comentario de una línea
+// This is a single-line comment
 ```
 
-### Comentario de varias líneas
+### Multi-line comment
 
 ```c
 /*
-   Este es un comentario
-   de varias líneas
+   This is a multi-line
+   comment
 */
 ```
 
-Los comentarios sirven para documentar ideas importantes o aclarar partes del código.
+Comments are useful for documenting important ideas or clarifying parts of the code.
 
-Pero ojo: si el código necesita comentarios para explicar TODO, muchas veces el problema no es la falta de comentarios, sino que el código está mal nombrado o mal organizado.
+But careful: if the code needs comments to explain EVERYTHING, often the problem isn't a lack of comments, but that the code is poorly named or poorly organized.
 
-## Ejemplo completo con partes señaladas
+## Complete example with labeled parts
 
 ```c
 #include <stdio.h>
 
 int main() {
-    // Muestra un mensaje en pantalla
+    // Shows a message on screen
     printf("Hola, mundo\n");
 
-    // Finaliza el programa
+    // Ends the program
     return 0;
 }
 ```
 
-En este ejemplo podés reconocer:
+In this example you can recognize:
 
-- una directiva de preprocesador
-- la función principal `main`
-- un bloque delimitado por llaves
-- sentencias terminadas en `;`
-- comentarios
+- a preprocessor directive
+- the main `main` function
+- a block delimited by braces
+- statements ending in `;`
+- comments
 
-## Qué deberías llevarte de esta primera lección
+## What you should take away from this first lesson
 
-Si esta lección quedó clara, ya entendés varias ideas grandes:
+If this lesson is clear, you already understand several big ideas:
 
-- un programa es un conjunto de instrucciones
-- un lenguaje de programación es la herramienta con la que escribimos esas instrucciones
-- un paradigma es una manera de pensar la solución
-- C se trabaja principalmente desde un enfoque imperativo y procedural
-- programar bien no es solo escribir código que compile, sino escribir código claro y ordenado
-- un programa en C tiene una estructura básica reconocible
+- a program is a set of instructions
+- a programming language is the tool we use to write those instructions
+- a paradigm is a way of thinking about the solution
+- C is mainly worked from an imperative and procedural approach
+- programming well isn't just writing code that compiles, but writing clear and organized code
+- a C program has a recognizable basic structure
 
-## Resumen
+## Summary
 
-- un **programa** es una secuencia de instrucciones para resolver una tarea
-- **programar** es pensar una solución y expresarla en un lenguaje formal
-- un **lenguaje de programación** permite escribir instrucciones para la computadora
-- un **paradigma** es una forma de organizar y pensar la solución
-- C se usa principalmente desde los paradigmas **imperativo** y **procedural**
-- las buenas prácticas empiezan desde el primer día
-- un programa básico en C suele incluir `#include`, `main`, sentencias, llaves y `return 0`
+- a **program** is a sequence of instructions to solve a task
+- **programming** is thinking of a solution and expressing it in a formal language
+- a **programming language** allows writing instructions for the computer
+- a **paradigm** is a way of organizing and thinking about the solution
+- C is mainly used from the **imperative** and **procedural** paradigms
+- good practices start from day one
+- a basic C program usually includes `#include`, `main`, statements, braces, and `return 0`
 
-## Idea final
+## Final thought
 
-No subestimes esta lección por ser la primera.
+Don't underestimate this lesson just because it's the first.
 
-Acá no estás aprendiendo “solo el saludo inicial” del lenguaje. Estás aprendiendo **cómo pensar un programa**.
+Here you're not learning "just the initial greeting" of the language. You're learning **how to think a program**.
 
-Y eso, hermano, vale más que memorizar veinte líneas de código sin entender nada.
+And that, friend, is worth more than memorizing twenty lines of code without understanding anything.

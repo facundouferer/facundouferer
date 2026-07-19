@@ -7,246 +7,246 @@ lang: 'en'
 published: true
 ---
 
-Acá hay que decir la verdad técnica completa: **C no es un lenguaje orientado a objetos de forma nativa**.
+Here's the full technical truth: **C is not natively an object-oriented language**.
 
-No tiene clases, herencia ni métodos como mecanismos incorporados del lenguaje al estilo de C++ o Java.
+It doesn't have classes, inheritance, or methods as built-in language mechanisms like C++ or Java do.
 
-Entonces, ¿por qué hablar de POO en C?
+So why talk about OOP in C?
 
-Porque muchas de las ideas de la programación orientada a objetos pueden **modelarse** en C usando:
+Because many of the ideas of object-oriented programming can be **modeled** in C using:
 
 - `struct`
-- funciones
-- punteros
-- organización modular
+- functions
+- pointers
+- modular organization
 
-En esta lección vas a aprender:
+In this lesson you will learn:
 
-- qué es POO a nivel conceptual
-- por qué C no la implementa de forma nativa
-- cómo puede simularse en C
-- diferencia entre programación estructurada y programación orientada a objetos
-- beneficios de aplicar programación orientada a objetos
-- qué ideas sí tiene sentido estudiar en este contexto
+- what OOP is at a conceptual level
+- why C doesn't implement it natively
+- how it can be simulated in C
+- the difference between structured programming and object-oriented programming
+- benefits of applying object-oriented programming
+- which ideas actually make sense to study in this context
 
-## ¿Qué es la programación orientada a objetos?
+## What is object-oriented programming?
 
-La **programación orientada a objetos** organiza el software alrededor de objetos que combinan:
+**Object-oriented programming** organizes software around objects that combine:
 
-- **estado**
-- **comportamiento**
+- **state**
+- **behavior**
 
-El estado son los datos.
-El comportamiento son las operaciones que pueden hacerse sobre esos datos.
+State is the data.
+Behavior is the operations that can be performed on that data.
 
-## Pilares de la programación orientada a objetos
+## Pillars of object-oriented programming
 
-Cuando se habla de POO, normalmente aparecen cuatro pilares clásicos:
+When talking about OOP, four classic pillars usually appear:
 
-- encapsulación
-- abstracción
-- herencia
-- polimorfismo
+- encapsulation
+- abstraction
+- inheritance
+- polymorphism
 
-Estos pilares NO significan “cuatro palabras para memorizar”. Significan cuatro ideas de diseño.
+These pillars do NOT mean "four words to memorize." They mean four design ideas.
 
-### 1. Encapsulación
+### 1. Encapsulation
 
-La **encapsulación** consiste en agrupar datos y operaciones relacionadas.
+**Encapsulation** consists of grouping related data and operations together.
 
-La idea es que una entidad mantenga juntos:
+The idea is that an entity keeps together:
 
-- su estado
-- las operaciones que actúan sobre ese estado
+- its state
+- the operations that act on that state
 
-En C, esto puede aproximarse combinando `struct` con funciones relacionadas.
+In C, this can be approximated by combining `struct` with related functions.
 
-### 2. Abstracción
+### 2. Abstraction
 
-La **abstracción** consiste en mostrar lo importante y ocultar detalles innecesarios.
+**Abstraction** consists of showing what matters and hiding unnecessary details.
 
-Por ejemplo, al usar una cuenta bancaria te interesa saber que puede depositar o extraer dinero, no todos los detalles internos de implementación.
+For example, when using a bank account you care about knowing it can deposit or withdraw money, not all the internal implementation details.
 
-### 3. Herencia
+### 3. Inheritance
 
-La **herencia** permite construir nuevos tipos a partir de otros, reutilizando y extendiendo características.
+**Inheritance** allows building new types from existing ones, reusing and extending features.
 
-En C no existe como mecanismo nativo del lenguaje, pero algunas ideas parecidas pueden simularse mediante composición de estructuras.
+In C it does not exist as a native language mechanism, but some similar ideas can be simulated through struct composition.
 
-### 4. Polimorfismo
+### 4. Polymorphism
 
-El **polimorfismo** permite que una misma idea general de operación adopte comportamientos distintos según el contexto.
+**Polymorphism** allows the same general operation idea to take on different behaviors depending on the context.
 
-En C tampoco existe como mecanismo orientado a objetos nativo, pero ciertas aproximaciones pueden construirse usando punteros a función.
+In C it also doesn't exist as a native object-oriented mechanism, but certain approaches can be built using function pointers.
 
-## Importante sobre los pilares en C
+## Important note about the pillars in C
 
-Acá hay que ser MUY precisos:
+Here we need to be VERY precise:
 
-- los pilares de la POO existen como conceptos de diseño
-- C no los implementa de manera nativa como lo hacen lenguajes orientados a objetos puros o híbridos
-- en C se estudian como ideas que pueden modelarse o simularse parcialmente
+- the pillars of OOP exist as design concepts
+- C does not implement them natively the way pure or hybrid object-oriented languages do
+- in C they are studied as ideas that can be partially modeled or simulated
 
-Por eso, cuando en este curso hablamos de pilares de POO en C, hablamos de:
+That's why, when in this course we talk about OOP pillars in C, we talk about:
 
-- **conceptos fundamentales de POO**
-- y de **cómo aproximarlos con herramientas reales de C**
+- **fundamental OOP concepts**
+- and **how to approximate them with real C tools**
 
-## Diferencia entre programación estructurada y programación orientada a objetos
+## Difference between structured programming and object-oriented programming
 
-Esta parte es IMPORTANTÍSIMA, porque muchos estudiantes escuchan “POO” y creen que es solo otra sintaxis. No. Es otra forma de organizar el pensamiento del programa.
+This part is EXTREMELY IMPORTANT, because many students hear "OOP" and think it's just another syntax. No. It's another way of organizing program thinking.
 
-### Programación estructurada
+### Structured programming
 
-La programación estructurada organiza la solución principalmente alrededor de:
+Structured programming organizes the solution mainly around:
 
-- secuencia
-- decisión
-- iteración
-- funciones o procedimientos
+- sequence
+- decision
+- iteration
+- functions or procedures
 
-El foco suele estar en **las acciones** que el programa realiza.
+The focus is usually on **the actions** the program performs.
 
-O sea: pensamos mucho en el flujo del algoritmo.
+In other words: we think a lot about the algorithm flow.
 
-Por ejemplo:
+For example:
 
-- leer datos
-- procesar datos
-- mostrar resultados
+- read data
+- process data
+- show results
 
-### Programación orientada a objetos
+### Object-oriented programming
 
-La programación orientada a objetos organiza la solución alrededor de **entidades** que tienen:
+Object-oriented programming organizes the solution around **entities** that have:
 
-- datos propios
-- operaciones asociadas a esos datos
+- their own data
+- operations associated with that data
 
-El foco ya no está solo en “qué pasos hacer”, sino también en **qué objetos existen en el problema y cómo se comportan**.
+The focus is no longer just on "what steps to do," but also on **what objects exist in the problem and how they behave**.
 
-### Diferencia conceptual corta
+### Short conceptual difference
 
-- en programación estructurada, el centro suele ser el **algoritmo**
-- en programación orientada a objetos, el centro suele ser el **modelo de objetos**
+- in structured programming, the center is usually the **algorithm**
+- in object-oriented programming, the center is usually the **object model**
 
-### Ejemplo intuitivo
+### Intuitive example
 
-Supongamos un sistema de cuentas bancarias.
+Suppose a bank account system.
 
-#### En enfoque estructurado
+#### Structured approach
 
-Podrías pensar algo así:
+You might think something like:
 
-- leer saldo
-- depositar monto
-- extraer monto
-- mostrar saldo
+- read balance
+- deposit amount
+- withdraw amount
+- show balance
 
-La atención está puesta en las operaciones del proceso.
+The attention is on the process operations.
 
-#### En enfoque orientado a objetos
+#### Object-oriented approach
 
-Pensarías más bien en:
+You would think more like:
 
-- existe una **Cuenta**
-- la cuenta tiene un **saldo**
-- la cuenta puede **depositar**
-- la cuenta puede **extraer**
+- there is an **Account**
+- the account has a **balance**
+- the account can **deposit**
+- the account can **withdraw**
 
-Ahora la atención está puesta en la entidad y en su comportamiento.
+Now the attention is on the entity and its behavior.
 
-## ¿Quiere decir que una reemplaza a la otra?
+## Does this mean one replaces the other?
 
 No.
 
-Y esto hay que decirlo bien.
+And this needs to be said clearly.
 
-La programación orientada a objetos NO elimina la programación estructurada. De hecho:
+Object-oriented programming does NOT eliminate structured programming. In fact:
 
-- sigue habiendo secuencia
-- sigue habiendo decisiones
-- sigue habiendo iteraciones
-- sigue habiendo funciones
+- there is still sequence
+- there are still decisions
+- there are still iterations
+- there are still functions
 
-La diferencia está en **cómo se organiza el diseño general del programa**.
+The difference is in **how the overall program design is organized**.
 
-## Beneficios de la aplicación de la programación orientada a objetos
+## Benefits of applying object-oriented programming
 
-La POO se volvió importante porque ayuda a organizar mejor muchos sistemas complejos.
+OOP became important because it helps organize many complex systems better.
 
-### 1. Mejor modelado del problema
+### 1. Better problem modeling
 
-Permite representar entidades del mundo del problema de manera más natural.
+It allows representing real-world problem entities more naturally.
 
-Por ejemplo:
+For example:
 
-- Cuenta
-- Alumno
-- Producto
-- Rectángulo
+- Account
+- Student
+- Product
+- Rectangle
 
-Eso hace que el programa se parezca más a lo que intenta modelar.
+This makes the program look more like what it's trying to model.
 
-### 2. Mayor organización del código
+### 2. Better code organization
 
-Cuando los datos y las operaciones relacionadas se agrupan, el código suele quedar más claro.
+When related data and operations are grouped together, the code is usually clearer.
 
-En vez de tener lógica dispersa, cada entidad concentra mejor su responsabilidad.
+Instead of having scattered logic, each entity better concentrates its responsibility.
 
-### 3. Mejor mantenimiento
+### 3. Better maintainability
 
-Un diseño orientado a objetos bien pensado suele facilitar cambios futuros.
+A well-thought-out object-oriented design usually makes future changes easier.
 
-¿Por qué? Porque si una responsabilidad está bien localizada, es más fácil modificarla sin romper todo lo demás.
+Why? Because if a responsibility is well localized, it's easier to modify without breaking everything else.
 
-### 4. Reutilización
+### 4. Reusability
 
-Cuando una estructura o diseño está bien armado, muchas ideas pueden reutilizarse en distintas partes del sistema o incluso en otros proyectos.
+When a structure or design is well built, many ideas can be reused in different parts of the system or even in other projects.
 
-### 5. Mayor claridad conceptual
+### 5. Greater conceptual clarity
 
-La POO ayuda a pensar el software en términos de componentes con identidad propia.
+OOP helps think about software in terms of components with their own identity.
 
-Eso no siempre hace el código “más corto”, pero muchas veces sí lo hace **más entendible**.
+This doesn't always make code "shorter," but it often makes it **more understandable**.
 
-## Ojo: la POO NO resuelve todo mágicamente
+## Caution: OOP does NOT magically solve everything
 
-Acá también hay que ser honestos.
+Here we also need to be honest.
 
-La programación orientada a objetos no es una solución mágica.
+Object-oriented programming is not a magic solution.
 
-Un mal diseño orientado a objetos puede ser peor que un diseño estructurado simple y claro.
+A bad object-oriented design can be worse than a simple, clear structured design.
 
-Los beneficios aparecen cuando:
+The benefits appear when:
 
-- el problema realmente lo justifica
-- el diseño está bien pensado
-- no se fuerza POO donde no hace falta
+- the problem really justifies it
+- the design is well thought out
+- OOP is not forced where it's not needed
 
-## ¿Qué falta en C?
+## What's missing in C?
 
-En C no hay:
+In C there are no:
 
-- clases
-- objetos nativos
-- métodos ligados al tipo como mecanismo del lenguaje
-- herencia nativa
-- polimorfismo nativo
+- classes
+- native objects
+- methods tied to the type as a language mechanism
+- native inheritance
+- native polymorphism
 
-Entonces, si alguien te dice “C es orientado a objetos igual que Java”, eso es incorrecto.
+So if someone tells you "C is object-oriented just like Java," that's incorrect.
 
-## ¿Qué sí puede hacerse en C?
+## What CAN be done in C?
 
-Puede construirse un diseño con inspiración orientada a objetos.
+A design with object-oriented inspiration can be built.
 
-Por ejemplo:
+For example:
 
-- representar una entidad con `struct`
-- definir funciones que trabajen sobre esa estructura
-- ocultar detalles mediante módulos
-- simular polimorfismo con punteros a función
+- represent an entity with `struct`
+- define functions that work on that structure
+- hide details through modules
+- simulate polymorphism with function pointers
 
-## Primer ejemplo conceptual
+## First conceptual example
 
 ```c
 struct Cuenta {
@@ -258,30 +258,30 @@ void depositar(struct Cuenta* cuenta, float monto) {
 }
 ```
 
-Acá ya aparece una idea parecida a objeto:
+Here an object-like idea already appears:
 
-- la estructura `Cuenta` representa el estado
-- la función `depositar` representa comportamiento
+- the `Cuenta` structure represents the state
+- the `depositar` function represents behavior
 
-## Entonces, ¿es POO real?
+## So, is it real OOP?
 
-No en sentido nativo del lenguaje.
+Not in the native language sense.
 
-Pero sí es una forma válida de enseñar y aplicar ideas orientadas a objetos dentro de C.
+But it is a valid way to teach and apply object-oriented ideas within C.
 
-## Resumen
+## Summary
 
-- la programación estructurada pone mucho foco en el algoritmo y el flujo
-- la programación orientada a objetos pone mucho foco en las entidades y su comportamiento
-- la POO ayuda a modelar mejor ciertos problemas, organizar código y mejorar mantenimiento
-- C no es un lenguaje orientado a objetos nativo
-- aun así, puede modelar conceptos de POO
-- `struct` + funciones + punteros permiten construir diseños con estilo orientado a objetos
+- structured programming puts a lot of focus on the algorithm and flow
+- object-oriented programming puts a lot of focus on entities and their behavior
+- OOP helps model certain problems better, organize code, and improve maintainability
+- C is not a native object-oriented language
+- still, it can model OOP concepts
+- `struct` + functions + pointers allow building designs with an object-oriented style
 
-## Idea final
+## Final thought
 
-En C, aprender POO no significa aprender “clases mágicas ocultas”.
+In C, learning OOP does not mean learning "hidden magic classes."
 
-Significa aprender a construir abstracciones con las herramientas reales del lenguaje.
+It means learning to build abstractions with the real tools of the language.
 
-Y entender la diferencia con la programación estructurada te ayuda a ver que no estás cambiando solo la sintaxis: estás cambiando la manera de pensar el diseño del programa.
+And understanding the difference from structured programming helps you see that you're not just changing the syntax: you're changing the way you think about program design.

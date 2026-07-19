@@ -7,21 +7,21 @@ lang: 'en'
 published: true
 ---
 
-# Bucles e Iteradores
+# Loops and Iterators
 
-Los bucles permiten repetir un bloque de código mientras se cumpla una condición o para recorrer conjuntos de datos.
+Loops allow you to repeat a block of code while a condition is met or to traverse data sets.
 
-## Bucle `for`
-Se usa cuando sabés exactamente cuántas veces querés repetir algo.
+## `for` Loop
+Use it when you know exactly how many times you want to repeat something.
 
 ```javascript
 for (let i = 0; i < 5; i++) {
-    console.log("Número: " + i);
+    console.log("Number: " + i);
 }
 ```
 
-## Bucle `while`
-Repite mientras la condición sea verdadera. Ideal si no sabés cuántas vueltas dará.
+## `while` Loop
+Repeats while the condition is true. Ideal if you don't know how many iterations it will take.
 
 ```javascript
 let contador = 0;
@@ -31,8 +31,8 @@ while (contador < 5) {
 }
 ```
 
-## Bucle `do...while`
-Similar al `while`, pero garantiza que el código se ejecute **al menos una vez**, ya que la condición se evalúa al final.
+## `do...while` Loop
+Similar to `while`, but guarantees the code runs **at least once**, since the condition is evaluated at the end.
 
 ```javascript
 let i = 1;
@@ -42,8 +42,8 @@ do {
 } while (i <= 5);
 ```
 
-## Bucle `for...in`
-Especial para recorrer las propiedades de un **objeto**.
+## `for...in` Loop
+Specifically for traversing the properties of an **object**.
 
 ```javascript
 const persona = { nombre: "Facu", edad: 30 };
@@ -52,6 +52,6 @@ for (let clave in persona) {
 }
 ```
 
-## Control de Bucles
-- **`break`**: Corta el bucle inmediatamente.
-- **`continue`**: Salta a la siguiente vuelta del bucle ignorando lo que queda de la actual.
+## Loop Control
+- **`break`**: Exits the loop immediately.
+- **`continue`**: Skips to the next iteration of the loop, ignoring the rest of the current one.

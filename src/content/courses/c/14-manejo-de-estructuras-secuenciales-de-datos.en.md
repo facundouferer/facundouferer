@@ -7,34 +7,34 @@ lang: 'en'
 published: true
 ---
 
-Hasta ahora trabajaste con variables individuales. Pero cuando un programa necesita manejar muchos datos relacionados, hace falta una forma mejor de organizarlos.
+So far you've worked with individual variables. But when a program needs to handle many related data, you need a better way to organize them.
 
-Ahí aparece el manejo de **estructuras secuenciales de datos**.
+That's where **sequential data structures** come in.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué es una estructura secuencial de datos
-- por qué no alcanza con variables sueltas
-- qué significa que los datos estén ordenados en una secuencia
-- qué operaciones suelen hacerse sobre una secuencia
+- what a sequential data structure is
+- why individual variables aren't enough
+- what it means for data to be ordered in a sequence
+- what operations are typically done on a sequence
 
-> Idea clave: una estructura secuencial permite pensar varios datos como un conjunto ordenado y no como variables aisladas.
+> Key idea: a sequential structure lets you think of several data as an ordered set rather than isolated variables.
 
-## ¿Qué es una estructura secuencial de datos?
+## What is a sequential data structure?
 
-Una **estructura secuencial de datos** es una organización en la que los elementos se disponen uno detrás de otro siguiendo un orden.
+A **sequential data structure** is an organization where elements are arranged one after another following an order.
 
-Por ejemplo, una secuencia de notas puede verse así:
+For example, a sequence of grades could look like this:
 
 ```text
 8, 6, 10, 7, 9
 ```
 
-Acá no pensás en cinco variables separadas, sino en una colección ordenada de cinco valores.
+Here you don't think of five separate variables, but of an ordered collection of five values.
 
-## ¿Por qué no alcanza con variables sueltas?
+## Why aren't individual variables enough?
 
-Mirá este ejemplo:
+Look at this example:
 
 ```c
 int nota1 = 8;
@@ -44,56 +44,56 @@ int nota4 = 7;
 int nota5 = 9;
 ```
 
-Esto puede funcionar para muy pocos datos, pero tiene problemas:
+This can work for very few data, but it has problems:
 
-- cuesta recorrerlos de forma ordenada
-- cuesta aplicar la misma operación sobre todos
-- no escala bien si la cantidad aumenta
-- vuelve el programa rígido y desprolijo
+- it's hard to traverse them in order
+- it's hard to apply the same operation to all of them
+- it doesn't scale well if the amount increases
+- it makes the program rigid and messy
 
-## Relación entre secuencia y operaciones
+## Relationship between sequence and operations
 
-Cuando los datos están organizados secuencialmente, aparecen operaciones muy importantes:
+When data is organized sequentially, very important operations emerge:
 
-- **recorrido**: visitar uno por uno los elementos
-- **búsqueda**: encontrar un valor dentro de la secuencia
-- **inserción**: agregar un nuevo elemento
-- **actualización**: cambiar un elemento existente
+- **traversal**: visiting elements one by one
+- **search**: finding a value within the sequence
+- **insertion**: adding a new element
+- **update**: changing an existing element
 
-## Ejemplo conceptual
+## Conceptual example
 
-Supongamos que tenés las edades de cuatro personas:
+Suppose you have the ages of four people:
 
 ```text
 20, 18, 25, 19
 ```
 
-El programa puede hacerse preguntas como:
+The program can ask questions like:
 
-- ¿cuál es la primera edad?
-- ¿cuál es la tercera?
-- ¿está la edad 25 dentro de la secuencia?
-- ¿cuál es la mayor?
+- what is the first age?
+- what is the third one?
+- is age 25 in the sequence?
+- which one is the largest?
 
-## ¿Qué estructuras secuenciales vas a estudiar?
+## What sequential structures will you study?
 
-En esta parte del curso vas a trabajar principalmente con:
+In this part of the course you'll mainly work with:
 
-- arreglos
-- cadenas de caracteres
-- listas
-- pilas
-- colas
+- arrays
+- character strings
+- linked lists
+- stacks
+- queues
 
-No todas funcionan igual, pero todas organizan datos de forma secuencial.
+Not all work the same way, but they all organize data sequentially.
 
-## Resumen
+## Summary
 
-- una estructura secuencial organiza varios datos siguiendo un orden
-- permite tratar una colección como un conjunto
-- facilita recorrido, búsqueda e inserción
-- es la base para entender arreglos, cadenas y varias estructuras dinámicas
+- a sequential structure organizes several data following an order
+- it lets you treat a collection as a set
+- it makes traversal, search, and insertion easier
+- it's the foundation for understanding arrays, strings, and various dynamic structures
 
-## Idea final
+## Final thought
 
-Cuando pasás de variables sueltas a estructuras secuenciales, tu programa empieza a manejar datos de verdad y no solo valores aislados.
+When you move from individual variables to sequential structures, your program starts handling real data instead of just isolated values.

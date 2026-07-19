@@ -7,44 +7,44 @@ lang: 'en'
 published: true
 ---
 
-# Operadores y Conversión
+# Operators and Type Conversion
 
-## Operadores Básicos
+## Basic Operators
 
-### Aritméticos
+### Arithmetic
 - `+`, `-`, `*`, `/`
-- `%` (Módulo: resto de la división)
-- `++`, `--` (Incremento y decremento)
+- `%` (Modulus: remainder of division)
+- `++`, `--` (Increment and decrement)
 
-### Comparación
-- `==` (Igualdad: ignora el tipo de dato).
-- `===` (Igualdad estricta: ¡Recomendado! Compara valor y tipo).
-- `!=`, `!==` (Desigualdad).
+### Comparison
+- `==` (Equality: ignores data type).
+- `===` (Strict equality: Recommended! Compares value and type).
+- `!=`, `!==` (Inequality).
 - `>`, `<`, `>=`, `<=`
 
-### Lógicos
+### Logical
 - `&&` (AND)
 - `||` (OR)
 - `!` (NOT)
 
-### Asignación
+### Assignment
 - `=`, `+=`, `-=`, `*=`, `/=`
 
-## Conversión de Datos (Casting)
+## Data Conversion (Casting)
 
-A veces necesitás transformar un tipo en otro:
+Sometimes you need to convert one type to another:
 
 ```javascript
-// A Número
+// To Number
 Number("123"); // 123
 parseInt("10.5"); // 10
 parseFloat("10.5"); // 10.5
 
-// A String
+// To String
 String(123); // "123"
 (123).toString(); // "123"
 
-// A Boolean
+// To Boolean
 Boolean(1); // true
 Boolean(0); // false
 ```

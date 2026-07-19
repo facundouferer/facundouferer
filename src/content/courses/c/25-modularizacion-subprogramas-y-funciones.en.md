@@ -7,80 +7,80 @@ lang: 'en'
 published: true
 ---
 
-Cuando un programa empieza a crecer, escribir todo dentro de `main` se vuelve una mala idea.
+When a program starts to grow, writing everything inside `main` becomes a bad idea.
 
-Sí, puede funcionar para ejemplos mínimos. Pero cuando el problema crece, necesitás dividir el programa en partes más pequeñas, comprensibles y reutilizables.
+Yes, it can work for minimal examples. But when the problem grows, you need to divide the program into smaller, understandable, and reusable parts.
 
-Ahí aparece la **modularización**.
+That's where **modularization** comes in.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué es modularizar
-- qué es un subprograma
-- qué diferencia conceptual hay entre función y procedimiento
-- cómo se declara y usa una función en C
-- por qué modularizar mejora el diseño del programa
+- what modularization is
+- what a subprogram is
+- what the conceptual difference between function and procedure is
+- how to declare and use a function in C
+- why modularization improves program design
 
-> Idea clave: modularizar es dividir un problema grande en partes más pequeñas para poder pensarlo, implementarlo y mantenerlo mejor.
+> Key idea: modularization is dividing a large problem into smaller parts so you can think about it, implement it, and maintain it better.
 
-## ¿Qué es modularización?
+## What is modularization?
 
-**Modularizar** significa dividir un programa en partes más pequeñas y organizadas, donde cada una cumple una tarea específica.
+**Modularization** means dividing a program into smaller, organized parts, where each one fulfills a specific task.
 
-En vez de tener un bloque enorme de código mezclando todo, separás responsabilidades.
+Instead of having a huge block of code mixing everything together, you separate responsibilities.
 
-Por ejemplo, en lugar de escribir un programa gigante que:
+For example, instead of writing a giant program that:
 
-- lea datos
-- valide datos
-- calcule resultados
-- muestre resultados
+- reads data
+- validates data
+- calculates results
+- displays results
 
-mezclando todo en un solo bloque, podés separar cada tarea en una parte distinta.
+mixing everything into a single block, you can separate each task into a different part.
 
-## ¿Por qué modularizar?
+## Why modularize?
 
-Porque mejora muchas cosas a la vez:
+Because it improves many things at once:
 
-- el código se entiende mejor
-- cada parte tiene una responsabilidad más clara
-- podés reutilizar lógica
-- es más fácil detectar errores
-- el programa crece con más orden
+- the code is easier to understand
+- each part has a clearer responsibility
+- you can reuse logic
+- it's easier to detect errors
+- the program grows more orderly
 
-## ¿Qué es un subprograma?
+## What is a subprogram?
 
-Un **subprograma** es una parte del programa que realiza una tarea específica.
+A **subprogram** is a part of the program that performs a specific task.
 
-Es, básicamente, un bloque de código con nombre propio al que el programa puede acudir cuando necesita ejecutar esa tarea.
+It's basically a named block of code that the program can call when it needs to execute that task.
 
-En C, los subprogramas se expresan mediante **funciones**.
+In C, subprograms are expressed through **functions**.
 
-## Funciones y procedimientos: diferencia conceptual
+## Functions and procedures: conceptual difference
 
-Acá hay una distinción MUY útil a nivel pedagógico.
+Here's a VERY useful distinction at a pedagogical level.
 
-### Función
+### Function
 
-Una **función** es un subprograma que devuelve un resultado.
+A **function** is a subprogram that returns a result.
 
-Por ejemplo, una función que suma dos números y devuelve el total.
+For example, a function that adds two numbers and returns the total.
 
-### Procedimiento
+### Procedure
 
-Un **procedimiento** es un subprograma cuya idea principal es realizar una acción, sin centrarse en devolver un valor.
+A **procedure** is a subprogram whose main idea is to perform an action, without focusing on returning a value.
 
-Por ejemplo, mostrar un mensaje en pantalla.
+For example, displaying a message on the screen.
 
-## Importante en C
+## Important in C
 
-En C, técnicamente todo se expresa con funciones.
+In C, technically everything is expressed with functions.
 
-O sea: incluso aquello que conceptualmente llamamos “procedimiento” suele escribirse como una función con retorno `void`.
+In other words: even what we conceptually call a "procedure" is usually written as a function with `void` return type.
 
-Entonces, la diferencia entre función y procedimiento en este curso se enseña como una **distinción conceptual**, no como dos mecanismos distintos del lenguaje.
+So, the difference between function and procedure in this course is taught as a **conceptual distinction**, not as two different language mechanisms.
 
-## Ejemplo de función que devuelve un valor
+## Example of a function that returns a value
 
 ```c
 int sumar(int a, int b) {
@@ -88,19 +88,19 @@ int sumar(int a, int b) {
 }
 ```
 
-Esta función recibe dos enteros y devuelve otro entero.
+This function receives two integers and returns another integer.
 
-## Ejemplo de procedimiento conceptual en C
+## Example of a conceptual procedure in C
 
 ```c
 void mostrarSaludo() {
-    printf("Hola\n");
+    printf("Hello\n");
 }
 ```
 
-Acá no se devuelve un valor útil. La función realiza una acción.
+Here no useful value is returned. The function performs an action.
 
-## Estructura general de una función
+## General structure of a function
 
 ```c
 tipo_retorno nombre(parametros) {
@@ -108,14 +108,14 @@ tipo_retorno nombre(parametros) {
 }
 ```
 
-### Partes
+### Parts
 
-- **tipo de retorno**: qué devuelve la función
-- **nombre**: cómo se llama
-- **parámetros**: datos que recibe
-- **cuerpo**: instrucciones que ejecuta
+- **return type**: what the function returns
+- **name**: how it's called
+- **parameters**: data it receives
+- **body**: instructions it executes
 
-## Ejemplo completo
+## Complete example
 
 ```c
 #include <stdio.h>
@@ -125,7 +125,7 @@ int sumar(int a, int b) {
 }
 
 void mostrarResultado(int resultado) {
-    printf("El resultado es %d\n", resultado);
+    printf("The result is %d\n", resultado);
 }
 
 int main() {
@@ -138,37 +138,37 @@ int main() {
 }
 ```
 
-## ¿Qué se gana con esto?
+## What do you gain from this?
 
-Muchísimo.
+A lot.
 
-Porque ahora la lógica está separada:
+Because now the logic is separated:
 
-- una parte suma
-- otra parte muestra
-- `main` coordina
+- one part adds
+- another part displays
+- `main` coordinates
 
-Eso hace que el programa se lea mucho mejor.
+That makes the program much easier to read.
 
-## Modularización en varios archivos
+## Modularization across multiple files
 
-Cuando el programa crece más, la modularización también puede reflejarse en distintos archivos.
+When the program grows further, modularization can also be reflected in separate files.
 
-De manera general, aparecen:
+Generally speaking, these appear:
 
-- archivos `.h` para declaraciones
-- archivos `.c` para implementaciones
-- un `main.c` como punto de entrada
+- `.h` files for declarations
+- `.c` files for implementations
+- a `main.c` as the entry point
 
-### Ejemplo conceptual
+### Conceptual example
 
-#### Archivo de cabecera
+#### Header file
 
 ```c
 int sumar(int a, int b);
 ```
 
-#### Archivo de implementación
+#### Implementation file
 
 ```c
 int sumar(int a, int b) {
@@ -176,40 +176,40 @@ int sumar(int a, int b) {
 }
 ```
 
-## ¿Cuándo conviene crear un subprograma?
+## When should you create a subprogram?
 
-Conviene cuando:
+It's convenient when:
 
-- una tarea tiene sentido por sí misma
-- una lógica se repite
-- un bloque dentro de `main` ya está creciendo demasiado
-- querés separar responsabilidades
+- a task makes sense on its own
+- a piece of logic is repeated
+- a block inside `main` is already growing too large
+- you want to separate responsibilities
 
-## Errores comunes al empezar
+## Common mistakes when starting
 
-### 1. Meter todo en `main`
+### 1. Putting everything in `main`
 
-Eso vuelve el código difícil de leer y mantener.
+That makes the code hard to read and maintain.
 
-### 2. Crear funciones sin una responsabilidad clara
+### 2. Creating functions without a clear responsibility
 
-No se trata de dividir por dividir. Cada subprograma debe tener una intención concreta.
+It's not about dividing for the sake of dividing. Each subprogram must have a concrete intention.
 
-### 3. No distinguir entre “calcular” y “mostrar”
+### 3. Not distinguishing between "calculating" and "displaying"
 
-Una buena modularización separa cálculo, entrada y salida cuando tiene sentido.
+Good modularization separates calculation, input, and output when it makes sense.
 
-## Resumen
+## Summary
 
-- modularizar es dividir un programa en partes más pequeñas
-- un subprograma realiza una tarea específica
-- una función devuelve un valor
-- un procedimiento, conceptualmente, realiza una acción
-- en C, ambos se representan mediante funciones
-- modularizar mejora claridad, reutilización y mantenimiento
+- modularization is dividing a program into smaller parts
+- a subprogram performs a specific task
+- a function returns a value
+- a procedure, conceptually, performs an action
+- in C, both are represented by functions
+- modularization improves clarity, reusability, and maintainability
 
-## Idea final
+## Final thought
 
-La modularización es una señal de madurez al programar.
+Modularization is a sign of maturity in programming.
 
-Cuando dejás de pensar el programa como un bloque gigante y empezás a pensarlo como piezas con responsabilidades claras, tu diseño mejora MUCHÍSIMO.
+When you stop thinking of the program as a giant block and start thinking of it as pieces with clear responsibilities, your design improves GREATLY.

@@ -7,38 +7,38 @@ lang: 'en'
 published: true
 ---
 
-Hasta ahora viste programas secuenciales: las instrucciones se ejecutan una detrás de otra. Pero a veces eso no alcanza.
+So far you've seen sequential programs: instructions execute one after another. But sometimes that's not enough.
 
-Muchas veces un programa necesita **elegir** entre dos o más caminos según una condición.
+Many times a program needs to **choose** between two or more paths based on a condition.
 
-Ahí aparece la sentencia `if-else`.
+That's where the `if-else` statement comes in.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué significa tomar una decisión en un programa
-- qué hace `if`
-- qué hace `if-else`
-- cómo se usan bloques de código con llaves
-- qué son las sentencias anidadas
-- errores comunes al trabajar con decisiones
+- what it means to make a decision in a program
+- what `if` does
+- what `if-else` does
+- how code blocks with braces are used
+- what nested statements are
+- common mistakes when working with decisions
 
-> Idea clave: `if-else` permite romper la secuencia lineal simple para elegir qué bloque ejecutar según una condición.
+> Key idea: `if-else` lets you break the simple linear sequence to choose which block to execute based on a condition.
 
-## ¿Qué es una decisión en programación?
+## What is a decision in programming?
 
-Una decisión ocurre cuando el programa debe evaluar una condición y, a partir de eso, ejecutar un bloque u otro.
+A decision occurs when the program must evaluate a condition and, based on that, execute one block or another.
 
-Por ejemplo:
+For example:
 
-- si la edad es 18 o más, mostrar “mayor de edad”
-- si la nota es menor que 6, mostrar “desaprobado”
-- si el número es 0, mostrar “cero”
+- if age is 18 or more, show "of legal age"
+- if the grade is less than 6, show "failed"
+- if the number is 0, show "zero"
 
-## Recordatorio: ¿qué es una condición?
+## Reminder: what is a condition?
 
-Una **condición** es una expresión que puede resultar verdadera o falsa.
+A **condition** is an expression that can be true or false.
 
-Ejemplos:
+Examples:
 
 ```c
 edad >= 18
@@ -46,21 +46,21 @@ numero == 0
 nota < 6
 ```
 
-Estas expresiones usan operadores relacionales, que ya viste en la lección anterior.
+These expressions use relational operators, which you already saw in the previous lesson.
 
-## Sentencia `if`
+## The `if` statement
 
-La sentencia `if` ejecuta un bloque de código solo si la condición es verdadera.
+The `if` statement executes a block of code only if the condition is true.
 
-### Sintaxis
+### Syntax
 
 ```c
-if (condicion) {
-    instrucciones;
+if (condition) {
+    instructions;
 }
 ```
 
-## Ejemplo simple
+## Simple example
 
 ```c
 #include <stdio.h>
@@ -69,31 +69,31 @@ int main() {
     int edad = 20;
 
     if (edad >= 18) {
-        printf("Es mayor de edad\n");
+        printf("Is of legal age\n");
     }
 
     return 0;
 }
 ```
 
-Si la condición es verdadera, el bloque se ejecuta.
-Si es falsa, ese bloque se omite.
+If the condition is true, the block executes.
+If it's false, that block is skipped.
 
-## Sentencia `if-else`
+## The `if-else` statement
 
-La estructura `if-else` permite ejecutar un bloque si la condición es verdadera y otro bloque distinto si es falsa.
+The `if-else` structure allows executing one block if the condition is true and a different block if it's false.
 
-### Sintaxis
+### Syntax
 
 ```c
-if (condicion) {
-    instrucciones_si_verdadero;
+if (condition) {
+    instructions_if_true;
 } else {
-    instrucciones_si_falso;
+    instructions_if_false;
 }
 ```
 
-## Ejemplo
+## Example
 
 ```c
 #include <stdio.h>
@@ -102,37 +102,37 @@ int main() {
     int numero = 5;
 
     if (numero % 2 == 0) {
-        printf("El número es par\n");
+        printf("The number is even\n");
     } else {
-        printf("El número es impar\n");
+        printf("The number is odd\n");
     }
 
     return 0;
 }
 ```
 
-## ¿Qué papel tienen las llaves?
+## What role do braces play?
 
-Las llaves `{}` delimitan el bloque de instrucciones que pertenece al `if` o al `else`.
+Braces `{}` delimit the block of instructions belonging to `if` or `else`.
 
 ```c
 if (edad >= 18) {
-    printf("Mayor de edad\n");
-    printf("Puede continuar\n");
+    printf("Of legal age\n");
+    printf("Can continue\n");
 }
 ```
 
-Acá ambas sentencias pertenecen al mismo bloque.
+Here both statements belong to the same block.
 
-Aunque en C existe la posibilidad de escribir un `if` sin llaves cuando solo hay una instrucción, para enseñar y escribir código claro conviene usar llaves siempre.
+Although in C it's possible to write an `if` without braces when there's only one instruction, for teaching and writing clear code it's better to always use braces.
 
-## Sentencias anidadas
+## Nested statements
 
-Una **sentencia anidada** es una sentencia de control colocada dentro de otra.
+A **nested statement** is a control statement placed inside another.
 
-Por ejemplo, un `if` dentro de otro `if`.
+For example, an `if` inside another `if`.
 
-### Ejemplo
+### Example
 
 ```c
 #include <stdio.h>
@@ -142,82 +142,82 @@ int main() {
 
     if (numero >= 0) {
         if (numero == 0) {
-            printf("El número es cero\n");
+            printf("The number is zero\n");
         } else {
-            printf("El número es positivo\n");
+            printf("The number is positive\n");
         }
     } else {
-        printf("El número es negativo\n");
+        printf("The number is negative\n");
     }
 
     return 0;
 }
 ```
 
-## ¿Cuándo conviene anidar?
+## When should you nest?
 
-Conviene anidar cuando una segunda decisión depende de que la primera ya se haya cumplido.
+You should nest when a second decision depends on the first one having been already met.
 
-Pero tampoco hay que exagerar.
+But don't overdo it either.
 
-Si empezás a meter demasiados niveles de anidación, el código se vuelve difícil de leer.
+If you start adding too many nesting levels, the code becomes hard to read.
 
-## Flujo del programa con `if-else`
+## Program flow with `if-else`
 
-Mirá este ejemplo:
+Look at this example:
 
 ```c
 int edad = 16;
 
 if (edad >= 18) {
-    printf("Mayor\n");
+    printf("Of age\n");
 } else {
-    printf("Menor\n");
+    printf("Underage\n");
 }
 ```
 
-### Flujo
+### Flow
 
-1. se evalúa `edad >= 18`
-2. como es falso, no se ejecuta el bloque del `if`
-3. se ejecuta el bloque del `else`
+1. `edad >= 18` is evaluated
+2. since it's false, the `if` block is not executed
+3. the `else` block is executed
 
-La clave es entender que el programa no ejecuta los dos caminos: elige uno.
+The key is to understand that the program doesn't execute both paths: it chooses one.
 
-## Errores comunes al empezar
+## Common mistakes when starting
 
-### 1. Confundir `=` con `==`
+### 1. Confusing `=` with `==`
 
 ```c
 if (edad = 18) {
 ```
 
-Eso está mal conceptualmente para una comparación. Para comparar se usa `==`.
+That's conceptually wrong for a comparison. For comparing, use `==`.
 
-### 2. Olvidar las llaves en bloques que crecen
+### 2. Forgetting braces in blocks that grow
 
-Hoy tenés una línea, mañana agregás dos más y ya aparece el caos.
+Today you have one line, tomorrow you add two more and chaos appears.
 
-### 3. No pensar el flujo
+### 3. Not thinking about the flow
 
-No alcanza con escribir la condición. Tenés que entender qué bloque se ejecuta cuando la condición da verdadero y cuál cuando da falso.
+It's not enough to write the condition. You need to understand which block executes when the condition is true and which when it's false.
 
-### 4. Anidar sin necesidad
+### 4. Nesting unnecessarily
 
-La anidación sirve, pero abusar de ella vuelve el código más difícil.
+Nesting is useful, but overusing it makes code harder.
 
-## Resumen
+## Summary
 
-- `if` ejecuta un bloque solo si la condición es verdadera
-- `if-else` permite elegir entre dos caminos
-- las llaves delimitan el bloque de instrucciones
-- las sentencias anidadas permiten decisiones dentro de otras decisiones
-- el programa elige un camino según el resultado de la condición
+- `if` executes a block only if the condition is true
+- `if-else` allows choosing between two paths
+- braces delimit the instruction block
+- nested statements allow decisions within other decisions
+- the program chooses one path based on the condition's result
 
-## Idea final
+## Final thought
 
-`if-else` es la primera gran ruptura de la secuencia simple.
+`if-else` is the first major break from the simple sequence.
 
-A partir de acá, el programa ya no hace siempre lo mismo: empieza a adaptarse según los datos.
+From here on, the program no longer always does the same thing: it starts adapting based on the data.
 
-Y eso es exactamente lo que vuelve útil a una enorme cantidad de programas reales.
+And that's exactly what makes a huge number of real programs useful.

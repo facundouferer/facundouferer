@@ -7,56 +7,56 @@ lang: 'en'
 published: true
 ---
 
-# Control de Flujo
+# Flow Control
 
-Las estructuras de control nos permiten decidir qué camino sigue nuestro programa basándose en condiciones o repitiendo tareas.
+Control structures allow us to decide which path our program follows based on conditions or by repeating tasks.
 
-## Estructuras Condicionales
+## Conditional Structures
 
-### El bloque `if / else`
-Permite ejecutar código solo si se cumple una condición.
+### The `if / else` block
+Allows executing code only if a condition is met.
 
 ```java
 int num = 10;
 if (num > 0) {
-    System.out.println("Es positivo");
+    System.out.println("It is positive");
 } else if (num == 0) {
-    System.out.println("Es cero");
+    System.out.println("It is zero");
 } else {
-    System.out.println("Es negativo");
+    System.out.println("It is negative");
 }
 ```
 
-### Estructura `switch-case`
-Ideal para evaluar una sola variable contra múltiples valores posibles.
+### The `switch-case` statement
+Ideal for evaluating a single variable against multiple possible values.
 
 ```java
 int dia = 1;
 switch(dia) {
-    case 1: System.out.println("Lunes"); break;
-    case 2: System.out.println("Martes"); break;
-    default: System.out.println("Otro día");
+    case 1: System.out.println("Monday"); break;
+    case 2: System.out.println("Tuesday"); break;
+    default: System.out.println("Other day");
 }
 ```
 
-## Estructuras de Repetición (Bucles)
+## Loop Structures
 
-### Bucle `while`
-Repite mientras la condición sea verdadera.
+### The `while` loop
+Repeats while the condition is true.
 
 ```java
 int i = 0;
 while (i < 5) {
-    System.out.println("Contando: " + i);
+    System.out.println("Counting: " + i);
     i++;
 }
 ```
 
-### Bucle `for`
-Ideal cuando sabemos cuántas veces queremos repetir algo.
+### The `for` loop
+Ideal when we know how many times we want to repeat something.
 
 ```java
 for (int j = 0; j < 5; j++) {
-    System.out.println("Iteración: " + j);
+    System.out.println("Iteration: " + j);
 }
 ```

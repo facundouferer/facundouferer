@@ -7,38 +7,38 @@ lang: 'en'
 published: true
 ---
 
-# Tipos de Datos
+# Data Types
 
-## Tipos Primitivos
-- **Number:** Números de cualquier tipo (enteros o decimales).
-- **String:** Cadenas de texto.
-- **Boolean:** `true` o `false`.
+## Primitive Types
+- **Number:** Numbers of any kind (integers or decimals).
+- **String:** Text strings.
+- **Boolean:** `true` or `false`.
 
-## Los "Valores Locos"
-JavaScript tiene comportamientos únicos con ciertos valores que pueden confundir al principio:
+## The "Crazy Values"
+JavaScript has unique behaviors with certain values that can be confusing at first:
 
 ### 1. NaN (Not-a-Number)
-Ocurre cuando hacés una operación matemática inválida (ej: `"hola" * 2`).
-- Dato curioso: `typeof NaN` es `"number"`.
-- ¡`NaN === NaN` es `false`! Debés usar `isNaN()` para verificarlo.
+Occurs when you perform an invalid math operation (e.g., `"hello" * 2`).
+- Fun fact: `typeof NaN` is `"number"`.
+- `NaN === NaN` is `false`! You must use `isNaN()` to check for it.
 
 ### 2. null
-Representa la ausencia intencionada de un valor. Es un objeto (`typeof null` es `"object"`).
+Represents the intentional absence of a value. It is an object (`typeof null` is `"object"`).
 
 ### 3. undefined
-Significa que una variable ha sido declarada pero no se le ha asignado ningún valor todavía.
+Means a variable has been declared but not assigned a value yet.
 
 ### 4. Falsy Values
-En contextos booleanos (como un `if`), estos valores se evalúan como `false`:
+In boolean contexts (like an `if`), these values evaluate to `false`:
 - `0`
-- `""` (cadena vacía)
+- `""` (empty string)
 - `null`
 - `undefined`
 - `NaN`
 - `false`
 
-### El operador `typeof`
-Sirve para saber qué tipo de dato tiene una variable en ese momento.
+### The `typeof` operator
+Use it to know what data type a variable has at that moment.
 
 ```javascript
 let x = 10;

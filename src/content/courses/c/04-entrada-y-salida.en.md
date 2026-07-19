@@ -7,43 +7,43 @@ lang: 'en'
 published: true
 ---
 
-Hasta ahora viste que un programa puede guardar información en variables. Pero un programa realmente empieza a resultar útil cuando puede **mostrar información** y también **recibir datos**.
+So far you've seen that a program can store information in variables. But a program really starts to become useful when it can **display information** and also **receive data**.
 
-A eso lo llamamos **salida** y **entrada**.
+That's what we call **output** and **input**.
 
-- **Salida**: cuando el programa muestra información hacia afuera, por ejemplo en pantalla.
-- **Entrada**: cuando el programa recibe información desde afuera, por ejemplo cuando una persona escribe con el teclado.
+- **Output**: when the program displays information outward, for example on the screen.
+- **Input**: when the program receives information from outside, for example when a person types with the keyboard.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué significa entrada y salida en un programa
-- cómo mostrar mensajes y valores con `printf`
-- qué son los especificadores de formato
-- cómo leer datos simples con `scanf`
-- por qué a veces aparece el símbolo `&`
-- errores comunes al empezar con entrada y salida
+- what input and output mean in a program
+- how to display messages and values with `printf`
+- what format specifiers are
+- how to read simple data with `scanf`
+- why the `&` symbol sometimes appears
+- common mistakes when starting with input and output
 
-> Idea clave: un programa sin entrada ni salida es como una persona que piensa pero no habla ni escucha. Puede tener datos adentro, pero no interactúa con nadie.
+> Key idea: a program without input or output is like a person who thinks but doesn't speak or listen. It can have data inside, but it doesn't interact with anyone.
 
-## ¿Qué es la salida de datos?
+## What is data output?
 
-La **salida de datos** ocurre cuando el programa envía información hacia el exterior.
+**Data output** occurs when the program sends information to the outside.
 
-En los programas iniciales en C, la salida más común es mostrar texto o valores en la pantalla.
+In initial C programs, the most common output is displaying text or values on the screen.
 
-Por ejemplo, un programa puede mostrar:
+For example, a program can show:
 
-- un mensaje de bienvenida
-- el valor de una variable
-- el resultado de un cálculo
+- a welcome message
+- the value of a variable
+- the result of a calculation
 
-En C, la función más usada para esto es `printf`.
+In C, the most used function for this is `printf`.
 
-## `printf`: mostrar información en pantalla
+## `printf`: displaying information on screen
 
-La función `printf()` sirve para imprimir texto en pantalla.
+The `printf()` function is used to print text on the screen.
 
-Ejemplo:
+Example:
 
 ```c
 #include <stdio.h>
@@ -54,165 +54,165 @@ int main() {
 }
 ```
 
-Ese programa muestra el mensaje `Hola, mundo`.
+That program displays the message `Hola, mundo`.
 
-### ¿Qué significa `\n`?
+### What does `\n` mean?
 
-Dentro del texto aparece esto:
+Inside the text, this appears:
 
 ```c
 \n
 ```
 
-Eso representa un **salto de línea**.
+That represents a **newline**.
 
-Es decir, después de mostrar el texto, el cursor baja a la línea siguiente.
+That means after displaying the text, the cursor moves to the next line.
 
-Por ejemplo:
+For example:
 
 ```c
-printf("Primera línea\n");
-printf("Segunda línea\n");
+printf("First line\n");
+printf("Second line\n");
 ```
 
-La salida sería:
+The output would be:
 
 ```text
-Primera línea
-Segunda línea
+First line
+Second line
 ```
 
-## `printf` mostrando solo texto
+## `printf` displaying text only
 
-Al principio, `printf` puede usarse simplemente para mostrar mensajes.
+At first, `printf` can be used simply to display messages.
 
 ```c
-printf("Bienvenido al programa\n");
-printf("C es un lenguaje poderoso\n");
+printf("Welcome to the program\n");
+printf("C is a powerful language\n");
 ```
 
-Fijate que el texto va entre **comillas dobles**.
+Notice the text goes in **double quotes**.
 
-Eso indica que estamos escribiendo un mensaje literal para mostrar en pantalla.
+That indicates we're writing a literal message to display on the screen.
 
-## Mostrar el valor de una variable
+## Displaying the value of a variable
 
-`printf` no solo sirve para mostrar texto fijo. También puede mostrar el valor guardado en una variable.
+`printf` isn't just for displaying fixed text. It can also show the value stored in a variable.
 
-Mirá este ejemplo:
+Look at this example:
 
 ```c
 #include <stdio.h>
 
 int main() {
     int edad = 18;
-    printf("La edad es %d\n", edad);
+    printf("The age is %d\n", edad);
     return 0;
 }
 ```
 
-Acá aparece algo nuevo:
+Here something new appears:
 
 ```c
 %d
 ```
 
-Eso se llama **especificador de formato**.
+That's called a **format specifier**.
 
-## ¿Qué es un especificador de formato?
+## What is a format specifier?
 
-Un especificador de formato le indica a `printf` qué tipo de dato tiene que mostrar en ese lugar del texto.
+A format specifier tells `printf` what type of data to display in that part of the text.
 
-Pensalo así: dentro del mensaje dejamos un espacio reservado para que después aparezca el valor de una variable.
+Think of it like this: inside the message we leave a reserved spot for the value of a variable to appear later.
 
-En este ejemplo:
+In this example:
 
 ```c
-printf("La edad es %d\n", edad);
+printf("The age is %d\n", edad);
 ```
 
-- el texto es `La edad es `
-- `%d` le dice a `printf` que ahí va un número entero
-- `edad` es la variable cuyo valor se va a mostrar
+- the text is `The age is `
+- `%d` tells `printf` that an integer goes there
+- `edad` is the variable whose value will be displayed
 
-Si `edad` vale `18`, la salida será:
+If `edad` is `18`, the output will be:
 
 ```text
-La edad es 18
+The age is 18
 ```
 
-## Especificadores más comunes al comenzar
+## Most common specifiers when starting
 
-Por ahora, los más importantes son estos:
+For now, the most important ones are these:
 
 ### `%d`
 
-Se usa para mostrar valores de tipo `int`.
+Used to display `int` values.
 
 ```c
 int cantidad = 25;
-printf("Cantidad: %d\n", cantidad);
+printf("Quantity: %d\n", cantidad);
 ```
 
 ### `%f`
 
-Se usa para mostrar valores de tipo `float`.
+Used to display `float` values.
 
 ```c
 float altura = 1.75;
-printf("Altura: %f\n", altura);
+printf("Height: %f\n", altura);
 ```
 
 ### `%c`
 
-Se usa para mostrar valores de tipo `char`.
+Used to display `char` values.
 
 ```c
 char inicial = 'F';
-printf("Inicial: %c\n", inicial);
+printf("Initial: %c\n", inicial);
 ```
 
-## Ejemplos separados por tipo de dato
+## Examples separated by data type
 
-### Mostrar un entero
+### Displaying an integer
 
 ```c
 #include <stdio.h>
 
 int main() {
     int edad = 20;
-    printf("Edad: %d\n", edad);
+    printf("Age: %d\n", edad);
     return 0;
 }
 ```
 
-### Mostrar un decimal
+### Displaying a decimal
 
 ```c
 #include <stdio.h>
 
 int main() {
     float precio = 1499.50;
-    printf("Precio: %f\n", precio);
+    printf("Price: %f\n", precio);
     return 0;
 }
 ```
 
-### Mostrar un carácter
+### Displaying a character
 
 ```c
 #include <stdio.h>
 
 int main() {
     char letra = 'A';
-    printf("Letra: %c\n", letra);
+    printf("Letter: %c\n", letra);
     return 0;
 }
 ```
 
-## Mezclar texto y valores
+## Mixing text and values
 
-Una de las cosas más útiles de `printf` es que permite combinar texto con valores.
+One of the most useful things about `printf` is that it allows combining text with values.
 
 ```c
 #include <stdio.h>
@@ -222,36 +222,36 @@ int main() {
     float altura = 1.72;
     char inicial = 'F';
 
-    printf("Edad: %d\n", edad);
-    printf("Altura: %f\n", altura);
-    printf("Inicial: %c\n", inicial);
+    printf("Age: %d\n", edad);
+    printf("Height: %f\n", altura);
+    printf("Initial: %c\n", inicial);
 
     return 0;
 }
 ```
 
-Esto hace que la información del programa pueda verse de forma clara para quien lo usa.
+This makes the program's information clear for whoever uses it.
 
-## ¿Qué es la entrada de datos?
+## What is data input?
 
-La **entrada de datos** ocurre cuando el programa recibe información desde el exterior.
+**Data input** occurs when the program receives information from the outside.
 
-En los programas básicos en C, eso suele pasar cuando el usuario escribe datos con el teclado.
+In basic C programs, this usually happens when the user types data with the keyboard.
 
-Por ejemplo, el programa puede pedir:
+For example, the program can ask for:
 
-- una edad
-- un número
-- una letra
-- un precio
+- an age
+- a number
+- a letter
+- a price
 
-En C, una de las funciones más conocidas para leer datos básicos es `scanf()`.
+In C, one of the best-known functions for reading basic data is `scanf()`.
 
-## `scanf`: leer datos ingresados por el usuario
+## `scanf`: reading data entered by the user
 
-La función `scanf()` permite leer datos que el usuario escribe.
+The `scanf()` function allows reading data that the user types.
 
-Ejemplo:
+Example:
 
 ```c
 #include <stdio.h>
@@ -259,65 +259,65 @@ Ejemplo:
 int main() {
     int edad;
 
-    printf("Ingrese su edad: ");
+    printf("Enter your age: ");
     scanf("%d", &edad);
 
-    printf("Usted tiene %d años\n", edad);
+    printf("You are %d years old\n", edad);
 
     return 0;
 }
 ```
 
-## ¿Qué hace este programa?
+## What does this program do?
 
-Paso a paso:
+Step by step:
 
-1. declara una variable llamada `edad`
-2. muestra el mensaje `Ingrese su edad:`
-3. espera que el usuario escriba un número
-4. guarda ese número en la variable `edad`
-5. muestra el valor guardado
+1. declares a variable called `edad`
+2. shows the message `Enter your age:`
+3. waits for the user to type a number
+4. stores that number in the variable `edad`
+5. displays the stored value
 
-Esto ya permite interacción real entre el usuario y el programa.
+This already allows real interaction between the user and the program.
 
-## La estructura básica de `scanf`
+## The basic structure of `scanf`
 
-La forma general es:
+The general form is:
 
 ```c
-scanf("especificador", &variable);
+scanf("specifier", &variable);
 ```
 
-Por ejemplo:
+For example:
 
 ```c
 scanf("%d", &edad);
 ```
 
-Acá:
+Here:
 
-- `%d` indica que se espera un entero
-- `&edad` indica dónde se va a guardar el valor leído
+- `%d` indicates an integer is expected
+- `&edad` indicates where the read value will be stored
 
-## ¿Por qué aparece `&` en `scanf`?
+## Why does `&` appear in `scanf`?
 
-Excelente pregunta. Y sí, esta parte suele confundir al principio.
+Excellent question. And yes, this part tends to confuse at first.
 
-Cuando usás `scanf`, el programa necesita saber **dónde guardar** el dato que el usuario escribió.
+When you use `scanf`, the program needs to know **where to store** the data the user typed.
 
-Por eso aparece el símbolo `&` antes del nombre de la variable.
+That's why the `&` symbol appears before the variable name.
 
-En esta etapa, alcanza con esta idea:
+At this stage, this idea is enough:
 
-> `&variable` le permite a `scanf` trabajar directamente con esa variable para guardar ahí el dato leído.
+> `&variable` allows `scanf` to work directly with that variable to store the read data there.
 
-No hace falta meterse todavía con explicaciones más avanzadas.
+No need to get into more advanced explanations yet.
 
-Por ahora, quedate con esta regla práctica:
+For now, stick with this practical rule:
 
-- con `scanf`, para leer `int`, `float` y `char`, normalmente vas a usar `&` antes de la variable
+- with `scanf`, to read `int`, `float`, and `char`, you'll normally use `&` before the variable
 
-## Leer un entero con `scanf`
+## Reading an integer with `scanf`
 
 ```c
 #include <stdio.h>
@@ -325,16 +325,16 @@ Por ahora, quedate con esta regla práctica:
 int main() {
     int numero;
 
-    printf("Ingrese un número entero: ");
+    printf("Enter an integer: ");
     scanf("%d", &numero);
 
-    printf("El número ingresado es %d\n", numero);
+    printf("The number entered is %d\n", numero);
 
     return 0;
 }
 ```
 
-## Leer un decimal con `scanf`
+## Reading a decimal with `scanf`
 
 ```c
 #include <stdio.h>
@@ -342,16 +342,16 @@ int main() {
 int main() {
     float precio;
 
-    printf("Ingrese un precio: ");
+    printf("Enter a price: ");
     scanf("%f", &precio);
 
-    printf("El precio ingresado es %f\n", precio);
+    printf("The price entered is %f\n", precio);
 
     return 0;
 }
 ```
 
-## Leer un carácter con `scanf`
+## Reading a character with `scanf`
 
 ```c
 #include <stdio.h>
@@ -359,35 +359,35 @@ int main() {
 int main() {
     char inicial;
 
-    printf("Ingrese una letra: ");
+    printf("Enter a letter: ");
     scanf(" %c", &inicial);
 
-    printf("La letra ingresada es %c\n", inicial);
+    printf("The letter entered is %c\n", inicial);
 
     return 0;
 }
 ```
 
-Fijate en este detalle:
+Notice this detail:
 
 ```c
 " %c"
 ```
 
-Hay un espacio antes de `%c`.
+There's a space before `%c`.
 
-Y no está puesto porque sí.
+And it's not there for no reason.
 
-## Un problema muy común con `scanf` y `%c`
+## A very common problem with `scanf` and `%c`
 
-Cuando leemos primero un número y después un carácter, muchas veces pasa esto:
+When we first read a number and then a character, this often happens:
 
-- el programa pide un número
-- escribimos el número y apretamos Enter
-- después el programa pide una letra
-- pero parece que “se saltea” la lectura del carácter
+- the program asks for a number
+- we type the number and press Enter
+- then the program asks for a letter
+- but it seems to "skip" reading the character
 
-Mirá este ejemplo:
+Look at this example:
 
 ```c
 #include <stdio.h>
@@ -396,70 +396,70 @@ int main() {
     int ruedas;
     char inicialMarca;
 
-    printf("Ingrese la cantidad de ruedas: ");
+    printf("Enter the number of wheels: ");
     scanf("%d", &ruedas);
 
-    printf("Ingrese la inicial de la marca: ");
+    printf("Enter the initial of the brand: ");
     scanf("%c", &inicialMarca);
 
-    printf("Ruedas: %d\n", ruedas);
-    printf("Inicial: %c\n", inicialMarca);
+    printf("Wheels: %d\n", ruedas);
+    printf("Initial: %c\n", inicialMarca);
 
     return 0;
 }
 ```
 
-A simple vista parece correcto. Pero puede fallar.
+At first glance it looks correct. But it can fail.
 
-## ¿Qué está pasando realmente?
+## What's really happening?
 
-Cuando escribís un número como `4` y después apretás Enter, no solo se ingresa el `4`.
+When you type a number like `4` and then press Enter, you're not just entering `4`.
 
-También queda registrado el salto de línea que produce la tecla Enter.
+The newline produced by the Enter key is also registered.
 
-Entonces, después de esto:
+So, after this:
 
 ```c
 scanf("%d", &ruedas);
 ```
 
-el número se guarda en `ruedas`, pero el `\n` del Enter puede quedar en el buffer de entrada.
+the number is stored in `ruedas`, but the `\n` from Enter can remain in the input buffer.
 
-Luego, cuando hacés esto:
+Then, when you do this:
 
 ```c
 scanf("%c", &inicialMarca);
 ```
 
-`scanf` toma el siguiente carácter disponible.
+`scanf` takes the next available character.
 
-Y ese siguiente carácter puede ser justamente el salto de línea `\n` que quedó pendiente.
+And that next character can be precisely the pending newline `\n`.
 
-Por eso parece que el programa “se saltea” el prompt, cuando en realidad sí leyó algo: leyó el Enter anterior como carácter válido.
+That's why the program seems to "skip" the prompt, when in reality it did read something: it read the previous Enter as a valid character.
 
-## Solución simple
+## Simple solution
 
-La solución práctica más común al empezar es escribir un espacio antes de `%c`.
+The most common practical solution when starting is to write a space before `%c`.
 
-Así:
+Like this:
 
 ```c
 scanf(" %c", &inicialMarca);
 ```
 
-Ese espacio le dice a `scanf` que ignore cualquier whitespace anterior antes de leer el carácter real.
+That space tells `scanf` to ignore any whitespace before reading the actual character.
 
-### ¿Qué significa whitespace?
+### What does whitespace mean?
 
-Significa caracteres en blanco, por ejemplo:
+It means blank characters, for example:
 
-- espacios
-- tabulaciones
-- saltos de línea
+- spaces
+- tabs
+- newlines
 
-Entonces, si quedó un `\n` del Enter anterior, ese espacio hace que `scanf` lo descarte y siga esperando una letra real.
+So, if a `\n` from the previous Enter remains, that space makes `scanf` discard it and keep waiting for a real letter.
 
-## Ejemplo corregido
+## Fixed example
 
 ```c
 #include <stdio.h>
@@ -468,48 +468,48 @@ int main() {
     int ruedas;
     char inicialMarca;
 
-    printf("Ingrese la cantidad de ruedas: ");
+    printf("Enter the number of wheels: ");
     scanf("%d", &ruedas);
 
-    printf("Ingrese la inicial de la marca: ");
+    printf("Enter the initial of the brand: ");
     scanf(" %c", &inicialMarca);
 
-    printf("Ruedas: %d\n", ruedas);
-    printf("Inicial: %c\n", inicialMarca);
+    printf("Wheels: %d\n", ruedas);
+    printf("Initial: %c\n", inicialMarca);
 
     return 0;
 }
 ```
 
-## Idea práctica para principiantes
+## Practical tip for beginners
 
-Cuando uses `scanf` para leer un `char`, esta forma es una muy buena costumbre:
+When you use `scanf` to read a `char`, this is a very good habit:
 
 ```c
 scanf(" %c", &variableChar);
 ```
 
-No porque siempre haya un problema, sino porque evita uno de los errores más comunes al empezar.
+Not because there's always a problem, but because it avoids one of the most common mistakes when starting.
 
-## Relación entre tipos y especificadores
+## Relationship between types and specifiers
 
-Hay una relación directa entre el tipo de dato y el especificador que usás.
+There's a direct relationship between the data type and the specifier you use.
 
-### Para mostrar con `printf`
-
-- `int` → `%d`
-- `float` → `%f`
-- `char` → `%c`
-
-### Para leer con `scanf`
+### For displaying with `printf`
 
 - `int` → `%d`
 - `float` → `%f`
 - `char` → `%c`
 
-Esto hay que aprenderlo bien, porque si mezclás tipos y especificadores, el programa deja de comportarse como esperás.
+### For reading with `scanf`
 
-## Un ejemplo completo de entrada y salida
+- `int` → `%d`
+- `float` → `%f`
+- `char` → `%c`
+
+You need to learn this well, because if you mix types and specifiers, the program stops behaving as you expect.
+
+## A complete input and output example
 
 ```c
 #include <stdio.h>
@@ -519,115 +519,115 @@ int main() {
     float altura;
     char inicial;
 
-    printf("Ingrese su edad: ");
+    printf("Enter your age: ");
     scanf("%d", &edad);
 
-    printf("Ingrese su altura: ");
+    printf("Enter your height: ");
     scanf("%f", &altura);
 
-    printf("Ingrese la inicial de su nombre: ");
+    printf("Enter the initial of your name: ");
     scanf(" %c", &inicial);
 
-    printf("Edad: %d\n", edad);
-    printf("Altura: %f\n", altura);
-    printf("Inicial: %c\n", inicial);
+    printf("Age: %d\n", edad);
+    printf("Height: %f\n", altura);
+    printf("Initial: %c\n", inicial);
 
     return 0;
 }
 ```
 
-Este programa:
+This program:
 
-- recibe datos del usuario
-- los guarda en variables
-- luego los muestra en pantalla
+- receives data from the user
+- stores it in variables
+- then displays it on the screen
 
-Ahí ya ves claramente cómo se conectan las lecciones:
+Here you can clearly see how the lessons connect:
 
-- primero aprendiste variables
-- ahora ves cómo cargarlas y cómo mostrar su contenido
+- first you learned variables
+- now you see how to load them and how to display their content
 
-## Errores comunes al empezar
+## Common mistakes when starting
 
-### 1. Olvidar incluir `stdio.h`
+### 1. Forgetting to include `stdio.h`
 
-Si usás `printf` o `scanf`, necesitás:
+If you use `printf` or `scanf`, you need:
 
 ```c
 #include <stdio.h>
 ```
 
-### 2. Olvidar el punto y coma
+### 2. Forgetting the semicolon
 
 ```c
-printf("Hola")
+printf("Hello")
 ```
 
-Eso está mal. En C, la sentencia debe terminar con `;`.
+That's wrong. In C, the statement must end with `;`.
 
-Correcto:
+Correct:
 
 ```c
-printf("Hola");
+printf("Hello");
 ```
 
-### 3. Usar mal el especificador de formato
+### 3. Using the wrong format specifier
 
-Esto está mal:
+This is wrong:
 
 ```c
 int edad = 18;
 printf("%f\n", edad);
 ```
 
-¿Por qué? Porque `edad` es `int`, y `%f` se usa para `float`.
+Why? Because `edad` is `int`, and `%f` is used for `float`.
 
-Lo correcto sería:
+Correct would be:
 
 ```c
 printf("%d\n", edad);
 ```
 
-### 4. Olvidar `&` en `scanf`
+### 4. Forgetting `&` in `scanf`
 
-Esto está mal:
+This is wrong:
 
 ```c
 scanf("%d", edad);
 ```
 
-Lo correcto es:
+Correct is:
 
 ```c
 scanf("%d", &edad);
 ```
 
-### 5. Querer leer texto completo antes de tiempo
+### 5. Wanting to read full text too early
 
-Muchos principiantes quieren pasar enseguida a nombres completos o frases.
+Many beginners want to move quickly to full names or phrases.
 
-Pero eso conviene verlo con calma más adelante, cuando aparezca la lección de cadenas de caracteres.
+But that's better to see calmly later, when the lesson on character strings appears.
 
-En esta etapa, lo importante es dominar bien la entrada y salida de:
+At this stage, the important thing is to master input and output of:
 
-- enteros
-- decimales
-- caracteres
+- integers
+- decimals
+- characters
 
-## Resumen
+## Summary
 
-- la **salida** permite que el programa muestre información
-- la **entrada** permite que el programa reciba información
-- `printf()` se usa para mostrar texto y valores en pantalla
-- `scanf()` se usa para leer datos simples ingresados por el usuario
-- `%d`, `%f` y `%c` son especificadores fundamentales al comenzar
-- en `scanf()`, normalmente aparece `&` antes de la variable
-- entrada y salida conectan al programa con quien lo usa
+- **output** allows the program to display information
+- **input** allows the program to receive information
+- `printf()` is used to display text and values on the screen
+- `scanf()` is used to read simple data entered by the user
+- `%d`, `%f`, and `%c` are fundamental specifiers when starting
+- in `scanf()`, `&` normally appears before the variable
+- input and output connect the program with its user
 
-## Idea final
+## Final thought
 
-Cuando un programa puede mostrar y recibir datos, deja de ser una secuencia cerrada de instrucciones y empieza a convertirse en una herramienta interactiva.
+When a program can display and receive data, it stops being a closed sequence of instructions and starts becoming an interactive tool.
 
-Y eso es un paso enorme.
+And that's a huge step.
 
-Porque programar no es solo guardar cosas en memoria: también es poder comunicarse con el usuario de forma clara.
+Because programming isn't just about storing things in memory: it's also about being able to communicate with the user clearly.

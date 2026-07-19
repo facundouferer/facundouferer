@@ -70,7 +70,16 @@ const courses = defineCollection({
 });
 
 const lessons = defineCollection({
-	loader: glob({ pattern: '**/*.+(es|en).md', base: './src/content/courses' }),
+	loader: glob({
+		pattern: '**/*.+(es|en).md',
+		base: './src/content/courses',
+		generateId: ({ data }) => {
+			const course = typeof data.course === 'string' ? data.course : 'unknown';
+			const slug = typeof data.slug === 'string' ? data.slug : 'unknown';
+			const lang = typeof data.lang === 'string' ? data.lang : 'es';
+			return `${course}/${slug}__${lang}`;
+		},
+	}),
 	schema: z.object({
 		course: z.string(),
 		slug: z.string(),

@@ -7,21 +7,21 @@ lang: 'en'
 published: true
 ---
 
-# Programación Orientada a Objetos (POO)
+# Object-Oriented Programming (OOP)
 
-La POO es un paradigma que organiza el código en "objetos" que contienen datos (atributos) y comportamientos (métodos).
+OOP is a paradigm that organizes code into "objects" that contain data (attributes) and behaviors (methods).
 
-## Los 4 Pilares de la POO
+## The 4 Pillars of OOP
 
-1. **Encapsulamiento:** Ocultar detalles internos y exponer solo lo necesario (usando `private` y `getters/setters`).
-2. **Herencia:** Crear clases nuevas a partir de existentes (`extends`).
-3. **Polimorfismo:** Capacidad de un objeto de actuar de diferentes formas.
-4. **Abstracción:** Representar conceptos complejos de forma simplificada (clases abstractas e interfaces).
+1. **Encapsulation:** Hide internal details and expose only what's needed (using `private` and `getters/setters`).
+2. **Inheritance:** Create new classes from existing ones (`extends`).
+3. **Polymorphism:** The ability of an object to behave in different ways.
+4. **Abstraction:** Represent complex concepts in a simplified way (abstract classes and interfaces).
 
-## Clases y Objetos
+## Classes and Objects
 
-- **Clase:** El plano o molde (ej: la clase `Perro`).
-- **Objeto:** La instancia real creada del molde (ej: `miPerro`).
+- **Class:** The blueprint or template (e.g., the `Perro` class).
+- **Object:** The actual instance created from the template (e.g., `miPerro`).
 
 ```java
 public class Perro {
@@ -32,20 +32,20 @@ public class Perro {
     }
 }
 
-// Uso:
+// Usage:
 Perro miPerro = new Perro();
 miPerro.nombre = "Firulais";
 miPerro.ladrar();
 ```
 
-## Modificadores de Acceso
-- `public`: Accesible desde cualquier lugar.
-- `private`: Solo accesible dentro de la misma clase.
-- `protected`: Accesible en el mismo paquete y por subclases.
-- `default`: Solo dentro del mismo paquete.
+## Access Modifiers
+- `public`: Accessible from anywhere.
+- `private`: Only accessible within the same class.
+- `protected`: Accessible within the same package and by subclasses.
+- `default`: Only within the same package.
 
-## Constructores
-Métodos especiales que se ejecutan al crear el objeto (`new`). No tienen tipo de retorno y se llaman igual que la clase.
+## Constructors
+Special methods that run when an object is created (`new`). They have no return type and are named the same as the class.
 
 ```java
 public Persona(String nombre, int edad) {
@@ -55,4 +55,4 @@ public Persona(String nombre, int edad) {
 ```
 
 ## Wrappers
-Clases que envuelven tipos primitivos para tratarlos como objetos (ej: `Integer` para `int`, `Double` para `double`). Son útiles para colecciones.
+Classes that wrap primitive types to treat them as objects (e.g., `Integer` for `int`, `Double` for `double`). They are useful for collections.

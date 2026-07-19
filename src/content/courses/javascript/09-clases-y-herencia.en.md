@@ -7,11 +7,11 @@ lang: 'en'
 published: true
 ---
 
-# Clases en JavaScript
+# Classes in JavaScript
 
-Las clases son "plantillas" para crear objetos que comparten la misma estructura y comportamiento.
+Classes are "templates" for creating objects that share the same structure and behavior.
 
-## Definición de una Clase
+## Defining a Class
 
 ```javascript
 class Persona {
@@ -21,7 +21,7 @@ class Persona {
     }
 
     saludar() {
-        console.log(`Hola, soy ${this.nombre}`);
+        console.log(`Hi, I'm ${this.nombre}`);
     }
 }
 
@@ -29,25 +29,25 @@ const p1 = new Persona("Juan", 30);
 p1.saludar();
 ```
 
-## Herencia
+## Inheritance
 
-Permite crear una clase a partir de otra, heredando sus características y agregando o modificando lo que necesitemos. Se usa `extends`.
+It allows creating a class from another one, inheriting its characteristics and adding or modifying what we need. Use `extends`.
 
 ```javascript
 class Estudiante extends Persona {
     constructor(nombre, edad, carrera) {
-        super(nombre, edad); // Llama al constructor del padre
+        super(nombre, edad); // Calls the parent constructor
         this.carrera = carrera;
     }
 
     estudiar() {
-        console.log(`${this.nombre} está estudiando ${this.carrera}`);
+        console.log(`${this.nombre} is studying ${this.carrera}`);
     }
 }
 
-const e1 = new Estudiante("Pedro", 20, "Ingeniería");
-e1.saludar(); // Heredado
-e1.estudiar(); // Propio
+const e1 = new Estudiante("Pedro", 20, "Engineering");
+e1.saludar(); // Inherited
+e1.estudiar(); // Own
 ```
 
-**Nota:** Por convención, los nombres de las clases siempre empiezan con **Mayúscula**.
+**Note:** By convention, class names always start with a **capital letter**.

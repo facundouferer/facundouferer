@@ -7,33 +7,33 @@ lang: 'en'
 published: true
 ---
 
-Después de aprender `while`, aparece una estructura muy usada cuando la repetición tiene una forma más compacta y controlada: `for`.
+After learning `while`, a very commonly used structure appears when repetition has a more compact and controlled form: `for`.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- cómo funciona `for`
-- qué partes tiene
-- cómo se relaciona con el estado inicial, la condición y la actualización
-- cuándo conviene usar `for`
-- cómo usar `break` y `continue` dentro de un `for`
+- how `for` works
+- what parts it has
+- how it relates to initial state, condition, and update
+- when to use `for`
+- how to use `break` and `continue` inside a `for`
 
-## ¿Qué hace `for`?
+## What does `for` do?
 
-La sentencia `for` repite un bloque de código y concentra en una sola línea tres elementos muy importantes del ciclo:
+The `for` statement repeats a block of code and concentrates in a single line three very important elements of the loop:
 
-- inicialización
-- condición
-- actualización
+- initialization
+- condition
+- update
 
-### Sintaxis
+### Syntax
 
 ```c
-for (inicializacion; condicion; actualizacion) {
-    instrucciones;
+for (initialization; condition; update) {
+    instructions;
 }
 ```
 
-## Ejemplo básico
+## Basic example
 
 ```c
 #include <stdio.h>
@@ -49,51 +49,51 @@ int main() {
 }
 ```
 
-## Lectura correcta del `for`
+## Reading the `for` correctly
 
-### Inicialización
+### Initialization
 
 ```c
 i = 1
 ```
 
-Se ejecuta una sola vez, al comienzo.
+Executed once, at the beginning.
 
-### Condición
+### Condition
 
 ```c
 i <= 5
 ```
 
-Se evalúa antes de cada iteración.
+Evaluated before each iteration.
 
-### Actualización
+### Update
 
 ```c
 i = i + 1
 ```
 
-Se ejecuta al final de cada vuelta.
+Executed at the end of each loop cycle.
 
-## ¿Cuándo conviene usar `for`?
+## When should you use `for`?
 
-`for` conviene mucho cuando la repetición está asociada a un contador o a una cantidad de pasos bastante clara.
+`for` is very useful when the repetition is associated with a counter or a fairly clear number of steps.
 
-Por ejemplo:
+For example:
 
-- mostrar los números del 1 al 10
-- repetir una acción 5 veces
-- recorrer posiciones numeradas
+- displaying numbers from 1 to 10
+- repeating an action 5 times
+- traversing numbered positions
 
-## `for` y `while`: misma idea, distinta forma
+## `for` and `while`: same idea, different form
 
-Un `for` y un `while` muchas veces pueden expresar la misma lógica.
+A `for` and a `while` can often express the same logic.
 
-La diferencia principal está en cómo se organiza la lectura.
+The main difference is in how the reading is organized.
 
-`for` suele ser más cómodo cuando querés ver juntas la inicialización, la condición y la actualización.
+`for` is usually more comfortable when you want to see the initialization, condition, and update together.
 
-## Uso de `break` en `for`
+## Using `break` in `for`
 
 ```c
 for (i = 1; i <= 10; i = i + 1) {
@@ -104,9 +104,9 @@ for (i = 1; i <= 10; i = i + 1) {
 }
 ```
 
-El ciclo se corta cuando `i` vale `6`.
+The loop is cut off when `i` is `6`.
 
-## Uso de `continue` en `for`
+## Using `continue` in `for`
 
 ```c
 for (i = 1; i <= 5; i = i + 1) {
@@ -117,26 +117,26 @@ for (i = 1; i <= 5; i = i + 1) {
 }
 ```
 
-Cuando `i` vale `3`, esa iteración salta directamente al siguiente paso del ciclo.
+When `i` is `3`, that iteration jumps directly to the next step of the loop.
 
-## Error conceptual frecuente
+## Frequent conceptual error
 
-Muchos estudiantes creen que `for` es “otro tipo de magia” distinta de `while`.
+Many students believe `for` is "another type of magic" different from `while`.
 
 No.
 
-La idea profunda es la misma: repetir un bloque mientras una condición lo permita.
+The deep idea is the same: repeating a block while a condition allows it.
 
-Lo que cambia es la forma de organizar la expresión del ciclo.
+What changes is the way the loop expression is organized.
 
-## Resumen
+## Summary
 
-- `for` organiza en una sola línea inicialización, condición y actualización
-- es muy útil cuando trabajás con un contador o una cantidad de repeticiones clara
-- `break` puede cortar el ciclo
-- `continue` puede saltar a la siguiente iteración
-- conceptualmente, `for` y `while` comparten la misma lógica de repetición controlada
+- `for` organizes initialization, condition, and update in a single line
+- it's very useful when working with a counter or a clear number of repetitions
+- `break` can cut the loop
+- `continue` can skip to the next iteration
+- conceptually, `for` and `while` share the same logic of controlled repetition
 
-## Idea final
+## Final thought
 
-Si `while` te enseña la lógica general de la repetición, `for` te enseña a escribirla de forma más compacta y legible cuando la estructura del ciclo está bien definida.
+If `while` teaches you the general logic of repetition, `for` teaches you to write it in a more compact and readable way when the loop structure is well defined.

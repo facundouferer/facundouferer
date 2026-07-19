@@ -7,30 +7,30 @@ lang: 'en'
 published: true
 ---
 
-Los arreglos sirven cuando todos los datos son del mismo tipo. Pero en muchos problemas reales necesitás agrupar datos distintos que pertenecen a una misma entidad.
+Arrays work when all the data is of the same type. But in many real problems you need to group different data that belongs to the same entity.
 
-Ahí aparece el concepto de **estructura**.
+That's where the concept of **structure** comes in.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué es una estructura
-- cómo se declara en C
-- cómo se crean variables de ese tipo
-- cómo se accede a sus campos
+- what a structure is
+- how to declare it in C
+- how to create variables of that type
+- how to access its fields
 
-## ¿Qué es una estructura?
+## What is a structure?
 
-Una **estructura** es un tipo de dato compuesto que agrupa varios datos relacionados, aunque sean de tipos distintos.
+A **structure** is a compound data type that groups several related pieces of data, even if they're of different types.
 
-### Ejemplo conceptual
+### Conceptual example
 
-Una persona podría tener:
+A person could have:
 
-- nombre
-- edad
-- altura
+- name
+- age
+- height
 
-## Declaración con `struct`
+## Declaration with `struct`
 
 ```c
 struct Persona {
@@ -40,20 +40,20 @@ struct Persona {
 };
 ```
 
-## Crear una variable estructura
+## Creating a structure variable
 
 ```c
 struct Persona alumno;
 ```
 
-## Acceso a los campos
+## Accessing fields
 
 ```c
 alumno.edad = 20;
 alumno.altura = 1.75;
 ```
 
-## Ejemplo completo
+## Complete example
 
 ```c
 #include <stdio.h>
@@ -67,25 +67,25 @@ struct Persona {
 int main() {
     struct Persona alumno = {"Facu", 20, 1.75};
 
-    printf("Nombre: %s\n", alumno.nombre);
-    printf("Edad: %d\n", alumno.edad);
-    printf("Altura: %f\n", alumno.altura);
+    printf("Name: %s\n", alumno.nombre);
+    printf("Age: %d\n", alumno.edad);
+    printf("Height: %f\n", alumno.altura);
 
     return 0;
 }
 ```
 
-## ¿Por qué importan tanto las estructuras?
+## Why are structures so important?
 
-Porque muchas estructuras dinámicas se construyen a partir de nodos representados con `struct`.
+Because many dynamic structures are built from nodes represented with `struct`.
 
-## Resumen
+## Summary
 
-- una estructura agrupa datos relacionados de distintos tipos
-- se declara con `struct`
-- sus campos se acceden con `.`
-- es clave para modelar entidades y crear estructuras más complejas
+- a structure groups related data of different types
+- it's declared with `struct`
+- its fields are accessed with `.`
+- it's key for modeling entities and creating more complex structures
 
-## Idea final
+## Final thought
 
-Las estructuras son el paso que te permite modelar información con sentido y no solo guardar valores aislados.
+Structures are the step that allows you to model information meaningfully, not just store isolated values.

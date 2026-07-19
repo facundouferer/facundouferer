@@ -7,42 +7,42 @@ lang: 'en'
 published: true
 ---
 
-# Variables, Constantes y Comentarios
+# Variables, Constants and Comments
 
-## Comentarios
-Los comentarios son notas que dejamos en el código para nosotros u otros desarrolladores. No se ejecutan.
+## Comments
+Comments are notes we leave in the code for ourselves or other developers. They are not executed.
 
-- **Línea simple:** Se usa `//`.
-- **Bloque (múltiples líneas):** Se usa `/* ... */`.
+- **Single line:** Use `//`.
+- **Block (multiple lines):** Use `/* ... */`.
 
 ```javascript
-// Este es un comentario de una sola línea
+// This is a single-line comment
 /*
-   Este es un comentario
-   que abarca varias líneas
+   This is a comment
+   that spans multiple lines
 */
 ```
 
-## Declaración de variables
+## Variable Declaration
 
-JavaScript tiene tres palabras clave para crear contenedores de datos:
+JavaScript has three keywords to create data containers:
 
-1. **`var`**: Forma antigua. Tiene ámbito de función y puede dar problemas de confusión (evitá usarla).
-2. **`let`**: Forma moderna. Permite reasignar valores y tiene ámbito de bloque.
-3. **`const`**: Para valores que no van a cambiar. Una vez asignado, no se puede modificar.
+1. **`var`**: Old way. Has function scope and can cause confusion (avoid using it).
+2. **`let`**: Modern way. Allows reassigning values and has block scope.
+3. **`const`**: For values that won't change. Once assigned, it cannot be modified.
 
-### El ámbito (Scope)
-Es el lugar donde una variable vive y es accesible.
-- **Global:** Fuera de cualquier función o bloque.
-- **Local / Bloque:** Dentro de `{ }`, como en un `if` o una función.
+### Scope
+Scope is where a variable lives and is accessible.
+- **Global:** Outside any function or block.
+- **Local / Block:** Inside `{ }`, like in an `if` or a function.
 
 ```javascript
 if (true) {
-    let mensaje = "Hola"; // Solo vive dentro de este bloque
-    var saludo = "Buen día"; // Escapa al bloque (problema de var)
+    let mensaje = "Hola"; // Only lives inside this block
+    var saludo = "Buen día"; // Leaks out of the block (var problem)
 }
-console.log(saludo); // Funciona
-console.log(mensaje); // ¡Error! ReferenceError
+console.log(saludo); // Works
+console.log(mensaje); // Error! ReferenceError
 ```
 
-**Regla de oro:** Usá `const` por defecto. Si necesitás cambiar el valor más adelante, usá `let`.
+**Golden rule:** Use `const` by default. If you need to change the value later, use `let`.

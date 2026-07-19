@@ -1,0 +1,149 @@
+/* Shared content styling for articles and course lessons.
+   Mirrors the ArticleLayout.astro .article-body block.
+   Import via Astro: <style>@import '../styles/article-body.css';</style> */
+
+.article-body {
+	font-size: 1.05rem;
+	line-height: 1.8;
+	margin-top: var(--space-4);
+}
+
+.article-body :global(h1),
+.article-body :global(h2),
+.article-body :global(h3),
+.article-body :global(h4) {
+	font-family: var(--font-heading);
+	font-weight: var(--font-heading-weight);
+	line-height: 1.2;
+	letter-spacing: -0.015em;
+	margin: 1.5em 0 0.45em;
+	color: var(--color-text);
+}
+
+.article-body :global(h1) {
+	font-size: clamp(1.8rem, 4vw, 2.4rem);
+}
+
+.article-body :global(h2) {
+	font-size: clamp(1.55rem, 3.4vw, 2rem);
+}
+
+.article-body :global(h3) {
+	font-size: clamp(1.3rem, 2.8vw, 1.6rem);
+}
+
+.article-body :global(p),
+.article-body :global(ul),
+.article-body :global(ol) {
+	margin: 0 0 1rem;
+}
+
+.article-body :global(ul) {
+	list-style: disc;
+	padding-left: 1.5rem;
+}
+
+.article-body :global(ol) {
+	list-style: decimal;
+	padding-left: 1.5rem;
+}
+
+.article-body :global(li) {
+	margin: 0 0 0.45rem;
+}
+
+.article-body :global(a) {
+	color: var(--color-accent-700);
+}
+
+.article-body :global(strong) {
+	color: var(--color-accent-700);
+	font-weight: 700;
+}
+
+.article-body :global(img) {
+	display: block;
+	float: right;
+	width: min(48%, 320px);
+	height: auto;
+	margin: 0 0 1rem 1.5rem;
+	border-radius: var(--radius-lg);
+	shape-margin: 1rem;
+}
+
+.article-body :global(p:has(> img)) {
+	margin: 0;
+}
+
+.article-body :global(h1),
+.article-body :global(h2),
+.article-body :global(h3),
+.article-body :global(h4),
+.article-body :global(pre),
+.article-body :global(blockquote) {
+	clear: both;
+}
+
+.article-body :global(pre) {
+	overflow-x: auto;
+	padding: var(--space-4);
+	border-radius: var(--radius-md);
+	background: var(--color-surface);
+}
+
+.article-body :global(blockquote) {
+	margin: 0;
+	padding-left: var(--space-4);
+	border-left: 3px solid var(--color-accent);
+	color: color-mix(in srgb, var(--color-text) 78%, transparent);
+}
+
+.article-body :global(table) {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 1.5rem 0;
+}
+
+.article-body :global(th),
+.article-body :global(td) {
+	border-bottom: 1px solid var(--color-divider);
+	padding: var(--space-2) var(--space-3);
+	text-align: left;
+}
+
+.article-body :global(th) {
+	color: var(--color-accent-700);
+	font-family: var(--font-heading);
+	font-weight: var(--font-heading-weight);
+	border-bottom: 2px solid var(--color-accent);
+}
+
+.article-body :global(code) {
+	background: var(--color-surface);
+	padding: 0.15em 0.4em;
+	border-radius: var(--radius-sm);
+	font-size: 0.92em;
+}
+
+.article-body :global(pre code) {
+	background: none;
+	padding: 0;
+	border-radius: 0;
+	font-size: inherit;
+}
+
+.article-shell {
+	max-width: 1024px;
+}
+
+@media (width < 760px) {
+	.article-body :global(img) {
+		float: none;
+		width: 100%;
+		margin: 0 0 1.25rem;
+	}
+
+	.article-body :global(p:has(> img)) {
+		margin: 0 0 1rem;
+	}
+}

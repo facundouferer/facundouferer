@@ -7,81 +7,81 @@ lang: 'en'
 published: true
 ---
 
-Una vez que entendés qué tipos de datos existen, el siguiente paso natural es aprender **qué podés hacer con esos datos**.
+Once you understand what data types exist, the next natural step is to learn **what you can do with that data**.
 
-Ahí entran en juego los **operadores**.
+That's where **operators** come in.
 
-Un operador es un símbolo que le indica al programa qué acción debe realizar con uno o más valores.
+An operator is a symbol that tells the program what action to perform with one or more values.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué es un operador
-- operadores matemáticos
-- operadores relacionales
-- operadores lógicos
-- operadores de asignación
-- precedencia entre operadores
+- what an operator is
+- mathematical operators
+- relational operators
+- logical operators
+- assignment operators
+- operator precedence
 
-> Idea clave: los operadores son parte del lenguaje con el que construís expresiones. Si no entendés qué hace cada uno y en qué orden actúan, el código se vuelve confuso muy rápido.
+> Key idea: operators are part of the language you use to build expressions. If you don't understand what each one does and in what order they act, code becomes confusing very quickly.
 
-## ¿Qué es un operador?
+## What is an operator?
 
-Un **operador** es un símbolo que representa una operación.
+An **operator** is a symbol that represents an operation.
 
-Por ejemplo, en matemáticas ya conocés símbolos como:
+For example, in math you already know symbols like:
 
 - `+`
 - `-`
 - `*`
 - `/`
 
-En programación pasa algo parecido, pero además existen operadores para:
+In programming, something similar happens, but there are also operators for:
 
-- comparar valores
-- combinar condiciones lógicas
-- asignar valores a variables
+- comparing values
+- combining logical conditions
+- assigning values to variables
 
-## ¿Qué es una expresión?
+## What is an expression?
 
-Antes de seguir, necesitás esta idea.
+Before continuing, you need this idea.
 
-Una **expresión** es una combinación de valores, variables y operadores que produce un resultado.
+An **expression** is a combination of values, variables, and operators that produces a result.
 
-Por ejemplo:
+For example:
 
 ```c
 5 + 3
 ```
 
-Eso es una expresión.
+That's an expression.
 
-También:
+Also:
 
 ```c
 edad + 1
 ```
 
-Y también:
+And also:
 
 ```c
 nota >= 6
 ```
 
-Los operadores forman parte de esas expresiones.
+Operators are part of those expressions.
 
-## Operadores matemáticos
+## Mathematical operators
 
-Los operadores matemáticos permiten realizar cálculos numéricos.
+Mathematical operators allow performing numeric calculations.
 
-Los más importantes al comenzar son estos:
+The most important ones to start with are:
 
-- `+` suma
-- `-` resta
-- `*` multiplicación
-- `/` división
-- `%` resto de una división entera
+- `+` addition
+- `-` subtraction
+- `*` multiplication
+- `/` division
+- `%` remainder of integer division
 
-## Suma `+`
+## Addition `+`
 
 ```c
 int a = 10;
@@ -89,9 +89,9 @@ int b = 5;
 int resultado = a + b;
 ```
 
-Acá, `resultado` vale `15`.
+Here, `resultado` is `15`.
 
-## Resta `-`
+## Subtraction `-`
 
 ```c
 int a = 10;
@@ -99,9 +99,9 @@ int b = 5;
 int resultado = a - b;
 ```
 
-Acá, `resultado` vale `5`.
+Here, `resultado` is `5`.
 
-## Multiplicación `*`
+## Multiplication `*`
 
 ```c
 int a = 4;
@@ -109,9 +109,9 @@ int b = 3;
 int resultado = a * b;
 ```
 
-Acá, `resultado` vale `12`.
+Here, `resultado` is `12`.
 
-## División `/`
+## Division `/`
 
 ```c
 int a = 10;
@@ -119,84 +119,84 @@ int b = 2;
 int resultado = a / b;
 ```
 
-Acá, `resultado` vale `5`.
+Here, `resultado` is `5`.
 
-### Atención con la división entre enteros
+### Watch out for integer division
 
-Mirá este ejemplo:
+Look at this example:
 
 ```c
 int resultado = 5 / 2;
 ```
 
-Si trabajás con enteros, el resultado no conserva la parte decimal.
+If you work with integers, the result doesn't keep the decimal part.
 
-O sea, en este contexto el resultado será `2`.
+So in this context, the result will be `2`.
 
-Esto al principio sorprende muchísimo, pero hay que entenderlo bien: **el tipo de dato influye en el resultado de la operación**.
+This surprises a lot of people at first, but you need to understand it well: **the data type influences the result of the operation**.
 
-## Resto `%`
+## Remainder `%`
 
-El operador `%` devuelve el resto de una división entera.
+The `%` operator returns the remainder of an integer division.
 
 ```c
 int resto = 10 % 3;
 ```
 
-Acá, `resto` vale `1`, porque:
+Here, `resto` is `1`, because:
 
-- `10 / 3` da `3`
-- sobra `1`
+- `10 / 3` gives `3`
+- remainder is `1`
 
-Este operador solo tiene sentido con valores enteros en el nivel en que estamos trabajando.
+This operator only makes sense with integer values at the level we're working.
 
-## Operadores de asignación
+## Assignment operators
 
-Los operadores de asignación sirven para guardar un valor en una variable.
+Assignment operators are used to store a value in a variable.
 
-El más importante y fundamental es:
+The most important and fundamental one is:
 
-- `=` asignación simple
+- `=` simple assignment
 
-## Asignación simple `=`
+## Simple assignment `=`
 
 ```c
 int edad;
 edad = 18;
 ```
 
-Acá, el operador `=` toma el valor `18` y lo guarda en la variable `edad`.
+Here, the `=` operator takes the value `18` and stores it in the variable `edad`.
 
-Esto es IMPORTANTÍSIMO: en programación, `=` no significa lo mismo que en matemática escolar.
+This is VERY IMPORTANT: in programming, `=` doesn't mean the same thing as in school math.
 
-En C:
+In C:
 
 ```c
 edad = 18;
 ```
 
-no significa “edad es igual a 18” como una afirmación abstracta, sino:
+doesn't mean "age equals 18" as an abstract statement, but rather:
 
-> guardá 18 dentro de la variable `edad`
+> store 18 inside the variable `edad`
 
-## Asignación usando el valor previo de la variable
+## Assignment using the variable's previous value
 
 ```c
 int edad = 18;
 edad = edad + 1;
 ```
 
-Esto puede leerse así:
+This can be read as:
 
-1. tomá el valor actual de `edad`
-2. sumale `1`
-3. guardá el resultado nuevamente en `edad`
+1. take the current value of `edad`
+2. add `1` to it
+3. store the result back in `edad`
 
-Al final, `edad` vale `19`.
+At the end, `edad` is `19`.
 
-## Operadores de asignación combinados
+## Combined assignment operators
 
-Además de `=`, existen formas abreviadas muy usadas:
+In addition to `=`, there are widely used shorthand forms:
 
 - `+=`
 - `-=`
@@ -211,7 +211,7 @@ int puntos = 10;
 puntos += 5;
 ```
 
-Equivale a:
+Equivalent to:
 
 ```c
 puntos = puntos + 5;
@@ -224,7 +224,7 @@ int stock = 20;
 stock -= 3;
 ```
 
-Equivale a:
+Equivalent to:
 
 ```c
 stock = stock - 3;
@@ -237,7 +237,7 @@ int valor = 4;
 valor *= 2;
 ```
 
-Equivale a:
+Equivalent to:
 
 ```c
 valor = valor * 2;
@@ -250,7 +250,7 @@ int numero = 20;
 numero /= 4;
 ```
 
-Equivale a:
+Equivalent to:
 
 ```c
 numero = numero / 4;
@@ -263,33 +263,33 @@ int resto = 10;
 resto %= 3;
 ```
 
-Equivale a:
+Equivalent to:
 
 ```c
 resto = resto % 3;
 ```
 
-## ¿Qué son los operadores relacionales?
+## What are relational operators?
 
-Los operadores relacionales sirven para **comparar valores**.
+Relational operators are used to **compare values**.
 
-Se usan para responder preguntas como:
+They're used to answer questions like:
 
-- ¿es igual?
-- ¿es distinto?
-- ¿es mayor?
-- ¿es menor?
+- is it equal?
+- is it different?
+- is it greater?
+- is it less?
 
-Los principales son:
+The main ones are:
 
-- `==` igual que
-- `!=` distinto de
-- `>` mayor que
-- `<` menor que
-- `>=` mayor o igual que
-- `<=` menor o igual que
+- `==` equal to
+- `!=` not equal to
+- `>` greater than
+- `<` less than
+- `>=` greater than or equal to
+- `<=` less than or equal to
 
-## Ejemplos de operadores relacionales
+## Examples of relational operators
 
 ```c
 edad == 18
@@ -300,202 +300,202 @@ cantidad >= 10
 cantidad <= 20
 ```
 
-Aunque más adelante los vas a usar en estructuras como decisiones, por ahora lo importante es entender el significado de cada comparación.
+Although you'll use them later in structures like decisions, for now the important thing is to understand the meaning of each comparison.
 
-## Diferencia entre `=` y `==`
+## Difference between `=` and `==`
 
-Este es uno de los errores más comunes al empezar.
+This is one of the most common mistakes when starting.
 
-- `=` asigna un valor
-- `==` compara dos valores
+- `=` assigns a value
+- `==` compares two values
 
-Mirá la diferencia:
+Look at the difference:
 
 ```c
 edad = 18;
 ```
 
-Eso asigna.
+That assigns.
 
 ```c
 edad == 18
 ```
 
-Eso compara.
+That compares.
 
-No confundas estas dos cosas porque cambian por completo el sentido del código.
+Don't confuse these two things because they completely change the meaning of the code.
 
-## ¿Qué son los operadores lógicos?
+## What are logical operators?
 
-Los operadores lógicos permiten combinar o modificar expresiones relacionales.
+Logical operators allow combining or modifying relational expressions.
 
-Los más importantes son:
+The most important ones are:
 
-- `&&` significa “y”
-- `||` significa “o”
-- `!` significa “no” o negación
+- `&&` means "and"
+- `||` means "or"
+- `!` means "not" or negation
 
-## Operador lógico `&&`
+## Logical operator `&&`
 
-Se usa cuando querés que dos expresiones sean verdaderas al mismo tiempo.
+Used when you want two expressions to be true at the same time.
 
 ```c
 edad >= 18 && edad <= 65
 ```
 
-La idea conceptual es:
+The conceptual idea is:
 
-- la primera comparación debe cumplirse
-- y la segunda también
+- the first comparison must hold
+- and the second one too
 
-## Operador lógico `||`
+## Logical operator `||`
 
-Se usa cuando alcanza con que se cumpla al menos una de las expresiones.
+Used when at least one of the expressions needs to be true.
 
 ```c
 letra == 'a' || letra == 'A'
 ```
 
-## Operador lógico `!`
+## Logical operator `!`
 
-Se usa para negar una expresión.
+Used to negate an expression.
 
 ```c
 !(edad == 18)
 ```
 
-Esto expresa la negación de esa comparación.
+This expresses the negation of that comparison.
 
-## Importante: por ahora entendé el significado, no adelantes estructuras
+## Important: for now understand the meaning, don't get ahead
 
-Los operadores relacionales y lógicos suelen usarse muchísimo junto con sentencias de decisión.
+Relational and logical operators are heavily used together with decision statements.
 
-Pero NO hace falta adelantarse a esa lección.
+But there's NO need to get ahead of that lesson.
 
-En esta etapa lo importante es que entiendas qué significa cada operador y qué tipo de resultado conceptual produce una comparación o una combinación lógica.
+At this stage, the important thing is that you understand what each operator means and what kind of conceptual result a comparison or logical combination produces.
 
-## Precedencia entre operadores
+## Operator precedence
 
-Cuando una expresión tiene varios operadores, no siempre se evalúa de izquierda a derecha sin más.
+When an expression has several operators, it's not always evaluated strictly left to right.
 
-Existe un **orden de precedencia**, es decir, un orden de prioridad.
+There's a **precedence order**, that is, a priority order.
 
-Pensalo como las reglas de una cuenta matemática.
+Think of it like the rules of a math problem.
 
-Por ejemplo, en matemática sabés que la multiplicación tiene prioridad sobre la suma.
+For example, in math you know multiplication has priority over addition.
 
-En C ocurre algo parecido.
+In C, something similar happens.
 
-## Regla general simplificada para empezar
+## Simplified general rule for beginners
 
-Sin entrar todavía en todas las reglas avanzadas, podés empezar con este orden general:
+Without getting into all the advanced rules yet, you can start with this general order:
 
-1. paréntesis `()`
-2. operadores aritméticos como `*`, `/`, `%`
-3. operadores aritméticos como `+`, `-`
-4. operadores relacionales como `>`, `<`, `>=`, `<=`
-5. operadores de igualdad como `==`, `!=`
-6. operador lógico `&&`
-7. operador lógico `||`
-8. asignación `=` y operadores de asignación combinados
+1. parentheses `()`
+2. arithmetic operators like `*`, `/`, `%`
+3. arithmetic operators like `+`, `-`
+4. relational operators like `>`, `<`, `>=`, `<=`
+5. equality operators like `==`, `!=`
+6. logical operator `&&`
+7. logical operator `||`
+8. assignment `=` and combined assignment operators
 
-Esta versión simplificada alcanza muy bien para empezar a leer expresiones.
+This simplified version works very well for starting to read expressions.
 
-## Ejemplo de precedencia
+## Precedence example
 
 ```c
 int resultado = 2 + 3 * 4;
 ```
 
-Primero se resuelve:
+First it resolves:
 
 ```c
 3 * 4
 ```
 
-Después:
+Then:
 
 ```c
 2 + 12
 ```
 
-Por lo tanto, `resultado` vale `14`.
+Therefore, `resultado` is `14`.
 
-## Uso de paréntesis para dar claridad
+## Using parentheses for clarity
 
-Si querés dejar más clara una expresión, usá paréntesis.
+If you want to make an expression clearer, use parentheses.
 
 ```c
 int resultado = (2 + 3) * 4;
 ```
 
-Ahora primero se resuelve:
+Now it resolves:
 
 ```c
 2 + 3
 ```
 
-Y después se multiplica por `4`.
+And then multiplies by `4`.
 
-El resultado será `20`.
+The result will be `20`.
 
-Los paréntesis no solo sirven para cambiar el orden. También sirven para hacer el código más claro al leerlo.
+Parentheses aren't just for changing the order. They also help make the code clearer to read.
 
-## Errores comunes al empezar
+## Common mistakes when starting
 
-### 1. Confundir `=` con `==`
+### 1. Confusing `=` with `==`
 
-Es el clásico error de principiante.
+It's the classic beginner error.
 
-- `=` asigna
-- `==` compara
+- `=` assigns
+- `==` compares
 
-### 2. Olvidar la precedencia
+### 2. Forgetting precedence
 
 ```c
 int resultado = 2 + 3 * 4;
 ```
 
-Si asumís que esto da `20`, te equivocás.
+If you assume this gives `20`, you're wrong.
 
-### 3. Creer que la división siempre conserva decimales
+### 3. Believing division always keeps decimals
 
 ```c
 int resultado = 5 / 2;
 ```
 
-Con enteros, ese resultado no conserva la parte decimal.
+With integers, that result doesn't keep the decimal part.
 
-### 4. Usar operadores sin pensar en el tipo de dato
+### 4. Using operators without thinking about the data type
 
-El tipo de dato influye en la operación y en el resultado.
+The data type influences the operation and the result.
 
-### 5. Escribir expresiones demasiado confusas
+### 5. Writing overly confusing expressions
 
-Cuando una expresión empieza a verse enredada, los paréntesis ayudan mucho a hacer explícita la intención.
+When an expression starts looking tangled, parentheses help a lot to make the intent explicit.
 
-## Resumen
+## Summary
 
-- un **operador** es un símbolo que representa una acción sobre valores
-- los operadores matemáticos permiten hacer cálculos
-- los operadores relacionales permiten comparar valores
-- los operadores lógicos permiten combinar o negar comparaciones
-- los operadores de asignación permiten guardar resultados en variables
-- `=` y `==` no significan lo mismo
-- la **precedencia** define en qué orden se evalúan los operadores
-- los paréntesis ayudan a controlar y aclarar ese orden
+- an **operator** is a symbol that represents an action on values
+- mathematical operators allow calculations
+- relational operators allow comparing values
+- logical operators allow combining or negating comparisons
+- assignment operators allow storing results in variables
+- `=` and `==` don't mean the same thing
+- **precedence** defines the order in which operators are evaluated
+- parentheses help control and clarify that order
 
-## Idea final
+## Final thought
 
-Los operadores son el lenguaje interno con el que empezás a construir expresiones más potentes.
+Operators are the internal language you use to start building more powerful expressions.
 
-Pero ojo: no se trata solo de memorizar símbolos.
+But careful: it's not just about memorizing symbols.
 
-Se trata de entender:
+It's about understanding:
 
-- qué hace cada operador
-- con qué tipo de datos tiene sentido usarlo
-- qué resultado produce
-- en qué orden actúa dentro de una expresión
+- what each operator does
+- which data types it makes sense to use it with
+- what result it produces
+- in what order it acts within an expression
 
-Si eso te queda claro, después las estructuras más complejas se entienden MUCHO mejor.
+If that's clear, then the more complex structures become MUCH easier to understand.

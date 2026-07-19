@@ -7,46 +7,46 @@ lang: 'en'
 published: true
 ---
 
-# Objetos en JavaScript
+# Objects in JavaScript
 
-Un objeto es una colección de propiedades (clave y valor). Es la base de casi todo en JavaScript.
+An object is a collection of properties (key and value). It is the foundation of almost everything in JavaScript.
 
-## Crear y Acceder
+## Create and Access
 
 ```javascript
 const persona = {
     nombre: "Juan",
     edad: 30,
     saludar: function() {
-        console.log("Hola!");
+        console.log("Hello!");
     }
 };
 
-// Notación de punto (Estándar)
+// Dot notation (Standard)
 console.log(persona.nombre);
 
-// Notación de corchetes (Para nombres dinámicos o con espacios)
+// Bracket notation (For dynamic names or with spaces)
 console.log(persona["edad"]);
 ```
 
-## Manipulación
-- **Agregar:** `persona.trabajo = "Dev";`
-- **Eliminar:** `delete persona.edad;`
-- **Verificar:** `"nombre" in persona; // true`
+## Manipulation
+- **Add:** `persona.trabajo = "Dev";`
+- **Delete:** `delete persona.edad;`
+- **Check:** `"nombre" in persona; // true`
 
-## El concepto de `this`
+## The concept of `this`
 
-La palabra reservada `this` hace referencia al **objeto actual** en el que se está ejecutando el código. Su valor cambia según cómo se llame a la función.
+The reserved word `this` refers to the **current object** in which the code is being executed. Its value changes depending on how the function is called.
 
 ```javascript
 const usuario = {
     nombre: "Facu",
     presentarse() {
-        console.log(`Hola, soy ${this.nombre}`);
+        console.log(`Hi, I'm ${this.nombre}`);
     }
 };
 
-usuario.presentarse(); // "Hola, soy Facu"
+usuario.presentarse(); // "Hi, I'm Facu"
 ```
 
-Dentro de un método de un objeto, `this` nos permite acceder a las otras propiedades de ese mismo objeto.
+Inside an object method, `this` lets us access the other properties of that same object.

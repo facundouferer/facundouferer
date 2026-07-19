@@ -7,93 +7,93 @@ lang: 'en'
 published: true
 ---
 
-Después de aprender `if-else`, aparece una herramienta muy útil para resolver **decisiones simples** de una manera más corta: el **operador ternario**.
+After learning `if-else`, a very useful tool appears for solving **simple decisions** in a shorter way: the **ternary operator**.
 
-Se llama “ternario” porque trabaja con **tres partes**.
+It's called "ternary" because it works with **three parts**.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué es el operador ternario
-- cuál es su sintaxis
-- cómo se relaciona con `if-else`
-- cuándo conviene usarlo
-- errores comunes al empezar
+- what the ternary operator is
+- what its syntax is
+- how it relates to `if-else`
+- when to use it
+- common mistakes when starting
 
-> Idea clave: el operador ternario sirve para elegir entre dos valores según una condición. Es útil cuando la decisión es simple, pero no reemplaza a `if-else` en todos los casos.
+> Key idea: the ternary operator lets you choose between two values based on a condition. It's useful when the decision is simple, but it doesn't replace `if-else` in every case.
 
-## ¿Qué problema resuelve?
+## What problem does it solve?
 
-A veces querés guardar un valor distinto según una condición.
+Sometimes you want to store a different value depending on a condition.
 
-Por ejemplo:
+For example:
 
-- si la nota es 6 o más, guardar “aprobado”
-- si un número es par, guardar “par”
-- si la edad es 18 o más, guardar `1`, y si no, guardar `0`
+- if the grade is 6 or more, store "passed"
+- if a number is even, store "even"
+- if age is 18 or more, store `1`, otherwise store `0`
 
-Eso se puede hacer con `if-else`, claro.
+That can be done with `if-else`, of course.
 
-Pero cuando solo necesitás **elegir un valor entre dos opciones**, el operador ternario puede escribir esa idea de forma más directa.
+But when you only need to **choose one value between two options**, the ternary operator can write that idea more directly.
 
-## Sintaxis general
+## General syntax
 
-La forma general es esta:
+The general form is this:
 
 ```c
-condicion ? valor_si_verdadero : valor_si_falso
+condition ? value_if_true : value_if_false
 ```
 
-Leelo así:
+Read it like this:
 
-> si la condición es verdadera, usar este valor; si es falsa, usar este otro
+> if the condition is true, use this value; if it's false, use this other one
 
-## Ejemplo simple
+## Simple example
 
 ```c
 int edad = 20;
 int esMayor = edad >= 18 ? 1 : 0;
 ```
 
-### ¿Qué pasa acá?
+### What's happening here?
 
-1. se evalúa la condición `edad >= 18`
-2. como es verdadera, se usa el valor `1`
-3. ese valor se guarda en `esMayor`
+1. the condition `edad >= 18` is evaluated
+2. since it's true, the value `1` is used
+3. that value is stored in `esMayor`
 
-Si `edad` fuera menor que `18`, entonces se guardaría `0`.
+If `edad` were less than `18`, then `0` would be stored.
 
-## Equivalencia con `if-else`
+## Equivalence with `if-else`
 
-Este código con ternario:
+This code with ternary:
 
 ```c
 int numero = 8;
-char* tipo = numero % 2 == 0 ? "par" : "impar";
+char* tipo = numero % 2 == 0 ? "even" : "odd";
 ```
 
-expresa la misma idea que este código con `if-else`:
+expresses the same idea as this code with `if-else`:
 
 ```c
 int numero = 8;
 char* tipo;
 
 if (numero % 2 == 0) {
-    tipo = "par";
+    tipo = "even";
 } else {
-    tipo = "impar";
+    tipo = "odd";
 }
 ```
 
-La diferencia no está en **lo que resuelve**, sino en **cómo se escribe**.
+The difference isn't in **what it solves**, but in **how it's written**.
 
-## Ejemplo completo en C
+## Complete example in C
 
 ```c
 #include <stdio.h>
 
 int main() {
     int nota = 7;
-    char* resultado = nota >= 6 ? "Aprobado" : "Desaprobado";
+    char* resultado = nota >= 6 ? "Passed" : "Failed";
 
     printf("%s\n", resultado);
 
@@ -101,28 +101,28 @@ int main() {
 }
 ```
 
-Si `nota` vale `7`, se muestra `Aprobado`.
-Si `nota` valiera `4`, se mostraría `Desaprobado`.
+If `nota` is `7`, it shows `Passed`.
+If `nota` were `4`, it would show `Failed`.
 
-## ¿Por qué se llama operador?
+## Why is it called an operator?
 
-Y acá está una diferencia FUNDAMENTAL que mucha gente principiante no entiende al comienzo.
+Here's a FUNDAMENTAL difference that many beginners don't understand at first.
 
-`if-else` es una **estructura de control**.
+`if-else` is a **control structure**.
 
-En cambio, el ternario es un **operador** que forma una **expresión**.
+The ternary, on the other hand, is an **operator** that forms an **expression**.
 
-Eso significa que el ternario **produce un valor**.
+That means the ternary **produces a value**.
 
-Por eso podés usarlo, por ejemplo, al asignar una variable:
+That's why you can use it, for example, when assigning a variable:
 
 ```c
 int menor = a < b ? a : b;
 ```
 
-Acá el resultado de toda la expresión ternaria es un valor: `a` o `b`.
+Here the result of the entire ternary expression is a value: `a` or `b`.
 
-## Otro ejemplo útil: elegir el menor de dos números
+## Another useful example: choosing the smaller of two numbers
 
 ```c
 #include <stdio.h>
@@ -132,80 +132,80 @@ int main() {
     int b = 5;
     int menor = a < b ? a : b;
 
-    printf("El menor es: %d\n", menor);
+    printf("The smaller is: %d\n", menor);
 
     return 0;
 }
 ```
 
-Si `a` es menor que `b`, `menor` guarda `a`.
-Si no, guarda `b`.
+If `a` is less than `b`, `menor` stores `a`.
+If not, it stores `b`.
 
-## ¿Cuándo conviene usarlo?
+## When should you use it?
 
-Conviene usar el operador ternario cuando:
+You should use the ternary operator when:
 
-- la condición es clara
-- solo hay dos posibles resultados
-- querés obtener un valor
-- la expresión sigue siendo fácil de leer
+- the condition is clear
+- there are only two possible results
+- you want to obtain a value
+- the expression remains easy to read
 
-## ¿Cuándo NO conviene usarlo?
+## When should you NOT use it?
 
-No conviene usarlo cuando la lógica empieza a enredarse.
+You shouldn't use it when the logic starts getting tangled.
 
-Por ejemplo, si la condición es muy larga o si querés meter un ternario dentro de otro, el código se vuelve más difícil de leer.
+For example, if the condition is very long or if you want to nest a ternary inside another, the code becomes harder to read.
 
-Y si el código se vuelve difícil de leer, ya perdiste el beneficio.
+And if the code becomes hard to read, you've already lost the benefit.
 
-Mirá esta idea:
+Look at this idea:
 
 ```c
 int resultado = edad >= 18 ? 1 : 0;
 ```
 
-Eso está bien.
+That's fine.
 
-Pero si empezás a escribir cosas demasiado complejas en una sola línea, ya conviene volver a `if-else`.
+But if you start writing things that are too complex in a single line, it's better to go back to `if-else`.
 
-## Errores comunes al empezar
+## Common mistakes when starting
 
-### 1. Creer que reemplaza siempre a `if-else`
+### 1. Believing it always replaces `if-else`
 
-No. Sirve para decisiones simples que devuelven un valor.
+No. It's useful for simple decisions that return a value.
 
-Si tenés varios pasos dentro de cada camino, `if-else` suele ser mejor opción.
+If you have several steps inside each path, `if-else` is usually the better option.
 
-### 2. No entender qué parte corresponde a cada caso
+### 2. Not understanding which part corresponds to which case
 
-Recordá el orden:
+Remember the order:
 
 ```c
-condicion ? verdadero : falso
+condition ? true_value : false_value
 ```
 
-Primero va la condición, después el valor si se cumple, y al final el valor si no se cumple.
+First goes the condition, then the value if true, and finally the value if false.
 
-### 3. Querer hacerlo demasiado “inteligente”
+### 3. Trying to be too "clever"
 
-El objetivo del código no es parecer sofisticado. El objetivo es que se entienda.
+The goal of code isn't to look sophisticated. The goal is to be understandable.
 
-Si el ternario complica la lectura, no lo uses.
+If the ternary complicates reading, don't use it.
 
-## Resumen
+## Summary
 
-- el operador ternario permite elegir entre dos valores
-- su forma general es `condicion ? valor_si_verdadero : valor_si_falso`
-- se parece a un `if-else`, pero produce un valor
-- conviene para decisiones simples y claras
-- si la expresión se vuelve confusa, es mejor usar `if-else`
+- the ternary operator allows choosing between two values
+- its general form is `condition ? value_if_true : value_if_false`
+- it resembles `if-else`, but produces a value
+- it's good for simple, clear decisions
+- if the expression becomes confusing, it's better to use `if-else`
 
-## Idea final
+## Final thought
 
-El operador ternario es una herramienta chica, pero muy útil.
+The ternary operator is a small tool, but very useful.
 
-Bien usado, te permite escribir decisiones simples de una forma compacta y clara.
+Used well, it lets you write simple decisions in a compact and clear way.
 
-Mal usado, convierte una idea simple en una línea difícil de entender.
+Used poorly, it turns a simple idea into a line that's hard to understand.
 
-Y en programación, hermano, **claridad siempre le gana a la viveza**.
+And in programming, friend, **clarity always beats cleverness**.

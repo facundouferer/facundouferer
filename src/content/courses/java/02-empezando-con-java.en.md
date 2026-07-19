@@ -7,22 +7,22 @@ lang: 'en'
 published: true
 ---
 
-# Empezando con Java
+# Getting Started with Java
 
-Java es un lenguaje de programación de propósito general, potente y versátil. Se utiliza en todo, desde aplicaciones móviles (Android) hasta grandes sistemas empresariales y servidores.
+Java is a powerful, versatile general-purpose programming language. It is used in everything from mobile applications (Android) to large enterprise systems and servers.
 
-## ¿Qué es Java?
+## What is Java?
 
-A diferencia de lenguajes como JavaScript (que es interpretado), Java es un lenguaje compilado. Esto significa que el código que escribes se traduce a un formato intermedio llamado **Bytecode**, que luego la Máquina Virtual de Java (JVM) ejecuta en cualquier plataforma.
+Unlike languages like JavaScript (which is interpreted), Java is a compiled language. This means the code you write is translated into an intermediate format called **Bytecode**, which is then executed by the Java Virtual Machine (JVM) on any platform.
 
-## Las ventajas de aprender Java
+## The advantages of learning Java
 
-- **Amplia demanda laboral:** Es uno de los lenguajes más usados en la industria.
-- **Portabilidad:** "Escribe una vez, ejecuta en cualquier lugar".
-- **Flexibilidad:** Se adapta a múltiples tipos de proyectos.
-- **Comunidad activa:** Miles de librerías y soporte disponible.
+- **High job demand:** It is one of the most widely used languages in the industry.
+- **Portability:** "Write once, run anywhere".
+- **Flexibility:** It adapts to multiple types of projects.
+- **Active community:** Thousands of libraries and available support.
 
-## El primer programa en Java
+## The first Java program
 
 ```java
 public class MiPrograma {
@@ -32,22 +32,22 @@ public class MiPrograma {
 }
 ```
 
-### ¿Qué acabamos de hacer?
+### What did we just do?
 
-1. `public class MiPrograma`: Define una clase pública llamada `MiPrograma`.
-2. `public static void main(String[] args)`: El punto de entrada del programa. Es lo primero que se ejecuta.
-3. `System.out.println("¡Hola, mundo!")`: Imprime el texto en la consola y salta a la siguiente línea.
+1. `public class MiPrograma`: Defines a public class called `MiPrograma`.
+2. `public static void main(String[] args)`: The program's entry point. It is the first thing that runs.
+3. `System.out.println("¡Hola, mundo!")`: Prints the text to the console and jumps to the next line.
 
-## La salida estándar
+## Standard output
 
-En Java usamos la clase `System.out` para mostrar información:
+In Java we use the `System.out` class to display information:
 
-- `System.out.println()`: Imprime y salta de línea.
-- `System.out.print()`: Imprime sin saltar de línea.
-- `System.out.printf()`: Permite imprimir con formato (como en C).
-- `System.out.write()`: Escribe un solo carácter (menos común).
+- `System.out.println()`: Prints and jumps to a new line.
+- `System.out.print()`: Prints without jumping to a new line.
+- `System.out.printf()`: Allows printing with formatting (like in C).
+- `System.out.write()`: Writes a single character (less common).
 
-### Ejemplo de `printf`:
+### Example of `printf`:
 ```java
 String nombre = "Juan";
 int edad = 25;

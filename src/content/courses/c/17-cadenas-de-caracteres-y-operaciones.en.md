@@ -7,222 +7,222 @@ lang: 'en'
 published: true
 ---
 
-En muchos programas no alcanza con trabajar solo con números. También necesitamos trabajar con texto: nombres, apellidos, ciudades, mensajes, contraseñas, frases y mucho más.
+In many programs it's not enough to work only with numbers. We also need to work with text: names, last names, cities, messages, passwords, phrases, and much more.
 
-En C, ese texto no se maneja con un tipo especial llamado `string`, como pasa en otros lenguajes. En C, una cadena de caracteres se representa como un **arreglo de caracteres**.
+In C, that text isn't handled with a special type called `string`, as happens in other languages. In C, a character string is represented as an **array of characters**.
 
-Y esto es CLAVE entenderlo desde el comienzo.
+And this is KEY to understand from the beginning.
 
-> Una cadena en C no es magia. Es un arreglo de `char` con una marca de final.
+> A string in C isn't magic. It's an array of `char` with an end marker.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué es una cadena de caracteres
-- cómo se relaciona con los arreglos
-- qué significa `\0`
-- cómo declarar e inicializar cadenas
-- cómo leer cadenas desde el teclado
-- cómo recorrer una cadena carácter por carácter
-- operaciones comunes con cadenas
-- funciones útiles de `<string.h>`
+- what a character string is
+- how it relates to arrays
+- what `\0` means
+- how to declare and initialize strings
+- how to read strings from the keyboard
+- how to traverse a string character by character
+- common string operations
+- useful functions from `<string.h>`
 
-Antes de empezar, quedate con esta idea: **si entendés los índices y el `\0`, entendés cadenas en C**. Si no entendés eso, vas a terminar copiando funciones de memoria sin saber por qué funcionan. Y ahí es donde después aparecen los errores raros.
+Before starting, keep this idea: **if you understand indices and `\0`, you understand strings in C**. If you don't understand that, you'll end up copying functions from memory without knowing why they work. And that's where strange errors appear later.
 
-## El problema: guardar texto no es guardar un número
+## The problem: storing text isn't storing a number
 
-Guardar un número es directo:
+Storing a number is straightforward:
 
 ```c
 int edad = 18;
 ```
 
-Guardar un carácter también:
+Storing a character too:
 
 ```c
 char inicial = 'A';
 ```
 
-Pero un nombre como `"Ana"` no entra en un solo `char`, porque un `char` guarda **un carácter**, no una palabra completa.
+But a name like `"Ana"` doesn't fit in a single `char`, because a `char` stores **one character**, not a whole word.
 
-Esto está mal:
+This is wrong:
 
 ```c
-char nombre = 'Ana'; /* incorrecto */
+char nombre = 'Ana'; /* incorrect */
 ```
 
-¿Por qué? Porque `'Ana'` no es un carácter. Son varios caracteres. Para guardar varios valores del mismo tipo usamos un arreglo.
+Why? Because `'Ana'` isn't a character. It's several characters. To store several values of the same type we use an array.
 
-Entonces, para guardar texto en C, usamos un arreglo de `char`:
+So, to store text in C, we use an array of `char`:
 
 ```c
 char nombre[10];
 ```
 
-Eso reserva 10 posiciones de memoria para guardar caracteres.
+That reserves 10 memory positions to store characters.
 
-## ¿Qué es una cadena de caracteres?
+## What is a character string?
 
-Una **cadena de caracteres** es una secuencia de caracteres guardada en un arreglo de tipo `char`.
+A **character string** is a sequence of characters stored in an array of type `char`.
 
-Por ejemplo:
+For example:
 
 ```c
 char nombre[] = "Juan";
 ```
 
-Acá parece que guardamos una sola cosa, pero en realidad se guardan varios caracteres:
+Here it seems we store a single thing, but in reality several characters are stored:
 
 - `J`
 - `u`
 - `a`
 - `n`
-- y un carácter especial más: `\0`
+- and one more special character: `\0`
 
-## ¿Qué significa `\0`?
+## What does `\0` mean?
 
-`\0` se llama **carácter nulo**.
+`\0` is called the **null character**.
 
-No es una letra, no es un número visible, no se imprime como texto común. Su función es marcar el final de la cadena.
+It's not a letter, not a visible number, it doesn't print like regular text. Its function is to mark the end of the string.
 
-Eso significa que una cadena como `"Juan"` en memoria se representa así:
+That means a string like `"Juan"` is represented in memory like this:
 
 ```text
 J u a n \0
 ```
 
-También podemos verlo con índices:
+We can also see it with indices:
 
 ```text
-Indice:      0    1    2    3    4
-Contenido:  'J'  'u'  'a'  'n'  '\0'
+Index:       0    1    2    3    4
+Content:    'J'  'u'  'a'  'n'  '\0'
 ```
 
-Esto es exactamente igual a pensar en un arreglo común. La diferencia es que, cuando hablamos de cadenas, el `\0` le dice al programa: “hasta acá llega el texto”.
+This is exactly like thinking about a regular array. The difference is that when we talk about strings, `\0` tells the program: "this is where the text ends."
 
-## ¿Por qué `\0` es tan importante?
+## Why is `\0` so important?
 
-Porque muchas funciones en C no saben cuántos caracteres querés usar. Entonces leen carácter por carácter hasta encontrar `\0`.
+Because many functions in C don't know how many characters you want to use. So they read character by character until they find `\0`.
 
-Si ese carácter de final no está donde corresponde, el programa puede leer basura o comportarse mal.
+If that end character isn't where it should be, the program may read garbage or misbehave.
 
-Y eso, hermano, es una de las cosas que más confunden al que recién empieza.
+And that, friend, is one of the things that most confuses beginners.
 
-Pensalo así: el arreglo puede tener más espacio del que usa la palabra.
+Think of it this way: the array can have more space than the word uses.
 
 ```c
 char nombre[10] = "Ana";
 ```
 
-En memoria queda conceptualmente así:
+In memory it looks conceptually like this:
 
 ```text
-Indice:      0    1    2    3    4    5    6    7    8    9
-Contenido:  'A'  'n'  'a'  '\0' ...  ...  ...  ...  ...  ...
+Index:      0    1    2    3    4    5    6    7    8    9
+Content:   'A'  'n'  'a'  '\0' ...  ...  ...  ...  ...  ...
 ```
 
-La cadena no ocupa necesariamente todo el arreglo. La cadena termina en el primer `\0`.
+The string doesn't necessarily occupy the whole array. The string ends at the first `\0`.
 
-Eso significa que el **tamaño del arreglo** y la **longitud real del texto** no son lo mismo.
+That means the **array size** and the **actual text length** are not the same.
 
-- `char nombre[10]` tiene 10 posiciones disponibles
-- `"Ana"` tiene 3 caracteres visibles
-- además necesita 1 posición extra para `\0`
+- `char nombre[10]` has 10 available positions
+- `"Ana"` has 3 visible characters
+- it also needs 1 extra position for `\0`
 
-## Una cadena es un arreglo de `char`
+## A string is an array of `char`
 
-Como una cadena es un arreglo, podemos acceder a sus posiciones igual que con cualquier otro arreglo.
+Since a string is an array, we can access its positions just like any other array.
 
 ```c
 char nombre[] = "Ana";
 ```
 
-Entonces:
+So:
 
-- `nombre[0]` es `'A'`
-- `nombre[1]` es `'n'`
-- `nombre[2]` es `'a'`
-- `nombre[3]` es `\0`
+- `nombre[0]` is `'A'`
+- `nombre[1]` is `'n'`
+- `nombre[2]` is `'a'`
+- `nombre[3]` is `\0`
 
-Fijate algo importante:
+Notice something important:
 
-- `'A'` con comillas simples representa un **carácter**
-- `"Ana"` con comillas dobles representa una **cadena**
+- `'A'` with single quotes represents a **character**
+- `"Ana"` with double quotes represents a **string**
 
-No es lo mismo.
+They're not the same.
 
-## Declaración de cadenas
+## Declaring strings
 
-Cuando declarás una cadena, tenés que pensar en dos cosas:
+When you declare a string, you need to think about two things:
 
-- cuántos caracteres visibles querés guardar
-- una posición extra para el `\0`
+- how many visible characters you want to store
+- one extra position for `\0`
 
-Esto es FUNDAMENTAL. Si querés guardar una palabra de 4 letras, necesitás como mínimo 5 posiciones.
+This is FUNDAMENTAL. If you want to store a 4-letter word, you need at least 5 positions.
 
-### Declaración con tamaño fijo
+### Declaration with fixed size
 
 ```c
 char ciudad[20];
 ```
 
-Esto reserva espacio para guardar hasta 19 caracteres visibles y el `\0` final.
+This reserves space to store up to 19 visible characters and the final `\0`.
 
-No significa que ya haya una palabra guardada. Solo significa que existe espacio reservado.
+It doesn't mean a word is already stored there. It only means there's reserved space.
 
-### Declaración con inicialización directa
+### Declaration with direct initialization
 
 ```c
 char nombre[] = "Lucia";
 ```
 
-En este caso, el compilador calcula automáticamente el tamaño necesario.
+In this case, the compiler automatically calculates the necessary size.
 
-Como `"Lucia"` tiene 5 letras, el arreglo necesita 6 posiciones:
+Since `"Lucia"` has 5 letters, the array needs 6 positions:
 
 ```text
 L u c i a \0
 ```
 
-### Declaración indicando tamaño e inicialización
+### Declaration specifying size and initialization
 
 ```c
 char apellido[10] = "Perez";
 ```
 
-Acá se reserva espacio para 10 caracteres, aunque la palabra use menos.
+Here space is reserved for 10 characters, even though the word uses less.
 
-Conceptualmente queda así:
+Conceptually it looks like this:
 
 ```text
 P e r e z \0 ... ... ... ...
 ```
 
-El texto termina en `\0`; el resto del arreglo queda disponible.
+The text ends at `\0`; the rest of the array is available.
 
-## Caracteres vs cadenas
+## Characters vs strings
 
-Esto parece un detalle, pero no lo es:
+This may seem like a detail, but it's not:
 
 ```c
 char letra = 'A';
 char palabra[] = "A";
 ```
 
-No son lo mismo.
+They're not the same.
 
-`'A'` es un solo carácter.
+`'A'` is a single character.
 
-`"A"` es una cadena. Aunque tenga una sola letra visible, internamente guarda:
+`"A"` is a string. Even though it has only one visible letter, internally it stores:
 
 ```text
 'A' '\0'
 ```
 
-O sea, `"A"` necesita dos posiciones.
+In other words, `"A"` needs two positions.
 
-Esta diferencia te evita muchísimos errores.
+This difference will save you from many errors.
 
-## Ejemplo: mostrar una cadena
+## Example: displaying a string
 
 ```c
 #include <stdio.h>
@@ -230,19 +230,19 @@ Esta diferencia te evita muchísimos errores.
 int main() {
     char nombre[] = "Martina";
 
-    printf("Nombre: %s\n", nombre);
+    printf("Name: %s\n", nombre);
 
     return 0;
 }
 ```
 
-### ¿Qué significa `%s`?
+### What does `%s` mean?
 
-`%s` es el especificador de formato que se usa en `printf` para mostrar cadenas.
+`%s` is the format specifier used in `printf` to display strings.
 
-## Acceder a caracteres individuales
+## Accessing individual characters
 
-Como la cadena es un arreglo, podemos leer cada carácter por separado.
+Since the string is an array, we can read each character separately.
 
 ```c
 #include <stdio.h>
@@ -250,29 +250,29 @@ Como la cadena es un arreglo, podemos leer cada carácter por separado.
 int main() {
     char palabra[] = "Sol";
 
-    printf("Primer caracter: %c\n", palabra[0]);
-    printf("Segundo caracter: %c\n", palabra[1]);
-    printf("Tercer caracter: %c\n", palabra[2]);
+    printf("First character: %c\n", palabra[0]);
+    printf("Second character: %c\n", palabra[1]);
+    printf("Third character: %c\n", palabra[2]);
 
     return 0;
 }
 ```
 
-### Salida esperada
+### Expected output
 
 ```text
-Primer caracter: S
-Segundo caracter: o
-Tercer caracter: l
+First character: S
+Second character: o
+Third character: l
 ```
 
-Fijate que ahora usamos `%c`, porque mostramos un solo carácter cada vez.
+Notice we use `%c` now, because we're showing a single character each time.
 
-## Recorrer una cadena carácter por carácter
+## Traversing a string character by character
 
-También podemos recorrer una cadena con un ciclo.
+We can also traverse a string with a loop.
 
-Esta es una operación clave porque confirma la idea central: una cadena se procesa igual que un arreglo, posición por posición.
+This is a key operation because it confirms the central idea: a string is processed just like an array, position by position.
 
 ```c
 #include <stdio.h>
@@ -282,41 +282,41 @@ int main() {
     int i;
 
     for (i = 0; palabra[i] != '\0'; i = i + 1) {
-        printf("Caracter %d: %c\n", i, palabra[i]);
+        printf("Character %d: %c\n", i, palabra[i]);
     }
 
     return 0;
 }
 ```
 
-## ¿Por qué la condición es `palabra[i] != '\0'`?
+## Why is the condition `palabra[i] != '\0'`?
 
-Porque no siempre necesitamos saber el tamaño exacto del arreglo completo. Lo que nos importa es recorrer la cadena hasta su final real.
+Because we don't always need to know the exact size of the entire array. What matters is traversing the string up to its actual end.
 
-El final real de la cadena está marcado por `\0`.
+The actual end of the string is marked by `\0`.
 
-Entonces el ciclo dice:
+So the loop says:
 
-> seguí mientras el carácter actual no sea el carácter nulo.
+> continue while the current character is not the null character.
 
-Fantástico. Esa es la idea correcta.
+Fantastic. That's the correct idea.
 
-### Salida esperada
+### Expected output
 
 ```text
-Caracter 0: H
-Caracter 1: o
-Caracter 2: l
-Caracter 3: a
+Character 0: H
+Character 1: o
+Character 2: l
+Character 3: a
 ```
 
-El `\0` no se imprime porque el ciclo se detiene justo antes de llegar a él.
+The `\0` is not printed because the loop stops just before reaching it.
 
-## Contar caracteres manualmente
+## Counting characters manually
 
-Antes de usar funciones de biblioteca, conviene saber hacer una operación manual. No porque siempre vayas a escribirla así, sino porque te obliga a entender el mecanismo.
+Before using library functions, it's good to know how to do an operation manually. Not because you'll always write it that way, but because it forces you to understand the mechanism.
 
-Por ejemplo, podemos contar cuántos caracteres visibles tiene una cadena:
+For example, we can count how many visible characters a string has:
 
 ```c
 #include <stdio.h>
@@ -329,30 +329,30 @@ int main() {
         i = i + 1;
     }
 
-    printf("Cantidad de caracteres: %d\n", i);
+    printf("Number of characters: %d\n", i);
 
     return 0;
 }
 ```
 
-### ¿Qué pasa paso a paso?
+### What happens step by step?
 
-- `i` empieza en `0`
-- se revisa `palabra[0]`
-- si no es `\0`, se suma 1
-- se repite hasta encontrar el final de la cadena
+- `i` starts at `0`
+- `palabra[0]` is checked
+- if it's not `\0`, add 1
+- repeat until finding the end of the string
 
-Cuando el ciclo termina, `i` contiene la cantidad de caracteres visibles.
+When the loop ends, `i` contains the number of visible characters.
 
-Para `"perro"`, el resultado es `5`.
+For `"perro"`, the result is `5`.
 
-¿Ves la idea? No contamos el tamaño total del arreglo. Contamos hasta llegar al `\0`.
+See the idea? We don't count the total size of the array. We count until we reach `\0`.
 
-## Entrada de cadenas
+## String input
 
-Leer texto desde el teclado requiere más cuidado que leer un número.
+Reading text from the keyboard requires more care than reading a number.
 
-## Leer una palabra con `scanf`
+## Reading a word with `scanf`
 
 ```c
 #include <stdio.h>
@@ -360,58 +360,58 @@ Leer texto desde el teclado requiere más cuidado que leer un número.
 int main() {
     char nombre[20];
 
-    printf("Ingresa tu nombre: ");
+    printf("Enter your name: ");
     scanf("%19s", nombre);
 
-    printf("Hola, %s\n", nombre);
+    printf("Hello, %s\n", nombre);
 
     return 0;
 }
 ```
 
-### ¿Qué hace bien este ejemplo?
+### What does this example do well?
 
-- `nombre` tiene espacio reservado
-- `scanf` guarda allí la palabra ingresada
-- `%s` indica que vamos a leer una cadena
-- `%19s` limita la lectura a 19 caracteres visibles
+- `nombre` has reserved space
+- `scanf` stores the entered word there
+- `%s` indicates we're reading a string
+- `%19s` limits reading to 19 visible characters
 
-### ¿Por qué usamos `%19s` y no solo `%s`?
+### Why do we use `%19s` and not just `%s`?
 
-Porque `nombre` tiene 20 posiciones:
+Because `nombre` has 20 positions:
 
 ```c
 char nombre[20];
 ```
 
-Pero una posición debe quedar para el `\0` final.
+But one position must remain for the final `\0`.
 
-Entonces podemos leer como máximo 19 caracteres visibles.
+So we can read at most 19 visible characters.
 
-Esto:
+This:
 
 ```c
 scanf("%19s", nombre);
 ```
 
-le dice a `scanf`: “leé una palabra, pero no más de 19 caracteres”.
+tells `scanf`: "read a word, but no more than 19 characters."
 
-Ponete las pilas con esto: usar `scanf("%s", nombre)` sin límite puede escribir más caracteres de los que entran en el arreglo. Eso se llama desbordamiento de buffer y es una fuente clásica de errores en C.
+Pay attention to this: using `scanf("%s", nombre)` without a limit can write more characters than the array can hold. That's called a buffer overflow and it's a classic source of errors in C.
 
-### Limitación importante de `scanf("%s", ...)`
+### Important limitation of `scanf("%s", ...)`
 
-Lee solo hasta el primer espacio.
+It reads only up to the first space.
 
-Entonces:
+So:
 
-- si escribís `Ana`, lee `Ana`
-- si escribís `Ana Maria`, solo lee `Ana`
+- if you type `Ana`, it reads `Ana`
+- if you type `Ana Maria`, it only reads `Ana`
 
-Además, `scanf` deja de leer cuando encuentra un espacio, una tabulación o un salto de línea.
+Also, `scanf` stops reading when it encounters a space, a tab, or a newline.
 
-## Leer una línea completa con `fgets`
+## Reading a full line with `fgets`
 
-Cuando necesitamos leer texto con espacios, usamos `fgets`.
+When we need to read text with spaces, we use `fgets`.
 
 ```c
 #include <stdio.h>
@@ -419,38 +419,38 @@ Cuando necesitamos leer texto con espacios, usamos `fgets`.
 int main() {
     char frase[100];
 
-    printf("Escribi una frase: ");
+    printf("Write a sentence: ");
     fgets(frase, 100, stdin);
 
-    printf("La frase ingresada fue: %s", frase);
+    printf("The sentence entered was: %s", frase);
 
     return 0;
 }
 ```
 
-### ¿Qué recibe `fgets`?
+### What does `fgets` receive?
 
 ```c
 fgets(frase, 100, stdin);
 ```
 
-- `frase`: dónde se guarda el texto
-- `100`: cantidad máxima de caracteres a leer
-- `stdin`: entrada estándar, o sea, el teclado
+- `frase`: where the text is stored
+- `100`: maximum number of characters to read
+- `stdin`: standard input, i.e., the keyboard
 
-### Detalle importante: `fgets` puede guardar el salto de línea
+### Important detail: `fgets` may store the newline
 
-Si escribís:
+If you type:
 
 ```text
-Hola mundo
+Hello world
 ```
 
-y apretás Enter, `fgets` puede guardar también ese Enter como `\n`, siempre que haya espacio en el arreglo.
+and press Enter, `fgets` may also store that Enter as `\n`, as long as there's space in the array.
 
-Por eso, muchas veces conviene quitar ese `\n` al final.
+That's why it's often convenient to remove that `\n` at the end.
 
-Podemos hacerlo recorriendo la cadena:
+We can do it by traversing the string:
 
 ```c
 #include <stdio.h>
@@ -459,7 +459,7 @@ int main() {
     char frase[100];
     int i;
 
-    printf("Escribi una frase: ");
+    printf("Write a sentence: ");
     fgets(frase, 100, stdin);
 
     for (i = 0; frase[i] != '\0'; i = i + 1) {
@@ -468,52 +468,52 @@ int main() {
         }
     }
 
-    printf("Frase limpia: %s\n", frase);
+    printf("Clean sentence: %s\n", frase);
 
     return 0;
 }
 ```
 
-### ¿Qué hicimos?
+### What did we do?
 
-- recorrimos la cadena carácter por carácter
-- buscamos el carácter `\n`
-- cuando lo encontramos, lo reemplazamos por `\0`
+- we traversed the string character by character
+- we looked for the `\n` character
+- when we found it, we replaced it with `\0`
 
-Eso convierte el salto de línea en el final real de la cadena.
+That turns the newline into the actual end of the string.
 
-No memorices esto como receta ciega. Entendé el concepto: **modificamos un carácter del arreglo**.
+Don't memorize this as a blind recipe. Understand the concept: **we modified a character of the array**.
 
-## Diferencia entre `scanf` y `fgets`
+## Difference between `scanf` and `fgets`
 
 ### `scanf("%s", cadena)`
 
-- sirve para una sola palabra
-- se detiene en el primer espacio
-- es simple, pero limitada
+- works for a single word
+- stops at the first space
+- simple, but limited
 
 ### `fgets(cadena, tamanio, stdin)`
 
-- permite leer una línea completa
-- acepta espacios
-- suele ser más útil para frases
+- allows reading a full line
+- accepts spaces
+- usually more useful for sentences
 
-## Operaciones comunes con cadenas
+## Common string operations
 
-Como una cadena es un arreglo, muchas operaciones podrían hacerse manualmente con ciclos. Pero C también ofrece funciones en la biblioteca `<string.h>`.
+Since a string is an array, many operations could be done manually with loops. But C also offers functions in the `<string.h>` library.
 
-Primero entendamos qué significa cada operación:
+First let's understand what each operation means:
 
-- medir: contar caracteres hasta `\0`
-- copiar: pasar caracteres de una cadena a otra
-- comparar: revisar si dos cadenas tienen los mismos caracteres en el mismo orden
-- concatenar: agregar una cadena al final de otra
+- measure: count characters until `\0`
+- copy: pass characters from one string to another
+- compare: check if two strings have the same characters in the same order
+- concatenate: add one string to the end of another
 
-Las funciones de `<string.h>` hacen estas tareas por nosotros, pero internamente la idea sigue siendo la misma: recorrer caracteres.
+The functions in `<string.h>` do these tasks for us, but internally the idea is still the same: traversing characters.
 
-## Copiar manualmente una cadena
+## Copying a string manually
 
-Antes de usar `strcpy`, mirá cómo sería copiar una cadena a mano:
+Before using `strcpy`, look at how to copy a string by hand:
 
 ```c
 #include <stdio.h>
@@ -530,25 +530,25 @@ int main() {
 
     destino[i] = '\0';
 
-    printf("Destino: %s\n", destino);
+    printf("Destination: %s\n", destino);
 
     return 0;
 }
 ```
 
-### La línea más importante
+### The most important line
 
 ```c
 destino[i] = '\0';
 ```
 
-Esa línea pone el final de la cadena copiada.
+That line puts the end of the copied string.
 
-Si te olvidás de copiar o agregar el `\0`, el programa no sabe dónde termina el texto. Y ahí empieza la locura cósmica: caracteres basura, salidas raras y bugs difíciles de entender.
+If you forget to copy or add the `\0`, the program doesn't know where the text ends. And then the cosmic chaos begins: garbage characters, strange output, and bugs that are hard to understand.
 
-## Comparar manualmente dos cadenas
+## Comparing two strings manually
 
-También podemos comparar dos cadenas carácter por carácter.
+We can also compare two strings character by character.
 
 ```c
 #include <stdio.h>
@@ -568,22 +568,22 @@ int main() {
     }
 
     if (iguales == 1) {
-        printf("Son iguales.\n");
+        printf("They are equal.\n");
     } else {
-        printf("Son diferentes.\n");
+        printf("They are different.\n");
     }
 
     return 0;
 }
 ```
 
-No te preocupes si después usás `strcmp`. Está perfecto. Pero este ejemplo te muestra la idea de fondo: comparar cadenas no es comparar una sola cosa, sino comparar posiciones.
+Don't worry if you later use `strcmp`. That's perfectly fine. But this example shows you the underlying idea: comparing strings isn't comparing a single thing, but comparing positions.
 
-## Longitud de una cadena: `strlen`
+## String length: `strlen`
 
-`strlen` devuelve la cantidad de caracteres de la cadena, sin contar el `\0`.
+`strlen` returns the number of characters in the string, not counting the `\0`.
 
-Es decir: hace por nosotros algo muy parecido al ejemplo manual donde contábamos caracteres hasta encontrar el final.
+That is: it does something very similar to our manual example where we counted characters until finding the end.
 
 ```c
 #include <stdio.h>
@@ -592,40 +592,40 @@ Es decir: hace por nosotros algo muy parecido al ejemplo manual donde contábamo
 int main() {
     char palabra[] = "computadora";
 
-    printf("Longitud: %d\n", strlen(palabra));
+    printf("Length: %d\n", strlen(palabra));
 
     return 0;
 }
 ```
 
-### Resultado
+### Result
 
-La longitud es `11`, porque la palabra tiene 11 letras. El `\0` no se cuenta.
+The length is `11`, because the word has 11 letters. The `\0` is not counted.
 
-Ojo con este punto: `strlen` no devuelve el tamaño total del arreglo. Devuelve la longitud real de la cadena hasta `\0`.
+Be careful with this: `strlen` does not return the total size of the array. It returns the actual length of the string up to `\0`.
 
 ```c
 char texto[20] = "Hola";
 ```
 
-En este caso:
+In this case:
 
-- el arreglo tiene 20 posiciones
-- `strlen(texto)` devuelve 4
+- the array has 20 positions
+- `strlen(texto)` returns 4
 
-Son conceptos distintos.
+They're different concepts.
 
-## Copiar una cadena: `strcpy`
+## Copying a string: `strcpy`
 
-No podemos copiar cadenas con el signo `=` como si fueran números.
+We cannot copy strings with the `=` sign like we do with numbers.
 
-Esto NO es correcto para copiar contenido:
+This is NOT correct for copying content:
 
 ```c
 /* destino = origen; */
 ```
 
-Para copiar una cadena usamos `strcpy`.
+To copy a string we use `strcpy`.
 
 ```c
 #include <stdio.h>
@@ -637,29 +637,29 @@ int main() {
 
     strcpy(destino, origen);
 
-    printf("Destino: %s\n", destino);
+    printf("Destination: %s\n", destino);
 
     return 0;
 }
 ```
 
-### Idea importante
+### Important idea
 
-- `origen` contiene el texto original
-- `destino` debe tener espacio suficiente
-- `strcpy` copia carácter por carácter, incluyendo el `\0`
+- `origen` contains the original text
+- `destino` must have enough space
+- `strcpy` copies character by character, including the `\0`
 
-Si `destino` no tiene espacio suficiente, `strcpy` puede escribir fuera del arreglo. C no te salva automáticamente. Por eso, antes de copiar, tenés que pensar si el destino tiene lugar para el texto y para el `\0`.
+If `destino` doesn't have enough space, `strcpy` may write outside the array. C doesn't save you automatically. That's why, before copying, you need to think about whether the destination has room for the text and for the `\0`.
 
-## Comparar cadenas: `strcmp`
+## Comparing strings: `strcmp`
 
-Para comparar si dos cadenas son iguales no debemos usar `==`.
+To compare if two strings are equal, we must NOT use `==`.
 
-Eso sería un error conceptual.
+That would be a conceptual error.
 
-Con arreglos, `==` no compara el contenido carácter por carácter. Para comparar texto, necesitás una función que recorra ambas cadenas y revise sus caracteres.
+With arrays, `==` doesn't compare content character by character. To compare text, you need a function that traverses both strings and checks their characters.
 
-Para comparar contenido usamos `strcmp`.
+To compare content we use `strcmp`.
 
 ```c
 #include <stdio.h>
@@ -670,37 +670,37 @@ int main() {
     char clave2[] = "casa";
 
     if (strcmp(clave1, clave2) == 0) {
-        printf("Las cadenas son iguales.\n");
+        printf("The strings are equal.\n");
     } else {
-        printf("Las cadenas son diferentes.\n");
+        printf("The strings are different.\n");
     }
 
     return 0;
 }
 ```
 
-### ¿Por qué se compara con `0`?
+### Why compare with `0`?
 
-Porque `strcmp`:
+Because `strcmp`:
 
-- devuelve `0` si las cadenas son iguales
-- devuelve otro valor si son diferentes
+- returns `0` if the strings are equal
+- returns another value if they're different
 
-Para este nivel, con entender que `0` significa “son iguales” alcanza perfecto.
+At this level, understanding that `0` means "they are equal" is perfectly enough.
 
-Pensalo así:
+Think of it this way:
 
 ```c
 if (strcmp(clave1, clave2) == 0)
 ```
 
-se lee como:
+reads as:
 
-> si el contenido de `clave1` y `clave2` es igual...
+> if the content of `clave1` and `clave2` is equal...
 
-## Concatenar cadenas: `strcat`
+## Concatenating strings: `strcat`
 
-**Concatenar** significa unir una cadena con otra.
+**Concatenating** means joining one string with another.
 
 ```c
 #include <stdio.h>
@@ -711,31 +711,31 @@ int main() {
 
     strcat(nombre, " Maria");
 
-    printf("Nombre completo: %s\n", nombre);
+    printf("Full name: %s\n", nombre);
 
     return 0;
 }
 ```
 
-### Resultado
+### Result
 
-La variable `nombre` pasa a contener:
+The variable `nombre` now contains:
 
 ```text
 Ana Maria
 ```
 
-### Cuidado
+### Caution
 
-El arreglo destino debe tener espacio suficiente para guardar:
+The destination array must have enough space to store:
 
-- su contenido original
-- la cadena que agregamos
-- el `\0` final
+- its original content
+- the string we add
+- the final `\0`
 
-En este ejemplo `nombre` tiene 30 posiciones, por eso entra `"Ana Maria"` sin problema.
+In this example `nombre` has 30 positions, so `"Ana Maria"` fits without issue.
 
-## Ejemplo completo con varias operaciones
+## Complete example with several operations
 
 ```c
 #include <stdio.h>
@@ -750,20 +750,20 @@ int main() {
     strcat(completo, " ");
     strcat(completo, apellido);
 
-    printf("Nombre completo: %s\n", completo);
-    printf("Longitud: %d\n", strlen(completo));
+    printf("Full name: %s\n", completo);
+    printf("Length: %d\n", strlen(completo));
 
     if (strcmp(nombre, "Juan") == 0) {
-        printf("El nombre guardado es Juan.\n");
+        printf("The stored name is Juan.\n");
     }
 
     return 0;
 }
 ```
 
-## Recorrer una cadena para contar vocales
+## Traversing a string to count vowels
 
-Además de usar funciones de biblioteca, también podemos resolver problemas recorriendo la cadena manualmente.
+In addition to using library functions, we can also solve problems by traversing the string manually.
 
 ```c
 #include <stdio.h>
@@ -779,40 +779,40 @@ int main() {
         }
     }
 
-    printf("Cantidad de vocales: %d\n", cantidadVocales);
+    printf("Number of vowels: %d\n", cantidadVocales);
 
     return 0;
 }
 ```
 
-Este ejemplo es muy valioso porque muestra algo clave:
+This example is very valuable because it shows something key:
 
-> una cadena no solo se imprime o se copia; también puede procesarse carácter por carácter.
+> a string isn't just printed or copied; it can also be processed character by character.
 
-### Mejora posible
+### Possible improvement
 
-Este ejemplo cuenta vocales minúsculas. Si la palabra tuviera mayúsculas, como `"Murcielago"`, la `M` no importa porque no es vocal, pero si tuviera `"Avion"`, la `A` no se contaría con este código.
+This example counts lowercase vowels. If the word had uppercase letters, like `"Murcielago"`, the `M` doesn't matter because it's not a vowel, but if it were `"Avion"`, the `A` wouldn't be counted with this code.
 
-Para este nivel está bien. Más adelante podrías ampliar la condición para incluir `A`, `E`, `I`, `O`, `U`.
+For this level that's fine. Later you could expand the condition to include `A`, `E`, `I`, `O`, `U`.
 
-Lo importante ahora es entender el recorrido.
+The important thing now is to understand the traversal.
 
-## Errores comunes al trabajar con cadenas
+## Common mistakes when working with strings
 
-### Confundir carácter con cadena
+### Confusing character with string
 
-- `'A'` es un carácter
-- `"A"` es una cadena
+- `'A'` is a character
+- `"A"` is a string
 
-No son lo mismo.
+They're not the same.
 
-### No dejar espacio suficiente
+### Not leaving enough space
 
 ```c
 char nombre[4] = "Juan";
 ```
 
-Esto está mal, porque `"Juan"` necesita:
+This is wrong, because `"Juan"` needs:
 
 - `J`
 - `u`
@@ -820,92 +820,92 @@ Esto está mal, porque `"Juan"` necesita:
 - `n`
 - `\0`
 
-O sea, necesita 5 posiciones.
+That is, it needs 5 positions.
 
-La versión correcta sería:
+The correct version would be:
 
 ```c
 char nombre[5] = "Juan";
 ```
 
-o mejor todavía, dejar que el compilador calcule:
+or even better, let the compiler calculate:
 
 ```c
 char nombre[] = "Juan";
 ```
 
-### Comparar cadenas con `==`
+### Comparing strings with `==`
 
-Para comparar contenido, usá `strcmp`.
+To compare content, use `strcmp`.
 
 ```c
 if (strcmp(a, b) == 0) {
-    printf("Son iguales.\n");
+    printf("They are equal.\n");
 }
 ```
 
-### Olvidarse de que `scanf("%s", ...)` no lee espacios
+### Forgetting that `scanf("%s", ...)` doesn't read spaces
 
-Si necesitás leer una frase completa, usá `fgets`.
+If you need to read a full sentence, use `fgets`.
 
-### Usar `scanf("%s", cadena)` sin límite
+### Using `scanf("%s", cadena)` without a limit
 
-Si el arreglo tiene 20 posiciones, usá un ancho máximo:
+If the array has 20 positions, use a maximum width:
 
 ```c
 scanf("%19s", cadena);
 ```
 
-Ese `19` deja lugar para el `\0`.
+That `19` leaves room for `\0`.
 
-### Olvidarse del `\n` que puede dejar `fgets`
+### Forgetting the `\n` that `fgets` may leave
 
-Si después de leer una frase aparecen saltos de línea raros, revisá si `fgets` guardó el `\n`.
+If after reading a sentence strange newlines appear, check if `fgets` stored the `\n`.
 
-Podés reemplazarlo por `\0` recorriendo la cadena.
+You can replace it with `\0` by traversing the string.
 
-### Pensar que el tamaño del arreglo y la longitud de la cadena son iguales
+### Thinking the array size and the string length are the same
 
-No necesariamente.
+Not necessarily.
 
 ```c
 char texto[50] = "Hola";
 ```
 
-Acá el arreglo tiene 50 posiciones, pero la cadena tiene 4 caracteres visibles.
+Here the array has 50 positions, but the string has 4 visible characters.
 
-## Resumen
+## Summary
 
-- una cadena en C es un arreglo de `char`
-- toda cadena termina en `\0`
-- el `\0` marca el final real del texto
-- el tamaño del arreglo y la longitud de la cadena no son lo mismo
-- `%s` se usa para mostrar cadenas completas
-- `%c` se usa para mostrar un solo carácter
-- una cadena puede recorrerse con un ciclo como cualquier arreglo
-- `scanf("%s", ...)` lee una palabra, pero conviene limitar el ancho
-- `fgets` permite leer frases con espacios
-- `fgets` puede guardar el `\n`, y podemos reemplazarlo por `\0`
-- `strlen` mide longitud
-- `strcpy` copia
-- `strcmp` compara
-- `strcat` concatena
+- a string in C is an array of `char`
+- every string ends in `\0`
+- `\0` marks the actual end of the text
+- the array size and the string length are not the same
+- `%s` is used to display complete strings
+- `%c` is used to display a single character
+- a string can be traversed with a loop like any array
+- `scanf("%s", ...)` reads a word, but it's good to limit the width
+- `fgets` allows reading sentences with spaces
+- `fgets` may store `\n`, and we can replace it with `\0`
+- `strlen` measures length
+- `strcpy` copies
+- `strcmp` compares
+- `strcat` concatenates
 
-## Qué deberías poder explicar antes de seguir
+## What you should be able to explain before continuing
 
-Antes de pasar a la próxima lección, deberías poder responder estas preguntas:
+Before moving to the next lesson, you should be able to answer these questions:
 
-- ¿por qué `"Ana"` necesita 4 posiciones y no 3?
-- ¿qué diferencia hay entre `'A'` y `"A"`?
-- ¿por qué una cadena se puede recorrer con un `for` o un `while`?
-- ¿por qué `scanf("%s", nombre)` no lee `Ana Maria` completo?
-- ¿por qué `strcmp(a, b) == 0` significa que dos cadenas son iguales?
-- ¿qué puede pasar si te olvidás del `\0`?
+- why does `"Ana"` need 4 positions and not 3?
+- what's the difference between `'A'` and `"A"`?
+- why can a string be traversed with a `for` or `while`?
+- why doesn't `scanf("%s", nombre)` read `Ana Maria` completely?
+- why does `strcmp(a, b) == 0` mean two strings are equal?
+- what can happen if you forget the `\0`?
 
-Si podés explicar eso, no estás memorizando: estás entendiendo. Y eso vale muchísimo más.
+If you can explain that, you're not memorizing: you're understanding. And that's worth much more.
 
-## Idea final
+## Final thought
 
-Si entendés que una cadena en C es un arreglo de caracteres con un final marcado por `\0`, se ordena TODO.
+If you understand that a string in C is an array of characters with an end marked by `\0`, EVERYTHING falls into place.
 
-Y cuando eso se entiende de verdad, dejás de memorizar funciones sueltas y empezás a comprender qué está pasando en memoria y en el programa.
+And when that's truly understood, you stop memorizing isolated functions and start understanding what's happening in memory and in the program.

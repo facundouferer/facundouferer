@@ -7,45 +7,45 @@ lang: 'en'
 published: true
 ---
 
-# Operadores
+# Operators
 
-Los operadores son símbolos que le indican al programa que debe realizar una operación específica sobre los datos.
+Operators are symbols that tell the program to perform a specific operation on data.
 
-## Operadores Aritméticos
+## Arithmetic Operators
 
-Se usan para cálculos matemáticos:
+Used for mathematical calculations:
 
-- `+` (Suma): `5 + 3 = 8`
-- `-` (Resta): `7 - 4 = 3`
-- `*` (Multiplicación): `3 * 4 = 12`
-- `/` (División): `12 / 4 = 3`
-- `%` (Módulo - resto de la división): `13 % 4 = 1`
-- `++` (Incremento): `i++` aumenta en 1.
-- `--` (Decremento): `j--` disminuye en 1.
+- `+` (Addition): `5 + 3 = 8`
+- `-` (Subtraction): `7 - 4 = 3`
+- `*` (Multiplication): `3 * 4 = 12`
+- `/` (Division): `12 / 4 = 3`
+- `%` (Modulus - remainder of division): `13 % 4 = 1`
+- `++` (Increment): `i++` increases by 1.
+- `--` (Decrement): `j--` decreases by 1.
 
-## Operadores de Comparación
+## Comparison Operators
 
-Devuelven un valor booleano (`true` o `false`):
+They return a boolean value (`true` or `false`):
 
-- `==` (Igualdad): `a == b`
-- `!=` (Desigualdad): `a != b`
-- `>` (Mayor que): `a > b`
-- `<` (Menor que): `a < b`
-- `>=` (Mayor o igual): `a >= b`
-- `<=` (Menor o igual): `a <= b`
+- `==` (Equality): `a == b`
+- `!=` (Inequality): `a != b`
+- `>` (Greater than): `a > b`
+- `<` (Less than): `a < b`
+- `>=` (Greater or equal): `a >= b`
+- `<=` (Less or equal): `a <= b`
 
-## Operadores Lógicos
+## Logical Operators
 
-Se usan para combinar expresiones booleanas:
+Used to combine boolean expressions:
 
-- `&&` (AND): Verdadero si ambos son ciertos.
-- `||` (OR): Verdadero si al menos uno es cierto.
-- `!` (NOT): Niega el valor (cambia `true` a `false` y viceversa).
+- `&&` (AND): True if both are true.
+- `||` (OR): True if at least one is true.
+- `!` (NOT): Negates the value (changes `true` to `false` and vice versa).
 
-## Operadores de Asignación
+## Assignment Operators
 
-- `=` (Asignación simple): `x = 10`
-- `+=`: `x += 3` es lo mismo que `x = x + 3`
+- `=` (Simple assignment): `x = 10`
+- `+=`: `x += 3` is the same as `x = x + 3`
 - `-=`: `x -= 4`
 - `*=`: `x *= 5`
 - `/=`: `x /= 2`

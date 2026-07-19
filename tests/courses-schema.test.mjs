@@ -49,6 +49,15 @@ test('lessons schema uses locale-split glob pattern', async () => {
 	assert.match(lessonsSection, /\+\(es\|en\)\.md/);
 });
 
+test('lessons collection has generateId that includes course+slug+lang (prevents duplicate id collisions)', async () => {
+	const content = await readFile('src/content.config.ts', 'utf8');
+	const lessonsSection = content.slice(content.indexOf('const lessons'), content.indexOf('const lessons') + 1000);
+	assert.match(lessonsSection, /generateId:/, 'lessons collection must declare generateId');
+	assert.match(lessonsSection, /data\.course/, 'generateId must reference data.course');
+	assert.match(lessonsSection, /data\.lang/, 'generateId must reference data.lang');
+	assert.match(lessonsSection, /data\.slug/, 'generateId must reference data.slug');
+});
+
 test('articles schema does not include title_en or excerpt_en (GREEN after B-12)', async () => {
 	const content = await readFile('src/content.config.ts', 'utf8');
 	const articlesSection = content.slice(content.indexOf('const articles'), content.indexOf('const projects') > -1 ? content.indexOf('const projects') : undefined);

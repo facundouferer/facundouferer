@@ -7,44 +7,44 @@ lang: 'en'
 published: true
 ---
 
-En la lección anterior aprendiste qué es un arreglo y cómo declarar arreglos unidimensionales y multidimensionales. Pero declarar un arreglo no alcanza. Un arreglo recién se vuelve útil cuando aprendés a **trabajar con sus elementos**.
+In the previous lesson you learned what an array is and how to declare one-dimensional and multidimensional arrays. But declaring an array isn't enough. An array only becomes useful when you learn to **work with its elements**.
 
-Eso significa, por ejemplo:
+That means, for example:
 
-- recorrerlo para leer todos sus valores
-- buscar un dato dentro de él
-- insertar un nuevo valor en una posición determinada
-- procesar la información para obtener resultados
+- traversing it to read all its values
+- searching for data inside it
+- inserting a new value at a specific position
+- processing information to obtain results
 
-En esta lección vamos a concentrarnos en esas operaciones básicas, paso a paso y con ejemplos en C.
+In this lesson we'll focus on these basic operations, step by step with examples in C.
 
-## ¿Qué significa operar con un arreglo?
+## What does operating with an array mean?
 
-Un arreglo guarda varios datos del mismo tipo en posiciones consecutivas de memoria.
+An array stores multiple data items of the same type in consecutive memory positions.
 
-Por ejemplo:
+For example:
 
 ```c
 int numeros[5] = {10, 20, 30, 40, 50};
 ```
 
-En este caso:
+In this case:
 
-- `numeros[0]` vale `10`
-- `numeros[1]` vale `20`
-- `numeros[2]` vale `30`
-- `numeros[3]` vale `40`
-- `numeros[4]` vale `50`
+- `numeros[0]` is `10`
+- `numeros[1]` is `20`
+- `numeros[2]` is `30`
+- `numeros[3]` is `40`
+- `numeros[4]` is `50`
 
-Trabajar con un arreglo consiste en usar su nombre y sus índices para leer o modificar sus elementos.
+Working with an array involves using its name and its indices to read or modify its elements.
 
-## Recorrido de un arreglo
+## Traversing an array
 
-**Recorrer** un arreglo significa visitar sus elementos uno por uno.
+**Traversing** an array means visiting its elements one by one.
 
-Esta es la operación más importante, porque casi todo lo que hacemos con arreglos parte de un recorrido.
+This is the most important operation, because almost everything we do with arrays starts with a traversal.
 
-### Ejemplo básico: mostrar todos los elementos
+### Basic example: displaying all elements
 
 ```c
 #include <stdio.h>
@@ -54,21 +54,21 @@ int main() {
     int i;
 
     for (i = 0; i < 5; i = i + 1) {
-        printf("Posicion %d -> %d\n", i, numeros[i]);
+        printf("Position %d -> %d\n", i, numeros[i]);
     }
 
     return 0;
 }
 ```
 
-### ¿Qué hace este programa?
+### What does this program do?
 
-- la variable `i` empieza en `0`
-- mientras `i` sea menor que `5`, el ciclo sigue
-- en cada vuelta se muestra `numeros[i]`
-- después `i` aumenta en `1`
+- the variable `i` starts at `0`
+- while `i` is less than `5`, the loop continues
+- in each cycle, `numeros[i]` is displayed
+- then `i` increases by `1`
 
-Entonces el programa visita estas posiciones:
+So the program visits these positions:
 
 - `numeros[0]`
 - `numeros[1]`
@@ -76,21 +76,21 @@ Entonces el programa visita estas posiciones:
 - `numeros[3]`
 - `numeros[4]`
 
-### Salida esperada
+### Expected output
 
 ```text
-Posicion 0 -> 10
-Posicion 1 -> 20
-Posicion 2 -> 30
-Posicion 3 -> 40
-Posicion 4 -> 50
+Position 0 -> 10
+Position 1 -> 20
+Position 2 -> 30
+Position 3 -> 40
+Position 4 -> 50
 ```
 
-## Recorrido para procesar datos
+## Traversal for processing data
 
-Recorrer no siempre significa mostrar valores. Muchas veces recorremos un arreglo para hacer cálculos.
+Traversing doesn't always mean displaying values. Many times we traverse an array to perform calculations.
 
-### Ejemplo: sumar los elementos
+### Example: summing the elements
 
 ```c
 #include <stdio.h>
@@ -104,32 +104,32 @@ int main() {
         suma = suma + numeros[i];
     }
 
-    printf("La suma es: %d\n", suma);
+    printf("The sum is: %d\n", suma);
 
     return 0;
 }
 ```
 
-### ¿Qué pasa acá?
+### What's happening here?
 
-- `suma` empieza en `0`
-- en cada vuelta se agrega el valor actual del arreglo
-- al final, `suma` contiene el total
+- `suma` starts at `0`
+- in each cycle, the current array value is added
+- at the end, `suma` contains the total
 
-### Paso a paso
+### Step by step
 
-Si el arreglo es `{3, 5, 2, 8, 4}`:
+If the array is `{3, 5, 2, 8, 4}`:
 
-- al empezar, `suma = 0`
-- después de leer `3`, `suma = 3`
-- después de leer `5`, `suma = 8`
-- después de leer `2`, `suma = 10`
-- después de leer `8`, `suma = 18`
-- después de leer `4`, `suma = 22`
+- at the start, `suma = 0`
+- after reading `3`, `suma = 3`
+- after reading `5`, `suma = 8`
+- after reading `2`, `suma = 10`
+- after reading `8`, `suma = 18`
+- after reading `4`, `suma = 22`
 
-## Recorrido para encontrar el mayor valor
+## Traversal to find the largest value
 
-Otro caso muy común es recorrer un arreglo para descubrir cuál es el mayor elemento.
+Another very common case is traversing an array to find the largest element.
 
 ```c
 #include <stdio.h>
@@ -145,31 +145,31 @@ int main() {
         }
     }
 
-    printf("El mayor valor es: %d\n", mayor);
+    printf("The largest value is: %d\n", mayor);
 
     return 0;
 }
 ```
 
-### Idea importante
+### Important idea
 
-Fijate esto:
+Notice this:
 
 ```c
 int mayor = numeros[0];
 ```
 
-No empezamos con un valor inventado. Empezamos suponiendo que el primer elemento es el mayor. Después comparamos el resto.
+We don't start with a made-up value. We start assuming the first element is the largest. Then we compare the rest.
 
-Eso es una buena práctica. ¿Y sabés por qué? Porque trabajamos con un valor real del arreglo.
+That's a good practice. And you know why? Because we work with a real value from the array.
 
-## Búsqueda en un arreglo
+## Searching in an array
 
-**Buscar** significa intentar encontrar un valor dentro del arreglo.
+**Searching** means trying to find a value inside the array.
 
-La forma más simple es la **búsqueda secuencial**. Se llama así porque revisa las posiciones una por una, desde el principio hasta el final.
+The simplest form is **sequential search**. It's called that because it checks positions one by one, from beginning to end.
 
-### Ejemplo: buscar un número
+### Example: searching for a number
 
 ```c
 #include <stdio.h>
@@ -187,24 +187,24 @@ int main() {
     }
 
     if (encontrado == 1) {
-        printf("El valor %d esta en el arreglo.\n", buscado);
+        printf("The value %d is in the array.\n", buscado);
     } else {
-        printf("El valor %d no esta en el arreglo.\n", buscado);
+        printf("The value %d is not in the array.\n", buscado);
     }
 
     return 0;
 }
 ```
 
-### ¿Cómo funciona?
+### How does it work?
 
-- `buscado` guarda el valor que queremos encontrar
-- `encontrado` empieza en `0`, que significa “todavía no lo encontré”
-- si aparece una coincidencia, `encontrado` pasa a valer `1`
+- `buscado` stores the value we want to find
+- `encontrado` starts at `0`, meaning "I haven't found it yet"
+- if a match appears, `encontrado` becomes `1`
 
-## Búsqueda mostrando la posición
+## Search showing the position
 
-Muchas veces no alcanza con saber si el dato existe. También queremos saber **en qué posición** está.
+Many times knowing if the data exists isn't enough. We also want to know **what position** it's in.
 
 ```c
 #include <stdio.h>
@@ -223,41 +223,41 @@ int main() {
     }
 
     if (posicion != -1) {
-        printf("El valor %d se encontro en la posicion %d.\n", buscado, posicion);
+        printf("The value %d was found at position %d.\n", buscado, posicion);
     } else {
-        printf("El valor %d no se encontro.\n", buscado);
+        printf("The value %d was not found.\n", buscado);
     }
 
     return 0;
 }
 ```
 
-### ¿Por qué usamos `-1`?
+### Why do we use `-1`?
 
-Porque una posición válida de un arreglo nunca puede ser `-1`.
+Because a valid array position can never be `-1`.
 
-Entonces:
+So:
 
-- si `posicion` sigue valiendo `-1`, el dato no apareció
-- si `posicion` cambia a `0`, `1`, `2`, etc., encontramos el dato
+- if `posicion` is still `-1`, the data didn't appear
+- if `posicion` changes to `0`, `1`, `2`, etc., we found the data
 
-### ¿Y qué hace `break`?
+### And what does `break` do?
 
-`break` corta el ciclo en ese momento.
+`break` cuts the loop at that moment.
 
-En este ejemplo nos sirve porque, una vez encontrado el valor, no hace falta seguir buscando.
+In this example it's useful because, once the value is found, there's no need to keep searching.
 
-## Inserción en un arreglo
+## Insertion in an array
 
-**Insertar** significa agregar un nuevo dato en una posición determinada.
+**Inserting** means adding new data at a specific position.
 
-Acá aparece una idea MUY importante:
+Here comes a VERY important idea:
 
-> en un arreglo, las posiciones ya están ocupadas o reservadas, y si querés insertar en el medio, tenés que mover elementos.
+> in an array, positions are already occupied or reserved, and if you want to insert in the middle, you have to move elements.
 
-Además, recordá que el arreglo tiene un tamaño fijo. Eso significa que para insertar un dato tiene que haber lugar disponible.
+Also, remember that the array has a fixed size. That means to insert data, there has to be space available.
 
-## Ejemplo: insertar en el medio
+## Example: inserting in the middle
 
 ```c
 #include <stdio.h>
@@ -286,35 +286,35 @@ int main() {
 }
 ```
 
-### ¿Qué había al comienzo?
+### What was there at the start?
 
-El arreglo contenía:
+The array contained:
 
 ```text
 10 20 40 50
 ```
 
-Y queríamos insertar `30` en la posición `2`.
+And we wanted to insert `30` at position `2`.
 
-### ¿Por qué hay que mover elementos?
+### Why do we need to move elements?
 
-Porque en la posición `2` ya estaba `40`.
+Because at position `2` there was already `40`.
 
-Entonces hacemos lugar desplazando hacia la derecha:
+So we make room by shifting to the right:
 
-- `50` pasa a la siguiente posición
-- `40` pasa a la siguiente posición
-- recién ahí se puede guardar `30`
+- `50` moves to the next position
+- `40` moves to the next position
+- only then can we store `30`
 
-### Resultado final
+### Final result
 
 ```text
 10 20 30 40 50
 ```
 
-## Explicación paso a paso del desplazamiento
+## Step-by-step explanation of the shift
 
-Veamos este ciclo:
+Look at this loop:
 
 ```c
 for (i = cantidad; i > posicion; i = i - 1) {
@@ -322,26 +322,26 @@ for (i = cantidad; i > posicion; i = i - 1) {
 }
 ```
 
-Si `cantidad = 4` y `posicion = 2`:
+If `cantidad = 4` and `posicion = 2`:
 
-- cuando `i = 4`, `numeros[4] = numeros[3]` → copia `50`
-- cuando `i = 3`, `numeros[3] = numeros[2]` → copia `40`
+- when `i = 4`, `numeros[4] = numeros[3]` → copies `50`
+- when `i = 3`, `numeros[3] = numeros[2]` → copies `40`
 
-Después de eso, la posición `2` queda libre para el nuevo valor.
+After that, position `2` is free for the new value.
 
-## Error común al insertar
+## Common error when inserting
 
-Un error muy común es mover los elementos desde la izquierda hacia la derecha.
+A very common error is moving elements from left to right.
 
-Eso está mal en este caso, porque se pisan valores antes de copiarlos.
+That's wrong in this case, because values get overwritten before being copied.
 
-Cuando insertás en un arreglo, el desplazamiento debe hacerse **desde el final hacia la posición de inserción**.
+When inserting in an array, the shift must be done **from the end toward the insertion position**.
 
-## Arreglos bidimensionales
+## Two-dimensional arrays
 
-Un arreglo bidimensional, también llamado **matriz**, tiene filas y columnas.
+A two-dimensional array, also called a **matrix**, has rows and columns.
 
-Ejemplo:
+Example:
 
 ```c
 int matriz[2][3] = {
@@ -350,17 +350,17 @@ int matriz[2][3] = {
 };
 ```
 
-Acá hay:
+Here there are:
 
-- 2 filas
-- 3 columnas
+- 2 rows
+- 3 columns
 
-## Recorrido de una matriz
+## Traversing a matrix
 
-Para recorrer una matriz se usan normalmente dos ciclos:
+To traverse a matrix, two loops are typically used:
 
-- uno para las filas
-- otro para las columnas
+- one for the rows
+- another for the columns
 
 ```c
 #include <stdio.h>
@@ -384,14 +384,14 @@ int main() {
 }
 ```
 
-### Salida esperada
+### Expected output
 
 ```text
 1 2 3
 4 5 6
 ```
 
-## Ejemplo: sumar todos los elementos de una matriz
+## Example: summing all elements of a matrix
 
 ```c
 #include <stdio.h>
@@ -411,17 +411,17 @@ int main() {
         }
     }
 
-    printf("La suma total es: %d\n", suma);
+    printf("The total sum is: %d\n", suma);
 
     return 0;
 }
 ```
 
-## Errores comunes al trabajar con arreglos
+## Common mistakes when working with arrays
 
-### Usar una posición que no existe
+### Using a position that doesn't exist
 
-Si el arreglo tiene 5 elementos, las posiciones válidas son:
+If the array has 5 elements, the valid positions are:
 
 - `0`
 - `1`
@@ -429,37 +429,37 @@ Si el arreglo tiene 5 elementos, las posiciones válidas son:
 - `3`
 - `4`
 
-La posición `5` ya no pertenece al arreglo.
+Position `5` no longer belongs to the array.
 
-### Confundir cantidad de elementos con último índice
+### Confusing the number of elements with the last index
 
-Si hay 5 elementos:
+If there are 5 elements:
 
-- la cantidad es `5`
-- el último índice es `4`
+- the count is `5`
+- the last index is `4`
 
-No es lo mismo.
+They're not the same.
 
-### Olvidarse de inicializar variables auxiliares
+### Forgetting to initialize auxiliary variables
 
-Si hacés una suma, una búsqueda o una comparación, las variables auxiliares tienen que empezar con un valor correcto.
+If you're doing a sum, search, or comparison, the auxiliary variables need to start with a correct value.
 
-Por ejemplo:
+For example:
 
-- `suma` suele empezar en `0`
-- `encontrado` suele empezar en `0`
-- `posicion` puede empezar en `-1`
+- `suma` usually starts at `0`
+- `encontrado` usually starts at `0`
+- `posicion` can start at `-1`
 
-## Resumen
+## Summary
 
-- recorrer un arreglo es visitar sus elementos uno por uno
-- un recorrido puede servir para mostrar, sumar, comparar o procesar datos
-- la búsqueda secuencial revisa el arreglo desde el principio hasta el final
-- insertar en un arreglo implica mover elementos cuando no se agrega al final
-- una matriz se recorre con ciclos anidados
+- traversing an array is visiting its elements one by one
+- a traversal can be used to display, sum, compare, or process data
+- sequential search checks the array from beginning to end
+- inserting in an array involves moving elements when not adding at the end
+- a matrix is traversed with nested loops
 
-## Idea final
+## Final thought
 
-Los arreglos no son solo “cajas con varios datos”. Son estructuras sobre las que hacemos operaciones concretas.
+Arrays aren't just "boxes with multiple pieces of data." They're structures on which we perform concrete operations.
 
-Si entendés bien cómo recorrer, buscar e insertar, ya no estás mirando un arreglo como una lista estática: lo empezás a usar como una herramienta real para resolver problemas.
+If you understand how to traverse, search, and insert, you're no longer looking at an array as a static list: you start using it as a real tool to solve problems.

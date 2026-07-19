@@ -7,18 +7,18 @@ lang: 'en'
 published: true
 ---
 
-Cuando trabajamos con muchos datos, guardarlos es solo la mitad del trabajo. La otra mitad, y quizás la más importante, es saber **encontrarlos** rápido.
+When working with lots of data, storing it is only half the job. The other half, and perhaps the most important one, is knowing how to **find it** quickly.
 
-En esta lección vamos a aprender cómo buscar elementos en un arreglo y cómo el orden de los datos influye en la velocidad de nuestro programa.
+In this lesson we'll learn how to search for elements in an array and how the order of data influences the speed of our program.
 
 ---
 
-## 1. Búsqueda Lineal (o Secuencial)
+## 1. Linear (or Sequential) Search
 
-Imaginá que tenés una lista de nombres anotados en un papel sin ningún orden. Si buscás a "Juan", tenés que empezar desde el primero y mirar uno por uno hasta encontrarlo o llegar al final.
+Imagine you have a list of names written on a piece of paper without any order. If you're looking for "Juan," you have to start from the first one and check one by one until you find it or reach the end.
 
-### ¿Cómo funciona?
-Recorremos el arreglo desde la posición `0` hasta la última, comparando cada elemento con el que buscamos.
+### How does it work?
+We traverse the array from position `0` to the last one, comparing each element with what we're looking for.
 
 ```c
 #include <stdio.h>
@@ -27,41 +27,41 @@ int main() {
     int numeros[] = {10, 5, 8, 2, 7};
     int n = 5;
     int buscado = 8;
-    int posicion = -1; // Usamos -1 para indicar "no encontrado"
+    int posicion = -1; // Using -1 to indicate "not found"
 
     for (int i = 0; i < n; i++) {
         if (numeros[i] == buscado) {
-            posicion = i; // ¡Lo encontramos!
-            break; // No hace falta seguir buscando
+            posicion = i; // We found it!
+            break; // No need to keep searching
         }
     }
 
     if (posicion != -1) {
-        printf("Elemento encontrado en la posicion %d\n", posicion);
+        printf("Element found at position %d\n", posicion);
     } else {
-        printf("Elemento no encontrado\n");
+        printf("Element not found\n");
     }
 
     return 0;
 }
 ```
 
-*   **Ventaja:** Sirve para cualquier arreglo, esté ordenado o no.
-*   **Desventaja:** Es lenta para listas grandes.
+*   **Advantage:** Works for any array, whether sorted or not.
+*   **Disadvantage:** Slow for large lists.
 
 ---
 
-## 2. Búsqueda Binaria
+## 2. Binary Search
 
-La **Búsqueda Binaria** es extremadamente rápida, pero tiene un requisito fundamental: el arreglo **tiene que estar ordenado**.
+**Binary Search** is extremely fast, but it has a fundamental requirement: the array **must be sorted**.
 
-### La analogía del Diccionario
-Si buscás la palabra "Programación" en un diccionario, abrís el libro por la mitad:
-1.  Si la palabra que ves está "después" de la que buscás, descartás toda la segunda mitad.
-2.  Si está "antes", descartás la primera mitad.
-3.  Repetís el proceso con la mitad que te queda hasta encontrarla.
+### The Dictionary Analogy
+If you look for the word "Programming" in a dictionary, you open the book in the middle:
+1.  If the word you see comes "after" the one you're looking for, you discard the entire second half.
+2.  If it comes "before," you discard the first half.
+3.  You repeat the process with the remaining half until you find it.
 
-### Implementación en C
+### Implementation in C
 
 ```c
 int busquedaBinaria(int arr[], int n, int buscado) {
@@ -82,12 +82,12 @@ int busquedaBinaria(int arr[], int n, int buscado) {
         }
     }
 
-    return -1; // No se encontró
+    return -1; // Not found
 }
 ```
 
 ---
 
-## Idea Clave
+## Key Idea
 
-Si tus datos están desordenados, estás obligado a usar la búsqueda lineal. Si querés usar la búsqueda binaria para ser más eficiente, primero debés pasar por un proceso de **Ordenación**, que veremos en la próxima lección.
+If your data is unsorted, you're forced to use linear search. If you want to use binary search to be more efficient, you first need to go through a **Sorting** process, which we'll see in the next lesson.

@@ -7,62 +7,62 @@ lang: 'en'
 published: true
 ---
 
-En las lecciones anteriores viste que un programa en C necesita una estructura básica, puede guardar información en variables y puede mostrar o recibir datos.
+In previous lessons you saw that a C program needs a basic structure, can store information in variables, and can display or receive data.
 
-Ahora aparece una pregunta FUNDAMENTAL:
+Now a FUNDAMENTAL question appears:
 
-> ¿Qué clase de dato estoy guardando realmente?
+> What kind of data am I really storing?
 
-La respuesta a esa pregunta tiene que ver con los **tipos de datos**.
+The answer to that question has to do with **data types**.
 
-En C, no alcanza con decir “quiero guardar un valor”. También hay que decir **qué tipo de valor es**.
+In C, it's not enough to say "I want to store a value." You also have to say **what type of value it is**.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué es un tipo de dato
-- qué son los tipos primitivos de datos
-- cuál es el dominio de cada tipo
-- qué operaciones son válidas según el tipo
-- cómo se relacionan los tipos con la memoria
-- qué son los datos compuestos
-- qué son las estructuras de datos
-- qué diferencia hay entre estructuras estáticas y dinámicas
-- cómo se relacionan constantes y variables con los tipos de datos
+- what a data type is
+- what primitive data types are
+- what the domain of each type is
+- what operations are valid depending on the type
+- how types relate to memory
+- what compound data is
+- what data structures are
+- what the difference is between static and dynamic structures
+- how constants and variables relate to data types
 
-> Idea clave: el tipo de dato define qué puede guardar una variable, qué operaciones tienen sentido sobre ese valor y cómo se representa en memoria.
+> Key idea: the data type defines what a variable can store, what operations make sense on that value, and how it's represented in memory.
 
-## ¿Qué es un tipo de dato?
+## What is a data type?
 
-Un **tipo de dato** es una clasificación que le indica al lenguaje:
+A **data type** is a classification that tells the language:
 
-- qué clase de valor se va a almacenar
-- qué operaciones se pueden hacer con ese valor
-- cuánto espacio de memoria puede necesitar
-- cómo debe interpretarse ese contenido
+- what kind of value will be stored
+- what operations can be done with that value
+- how much memory space it may need
+- how that content should be interpreted
 
-Por ejemplo, no es lo mismo guardar:
+For example, it's not the same to store:
 
-- un número entero
-- un número con decimales
-- un carácter
+- an integer
+- a decimal number
+- a character
 
-Aunque todos sean “datos”, no se representan igual ni se trabajan igual.
+Even though they're all "data," they're not represented or handled the same way.
 
-## ¿Por qué C necesita tipos de datos?
+## Why does C need data types?
 
-Porque C es un lenguaje donde el manejo de datos debe ser explícito.
+Because C is a language where data handling must be explicit.
 
-Si querés guardar una edad, normalmente usarás un entero.
-Si querés guardar una altura, probablemente usarás un decimal.
-Si querés guardar una inicial, usarás un carácter.
+If you want to store an age, you'll normally use an integer.
+If you want to store a height, you'll probably use a decimal.
+If you want to store an initial, you'll use a character.
 
-Eso significa que el programa necesita saber de antemano cómo tratar cada valor.
+That means the program needs to know in advance how to treat each value.
 
-## Tipos primitivos de datos
+## Primitive data types
 
-Los **tipos primitivos** son los tipos básicos que el lenguaje ofrece para representar datos simples.
+**Primitive types** are the basic types that the language offers to represent simple data.
 
-En una primera etapa, los más importantes son estos:
+In a first stage, the most important ones are these:
 
 - `int`
 - `float`
@@ -71,7 +71,7 @@ En una primera etapa, los más importantes son estos:
 
 ### `int`
 
-Se usa para representar números enteros, es decir, números sin parte decimal.
+Used to represent integers, that is, numbers without a decimal part.
 
 ```c
 int edad = 18;
@@ -81,7 +81,7 @@ int anio = 2026;
 
 ### `float`
 
-Se usa para representar números con decimales.
+Used to represent numbers with decimals.
 
 ```c
 float altura = 1.75;
@@ -91,7 +91,7 @@ float promedio = 8.4;
 
 ### `double`
 
-También representa números con decimales, pero con mayor precisión que `float`.
+Also represents numbers with decimals, but with greater precision than `float`.
 
 ```c
 double distancia = 12345.6789;
@@ -100,7 +100,7 @@ double temperatura = 21.4567;
 
 ### `char`
 
-Se usa para representar un solo carácter.
+Used to represent a single character.
 
 ```c
 char inicial = 'F';
@@ -108,23 +108,23 @@ char letra = 'A';
 char simbolo = '#';
 ```
 
-Fijate en algo importante: un `char` representa **un solo carácter**, no una palabra completa.
+Notice something important: a `char` represents **a single character**, not a full word.
 
-## Dominio de cada tipo
+## Domain of each type
 
-El **dominio** de un tipo de dato es el conjunto de valores que ese tipo puede representar.
+The **domain** of a data type is the set of values that type can represent.
 
-Dicho más simple: cada tipo tiene un rango o universo de valores posibles.
+Put more simply: each type has a range or universe of possible values.
 
-### Dominio de `int`
+### Domain of `int`
 
-`int` representa números enteros.
+`int` represents integers.
 
-Por ejemplo:
+For example:
 
-- valores positivos
-- valores negativos
-- cero
+- positive values
+- negative values
+- zero
 
 ```c
 int temperatura = -3;
@@ -132,18 +132,18 @@ int cantidad = 0;
 int edad = 20;
 ```
 
-### Dominio de `float` y `double`
+### Domain of `float` and `double`
 
-`float` y `double` representan números reales aproximados, es decir, valores con parte decimal.
+`float` and `double` represent approximate real numbers, that is, values with a decimal part.
 
 ```c
 float altura = 1.72;
 double distancia = 1500.3456;
 ```
 
-### Dominio de `char`
+### Domain of `char`
 
-`char` representa un único carácter.
+`char` represents a single character.
 
 ```c
 char letra = 'Z';
@@ -151,27 +151,27 @@ char digito = '7';
 char simbolo = '*';
 ```
 
-Ojo con esto: `'7'` no es lo mismo que `7`.
+Be careful with this: `'7'` is not the same as `7`.
 
-- `'7'` es un carácter
-- `7` es un número entero
+- `'7'` is a character
+- `7` is an integer
 
-Eso cambia completamente el tipo de dato.
+That completely changes the data type.
 
-## Operaciones válidas según el tipo
+## Valid operations by type
 
-No todos los tipos admiten las mismas operaciones de la misma forma.
+Not all types support the same operations in the same way.
 
-Acá está una de las ideas más importantes de la lección: **el tipo de dato condiciona qué operaciones tienen sentido**.
+Here's one of the most important ideas of the lesson: **the data type determines which operations make sense**.
 
-### Operaciones válidas con `int`
+### Valid operations with `int`
 
-Con números enteros tiene sentido hacer operaciones matemáticas como:
+With integers, it makes sense to do mathematical operations like:
 
-- sumar
-- restar
-- multiplicar
-- dividir
+- adding
+- subtracting
+- multiplying
+- dividing
 
 ```c
 int a = 10;
@@ -179,9 +179,9 @@ int b = 5;
 int resultado = a + b;
 ```
 
-### Operaciones válidas con `float` y `double`
+### Valid operations with `float` and `double`
 
-También admiten operaciones matemáticas.
+They also support mathematical operations.
 
 ```c
 float precio1 = 10.5;
@@ -189,60 +189,60 @@ float precio2 = 2.5;
 float total = precio1 + precio2;
 ```
 
-### Operaciones con `char`
+### Operations with `char`
 
-Con `char`, el uso básico inicial no es “hacer cuentas”, sino representar caracteres.
+With `char`, the basic initial use isn't "doing math," but representing characters.
 
 ```c
 char inicial = 'F';
 ```
 
-Aunque internamente un carácter tiene una representación numérica, al comenzar conviene pensar `char` como un tipo para guardar **un símbolo individual**.
+Although internally a character has a numeric representation, when starting it's best to think of `char` as a type for storing **an individual symbol**.
 
-## Cuando una operación no tiene sentido pedagógico
+## When an operation doesn't make pedagogical sense
 
-Acá hay algo importante: no todo lo que el lenguaje permite conviene enseñarlo de entrada.
+Here's something important: not everything the language allows is suitable to teach from the start.
 
-Por ejemplo, en niveles más avanzados vas a descubrir que ciertos tipos pueden participar en conversiones automáticas o comportamientos más complejos.
+For example, at more advanced levels you'll discover that certain types can participate in automatic conversions or more complex behaviors.
 
-Pero al comenzar, lo correcto es entender esto:
+But when starting, the correct thing is to understand this:
 
-- `int`, `float` y `double` se usan para trabajar con valores numéricos
-- `char` se usa para representar un carácter
+- `int`, `float`, and `double` are used to work with numeric values
+- `char` is used to represent a character
 
-Primero construimos la idea correcta. Después ya habrá tiempo para refinarla.
+First we build the correct idea. Later there will be time to refine it.
 
-## Ocupación de memoria
+## Memory usage
 
-Cada tipo de dato ocupa espacio en memoria.
+Each data type occupies space in memory.
 
-Eso significa que no todos los tipos almacenan la información de la misma manera ni con el mismo tamaño.
+That means not all types store information the same way or with the same size.
 
-### Idea importante sobre el tamaño
+### Important idea about size
 
-El tamaño exacto de un tipo puede depender de la implementación, del compilador y de la arquitectura donde corre el programa.
+The exact size of a type can depend on the implementation, the compiler, and the architecture where the program runs.
 
-O sea: NO es serio enseñar que todos los tamaños son absolutamente fijos en cualquier máquina.
+In other words: it's NOT serious to teach that all sizes are absolutely fixed on any machine.
 
-Sin embargo, para empezar, sí podés quedarte con esta idea:
+However, to start, you can keep this idea:
 
-- `char` suele ocupar menos memoria que `int`
-- `int` suele ocupar menos memoria que `double`
-- cuanto más complejo o preciso es el dato, más memoria puede requerir
+- `char` usually occupies less memory than `int`
+- `int` usually occupies less memory than `double`
+- the more complex or precise the data, the more memory it may require
 
-### Relación entre tipo y memoria
+### Relationship between type and memory
 
-Elegir un tipo no es solamente elegir un “nombre técnico”. También es decidir:
+Choosing a type isn't just choosing a "technical name." It's also deciding:
 
-- qué clase de valor querés representar
-- cuánta precisión necesitás
-- cómo se almacenará ese valor
+- what kind of value you want to represent
+- how much precision you need
+- how that value will be stored
 
-Eso más adelante va a importar muchísimo cuando trabajes con estructuras más grandes y con colecciones de datos.
+Later that will matter a lot when you work with larger structures and collections of data.
 
-## Ejemplo conceptual de memoria
+## Conceptual memory example
 
-Pensá en estas declaraciones:
+Think about these declarations:
 
 ```c
 char inicial = 'F';
@@ -250,177 +250,177 @@ int edad = 18;
 double distancia = 1234.5678;
 ```
 
-Aunque las tres variables guardan datos, no lo hacen del mismo modo.
+Although all three variables store data, they don't do it the same way.
 
-- `inicial` guarda un único carácter
-- `edad` guarda un entero
-- `distancia` guarda un número decimal con mayor precisión
+- `inicial` stores a single character
+- `edad` stores an integer
+- `distancia` stores a decimal number with greater precision
 
-Por eso no tendría sentido asumir que las tres ocupan lo mismo en memoria.
+That's why it wouldn't make sense to assume all three occupy the same memory.
 
-## Tipos de datos: constantes y variables
+## Data types: constants and variables
 
-Los tipos de datos se relacionan tanto con **variables** como con **constantes**.
+Data types relate to both **variables** and **constants**.
 
-### Variable tipada
+### Typed variable
 
 ```c
 int edad = 18;
 ```
 
-Acá:
+Here:
 
-- `int` es el tipo
-- `edad` es la variable
-- `18` es el valor
+- `int` is the type
+- `edad` is the variable
+- `18` is the value
 
-### Constante tipada
+### Typed constant
 
 ```c
 const int diasSemana = 7;
 ```
 
-Acá:
+Here:
 
-- `int` sigue siendo el tipo de dato
-- `diasSemana` es una constante
-- `7` es el valor fijo
+- `int` is still the data type
+- `diasSemana` is a constant
+- `7` is the fixed value
 
-La diferencia entre variable y constante NO cambia el concepto de tipo. Lo que cambia es si ese valor puede modificarse o no.
+The difference between variable and constant does NOT change the concept of type. What changes is whether that value can be modified or not.
 
-## ¿Qué son los datos compuestos?
+## What are compound data?
 
-Hasta ahora hablamos de datos simples o básicos.
+So far we've talked about simple or basic data.
 
-Pero muchas veces un solo dato no alcanza.
+But many times a single piece of data isn't enough.
 
-Por ejemplo, una persona puede necesitar:
+For example, a person might need:
 
-- nombre
-- edad
-- altura
-- inicial
+- name
+- age
+- height
+- initial
 
-Eso ya no es un dato simple aislado, sino un conjunto de datos relacionados.
+That's no longer an isolated simple datum, but a set of related data.
 
-A esa idea general la podemos conectar con los **datos compuestos**.
+We can connect that general idea with **compound data**.
 
-Un **dato compuesto** es un dato formado por varios elementos o por una organización más compleja que un valor primitivo individual.
+A **compound datum** is data made up of several elements or a more complex organization than an individual primitive value.
 
-## Ejemplos conceptuales de datos compuestos
+## Conceptual examples of compound data
 
-Sin entrar todavía en detalle técnico, algunos ejemplos de datos compuestos o estructuras que agrupan datos son:
+Without going into technical detail yet, some examples of compound data or structures that group data are:
 
-- arreglos
-- cadenas de caracteres
-- registros o estructuras
-- listas
-- pilas
-- colas
-- árboles
+- arrays
+- character strings
+- records or structs
+- lists
+- stacks
+- queues
+- trees
 
-No hace falta dominarlos ahora. Lo importante es entender que existen niveles de organización más complejos que un solo `int` o un solo `char`.
+No need to master them now. The important thing is to understand that there are levels of organization more complex than a single `int` or a single `char`.
 
-## ¿Qué es una estructura de datos?
+## What is a data structure?
 
-Una **estructura de datos** es una forma de organizar datos para poder almacenarlos, acceder a ellos y trabajar con ellos de manera ordenada.
+A **data structure** is a way of organizing data to store, access, and work with it in an orderly fashion.
 
-O sea: no se trata solo de “tener datos”, sino de **cómo los organizamos**.
+In other words: it's not just about "having data," but about **how we organize it**.
 
-Por ejemplo:
+For example:
 
-- a veces querés guardar varios valores del mismo tipo
-- otras veces querés agrupar datos diferentes que pertenecen a una misma entidad
-- otras veces necesitás una organización que facilite ciertas operaciones
+- sometimes you want to store several values of the same type
+- other times you want to group different data that belongs to the same entity
+- other times you need an organization that facilitates certain operations
 
-Eso es justamente el terreno de las estructuras de datos.
+That's precisely the territory of data structures.
 
-## Estructuras estáticas y dinámicas
+## Static and dynamic structures
 
-Las estructuras de datos pueden clasificarse, de manera general, en **estáticas** y **dinámicas**.
+Data structures can be classified, in a general way, into **static** and **dynamic**.
 
-### Estructuras estáticas
+### Static structures
 
-Son aquellas cuyo tamaño o capacidad queda definido de forma fija.
+Those whose size or capacity is fixed.
 
-La idea principal es que su tamaño está previsto de antemano.
+The main idea is that their size is planned in advance.
 
-Más adelante vas a ver ejemplos claros de esto.
+Later you'll see clear examples of this.
 
-### Estructuras dinámicas
+### Dynamic structures
 
-Son aquellas cuya organización puede crecer o cambiar durante la ejecución del programa.
+Those whose organization can grow or change during program execution.
 
-Esto permite más flexibilidad, pero también exige un manejo más cuidadoso.
+This allows more flexibility, but also requires more careful handling.
 
-Por ahora no hace falta profundizar. Alcanzan estas dos ideas:
+For now, no need to go deep. These two ideas are enough:
 
-- estática: tamaño más fijo o predefinido
-- dinámica: tamaño u organización más flexible durante la ejecución
+- static: more fixed or predefined size
+- dynamic: more flexible size or organization during execution
 
-## ¿Por qué esta distinción importa?
+## Why does this distinction matter?
 
-Porque no es lo mismo guardar:
+Because it's not the same to store:
 
-- un solo número
-- varios números
-- una colección de elementos cuyo tamaño ya conocés
-- una colección cuyo tamaño puede cambiar
+- a single number
+- several numbers
+- a collection of elements whose size you already know
+- a collection whose size can change
 
-Cada necesidad pide una organización distinta.
+Each need calls for a different organization.
 
-Y todo eso empieza, justamente, entendiendo primero qué es un tipo de dato simple.
+And all of that starts, precisely, by first understanding what a simple data type is.
 
-## Errores comunes al empezar
+## Common mistakes when starting
 
-### 1. Creer que todos los datos son iguales
+### 1. Believing all data is the same
 
 No.
 
-No es lo mismo guardar un entero, un decimal o un carácter.
+It's not the same to store an integer, a decimal, or a character.
 
-### 2. Elegir un tipo sin pensar qué representa
+### 2. Choosing a type without thinking about what it represents
 
-El tipo debe elegirse por el dato real que querés modelar.
+The type should be chosen based on the actual data you want to model.
 
-### 3. Confundir un carácter con un número
+### 3. Confusing a character with a number
 
 ```c
 char digito = '7';
 int numero = 7;
 ```
 
-No representan lo mismo.
+They don't represent the same thing.
 
-### 4. Pensar que el tamaño de cada tipo es universal y fijo
+### 4. Thinking each type's size is universal and fixed
 
-En programación real, el tamaño exacto puede depender del entorno.
+In real programming, the exact size can depend on the environment.
 
-### 5. Mezclar el concepto de tipo con el de variable
+### 5. Mixing up the concept of type with that of variable
 
-El tipo describe la naturaleza del dato.
-La variable es el nombre del espacio donde lo guardás.
+The type describes the nature of the data.
+The variable is the name of the space where you store it.
 
-## Resumen
+## Summary
 
-- un **tipo de dato** define qué clase de valor se puede almacenar
-- los tipos primitivos más importantes al comenzar son `int`, `float`, `double` y `char`
-- cada tipo tiene un **dominio** de valores posibles
-- no todos los tipos admiten las mismas operaciones con el mismo sentido
-- los tipos también están relacionados con la **ocupación de memoria**
-- variables y constantes siempre tienen un tipo de dato
-- además de los datos primitivos, existen **datos compuestos** y **estructuras de datos**
-- las estructuras pueden ser **estáticas** o **dinámicas**
+- a **data type** defines what kind of value can be stored
+- the most important primitive types when starting are `int`, `float`, `double`, and `char`
+- each type has a **domain** of possible values
+- not all types support the same operations with the same meaning
+- types are also related to **memory usage**
+- variables and constants always have a data type
+- in addition to primitive data, there are **compound data** and **data structures**
+- structures can be **static** or **dynamic**
 
-## Idea final
+## Final thought
 
-Cuando elegís un tipo de dato, no estás escribiendo una palabra técnica porque sí.
+When you choose a data type, you're not writing a technical word for no reason.
 
-Estás tomando una decisión de diseño sobre:
+You're making a design decision about:
 
-- qué representa el dato
-- cómo se guarda
-- qué se puede hacer con él
-- cómo debe interpretarlo el programa
+- what the data represents
+- how it's stored
+- what can be done with it
+- how the program should interpret it
 
-Y eso, hermano, es una de las bases más importantes de toda la programación.
+And that, friend, is one of the most important foundations of all programming.

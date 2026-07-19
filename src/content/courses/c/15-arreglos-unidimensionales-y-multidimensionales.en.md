@@ -7,9 +7,9 @@ lang: 'en'
 published: true
 ---
 
-Hasta ahora trabajaste muchas veces con una variable por vez.
+So far you've worked many times with one variable at a time.
 
-Por ejemplo:
+For example:
 
 ```c
 int edad;
@@ -17,16 +17,16 @@ float precio;
 char inicial;
 ```
 
-Eso está bien cuando necesitás guardar un solo dato.
+That's fine when you need to store a single piece of data.
 
-Pero, ¿qué pasa si necesitás guardar:
+But what if you need to store:
 
-- 5 notas
-- 10 edades
-- 30 temperaturas
-- 7 números ingresados por el usuario
+- 5 grades
+- 10 ages
+- 30 temperatures
+- 7 numbers entered by the user
 
-¿Vas a crear una variable para cada dato?
+Are you going to create a variable for each one?
 
 ```c
 int nota1;
@@ -36,83 +36,83 @@ int nota4;
 int nota5;
 ```
 
-Podrías hacerlo, sí. Pero sería incómodo, desordenado y poco práctico.
+You could, yes. But it would be awkward, messy, and impractical.
 
-Ahí es donde aparecen los **arreglos**.
+That's where **arrays** come in.
 
-## ¿Qué es un arreglo?
+## What is an array?
 
-Un **arreglo** es una estructura que permite guardar varios datos del mismo tipo bajo un mismo nombre.
+An **array** is a structure that lets you store several data of the same type under a single name.
 
-Cada dato se guarda en una **posición** y se accede a esa posición mediante un **índice**.
+Each piece of data is stored in a **position** and that position is accessed through an **index**.
 
-### Ejemplo simple
+### Simple example
 
 ```c
 int notas[5];
 ```
 
-Esto significa:
+This means:
 
-- `int` es el tipo de dato de cada elemento
-- `notas` es el nombre del arreglo
-- `5` es la cantidad de posiciones reservadas
+- `int` is the data type of each element
+- `notas` is the name of the array
+- `5` is the number of reserved positions
 
-O sea: `notas` puede guardar 5 valores enteros.
+In other words: `notas` can store 5 integer values.
 
-## ¿Por qué un arreglo es útil?
+## Why is an array useful?
 
-Porque te permite agrupar muchos datos relacionados.
+Because it lets you group many related data.
 
-Por ejemplo, si querés guardar 5 notas, en vez de tener:
+For example, if you want to store 5 grades, instead of having:
 
 ```c
 int nota1, nota2, nota3, nota4, nota5;
 ```
 
-podés tener:
+you can have:
 
 ```c
 int notas[5];
 ```
 
-Eso organiza mejor el programa y facilita muchísimo el trabajo posterior.
+That organizes the program better and makes subsequent work much easier.
 
-## Todos los elementos deben ser del mismo tipo
+## All elements must be the same type
 
-En un arreglo, todos los elementos tienen el mismo tipo.
+In an array, all elements have the same type.
 
-Por ejemplo:
+For example:
 
 ```c
 int numeros[4];
 ```
 
-acá todos los elementos son `int`.
+here all elements are `int`.
 
-Y en:
+And in:
 
 ```c
 char letras[6];
 ```
 
-acá todos los elementos son `char`.
+here all elements are `char`.
 
-No podés guardar en el mismo arreglo un `int`, un `float` y un `char` mezclados.
+You can't mix an `int`, a `float`, and a `char` in the same array.
 
-## Índices: las posiciones del arreglo
+## Indices: array positions
 
-En C, los arreglos empiezan en el índice `0`.
+In C, arrays start at index `0`.
 
-Esto es FUNDAMENTAL. Si no entendés esto bien, después todo se empieza a romper.
+This is FUNDAMENTAL. If you don't understand this well, everything starts to break later.
 
-Si tenemos:
+If we have:
 
 ```c
 int notas[5];
 ```
 
-las posiciones válidas son:
+the valid positions are:
 
 - `notas[0]`
 - `notas[1]`
@@ -120,42 +120,42 @@ las posiciones válidas son:
 - `notas[3]`
 - `notas[4]`
 
-### Ojo con esto
+### Watch out for this
 
-Si el arreglo tiene 5 elementos:
+If the array has 5 elements:
 
-- la cantidad de elementos es `5`
-- el último índice es `4`
+- the number of elements is `5`
+- the last index is `4`
 
-No es lo mismo.
+They are not the same.
 
-## Forma mental de imaginar un arreglo
+## Mental picture of an array
 
-Podés pensar un arreglo como una fila de casilleros.
+You can think of an array as a row of lockers.
 
 ```text
-Indice:   0    1    2    3    4
-Valor:   [ ]  [ ]  [ ]  [ ]  [ ]
+Index:   0    1    2    3    4
+Value:   [ ]  [ ]  [ ]  [ ]  [ ]
 ```
 
-Cada casillero tiene:
+Each locker has:
 
-- una posición
-- un valor posible
+- a position
+- a possible value
 
-## Declaración de un arreglo
+## Declaring an array
 
-Declarar un arreglo significa reservar espacio para sus elementos.
+Declaring an array means reserving space for its elements.
 
 ```c
 int numeros[5];
 ```
 
-Acá reservamos espacio para 5 enteros.
+Here we reserve space for 5 integers.
 
-## Asignar valores a las posiciones
+## Assigning values to positions
 
-Después de declarar el arreglo, podemos cargar valores en sus posiciones.
+After declaring the array, we can load values into its positions.
 
 ```c
 #include <stdio.h>
@@ -169,22 +169,22 @@ int main() {
     numeros[3] = 40;
     numeros[4] = 50;
 
-    printf("Primer valor: %d\n", numeros[0]);
-    printf("Ultimo valor: %d\n", numeros[4]);
+    printf("First value: %d\n", numeros[0]);
+    printf("Last value: %d\n", numeros[4]);
 
     return 0;
 }
 ```
 
-## Inicialización de un arreglo
+## Initializing an array
 
-También podemos declarar y cargar valores al mismo tiempo.
+We can also declare and load values at the same time.
 
 ```c
 int numeros[5] = {10, 20, 30, 40, 50};
 ```
 
-Eso significa exactamente esto:
+That means exactly this:
 
 - `numeros[0] = 10`
 - `numeros[1] = 20`
@@ -192,16 +192,16 @@ Eso significa exactamente esto:
 - `numeros[3] = 40`
 - `numeros[4] = 50`
 
-## Acceso a los elementos
+## Accessing elements
 
-Para leer o usar un valor del arreglo, escribimos el nombre del arreglo y entre corchetes el índice.
+To read or use a value from the array, we write the array name and the index in brackets.
 
 ```c
 int primero = numeros[0];
 int tercero = numeros[2];
 ```
 
-## Ejemplo completo con acceso a posiciones
+## Complete example with position access
 
 ```c
 #include <stdio.h>
@@ -209,18 +209,18 @@ int tercero = numeros[2];
 int main() {
     int edades[4] = {15, 18, 20, 22};
 
-    printf("Edad en la posicion 0: %d\n", edades[0]);
-    printf("Edad en la posicion 1: %d\n", edades[1]);
-    printf("Edad en la posicion 2: %d\n", edades[2]);
-    printf("Edad en la posicion 3: %d\n", edades[3]);
+    printf("Age at position 0: %d\n", edades[0]);
+    printf("Age at position 1: %d\n", edades[1]);
+    printf("Age at position 2: %d\n", edades[2]);
+    printf("Age at position 3: %d\n", edades[3]);
 
     return 0;
 }
 ```
 
-## Modificar un elemento del arreglo
+## Modifying an array element
 
-Los valores del arreglo también pueden cambiar.
+Array values can also change.
 
 ```c
 #include <stdio.h>
@@ -228,34 +228,34 @@ Los valores del arreglo también pueden cambiar.
 int main() {
     int notas[3] = {6, 7, 8};
 
-    printf("Antes: %d\n", notas[1]);
+    printf("Before: %d\n", notas[1]);
 
     notas[1] = 10;
 
-    printf("Despues: %d\n", notas[1]);
+    printf("After: %d\n", notas[1]);
 
     return 0;
 }
 ```
 
-## Arreglo unidimensional
+## One-dimensional array
 
-Un **arreglo unidimensional** es el arreglo más simple.
+A **one-dimensional array** is the simplest array.
 
-Tiene una sola dimensión y se puede imaginar como una fila de elementos.
+It has one dimension and can be imagined as a row of elements.
 
 ```text
 [10, 20, 30, 40, 50]
 ```
 
-O más visualmente:
+Or more visually:
 
 ```text
-Indice:   0    1    2    3    4
-Valor:   10   20   30   40   50
+Index:   0    1    2    3    4
+Value:   10   20   30   40   50
 ```
 
-## Ejemplo con `float`
+## Example with `float`
 
 ```c
 #include <stdio.h>
@@ -263,21 +263,21 @@ Valor:   10   20   30   40   50
 int main() {
     float precios[3] = {1250.5, 980.0, 1500.75};
 
-    printf("Precio 1: %.2f\n", precios[0]);
-    printf("Precio 2: %.2f\n", precios[1]);
-    printf("Precio 3: %.2f\n", precios[2]);
+    printf("Price 1: %.2f\n", precios[0]);
+    printf("Price 2: %.2f\n", precios[1]);
+    printf("Price 3: %.2f\n", precios[2]);
 
     return 0;
 }
 ```
 
-Esto muestra algo importante:
+This shows something important:
 
-> un arreglo no tiene que ser siempre de enteros. Puede ser de cualquier tipo, siempre que todos sus elementos sean del mismo tipo.
+> an array doesn't always have to be of integers. It can be of any type, as long as all its elements are the same type.
 
-## Cargar datos en un arreglo con un ciclo
+## Loading data into an array with a loop
 
-Una de las grandes ventajas de los arreglos es que se combinan muy bien con estructuras repetitivas.
+One of the great advantages of arrays is that they combine very well with repetitive structures.
 
 ```c
 #include <stdio.h>
@@ -287,11 +287,11 @@ int main() {
     int i;
 
     for (i = 0; i < 5; i = i + 1) {
-        printf("Ingresa un numero: ");
+        printf("Enter a number: ");
         scanf("%d", &numeros[i]);
     }
 
-    printf("\nValores guardados:\n");
+    printf("\nStored values:\n");
 
     for (i = 0; i < 5; i = i + 1) {
         printf("numeros[%d] = %d\n", i, numeros[i]);
@@ -301,11 +301,11 @@ int main() {
 }
 ```
 
-### ¿Qué tiene de bueno este ejemplo?
+### What's good about this example?
 
-Muchísimo.
+So much.
 
-Porque te muestra que no hace falta escribir:
+Because it shows you don't need to write:
 
 ```c
 scanf("%d", &numeros[0]);
@@ -313,45 +313,45 @@ scanf("%d", &numeros[1]);
 scanf("%d", &numeros[2]);
 ```
 
-Eso sería repetitivo e incómodo. Con un ciclo, trabajamos todas las posiciones de forma ordenada.
+That would be repetitive and awkward. With a loop, we work through all positions in an orderly way.
 
-## Arreglos multidimensionales
+## Multidimensional arrays
 
-Un **arreglo multidimensional** es un arreglo con más de una dimensión.
+A **multidimensional array** is an array with more than one dimension.
 
-El caso más común cuando se empieza a programar es el **arreglo bidimensional**, también llamado **matriz**.
+The most common case when starting to program is the **two-dimensional array**, also called a **matrix**.
 
-## ¿Qué es una matriz?
+## What is a matrix?
 
-Una matriz organiza los datos en:
+A matrix organizes data into:
 
-- filas
-- columnas
+- rows
+- columns
 
-Entonces, en vez de imaginar una sola fila de casilleros, imaginamos una tabla.
+So instead of imagining a single row of lockers, we imagine a table.
 
-## Declaración de una matriz
+## Declaring a matrix
 
 ```c
 int matriz[2][3];
 ```
 
-Esto significa:
+This means:
 
-- 2 filas
-- 3 columnas
+- 2 rows
+- 3 columns
 
-O sea, hay lugar para 6 enteros en total.
+In other words, there's room for 6 integers total.
 
-## Forma mental de imaginar una matriz
+## Mental picture of a matrix
 
 ```text
-       Columna 0  Columna 1  Columna 2
-Fila 0     [ ]        [ ]        [ ]
-Fila 1     [ ]        [ ]        [ ]
+       Column 0  Column 1  Column 2
+Row 0     [ ]        [ ]        [ ]
+Row 1     [ ]        [ ]        [ ]
 ```
 
-## Inicialización de una matriz
+## Initializing a matrix
 
 ```c
 int matriz[2][3] = {
@@ -360,7 +360,7 @@ int matriz[2][3] = {
 };
 ```
 
-Esto significa:
+This means:
 
 - `matriz[0][0] = 1`
 - `matriz[0][1] = 2`
@@ -369,27 +369,27 @@ Esto significa:
 - `matriz[1][1] = 5`
 - `matriz[1][2] = 6`
 
-## Acceso a un elemento de la matriz
+## Accessing a matrix element
 
-Para acceder a un elemento de una matriz necesitamos dos índices:
+To access an element in a matrix we need two indices:
 
-- uno para la fila
-- otro para la columna
+- one for the row
+- another for the column
 
 ```c
 int valor = matriz[1][2];
 ```
 
-Ese valor es `6`.
+That value is `6`.
 
-### ¿Por qué?
+### Why?
 
-Porque:
+Because:
 
-- fila `1` es la segunda fila
-- columna `2` es la tercera columna
+- row `1` is the second row
+- column `2` is the third column
 
-## Ejemplo completo con matriz
+## Complete matrix example
 
 ```c
 #include <stdio.h>
@@ -409,9 +409,9 @@ int main() {
 }
 ```
 
-## Modificar una posición en una matriz
+## Modifying a position in a matrix
 
-También podemos cambiar un valor de la matriz.
+We can also change a value in the matrix.
 
 ```c
 #include <stdio.h>
@@ -424,53 +424,53 @@ int main() {
 
     tablero[0][1] = 9;
 
-    printf("Nuevo valor: %d\n", tablero[0][1]);
+    printf("New value: %d\n", tablero[0][1]);
 
     return 0;
 }
 ```
 
-## ¿Para qué sirven los arreglos multidimensionales?
+## What are multidimensional arrays used for?
 
-Sirven cuando los datos tienen organización de tabla.
+They're useful when data has a table-like organization.
 
-Por ejemplo:
+For example:
 
-- notas de varios alumnos en varias materias
-- asientos de una sala
-- tablero de juego
-- matrices matemáticas
-- temperaturas por día y por turno
+- grades of several students in several subjects
+- seats in a room
+- game board
+- mathematical matrices
+- temperatures by day and shift
 
-## Ejemplo conceptual: notas por alumno y materia
+## Conceptual example: grades by student and subject
 
 ```c
 int notas[3][2];
 ```
 
-Podría significar:
+Could mean:
 
-- 3 alumnos
-- 2 materias
+- 3 students
+- 2 subjects
 
-Entonces:
+So:
 
-- `notas[0][0]` = nota del alumno 1 en la materia 1
-- `notas[0][1]` = nota del alumno 1 en la materia 2
-- `notas[1][0]` = nota del alumno 2 en la materia 1
-- y así sucesivamente
+- `notas[0][0]` = grade of student 1 in subject 1
+- `notas[0][1]` = grade of student 1 in subject 2
+- `notas[1][0]` = grade of student 2 in subject 1
+- and so on
 
-## Diferencia entre arreglo unidimensional y multidimensional
+## Difference between one-dimensional and multidimensional arrays
 
-### Unidimensional
+### One-dimensional
 
-Tiene una sola línea de posiciones.
+It has a single line of positions.
 
 ```c
 int numeros[5];
 ```
 
-Se accede con un solo índice.
+It's accessed with a single index.
 
 ```c
 numeros[2]
@@ -478,77 +478,77 @@ numeros[2]
 
 ### Multidimensional
 
-Tiene más de una dimensión.
+It has more than one dimension.
 
 ```c
 int matriz[2][3];
 ```
 
-Se accede con más de un índice.
+It's accessed with more than one index.
 
 ```c
 matriz[1][2]
 ```
 
-## Errores comunes
+## Common mistakes
 
-### Olvidar que el índice empieza en `0`
+### Forgetting that the index starts at `0`
 
-Este es el error clásico.
+This is the classic mistake.
 
-Si el arreglo tiene 5 elementos, el último índice es `4`, no `5`.
+If the array has 5 elements, the last index is `4`, not `5`.
 
-### Acceder a una posición que no existe
+### Accessing a position that doesn't exist
 
-Esto está mal:
+This is wrong:
 
 ```c
 int numeros[5];
 int x = numeros[5];
 ```
 
-Porque `numeros[5]` queda fuera del arreglo.
+Because `numeros[5]` is outside the array.
 
-### Confundir cantidad con último índice
+### Confusing count with last index
 
-Si hay 3 filas y 2 columnas:
+If there are 3 rows and 2 columns:
 
 ```c
 int notas[3][2];
 ```
 
-las filas válidas son:
+the valid rows are:
 
 - `0`
 - `1`
 - `2`
 
-Y las columnas válidas son:
+And the valid columns are:
 
 - `0`
 - `1`
 
-### Pensar que una matriz se maneja igual que un arreglo simple
+### Thinking a matrix works the same as a simple array
 
-No. En una matriz necesitás dos índices.
+No. In a matrix you need two indices.
 
-## Resumen
+## Summary
 
-- un arreglo permite guardar varios datos del mismo tipo
-- cada elemento se identifica por su índice
-- en C, el primer índice siempre es `0`
-- un arreglo unidimensional se parece a una fila de datos
-- un arreglo bidimensional se parece a una tabla con filas y columnas
-- para acceder a una matriz se necesitan dos índices
+- an array lets you store several data of the same type
+- each element is identified by its index
+- in C, the first index is always `0`
+- a one-dimensional array looks like a row of data
+- a two-dimensional array looks like a table with rows and columns
+- to access a matrix you need two indices
 
-## Idea final
+## Final thought
 
-Los arreglos son una de las primeras herramientas realmente poderosas para trabajar con varios datos relacionados.
+Arrays are one of the first truly powerful tools for working with several related data.
 
-Si entendés bien estas tres ideas:
+If you understand these three ideas well:
 
-- que los datos comparten un mismo nombre
-- que cada posición se identifica por un índice
-- que una matriz agrega filas y columnas
+- that data shares a single name
+- that each position is identified by an index
+- that a matrix adds rows and columns
 
-entonces ya tenés una base muy sólida para todo lo que viene después.
+then you already have a very solid foundation for everything that comes next.

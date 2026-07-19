@@ -7,52 +7,52 @@ lang: 'en'
 published: true
 ---
 
-Después de aprender `if-else`, aparece otra necesidad frecuente: elegir entre varias opciones posibles según el valor de una variable.
+After learning `if-else`, another frequent need appears: choosing between several possible options based on the value of a variable.
 
-Para eso existe `switch`.
+That's what `switch` is for.
 
-Pero esta lección no trata solo de `switch`. También es un muy buen momento para entender mejor los **bloques de código** y algunas instrucciones que alteran el flujo dentro de esos bloques, como `break`.
+But this lesson isn't just about `switch`. It's also a very good time to better understand **code blocks** and some instructions that alter flow within those blocks, like `break`.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué problema resuelve `switch`
-- cómo se escribe un `switch`
-- para qué sirve `break`
-- qué pasa si falta `break`
-- qué es `default`
-- qué son los bloques de código
-- cómo algunas instrucciones alteran el flujo del bloque
+- what problem `switch` solves
+- how to write a `switch`
+- what `break` is for
+- what happens if `break` is missing
+- what `default` is
+- what code blocks are
+- how some instructions alter the flow of a block
 
-## ¿Cuándo conviene usar `switch`?
+## When should you use `switch`?
 
-`switch` conviene cuando querés comparar una misma variable contra varios valores posibles.
+`switch` is useful when you want to compare the same variable against several possible values.
 
-Por ejemplo:
+For example:
 
-- un número que representa un día
-- una opción de menú
-- un código simple de selección
+- a number representing a day
+- a menu option
+- a simple selection code
 
-En esos casos, un `switch` puede resultar más claro que una larga cadena de comparaciones.
+In those cases, a `switch` can be clearer than a long chain of comparisons.
 
-## Sintaxis general
+## General syntax
 
 ```c
 switch (variable) {
-    case valor1:
-        instrucciones;
+    case value1:
+        instructions;
         break;
 
-    case valor2:
-        instrucciones;
+    case value2:
+        instructions;
         break;
 
     default:
-        instrucciones;
+        instructions;
 }
 ```
 
-## Ejemplo básico
+## Basic example
 
 ```c
 #include <stdio.h>
@@ -62,77 +62,77 @@ int main() {
 
     switch (dia) {
         case 1:
-            printf("Lunes\n");
+            printf("Monday\n");
             break;
         case 2:
-            printf("Martes\n");
+            printf("Tuesday\n");
             break;
         case 3:
-            printf("Miércoles\n");
+            printf("Wednesday\n");
             break;
         default:
-            printf("Valor no válido\n");
+            printf("Invalid value\n");
     }
 
     return 0;
 }
 ```
 
-## ¿Qué hace `break`?
+## What does `break` do?
 
-`break` corta la ejecución del `switch` cuando ya se ejecutó el caso que correspondía.
+`break` cuts off the execution of `switch` when the corresponding case has already been executed.
 
-Si el valor de `dia` es `3`, el programa entra en `case 3`, muestra `Miércoles` y luego `break` hace que salga del `switch`.
+If the value of `dia` is `3`, the program enters `case 3`, shows `Wednesday`, and then `break` makes it exit the `switch`.
 
-## ¿Qué pasa si falta `break`?
+## What happens if `break` is missing?
 
-Acá está uno de los comportamientos que más confunden al principio.
+Here's one of the behaviors that confuses most at first.
 
-Si falta `break`, el programa puede seguir ejecutando el siguiente `case`.
+If `break` is missing, the program may continue executing the next `case`.
 
-### Ejemplo
+### Example
 
 ```c
 switch (opcion) {
     case 1:
-        printf("Opción 1\n");
+        printf("Option 1\n");
     case 2:
-        printf("Opción 2\n");
+        printf("Option 2\n");
         break;
 }
 ```
 
-Si `opcion` vale `1`, podrían ejecutarse ambas salidas, porque no hubo `break` al terminar el `case 1`.
+If `opcion` is `1`, both outputs might execute, because there was no `break` at the end of `case 1`.
 
-Por eso, al comenzar, la regla práctica es muy simple:
+That's why, when starting, the practical rule is very simple:
 
-> si no querés que siga al siguiente caso, usá `break`.
+> if you don't want it to fall through to the next case, use `break`.
 
-## ¿Qué hace `default`?
+## What does `default` do?
 
-`default` representa el caso por defecto, es decir, qué debe pasar si ningún `case` coincide.
+`default` represents the default case, that is, what should happen if no `case` matches.
 
 ```c
 default:
-    printf("Opción no válida\n");
+    printf("Invalid option\n");
 ```
 
-No siempre es obligatorio, pero casi siempre es una buena idea tenerlo.
+It's not always mandatory, but almost always a good idea to have it.
 
-## ¿Qué es un bloque de código?
+## What is a code block?
 
-Un **bloque de código** es un conjunto de sentencias encerradas entre llaves.
+A **code block** is a set of statements enclosed between braces.
 
 ```c
 {
-    printf("Hola\n");
-    printf("Mundo\n");
+    printf("Hello\n");
+    printf("World\n");
 }
 ```
 
-Esas dos sentencias forman un bloque.
+Those two statements form a block.
 
-Los bloques aparecen en muchas estructuras de control:
+Blocks appear in many control structures:
 
 - `if`
 - `else`
@@ -141,71 +141,71 @@ Los bloques aparecen en muchas estructuras de control:
 - `for`
 - `do-while`
 
-## ¿Por qué importan los bloques?
+## Why do blocks matter?
 
-Porque ayudan a organizar qué instrucciones pertenecen a cada parte del flujo.
+Because they help organize which instructions belong to each part of the flow.
 
-Sin bloques claros, el programa se vuelve difícil de leer y más propenso a errores.
+Without clear blocks, the program becomes hard to read and more prone to errors.
 
-## Instrucciones que alteran el flujo dentro de un bloque
+## Instructions that alter flow within a block
 
 ### `break`
 
-Ya viste que `break` sirve para salir de un `switch`.
+You already saw that `break` is used to exit a `switch`.
 
-También más adelante lo vas a ver dentro de ciclos, donde permite cortar una repetición antes de tiempo.
+Later you'll also see it inside loops, where it allows cutting off a repetition early.
 
 ### `continue`
 
-`continue` se usa en ciclos, no en `switch`, y sirve para saltar al siguiente paso de la repetición.
+`continue` is used in loops, not in `switch`, and serves to skip to the next step of the repetition.
 
-Por ahora te alcanza con reconocer que existen instrucciones que pueden alterar el recorrido normal del bloque.
+For now, it's enough to recognize that there are instructions that can alter the normal course of a block.
 
 ### `return`
 
-`return` finaliza la función actual.
+`return` ends the current function.
 
-En `main`, por ejemplo:
+In `main`, for example:
 
 ```c
 return 0;
 ```
 
-indica que la ejecución principal terminó.
+indicates that the main execution finished.
 
-## Relación entre `switch` y bloques
+## Relationship between `switch` and blocks
 
-Aunque visualmente `switch` parece una estructura distinta, sigue organizando el flujo en bloques y casos delimitados.
+Although visually `switch` seems like a different structure, it still organizes the flow into delimited blocks and cases.
 
-Aprender a leer bien esa estructura es clave para no perderte dentro del código.
+Learning to read that structure well is key to not getting lost inside the code.
 
-## Errores comunes al empezar
+## Common mistakes when starting
 
-### 1. Olvidar `break`
+### 1. Forgetting `break`
 
-Es el error clásico en `switch`.
+It's the classic `switch` error.
 
-### 2. Usar `switch` para cualquier cosa
+### 2. Using `switch` for everything
 
-`switch` no reemplaza mágicamente a toda decisión. Conviene cuando comparás una misma variable con varios valores concretos.
+`switch` doesn't magically replace every decision. It's useful when you're comparing the same variable against several concrete values.
 
-### 3. Desordenar los bloques
+### 3. Disorganizing blocks
 
-Si no indentás bien o no usás llaves con claridad, el código se vuelve un desastre de leer.
+If you don't indent well or don't use braces clearly, the code becomes a mess to read.
 
-## Resumen
+## Summary
 
-- `switch` permite elegir entre varias opciones según el valor de una variable
-- `case` representa cada alternativa posible
-- `break` corta la ejecución del `switch`
-- `default` cubre el caso en que no hubo coincidencias
-- los bloques de código agrupan instrucciones relacionadas
-- algunas sentencias, como `break`, alteran el flujo del bloque
+- `switch` allows choosing between several options based on a variable's value
+- `case` represents each possible alternative
+- `break` cuts off the execution of the `switch`
+- `default` covers the case where there were no matches
+- code blocks group related instructions
+- some statements, like `break`, alter the block's flow
 
-## Idea final
+## Final thought
 
-Aprender `switch` no es solo aprender otra sintaxis.
+Learning `switch` isn't just learning another syntax.
 
-Es aprender a organizar decisiones múltiples de manera clara y controlada.
+It's learning to organize multiple decisions in a clear and controlled way.
 
-Y entender los bloques de código es clave para no perder de vista qué instrucciones pertenecen a cada parte del programa.
+And understanding code blocks is key to not losing sight of which instructions belong to each part of the program.

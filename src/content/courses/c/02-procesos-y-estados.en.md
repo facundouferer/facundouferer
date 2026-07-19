@@ -7,73 +7,73 @@ lang: 'en'
 published: true
 ---
 
-Antes de que un programa tome decisiones o repita acciones, hay una idea todavía más básica que tenés que dominar: **la composición secuencial de acciones**.
+Before a program makes decisions or repeats actions, there's an even more basic idea you need to master: **the sequential composition of actions**.
 
-Programar no empieza con `if` ni con `while`. Empieza entendiendo que un programa es un **proceso** que avanza paso a paso, y que cada paso puede cambiar el **estado** del sistema.
+Programming doesn't start with `if` or `while`. It starts by understanding that a program is a **process** that moves forward step by step, and each step can change the **state** of the system.
 
-En esta lección vas a aprender:
+In this lesson you'll learn:
 
-- qué es un proceso en programación
-- qué es una acción
-- qué es un estado
-- qué significa composición secuencial de acciones
-- qué son los estados iniciales, intermedios y finales
-- qué significa refinamiento sucesivo
+- what a process is in programming
+- what an action is
+- what a state is
+- what sequential composition of actions means
+- what initial, intermediate, and final states are
+- what successive refinement means
 
-> Idea clave: antes de controlar el flujo de un programa, primero tenés que entender cómo evoluciona su estado paso a paso.
+> Key idea: before controlling the flow of a program, you first need to understand how its state evolves step by step.
 
-## ¿Qué es un proceso?
+## What is a process?
 
-Un **proceso** es una secuencia ordenada de acciones orientadas a lograr un objetivo.
+A **process** is an ordered sequence of actions aimed at achieving a goal.
 
-En programación, un proceso describe qué le ocurre al programa desde que empieza hasta que termina.
+In programming, a process describes what happens to the program from start to finish.
 
-Todo proceso tiene, al menos:
+Every process has at least:
 
-- un **estado inicial**
-- una o más **acciones**
-- un **estado final**
+- an **initial state**
+- one or more **actions**
+- a **final state**
 
-## ¿Qué es una acción?
+## What is an action?
 
-Una **acción** es una operación concreta que realiza el programa.
+An **action** is a concrete operation that the program performs.
 
-Por ejemplo:
+For example:
 
-- leer un valor
-- mostrar un mensaje
-- calcular un resultado
-- asignar un valor a una variable
+- reading a value
+- displaying a message
+- calculating a result
+- assigning a value to a variable
 
-Cada acción puede modificar la situación del programa.
+Each action can modify the program's situation.
 
-## ¿Qué es un estado?
+## What is a state?
 
-Un **estado** es la situación del programa en un momento determinado.
+A **state** is the situation of the program at a given moment.
 
-En una primera aproximación, el estado está dado principalmente por los valores que tienen las variables en ese instante.
+In a first approximation, the state is mainly given by the values that the variables have at that instant.
 
-Por ejemplo:
+For example:
 
 ```c
 int edad = 18;
 float altura = 1.72;
 ```
 
-En ese momento, el estado puede describirse así:
+At that moment, the state can be described like this:
 
 ```text
 edad = 18
 altura = 1.72
 ```
 
-## Composición secuencial de acciones
+## Sequential composition of actions
 
-La **composición secuencial de acciones** significa que las instrucciones se ejecutan una después de otra, en el orden en que aparecen.
+**Sequential composition of actions** means that instructions are executed one after another, in the order they appear.
 
-Eso es el flujo más básico de un programa.
+That's the most basic flow of a program.
 
-Por ejemplo:
+For example:
 
 ```c
 int numero;
@@ -83,73 +83,73 @@ numero = 4;
 cuadrado = numero * numero;
 ```
 
-¿Qué ocurre secuencialmente?
+What happens sequentially?
 
-1. se declara `numero`
-2. se declara `cuadrado`
-3. se asigna `4` a `numero`
-4. se calcula `numero * numero`
-5. se guarda el resultado en `cuadrado`
+1. `numero` is declared
+2. `cuadrado` is declared
+3. `4` is assigned to `numero`
+4. `numero * numero` is calculated
+5. the result is stored in `cuadrado`
 
-No hay decisiones, no hay repeticiones. Solo hay una secuencia ordenada.
+No decisions, no repetitions. Just an ordered sequence.
 
-## ¿Por qué esta idea es tan importante?
+## Why is this idea so important?
 
-Porque incluso cuando más adelante uses `if`, `switch`, `while` o `for`, dentro de cada bloque sigue habiendo secuencia.
+Because even when you later use `if`, `switch`, `while`, or `for`, inside each block there's still a sequence.
 
-O sea: el control del flujo se construye sobre una base secuencial.
+In other words: flow control is built on a sequential foundation.
 
-Primero entendés la secuencia.
-Después entendés cómo desviarla o repetirla.
+First you understand the sequence.
+Then you understand how to divert or repeat it.
 
-## Estados iniciales, intermedios y finales
+## Initial, intermediate, and final states
 
-### Estado inicial
+### Initial state
 
-Es la situación del programa antes de ejecutar las acciones principales.
+It's the situation of the program before executing the main actions.
 
-Por ejemplo:
+For example:
 
 ```c
 int numero;
 int doble;
 ```
 
-Todavía no hay un valor útil asignado por nuestra lógica. El programa recién empieza a prepararse.
+There's no useful value assigned by our logic yet. The program is just starting to prepare.
 
-### Estado intermedio
+### Intermediate state
 
-Es cualquier estado que aparece durante la ejecución, después de algunas acciones pero antes del resultado final.
+It's any state that appears during execution, after some actions but before the final result.
 
 ```c
 numero = 6;
 ```
 
-Ahora ya hay un estado intermedio:
+Now there's an intermediate state:
 
 ```text
 numero = 6
 doble = ?
 ```
 
-Todavía no llegamos al final del proceso, pero el estado ya cambió.
+We haven't reached the end of the process yet, but the state has already changed.
 
-### Estado final
+### Final state
 
-Es la situación del programa después de completar las acciones principales del proceso.
+It's the situation of the program after completing the main actions of the process.
 
 ```c
 doble = numero * 2;
 ```
 
-Ahora el estado final podría describirse así:
+Now the final state could be described like this:
 
 ```text
 numero = 6
 doble = 12
 ```
 
-## Ejemplo completo paso a paso
+## Complete step-by-step example
 
 ```c
 #include <stdio.h>
@@ -167,67 +167,67 @@ int main() {
 }
 ```
 
-### Estado inicial
+### Initial state
 
 ```text
-numero = sin valor asignado por nuestra lógica
-resultado = sin valor asignado por nuestra lógica
+numero = no value assigned by our logic
+resultado = no value assigned by our logic
 ```
 
-### Después de `numero = 5;`
+### After `numero = 5;`
 
 ```text
 numero = 5
-resultado = sin valor asignado por nuestra lógica
+resultado = no value assigned by our logic
 ```
 
-### Después de `resultado = numero + 3;`
+### After `resultado = numero + 3;`
 
 ```text
 numero = 5
 resultado = 8
 ```
 
-### Estado final observable
+### Observable final state
 
-El programa muestra:
+The program displays:
 
 ```text
 Resultado: 8
 ```
 
-## Refinamiento sucesivo
+## Successive refinement
 
-El **refinamiento sucesivo** es una técnica para pensar soluciones de manera gradual.
+**Successive refinement** is a technique for thinking through solutions gradually.
 
-En vez de intentar escribir todo el programa de una sola vez, vas descomponiendo el problema en pasos cada vez más precisos.
+Instead of trying to write the entire program at once, you break the problem down into increasingly precise steps.
 
-### Primer nivel de refinamiento
+### First level of refinement
 
-Supongamos que querés hacer un programa que calcule el promedio de dos números.
+Suppose you want to make a program that calculates the average of two numbers.
 
-Primero lo pensás así:
+You first think of it like this:
 
-1. leer dos números
-2. calcular el promedio
-3. mostrar el resultado
+1. read two numbers
+2. calculate the average
+3. display the result
 
-Eso todavía es muy general, pero ya organiza la solución.
+That's still very general, but it already organizes the solution.
 
-### Segundo nivel de refinamiento
+### Second level of refinement
 
-Ahora detallás mejor:
+Now you detail it better:
 
-1. declarar variables
-2. leer el primer número
-3. leer el segundo número
-4. sumarlos
-5. dividir el resultado por 2
-6. mostrar el promedio
+1. declare variables
+2. read the first number
+3. read the second number
+4. add them
+5. divide the result by 2
+6. display the average
 
-### Tercer nivel de refinamiento
+### Third level of refinement
 
-Recién ahí lo llevás a código.
+Only then do you turn it into code.
 
 ```c
 #include <stdio.h>
@@ -237,45 +237,45 @@ int main() {
     float numero2;
     float promedio;
 
-    printf("Ingrese el primer número: ");
+    printf("Enter the first number: ");
     scanf("%f", &numero1);
 
-    printf("Ingrese el segundo número: ");
+    printf("Enter the second number: ");
     scanf("%f", &numero2);
 
     promedio = (numero1 + numero2) / 2;
 
-    printf("El promedio es %f\n", promedio);
+    printf("The average is %f\n", promedio);
 
     return 0;
 }
 ```
 
-## ¿Por qué conviene refinar sucesivamente?
+## Why refine successively?
 
-Porque te obliga a pensar antes de escribir código.
+Because it forces you to think before writing code.
 
-Y eso te ahorra errores.
+And that saves you from errors.
 
-Un principiante apurado suele hacer esto:
+A rushed beginner often does this:
 
-- abre el editor
-- empieza a tipear cosas al azar
-- se pierde
-- no entiende por qué el programa falla
+- opens the editor
+- starts typing random things
+- gets lost
+- doesn't understand why the program fails
 
-La forma correcta es:
+The correct way is:
 
-- entender el problema
-- descomponerlo
-- refinar la solución
-- recién después codificar
+- understand the problem
+- break it down
+- refine the solution
+- only then codify
 
-## Secuencia y cambio de estado
+## Sequence and state change
 
-Cada vez que ejecutás una acción, el estado puede cambiar.
+Every time you execute an action, the state can change.
 
-Mirá este ejemplo:
+Look at this example:
 
 ```c
 int x;
@@ -285,59 +285,59 @@ x = x + 5;
 x = x * 3;
 ```
 
-### Evolución del estado
+### State evolution
 
-Después de `x = 2;`
+After `x = 2;`
 
 ```text
 x = 2
 ```
 
-Después de `x = x + 5;`
+After `x = x + 5;`
 
 ```text
 x = 7
 ```
 
-Después de `x = x * 3;`
+After `x = x * 3;`
 
 ```text
 x = 21
 ```
 
-Esto es programación secuencial pura: una acción lleva a otra, y cada una transforma el estado.
+This is pure sequential programming: one action leads to another, and each transforms the state.
 
-## Errores comunes al empezar
+## Common mistakes when starting
 
-### 1. Querer saltar directamente a estructuras más complejas
+### 1. Wanting to jump directly to more complex structures
 
-Si no entendés secuencia y estado, después `if` y `while` se vuelven magia negra.
+If you don't understand sequence and state, `if` and `while` become black magic.
 
-### 2. Pensar el programa como texto en vez de pensarlo como proceso
+### 2. Thinking of the program as text instead of as a process
 
-El programa no es solo “código escrito”. Es una secuencia de acciones que cambia estados.
+The program isn't just "written code." It's a sequence of actions that changes states.
 
-### 3. No distinguir entre estado inicial, intermedio y final
+### 3. Not distinguishing between initial, intermediate, and final state
 
-Si no sabés en qué estado está tu programa, no sabés realmente qué está pasando.
+If you don't know what state your program is in, you don't really know what's happening.
 
-### 4. Escribir código sin refinar la solución
+### 4. Writing code without refining the solution
 
-Primero se piensa el problema. Después se escribe la implementación.
+First you think through the problem. Then you write the implementation.
 
-## Resumen
+## Summary
 
-- un programa puede entenderse como un **proceso**
-- un proceso está formado por **acciones**
-- las acciones modifican el **estado** del programa
-- la forma más básica de organizar un programa es la **composición secuencial de acciones**
-- un proceso puede analizarse en **estado inicial**, **estados intermedios** y **estado final**
-- el **refinamiento sucesivo** ayuda a pasar de una idea general a una solución concreta
+- a program can be understood as a **process**
+- a process is made up of **actions**
+- actions modify the **state** of the program
+- the most basic way to organize a program is **sequential composition of actions**
+- a process can be analyzed in **initial state**, **intermediate states**, and **final state**
+- **successive refinement** helps go from a general idea to a concrete solution
 
-## Idea final
+## Final thought
 
-Controlar el flujo de un programa no significa empezar por `if` o `for`.
+Controlling the flow of a program doesn't mean starting with `if` or `for`.
 
-Significa entender primero cómo una secuencia de acciones transforma un estado inicial en un estado final.
+It means first understanding how a sequence of actions transforms an initial state into a final state.
 
-Ese es el cimiento. Si esto está firme, después las estructuras de control empiezan a tener sentido de verdad.
+That's the foundation. If this is solid, then control structures will start making real sense.

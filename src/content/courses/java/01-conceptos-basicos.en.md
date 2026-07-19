@@ -7,15 +7,15 @@ lang: 'en'
 published: true
 ---
 
-# Conceptos Básicos de Programación
+# Basic Programming Concepts
 
-## El Algoritmo
+## The Algorithm
 
-Un algoritmo es un conjunto de pasos que nos ayudan a resolver un problema. Es como una receta de cocina, donde cada paso tiene que ser seguido en orden para obtener el resultado deseado.
+An algorithm is a set of steps that help us solve a problem. It's like a cooking recipe, where each step must be followed in order to get the desired result.
 
-Por ejemplo, si queremos hacer una torta, tenemos que seguir un algoritmo que nos indica los pasos a seguir: mezclar los ingredientes, poner la mezcla en un molde, hornear la torta, y luego decorarla. Si seguimos los pasos correctamente, tendremos una deliciosa torta para disfrutar.
+For example, if we want to bake a cake, we have to follow an algorithm that tells us the steps: mix the ingredients, put the mixture in a mold, bake the cake, and then decorate it. If we follow the steps correctly, we'll have a delicious cake to enjoy.
 
-En Java, podemos escribir algoritmos en forma de código:
+In Java, we can write algorithms as code:
 
 ```java
 int numero1 = 5;
@@ -24,32 +24,32 @@ int resultado = numero1 + numero2;
 System.out.println("El resultado es: " + resultado);
 ```
 
-Aquí, estamos declarando dos variables, `numero1` y `numero2`, sumándolas y almacenando el resultado en una tercera variable, `resultado`.
+Here, we're declaring two variables, `numero1` and `numero2`, adding them and storing the result in a third variable, `resultado`.
 
-## Las Instrucciones
+## Instructions
 
-Las instrucciones son el conjunto de órdenes que le damos a un programa de computadora para que realice una tarea específica. Cada instrucción representa una acción que el programa debe llevar a cabo.
+Instructions are the set of commands we give a computer program to perform a specific task. Each instruction represents an action the program must carry out.
 
-### Algunos ejemplos:
+### Some examples:
 
-- **Asignación de valores:** `int numero = 5;`
-- **Operaciones matemáticas:** `int resultado = 5 + 3;`
-- **Condiciones:**
+- **Value assignment:** `int numero = 5;`
+- **Math operations:** `int resultado = 5 + 3;`
+- **Conditionals:**
 ```java
 if (numero1 > numero2) {
     System.out.println("El número 1 es mayor que el número 2");
 }
 ```
 
-## Buenas Prácticas de Programación
+## Good Programming Practices
 
-1. **Nombres descriptivos:** Utiliza nombres que reflejen el propósito de la variable o función.
-2. **Comentarios claros:** Explica el "por qué" y no solo el "qué".
-3. **Divide y vencerás:** Divide tu código en funciones pequeñas y cohesivas.
-4. **Evita la duplicación:** Si ves código repetido, encapsúlalo.
-5. **Mantén la simplicidad:** Evita soluciones excesivamente complicadas.
-6. **Gestión de errores:** Usa mecanismos como `try-catch`.
-7. **Formato y estilo:** Mantén una indentación y estilo consistentes.
-8. **Prueba tu código:** Realiza pruebas exhaustivas.
-9. **Aprende de los demás:** Lee código de otros desarrolladores.
-10. **Practica regularmente:** La clave para mejorar es la constancia.
+1. **Descriptive names:** Use names that reflect the purpose of the variable or function.
+2. **Clear comments:** Explain the "why" and not just the "what".
+3. **Divide and conquer:** Break your code into small, cohesive functions.
+4. **Avoid duplication:** If you see repeated code, encapsulate it.
+5. **Keep it simple:** Avoid overly complicated solutions.
+6. **Error handling:** Use mechanisms like `try-catch`.
+7. **Format and style:** Keep consistent indentation and style.
+8. **Test your code:** Run thorough tests.
+9. **Learn from others:** Read code from other developers.
+10. **Practice regularly:** Consistency is the key to improvement.

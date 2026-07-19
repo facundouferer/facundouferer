@@ -7,39 +7,39 @@ lang: 'en'
 published: true
 ---
 
-# Funciones Avanzadas
+# Advanced Functions
 
-## Declaración vs. Expresión (Arrow)
+## Declaration vs. Expression (Arrow)
 
-Existen dos formas principales de escribir funciones:
+There are two main ways to write functions:
 
 ```javascript
-// Función tradicional (Sintaxis antigua)
+// Traditional function (Old syntax)
 function sumar(a, b) {
     return a + b;
 }
 
-// Arrow Function (Sintaxis moderna - ES6)
+// Arrow Function (Modern syntax - ES6)
 const sumar = (a, b) => a + b;
 ```
 
-**Ventajas de las Arrow Functions:**
-- Sintaxis más corta y limpia.
-- El retorno es implícito si es una sola línea.
-- No crean su propio contexto de `this` (lo heredan del padre).
+**Advantages of Arrow Functions:**
+- Shorter and cleaner syntax.
+- Implicit return if it's a single line.
+- They don't create their own `this` context (they inherit it from the parent).
 
-## Funciones de Orden Superior
+## Higher-Order Functions
 
-Son funciones que pueden recibir otras funciones como argumentos o devolverlas. Esto permite un código mucho más modular.
+These are functions that can receive other functions as arguments or return them. This enables much more modular code.
 
 ### `setTimeout()`
-Ejecuta una función después de un tiempo determinado (en milisegundos).
+Executes a function after a specified time (in milliseconds).
 
 ```javascript
 setTimeout(() => {
-    console.log("Pasó 1 segundo");
+    console.log("1 second passed");
 }, 1000);
 ```
 
-### Map, Filter y Reduce
-Como vimos en la sección de Arrays, estos métodos son el corazón de la programación funcional en JavaScript ya que operan usando otras funciones (callbacks).
+### Map, Filter and Reduce
+As we saw in the Arrays section, these methods are the heart of functional programming in JavaScript because they operate using other functions (callbacks).
