@@ -27,7 +27,7 @@ export async function GET({ params }: APIContext) {
 		return new Response('Not found', { status: 404 });
 	}
 
-	const title = escapeXml(article.data.title_en);
+	const title = escapeXml(article.data.title);
 	const category = escapeXml(article.data.category);
 
 	const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">

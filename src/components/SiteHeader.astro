@@ -2,6 +2,7 @@
 import LanguageSwitch from "./LanguageSwitch.astro";
 import { NAVIGATION } from "../config/site";
 import { withBase } from "../utils/withBase";
+import { useTranslations } from "../i18n/utils";
 
 type Props = {
 	locale: "es" | "en";
@@ -10,9 +11,10 @@ type Props = {
 };
 
 const { locale, esPath, enPath } = Astro.props;
+const t = useTranslations(locale);
 const navItems = NAVIGATION[locale];
 const hireHref = locale === "es" ? "/#contact" : "/en/#contact";
-const hireLabel = locale === "es" ? "Contratame" : "Hire Me";
+const hireLabel = t("nav.contact");
 const homeHref = locale === "es" ? "/" : "/en/";
 ---
 

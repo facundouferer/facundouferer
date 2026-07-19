@@ -1,15 +1,14 @@
 ---
+import { useTranslations } from '../i18n/utils';
 import { withBase } from '../utils/withBase';
 
 type Article = {
 	title: string;
-	title_en: string;
 	slug: string;
 	date: Date;
 	category: string;
 	tags: string[];
 	excerpt: string;
-	excerpt_en: string;
 	readingTime: number;
 	image?: string;
 	lang: 'es' | 'en' | 'both';
@@ -21,8 +20,9 @@ type Props = {
 };
 
 const { article, locale } = Astro.props;
-const title = locale === 'es' ? article.title : article.title_en;
-const excerpt = locale === 'es' ? article.excerpt : article.excerpt_en;
+const t = useTranslations(locale);
+const title = article.title;
+const excerpt = article.excerpt;
 const href = locale === 'es' ? `/articulos/${article.slug}` : `/en/articles/${article.slug}`;
 const dateLabel = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'en-US');
 ---
@@ -48,7 +48,7 @@ const dateLabel = article.date.toLocaleDateString(locale === 'es' ? 'es-AR' : 'e
 			{article.tags.slice(0, 3).map((tag) => <li class="tag tag-neutral">{tag}</li>)}
 		</ul>
 	</div>
-	{article.lang !== 'both' && <p class="lang-tag">{locale === 'es' ? `Idioma: ${article.lang}` : `Language: ${article.lang}`}</p>}
+	{article.lang !== 'both' && <p class="lang-tag">{`${t('articleCard.languageLabel')} ${article.lang}`}</p>}
 </article>
 
 <style>

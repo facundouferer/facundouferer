@@ -1,18 +1,17 @@
 ---
 import { getCollection } from 'astro:content';
+import { useTranslations } from '../i18n/utils';
 import ProjectCard from './ProjectCard.astro';
 
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
+const t = useTranslations(locale);
 
 const projects = (await getCollection('projects')).filter((item) => item.data.published);
 const filters = ['All', 'Civic Tech', 'EdTech', 'Government', 'Tourism', 'Portfolio & Art'];
 
-const title = locale === 'es' ? 'Todos los Proyectos' : 'All Projects';
-const subtitle =
-	locale === 'es'
-		? 'Cada proyecto es construido con asistencia de IA en cada capa.'
-		: 'Every project is built with AI assistance at every layer.';
+const title = t('catalog.projects.title');
+const subtitle = t('catalog.projects.subtitle');
 ---
 
 <section class="section">

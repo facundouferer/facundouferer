@@ -1,0 +1,95 @@
+---
+import { withBase } from '../utils/withBase';
+
+type Lesson = {
+	slug: string;
+	title: string;
+	description?: string;
+	order: number;
+};
+
+type Props = {
+	lessons: Lesson[];
+	courseSlug: string;
+	locale: 'es' | 'en';
+};
+
+const { lessons, courseSlug, locale } = Astro.props;
+---
+
+<ol class="lessons-list">
+	{lessons.map((lesson) => {
+		const href = locale === 'es'
+			? `/cursos/${courseSlug}/${lesson.slug}`
+			: `/en/courses/${courseSlug}/${lesson.slug}`;
+		return (
+			<li class="lesson-item">
+				<a href={withBase(href)} class="lesson-link">
+					<span class="lesson-order">{lesson.order}</span>
+					<span class="lesson-info">
+						<span class="lesson-title">{lesson.title}</span>
+						{lesson.description && <span class="lesson-desc">{lesson.description}</span>}
+					</span>
+				</a>
+			</li>
+		);
+	})}
+</ol>
+
+<style>
+	.lessons-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: var(--space-2);
+	}
+
+	.lesson-item {
+		margin: 0;
+	}
+
+	.lesson-link {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--space-3);
+		padding: var(--space-3);
+		border-radius: 8px;
+		text-decoration: none;
+		color: var(--color-text);
+		transition: background 200ms ease;
+	}
+
+	.lesson-link:hover {
+		background: color-mix(in srgb, var(--color-accent-700) 8%, transparent);
+	}
+
+	.lesson-order {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 50%;
+		background: var(--color-accent-700);
+		color: #fff;
+		font-size: 0.8rem;
+		font-weight: 600;
+		flex-shrink: 0;
+	}
+
+	.lesson-info {
+		display: grid;
+		gap: 0.2rem;
+	}
+
+	.lesson-title {
+		font-weight: 600;
+		font-size: 0.95rem;
+	}
+
+	.lesson-desc {
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+</style>

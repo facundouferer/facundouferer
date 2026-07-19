@@ -1,27 +1,26 @@
 ---
 import { getCollection } from 'astro:content';
+import { useTranslations } from '../i18n/utils';
 import ProjectCard from './ProjectCard.astro';
 import { withBase } from '../utils/withBase';
 
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
+const t = useTranslations(locale);
 
 const projects = (await getCollection('projects'))
 	.filter((item) => item.data.published && item.data.featured)
 	.slice(0, 2);
 
-const title = locale === 'es' ? 'Proyectos Destacados' : 'Selected Case Studies';
-const subtitle =
-	locale === 'es'
-		? 'Soluciones reales para desafios de infraestructura y estrategia digital.'
-		: 'Real solutions for complex infrastructure and digital strategy challenges.';
+const title = t('featured.projects.title');
+const subtitle = t('featured.projects.subtitle');
 const ctaHref = locale === 'es' ? '/proyectos' : '/en/projects';
-const ctaLabel = locale === 'es' ? 'Ver todos los proyectos' : 'View all projects';
+const ctaLabel = t('featured.projects.cta');
 ---
 
 <section class="section">
 	<div class="container">
-		<p class="kicker">{locale === 'es' ? 'PORTAFOLIO' : 'PORTFOLIO'}</p>
+		<p class="kicker">{t('featured.projects.kicker')}</p>
 		<h2 class="section-title">
 			{title.split(' ').slice(0, -1).join(' ')}{' '}
 			<span class="accent-word">{title.split(' ').at(-1)}</span>

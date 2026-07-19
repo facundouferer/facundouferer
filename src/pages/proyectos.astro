@@ -2,15 +2,17 @@
 import { getCollection } from 'astro:content';
 import ProjectsCatalog from '../components/ProjectsCatalog.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SEO } from '../seo/meta';
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
 import { buildCollectionPageSchemas } from '../seo/schema';
 
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 const projects = (await getCollection('projects')).filter((item) => item.data.published);
 const schema = buildCollectionPageSchemas({
 	locale: 'es',
 	path: '/proyectos',
-	name: SEO.es.projects.title,
-	description: SEO.es.projects.description,
+	name: t('seo.projects.title'),
+	description: t('seo.projects.description'),
 	items: projects.map((project) => ({
 		name: project.data.title,
 		url: project.data.liveUrl,
@@ -24,9 +26,9 @@ const schema = buildCollectionPageSchemas({
 ---
 
 <BaseLayout
-	title={SEO.es.projects.title}
-	description={SEO.es.projects.description}
-	locale="es"
+	title={t('seo.projects.title')}
+	description={t('seo.projects.description')}
+	locale={lang}
 	esPath="/proyectos"
 	enPath="/en/projects"
 	canonicalPath="/proyectos"

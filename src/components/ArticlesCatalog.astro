@@ -1,10 +1,12 @@
 ---
 import { getCollection } from 'astro:content';
+import { useTranslations } from '../i18n/utils';
 import ArticleCard from './ArticleCard.astro';
 import { getArticlePreviewImage, getArticlesForLocale } from '../utils/articles';
 
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
+const t = useTranslations(locale);
 
 const articles = getArticlesForLocale(await getCollection('articles'), locale, locale === 'es' ? 'en' : 'es');
 const articleCards = articles.map((item) => ({
@@ -15,11 +17,8 @@ const articleCards = articles.map((item) => ({
 const categories = ['All', ...new Set(articleCards.map((item) => item.category))];
 const tags = ['All', ...new Set(articleCards.flatMap((item) => item.tags))];
 
-const title = locale === 'es' ? 'Articulos Tecnicos' : 'Technical Articles';
-const subtitle =
-	locale === 'es'
-		? 'Publicacion tecnica y cientifica sobre software, IA y sistemas.'
-		: 'Technical-scientific publication about software, AI, and systems.';
+const title = t('catalog.articles.title');
+const subtitle = t('catalog.articles.subtitle');
 ---
 
 <section class="section">

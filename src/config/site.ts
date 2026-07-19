@@ -48,13 +48,13 @@ export const NAVIGATION = {
 	es: [
 		{ href: '/proyectos', label: 'Proyectos' },
 		{ href: '/articulos', label: 'Articulos' },
+		{ href: '/cursos', label: 'Cursos' },
 		{ href: '/#about', label: 'Sobre mi' },
-		{ href: '/#contact', label: 'Contacto' },
 	],
 	en: [
 		{ href: '/en/projects', label: 'Projects' },
 		{ href: '/en/articles', label: 'Articles' },
+		{ href: '/en/courses', label: 'Courses' },
 		{ href: '/en/#about', label: 'About' },
-		{ href: '/en/#contact', label: 'Contact' },
 	],
 } as const;

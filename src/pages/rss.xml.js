@@ -10,9 +10,9 @@ export async function GET(context) {
 		description: 'Research and applied thinking on software engineering and AI.',
 		site: context.site ?? 'https://facundouferer.ar',
 		items: articles.map((article) => ({
-			title: article.data.title_en,
+			title: article.data.title,
 			pubDate: article.data.date,
-			description: article.data.excerpt_en,
+			description: article.data.excerpt,
 			link: `/en/articles/${article.data.slug}`,
 		})),
 		customData: '<language>en-us</language>',

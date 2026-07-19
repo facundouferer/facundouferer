@@ -25,9 +25,10 @@ test('all bilingual routes exist', async () => {
 });
 
 test('translations include es and en home metadata', async () => {
-	const content = await readFile('src/i18n/translations.ts', 'utf8');
-	assert.match(content, /export const translations/);
-	assert.match(content, /es:/);
-	assert.match(content, /en:/);
-	assert.match(content, /home:/);
+	const es = JSON.parse(await readFile('src/i18n/es.json', 'utf8'));
+	const en = JSON.parse(await readFile('src/i18n/en.json', 'utf8'));
+	assert.ok(es.home, 'home metadata present in es.json');
+	assert.ok(en.home, 'home metadata present in en.json');
+	assert.ok(es.nav, 'nav translations present in es.json');
+	assert.ok(en.nav, 'nav translations present in en.json');
 });

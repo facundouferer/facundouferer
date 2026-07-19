@@ -38,14 +38,12 @@ const articles = defineCollection({
 	}),
 	schema: z.object({
 		title: z.string(),
-		title_en: z.string(),
 		slug: z.string(),
 		date: z.coerce.date(),
 		author: z.string().default('Facundo Uferer'),
 		category: z.string(),
 		tags: z.array(z.string()).min(1),
 		excerpt: z.string(),
-		excerpt_en: z.string(),
 		readingTime: z.number().int().positive(),
 		image: z.string().optional(),
 		lang: z.enum(['es', 'en', 'both']).default('es'),
@@ -55,4 +53,33 @@ const articles = defineCollection({
 	}),
 });
 
-export const collections = { projects, articles };
+const courses = defineCollection({
+	loader: glob({ pattern: '**/index.md', base: './src/content/courses' }),
+	schema: z.object({
+		slug: z.string(),
+		title: z.string(),
+		title_en: z.string(),
+		description: z.string(),
+		description_en: z.string(),
+		technology: z.string(),
+		difficulty: z.string(),
+		image: z.string().optional(),
+		published: z.boolean().default(true),
+		featured: z.boolean().default(false),
+	}),
+});
+
+const lessons = defineCollection({
+	loader: glob({ pattern: '**/*.+(es|en).md', base: './src/content/courses' }),
+	schema: z.object({
+		course: z.string(),
+		slug: z.string(),
+		title: z.string(),
+		description: z.string().optional(),
+		order: z.number().int().nonnegative(),
+		lang: z.enum(['es', 'en']),
+		published: z.boolean().default(true),
+	}),
+});
+
+export const collections = { projects, articles, courses, lessons };

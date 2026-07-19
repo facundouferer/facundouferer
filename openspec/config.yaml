@@ -1,0 +1,32 @@
+schema: spec-driven
+
+context: |
+  Stack: Astro 6 + TypeScript (strict), ESM, Node >=22.12, npm
+  Architecture: Astro content collections (articles, projects), i18n es default + en
+  Testing: node --test tests/**/*.test.mjs (built-in runner, strict TDD mandated)
+  Style: no linter; astro check for types; semicolons, single quotes, tabs in .astro
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Identify affected content collections / pages
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document i18n / locale-split decisions with rationale
+  tasks:
+    - Group tasks by phase (content, components, tests)
+    - Use hierarchical numbering (1.1, 1.2, etc.)
+    - Keep tasks small enough to complete in one session
+  apply:
+    - Follow AGENTS.md article/project authoring conventions exactly
+    - Maintain bilingual content (es + en) for articles and projects
+    - Update affected tests (article/project counts, asset lists) when adding content
+    - Verify with: npm test + npm run astro -- check
+  verify:
+    - Run node --test tests/**/*.test.mjs
+    - Compare implementation against every spec scenario
+  archive:
+    - Warn before merging destructive deltas (large content removals)

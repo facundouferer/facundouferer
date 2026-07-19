@@ -2,20 +2,22 @@
 import { getCollection } from 'astro:content';
 import ArticlesCatalog from '../../../components/ArticlesCatalog.astro';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import { SEO } from '../../../seo/meta';
+import { getLangFromUrl, useTranslations } from '../../../i18n/utils';
 import { buildCollectionPageSchemas } from '../../../seo/schema';
 import { getArticlesForLocale } from '../../../utils/articles';
 
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 const articles = getArticlesForLocale(await getCollection('articles'), 'en', 'es');
 const schema = buildCollectionPageSchemas({
 	locale: 'en',
 	path: '/en/articles',
-	name: SEO.en.articles.title,
-	description: SEO.en.articles.description,
+	name: t('seo.articles.title'),
+	description: t('seo.articles.description'),
 	items: articles.map((article) => ({
-		name: article.data.title_en,
+		name: article.data.title,
 		url: `/en/articles/${article.data.slug}`,
-		description: article.data.excerpt_en,
+		description: article.data.excerpt,
 	})),
 	breadcrumbs: [
 		{ name: 'Home', path: '/en/' },
@@ -25,9 +27,9 @@ const schema = buildCollectionPageSchemas({
 ---
 
 <BaseLayout
-	title={SEO.en.articles.title}
-	description={SEO.en.articles.description}
-	locale="en"
+	title={t('seo.articles.title')}
+	description={t('seo.articles.description')}
+	locale={lang}
 	esPath="/articulos"
 	enPath="/en/articles"
 	canonicalPath="/en/articles"

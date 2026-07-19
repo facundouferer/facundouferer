@@ -1,0 +1,99 @@
+---
+import { getCollection, render } from 'astro:content';
+import { getLangFromUrl, useTranslations } from '../../../i18n/utils';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import CourseBreadcrumb from '../../../components/CourseBreadcrumb.astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+export async function getStaticPaths() {
+	const lessons = await getCollection('lessons');
+	const paths = [];
+
+	for (const lesson of lessons) {
+		if (lesson.data.published && lesson.data.lang === 'es') {
+			paths.push({
+				params: { course: lesson.data.course, lesson: lesson.data.slug },
+			});
+		}
+	}
+
+	return paths;
+}
+
+const { course: courseSlug, lesson: lessonSlug } = Astro.params;
+if (!courseSlug || !lessonSlug) {
+	throw new Error('Missing course or lesson slug');
+}
+
+const allCourses = await getCollection('courses');
+const allLessons = await getCollection('lessons');
+const course = allCourses.find((c) => c.data.slug === courseSlug && c.data.published);
+
+// Get the lesson: must match course AND slug AND locale
+const entry = allLessons.find(
+	(l) =>
+		l.data.course === courseSlug &&
+		l.data.slug === lessonSlug &&
+		l.data.lang === 'es' &&
+		l.data.published,
+);
+
+if (!course || !entry) {
+	return Astro.redirect('/cursos');
+}
+
+const { Content } = await render(entry);
+---
+
+<BaseLayout
+	title={`${entry.data.title} — ${course.data.title}`}
+	description={entry.data.description ?? course.data.description}
+	locale={lang}
+	esPath={`/cursos/${courseSlug}/${lessonSlug}`}
+	enPath={`/en/courses/${courseSlug}/${lessonSlug}`}
+	canonicalPath={`/cursos/${courseSlug}/${lessonSlug}`}
+>
+	<div class="container">
+		<CourseBreadcrumb
+			courseSlug={courseSlug}
+			courseTitle={course.data.title}
+			lessonTitle={entry.data.title}
+			locale="es"
+		/>
+
+		<article class="lesson-content">
+			<h1>{entry.data.title}</h1>
+			<Content />
+		</article>
+
+		<a href={`/cursos/${courseSlug}`} class="back-link">
+			← {t('courses.backToCourse')}
+		</a>
+	</div>
+</BaseLayout>
+
+<style>
+	.lesson-content {
+		max-width: 720px;
+		margin-block: var(--space-4);
+	}
+
+	.lesson-content h1 {
+		font-size: 1.8rem;
+		margin-block: 0 var(--space-4);
+	}
+
+	.back-link {
+		display: inline-block;
+		margin-block: var(--space-6);
+		color: var(--color-accent-700);
+		text-decoration: none;
+		font-size: 0.9rem;
+	}
+
+	.back-link:hover {
+		text-decoration: underline;
+	}
+</style>

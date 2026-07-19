@@ -1,0 +1,57 @@
+---
+import { getCollection } from 'astro:content';
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+import { buildCollectionPageSchemas } from '../../seo/schema';
+import { getCoursesForLocale } from '../../utils/courses';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CourseCard from '../../components/CourseCard.astro';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const courses = getCoursesForLocale(await getCollection('courses'), 'es');
+const schema = buildCollectionPageSchemas({
+	locale: lang,
+	path: '/cursos',
+	name: t('seo.courses.title'),
+	description: t('seo.courses.description'),
+	items: courses.map((course) => ({
+		name: course.data.title,
+		url: `/cursos/${course.data.slug}`,
+		description: course.data.description,
+	})),
+	breadcrumbs: [
+		{ name: 'Inicio', path: '/' },
+		{ name: 'Cursos', path: '/cursos' },
+	],
+});
+---
+
+<BaseLayout
+	title={t('seo.courses.title')}
+	description={t('seo.courses.description')}
+	locale={lang}
+	esPath="/cursos"
+	enPath="/en/courses"
+	canonicalPath="/cursos"
+	schema={schema}
+>
+	<section class="section">
+		<div class="container">
+			<h1 class="section-title">{t('courses.catalogTitle')}</h1>
+			<p class="section-subtitle">{t('courses.catalogSubtitle')}</p>
+			<div class="courses-grid">
+				{courses.map((course) => (
+					<CourseCard course={course.data} locale="es" />
+				))}
+			</div>
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.courses-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: var(--space-4);
+	}
+</style>

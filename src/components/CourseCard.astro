@@ -1,0 +1,112 @@
+---
+import { withBase } from '../utils/withBase';
+
+type Course = {
+	slug: string;
+	title: string;
+	title_en: string;
+	description: string;
+	description_en: string;
+	technology: string;
+	difficulty: string;
+	image?: string;
+};
+
+type Props = {
+	course: Course;
+	locale: 'es' | 'en';
+};
+
+const { course, locale } = Astro.props;
+const title = locale === 'es' ? course.title : course.title_en;
+const description = locale === 'es' ? course.description : course.description_en;
+const href = locale === 'es' ? `/cursos/${course.slug}` : `/en/courses/${course.slug}`;
+const logo = course.image ? withBase(course.image) : undefined;
+---
+
+<article class="course-card card card-hover">
+	<a href={withBase(href)} class="course-card-image">
+		{logo
+			? <img src={logo} alt={title} loading="lazy" />
+			: <div class="course-card-placeholder" aria-hidden="true" />
+		}
+	</a>
+	<div class="card-body">
+		<h3 class="card-title"><a href={withBase(href)}>{title}</a></h3>
+		<p class="card-description">{description}</p>
+		<div class="course-meta">
+			<span class="tag tag-accent">{course.technology}</span>
+			<span class="tag tag-neutral">{course.difficulty}</span>
+		</div>
+	</div>
+</article>
+
+<style>
+	.course-card {
+		overflow: hidden;
+		padding: 0;
+		display: grid;
+		gap: var(--space-2);
+	}
+
+	.course-card-image {
+		display: block;
+		aspect-ratio: 16 / 9;
+		overflow: hidden;
+		background: var(--color-surface, #f5f5f5);
+	}
+
+	.course-card-image img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		padding: var(--space-4);
+		transition: transform 300ms ease;
+	}
+
+	.course-card:hover .course-card-image img {
+		transform: scale(1.03);
+	}
+
+	.course-card-placeholder {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.card-body {
+		padding: var(--space-4);
+		display: grid;
+		gap: var(--space-2);
+	}
+
+	.card-title {
+		margin: 0;
+		font-size: 1.1rem;
+	}
+
+	.card-title a {
+		text-decoration: none;
+		color: var(--color-text);
+	}
+
+	.card-title a:hover {
+		color: var(--color-accent-700);
+	}
+
+	.card-description {
+		font-size: 0.9rem;
+		margin: 0;
+		color: color-mix(in srgb, var(--color-text) 75%, transparent);
+	}
+
+	.course-meta {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+		margin-top: var(--space-1);
+	}
+</style>
