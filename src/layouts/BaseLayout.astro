@@ -12,6 +12,7 @@ import {
 } from '../config/site';
 import type { SchemaNode } from '../seo/schema';
 import { withBase } from '../utils/withBase';
+import { getLangFromUrl } from '../i18n/utils';
 
 type Props = {
 	title: string;
@@ -32,7 +33,7 @@ type Props = {
 const {
 	title,
 	description,
-	locale,
+	locale: localeProp,
 	esPath = '/',
 	enPath = '/en/',
 	ocImage = SITE_DEFAULT_OG_IMAGE,
@@ -45,6 +46,7 @@ const {
 	section,
 } = Astro.props;
 
+const locale = localeProp ?? getLangFromUrl(Astro.url);
 const localeMeta = SITE_LANGUAGES[locale];
 const alternateLocale = SITE_LANGUAGES[locale === 'es' ? 'en' : 'es'];
 const canonicalUrl = new URL(withBase(canonicalPath ?? (locale === 'es' ? esPath : enPath)), SITE_URL).toString();

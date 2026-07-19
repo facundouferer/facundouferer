@@ -9,16 +9,18 @@ import Process from '../components/Process.astro';
 import About from '../components/About.astro';
 import Certifications from '../components/Certifications.astro';
 import Contact from '../components/Contact.astro';
-import { SEO } from '../seo/meta';
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
 import { buildHomeSchemas } from '../seo/schema';
 
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 const schema = buildHomeSchemas('es');
 ---
 
 <BaseLayout
-	title={SEO.es.home.title}
-	description={SEO.es.home.description}
-	locale="es"
+	title={t('seo.home.title')}
+	description={t('seo.home.description')}
+	locale={lang}
 	esPath="/"
 	enPath="/en/"
 	canonicalPath="/"

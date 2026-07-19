@@ -33,7 +33,7 @@ export async function GET() {
 		'## Articles',
 		...articles.map(
 			(article) =>
-				`- ${article.data.title_en} — ${article.data.excerpt_en} (${SITE_URL}/en/articles/${article.data.slug})`,
+				`- ${article.data.title} — ${article.data.excerpt} (${SITE_URL}/en/articles/${article.data.slug})`,
 		),
 	].join('\n');
 

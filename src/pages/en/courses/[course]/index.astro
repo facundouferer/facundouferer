@@ -1,0 +1,128 @@
+---
+import { getCollection } from 'astro:content';
+import { getLangFromUrl, useTranslations } from '../../../../i18n/utils';
+import { getCourseSlugsForLocale, getCoursesForLocale, getLessonsForCourse } from '../../../../utils/courses';
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import CourseBreadcrumb from '../../../../components/CourseBreadcrumb.astro';
+import LessonsList from '../../../../components/LessonsList.astro';
+import { withBase } from '../../../../utils/withBase';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+export async function getStaticPaths() {
+	const entries = await getCollection('courses');
+	return getCourseSlugsForLocale(entries, 'en').map((slug) => ({ params: { course: slug } }));
+}
+
+const courseSlug = Astro.params.course;
+if (!courseSlug) {
+	throw new Error('Missing course slug');
+}
+
+const allCourses = await getCollection('courses');
+const allLessons = await getCollection('lessons');
+const course = getCoursesForLocale(allCourses, 'en').find((c) => c.data.slug === courseSlug);
+if (!course) {
+	return Astro.redirect('/en/courses');
+}
+
+const lessons = getLessonsForCourse(allLessons, courseSlug, 'en');
+---
+
+<BaseLayout
+	title={course.data.title_en}
+	description={course.data.description_en}
+	locale={lang}
+	esPath={`/cursos/${courseSlug}`}
+	enPath={`/en/courses/${courseSlug}`}
+	canonicalPath={`/en/courses/${courseSlug}`}
+>
+	<div class="container">
+		<CourseBreadcrumb
+			courseSlug={courseSlug}
+			courseTitle={course.data.title_en}
+			locale="en"
+		/>
+
+		<div class="course-header">
+			{course.data.image && (
+				<div class="course-logo">
+					<img src={withBase(course.data.image)} alt={course.data.title_en} />
+				</div>
+			)}
+			<div class="course-info">
+				<h1 class="course-title">{course.data.title_en}</h1>
+				<p class="course-description">{course.data.description_en}</p>
+				<div class="course-meta">
+					<span class="tag tag-accent">{course.data.technology}</span>
+					<span class="tag tag-neutral">{course.data.difficulty}</span>
+				</div>
+			</div>
+		</div>
+
+		<section class="lessons-section">
+			<h2 class="lessons-heading">{t('courses.lessonsLabel')} ({lessons.length})</h2>
+			<LessonsList lessons={lessons.map((l) => l.data)} courseSlug={courseSlug} locale="en" />
+		</section>
+	</div>
+</BaseLayout>
+
+<style>
+	.course-header {
+		display: flex;
+		gap: var(--space-4);
+		align-items: flex-start;
+		margin-block: var(--space-4);
+	}
+
+	.course-logo {
+		width: 120px;
+		flex-shrink: 0;
+	}
+
+	.course-logo img {
+		width: 100%;
+		height: auto;
+	}
+
+	.course-info {
+		flex: 1;
+	}
+
+	.course-title {
+		margin: 0 0 var(--space-2);
+		font-size: 1.8rem;
+	}
+
+	.course-description {
+		font-size: 1rem;
+		margin: 0 0 var(--space-3);
+		color: color-mix(in srgb, var(--color-text) 75%, transparent);
+	}
+
+	.course-meta {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.lessons-section {
+		margin-block: var(--space-6);
+	}
+
+	.lessons-heading {
+		font-size: 1.2rem;
+		margin: 0 0 var(--space-3);
+	}
+
+	@media (width <= 640px) {
+		.course-header {
+			flex-direction: column;
+		}
+
+		.course-logo {
+			width: 80px;
+		}
+	}
+</style>

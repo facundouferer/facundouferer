@@ -2,16 +2,18 @@
 import { getCollection } from 'astro:content';
 import ArticlesCatalog from '../../components/ArticlesCatalog.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { SEO } from '../../seo/meta';
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
 import { buildCollectionPageSchemas } from '../../seo/schema';
 import { getArticlesForLocale } from '../../utils/articles';
 
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 const articles = getArticlesForLocale(await getCollection('articles'), 'es', 'en');
 const schema = buildCollectionPageSchemas({
 	locale: 'es',
 	path: '/articulos',
-	name: SEO.es.articles.title,
-	description: SEO.es.articles.description,
+	name: t('seo.articles.title'),
+	description: t('seo.articles.description'),
 	items: articles.map((article) => ({
 		name: article.data.title,
 		url: `/articulos/${article.data.slug}`,
@@ -25,9 +27,9 @@ const schema = buildCollectionPageSchemas({
 ---
 
 <BaseLayout
-	title={SEO.es.articles.title}
-	description={SEO.es.articles.description}
-	locale="es"
+	title={t('seo.articles.title')}
+	description={t('seo.articles.description')}
+	locale={lang}
 	esPath="/articulos"
 	enPath="/en/articles"
 	canonicalPath="/articulos"

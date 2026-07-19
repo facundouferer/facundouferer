@@ -1,11 +1,13 @@
 ---
 import { getCollection } from 'astro:content';
+import { useTranslations } from '../i18n/utils';
 import ArticleCard from './ArticleCard.astro';
 import { withBase } from '../utils/withBase';
 import { getArticlePreviewImage, getArticlesForLocale } from '../utils/articles';
 
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
+const t = useTranslations(locale);
 
 const articles = getArticlesForLocale(await getCollection('articles'), locale, locale === 'es' ? 'en' : 'es').slice(0, 3);
 const articleCards = articles.map((item) => ({
@@ -13,18 +15,15 @@ const articleCards = articles.map((item) => ({
 	image: getArticlePreviewImage(item),
 }));
 
-const title = locale === 'es' ? 'Articulos Tecnicos' : 'Technical Articles';
-const subtitle =
-	locale === 'es'
-		? 'Investigacion, analisis y pensamiento aplicado en ingenieria de software e IA.'
-		: 'Research, analysis, and applied thinking on software engineering and AI.';
+const title = t('featured.articles.title');
+const subtitle = t('featured.articles.subtitle');
 const href = locale === 'es' ? '/articulos' : '/en/articles';
-const cta = locale === 'es' ? 'Ver todos los articulos' : 'Read all articles';
+const cta = t('featured.articles.cta');
 ---
 
 <section class="section">
 	<div class="container">
-		<p class="kicker">{locale === 'es' ? 'ESCRITURA' : 'WRITING'}</p>
+		<p class="kicker">{t('featured.articles.kicker')}</p>
 		<h2 class="section-title">
 			{title.split(' ').slice(0, -1).join(' ')}{' '}
 			<span class="accent-word">{title.split(' ').at(-1)}</span>

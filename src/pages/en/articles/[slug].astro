@@ -36,12 +36,12 @@ const { Content } = await render(entry);
 	locale="en"
 	article={entry.data}
 	href={`/en/articles/${entry.data.slug}`}
-	contentDescription={entry.data.excerpt_en}
+	contentDescription={entry.data.excerpt}
 	ocImage={`/og/${entry.data.slug}.svg`}
 	prev={previous
-		? { title: previous.data.title_en, href: `/en/articles/${previous.data.slug}` }
+		? { title: previous.data.title, href: `/en/articles/${previous.data.slug}` }
 		: null}
-	next={next ? { title: next.data.title_en, href: `/en/articles/${next.data.slug}` } : null}
+	next={next ? { title: next.data.title, href: `/en/articles/${next.data.slug}` } : null}
 >
 	<Content />
 </ArticleLayout>

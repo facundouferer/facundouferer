@@ -6,7 +6,12 @@ test('article layout includes metadata, pager, and contact CTA', async () => {
 	const content = await readFile('src/layouts/ArticleLayout.astro', 'utf8');
 	assert.match(content, /Tags:/);
 	assert.match(content, /aria-label="Article navigation"/);
-	assert.match(content, /work together/);
+	assert.match(content, /t\('article\.ctaWorkTogether'\)/);
+
+	const es = JSON.parse(await readFile('src/i18n/es.json', 'utf8'));
+	const en = JSON.parse(await readFile('src/i18n/en.json', 'utf8'));
+	assert.equal(es.article.ctaWorkTogether, 'Queres trabajar juntos?');
+	assert.equal(en.article.ctaWorkTogether, 'Want to work together?');
 });
 
 test('article routes render markdown content through content render helper', async () => {

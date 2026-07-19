@@ -1,0 +1,66 @@
+---
+import { withBase } from '../utils/withBase';
+
+type Props = {
+	courseSlug: string;
+	courseTitle: string;
+	lessonTitle?: string;
+	locale: 'es' | 'en';
+};
+
+const { courseSlug, courseTitle, lessonTitle, locale } = Astro.props;
+const homeHref = locale === 'es' ? '/' : '/en/';
+const catalogHref = locale === 'es' ? '/cursos' : '/en/courses';
+const homeLabel = locale === 'es' ? 'Inicio' : 'Home';
+const catalogLabel = locale === 'es' ? 'Cursos' : 'Courses';
+const courseHref = locale === 'es' ? `/cursos/${courseSlug}` : `/en/courses/${courseSlug}`;
+---
+
+<nav aria-label="Breadcrumb" class="breadcrumb">
+	<ol>
+		<li><a href={withBase(homeHref)}>{homeLabel}</a></li>
+		<li><a href={withBase(catalogHref)}>{catalogLabel}</a></li>
+		<li><a href={withBase(courseHref)}>{courseTitle}</a></li>
+		{lessonTitle && <li aria-current="page">{lessonTitle}</li>}
+	</ol>
+</nav>
+
+<style>
+	.breadcrumb {
+		font-size: 0.85rem;
+		margin-block: var(--space-3);
+	}
+
+	.breadcrumb ol {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.breadcrumb li {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.breadcrumb li + li::before {
+		content: '/';
+		color: color-mix(in srgb, var(--color-text) 40%, transparent);
+	}
+
+	.breadcrumb a {
+		color: var(--color-accent-700);
+		text-decoration: none;
+	}
+
+	.breadcrumb a:hover {
+		text-decoration: underline;
+	}
+
+	.breadcrumb [aria-current="page"] {
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+</style>

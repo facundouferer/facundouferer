@@ -156,7 +156,6 @@ Required article frontmatter fields:
 ```md
 ---
 title: 'Spanish title'
-title_en: 'English title'
 slug: 'article-slug'
 date: 2026-04-21
 author: 'Facundo Uferer'
@@ -165,7 +164,6 @@ tags:
   - AI
   - Strategy
 excerpt: 'Spanish excerpt'
-excerpt_en: 'English excerpt'
 readingTime: 6
 lang: 'es' # or 'en'
 published: true
@@ -177,7 +175,7 @@ Article authoring rules:
 
 - Keep `slug` identical in both locale files.
 - Keep `date`, `category`, `tags`, `readingTime`, `published`, and `featured` aligned across both locales unless the user explicitly requests otherwise.
-- `title` and `excerpt` are Spanish fields; `title_en` and `excerpt_en` are English fields. Both must exist in both files.
+- `title` and `excerpt` are locale-own fields — each file contains the value in its own language. The `.es.md` file has `title`/`excerpt` in Spanish; the `.en.md` file has them in English. Do NOT use bilingual fields (no `title_en`/`excerpt_en`).
 - Start the article body with a Markdown image right after frontmatter.
 - Use an article image under `/img/articles/*.png`.
 - If there is no specific image, use the default placeholder:
@@ -273,6 +271,103 @@ Useful project verification commands:
 - `npm test -- tests/issue-13-projects-catalog.test.mjs`
 - `npm test -- tests/issue-19-project-assets.test.mjs`
 - `npm test -- tests/issue-21-go-to-brazil-link.test.mjs`
+- `npm run astro -- check`
+
+#### Courses and Lessons (`src/content/courses/`)
+
+- Course index files are **single files with bilingual frontmatter** (same pattern as projects):
+  - `src/content/courses/<slug>/index.md`
+- Lesson files are **locale-split** (same pattern as articles):
+  - `src/content/courses/<slug>/<kebab-slug>.es.md`
+  - `src/content/courses/<slug>/<kebab-slug>.en.md`
+- The filename must include the locale suffix (`es` or `en`); the loader glob is `**/*.+(es|en).md`.
+- Lessons use kebab-case filenames. Spaces in filenames are not allowed.
+- Both locale files must share the same `slug` and `course` fields in frontmatter.
+- `title` and `description` are locale-own fields — each file contains the value in its own language.
+- `order` controls lesson sequencing within a course.
+- The `lang` field must match the file suffix: `lang: es` for `.es.md`, `lang: en` for `.en.md`.
+
+Required lesson frontmatter fields:
+
+```md
+---
+course: 'git'
+slug: '01-el-principio-con-git'
+title: 'El principio con Git'
+description: 'Primeros pasos con Git'
+order: 1
+lang: 'es'
+published: true
+---
+```
+
+Required course index frontmatter fields:
+
+```md
+---
+slug: 'javascript'
+title: 'JavaScript desde Cero'
+title_en: 'JavaScript from Zero'
+description: 'Aprendé JavaScript desde los fundamentos'
+description_en: 'Learn JavaScript from the fundamentals'
+technology: 'JavaScript'
+difficulty: 'Principiante'
+image: '/img/courses/javascript/logo.svg'
+published: true
+featured: true
+---
+```
+
+- `title` / `description` are Spanish fields; `title_en` / `description_en` are English fields.
+- Course images live under `public/img/courses/<slug>/logo.svg`.
+- Keep lesson body copy factual and concise; prefer examples over theory.
+- When adding a course, create the directory, `index.md`, and at minimum the `.es.md` lessons. English lessons may follow later.
+- Update tests that hardcode course/lesson counts when adding or removing courses.
+
+Courses pages are at `src/pages/cursos/` (Spanish) and `src/pages/en/courses/` (English) mirroring the articles catalog pattern: catalog at `index.astro`, course detail at `[course]/index.astro`, lesson page at `[course]/[lesson].astro`. Components: `CourseCard.astro`, `CourseBreadcrumb.astro`, `LessonsList.astro` in `src/components/`. Navigation entries live in `src/config/site.ts` `NAVIGATION` (between Articles and About). All UI strings use `t('courses.*')` keys from `es.json`/`en.json`.
+
+Useful courses/lessons verification commands:
+
+- `npm test -- tests/courses-schema.test.mjs`
+- `npm test -- tests/courses-helpers.test.mjs`
+- `npm test -- tests/courses-filename-normalization.test.mjs`
+- `npm test -- tests/courses-catalog.test.mjs`
+- `npm test -- tests/courses-detail-routing.test.mjs`
+- `npm test -- tests/site-nav-courses.test.mjs`
+- `npm run astro -- check`
+
+### 6.10 i18n Runtime (`src/i18n/`)
+
+UI strings are centralized in `src/i18n/es.json` + `src/i18n/en.json` (Astro 6 native i18n config — `defaultLocale: 'es'`, `prefixDefaultLocale: false`). The deprecated `src/i18n/translations.ts`, `src/i18n/paths.ts`, and `src/seo/meta.ts` modules have been removed; do not reintroduce them.
+
+Canonical runtime API:
+
+```astro
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<p>{t('nav.projects')}</p>
+```
+
+`getLangFromUrl(url: URL): 'es' | 'en'` derives the locale from the URL pathname (`/en/...` → `'en'`; everything else → `'es'`). `useTranslations(locale)(key: string): string` resolves a hierarchical dot-path key (`'nav.courses'`, `'seo.articles.title'`) against the matching JSON dictionary; missing keys throw with the locale + path context (fail loudly during build rather than render `undefined`).
+
+i18n conventions:
+
+- Every UI string MUST live in `src/i18n/es.json` + `src/i18n/en.json` as a hierarchical dot-path key. Do NOT inline `locale === 'es' ? '...' : '...'` ternaries in component templates for labels.
+- URL/href conditionals (`locale === 'es' ? '/proyectos' : '/en/projects'`) are permitted: they are decoration paths, not labels.
+- Data-field conditionals on collection entries are permitted for **bilingual single-file collections** (e.g. projects: `locale === 'es' ? project.title : project.title_en`). For **locale-split collections** (articles, lessons), the `title`/`excerpt` fields are already in the correct language — no conditional needed.
+- Add a new UI string by adding the same key to both `es.json` and `en.json`; `t()` will throw at build time if either is missing.
+- `BaseLayout.astro` derives `locale = Astro.props.locale ?? getLangFromUrl(Astro.url)` so pages may pass `locale` explicitly for edge cases but children/components rely on URL-derived locale.
+- Pages call `useTranslations(getLangFromUrl(Astro.url))` to read SEO strings: `t('seo.home.title')`, `t('seo.articles.description')`, etc.
+- `nav.courses` (`Cursos` / `Courses`) and `seo.courses.*` keys are seeded for upcoming slice work; do not remove them.
+
+i18n verification commands:
+
+- `npm test -- tests/i18n-runtime.test.mjs`
 - `npm run astro -- check`
 
 ## 7) Editing Guardrails for Agents

@@ -1,4 +1,5 @@
 ---
+import { useTranslations } from '../i18n/utils';
 import { withBase } from '../utils/withBase';
 
 type Project = {
@@ -22,6 +23,7 @@ type Props = {
 };
 
 const { project, locale } = Astro.props;
+const t = useTranslations(locale);
 const title = locale === 'es' ? project.title : project.title_en;
 const description = locale === 'es' ? project.description : project.description_en;
 const challenge = locale === 'es' ? project.challenge : project.challenge_en;
@@ -40,7 +42,7 @@ const imageSrc = project.image.startsWith('/') ? withBase(project.image) : proje
 			<h3 class="card-title">{title}</h3>
 			{project.archived && <p class="archive-tag">[archived]</p>}
 			<p class="card-body">{description}</p>
-			<p class="challenge"><strong>{locale === 'es' ? 'Desafio:' : 'Challenge:'}</strong> {challenge}</p>
+			<p class="challenge"><strong>{t('projectCard.challengeLabel')}</strong> {challenge}</p>
 		</div>
 	</a>
 </article>

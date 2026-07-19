@@ -1,8 +1,10 @@
 ---
 import { withBase } from '../utils/withBase';
+import { useTranslations } from '../i18n/utils';
 
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
+const t = useTranslations(locale);
 
 type Cert = {
 	name: string;
@@ -90,18 +92,12 @@ const shieldPath =
 
 <section class="section" id="certifications">
 	<div class="container">
-		<p class="kicker">{locale === 'es' ? 'CREDENCIALES' : 'CREDENTIALS'}</p>
+		<p class="kicker">{t('certifications.kicker')}</p>
 		<h2 class="section-title">
-			{locale === 'es' ? 'Mis ' : 'My '}
-			<span class="accent-word">{locale === 'es' ? 'Certificaciones' : 'Certifications'}</span>
+			{t('certifications.titleStart')}{' '}
+			<span class="accent-word">{t('certifications.titleAccent')}</span>
 		</h2>
-		<p class="section-subtitle">
-			{
-				locale === 'es'
-					? 'Formacion continua y validada en IA, desarrollo web y herramientas modernas.'
-					: 'Continuous, verified learning across AI, web development and modern tooling.'
-			}
-		</p>
+		<p class="section-subtitle">{t('certifications.subtitle')}</p>
 		<div class="cert-grid">
 			{
 				certifications.map((cert) => (
@@ -110,7 +106,7 @@ const shieldPath =
 						href={cert.url}
 						target="_blank"
 						rel="noreferrer"
-						aria-label={`${locale === 'es' ? 'Ver credencial de' : 'View credential for'} ${cert.name}`}
+						aria-label={`${t('certifications.viewCredential')} ${cert.name}`}
 					>
 						<span class:list={['cert-badge', { 'accent-2': cert.accent2 }]}>
 							<svg class="cert-badge-shield" viewBox="0 0 24 24" aria-hidden="true">

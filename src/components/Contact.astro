@@ -1,9 +1,11 @@
 ---
 import { SOCIAL_LINKS } from '../config/site';
 import { withBase } from '../utils/withBase';
+import { useTranslations } from '../i18n/utils';
 
 type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
+const t = useTranslations(locale);
 const copy = {
 	es: {
 		tag: 'CONTACTO',
@@ -58,7 +60,7 @@ const copy = {
 <footer class="site-footer">
 	<div class="container footer-inner">
 		<a href={withBase(locale === 'es' ? '/' : '/en/')} class="footer-brand">Facundo Uferer</a>
-		<p class="footer-copy">© {new Date().getFullYear()} Facundo Uferer. {locale === 'es' ? 'Hecho con precision.' : 'Built with precision.'}</p>
+		<p class="footer-copy">© {new Date().getFullYear()} Facundo Uferer. {t('contact.footerCopy')}</p>
 	</div>
 </footer>
 
