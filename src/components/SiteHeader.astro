@@ -63,11 +63,25 @@ const homeHref = locale === "es" ? "/" : "/en/";
 	}
 
 	.nav-links ul {
-		display: none;
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
 		list-style: none;
 		padding: 0;
 		margin: 0;
-		gap: var(--space-4);
+		gap: var(--space-3);
+	}
+
+	.nav-links a {
+		font-size: 0.92rem;
+		font-weight: 600;
+		color: var(--color-text);
+		text-decoration: none;
+		transition: color 0.2s ease;
+	}
+
+	.nav-links a:hover {
+		color: var(--color-accent-700);
 	}
 
 	.header-actions {
@@ -78,7 +92,10 @@ const homeHref = locale === "es" ? "/" : "/en/";
 
 	@media (width >= 960px) {
 		.nav-links ul {
-			display: inline-flex;
+			gap: var(--space-4);
+		}
+		.nav-links a {
+			font-size: 1rem;
 		}
 	}
 </style>

@@ -1,0 +1,542 @@
+---
+import Icon from '../Icon.astro';
+import { withBase } from '../../utils/withBase';
+
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+---
+
+
+	<style is:global>
+		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
+
+		.insertion-screen {
+			--ins-bg: #061016;
+			--ins-surface: #0c1c24;
+			--ins-panel: #102833;
+			--ins-primary: #0df259;
+			--ins-blue: #3b82f6;
+			--ins-amber: #f59e0b;
+			--ins-danger: #ef4444;
+			--ins-sorted: #a855f7;
+			--ins-key: #ec4899;
+			min-height: 100vh;
+			font-family: 'Chakra Petch', sans-serif;
+			background:
+				radial-gradient(circle at 10% 10%, rgba(13, 242, 89, 0.12), transparent 45%),
+				radial-gradient(circle at 85% 20%, rgba(59, 130, 246, 0.14), transparent 40%),
+				linear-gradient(135deg, #050b11 0%, var(--ins-bg) 100%);
+			color: #e7fbe7;
+		}
+
+		.ins-shell {
+			max-width: 1200px;
+			margin: 0 auto;
+			padding: 2.5rem 1rem 3rem;
+		}
+
+		.ins-title {
+			font-size: clamp(1.5rem, 3vw, 2.2rem);
+			line-height: 1.05;
+			font-weight: 700;
+			letter-spacing: 0.02em;
+			text-shadow: 0 0 30px rgba(13, 242, 89, 0.28);
+		}
+
+		.ins-subtitle {
+			max-width: 64ch;
+			font-size: 1rem;
+			color: rgba(231, 251, 231, 0.82);
+		}
+
+		.ins-grid {
+			display: grid;
+			gap: 1rem;
+			grid-template-columns: repeat(12, minmax(0, 1fr));
+		}
+
+		.card {
+			background: linear-gradient(160deg, rgba(16, 40, 51, 0.9), rgba(8, 20, 26, 0.86));
+			border: 1px solid rgba(13, 242, 89, 0.18);
+			border-radius: 1rem;
+			box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28);
+			padding: 1.25rem;
+		}
+
+		.code-card { grid-column: span 12; }
+		.visual-card { grid-column: span 12; }
+		
+		@media (min-width: 1024px) {
+			.code-card { grid-column: span 6; }
+			.visual-card { grid-column: span 6; }
+		}
+
+		.panel-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 1rem;
+		}
+
+		.badge {
+			display: inline-flex;
+			align-items: center;
+			border: 1px solid rgba(13, 242, 89, 0.25);
+			background: rgba(13, 242, 89, 0.1);
+			border-radius: 999px;
+			padding: 0.2rem 0.6rem;
+			font-size: 0.72rem;
+			font-family: 'Fira Code', monospace;
+			letter-spacing: 0.04em;
+		}
+
+		.code-panel {
+			background: rgba(4, 10, 14, 0.85);
+			border: 1px solid rgba(13, 242, 89, 0.14);
+			border-radius: 0.8rem;
+			padding: 0.75rem;
+			font-family: 'Fira Code', monospace;
+			font-size: 0.85rem;
+			overflow-x: auto;
+		}
+
+		.code-row {
+			display: grid;
+			grid-template-columns: 2rem 1fr;
+			gap: 0.8rem;
+			padding: 0.25rem 0.5rem;
+			border-radius: 0.4rem;
+			color: rgba(231, 251, 231, 0.8);
+			transition: all 0.2s ease;
+		}
+
+		.code-row.active {
+			background: linear-gradient(90deg, rgba(13, 242, 89, 0.2), rgba(13, 242, 89, 0.05));
+			outline: 1px solid rgba(13, 242, 89, 0.3);
+			transform: translateX(4px);
+			color: #fff;
+		}
+
+		.line-num { color: rgba(231, 251, 231, 0.35); text-align: right; user-select: none; }
+
+		.array-container {
+			display: flex;
+			align-items: flex-end;
+			justify-content: center;
+			gap: 0.75rem;
+			height: 180px;
+			margin: 2rem 0;
+			padding-bottom: 1.5rem;
+			border-bottom: 1px solid rgba(13, 242, 89, 0.1);
+		}
+
+		.bar-wrapper {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.5rem;
+			width: 45px;
+			transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		.bar {
+			width: 100%;
+			background: rgba(59, 130, 246, 0.3);
+			border: 1px solid rgba(59, 130, 246, 0.5);
+			border-radius: 0.4rem 0.4rem 0 0;
+			transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+			position: relative;
+			display: flex;
+			align-items: flex-end;
+			justify-content: center;
+			padding-bottom: 0.5rem;
+			font-family: 'Fira Code', monospace;
+			font-weight: 700;
+			color: #fff;
+		}
+
+		.bar.is-key {
+			background: rgba(236, 72, 153, 0.4);
+			border-color: var(--ins-key);
+			box-shadow: 0 0 15px rgba(236, 72, 153, 0.3);
+			transform: translateY(-20px);
+		}
+
+		.bar.comparing {
+			background: rgba(245, 158, 11, 0.4);
+			border-color: var(--ins-amber);
+		}
+
+		.bar.shifting {
+			background: rgba(239, 68, 68, 0.4);
+			border-color: var(--ins-danger);
+		}
+
+		.bar.sorted {
+			background: rgba(168, 85, 247, 0.3);
+			border-color: var(--ins-sorted);
+		}
+
+		.bar-index {
+			font-size: 0.75rem;
+			color: rgba(231, 251, 231, 0.5);
+			font-family: 'Fira Code', monospace;
+		}
+
+		.state-grid {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 0.75rem;
+			margin-top: 1rem;
+		}
+
+		.state-item {
+			padding: 0.75rem;
+			border-radius: 0.8rem;
+			background: rgba(13, 242, 89, 0.05);
+			border: 1px solid rgba(13, 242, 89, 0.1);
+			text-align: center;
+		}
+
+		.state-label {
+			display: block;
+			font-size: 0.7rem;
+			text-transform: uppercase;
+			letter-spacing: 0.1em;
+			color: rgba(231, 251, 231, 0.6);
+			margin-bottom: 0.25rem;
+		}
+
+		.state-value {
+			font-family: 'Fira Code', monospace;
+			font-size: 1.25rem;
+			font-weight: 700;
+			color: var(--ins-primary);
+		}
+
+		.controls {
+			margin-top: 2rem;
+			display: flex;
+			gap: 0.75rem;
+			align-items: center;
+			flex-wrap: wrap;
+		}
+
+		.btn {
+			border: 1px solid rgba(13, 242, 89, 0.3);
+			background: rgba(13, 242, 89, 0.1);
+			color: #e7fbe7;
+			padding: 0.6rem 1.2rem;
+			border-radius: 0.75rem;
+			font-weight: 600;
+			transition: all 0.2s ease;
+			cursor: pointer;
+		}
+
+		.btn:hover:not(:disabled) {
+			background: rgba(13, 242, 89, 0.2);
+			transform: translateY(-1px);
+			box-shadow: 0 4px 12px rgba(13, 242, 89, 0.2);
+		}
+
+		.btn:disabled {
+			opacity: 0.3;
+			cursor: not-allowed;
+		}
+
+		.step-msg {
+			margin-top: 1.5rem;
+			padding: 1rem;
+			border-radius: 0.8rem;
+			background: rgba(59, 130, 246, 0.1);
+			border: 1px solid rgba(59, 130, 246, 0.25);
+			min-height: 80px;
+			display: flex;
+			align-items: center;
+		}
+
+		.progress-container {
+			margin-top: 1rem;
+			height: 6px;
+			background: rgba(255, 255, 255, 0.1);
+			border-radius: 3px;
+			overflow: hidden;
+		}
+
+		.progress-bar {
+			height: 100%;
+			background: linear-gradient(90deg, var(--ins-primary), var(--ins-blue));
+			width: 0%;
+			transition: width 0.3s ease;
+		}
+
+		.footer-link {
+			display: inline-block;
+			margin-top: 2rem;
+			color: var(--ins-primary);
+			text-decoration: none;
+			border-bottom: 1px dashed rgba(13, 242, 89, 0.4);
+		}
+	</style>
+
+	<div class="insertion-screen">
+		<main class="ins-shell">
+			<header class="mb-8">
+				<p class="badge">{lang === 'en' ? 'algorithms / sorting' : 'algoritmos / ordenamiento'}</p>
+				<h1 class="ins-title mt-3">
+					{lang === 'en' ? <>Insertion Sort<br/>Step by Step</> : <>Ordenamiento por Inserción<br/>Paso a Paso</>}
+				</h1>
+				<p class="ins-subtitle mt-4">
+					{lang === 'en' 
+						? "Build the sorted array one item at a time by inserting each element into its correct position."
+						: "Construí el arreglo ordenado de a un elemento por vez, insertando cada valor en su posición correcta."}
+				</p>
+			</header>
+
+			<div class="ins-grid">
+				<!-- Código -->
+				<article class="card code-card">
+					<div class="panel-header">
+						<strong>{lang === 'en' ? 'C Implementation' : 'Implementación en C'}</strong>
+						<span class="badge" id="line-info">Line: -</span>
+					</div>
+					<div class="code-panel">
+						<div class="code-row" data-line="1"><span class="line-num">1</span><span>int arr[] = &#123;12, 11, 13, 5, 6&#125;;</span></div>
+						<div class="code-row" data-line="2"><span class="line-num">2</span><span>int n = 5;</span></div>
+						<div class="code-row" data-line="3"><span class="line-num">3</span><span>for (int i = 1; i &lt; n; i++) &#123;</span></div>
+						<div class="code-row" data-line="4"><span class="line-num">4</span><span>&nbsp;&nbsp;int key = arr[i];</span></div>
+						<div class="code-row" data-line="5"><span class="line-num">5</span><span>&nbsp;&nbsp;int j = i - 1;</span></div>
+						<div class="code-row" data-line="6"><span class="line-num">6</span><span>&nbsp;&nbsp;while (j >= 0 && arr[j] > key) &#123;</span></div>
+						<div class="code-row" data-line="7"><span class="line-num">7</span><span>&nbsp;&nbsp;&nbsp;&nbsp;arr[j + 1] = arr[j];</span></div>
+						<div class="code-row" data-line="8"><span class="line-num">8</span><span>&nbsp;&nbsp;&nbsp;&nbsp;j = j - 1;</span></div>
+						<div class="code-row" data-line="9"><span class="line-num">9</span><span>&nbsp;&nbsp;&#125;</span></div>
+						<div class="code-row" data-line="10"><span class="line-num">10</span><span>&nbsp;&nbsp;arr[j + 1] = key;</span></div>
+						<div class="code-row" data-line="11"><span class="line-num">11</span><span>&#125;</span></div>
+					</div>
+
+					<div class="state-grid">
+						<div class="state-item">
+							<span class="state-label">i</span>
+							<span class="state-value" id="val-i">-</span>
+						</div>
+						<div class="state-item">
+							<span class="state-label">key</span>
+							<span class="state-value" id="val-key">-</span>
+						</div>
+						<div class="state-item">
+							<span class="state-label">j</span>
+							<span class="state-value" id="val-j">-</span>
+						</div>
+					</div>
+				</article>
+
+				<!-- Visualización -->
+				<article class="card visual-card">
+					<div class="panel-header">
+						<strong>{lang === 'en' ? 'Array Visualization' : 'Visualización del Arreglo'}</strong>
+					</div>
+					
+					<div class="array-container" id="array-viz">
+						<!-- Bars -->
+					</div>
+
+					<div class="step-msg" id="step-msg">
+						{lang === 'en' ? 'Click "Start" to begin.' : 'Hacé clic en "Comenzar" para iniciar.'}
+					</div>
+
+					<div class="progress-container">
+						<div class="progress-bar" id="progress-bar"></div>
+					</div>
+
+					<div class="controls">
+						<button class="btn" id="prev-btn" disabled>{lang === 'en' ? '⬅ Back' : '⬅ Retroceder'}</button>
+						<button class="btn" id="next-btn">{lang === 'en' ? 'Next ➡' : 'Avanzar ➡'}</button>
+						<button class="btn" id="reset-btn">{lang === 'en' ? 'Reset ↺' : 'Reiniciar ↺'}</button>
+						<span class="badge" id="step-counter">Paso 0 / 0</span>
+					</div>
+				</article>
+			</div>
+
+			<a class="footer-link" href={withBase(lang === 'en' ? '/en/presentaciones' : '/presentaciones')}>
+				{lang === 'en' ? '← Back to all presentations' : '← Volver a todas las presentaciones'}
+			</a>
+		</main>
+	</div>
+
+	<script>
+		interface Step {
+			line: number;
+			i: number | string;
+			key: number | string;
+			j: number | string;
+			array: (number | null)[];
+			keyIndex: number | null;
+			comparing: number[];
+			shifting: number[];
+			sortedUntil: number;
+			msg: { es: string; en: string };
+		}
+
+		const initialArray = [12, 11, 13, 5, 6];
+		const steps: Step[] = [];
+
+		function generateSteps() {
+			let arr = [...initialArray];
+			let n = arr.length;
+
+			steps.push({
+				line: 1, i: '-', key: '-', j: '-', array: [...arr],
+				keyIndex: null, comparing: [], shifting: [], sortedUntil: 0,
+				msg: { es: "Iniciamos con el arreglo desordenado.", en: "Starting with the unsorted array." }
+			});
+
+			for (let i = 1; i < n; i++) {
+				steps.push({
+					line: 3, i: i, key: '-', j: '-', array: [...arr],
+					keyIndex: null, comparing: [], shifting: [], sortedUntil: i - 1,
+					msg: { es: `Iteración i = ${i}. Tomaremos el elemento en esta posición como 'key'.`, en: `Iteration i = ${i}. We will take the element at this position as 'key'.` }
+				});
+
+				let key = arr[i];
+				steps.push({
+					line: 4, i: i, key: key, j: '-', array: [...arr],
+					keyIndex: i, comparing: [], shifting: [], sortedUntil: i - 1,
+					msg: { es: `La clave (key) es ${key}. La 'sacamos' del arreglo para buscarle su lugar.`, en: `The key is ${key}. We 'take it out' of the array to find its spot.` }
+				});
+
+				let j = i - 1;
+				steps.push({
+					line: 5, i: i, key: key, j: j, array: [...arr],
+					keyIndex: i, comparing: [], shifting: [], sortedUntil: i - 1,
+					msg: { es: `Empezamos a comparar hacia atrás, desde j = ${j}.`, en: `Starting to compare backwards, from j = ${j}.` }
+				});
+
+				while (j >= 0 && arr[j] > key) {
+					steps.push({
+						line: 6, i: i, key: key, j: j, array: [...arr],
+						keyIndex: null, comparing: [j], shifting: [], sortedUntil: i - 1,
+						msg: { es: `¿Es arr[j] (${arr[j]}) mayor que la clave (${key})? Sí.`, en: `Is arr[j] (${arr[j]}) greater than key (${key})? Yes.` }
+					});
+
+					arr[j + 1] = arr[j];
+					steps.push({
+						line: 7, i: i, key: key, j: j, array: [...arr],
+						keyIndex: null, comparing: [], shifting: [j + 1], sortedUntil: i - 1,
+						msg: { es: `Desplazamos ${arr[j]} una posición a la derecha.`, en: `Shifting ${arr[j]} one position to the right.` }
+					});
+
+					j = j - 1;
+					steps.push({
+						line: 8, i: i, key: key, j: j, array: [...arr],
+						keyIndex: null, comparing: [], shifting: [], sortedUntil: i - 1,
+						msg: { es: `Decrementamos j. Ahora j vale ${j}.`, en: `Decrementing j. Now j is ${j}.` }
+					});
+				}
+
+				if (j >= 0) {
+					steps.push({
+						line: 6, i: i, key: key, j: j, array: [...arr],
+						keyIndex: null, comparing: [j], shifting: [], sortedUntil: i - 1,
+						msg: { es: `¿Es arr[j] (${arr[j]}) mayor que key (${key})? No.`, en: `Is arr[j] (${arr[j]}) greater than key (${key})? No.` }
+					});
+				} else {
+					steps.push({
+						line: 6, i: i, key: key, j: j, array: [...arr],
+						keyIndex: null, comparing: [], shifting: [], sortedUntil: i - 1,
+						msg: { es: "j es menor que 0. Ya no hay más elementos para comparar.", en: "j is less than 0. No more elements to compare." }
+					});
+				}
+
+				arr[j + 1] = key;
+				steps.push({
+					line: 10, i: i, key: key, j: j, array: [...arr],
+					keyIndex: j + 1, comparing: [], shifting: [], sortedUntil: i,
+					msg: { es: `Insertamos la clave (${key}) en la posición j + 1 (${j + 1}).`, en: `Inserting the key (${key}) at position j + 1 (${j + 1}).` }
+				});
+			}
+
+			steps.push({
+				line: 11, i: 'end', key: 'end', j: 'end', array: [...arr],
+				keyIndex: null, comparing: [], shifting: [], sortedUntil: n,
+				msg: { es: "¡Arreglo ordenado correctamente!", en: "Array sorted successfully!" }
+			});
+		}
+
+		generateSteps();
+
+		let currentStep = 0;
+		const isEnglish = document.documentElement.lang === 'en';
+
+		const arrayViz = document.getElementById('array-viz')!;
+		const stepMsg = document.getElementById('step-msg')!;
+		const valI = document.getElementById('val-i')!;
+		const valKey = document.getElementById('val-key')!;
+		const valJ = document.getElementById('val-j')!;
+		const lineInfo = document.getElementById('line-info')!;
+		const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+		const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
+		const resetBtn = document.getElementById('reset-btn') as HTMLButtonElement;
+		const stepCounter = document.getElementById('step-counter')!;
+		const progressBar = document.getElementById('progress-bar')!;
+		const codeRows = document.querySelectorAll('.code-row');
+
+		function render() {
+			const step = steps[currentStep];
+
+			valI.textContent = String(step.i);
+			valKey.textContent = String(step.key);
+			valJ.textContent = String(step.j);
+			lineInfo.textContent = isEnglish ? `Line: ${step.line}` : `Línea: ${step.line}`;
+			stepMsg.textContent = isEnglish ? step.msg.en : step.msg.es;
+			stepCounter.textContent = isEnglish 
+				? `Step ${currentStep + 1} / ${steps.length}`
+				: `Paso ${currentStep + 1} / ${steps.length}`;
+			
+			progressBar.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
+
+			codeRows.forEach(row => {
+				row.classList.toggle('active', Number((row as HTMLElement).dataset.line) === step.line);
+			});
+
+			arrayViz.innerHTML = '';
+			step.array.forEach((val, idx) => {
+				const wrapper = document.createElement('div');
+				wrapper.className = 'bar-wrapper';
+
+				const bar = document.createElement('div');
+				bar.className = 'bar';
+				bar.style.height = `${(val || 0) * 10 + 20}px`;
+				bar.textContent = val !== null ? String(val) : '';
+
+				if (idx === step.keyIndex) bar.classList.add('is-key');
+				if (step.comparing.includes(idx)) bar.classList.add('comparing');
+				if (step.shifting.includes(idx)) bar.classList.add('shifting');
+				if (idx <= step.sortedUntil && step.sortedUntil !== -1) bar.classList.add('sorted');
+
+				const label = document.createElement('span');
+				label.className = 'bar-index';
+				label.textContent = `[${idx}]`;
+
+				wrapper.appendChild(bar);
+				wrapper.appendChild(label);
+				arrayViz.appendChild(wrapper);
+			});
+
+			prevBtn.disabled = currentStep === 0;
+			nextBtn.disabled = currentStep === steps.length - 1;
+		}
+
+		nextBtn.addEventListener('click', () => { if (currentStep < steps.length - 1) { currentStep++; render(); } });
+		prevBtn.addEventListener('click', () => { if (currentStep > 0) { currentStep--; render(); } });
+		resetBtn.addEventListener('click', () => { currentStep = 0; render(); });
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowRight') nextBtn.click();
+			if (e.key === 'ArrowLeft') prevBtn.click();
+		});
+
+		render();
+	</script>
+

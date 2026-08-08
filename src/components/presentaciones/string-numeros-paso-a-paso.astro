@@ -1,0 +1,227 @@
+---
+import Icon from '../Icon.astro';
+import { withBase } from '../../utils/withBase';
+
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+---
+
+
+	<style is:global>
+		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
+		.sn-screen {
+			--sn-primary: #ef4444;
+			--sn-cyan: #22d3ee;
+			--sn-bg: #1b0b0f;
+			min-height: 100vh;
+			font-family: 'Chakra Petch', sans-serif;
+			color: #ffe8ec;
+			background: radial-gradient(circle at 78% 18%, rgba(239, 68, 68, 0.2), transparent 40%), linear-gradient(145deg, #0d0406 0%, var(--sn-bg) 100%);
+		}
+		.sn-shell { max-width: 1180px; margin: 0 auto; padding: 2.2rem 1rem 3rem; }
+		.sn-title { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; line-height: 1.05; }
+		.sn-sub { max-width: 68ch; color: rgba(255, 232, 236, 0.85); }
+		.sn-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
+		.sn-card { border-radius: 1rem; border: 1px solid rgba(239, 68, 68, 0.32); background: linear-gradient(160deg, rgba(46, 16, 22, 0.9), rgba(24, 9, 12, 0.94)); padding: 1rem; }
+		.sn-code, .sn-state, .sn-console { grid-column: span 12; }
+		@media (min-width: 1100px) { .sn-code { grid-column: span 6; } .sn-state, .sn-console { grid-column: span 3; } }
+		.sn-head { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
+		.sn-badge { border: 1px solid rgba(34, 211, 238, 0.45); background: rgba(34, 211, 238, 0.14); border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.72rem; font-family: 'Fira Code', monospace; }
+		.sn-panel { background: rgba(12, 4, 6, 0.9); border: 1px solid rgba(239, 68, 68, 0.28); border-radius: 0.8rem; padding: 0.75rem; }
+		.sn-row { display: grid; grid-template-columns: 2rem 1fr; gap: 0.8rem; padding: 0.42rem 0.5rem; border-radius: 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.86rem; color: rgba(255, 232, 236, 0.9); transition: all 0.2s ease; }
+		.sn-row.active { background: linear-gradient(90deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.08)); outline: 1px solid rgba(239, 68, 68, 0.45); transform: translateX(3px); }
+		.sn-ln { color: rgba(255, 232, 236, 0.42); text-align: right; }
+		.sn-state-item { display: flex; justify-content: space-between; border: 1px solid rgba(34, 211, 238, 0.3); background: rgba(34, 211, 238, 0.08); border-radius: 0.65rem; padding: 0.6rem 0.7rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+		.sn-value { color: var(--sn-primary); font-size: 0.95rem; font-weight: 700; text-align: right; }
+		.sn-copy { margin-top: 0.8rem; border: 1px solid rgba(239, 68, 68, 0.34); background: rgba(239, 68, 68, 0.12); border-radius: 0.7rem; padding: 0.75rem; }
+		.sn-controls { margin-top: 0.9rem; display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; }
+		.sn-btn { border: 1px solid rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.16); color: #ffe8ec; border-radius: 0.7rem; padding: 0.55rem 1rem; font-weight: 600; transition: all 0.2s ease; }
+		.sn-btn:hover:not(:disabled) { background: rgba(239, 68, 68, 0.3); transform: translateY(-1px); }
+		.sn-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+		.sn-select { border: 1px solid rgba(34, 211, 238, 0.45); background: rgba(12, 4, 6, 0.92); color: #ffe8ec; border-radius: 0.6rem; padding: 0.45rem 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
+		.sn-track { margin-top: 0.8rem; height: 0.55rem; border-radius: 999px; background: rgba(255, 232, 236, 0.14); overflow: hidden; }
+		.sn-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--sn-primary), var(--sn-cyan)); transition: width 0.25s ease; }
+		.sn-console-win { border: 1px solid rgba(34, 211, 238, 0.35); border-radius: 0.8rem; overflow: hidden; background: rgba(12, 4, 6, 0.9); }
+		.sn-console-head { display: flex; justify-content: space-between; padding: 0.5rem 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.72rem; background: rgba(34, 211, 238, 0.13); border-bottom: 1px solid rgba(34, 211, 238, 0.3); }
+		.sn-console-body { min-height: 160px; padding: 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+		.sn-log { opacity: 0; transform: translateY(8px); animation: sn-log 0.35s ease forwards; color: #d8f2ff; }
+		@keyframes sn-log { to { opacity: 1; transform: translateY(0); } }
+		.sn-back { display: inline-block; margin-top: 1.4rem; color: var(--sn-cyan); text-decoration: none; border-bottom: 1px dashed rgba(34, 211, 238, 0.5); }
+	</style>
+
+	<div class="sn-screen">
+		<main class="sn-shell">
+			<header class="mb-6">
+				<p class="sn-badge">{lang === 'en' ? 'string of numbers / step by step' : 'string de numeros / paso a paso'}</p>
+				<h1 class="sn-title mt-3">{lang === 'en' ? 'Strings and numbers in C' : 'Strings y numeros en C'}</h1>
+				<p class="sn-sub mt-3">{lang === 'en' ? 'Here you learn the difference between concatenating strings and adding real numbers using sprintf() and atoi().' : 'Aca aprendes la diferencia entre concatenar strings y sumar numeros reales usando sprintf() y atoi().'}</p>
+			</header>
+			<section class="sn-grid" aria-live="polite">
+				<article class="sn-card sn-code">
+					<div class="sn-head"><strong>1) {lang === 'en' ? 'Code' : 'Codigo'}</strong><span class="sn-badge" id="sn-line">{lang === 'en' ? 'Active line: 1' : 'Linea activa: 1'}</span></div>
+					<div class="sn-panel">
+						<div class="sn-row" data-line="1"><span class="sn-ln">1</span><span>char a[] = "10";</span></div>
+						<div class="sn-row" data-line="2"><span class="sn-ln">2</span><span>char b[] = "5";</span></div>
+						<div class="sn-row" data-line="3"><span class="sn-ln">3</span><span>char concat[] = "105";</span></div>
+						<div class="sn-row" data-line="4"><span class="sn-ln">4</span><span>int suma = atoi(a) + atoi(b);</span></div>
+						<div class="sn-row" data-line="5"><span class="sn-ln">5</span><span>int parcial = atoi("20px");</span></div>
+						<div class="sn-row" data-line="6"><span class="sn-ln">6</span><span>printf("%s\n", concat);</span></div>
+						<div class="sn-row" data-line="7"><span class="sn-ln">7</span><span>printf("%d\n", suma);</span></div>
+						<div class="sn-row" data-line="8"><span class="sn-ln">8</span><span>printf("%d\n", parcial);</span></div>
+					</div>
+					<div class="sn-copy" id="sn-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'a is defined as a char array with a number.' : 'Se define a como arreglo de chars con un numero.'}</div>
+					<div class="sn-track"><div class="sn-fill" id="sn-fill"></div></div>
+					<div class="sn-controls">
+						<button class="sn-btn" id="sn-prev" type="button">{lang === 'en' ? '← Back' : '⬅ Retroceder'}</button>
+						<button class="sn-btn" id="sn-next" type="button">{lang === 'en' ? 'Next →' : 'Avanzar ➡'}</button>
+						<button class="sn-btn" id="sn-auto" type="button">{lang === 'en' ? 'Auto-play ▶' : 'Auto-play ▶'}</button>
+						<select class="sn-select" id="sn-level" aria-label={lang === 'en' ? 'Detail level' : 'Nivel de detalle'}>
+							<option value="basico" selected>{lang === 'en' ? 'Basic' : 'Basico'}</option>
+							<option value="intermedio">{lang === 'en' ? 'Intermediate' : 'Intermedio'}</option>
+						</select>
+						<span class="sn-badge" id="sn-step">{lang === 'en' ? 'Step 1 / 8' : 'Paso 1 / 8'}</span>
+					</div>
+				</article>
+				<article class="sn-card sn-state">
+					<div class="sn-head"><strong>2) {lang === 'en' ? 'Variables' : 'Variables'}</strong></div>
+					<div class="sn-state-item"><span>a</span><span id="sn-a" class="sn-value">'10'</span></div>
+					<div class="sn-state-item"><span>b</span><span id="sn-b" class="sn-value">-</span></div>
+					<div class="sn-state-item"><span>concat</span><span id="sn-concat" class="sn-value">-</span></div>
+					<div class="sn-state-item"><span>suma</span><span id="sn-suma" class="sn-value">-</span></div>
+					<div class="sn-state-item"><span>parcial</span><span id="sn-parcial" class="sn-value">-</span></div>
+				</article>
+				<article class="sn-card sn-console">
+					<div class="sn-head"><strong>3) {lang === 'en' ? 'Simulated Console' : 'Consola simulada'}</strong></div>
+					<div class="sn-console-win">
+						<div class="sn-console-head"><span>./string-numeros-demo</span><span>stdout</span></div>
+						<div class="sn-console-body" id="sn-console"></div>
+					</div>
+				</article>
+			</section>
+</main>
+	</div>
+
+	<script>
+		type Step = {
+			line: number;
+			message: { es: string; en: string };
+			a: string;
+			b: string;
+			concat: string;
+			suma: string;
+			parcial: string;
+			logs: string[];
+		};
+		const baseSteps: Step[] = [
+			{ line: 1, message: { es: 'Se define a como arreglo de chars con un numero.', en: 'a is defined as a char array with a number.' }, a: "'10'", b: '-', concat: '-', suma: '-', parcial: '-', logs: [] },
+			{ line: 2, message: { es: 'Se define b como otro arreglo de chars numerico.', en: 'b is defined as another numeric char array.' }, a: "'10'", b: "'5'", concat: '-', suma: '-', parcial: '-', logs: [] },
+			{ line: 3, message: { es: 'concat representa la concatenacion de ambos textos.', en: 'concat represents the concatenation of both texts.' }, a: "'10'", b: "'5'", concat: "'105'", suma: '-', parcial: '-', logs: [] },
+			{ line: 4, message: { es: 'atoi(a) y atoi(b) convierten a numero y ahora si suman.', en: 'atoi(a) and atoi(b) convert to numbers and now actually add up.' }, a: "'10'", b: "'5'", concat: "'105'", suma: '15', parcial: '-', logs: [] },
+			{ line: 5, message: { es: 'atoi("20px") toma la parte numerica inicial hasta encontrar un caracter invalido.', en: 'atoi("20px") takes the initial numeric part until it finds an invalid character.' }, a: "'10'", b: "'5'", concat: "'105'", suma: '15', parcial: '20', logs: [] },
+			{ line: 6, message: { es: 'Imprime concat.', en: 'Prints concat.' }, a: "'10'", b: "'5'", concat: "'105'", suma: '15', parcial: '20', logs: ['105'] },
+			{ line: 7, message: { es: 'Imprime suma numerica real.', en: 'Prints actual numeric sum.' }, a: "'10'", b: "'5'", concat: "'105'", suma: '15', parcial: '20', logs: ['105', '15'] },
+			{ line: 8, message: { es: 'Imprime resultado de atoi.', en: 'Prints atoi result.' }, a: "'10'", b: "'5'", concat: "'105'", suma: '15', parcial: '20', logs: ['105', '15', '20'] },
+		];
+
+		const buildIntermediateSteps = (steps: Step[]): Step[] => {
+			const enriched: Step[] = [];
+			steps.forEach((stepState, index) => {
+				enriched.push(stepState);
+				if (index < steps.length - 1) {
+					enriched.push({ ...stepState, message: { es: `Detalle intermedio: ${stepState.message.es}`, en: `Intermediate detail: ${stepState.message.en}` } });
+				}
+			});
+			return enriched;
+		};
+
+		type Level = 'basico' | 'intermedio';
+		const stepSets: Record<Level, Step[]> = {
+			basico: baseSteps,
+			intermedio: buildIntermediateSteps(baseSteps),
+		};
+
+		let currentLevel: Level = 'basico';
+		let activeSteps: Step[] = stepSets[currentLevel];
+
+		let currentStep = 0;
+		const prev = document.getElementById('sn-prev') as HTMLButtonElement;
+		const next = document.getElementById('sn-next') as HTMLButtonElement;
+		const auto = document.getElementById('sn-auto') as HTMLButtonElement;
+		const levelSelect = document.getElementById('sn-level') as HTMLSelectElement;
+		const line = document.getElementById('sn-line') as HTMLElement;
+		const step = document.getElementById('sn-step') as HTMLElement;
+		const copy = document.getElementById('sn-copy') as HTMLElement;
+		const a = document.getElementById('sn-a') as HTMLElement;
+		const b = document.getElementById('sn-b') as HTMLElement;
+		const concat = document.getElementById('sn-concat') as HTMLElement;
+		const suma = document.getElementById('sn-suma') as HTMLElement;
+		const parcial = document.getElementById('sn-parcial') as HTMLElement;
+		const consoleBody = document.getElementById('sn-console') as HTMLElement;
+		const fill = document.getElementById('sn-fill') as HTMLElement;
+		let autoPlayTimer: number | null = null;
+
+		function stopAutoPlay(): void {
+			if (autoPlayTimer !== null) {
+				window.clearInterval(autoPlayTimer);
+				autoPlayTimer = null;
+			}
+			auto.textContent = 'Auto-play ▶';
+		}
+
+		function toggleAutoPlay(): void {
+			if (autoPlayTimer !== null) {
+				stopAutoPlay();
+				return;
+			}
+			auto.textContent = 'Pausar ⏸';
+			autoPlayTimer = window.setInterval(() => {
+				if (currentStep < activeSteps.length - 1) {
+					currentStep += 1;
+					render();
+				} else {
+					stopAutoPlay();
+				}
+			}, 1300);
+		}
+
+		function render(): void {
+			const isEnglish = document.documentElement.lang === 'en';
+			const state = activeSteps[currentStep];
+			document.querySelectorAll<HTMLElement>('.sn-row').forEach((row) => row.classList.toggle('active', Number(row.dataset.line) === state.line));
+			line.textContent = isEnglish ? `Active line: ${state.line}` : `Linea activa: ${state.line}`;
+			step.textContent = isEnglish ? `Step ${currentStep + 1} / ${activeSteps.length}` : `Paso ${currentStep + 1} / ${activeSteps.length}`;
+			copy.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${state.message[isEnglish ? 'en' : 'es']}`;
+			a.textContent = state.a;
+			b.textContent = state.b;
+			concat.textContent = state.concat;
+			suma.textContent = state.suma;
+			parcial.textContent = state.parcial;
+			consoleBody.innerHTML = '';
+			state.logs.forEach((entry, index) => {
+				const el = document.createElement('div');
+				el.className = 'sn-log';
+				el.style.animationDelay = `${index * 80}ms`;
+				el.textContent = `> ${entry}`;
+				consoleBody.appendChild(el);
+			});
+			fill.style.width = `${((currentStep + 1) / activeSteps.length) * 100}%`;
+			prev.disabled = currentStep === 0;
+			next.disabled = currentStep === activeSteps.length - 1;
+		}
+
+		prev.addEventListener('click', () => { if (currentStep > 0) { currentStep -= 1; render(); } });
+		next.addEventListener('click', () => { if (currentStep < activeSteps.length - 1) { currentStep += 1; render(); } });
+		auto.addEventListener('click', () => toggleAutoPlay());
+		levelSelect.addEventListener('change', () => {
+			currentLevel = levelSelect.value as Level;
+			activeSteps = stepSets[currentLevel];
+			currentStep = 0;
+			stopAutoPlay();
+			render();
+		});
+		document.addEventListener('keydown', (event: KeyboardEvent) => { if (event.key === 'ArrowLeft') prev.click(); if (event.key === 'ArrowRight') next.click(); });
+		render();
+	</script>

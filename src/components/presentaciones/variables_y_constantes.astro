@@ -1,0 +1,314 @@
+---
+import Icon from '../Icon.astro';
+import { withBase } from '../../utils/withBase';
+
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+---
+
+
+	<!-- CRT Styles -->
+	<style is:global>
+		@import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&display=swap');
+
+		.crt-container {
+			--primary: #0df259;
+			--crt-black: #050a05;
+			--crt-dark: #0a140a;
+			font-family: 'Space Mono', monospace;
+			background: radial-gradient(circle, #0a1a0a 0%, #050a05 100%);
+			color: var(--primary);
+			position: relative;
+			overflow: hidden;
+		}
+
+
+
+		.font-retro {
+			font-family: 'VT323', monospace;
+		}
+
+		.terminal-btn {
+			border: 1px solid var(--primary);
+			padding: 4px 16px;
+			text-transform: uppercase;
+			font-size: 0.875rem;
+			font-weight: 700;
+			transition: all 0.3s;
+			background-color: rgba(13, 242, 89, 0.05);
+			color: var(--primary);
+		}
+
+		.terminal-btn:hover:not(:disabled) {
+			background-color: var(--primary);
+			color: black;
+			box-shadow: 0 0 15px rgba(13, 242, 89, 0.4);
+		}
+
+		.terminal-btn:disabled {
+			opacity: 0.2;
+			cursor: not-allowed;
+			border-color: rgba(13, 242, 89, 0.2);
+		}
+
+		.slide-content {
+			text-shadow: 0 0 8px rgba(13, 242, 89, 0.6);
+		}
+
+		/* Animations */
+		@keyframes pulse {
+			0%, 100% { transform: scale(1); opacity: 1; }
+			50% { transform: scale(1.05); opacity: 0.8; }
+		}
+
+		.animate-pulse-slow {
+			animation: pulse 3s ease-in-out infinite;
+		}
+
+		@keyframes move-box {
+			0% { transform: translateX(-10px); }
+			100% { transform: translateX(10px); }
+		}
+
+		.box-anim {
+			animation: move-box 2s ease-in-out infinite alternate;
+		}
+
+		.slide {
+			display: none;
+		}
+
+		.slide.active {
+			display: flex;
+		}
+	</style>
+
+	<div class="relative flex min-h-screen flex-col overflow-x-hidden">
+
+		<main class="flex-1 crt-container flex flex-col relative">
+
+			<div class="flex-1 px-6 md:px-16 py-6 md:py-10 relative z-20 flex flex-col">
+				<!-- Terminal Header -->
+				<div class="flex justify-between items-start mb-8 border-b border-primary/30 pb-4">
+					<div class="text-xs font-bold" id="slide-number">SLIDE: 01 / 04</div>
+					<div class="text-xs font-bold tracking-widest font-retro text-lg">PROGRAMIERDS_OS v1.0.4</div>
+					<div class="text-xs font-bold">TOPIC: BASICS_01</div>
+				</div>
+
+				<!-- Slides Container -->
+				<div class="flex-1 overflow-hidden relative slide-content">
+					
+					<!-- SLIDE 1: INTRO -->
+					<div class="slide active flex-col justify-center items-center text-center h-full" data-slide="1">
+						<h1 class="font-retro text-5xl md:text-7xl mb-6 uppercase tracking-tighter">
+							> {lang === 'en' ? 'Variables and Constants' : 'Variables y Constantes'}
+						</h1>
+						<p class="text-xl md:text-2xl mb-8 opacity-80 max-w-2xl">
+							{lang === 'en' ? 'Welcome to the core of the system. Today we will learn how programs remember things.' : 'Bienvenidos al núcleo del sistema. Hoy aprenderemos cómo el programa recuerda cosas.'}
+						</p>
+						<div class="flex gap-4 items-center justify-center mt-8">
+							<div class="size-16 border-2 border-dashed border-primary/40 rounded-lg flex items-center justify-center animate-pulse-slow">
+								<span class="text-2xl">📦</span>
+							</div>
+							<div class="w-12 h-0.5 bg-primary/20"></div>
+							<div class="size-16 border-2 border-primary rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(13,242,89,0.3)]">
+								<span class="text-2xl">💾</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- SLIDE 2: VARIABLES -->
+					<div class="slide flex-col justify-center h-full" data-slide="2">
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+							<div>
+								<h2 class="text-4xl font-retro mb-6 uppercase tracking-tight flex items-center gap-4">
+									<span class="text-primary">#</span> {lang === 'en' ? 'Variables' : 'Variables'}
+								</h2>
+								<p class="text-lg md:text-xl leading-relaxed mb-6">
+									{lang === 'en' ? 'A' : 'Una'} <span class="bg-primary/20 px-2 rounded">variable</span> {lang === 'en' ? 'is a space in memory with a name. Its value can' : 'es un espacio en memoria con un nombre. Su valor puede'} <span class="italic text-white">{lang === 'en' ? 'change' : 'cambiar'}</span> {lang === 'en' ? 'during execution.' : 'durante la ejecución.'}
+								</p>
+								<div class="bg-black/40 border border-primary/20 p-4 rounded font-mono text-sm mb-6">
+									<p class="text-primary/60 mb-2">// Código C</p>
+									<p><span class="text-blue-400">int</span> score = <span class="text-yellow-400">0</span>;</p>
+									<p>score = <span class="text-yellow-400">10</span>; <span class="text-primary/40 italic">// ¡Cambió!</span></p>
+								</div>
+							</div>
+							<div class="flex flex-col items-center justify-center border-2 border-primary/10 rounded-2xl p-8 bg-primary/5 relative overflow-hidden">
+								<div class="absolute inset-0 opacity-10 pointer-events-none">
+									<div class="absolute top-0 left-0 w-full h-full" style="background-image: radial-gradient(var(--primary) 1px, transparent 1px); background-size: 20px 20px;"></div>
+								</div>
+								<div class="relative z-10 flex flex-col items-center">
+									<div class="text-6xl mb-4 box-anim">📦</div>
+									<div class="text-center">
+										<div class="text-xs uppercase opacity-50 mb-1">{lang === 'en' ? 'Name: score' : 'Nombre: score'}</div>
+										<div class="text-2xl font-bold bg-primary text-black px-4 py-1 border-2 border-primary/20 rounded" id="var-value">0</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- SLIDE 3: CONSTANTES -->
+					<div class="slide flex-col justify-center h-full" data-slide="3">
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+							<div class="order-2 md:order-1 flex flex-col items-center justify-center border-2 border-primary/10 rounded-2xl p-8 bg-primary/5 relative overflow-hidden">
+								<div class="relative z-10 flex flex-col items-center">
+									<div class="text-6xl mb-4 opacity-50">🧊</div>
+									<div class="text-center">
+										<div class="text-xs uppercase opacity-50 mb-1">{lang === 'en' ? 'Name: PI' : 'Nombre: PI'}</div>
+										<div class="text-2xl font-bold border-2 border-primary px-4 py-1 text-white">3.14159</div>
+										<div class="mt-4 flex gap-2">
+											<span class="material-symbols-outlined text-red-500">lock</span>
+											<span class="text-[10px] uppercase text-red-500 font-bold">READ_ONLY</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="order-1 md:order-2">
+								<h2 class="text-4xl font-retro mb-6 uppercase tracking-tight flex items-center gap-4">
+									<span class="text-primary">#</span> {lang === 'en' ? 'Constants' : 'Constantes'}
+								</h2>
+								<p class="text-lg md:text-xl leading-relaxed mb-6">
+									{lang === 'en' ? 'A' : 'Una'} <span class="bg-primary/20 px-2 rounded">constant</span> {lang === 'en' ? 'is a value that' : 'es un valor que'} <span class="text-white font-bold underline">{lang === 'en' ? 'cannot change' : 'no puede cambiar'}</span> {lang === 'en' ? 'once defined.' : 'una vez definido.'}
+								</p>
+								<div class="bg-black/40 border border-primary/20 p-4 rounded font-mono text-sm mb-6">
+									<p class="text-primary/60 mb-2">// Definición</p>
+									<p><span class="text-blue-400">const float</span> PI = <span class="text-yellow-400">3.14159</span>;</p>
+									<p class="text-red-400/60 mt-2">// ERROR: PI = 4.0;</p>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- SLIDE 4: RESUMEN -->
+					<div class="slide flex-col justify-center h-full" data-slide="4">
+						<h2 class="text-4xl font-retro mb-10 text-center uppercase">{lang === 'en' ? 'FINAL REPORT' : 'REPORTE FINAL'}</h2>
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+							<div class="border border-primary/40 p-6 bg-primary/5 rounded-lg">
+								<h3 class="text-2xl font-retro mb-4">{lang === 'en' ? 'VARIABLE' : 'VARIABLE'}</h3>
+								<ul class="space-y-4">
+									<li class="flex items-center gap-3">
+										<span class="text-lg">✅</span>
+										<span>{lang === 'en' ? 'Dynamic values' : 'Valores dinámicos'}</span>
+									</li>
+									<li class="flex items-center gap-3">
+										<span class="text-lg">✅</span>
+										<span>{lang === 'en' ? 'Updatable' : 'Actualizable'}</span>
+									</li>
+									<li class="flex items-center gap-3 italic opacity-60">
+										{lang === 'en' ? '"Like your bank balance"' : '"Como tu saldo bancario"'}
+									</li>
+								</ul>
+							</div>
+							<div class="border border-primary/40 p-6 bg-primary/5 rounded-lg">
+								<h3 class="text-2xl font-retro mb-4">{lang === 'en' ? 'CONSTANT' : 'CONSTANTE'}</h3>
+								<ul class="space-y-4">
+									<li class="flex items-center gap-3">
+										<span class="text-lg">✅</span>
+										<span>{lang === 'en' ? 'Fixed values' : 'Valores fijos'}</span>
+									</li>
+									<li class="flex items-center gap-3">
+										<span class="text-lg">✅</span>
+										<span>{lang === 'en' ? 'Immutable' : 'Inmutable'}</span>
+									</li>
+									<li class="flex items-center gap-3 italic opacity-60">
+										{lang === 'en' ? '"Like the laws of physics"' : '"Como las leyes de la física"'}
+									</li>
+								</ul>
+							</div>
+						</div>
+						<div class="mt-12 text-center">
+							<a href={withBase(lang === 'en' ? '/en/presentaciones' : '/presentaciones')} class="terminal-btn inline-block bg-primary text-black">
+								{lang === 'en' ? 'END SESSION' : 'FINALIZAR SESIÓN'}
+							</a>
+						</div>
+					</div>
+				</div>
+
+				<!-- Terminal Footer -->
+				<div class="mt-8 pt-4 border-t border-primary/10 flex flex-col md:flex-row justify-between items-center gap-6">
+					<div class="flex gap-4">
+						<button id="prev-btn" class="terminal-btn flex items-center gap-2">
+							<Icon name="arrow_back" class="w-4 h-4" />
+							[P] {lang === 'en' ? 'PREV' : 'PREV'}
+						</button>
+						<button id="next-btn" class="terminal-btn flex items-center gap-2 bg-primary text-black">
+							[N] {lang === 'en' ? 'NEXT' : 'NEXT'}
+							<Icon name="arrow_forward" class="w-4 h-4" />
+						</button>
+					</div>
+					<div class="text-[10px] uppercase tracking-widest opacity-40 font-mono hidden md:block">
+						CRT_MODE: ACTIVE // MEMORY_BUFFER: OPTIMAL
+					</div>
+				</div>
+			</div>
+		</main>
+	</div>
+
+	<script>
+		let currentSlide = 1;
+		const totalSlides = 4;
+
+		const updateSlides = () => {
+			document.querySelectorAll('.slide').forEach(slide => {
+				const s = slide as HTMLElement;
+				s.classList.remove('active');
+				if (s.dataset.slide && parseInt(s.dataset.slide) === currentSlide) {
+					s.classList.add('active');
+				}
+			});
+
+			const slideNumberEl = document.getElementById('slide-number');
+			if (slideNumberEl) {
+				slideNumberEl.innerText = `SLIDE: ${String(currentSlide).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`;
+			}
+			
+			const prevBtn = document.getElementById('prev-btn');
+			const nextBtn = document.getElementById('next-btn');
+
+			if (prevBtn instanceof HTMLButtonElement) prevBtn.disabled = currentSlide === 1;
+			if (nextBtn instanceof HTMLButtonElement) nextBtn.disabled = currentSlide === totalSlides;
+		};
+
+		document.getElementById('next-btn')?.addEventListener('click', () => {
+			if (currentSlide < totalSlides) {
+				currentSlide++;
+				updateSlides();
+			}
+		});
+
+		document.getElementById('prev-btn')?.addEventListener('click', () => {
+			if (currentSlide > 1) {
+				currentSlide--;
+				updateSlides();
+			}
+		});
+
+		// Variable animation logic for slide 2
+		setInterval(() => {
+			const valEl = document.getElementById('var-value');
+			if (valEl && currentSlide === 2) {
+				valEl.innerText = Math.floor(Math.random() * 100).toString();
+			}
+		}, 1000);
+
+		// Keyboard navigation
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowRight' || e.key === 'n') {
+				if (currentSlide < totalSlides) {
+					currentSlide++;
+					updateSlides();
+				}
+			} else if (e.key === 'ArrowLeft' || e.key === 'p') {
+				if (currentSlide > 1) {
+					currentSlide--;
+					updateSlides();
+				}
+			}
+		});
+
+		updateSlides();
+	</script>

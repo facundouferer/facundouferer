@@ -1,0 +1,448 @@
+---
+import Icon from '../Icon.astro';
+import { withBase } from '../../utils/withBase';
+
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+---
+
+
+	<style is:global>
+		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
+
+		:root {
+			--opa-bg: #081019;
+			--opa-card: rgba(12, 22, 32, 0.9);
+			--opa-primary: #0df259;
+			--opa-cyan: #22d3ee;
+			--opa-amber: #f59e0b;
+			--opa-pink: #fb7185;
+			--opa-text: #e8fff2;
+		}
+
+		html { scroll-behavior: smooth; }
+		.opa-page {
+			min-height: 100vh;
+			font-family: 'Chakra Petch', sans-serif;
+			color: var(--opa-text);
+			background:
+				radial-gradient(circle at 15% 20%, rgba(13, 242, 89, 0.12), transparent 30%),
+				radial-gradient(circle at 85% 10%, rgba(34, 211, 238, 0.15), transparent 28%),
+				linear-gradient(150deg, #03070b 0%, var(--opa-bg) 100%);
+		}
+		#opa-progress { position: fixed; top: 0; left: 0; height: 4px; width: 0%; background: linear-gradient(90deg, var(--opa-primary), var(--opa-cyan)); box-shadow: 0 0 16px rgba(13,242,89,.7); z-index: 200; }
+		.opa-shell { max-width: 1220px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+		.opa-hero { min-height: 88vh; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.2rem; align-items: center; }
+		.opa-copy, .opa-visual { grid-column: span 12; }
+		@media (min-width: 1280px) { .opa-copy { grid-column: span 6; } .opa-visual { grid-column: span 6; } }
+		.opa-badge { display: inline-flex; align-items: center; gap: .45rem; border-radius: 999px; padding: .3rem .8rem; background: rgba(34, 211, 238, .1); border: 1px solid rgba(34, 211, 238, .35); font-family: 'Fira Code', monospace; font-size: .76rem; }
+		.opa-title { font-size: clamp(1.5rem, 4vw, 3rem); line-height: .98; font-weight: 700; margin-top: .9rem; max-width: 10.5ch; }
+		@media (max-width: 1279px) { .opa-title { max-width: none; } .opa-hero { min-height: auto; } }
+		.opa-sub { max-width: 62ch; color: rgba(232,255,242,.82); font-size: 1.03rem; }
+		.opa-pills { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 1.2rem; }
+		.opa-pill { min-width: 160px; border-radius: 1rem; padding: .9rem 1rem; background: rgba(13, 242, 89, .07); border: 1px solid rgba(13, 242, 89, .22); }
+		.opa-pill strong { display: block; color: var(--opa-primary); font-size: 1.15rem; }
+		.opa-visual-box, .opa-card { border-radius: 1.2rem; background: var(--opa-card); border: 1px solid rgba(13,242,89,.18); box-shadow: 0 0 35px rgba(13,242,89,.06); }
+		.opa-visual-box { padding: 1.1rem; }
+		.opa-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
+		.opa-card { grid-column: span 12; padding: 1rem; }
+		@media (min-width: 1024px) { .opa-card.span-4 { grid-column: span 4; } .opa-card.span-5 { grid-column: span 5; } .opa-card.span-6 { grid-column: span 6; } .opa-card.span-7 { grid-column: span 7; } .opa-card.span-8 { grid-column: span 8; } }
+		.opa-section { padding: 2.4rem 0; opacity: 0; transform: translateY(36px); transition: opacity .75s ease, transform .75s ease; }
+		.opa-section.visible { opacity: 1; transform: translateY(0); }
+		.opa-section-title { font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.04; margin-bottom: .75rem; }
+		.opa-section-sub { max-width: 65ch; color: rgba(232,255,242,.8); }
+
+		.opa-array { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: .6rem; }
+		.opa-slot { border-radius: 1rem; border: 1px solid rgba(34,211,238,.28); background: rgba(34,211,238,.08); padding: .85rem .45rem; text-align: center; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+		.opa-slot.active { transform: translateY(-4px); border-color: var(--opa-primary); box-shadow: 0 0 18px rgba(13,242,89,.2); }
+		.opa-slot.moving { border-color: var(--opa-amber); box-shadow: 0 0 18px rgba(245,158,11,.24); }
+		.opa-index { display: block; font-family: 'Fira Code', monospace; color: var(--opa-cyan); font-size: .76rem; }
+		.opa-value { display: block; margin-top: .35rem; font-size: 1.25rem; font-weight: 700; }
+
+		.opa-mini-title { font-family: 'Fira Code', monospace; font-size: .8rem; color: rgba(232,255,242,.7); margin-bottom: .8rem; }
+		.opa-code { border-radius: 1rem; background: rgba(4,10,14,.88); border: 1px solid rgba(34,211,238,.22); padding: 1rem; font-family: 'Fira Code', monospace; font-size: .84rem; line-height: 1.75; overflow-x: auto; }
+		.opa-code [data-line] { display: block; padding: .1rem .35rem; border-radius: .6rem; }
+		.opa-code .active { background: linear-gradient(90deg, rgba(13,242,89,.2), rgba(13,242,89,.03)); }
+		.kw { color: #7dd3fc; } .tp { color: #fbbf24; } .fn { color: #86efac; } .st { color: #fde68a; } .nu { color: #fca5a5; }
+
+		.opa-state { display: grid; gap: .6rem; }
+		.opa-state-item { display: flex; justify-content: space-between; gap: 1rem; padding: .7rem .85rem; border-radius: .85rem; background: rgba(34,211,238,.08); border: 1px solid rgba(34,211,238,.2); font-family: 'Fira Code', monospace; font-size: .84rem; }
+		.opa-state-item strong { color: var(--opa-primary); }
+		.opa-copy-box { border-radius: .95rem; border: 1px solid rgba(13,242,89,.2); background: rgba(13,242,89,.06); padding: .9rem; min-height: 92px; }
+		.opa-controls { display: flex; gap: .7rem; flex-wrap: wrap; margin-top: .8rem; }
+		.opa-btn { border-radius: .8rem; border: 1px solid rgba(13,242,89,.34); background: rgba(13,242,89,.12); color: var(--opa-text); padding: .58rem .95rem; font-weight: 600; transition: all .2s ease; }
+		.opa-btn:hover:not(:disabled) { transform: translateY(-1px); background: rgba(13,242,89,.2); }
+		.opa-btn:disabled { opacity: .45; cursor: not-allowed; }
+		.opa-track { height: .55rem; border-radius: 999px; background: rgba(232,255,242,.12); overflow: hidden; margin-top: .85rem; }
+		.opa-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--opa-primary), var(--opa-cyan)); transition: width .25s ease; }
+		.opa-console { border-radius: 1rem; overflow: hidden; border: 1px solid rgba(34,211,238,.25); background: rgba(4,10,14,.88); }
+		.opa-console-head { display: flex; justify-content: space-between; padding: .55rem .8rem; font-family: 'Fira Code', monospace; font-size: .74rem; background: rgba(34,211,238,.12); }
+		.opa-console-body { min-height: 130px; padding: .8rem; font-family: 'Fira Code', monospace; font-size: .82rem; }
+		.opa-log { opacity: 0; transform: translateY(8px); animation: opaLog .32s ease forwards; color: #dffdff; }
+		.opa-tip { border-left: 4px solid var(--opa-amber); background: rgba(245,158,11,.08); padding: .9rem 1rem; border-radius: 0 1rem 1rem 0; }
+		.opa-warn { border-left-color: var(--opa-pink); background: rgba(251,113,133,.08); }
+		.opa-back { display: inline-block; margin-top: 1.8rem; text-decoration: none; color: var(--opa-cyan); border-bottom: 1px dashed rgba(34,211,238,.5); }
+		@keyframes opaLog { to { opacity: 1; transform: translateY(0); } }
+	</style>
+
+	<div class="opa-page">
+		<div id="opa-progress"></div>
+		<main class="opa-shell">
+			<section class="opa-hero">
+				<div class="opa-copy">
+					<span class="opa-badge">c / operaciones / arreglos</span>
+					<h1 class="opa-title">{lang === 'en' ? 'Array Operations' : 'Operaciones con arreglos'}</h1>
+					<p class="opa-sub mt-4">{lang === 'en' ? "We're not just repeating definitions here. You'll see, visually, how an array is traversed, how a value is searched for, and how a new element is inserted by moving positions. The idea is for you to understand WHAT the program does and WHY it does it." : "Acá no vamos a repetir solo definiciones. Vas a ver, de forma visual, cómo un arreglo se recorre, cómo se busca un valor y cómo se inserta un nuevo elemento moviendo posiciones. La idea es que entiendas QUÉ hace el programa y por qué lo hace."}</p>
+					<div class="opa-pills">
+						<div class="opa-pill"><strong>{lang === 'en' ? 'Traversal' : 'Recorrido'}</strong><span>{lang === 'en' ? 'visit position by position' : 'visitar posición por posición'}</span></div>
+						<div class="opa-pill"><strong>{lang === 'en' ? 'Search' : 'Búsqueda'}</strong><span>{lang === 'en' ? 'find a value within the array' : 'encontrar un valor dentro del arreglo'}</span></div>
+						<div class="opa-pill"><strong>{lang === 'en' ? 'Insertion' : 'Inserción'}</strong><span>{lang === 'en' ? 'make room and add data' : 'hacer lugar y agregar un dato'}</span></div>
+					</div>
+				</div>
+				<div class="opa-visual">
+					<div class="opa-visual-box">
+						<div class="opa-mini-title">{lang === 'en' ? 'General view: an array is an ordered sequence of positions' : 'Visual general: un arreglo es una secuencia ordenada de posiciones'}</div>
+						<div class="opa-array" id="hero-ops-array">
+							<div class="opa-slot active"><span class="opa-index">[0]</span><span class="opa-value">10</span></div>
+							<div class="opa-slot"><span class="opa-index">[1]</span><span class="opa-value">20</span></div>
+							<div class="opa-slot"><span class="opa-index">[2]</span><span class="opa-value">30</span></div>
+							<div class="opa-slot"><span class="opa-index">[3]</span><span class="opa-value">40</span></div>
+							<div class="opa-slot"><span class="opa-index">[4]</span><span class="opa-value">50</span></div>
+						</div>
+						<div class="opa-grid mt-4">
+							<div class="opa-card span-4"><strong>{lang === 'en' ? 'Same structure' : 'Misma estructura'}</strong><p class="mt-2">{lang === 'en' ? "It's always the same array. What changes is the operation we perform on it." : "Siempre es el mismo arreglo. Lo que cambia es la operación que hacemos sobre él."}</p></div>
+							<div class="opa-card span-4"><strong>{lang === 'en' ? 'Same index' : 'Mismo índice'}</strong><p class="mt-2">{lang === 'en' ? 'The index variable tells us which position we are working with.' : 'La variable índice nos dice en qué posición estamos trabajando.'}</p></div>
+							<div class="opa-card span-4"><strong>{lang === 'en' ? 'Same order' : 'Mismo orden'}</strong><p class="mt-2">{lang === 'en' ? 'Almost all operations start by traversing from the beginning toward the end.' : 'Casi todas las operaciones empiezan recorriendo desde el principio hacia el final.'}</p></div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="opa-section" data-reveal>
+				<h2 class="opa-section-title">{lang === 'en' ? '1. Traversing an Array' : '1. Recorrer un arreglo'}</h2>
+				<p class="opa-section-sub">{lang === 'en' ? 'Traversing means visiting all elements one by one. It is the base operation: without traversal you cannot display, sum, compare, or search.' : 'Recorrer significa visitar todos los elementos uno por uno. Es la operación base: sin recorrido no podés mostrar, sumar, comparar ni buscar.'}</p>
+				<div class="opa-grid">
+					<article class="opa-card span-7">
+						<div class="opa-mini-title">{lang === 'en' ? 'Step-by-step traversal simulation' : 'Simulación paso a paso del recorrido'}</div>
+						<div class="opa-code" id="walk-code">
+							<span data-line="1"><span class="tp">int</span> numeros[<span class="nu">5</span>] = &#123;<span class="nu">10</span>, <span class="nu">20</span>, <span class="nu">30</span>, <span class="nu">40</span>, <span class="nu">50</span>&#125;;</span>
+							<span data-line="2"><span class="tp">int</span> i;</span>
+							<span data-line="3"><span class="kw">for</span> (i = <span class="nu">0</span>; i &lt; <span class="nu">5</span>; i = i + <span class="nu">1</span>) &#123;</span>
+							<span data-line="4">&nbsp;&nbsp;<span class="fn">printf</span>(<span class="st">"Posicion %d -&gt; %d\n"</span>, i, numeros[i]);</span>
+							<span data-line="5">&#125;</span>
+						</div>
+						<div class="opa-copy-box mt-4" id="walk-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'The array is declared with 5 values.' : 'Se declara el arreglo con 5 valores.'}</div>
+						<div class="opa-track"><div class="opa-fill" id="walk-fill"></div></div>
+						<div class="opa-controls">
+							<button class="opa-btn" id="walk-prev" type="button">⬅ {lang === 'en' ? 'Back' : 'Retroceder'}</button>
+							<button class="opa-btn" id="walk-next" type="button">{lang === 'en' ? 'Forward' : 'Avanzar'} ➡</button>
+							<button class="opa-btn" id="walk-auto" type="button">{lang === 'en' ? 'Auto-play' : 'Auto-play'} ▶</button>
+							<span class="opa-badge" id="walk-step">{lang === 'en' ? 'Step' : 'Paso'} 1 / 7</span>
+						</div>
+					</article>
+					<article class="opa-card span-5">
+						<div class="opa-mini-title">{lang === 'en' ? 'Current state' : 'Estado actual'}</div>
+						<div class="opa-array" id="walk-array">
+							<div class="opa-slot"><span class="opa-index">[0]</span><span class="opa-value">10</span></div>
+							<div class="opa-slot"><span class="opa-index">[1]</span><span class="opa-value">20</span></div>
+							<div class="opa-slot"><span class="opa-index">[2]</span><span class="opa-value">30</span></div>
+							<div class="opa-slot"><span class="opa-index">[3]</span><span class="opa-value">40</span></div>
+							<div class="opa-slot"><span class="opa-index">[4]</span><span class="opa-value">50</span></div>
+						</div>
+						<div class="opa-state mt-4">
+							<div class="opa-state-item"><span>{lang === 'en' ? 'current i' : 'i actual'}</span><strong id="walk-i">-</strong></div>
+							<div class="opa-state-item"><span>{lang === 'en' ? 'value read' : 'valor leído'}</span><strong id="walk-value">-</strong></div>
+						</div>
+						<div class="opa-console mt-4">
+							<div class="opa-console-head"><span>./recorrido</span><span>stdout</span></div>
+							<div class="opa-console-body" id="walk-console"></div>
+						</div>
+					</article>
+				</div>
+				<div class="opa-tip mt-4">{lang === 'en' ? 'Important idea: in a traversal you don\'t "magically skip" to the data. The program goes through each position using index i.' : 'Idea importante: en un recorrido no "salteás mágicamente" al dato. El programa pasa por cada posición usando el índice i.'}</div>
+			</section>
+
+			<section class="opa-section" data-reveal>
+				<h2 class="opa-section-title">{lang === 'en' ? '2. Searching for a Value in the Array' : '2. Buscar un valor dentro del arreglo'}</h2>
+				<p class="opa-section-sub">{lang === 'en' ? 'Searching means comparing the searched value with each element of the array until a match is found or until the traversal ends.' : 'Buscar significa comparar el valor buscado con cada elemento del arreglo hasta encontrar coincidencia o hasta terminar el recorrido.'}</p>
+				<div class="opa-grid">
+					<article class="opa-card span-7">
+						<div class="opa-mini-title">{lang === 'en' ? 'Sequential search simulation' : 'Simulación de búsqueda secuencial'}</div>
+						<div class="opa-code" id="search-code">
+							<span data-line="1"><span class="tp">int</span> numeros[<span class="nu">6</span>] = &#123;<span class="nu">8</span>, <span class="nu">14</span>, <span class="nu">21</span>, <span class="nu">14</span>, <span class="nu">35</span>, <span class="nu">42</span>&#125;;</span>
+							<span data-line="2"><span class="tp">int</span> buscado = <span class="nu">14</span>;</span>
+							<span data-line="3"><span class="tp">int</span> posicion = -<span class="nu">1</span>;</span>
+							<span data-line="4"><span class="kw">for</span> (i = <span class="nu">0</span>; i &lt; <span class="nu">6</span>; i = i + <span class="nu">1</span>) &#123;</span>
+							<span data-line="5">&nbsp;&nbsp;<span class="kw">if</span> (numeros[i] == buscado) &#123;</span>
+							<span data-line="6">&nbsp;&nbsp;&nbsp;&nbsp;posicion = i;</span>
+							<span data-line="7">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">break</span>;</span>
+							<span data-line="8">&nbsp;&nbsp;&#125;</span>
+							<span data-line="9">&#125;</span>
+						</div>
+						<div class="opa-copy-box mt-4" id="search-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'The array and the value we want to find are prepared.' : 'Se prepara el arreglo y el valor que queremos encontrar.'}</div>
+						<div class="opa-track"><div class="opa-fill" id="search-fill"></div></div>
+						<div class="opa-controls">
+							<button class="opa-btn" id="search-prev" type="button">⬅ {lang === 'en' ? 'Back' : 'Retroceder'}</button>
+							<button class="opa-btn" id="search-next" type="button">{lang === 'en' ? 'Forward' : 'Avanzar'} ➡</button>
+							<button class="opa-btn" id="search-auto" type="button">{lang === 'en' ? 'Auto-play' : 'Auto-play'} ▶</button>
+							<span class="opa-badge" id="search-step">{lang === 'en' ? 'Step' : 'Paso'} 1 / 6</span>
+						</div>
+					</article>
+					<article class="opa-card span-5">
+						<div class="opa-mini-title">{lang === 'en' ? 'Comparison visualization' : 'Visual de comparación'}</div>
+						<div class="opa-array" id="search-array">
+							<div class="opa-slot"><span class="opa-index">[0]</span><span class="opa-value">8</span></div>
+							<div class="opa-slot"><span class="opa-index">[1]</span><span class="opa-value">14</span></div>
+							<div class="opa-slot"><span class="opa-index">[2]</span><span class="opa-value">21</span></div>
+							<div class="opa-slot"><span class="opa-index">[3]</span><span class="opa-value">14</span></div>
+							<div class="opa-slot"><span class="opa-index">[4]</span><span class="opa-value">35</span></div>
+							<div class="opa-slot"><span class="opa-index">[5]</span><span class="opa-value">42</span></div>
+						</div>
+						<div class="opa-state mt-4">
+							<div class="opa-state-item"><span>{lang === 'en' ? 'searched' : 'buscado'}</span><strong>14</strong></div>
+							<div class="opa-state-item"><span>{lang === 'en' ? 'current i' : 'i actual'}</span><strong id="search-i">-</strong></div>
+							<div class="opa-state-item"><span>{lang === 'en' ? 'found position' : 'posición encontrada'}</span><strong id="search-pos">-1</strong></div>
+						</div>
+					</article>
+				</div>
+				<div class="opa-tip mt-4">{lang === 'en' ? 'We use -1 because no valid array position can be negative. So -1 means "I haven\'t found anything yet".' : 'Usamos -1 porque ninguna posición válida del arreglo puede ser negativa. Entonces -1 significa "todavía no encontré nada".'}</div>
+			</section>
+
+			<section class="opa-section" data-reveal>
+				<h2 class="opa-section-title">{lang === 'en' ? '3. Inserting a Value in the Middle' : '3. Insertar un valor en el medio'}</h2>
+				<p class="opa-section-sub">{lang === 'en' ? 'Inserting is not simply "putting a value". If the position is already occupied, elements must first be shifted to the right to make room.' : 'Insertar no es simplemente "poner un valor". Si la posición ya está ocupada, primero hay que desplazar elementos hacia la derecha para hacer lugar.'}</p>
+				<div class="opa-grid">
+					<article class="opa-card span-7">
+						<div class="opa-mini-title">{lang === 'en' ? 'Insertion simulation with shifting' : 'Simulación de inserción con desplazamiento'}</div>
+						<div class="opa-code" id="insert-code">
+							<span data-line="1"><span class="tp">int</span> numeros[<span class="nu">6</span>] = &#123;<span class="nu">10</span>, <span class="nu">20</span>, <span class="nu">40</span>, <span class="nu">50</span>&#125;;</span>
+							<span data-line="2"><span class="tp">int</span> cantidad = <span class="nu">4</span>;</span>
+							<span data-line="3"><span class="tp">int</span> posicion = <span class="nu">2</span>;</span>
+							<span data-line="4"><span class="tp">int</span> nuevo = <span class="nu">30</span>;</span>
+							<span data-line="5"><span class="kw">for</span> (i = cantidad; i &gt; posicion; i = i - <span class="nu">1</span>) &#123;</span>
+							<span data-line="6">&nbsp;&nbsp;numeros[i] = numeros[i - <span class="nu">1</span>];</span>
+							<span data-line="7">&#125;</span>
+							<span data-line="8">numeros[posicion] = nuevo;</span>
+							<span data-line="9">cantidad = cantidad + <span class="nu">1</span>;</span>
+						</div>
+						<div class="opa-copy-box mt-4" id="insert-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'There is room for 6 elements, but the array is using 4.' : 'Tenemos espacio para 6 elementos, pero el arreglo está usando 4.'}</div>
+						<div class="opa-track"><div class="opa-fill" id="insert-fill"></div></div>
+						<div class="opa-controls">
+							<button class="opa-btn" id="insert-prev" type="button">⬅ {lang === 'en' ? 'Back' : 'Retroceder'}</button>
+							<button class="opa-btn" id="insert-next" type="button">{lang === 'en' ? 'Forward' : 'Avanzar'} ➡</button>
+							<button class="opa-btn" id="insert-auto" type="button">{lang === 'en' ? 'Auto-play' : 'Auto-play'} ▶</button>
+							<span class="opa-badge" id="insert-step">{lang === 'en' ? 'Step' : 'Paso'} 1 / 7</span>
+						</div>
+					</article>
+					<article class="opa-card span-5">
+						<div class="opa-mini-title">{lang === 'en' ? 'Shift visualization' : 'Visual del desplazamiento'}</div>
+						<div class="opa-array" id="insert-array">
+							<div class="opa-slot"><span class="opa-index">[0]</span><span class="opa-value">10</span></div>
+							<div class="opa-slot"><span class="opa-index">[1]</span><span class="opa-value">20</span></div>
+							<div class="opa-slot"><span class="opa-index">[2]</span><span class="opa-value">40</span></div>
+							<div class="opa-slot"><span class="opa-index">[3]</span><span class="opa-value">50</span></div>
+							<div class="opa-slot"><span class="opa-index">[4]</span><span class="opa-value">-</span></div>
+							<div class="opa-slot"><span class="opa-index">[5]</span><span class="opa-value">-</span></div>
+						</div>
+						<div class="opa-state mt-4">
+							<div class="opa-state-item"><span>{lang === 'en' ? 'current count' : 'cantidad actual'}</span><strong id="insert-count">4</strong></div>
+							<div class="opa-state-item"><span>{lang === 'en' ? 'insertion position' : 'posición de inserción'}</span><strong>2</strong></div>
+							<div class="opa-state-item"><span>{lang === 'en' ? 'new value' : 'nuevo valor'}</span><strong>30</strong></div>
+						</div>
+					</article>
+				</div>
+				<div class="opa-tip opa-warn mt-4">{lang === 'en' ? 'Common error: moving from left to right. That overwrites values. To insert in the middle, the shift is done from the end toward the insertion position.' : 'Error típico: mover desde la izquierda hacia la derecha. Eso pisa valores. Para insertar en el medio, el desplazamiento se hace desde el final hacia la posición de inserción.'}</div>
+			</section>
+
+			<section class="opa-section" data-reveal>
+				<h2 class="opa-section-title">{lang === 'en' ? '4. Key Takeaways' : '4. Qué te tenés que llevar'}</h2>
+				<div class="opa-grid">
+					<article class="opa-card span-4"><strong>{lang === 'en' ? 'Traverse' : 'Recorrer'}</strong><p class="mt-2">{lang === 'en' ? 'It\'s going through each position using an index. Without that, there\'s no real array processing.' : 'Es pasar por cada posición usando un índice. Sin eso no hay procesamiento real del arreglo.'}</p></article>
+					<article class="opa-card span-4"><strong>{lang === 'en' ? 'Search' : 'Buscar'}</strong><p class="mt-2">{lang === 'en' ? 'It\'s comparing one by one until you find the data or finish the traversal.' : 'Es comparar uno por uno hasta encontrar el dato o terminar el recorrido.'}</p></article>
+					<article class="opa-card span-4"><strong>{lang === 'en' ? 'Insert' : 'Insertar'}</strong><p class="mt-2">{lang === 'en' ? 'It\'s making room and only then saving the new value.' : 'Es hacer lugar y recién después guardar el nuevo valor.'}</p></article>
+				</div>
+</section>
+		</main>
+	</div>
+
+	<script>
+		type SimStep = {
+			line: number;
+			message: { es: string; en: string };
+			activeIndex?: number;
+			values?: string[];
+			logs?: string[];
+			extra?: Record<string, string>;
+			movingIndex?: number;
+		};
+
+		const isEnglish = document.documentElement.lang === 'en';
+
+		const revealSections = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
+		const revealObserver = new IntersectionObserver((entries) => {
+			entries.forEach((entry) => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+		}, { threshold: 0.18 });
+		revealSections.forEach((section) => revealObserver.observe(section));
+
+		const progress = document.getElementById('opa-progress') as HTMLElement;
+		const paintProgress = (): void => {
+			const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+			const pct = maxScroll > 0 ? (window.scrollY / maxScroll) * 100 : 0;
+			progress.style.width = `${pct}%`;
+		};
+		window.addEventListener('scroll', paintProgress, { passive: true });
+		paintProgress();
+
+		const heroSlots = Array.from(document.querySelectorAll<HTMLElement>('#hero-ops-array .opa-slot'));
+		let heroCursor = 0;
+		window.setInterval(() => {
+			heroSlots.forEach((slot, index) => slot.classList.toggle('active', index === heroCursor));
+			heroCursor = (heroCursor + 1) % heroSlots.length;
+		}, 1200);
+
+		function setupSimulation(config: {
+			prefix: string;
+			steps: SimStep[];
+			arraySelector: string;
+			codeSelector: string;
+			copyId: string;
+			fillId: string;
+			stepId: string;
+			consoleId?: string;
+			stateMap?: Record<string, string>;
+		}) {
+			let current = 0;
+			let timer: number | null = null;
+			const prev = document.getElementById(`${config.prefix}-prev`) as HTMLButtonElement;
+			const next = document.getElementById(`${config.prefix}-next`) as HTMLButtonElement;
+			const auto = document.getElementById(`${config.prefix}-auto`) as HTMLButtonElement;
+			const copy = document.getElementById(config.copyId) as HTMLElement;
+			const fill = document.getElementById(config.fillId) as HTMLElement;
+			const badge = document.getElementById(config.stepId) as HTMLElement;
+			const consoleBody = config.consoleId ? document.getElementById(config.consoleId) as HTMLElement : null;
+			const slots = Array.from(document.querySelectorAll<HTMLElement>(`${config.arraySelector} .opa-slot`));
+			const lines = Array.from(document.querySelectorAll<HTMLElement>(`${config.codeSelector} [data-line]`));
+
+			const stopAuto = (): void => {
+				if (timer !== null) {
+					window.clearInterval(timer);
+					timer = null;
+				}
+				auto.textContent = isEnglish ? 'Auto-play ▶' : 'Auto-play ▶';
+			};
+
+			const render = (): void => {
+				const step = config.steps[current];
+				const lang = isEnglish ? 'en' : 'es';
+				copy.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${current + 1}:</strong> ${step.message[lang]}`;
+				fill.style.width = `${((current + 1) / config.steps.length) * 100}%`;
+				badge.textContent = `${isEnglish ? 'Step' : 'Paso'} ${current + 1} / ${config.steps.length}`;
+				lines.forEach((line) => line.classList.toggle('active', Number(line.dataset.line) === step.line));
+				slots.forEach((slot, index) => {
+					slot.classList.toggle('active', index === step.activeIndex);
+					slot.classList.toggle('moving', index === step.movingIndex);
+					if (step.values && step.values[index] !== undefined) {
+						const value = slot.querySelector<HTMLElement>('.opa-value');
+						if (value) value.textContent = step.values[index];
+					}
+				});
+				if (consoleBody) {
+					consoleBody.innerHTML = '';
+					(step.logs || []).forEach((entry, index) => {
+						const el = document.createElement('div');
+						el.className = 'opa-log';
+						el.style.animationDelay = `${index * 90}ms`;
+						el.textContent = `> ${entry}`;
+						consoleBody.appendChild(el);
+					});
+				}
+				if (config.stateMap && step.extra) {
+					Object.entries(config.stateMap).forEach(([key, id]) => {
+						const el = document.getElementById(id);
+						if (el) el.textContent = step.extra?.[key] ?? '-';
+					});
+				}
+				prev.disabled = current === 0;
+				next.disabled = current === config.steps.length - 1;
+			};
+
+			prev.addEventListener('click', () => { if (current > 0) { current -= 1; render(); } });
+			next.addEventListener('click', () => { if (current < config.steps.length - 1) { current += 1; render(); } });
+			auto.addEventListener('click', () => {
+				if (timer !== null) {
+					stopAuto();
+					return;
+				}
+				auto.textContent = isEnglish ? 'Pause ⏸' : 'Pausar ⏸';
+				timer = window.setInterval(() => {
+					if (current < config.steps.length - 1) {
+						current += 1;
+						render();
+					} else {
+						stopAuto();
+					}
+				}, 1500);
+			});
+			render();
+		}
+
+		setupSimulation({
+			prefix: 'walk',
+			steps: [
+				{ line: 1, message: { es: 'Se crea el arreglo con los valores 10, 20, 30, 40 y 50.', en: 'The array is created with values 10, 20, 30, 40, and 50.' }, logs: [], extra: { i: '-', value: '-' } },
+				{ line: 2, message: { es: 'Se declara la variable i, que se usará como índice.', en: 'Variable i is declared, to be used as the index.' }, logs: [], extra: { i: '-', value: '-' } },
+				{ line: 3, message: { es: 'Empieza el recorrido con i = 0.', en: 'Traversal starts with i = 0.' }, activeIndex: 0, logs: [], extra: { i: '0', value: '-' } },
+				{ line: 4, message: { es: 'Se imprime la posición 0 y su valor 10.', en: 'Position 0 and its value 10 are printed.' }, activeIndex: 0, logs: ['Posicion 0 -> 10'], extra: { i: '0', value: '10' } },
+				{ line: 4, message: { es: 'Ahora i vale 1 y se lee la segunda posición.', en: 'Now i equals 1 and the second position is read.' }, activeIndex: 1, logs: ['Posicion 0 -> 10', 'Posicion 1 -> 20'], extra: { i: '1', value: '20' } },
+				{ line: 4, message: { es: 'Después i vale 2 y se lee el valor 30.', en: 'Then i equals 2 and value 30 is read.' }, activeIndex: 2, logs: ['Posicion 0 -> 10', 'Posicion 1 -> 20', 'Posicion 2 -> 30'], extra: { i: '2', value: '30' } },
+				{ line: 4, message: { es: 'Finalmente también se visitan las posiciones 3 y 4.', en: 'Finally positions 3 and 4 are also visited.' }, activeIndex: 4, logs: ['Posicion 0 -> 10', 'Posicion 1 -> 20', 'Posicion 2 -> 30', 'Posicion 3 -> 40', 'Posicion 4 -> 50'], extra: { i: '4', value: '50' } },
+			],
+			arraySelector: '#walk-array',
+			codeSelector: '#walk-code',
+			copyId: 'walk-copy',
+			fillId: 'walk-fill',
+			stepId: 'walk-step',
+			consoleId: 'walk-console',
+			stateMap: { i: 'walk-i', value: 'walk-value' },
+		});
+
+		setupSimulation({
+			prefix: 'search',
+			steps: [
+				{ line: 1, message: { es: 'Tenemos un arreglo de 6 elementos y vamos a buscar el valor 14.', en: 'We have an array of 6 elements and we will search for value 14.' }, extra: { i: '-', pos: '-1' } },
+				{ line: 4, message: { es: 'Empieza la búsqueda desde i = 0.', en: 'Search starts from i = 0.' }, activeIndex: 0, extra: { i: '0', pos: '-1' } },
+				{ line: 5, message: { es: 'Se compara numeros[0] = 8 con 14. No coinciden.', en: 'numeros[0] = 8 is compared with 14. They don\'t match.' }, activeIndex: 0, extra: { i: '0', pos: '-1' } },
+				{ line: 5, message: { es: 'Ahora i = 1. Se compara numeros[1] = 14 con 14.', en: 'Now i = 1. numeros[1] = 14 is compared with 14.' }, activeIndex: 1, extra: { i: '1', pos: '-1' } },
+				{ line: 6, message: { es: 'Como coincide, guardamos posicion = 1.', en: 'Since they match, we save position = 1.' }, activeIndex: 1, extra: { i: '1', pos: '1' } },
+				{ line: 7, message: { es: 'Con break se corta el ciclo porque ya encontramos el dato.', en: 'With break the cycle stops because we already found the data.' }, activeIndex: 1, extra: { i: '1', pos: '1' } },
+			],
+			arraySelector: '#search-array',
+			codeSelector: '#search-code',
+			copyId: 'search-copy',
+			fillId: 'search-fill',
+			stepId: 'search-step',
+			stateMap: { i: 'search-i', pos: 'search-pos' },
+		});
+
+		setupSimulation({
+			prefix: 'insert',
+			steps: [
+				{ line: 1, message: { es: 'El arreglo tiene lugar para 6 valores, pero por ahora usa 4.', en: 'The array has room for 6 values, but currently uses 4.' }, values: ['10', '20', '40', '50', '-', '-'], extra: { count: '4' } },
+				{ line: 5, message: { es: 'Empieza el desplazamiento desde el final ocupado hacia la derecha.', en: 'Shifting starts from the occupied end toward the right.' }, values: ['10', '20', '40', '50', '-', '-'], movingIndex: 4, extra: { count: '4' } },
+				{ line: 6, message: { es: 'Se copia el 50 desde la posición 3 hacia la posición 4.', en: '50 is copied from position 3 to position 4.' }, values: ['10', '20', '40', '50', '50', '-'], movingIndex: 4, extra: { count: '4' } },
+				{ line: 6, message: { es: 'Ahora se copia el 40 desde la posición 2 hacia la posición 3.', en: 'Now 40 is copied from position 2 to position 3.' }, values: ['10', '20', '40', '40', '50', '-'], movingIndex: 3, extra: { count: '4' } },
+				{ line: 8, message: { es: 'Ya hay lugar en la posición 2. Allí se guarda el nuevo valor 30.', en: 'There is now room at position 2. The new value 30 is saved there.' }, values: ['10', '20', '30', '40', '50', '-'], activeIndex: 2, extra: { count: '4' } },
+				{ line: 9, message: { es: 'La cantidad lógica del arreglo aumenta de 4 a 5.', en: 'The logical count of the array increases from 4 to 5.' }, values: ['10', '20', '30', '40', '50', '-'], extra: { count: '5' } },
+				{ line: 9, message: { es: 'Resultado final: 10, 20, 30, 40, 50.', en: 'Final result: 10, 20, 30, 40, 50.' }, values: ['10', '20', '30', '40', '50', '-'], extra: { count: '5' } },
+			],
+			arraySelector: '#insert-array',
+			codeSelector: '#insert-code',
+			copyId: 'insert-copy',
+			fillId: 'insert-fill',
+			stepId: 'insert-step',
+			stateMap: { count: 'insert-count' },
+		});
+	</script>

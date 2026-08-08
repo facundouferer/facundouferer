@@ -1,0 +1,214 @@
+---
+import Icon from '../Icon.astro';
+import { withBase } from '../../utils/withBase';
+
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+---
+
+
+	<style is:global>
+		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
+		.if-screen {
+			--if-primary: #22c55e;
+			--if-blue: #38bdf8;
+			--if-bg: #07141a;
+			min-height: 100vh;
+			font-family: 'Chakra Petch', sans-serif;
+			color: #eafff2;
+			background: radial-gradient(circle at 15% 20%, rgba(34, 197, 94, 0.15), transparent 40%), linear-gradient(145deg, #04090c 0%, var(--if-bg) 100%);
+		}
+		.if-shell { max-width: 1150px; margin: 0 auto; padding: 2.2rem 1rem 3rem; }
+		.if-title { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; line-height: 1.05; }
+		.if-sub { max-width: 65ch; color: rgba(234, 255, 242, 0.84); }
+		.if-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
+		.if-card { border-radius: 1rem; border: 1px solid rgba(34, 197, 94, 0.25); background: linear-gradient(160deg, rgba(15, 39, 48, 0.9), rgba(7, 20, 26, 0.92)); padding: 1rem; }
+		.if-code { grid-column: span 12; }
+		.if-state { grid-column: span 12; }
+		.if-console { grid-column: span 12; }
+		@media (min-width: 1100px) { .if-code { grid-column: span 6; } .if-state, .if-console { grid-column: span 3; } }
+		.if-head { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
+		.if-badge { border: 1px solid rgba(56, 189, 248, 0.45); background: rgba(56, 189, 248, 0.14); border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.72rem; font-family: 'Fira Code', monospace; }
+		.if-panel { background: rgba(3, 10, 13, 0.86); border: 1px solid rgba(34, 197, 94, 0.22); border-radius: 0.8rem; padding: 0.75rem; }
+		.if-row { display: grid; grid-template-columns: 2rem 1fr; gap: 0.8rem; padding: 0.42rem 0.5rem; border-radius: 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.89rem; color: rgba(234, 255, 242, 0.86); transition: all 0.2s ease; }
+		.if-row.active { background: linear-gradient(90deg, rgba(34, 197, 94, 0.26), rgba(34, 197, 94, 0.06)); outline: 1px solid rgba(34, 197, 94, 0.4); transform: translateX(3px); }
+		.if-ln { color: rgba(234, 255, 242, 0.42); text-align: right; }
+		.if-state-item { display: flex; justify-content: space-between; border: 1px solid rgba(56, 189, 248, 0.28); background: rgba(56, 189, 248, 0.08); border-radius: 0.65rem; padding: 0.6rem 0.7rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.84rem; }
+		.if-value { color: var(--if-primary); font-size: 1rem; font-weight: 700; }
+		.if-true { color: #86efac; }
+		.if-false { color: #fb7185; }
+		.if-copy { margin-top: 0.8rem; border: 1px solid rgba(34, 197, 94, 0.35); background: rgba(34, 197, 94, 0.1); border-radius: 0.7rem; padding: 0.75rem; }
+		.if-controls { margin-top: 0.9rem; display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; }
+		.if-btn { border: 1px solid rgba(34, 197, 94, 0.45); background: rgba(34, 197, 94, 0.13); color: #eafff2; border-radius: 0.7rem; padding: 0.55rem 1rem; font-weight: 600; transition: all 0.2s ease; }
+		.if-btn:hover:not(:disabled) { background: rgba(34, 197, 94, 0.24); transform: translateY(-1px); }
+		.if-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+		.if-select { border: 1px solid rgba(56, 189, 248, 0.45); background: rgba(3, 10, 13, 0.92); color: #eafff2; border-radius: 0.6rem; padding: 0.45rem 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
+		.if-track { margin-top: 0.8rem; height: 0.55rem; border-radius: 999px; background: rgba(234, 255, 242, 0.12); overflow: hidden; }
+		.if-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--if-primary), var(--if-blue)); transition: width 0.25s ease; }
+		.if-console-win { border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 0.8rem; overflow: hidden; background: rgba(3, 10, 13, 0.86); }
+		.if-console-head { display: flex; justify-content: space-between; padding: 0.5rem 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.72rem; background: rgba(56, 189, 248, 0.12); border-bottom: 1px solid rgba(56, 189, 248, 0.3); }
+		.if-console-body { min-height: 150px; padding: 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+		.if-log { opacity: 0; transform: translateY(8px); animation: if-log 0.35s ease forwards; color: #d8f2ff; }
+		@keyframes if-log { to { opacity: 1; transform: translateY(0); } }
+		.if-back { display: inline-block; margin-top: 1.4rem; color: var(--if-blue); text-decoration: none; border-bottom: 1px dashed rgba(56, 189, 248, 0.5); }
+	</style>
+
+	<div class="if-screen">
+		<main class="if-shell">
+			<header class="mb-6">
+				<p class="if-badge">{lang === 'en' ? 'if / step by step' : 'if / paso a paso'}</p>
+				<h1 class="if-title mt-3">{lang === 'en' ? '<code>if</code> conditional, line by line' : 'Condicional <code>if</code>, linea por linea'}</h1>
+				<p class="if-sub mt-3">{lang === 'en' ? 'You see at each step the active line, the variable value, and why it enters (or not) the block.' : 'Vas viendo en cada paso la linea activa, el valor de la variable y por que entra (o no) al bloque.'}</p>
+			</header>
+			<section class="if-grid" aria-live="polite">
+				<article class="if-card if-code">
+					<div class="if-head"><strong>{lang === 'en' ? '1) Code' : '1) Codigo'}</strong><span class="if-badge" id="if-line">{lang === 'en' ? 'Active line: 1' : 'Linea activa: 1'}</span></div>
+					<div class="if-panel">
+						<div class="if-row" data-line="1"><span class="if-ln">1</span><span>int edad = 18;</span></div>
+						<div class="if-row" data-line="2"><span class="if-ln">2</span><span>if (edad &gt;= 18) &#123;</span></div>
+						<div class="if-row" data-line="3"><span class="if-ln">3</span><span>&nbsp;&nbsp;printf("Puede votar\n");</span></div>
+						<div class="if-row" data-line="4"><span class="if-ln">4</span><span>&#125;</span></div>
+						<div class="if-row" data-line="5"><span class="if-ln">5</span><span>printf("Fin del ejemplo\n");</span></div>
+					</div>
+					<div class="if-copy" id="if-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'Creates variable <code>edad</code> with value 18.' : 'Se crea la variable <code>edad</code> en 18.'}</div>
+					<div class="if-track"><div class="if-fill" id="if-fill"></div></div>
+					<div class="if-controls">
+						<button class="if-btn" id="if-prev" type="button">{lang === 'en' ? '⬅ Back' : '⬅ Retroceder'}</button>
+						<button class="if-btn" id="if-next" type="button">{lang === 'en' ? 'Next ➡' : 'Avanzar ➡'}</button>
+						<button class="if-btn" id="if-auto" type="button">{lang === 'en' ? 'Auto-play ▶' : 'Auto-play ▶'}</button>
+						<select class="if-select" id="if-level" aria-label={lang === 'en' ? 'Detail level' : 'Nivel de detalle'}>
+							<option value="basico" selected>{lang === 'en' ? 'Basic' : 'Basico'}</option>
+							<option value="intermedio">{lang === 'en' ? 'Intermediate' : 'Intermedio'}</option>
+						</select>
+						<span class="if-badge" id="if-step">{lang === 'en' ? 'Step 1 / 5' : 'Paso 1 / 5'}</span>
+					</div>
+				</article>
+				<article class="if-card if-state">
+					<div class="if-head"><strong>{lang === 'en' ? '2) Variables' : '2) Variables'}</strong></div>
+					<div class="if-state-item"><span>edad</span><span id="if-edad" class="if-value">18</span></div>
+					<div class="if-state-item"><span>Condicion edad &gt;= 18</span><span id="if-cond" class="if-value">-</span></div>
+				</article>
+				<article class="if-card if-console">
+					<div class="if-head"><strong>{lang === 'en' ? '3) Simulated console' : '3) Consola simulada'}</strong></div>
+					<div class="if-console-win">
+						<div class="if-console-head"><span>./if-demo</span><span>stdout</span></div>
+						<div class="if-console-body" id="if-console"></div>
+					</div>
+				</article>
+			</section>
+</main>
+	</div>
+
+	<script>
+		type Step = { line: number; message: { es: string; en: string }; edad: number; cond: 'true' | 'false' | '-'; logs: string[] };
+		const baseSteps: Step[] = [
+			{ line: 1, message: { es: 'Se declara edad con valor 18.', en: 'Declares edad with value 18.' }, edad: 18, cond: '-', logs: [] },
+			{ line: 2, message: { es: 'Se evalua la condicion: 18 >= 18 da true.', en: 'Evaluates condition: 18 >= 18 is true.' }, edad: 18, cond: 'true', logs: [] },
+			{ line: 3, message: { es: 'Como dio true, entra al bloque if y escribe en consola.', en: 'Since it was true, enters the if block and writes to console.' }, edad: 18, cond: 'true', logs: ['Puede votar'] },
+			{ line: 4, message: { es: 'Cierra el bloque if.', en: 'Closes the if block.' }, edad: 18, cond: 'true', logs: ['Puede votar'] },
+			{ line: 5, message: { es: 'Continua con la siguiente linea fuera del if.', en: 'Continues with the next line outside the if.' }, edad: 18, cond: 'true', logs: ['Puede votar', 'Fin del ejemplo'] },
+		];
+
+		const buildIntermediateSteps = (steps: Step[]): Step[] => {
+			const enriched: Step[] = [];
+			steps.forEach((stepState, index) => {
+				enriched.push(stepState);
+				if (index < steps.length - 1) {
+					enriched.push({
+						...stepState,
+						message: { es: `Detalle intermedio: ${stepState.message.es}`, en: `Intermediate detail: ${stepState.message.en}` },
+					});
+				}
+			});
+			return enriched;
+		};
+
+		type Level = 'basico' | 'intermedio';
+		const stepSets: Record<Level, Step[]> = {
+			basico: baseSteps,
+			intermedio: buildIntermediateSteps(baseSteps),
+		};
+
+		let currentLevel: Level = 'basico';
+		let activeSteps: Step[] = stepSets[currentLevel];
+
+		let currentStep = 0;
+		const prev = document.getElementById('if-prev') as HTMLButtonElement;
+		const next = document.getElementById('if-next') as HTMLButtonElement;
+		const auto = document.getElementById('if-auto') as HTMLButtonElement;
+		const levelSelect = document.getElementById('if-level') as HTMLSelectElement;
+		const line = document.getElementById('if-line') as HTMLElement;
+		const step = document.getElementById('if-step') as HTMLElement;
+		const copy = document.getElementById('if-copy') as HTMLElement;
+		const edad = document.getElementById('if-edad') as HTMLElement;
+		const cond = document.getElementById('if-cond') as HTMLElement;
+		const consoleBody = document.getElementById('if-console') as HTMLElement;
+		const fill = document.getElementById('if-fill') as HTMLElement;
+		let autoPlayTimer: number | null = null;
+		const isEnglish = document.documentElement.lang === 'en';
+
+		function stopAutoPlay(): void {
+			if (autoPlayTimer !== null) {
+				window.clearInterval(autoPlayTimer);
+				autoPlayTimer = null;
+			}
+			auto.textContent = isEnglish ? 'Auto-play ▶' : 'Auto-play ▶';
+		}
+
+		function toggleAutoPlay(): void {
+			if (autoPlayTimer !== null) {
+				stopAutoPlay();
+				return;
+			}
+			auto.textContent = isEnglish ? 'Pause ⏸' : 'Pausar ⏸';
+			autoPlayTimer = window.setInterval(() => {
+				if (currentStep < activeSteps.length - 1) {
+					currentStep += 1;
+					render();
+				} else {
+					stopAutoPlay();
+				}
+			}, 1300);
+		}
+
+		function render(): void {
+			const state = activeSteps[currentStep];
+			document.querySelectorAll<HTMLElement>('.if-row').forEach((row) => row.classList.toggle('active', Number(row.dataset.line) === state.line));
+			line.textContent = isEnglish ? `Active line: ${state.line}` : `Linea activa: ${state.line}`;
+			step.textContent = isEnglish ? `Step ${currentStep + 1} / ${activeSteps.length}` : `Paso ${currentStep + 1} / ${activeSteps.length}`;
+			copy.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${state.message[isEnglish ? 'en' : 'es']}`;
+			edad.textContent = String(state.edad);
+			cond.textContent = state.cond;
+			cond.classList.remove('if-true', 'if-false');
+			if (state.cond === 'true') cond.classList.add('if-true');
+			if (state.cond === 'false') cond.classList.add('if-false');
+			consoleBody.innerHTML = '';
+			state.logs.forEach((entry, index) => {
+				const el = document.createElement('div');
+				el.className = 'if-log';
+				el.style.animationDelay = `${index * 80}ms`;
+				el.textContent = `> ${entry}`;
+				consoleBody.appendChild(el);
+			});
+			fill.style.width = `${((currentStep + 1) / activeSteps.length) * 100}%`;
+			prev.disabled = currentStep === 0;
+			next.disabled = currentStep === activeSteps.length - 1;
+		}
+
+		prev.addEventListener('click', () => { if (currentStep > 0) { currentStep -= 1; render(); } });
+		next.addEventListener('click', () => { if (currentStep < activeSteps.length - 1) { currentStep += 1; render(); } });
+		auto.addEventListener('click', () => toggleAutoPlay());
+		levelSelect.addEventListener('change', () => {
+			currentLevel = levelSelect.value as Level;
+			activeSteps = stepSets[currentLevel];
+			currentStep = 0;
+			stopAutoPlay();
+			render();
+		});
+		document.addEventListener('keydown', (event: KeyboardEvent) => { if (event.key === 'ArrowLeft') prev.click(); if (event.key === 'ArrowRight') next.click(); });
+		render();
+	</script>
+

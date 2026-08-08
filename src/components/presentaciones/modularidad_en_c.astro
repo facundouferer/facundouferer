@@ -1,0 +1,1549 @@
+---
+import Icon from '../Icon.astro';
+import { withBase } from '../../utils/withBase';
+
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+---
+
+
+	<style is:global>
+		@import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&display=swap');
+
+		:root {
+			--primary: #0df259;
+			--crt-black: #050a05;
+			--crt-dark: #0a140a;
+		}
+
+		html {
+			scroll-behavior: smooth;
+		}
+
+		.crt-wrapper {
+			background: radial-gradient(circle, #0a1a0a 0%, #050a05 100%);
+			position: relative;
+		}
+
+		.crt-main {
+			font-family: 'Space Mono', monospace;
+			color: var(--primary);
+			position: relative;
+		}
+
+		.font-retro {
+			font-family: 'VT323', monospace;
+		}
+
+		/* Progress bar */
+		#progress-bar {
+			position: fixed;
+			top: 0;
+			left: 0;
+			height: 3px;
+			width: 0%;
+			background: var(--primary);
+			box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
+			z-index: 200;
+			transition: width 0.1s linear;
+		}
+
+		/* Sections */
+		.section {
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 80px 24px 40px;
+			position: relative;
+			z-index: 10;
+		}
+
+		.section-inner {
+			width: 100%;
+			max-width: 1100px;
+		}
+
+		/* Reveal animations */
+		.section-hidden {
+			opacity: 0;
+			transform: translateY(60px);
+			transition: opacity 0.8s ease, transform 0.8s ease;
+		}
+
+		.section-visible {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.anim-item {
+			opacity: 0;
+			transform: translateY(30px);
+			transition: opacity 0.6s ease, transform 0.6s ease;
+			transition-delay: var(--delay, 0ms);
+		}
+
+		.section-visible .anim-item {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		/* Divider */
+		.section-divider {
+			border: none;
+			border-top: 1px solid rgba(13, 242, 89, 0.15);
+			margin: 0 24px;
+		}
+
+		/* Code block */
+		.code-block {
+			background: rgba(0, 0, 0, 0.5);
+			border: 1px solid rgba(13, 242, 89, 0.2);
+			border-radius: 4px;
+			padding: 16px 20px;
+			font-family: 'Space Mono', monospace;
+			font-size: 0.85rem;
+			line-height: 1.7;
+		}
+
+		.code-comment  { color: rgba(13, 242, 89, 0.4); font-style: italic; }
+		.code-keyword  { color: #61afef; }
+		.code-string   { color: #e5c07b; }
+		.code-number   { color: #d19a66; }
+		.code-result   { color: var(--primary); }
+		.code-type     { color: #c678dd; }
+		.code-func     { color: #98c379; }
+		.code-var      { color: #e06c75; }
+
+		/* Split columns */
+		.split-col {
+			border: 1px solid rgba(13, 242, 89, 0.2);
+			border-radius: 8px;
+			padding: 24px;
+			background: rgba(13, 242, 89, 0.03);
+		}
+
+		.split-col-blue {
+			border: 1px solid rgba(59, 130, 246, 0.3);
+			border-radius: 8px;
+			padding: 24px;
+			background: rgba(59, 130, 246, 0.04);
+		}
+
+		.split-col-amber {
+			border: 1px solid rgba(251, 191, 36, 0.35);
+			border-radius: 8px;
+			padding: 24px;
+			background: rgba(251, 191, 36, 0.04);
+		}
+
+		.split-col-red {
+			border: 1px solid rgba(239, 68, 68, 0.4);
+			border-radius: 8px;
+			padding: 24px;
+			background: rgba(239, 68, 68, 0.05);
+		}
+
+		/* Type / info card */
+		.type-card {
+			border: 1px solid rgba(13, 242, 89, 0.25);
+			background: rgba(13, 242, 89, 0.04);
+			border-radius: 6px;
+			padding: 12px 16px;
+			transition: border-color 0.3s, box-shadow 0.3s;
+		}
+
+		.type-card:hover {
+			border-color: var(--primary);
+			box-shadow: 0 0 12px rgba(13, 242, 89, 0.2);
+		}
+
+		/* Terminal button */
+		.terminal-btn {
+			border: 1px solid var(--primary);
+			padding: 8px 24px;
+			text-transform: uppercase;
+			font-size: 0.875rem;
+			font-weight: 700;
+			transition: all 0.3s;
+			background-color: rgba(13, 242, 89, 0.05);
+			color: var(--primary);
+			text-decoration: none;
+			display: inline-block;
+			font-family: 'Space Mono', monospace;
+			letter-spacing: 0.05em;
+		}
+
+		.terminal-btn:hover {
+			background-color: var(--primary);
+			color: black;
+			box-shadow: 0 0 20px rgba(13, 242, 89, 0.5);
+		}
+
+		/* ==================== KEYFRAMES ==================== */
+
+		@keyframes float {
+			0%, 100% { transform: translateY(0px); }
+			50% { transform: translateY(-12px); }
+		}
+
+		@keyframes float-slow {
+			0%, 100% { transform: translateY(0px) rotate(0deg); }
+			50% { transform: translateY(-18px) rotate(3deg); }
+		}
+
+		@keyframes blink-cursor {
+			0%, 100% { opacity: 1; }
+			50% { opacity: 0; }
+		}
+
+		@keyframes spin-slow {
+			from { transform: rotate(0deg); }
+			to { transform: rotate(360deg); }
+		}
+
+		@keyframes spin-reverse {
+			from { transform: rotate(360deg); }
+			to { transform: rotate(0deg); }
+		}
+
+		@keyframes typing-sub {
+			from { width: 0; opacity: 1; }
+			to { width: 100%; opacity: 1; }
+		}
+
+		@keyframes copy-fly {
+			0%   { transform: translateX(0) scale(1); opacity: 1; }
+			50%  { transform: translateX(80px) scale(1.2); opacity: 0.8; }
+			100% { transform: translateX(160px) scale(1); opacity: 1; }
+		}
+
+		@keyframes dissolve {
+			0%   { opacity: 1; transform: scale(1); }
+			50%  { opacity: 0.5; transform: scale(1.05); filter: blur(2px); }
+			100% { opacity: 0; transform: scale(0.8); filter: blur(6px); }
+		}
+
+		@keyframes appear {
+			from { opacity: 0; transform: scale(0.7) translateY(10px); }
+			to   { opacity: 1; transform: scale(1) translateY(0); }
+		}
+
+		@keyframes pulse-border-amber {
+			0%, 100% { box-shadow: 0 0 8px #f59e0b, 0 0 16px #f59e0b; border-color: #f59e0b; }
+			50%       { box-shadow: 0 0 20px #f59e0b, 0 0 40px #f59e0b; border-color: #fcd34d; }
+		}
+
+		@keyframes pulse-border-magenta {
+			0%, 100% { box-shadow: 0 0 8px #d946ef, 0 0 16px #d946ef; border-color: #d946ef; }
+			50%       { box-shadow: 0 0 20px #d946ef, 0 0 40px #d946ef; border-color: #f0abfc; }
+		}
+
+		@keyframes arrow-flow {
+			0%   { opacity: 0; transform: translateX(-6px); }
+			50%  { opacity: 1; }
+			100% { opacity: 0; transform: translateX(6px); }
+		}
+
+		/* ==================== SECTION 1: INTRO ==================== */
+
+		.intro-title {
+			font-family: 'VT323', monospace;
+			font-size: clamp(2rem, 6vw, 5rem);
+			text-shadow: 0 0 15px rgba(13, 242, 89, 0.7);
+			line-height: 1;
+		}
+
+		.intro-subtitle {
+			font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+			opacity: 0;
+			overflow: hidden;
+			white-space: nowrap;
+			border-right: 2px solid var(--primary);
+		}
+
+		.intro-subtitle.typing-active {
+			animation: typing-sub 3s steps(70) 0.5s forwards, blink-cursor 0.7s step-end infinite;
+			width: 0;
+		}
+
+		.gear {
+			display: inline-block;
+			color: var(--primary);
+			opacity: 0.7;
+			text-shadow: 0 0 20px rgba(13, 242, 89, 0.5);
+		}
+
+		.gear-1 { animation: spin-slow 8s linear infinite; font-size: clamp(3rem, 8vw, 6rem); }
+		.gear-2 { animation: spin-reverse 5s linear infinite; font-size: clamp(2rem, 5vw, 4rem); opacity: 0.5; }
+		.gear-3 { animation: spin-slow 12s linear infinite; font-size: clamp(1.5rem, 4vw, 3rem); opacity: 0.4; }
+
+		/* ==================== SECTION 2: MODULARIZAR ==================== */
+
+		.monolith-block {
+			border: 2px solid rgba(239, 68, 68, 0.5);
+			border-radius: 6px;
+			padding: 16px;
+			background: rgba(239, 68, 68, 0.05);
+			font-family: 'Space Mono', monospace;
+			font-size: 0.7rem;
+			line-height: 1.6;
+			color: #ef4444;
+			min-height: 200px;
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+		}
+
+		.module-piece {
+			border-radius: 4px;
+			padding: 8px 12px;
+			font-family: 'Space Mono', monospace;
+			font-size: 0.75rem;
+			font-weight: 700;
+			text-align: center;
+			transition: transform 0.3s, box-shadow 0.3s;
+		}
+
+		.module-piece:hover { transform: scale(1.05); }
+
+		.mod-green  { background: rgba(13, 242, 89, 0.15);  border: 1px solid rgba(13, 242, 89, 0.5);  color: #0df259; }
+		.mod-blue   { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.5); color: #93c5fd; }
+		.mod-purple { background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.5); color: #c4b5fd; }
+		.mod-amber  { background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.5); color: #fcd34d; }
+		.mod-pink   { background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.5); color: #f9a8d4; }
+
+		/* ==================== STACK / LOCALES ==================== */
+
+		.stack-frame {
+			border: 2px solid #06b6d4;
+			border-radius: 6px;
+			padding: 12px 16px;
+			background: rgba(6, 182, 212, 0.05);
+			margin-bottom: 8px;
+			transition: all 0.5s ease;
+		}
+
+		.stack-frame-title {
+			font-family: 'VT323', monospace;
+			font-size: 1rem;
+			color: #67e8f9;
+			margin-bottom: 6px;
+			letter-spacing: 0.08em;
+		}
+
+		.stack-var {
+			display: inline-block;
+			border: 1px solid #06b6d4;
+			border-radius: 3px;
+			padding: 2px 8px;
+			margin: 2px;
+			font-size: 0.75rem;
+			color: #a5f3fc;
+			background: rgba(6, 182, 212, 0.08);
+		}
+
+		/* ==================== GLOBALES ==================== */
+
+		.global-box {
+			border: 2px solid #f59e0b;
+			border-radius: 8px;
+			padding: 16px 20px;
+			background: rgba(245, 158, 11, 0.06);
+			text-align: center;
+			animation: pulse-border-amber 2.5s ease-in-out infinite;
+		}
+
+		.global-arrow {
+			color: #f59e0b;
+			animation: arrow-flow 1.5s ease-in-out infinite;
+			display: inline-block;
+		}
+
+		/* ==================== MEMORY BOXES ==================== */
+
+		.mem-box {
+			border-radius: 6px;
+			padding: 12px 16px;
+			font-family: 'Space Mono', monospace;
+			font-size: 0.8rem;
+			text-align: center;
+			position: relative;
+			transition: all 0.4s ease;
+			min-width: 120px;
+		}
+
+		.mem-box-local {
+			border: 2px solid #06b6d4;
+			background: rgba(6, 182, 212, 0.08);
+			color: #a5f3fc;
+		}
+
+		.mem-box-pointer {
+			border: 2px solid #d946ef;
+			background: rgba(217, 70, 239, 0.08);
+			color: #f0abfc;
+			animation: pulse-border-magenta 2s ease-in-out infinite;
+		}
+
+		.mem-address {
+			font-size: 0.65rem;
+			opacity: 0.6;
+			margin-bottom: 4px;
+			color: #fb923c;
+		}
+
+		.mem-label {
+			font-weight: 700;
+			font-size: 0.9rem;
+		}
+
+		.mem-value {
+			font-size: 1.3rem;
+			font-family: 'VT323', monospace;
+			margin-top: 4px;
+		}
+
+		/* ==================== STEP INDICATORS ==================== */
+
+		.step-indicator {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 28px;
+			height: 28px;
+			border-radius: 50%;
+			border: 1px solid rgba(13, 242, 89, 0.4);
+			font-family: 'VT323', monospace;
+			font-size: 1.1rem;
+			color: var(--primary);
+			flex-shrink: 0;
+		}
+
+		.step-active .step-indicator {
+			background: var(--primary);
+			color: black;
+			border-color: var(--primary);
+			box-shadow: 0 0 12px rgba(13, 242, 89, 0.5);
+		}
+
+		.flow-arrow {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0 12px;
+			font-size: 1.4rem;
+			color: rgba(13, 242, 89, 0.5);
+		}
+
+		.step-hidden { opacity: 0.15; transition: opacity 0.5s; }
+		.step-active { opacity: 1; transition: opacity 0.5s; }
+
+		/* ==================== NOMINALES / EFECTIVOS ==================== */
+
+		.param-badge-nominal {
+			display: inline-block;
+			border: 1px solid rgba(13, 242, 89, 0.5);
+			background: rgba(13, 242, 89, 0.1);
+			border-radius: 4px;
+			padding: 4px 12px;
+			font-size: 0.8rem;
+			color: var(--primary);
+			font-family: 'Space Mono', monospace;
+			margin: 3px;
+		}
+
+		.param-badge-effective {
+			display: inline-block;
+			border: 1px solid rgba(251, 191, 36, 0.5);
+			background: rgba(251, 191, 36, 0.1);
+			border-radius: 4px;
+			padding: 4px 12px;
+			font-size: 0.8rem;
+			color: #fcd34d;
+			font-family: 'Space Mono', monospace;
+			margin: 3px;
+		}
+
+		/* ==================== REGLAS ==================== */
+
+		.rule-card {
+			border: 1px solid rgba(13, 242, 89, 0.2);
+			border-radius: 6px;
+			padding: 16px 20px;
+			background: rgba(13, 242, 89, 0.03);
+			display: flex;
+			align-items: flex-start;
+			gap: 12px;
+			transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+		}
+
+		.rule-card:hover {
+			border-color: var(--primary);
+			background: rgba(13, 242, 89, 0.06);
+			box-shadow: 0 0 16px rgba(13, 242, 89, 0.15);
+		}
+
+		.rule-num {
+			font-family: 'VT323', monospace;
+			font-size: 2rem;
+			color: var(--primary);
+			opacity: 0.5;
+			line-height: 1;
+			flex-shrink: 0;
+		}
+
+		/* Warning box */
+		.warning-box {
+			border: 2px solid rgba(239, 68, 68, 0.5);
+			border-radius: 6px;
+			padding: 14px 18px;
+			background: rgba(239, 68, 68, 0.06);
+			color: #fca5a5;
+		}
+
+		/* Comparison table */
+		.cmp-table {
+			width: 100%;
+			border-collapse: separate;
+			border-spacing: 0 4px;
+			font-size: 0.8rem;
+		}
+
+		.cmp-table th {
+			padding: 8px 12px;
+			font-size: 0.7rem;
+			letter-spacing: 0.1em;
+			color: rgba(13, 242, 89, 0.5);
+			border-bottom: 1px solid rgba(13, 242, 89, 0.15);
+			text-align: left;
+		}
+
+		.cmp-table td {
+			padding: 10px 12px;
+			border-bottom: 1px solid rgba(13, 242, 89, 0.07);
+			vertical-align: middle;
+		}
+
+		.cmp-table tr:hover td {
+			background: rgba(13, 242, 89, 0.04);
+		}
+
+		/* Responsive */
+		@media (max-width: 768px) {
+			.split-grid { flex-direction: column !important; }
+			.intro-title { font-size: 2.5rem; }
+		}
+	</style>
+
+	<div class="crt-wrapper min-h-screen flex flex-col">
+		<!-- Progress bar -->
+		<div id="progress-bar"></div>
+
+		<div class="relative z-[200]">
+		</div>
+
+		<main class="flex-1 crt-main">
+
+			<!-- ======================== SECTION 1: INTRO ======================== -->
+			<section class="section section-hidden" id="sec-intro">
+				<div class="section-inner text-center">
+					<div class="anim-item" style="--delay: 0ms">
+						<div class="text-xs tracking-widest opacity-40 font-retro text-lg">PROGRAMIERDS_OS v1.0.4 // TOPIC: MODULARIDAD_C</div>
+					</div>
+
+					<div class="anim-item flex justify-center items-center gap-6 my-8" style="--delay: 100ms">
+						<span class="gear gear-1">&#x2699;</span>
+						<span class="gear gear-2">&#x2699;</span>
+						<span class="gear gear-3">&#x2699;</span>
+					</div>
+
+					<div class="anim-item" style="--delay: 200ms">
+						<h1 class="intro-title uppercase tracking-tight mb-2">
+							{lang === 'en' ? 'Modularization' : 'Modularización'}
+						</h1>
+						<h1 class="intro-title uppercase tracking-tight mb-8" style="color: rgba(13,242,89,0.6)">
+							{lang === 'en' ? 'in C' : 'en C'}
+						</h1>
+					</div>
+
+					<div class="anim-item flex justify-center" style="--delay: 400ms">
+						<p class="intro-subtitle" id="intro-subtitle">
+							{lang === 'en' ? 'Subprograms, Functions, Procedures and the art of dividing to conquer.' : 'Subprogramas, Funciones, Procedimientos y el arte de dividir para conquistar.'}
+						</p>
+					</div>
+
+					<div class="anim-item mt-12 opacity-50" style="--delay: 600ms">
+						<p class="text-sm" style="animation: float 2s ease-in-out infinite">&#8595; {lang === 'en' ? 'scroll to continue' : 'scroll para continuar'}</p>
+					</div>
+				</div>
+			</section>
+
+			<hr class="section-divider" />
+
+			<!-- ======================== SECTION 2: QUÉ ES MODULARIZAR ======================== -->
+			<section class="section section-hidden" id="sec-modularizar">
+				<div class="section-inner">
+					<div class="anim-item text-center mb-10" style="--delay: 0ms">
+						<h2 class="font-retro text-4xl md:text-6xl uppercase tracking-tight">
+							{lang === 'en' ? 'What is Modularization?' : '¿Qué es Modularizar?'}
+						</h2>
+						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'Breaking a large problem into small, manageable parts' : 'Dividir un problema grande en partes pequeñas y manejables'}</p>
+					</div>
+
+					<div class="flex gap-8 split-grid" style="align-items: stretch">
+						<!-- Monolito -->
+						<div class="flex-1 anim-item" style="--delay: 150ms">
+							<h3 class="font-retro text-2xl text-center mb-4" style="color: #ef4444">{lang === 'en' ? '✗ The Monolith' : '✗ El Monolito'}</h3>
+							<div class="monolith-block">
+								<span style="opacity:0.6"><span class="code-comment">// main.c — 500 lines of terror</span></span>
+								<span> &lt; span class="code-keyword">int</span> main() &lbrace;</span>
+								<span style="padding-left:16px; color:#ef4444">// read data...</span>
+								<span style="padding-left:16px; color:#ef4444">// validate input...</span>
+								<span style="padding-left:16px; color:#ef4444">// calculate result...</span>
+								<span style="padding-left:16px; color:#ef4444">// format output...</span>
+								<span style="padding-left:16px; color:#ef4444">// save to file...</span>
+								<span style="padding-left:16px; color:#ef4444">// print to screen...</span>
+								<span style="padding-left:16px; color:#ef4444">// ... 490 more lines</span>
+								<span>&rbrace;</span>
+								<div style="margin-top: 8px; font-family:'VT323',monospace; font-size:0.85rem; color: rgba(239,68,68,0.6)">
+									{lang === 'en' ? 'One giant block. If something fails, everything explodes.' : 'Un solo bloque gigante. Si algo falla, todo explota.'}
+								</div>
+							</div>
+						</div>
+
+						<!-- Modular -->
+						<div class="flex-1 anim-item" style="--delay: 300ms">
+							<h3 class="font-retro text-2xl text-center mb-4" style="color: #0df259">{lang === 'en' ? '✓ Modularized' : '✓ Modularizado'}</h3>
+							<div class="split-col" style="height: calc(100% - 44px)">
+								<div class="flex flex-col gap-3">
+									<div class="module-piece mod-green anim-item" style="--delay: 400ms">leerDatos()</div>
+									<div class="module-piece mod-blue anim-item" style="--delay: 500ms">validarEntrada()</div>
+									<div class="module-piece mod-purple anim-item" style="--delay: 600ms">calcularResultado()</div>
+									<div class="module-piece mod-amber anim-item" style="--delay: 700ms">formatearSalida()</div>
+									<div class="module-piece mod-pink anim-item" style="--delay: 800ms">guardarArchivo()</div>
+								</div>
+								<div style="margin-top: 12px; font-family:'VT323',monospace; font-size:0.85rem; color: rgba(13,242,89,0.6)">
+									{lang === 'en' ? 'Small, independent, reusable pieces. Like LEGO.' : 'Piezas pequeñas, independientes, reutilizables. Como LEGO.'}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="anim-item mt-6 type-card" style="--delay: 900ms">
+						<p class="text-xs opacity-50 mb-1">{lang === 'en' ? 'ANALOGY' : 'ANALOGÍA'}</p>
+						<p class="text-sm">{lang === 'en' ? "You don't sculpt from a whole rock — you build with LEGO. Each piece has a defined shape, fits with others, and can be reused in any construction." : 'No esculpís desde una roca entera — construyés con LEGO. Cada pieza tiene forma definida, encaja con otras, y la podés reusar en cualquier construcción.'}</p>
+					</div>
+				</div>
+			</section>
+
+			<hr class="section-divider" />
+
+			<!-- ======================== SECTION 3: SUBPROGRAMAS ======================== -->
+			<section class="section section-hidden" id="sec-subprogramas">
+				<div class="section-inner">
+					<div class="anim-item text-center mb-10" style="--delay: 0ms">
+						<h2 class="font-retro text-4xl md:text-6xl uppercase tracking-tight">{lang === 'en' ? 'Subprograms' : 'Subprogramas'}</h2>
+						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'In C, every subprogram is a' : 'En C, todo subprograma es una'} <strong>{lang === 'en' ? 'function' : 'función'}</strong>. {lang === 'en' ? 'There is nothing else.' : 'No hay otra cosa.'}</p>
+					</div>
+
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+						<!-- Anatomía -->
+						<div class="anim-item" style="--delay: 150ms">
+							<h3 class="font-retro text-2xl mb-6 text-center">{lang === 'en' ? ' Anatomy of a Function' : ' Anatomía de una Función'}</h3>
+
+							<div class="mb-6 space-y-2">
+								<div style="display:flex; align-items:center; gap:8px">
+									<span style="width:10px; height:10px; border-radius:50%; background:#c678dd; flex-shrink:0; display:inline-block"></span>
+									<span class="font-retro text-sm" style="color:#c678dd">{lang === 'en' ? 'RETURN_TYPE — what it returns' : 'TIPO_DE_RETORNO — qué devuelve'}</span>
+								</div>
+								<div style="display:flex; align-items:center; gap:8px">
+									<span style="width:10px; height:10px; border-radius:50%; background:#98c379; flex-shrink:0; display:inline-block"></span>
+									<span class="font-retro text-sm" style="color:#98c379">{lang === 'en' ? 'NAME — function identifier' : 'NOMBRE — identificador de la función'}</span>
+								</div>
+								<div style="display:flex; align-items:center; gap:8px">
+									<span style="width:10px; height:10px; border-radius:50%; background:#f59e0b; flex-shrink:0; display:inline-block"></span>
+									<span class="font-retro text-sm" style="color:#fcd34d">{lang === 'en' ? 'PARAMETERS — input data' : 'PARÁMETROS — datos de entrada'}</span>
+								</div>
+								<div style="display:flex; align-items:center; gap:8px">
+									<span style="width:10px; height:10px; border-radius:50%; background:#61afef; flex-shrink:0; display:inline-block"></span>
+									<span class="font-retro text-sm" style="color:#61afef">{lang === 'en' ? 'BODY — logic and instructions' : 'CUERPO — lógica e instrucciones'}</span>
+								</div>
+							</div>
+
+							<div class="code-block">
+<span class="code-type">int</span> <span class="code-func">sumar</span>(<span class="code-type">int</span> <span class="code-var">a</span>, <span class="code-type">int</span> <span class="code-var">b</span>) &lbrace;<br>
+<span style="padding-left:20px"><span class="code-type">int</span> <span class="code-var">resultado</span> = <span class="code-var">a</span> + <span class="code-var">b</span>;</span><br>
+<span style="padding-left:20px"><span class="code-keyword">return</span> <span class="code-var">resultado</span>;</span><br>
+&rbrace;
+							</div>
+						</div>
+
+						<!-- Conceptos -->
+						<div>
+							<div class="anim-item type-card mb-4" style="--delay: 250ms">
+								<p class="text-xs opacity-50 mb-1">{lang === 'en' ? 'REUSABILITY' : 'REUTILIZACIÓN'}</p>
+								<p class="text-sm">{lang === 'en' ? 'Once defined, the function can be called' : 'Una vez definida, la función puede llamarse'} <strong>{lang === 'en' ? 'infinitely many times' : 'infinitas veces'}</strong> {lang === 'en' ? 'from any part of the program.' : 'desde cualquier parte del programa.'}</p>
+							</div>
+
+							<div class="anim-item type-card mb-4" style="--delay: 350ms">
+								<p class="text-xs opacity-50 mb-1">{lang === 'en' ? 'ABSTRACTION' : 'ABSTRACCIÓN'}</p>
+								<p class="text-sm">{lang === 'en' ? "You don't need to know" : 'No necesitás saber'} <em>{lang === 'en' ? 'how' : 'cómo'}</em> {lang === 'en' ? 'it works to use it. Only what it receives and what it returns.' : 'funciona para usarla. Solo qué recibe y qué devuelve.'}</p>
+							</div>
+
+							<div class="anim-item code-block text-xs" style="--delay: 450ms">
+<span class="code-type">int</span> <span class="code-var">x</span> = <span class="code-func">sumar</span>(<span class="code-number">3</span>, <span class="code-number">7</span>);   <span class="code-comment">// x = 10</span><br>
+<span class="code-type">int</span> <span class="code-var">y</span> = <span class="code-func">sumar</span>(<span class="code-number">100</span>, <span class="code-number">200</span>); <span class="code-comment">// y = 300</span><br>
+<span class="code-type">int</span> <span class="code-var">z</span> = <span class="code-func">sumar</span>(<span class="code-var">x</span>, <span class="code-var">y</span>);    <span class="code-comment">// z = 310</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<hr class="section-divider" />
+
+			<!-- ======================== SECTION 4: FUNCIONES vs PROCEDIMIENTOS ======================== -->
+			<section class="section section-hidden" id="sec-func-proc">
+				<div class="section-inner">
+					<div class="anim-item text-center mb-10" style="--delay: 0ms">
+						<h2 class="font-retro text-4xl md:text-6xl uppercase tracking-tight">
+							{lang === 'en' ? 'Functions' : 'Funciones'} <span class="opacity-30">vs</span> {lang === 'en' ? 'Procedures' : 'Procedimientos'}
+						</h2>
+						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'The difference is whether they return something or not' : 'La diferencia está en si devuelven algo o no'}</p>
+					</div>
+
+					<div class="flex gap-8 split-grid">
+						<!-- Procedimiento -->
+						<div class="flex-1 anim-item split-col-blue" style="--delay: 150ms">
+							<h3 class="font-retro text-3xl mb-1 text-center" style="color:#93c5fd">{lang === 'en' ? 'PROCEDURE' : 'PROCEDIMIENTO'}</h3>
+							<p class="text-xs text-center mb-4 opacity-60" style="color:#93c5fd">{lang === 'en' ? 'void — executes an action, returns nothing' : 'void — ejecuta una acción, no retorna nada'}</p>
+
+							<div class="text-center py-4">
+								<div style="display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:8px">
+									<span style="color:#93c5fd; font-size:0.8rem">{lang === 'en' ? 'data IN' : 'datos IN'}</span>
+									<span style="color:#93c5fd; animation: arrow-flow 1.2s ease-in-out infinite; display:inline-block">&#x279C;</span>
+									<div style="border:2px solid #93c5fd; border-radius:6px; padding:8px 16px; background:rgba(59,130,246,0.1); font-family:'VT323',monospace; font-size:1.3rem; color:#93c5fd">
+										imprimirMenu()
+									</div>
+									<span style="color:rgba(59,130,246,0.25); font-size:0.75rem">{lang === 'en' ? '✗ no return' : '✗ sin retorno'}</span>
+								</div>
+								<p class="text-xs opacity-50 mt-2">{lang === 'en' ? 'Like a worker who does the task and thats it' : 'Como un trabajador que hace la tarea y ya'}</p>
+							</div>
+
+							<div class="code-block text-xs mt-2">
+<span class="code-keyword">void</span> <span class="code-func">imprimirMenu</span>() &lbrace;<br>
+<span style="padding-left:16px"><span class="code-func">printf</span>(<span class="code-string">"1. Ingresar\n"</span>);</span><br>
+<span style="padding-left:16px"><span class="code-func">printf</span>(<span class="code-string">"2. Salir\n"</span>);</span><br>
+<span style="padding-left:16px"><span class="code-comment">// no hay return</span></span><br>
+&rbrace;
+							</div>
+						</div>
+
+						<!-- Función -->
+						<div class="flex-1 anim-item split-col" style="--delay: 300ms">
+							<h3 class="font-retro text-3xl mb-1 text-center">{lang === 'en' ? 'FUNCTION' : 'FUNCIÓN'}</h3>
+							<p class="text-xs text-center mb-4 opacity-60">{lang === 'en' ? 'with return type — calculates and returns a value' : 'con tipo de retorno — calcula y devuelve un valor'}</p>
+
+							<div class="text-center py-4">
+								<div style="display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:8px">
+									<span style="color:var(--primary); font-size:0.8rem">a, b IN</span>
+									<span style="color:var(--primary); animation: arrow-flow 1.2s ease-in-out infinite; display:inline-block">&#x279C;</span>
+									<div style="border:2px solid var(--primary); border-radius:6px; padding:8px 16px; background:rgba(13,242,89,0.07); font-family:'VT323',monospace; font-size:1.3rem">
+										sumar(a, b)
+									</div>
+									<span style="color:var(--primary); animation: arrow-flow 1.2s ease-in-out 0.3s infinite; display:inline-block">&#x279C;</span>
+									<span style="color:var(--primary); font-size:0.8rem">{lang === 'en' ? 'result OUT' : 'resultado OUT'}</span>
+								</div>
+								<p class="text-xs opacity-50 mt-2">{lang === 'en' ? 'Like a worker who brings back the result' : 'Como un trabajador que trae de vuelta el resultado'}</p>
+							</div>
+
+							<div class="code-block text-xs mt-2">
+<span class="code-type">int</span> <span class="code-func">sumar</span>(<span class="code-type">int</span> <span class="code-var">a</span>, <span class="code-type">int</span> <span class="code-var">b</span>) &lbrace;<br>
+<span style="padding-left:16px"><span class="code-keyword">return</span> <span class="code-var">a</span> + <span class="code-var">b</span>;</span><br>
+&rbrace;<br>
+<span class="code-type">int</span> <span class="code-var">r</span> = <span class="code-func">sumar</span>(<span class="code-number">3</span>, <span class="code-number">4</span>); <span class="code-comment">// r = 7</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<hr class="section-divider" />
+
+			<!-- ======================== SECTION 5: VARIABLES LOCALES ======================== -->
+			<section class="section section-hidden" id="sec-locales">
+				<div class="section-inner">
+					<div class="anim-item text-center mb-10" style="--delay: 0ms">
+						<h2 class="font-retro text-4xl md:text-6xl uppercase tracking-tight">{lang === 'en' ? 'Local Variables' : 'Variables Locales'}</h2>
+						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'They live inside the function. When it ends, they disappear.' : 'Viven dentro de la función. Cuando termina, desaparecen.'}</p>
+					</div>
+
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+						<!-- Stack frames visual -->
+						<div class="anim-item" style="--delay: 150ms">
+							<h3 class="font-retro text-xl mb-4 text-center opacity-60">{lang === 'en' ? 'EXECUTION STACK' : 'STACK DE EJECUCIÓN'}</h3>
+
+							<div style="border: 1px solid rgba(13,242,89,0.15); border-radius: 8px; padding: 16px; min-height: 260px; display:flex; flex-direction:column-reverse; gap: 6px; position:relative">
+								<div class="stack-frame" id="frame-main">
+									<div class="stack-frame-title">&#x25BC; main()</div>
+									<span class="stack-var">argc = 1</span>
+								</div>
+								<div class="stack-frame anim-item" id="frame-calcular" style="--delay: 800ms; border-color: #22d3ee; background: rgba(34,211,238,0.06)">
+									<div class="stack-frame-title" style="color:#67e8f9">&#x25BC; calcular()</div>
+									<span class="stack-var">base = 10</span>
+									<span class="stack-var">altura = 5</span>
+									<span class="stack-var">area = 50</span>
+									<div style="font-size:0.65rem; color:rgba(6,182,212,0.5); margin-top:6px; font-family:'VT323',monospace">
+										&#x2191; {lang === 'en' ? 'only exist here inside' : 'solo existen acá dentro'}
+									</div>
+								</div>
+								<div style="position:absolute; top:10px; right:12px; font-family:'VT323',monospace; font-size:0.75rem; color:rgba(13,242,89,0.3)">STACK</div>
+							</div>
+
+							<p class="text-xs opacity-40 text-center mt-3 font-retro text-base">{lang === 'en' ? 'Each call stacks a new "drawer" with its local vars' : 'Cada llamada apila un nuevo "cajón" con sus vars locales'}</p>
+						</div>
+
+						<!-- Code + explanation -->
+						<div>
+							<div class="anim-item code-block text-xs mb-4" style="--delay: 250ms">
+<span class="code-type">int</span> <span class="code-func">calcular</span>(<span class="code-type">int</span> <span class="code-var">base</span>, <span class="code-type">int</span> <span class="code-var">altura</span>) &lbrace;<br>
+<span style="padding-left:16px"><span class="code-type">int</span> <span class="code-var">area</span> = <span class="code-var">base</span> * <span class="code-var">altura</span>;</span><br>
+<span style="padding-left:16px"><span class="code-keyword">return</span> <span class="code-var">area</span>;</span><br>
+&rbrace;<br><br>
+<span class="code-type">int</span> <span class="code-func">main</span>() &lbrace;<br>
+<span style="padding-left:16px"><span class="code-type">int</span> <span class="code-var">r</span> = <span class="code-func">calcular</span>(<span class="code-number">10</span>, <span class="code-number">5</span>);</span><br>
+<span style="padding-left:16px"><span class="code-comment">// 'area' DOES NOT exist here</span></span><br>
+<span style="padding-left:16px"><span class="code-comment">// printf("%d", area); → ERROR</span></span><br>
+&rbrace;
+							</div>
+
+							<div class="anim-item warning-box" style="--delay: 400ms">
+								<p class="font-retro text-lg mb-1">&#x26A0; {lang === 'en' ? 'Compilation Error' : 'Error de compilación'}</p>
+								<p class="text-xs">{lang === 'en' ? 'Trying to use' : 'Intentar usar'} <code style="color:#f0abfc">area</code> {lang === 'en' ? 'outside of' : 'fuera de'} <code style="color:#98c379">calcular()</code> {lang === 'en' ? 'fails. The local variable does not exist outside its scope. The compiler tells you right to your face.' : 'falla. La variable local no existe fuera de su scope. El compilador te lo dice en la cara.'}</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<hr class="section-divider" />
+
+			<!-- ======================== SECTION 6: VARIABLES GLOBALES ======================== -->
+			<section class="section section-hidden" id="sec-globales">
+				<div class="section-inner">
+					<div class="anim-item text-center mb-10" style="--delay: 0ms">
+						<h2 class="font-retro text-4xl md:text-6xl uppercase tracking-tight">{lang === 'en' ? 'Global Variables' : 'Variables Globales'}</h2>
+						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'Declared outside any function. Everyone can see them... and modify them.' : 'Declaradas fuera de toda función. Todos pueden verlas... y modificarlas.'}</p>
+					</div>
+
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+						<!-- Visual -->
+						<div class="anim-item" style="--delay: 150ms">
+							<div class="global-box mb-6">
+								<p class="font-retro text-xl mb-2" style="color:#fcd34d">{lang === 'en' ? 'GLOBAL VARIABLE' : 'VARIABLE GLOBAL'}</p>
+								<div class="code-block text-sm" style="text-align:left">
+									<span class="code-type">int</span> <span class="code-var" style="color:#fcd34d">contador</span> = <span class="code-number">0</span>;
+								</div>
+							</div>
+
+							<div class="flex flex-col gap-3">
+								<div style="display:flex; align-items:center; gap:12px">
+									<span class="global-arrow">&#x279C;</span>
+									<div style="border:1px solid rgba(245,158,11,0.3); border-radius:4px; padding:6px 12px; font-family:'Space Mono',monospace; font-size:0.75rem; color:#fcd34d; flex:1">
+										<span class="code-func">funcionA</span>() {lang === 'en' ? 'can read and write' : 'puede leer y escribir'} <span style="color:#fcd34d">contador</span>
+									</div>
+								</div>
+								<div style="display:flex; align-items:center; gap:12px">
+									<span class="global-arrow" style="animation-delay:0.4s">&#x279C;</span>
+									<div style="border:1px solid rgba(245,158,11,0.3); border-radius:4px; padding:6px 12px; font-family:'Space Mono',monospace; font-size:0.75rem; color:#fcd34d; flex:1">
+										<span class="code-func">funcionB</span>() {lang === 'en' ? 'can read and write' : 'puede leer y escribir'} <span style="color:#fcd34d">contador</span>
+									</div>
+								</div>
+								<div style="display:flex; align-items:center; gap:12px">
+									<span class="global-arrow" style="animation-delay:0.8s">&#x279C;</span>
+									<div style="border:1px solid rgba(245,158,11,0.3); border-radius:4px; padding:6px 12px; font-family:'Space Mono',monospace; font-size:0.75rem; color:#fcd34d; flex:1">
+										<span class="code-func">main</span>() {lang === 'en' ? 'can read and write' : 'puede leer y escribir'} <span style="color:#fcd34d">contador</span>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Warning + code -->
+						<div>
+							<div class="anim-item code-block text-xs mb-4" style="--delay: 250ms">
+<span class="code-type">int</span> <span class="code-var" style="color:#fcd34d">contador</span> = <span class="code-number">0</span>; <span class="code-comment">// GLOBAL</span><br><br>
+<span class="code-keyword">void</span> <span class="code-func">incrementar</span>() &lbrace;<br>
+<span style="padding-left:16px"><span class="code-var" style="color:#fcd34d">contador</span>++;</span><br>
+&rbrace;<br><br>
+<span class="code-keyword">void</span> <span class="code-func">resetear</span>() &lbrace;<br>
+<span style="padding-left:16px"><span class="code-var" style="color:#fcd34d">contador</span> = <span class="code-number">0</span>;</span><br>
+&rbrace;<br><br>
+<span class="code-type">int</span> <span class="code-func">main</span>() &lbrace;<br>
+<span style="padding-left:16px"><span class="code-func">incrementar</span>();</span><br>
+<span style="padding-left:16px"><span class="code-func">incrementar</span>();</span><br>
+<span style="padding-left:16px"><span class="code-func">resetear</span>();   <span class="code-comment">// surprise!</span></span><br>
+&rbrace;
+							</div>
+
+							<div class="anim-item warning-box" style="--delay: 400ms">
+								<p class="font-retro text-lg mb-2">&#x26A0; {lang === 'en' ? 'DANGER: Ghost Effect' : 'PELIGRO: Efecto Fantasma'}</p>
+								<p class="text-xs mb-2"><code class="code-func" style="color:#98c379">resetear()</code> {lang === 'en' ? 'modifies' : 'modifica'} <span style="color:#fcd34d">contador</span> {lang === 'en' ? 'without anyone expecting it. This kind of bug is a' : 'sin que nadie lo espere. Este tipo de bug es una'} <strong>{lang === 'en' ? 'nightmare to debug' : 'pesadilla para debuggear'}</strong>.</p>
+								<p class="text-xs opacity-70">{lang === 'en' ? 'Use globals only when strictly necessary.' : 'Usá globales solo cuando sea estrictamente necesario.'}</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<hr class="section-divider" />
+
+			<!-- ======================== SECTION 7: LOCALES vs GLOBALES comparación ======================== -->
+			<section class="section section-hidden" id="sec-scope">
+				<div class="section-inner">
+					<div class="anim-item text-center mb-10" style="--delay: 0ms">
+						<h2 class="font-retro text-4xl md:text-6xl uppercase tracking-tight">
+							{lang === 'en' ? 'Local' : 'Locales'} <span class="opacity-30">vs</span> {lang === 'en' ? 'Global' : 'Globales'}
+						</h2>
+						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'And the mystery of' : 'Y el misterio del'} <strong>{lang === 'en' ? 'shadowing' : 'shadowing'}</strong>: {lang === 'en' ? 'when a variable hides another' : 'cuándo una variable oculta a otra'}</p>
+					</div>
+
+					<div class="anim-item code-block text-xs mb-6" style="--delay: 150ms">
+<span class="code-type">int</span> <span class="code-var" style="color:#fcd34d">x</span> = <span class="code-number">100</span>; <span class="code-comment">// GLOBAL x</span><br><br>
+<span class="code-keyword">void</span> <span class="code-func">miFuncion</span>() &lbrace;<br>
+<span style="padding-left:16px"><span class="code-type">int</span> <span class="code-var" style="color:#a5f3fc">x</span> = <span class="code-number">5</span>; <span class="code-comment">// LOCAL x — HIDES the global</span></span><br>
+<span style="padding-left:16px"><span class="code-func">printf</span>(<span class="code-string">"%d"</span>, <span class="code-var" style="color:#a5f3fc">x</span>); <span class="code-comment">// prints 5, not 100</span></span><br>
+&rbrace; <span class="code-comment">// the local x disappears here</span><br><br>
+<span class="code-type">int</span> <span class="code-func">main</span>() &lbrace;<br>
+<span style="padding-left:16px"><span class="code-func">printf</span>(<span class="code-string">"%d"</span>, <span class="code-var" style="color:#fcd34d">x</span>); <span class="code-comment">// prints 100 (the global)</span></span><br>
+<span style="padding-left:16px"><span class="code-func">miFuncion</span>();              <span class="code-comment">// prints 5</span></span><br>
+<span style="padding-left:16px"><span class="code-func">printf</span>(<span class="code-string">"%d"</span>, <span class="code-var" style="color:#fcd34d">x</span>); <span class="code-comment">// still 100</span></span><br>
+&rbrace;
+					</div>
+
+					<div class="flex gap-6 split-grid">
+						<div class="flex-1 anim-item type-card" style="--delay: 300ms">
+							<p class="text-xs opacity-50 mb-1" style="color:#a5f3fc">{lang === 'en' ? 'LOCAL (cyan)' : 'LOCAL (cyan)'}</p>
+							<p class="text-sm">{lang === 'en' ? 'Exists only inside its block. It has priority over the global of the same name within that scope. When the block ends, it disappears from the stack.' : 'Existe solo dentro de su bloque. Tiene prioridad sobre la global del mismo nombre dentro de ese scope. Cuando el bloque termina, desaparece del stack.'}</p>
+						</div>
+						<div class="flex-1 anim-item type-card" style="--delay: 400ms; border-color: rgba(251,191,36,0.25)">
+							<p class="text-xs opacity-50 mb-1" style="color:#fcd34d">{lang === 'en' ? 'GLOBAL (amber)' : 'GLOBAL (amber)'}</p>
+							<p class="text-sm">{lang === 'en' ? 'Visible from any function. If a function has a local with the same name, the global becomes' : 'Visible desde cualquier función. Si una función tiene una local del mismo nombre, la global queda'} <strong>{lang === 'en' ? 'hidden (shadowed)' : 'oculta (shadowed)'}</strong> {lang === 'en' ? 'inside that function.' : 'dentro de esa función.'}</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<hr class="section-divider" />
+
+			<!-- ======================== SECTION 8: PASAJE POR VALOR ======================== -->
+			<section class="section section-hidden" id="sec-por-valor">
+				<div class="section-inner">
+					<div class="anim-item text-center mb-10" style="--delay: 0ms">
+						<h2 class="font-retro text-4xl md:text-6xl uppercase tracking-tight">{lang === 'en' ? 'Pass by Value' : 'Pasaje Por Valor'}</h2>
+						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'The value is copied. The original remains intact.' : 'Se copia el valor. El original queda intacto.'}</p>
+					</div>
+
+					<!-- Memory boxes -->
+					<div class="flex items-center justify-center gap-4 mb-8 flex-wrap">
+						<div style="border:1px solid rgba(13,242,89,0.2); border-radius:8px; padding:16px; text-align:center; min-width:180px">
+							<div class="font-retro text-sm opacity-50 mb-3">{lang === 'en' ? 'FRAME: main()' : 'FRAME: main()'}</div>
+							<div class="mem-box mem-box-local mx-auto" id="box-main-x" style="min-width:100px">
+								<div class="mem-address">0xFF01</div>
+								<div class="mem-label">x</div>
+								<div class="mem-value" id="val-main-x">5</div>
+							</div>
+						</div>
+
+						<div class="flow-arrow">&#x279C;</div>
+
+						<div style="border:1px solid rgba(13,242,89,0.2); border-radius:8px; padding:16px; text-align:center; min-width:180px" id="inc-frame">
+							<div class="font-retro text-sm opacity-50 mb-3">{lang === 'en' ? 'FRAME: inc()' : 'FRAME: inc()'}</div>
+							<div class="mem-box mem-box-local mx-auto" id="box-inc-n" style="min-width:100px">
+								<div class="mem-address">0xFF10</div>
+								<div class="mem-label">{lang === 'en' ? 'n (copy)' : 'n (copia)'}</div>
+								<div class="mem-value" id="val-inc-n">5</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Steps -->
+					<div class="space-y-3 max-w-xl mx-auto mb-8">
+						<div class="flex items-start gap-3 step-hidden" id="valor-step-0">
+							<span class="step-indicator">1</span>
+							<span class="text-sm pt-1"><code class="code-var">x</code> {lang === 'en' ? 'is' : 'vale'} <strong>5</strong> {lang === 'en' ? 'in the main frame' : 'en el frame de main'}</span>
+						</div>
+						<div class="flex items-start gap-3 step-hidden" id="valor-step-1">
+							<span class="step-indicator">2</span>
+							<span class="text-sm pt-1"><span class="code-func">inc(x)</span> {lang === 'en' ? 'is called — the value 5 is' : 'se llama — el valor 5 se'} <strong>{lang === 'en' ? 'copied' : 'copia'}</strong> {lang === 'en' ? 'into' : 'en'} <code class="code-var">n</code></span>
+						</div>
+						<div class="flex items-start gap-3 step-hidden" id="valor-step-2">
+							<span class="step-indicator">3</span>
+							<span class="text-sm pt-1">{lang === 'en' ? 'Inside' : 'Dentro de'} <code class="code-func">inc()</code>, <code class="code-var">n</code> {lang === 'en' ? 'becomes' : 'pasa a valer'} <strong>6</strong> (n++)</span>
+						</div>
+						<div class="flex items-start gap-3 step-hidden" id="valor-step-3">
+							<span class="step-indicator">4</span>
+							<span class="text-sm pt-1">{lang === 'en' ? 'The function ends, the inc() frame is destroyed. ' : 'La función termina, el frame de inc() se destruye. '} <code class="code-var">n</code> {lang === 'en' ? 'disappears.' : 'desaparece.'}</span>
+						</div>
+						<div class="flex items-start gap-3 step-hidden" id="valor-step-4">
+							<span class="step-indicator">5</span>
+							<span class="text-sm pt-1"><code class="code-var">x</code> {lang === 'en' ? 'still equals' : 'sigue valiendo'} <strong>5</strong>. {lang === 'en' ? 'The original was not touched.' : 'El original no fue tocado.'}</span>
+						</div>
+					</div>
+
+					<div class="anim-item code-block text-xs" style="--delay: 200ms">
+<span class="code-keyword">void</span> <span class="code-func">inc</span>(<span class="code-type">int</span> <span class="code-var">n</span>) &lbrace;<br>
+<span style="padding-left:16px"><span class="code-var">n</span>++; <span class="code-comment">// modifies the copy, not the original</span></span><br>
+&rbrace;<br><br>
+<span class="code-type">int</span> <span class="code-func">main</span>() &lbrace;<br>
+<span style="padding-left:16px"><span class="code-type">int</span> <span class="code-var">x</span> = <span class="code-number">5</span>;</span><br>
+<span style="padding-left:16px"><span class="code-func">inc</span>(<span class="code-var">x</span>);              <span class="code-comment">// passes a COPY of x</span></span><br>
+<span style="padding-left:16px"><span class="code-func">printf</span>(<span class="code-string">"%d"</span>, <span class="code-var">x</span>); <span class="code-comment">// prints 5 — unchanged</span></span><br>
+&rbrace;
+					</div>
+				</div>
+			</section>
+
+			<hr class="section-divider" />
+
+			<!-- ======================== SECTION 9: PASAJE POR REFERENCIA ======================== -->
+			<section class="section section-hidden" id="sec-por-ref">
+				<div class="section-inner">
+					<div class="anim-item text-center mb-10" style="--delay: 0ms">
+						<h2 class="font-retro text-4xl md:text-6xl uppercase tracking-tight">{lang === 'en' ? 'Pass by Reference' : 'Pasaje Por Referencia'}</h2>
+						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'The' : 'Se pasa la'} <strong>{lang === 'en' ? 'memory address' : 'dirección'}</strong> {lang === 'en' ? 'is passed. The original IS modified.' : 'de memoria. El original SÍ se modifica.'}</p>
+					</div>
+
+					<!-- Memory boxes -->
+					<div class="flex items-center justify-center gap-4 mb-8 flex-wrap">
+						<div style="border:1px solid rgba(13,242,89,0.2); border-radius:8px; padding:16px; text-align:center; min-width:180px">
+							<div class="font-retro text-sm opacity-50 mb-3">{lang === 'en' ? 'FRAME: main()' : 'FRAME: main()'}</div>
+							<div class="mem-box mem-box-local mx-auto" id="box-ref-x" style="min-width:110px">
+								<div class="mem-address">0xFF01</div>
+								<div class="mem-label">x</div>
+								<div class="mem-value" id="val-ref-x">5</div>
+							</div>
+						</div>
+
+						<div class="flow-arrow">&#x279C;</div>
+
+						<div style="border:1px solid rgba(217,70,239,0.3); border-radius:8px; padding:16px; text-align:center; min-width:180px" id="ref-frame">
+							<div class="font-retro text-sm opacity-50 mb-3">{lang === 'en' ? 'FRAME: cambiar()' : 'FRAME: cambiar()'}</div>
+							<div class="mem-box mem-box-pointer mx-auto" id="box-ref-p" style="min-width:110px">
+								<div class="mem-address">0xFF20</div>
+								<div class="mem-label">{lang === 'en' ? 'p (pointer)' : 'p (puntero)'}</div>
+								<div class="mem-value" id="val-ref-p" style="font-size:1rem">0xFF01</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Steps -->
+					<div class="space-y-3 max-w-xl mx-auto mb-8">
+						<div class="flex items-start gap-3 step-hidden" id="ref-step-0">
+							<span class="step-indicator">1</span>
+							<span class="text-sm pt-1"><code class="code-var">x</code> {lang === 'en' ? 'is' : 'vale'} <strong>5</strong> {lang === 'en' ? 'at address' : 'en dirección'} <code style="color:#fb923c">0xFF01</code></span>
+						</div>
+						<div class="flex items-start gap-3 step-hidden" id="ref-step-1">
+							<span class="step-indicator">2</span>
+							<span class="text-sm pt-1"><code style="color:#fb923c">&amp;x</code> ({lang === 'en' ? 'the address' : 'la dirección'}) {lang === 'en' ? 'is passed. The pointer' : 'se pasa. El puntero'} <code style="color:#f0abfc">p</code> {lang === 'en' ? 'receives' : 'recibe'} <code style="color:#fb923c">0xFF01</code></span>
+						</div>
+						<div class="flex items-start gap-3 step-hidden" id="ref-step-2">
+							<span class="step-indicator">3</span>
+							<span class="text-sm pt-1"><code style="color:#f0abfc">*p = 10</code> {lang === 'en' ? 'follows the address and modifies the memory at' : 'sigue la dirección y modifica la memoria en'} <code style="color:#fb923c">0xFF01</code></span>
+						</div>
+						<div class="flex items-start gap-3 step-hidden" id="ref-step-3">
+							<span class="step-indicator">4</span>
+							<span class="text-sm pt-1">{lang === 'en' ? 'The function ends.' : 'La función termina.'} <code style="color:#f0abfc">p</code> {lang === 'en' ? 'disappears, but the damage is done.' : 'desaparece, pero el daño está hecho.'}</span>
+						</div>
+						<div class="flex items-start gap-3 step-hidden" id="ref-step-4">
+							<span class="step-indicator">5</span>
+							<span class="text-sm pt-1"><code class="code-var">x</code> {lang === 'en' ? 'now equals' : 'ahora vale'} <strong>10</strong>. {lang === 'en' ? 'The original was modified.' : 'El original fue modificado.'}</span>
+						</div>
+					</div>
+
+					<div class="anim-item code-block text-xs" style="--delay: 200ms">
+<span class="code-keyword">void</span> <span class="code-func">cambiar</span>(<span class="code-type">int</span> *<span class="code-var" style="color:#f0abfc">p</span>) &lbrace;<br>
+<span style="padding-left:16px">*<span class="code-var" style="color:#f0abfc">p</span> = <span class="code-number">10</span>; <span class="code-comment">// dereference: modifies what it points to</span></span><br>
+&rbrace;<br><br>
+<span class="code-type">int</span> <span class="code-func">main</span>() &lbrace;<br>
+<span style="padding-left:16px"><span class="code-type">int</span> <span class="code-var">x</span> = <span class="code-number">5</span>;</span><br>
+<span style="padding-left:16px"><span class="code-func">cambiar</span>(&amp;<span class="code-var">x</span>);        <span class="code-comment">// passes the ADDRESS of x</span></span><br>
+<span style="padding-left:16px"><span class="code-func">printf</span>(<span class="code-string">"%d"</span>, <span class="code-var">x</span>); <span class="code-comment">// prints 10 — was modified</span></span><br>
+&rbrace;
+					</div>
+				</div>
+			</section>
+
+			<hr class="section-divider" />
+
+			<!-- ======================== SECTION 10: VALOR vs REFERENCIA comparación ======================== -->
+			<section class="section section-hidden" id="sec-cmp">
+				<div class="section-inner">
+					<div class="anim-item text-center mb-10" style="--delay: 0ms">
+						<h2 class="font-retro text-4xl md:text-6xl uppercase tracking-tight">
+							{lang === 'en' ? 'Value' : 'Valor'} <span class="opacity-30">vs</span> {lang === 'en' ? 'Reference' : 'Referencia'}
+						</h2>
+						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'Same starting point, completely different result' : 'Mismo punto de partida, resultado completamente distinto'}</p>
+					</div>
+
+					<div class="flex gap-8 split-grid mb-8">
+						<!-- Por valor -->
+						<div class="flex-1 anim-item split-col" style="--delay: 150ms">
+							<h3 class="font-retro text-2xl text-center mb-6">{lang === 'en' ? 'BY VALUE' : 'POR VALOR'}</h3>
+							<div style="display:flex; flex-direction:column; align-items:center; gap:12px">
+								<div class="mem-box mem-box-local" style="width:100%; max-width:160px">
+									<div class="mem-address">main: 0xFF01</div>
+									<div class="mem-label">x</div>
+									<div class="mem-value">5</div>
+								</div>
+								<span style="font-size:0.9rem; opacity:0.5">{lang === 'en' ? 'value is copied' : 'se copia el valor'} &#x2193;</span>
+								<div class="mem-box mem-box-local" style="width:100%; max-width:160px">
+									<div class="mem-address">func: 0xFF10</div>
+									<div class="mem-label">{lang === 'en' ? 'n (copy)' : 'n (copia)'}</div>
+									<div class="mem-value" style="color:#e06c75">6</div>
+								</div>
+								<span style="color:var(--primary); font-family:'VT323',monospace; font-size:1.2rem; margin-top:8px">x still = 5 &#x2714;</span>
+							</div>
+						</div>
+
+						<!-- Por referencia -->
+						<div class="flex-1 anim-item split-col-red" style="--delay: 300ms">
+							<h3 class="font-retro text-2xl text-center mb-6" style="color:#fca5a5">{lang === 'en' ? 'BY REFERENCE' : 'POR REFERENCIA'}</h3>
+							<div style="display:flex; flex-direction:column; align-items:center; gap:12px">
+								<div class="mem-box" style="width:100%; max-width:160px; border:2px solid #06b6d4; background:rgba(6,182,212,0.08); color:#a5f3fc">
+									<div class="mem-address">main: 0xFF01</div>
+									<div class="mem-label">x</div>
+									<div class="mem-value" style="color:#fca5a5">10 &#x26A0;</div>
+								</div>
+								<span style="font-size:0.9rem; opacity:0.5">{lang === 'en' ? 'address is passed' : 'se pasa la dirección'} &#x2193;</span>
+								<div class="mem-box mem-box-pointer" style="width:100%; max-width:160px">
+									<div class="mem-address">func: 0xFF20</div>
+									<div class="mem-label">{lang === 'en' ? 'p (ptr)' : 'p (ptr)'}</div>
+									<div class="mem-value" style="font-size:0.9rem">&#x279C; 0xFF01</div>
+								</div>
+								<span style="color:#fca5a5; font-family:'VT323',monospace; font-size:1.2rem; margin-top:8px">x now = 10 &#x26A0;</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Comparison table -->
+					<div class="anim-item" style="--delay: 450ms">
+						<table class="cmp-table">
+							<thead>
+								<tr>
+									<th>{lang === 'en' ? 'Aspect' : 'Aspecto'}</th>
+									<th>{lang === 'en' ? 'By Value' : 'Por Valor'}</th>
+									<th>{lang === 'en' ? 'By Reference (pointer)' : 'Por Referencia (puntero)'}</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td class="opacity-70">{lang === 'en' ? 'What is passed' : 'Qué se pasa'}</td>
+									<td style="color:var(--primary)">{lang === 'en' ? 'Copy of the value' : 'Copia del valor'}</td>
+									<td style="color:#f0abfc">{lang === 'en' ? 'Memory address' : 'Dirección de memoria'}</td>
+								</tr>
+								<tr>
+									<td class="opacity-70">{lang === 'en' ? 'Modifies original' : 'Modifica original'}</td>
+									<td style="color:var(--primary)">{lang === 'en' ? 'NO' : 'NO'} &#x2714;</td>
+									<td style="color:#fca5a5">{lang === 'en' ? 'YES' : 'SÍ'} &#x26A0;</td>
+								</tr>
+								<tr>
+									<td class="opacity-70">{lang === 'en' ? 'Syntax at call' : 'Sintaxis en llamada'}</td>
+									<td><code class="code-block px-2 py-0.5 text-xs">func(x)</code></td>
+									<td><code class="code-block px-2 py-0.5 text-xs">func(&amp;x)</code></td>
+								</tr>
+								<tr>
+									<td class="opacity-70">{lang === 'en' ? 'Syntax at parameter' : 'Sintaxis en parámetro'}</td>
+									<td><code class="code-block px-2 py-0.5 text-xs">int n</code></td>
+									<td><code class="code-block px-2 py-0.5 text-xs">int *p</code></td>
+								</tr>
+								<tr>
+									<td class="opacity-70">{lang === 'en' ? 'When to use' : 'Cuándo usar'}</td>
+									<td>{lang === 'en' ? 'Read data, calculate' : 'Leer datos, calcular'}</td>
+									<td>{lang === 'en' ? 'Modify the original' : 'Modificar el original'}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</section>
+
+			<hr class="section-divider" />
+
+			<!-- ======================== SECTION 11: NOMINALES Y EFECTIVOS ======================== -->
+			<section class="section section-hidden" id="sec-params">
+				<div class="section-inner">
+					<div class="anim-item text-center mb-10" style="--delay: 0ms">
+						<h2 class="font-retro text-4xl md:text-6xl uppercase tracking-tight">
+							{lang === 'en' ? 'Formal and Actual Parameters' : 'Parámetros Nominales y Efectivos'}
+						</h2>
+						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'Definition vs call. Placeholder vs real value.' : 'Definición vs llamada. Placeholder vs valor real.'}</p>
+					</div>
+
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+						<!-- Nominales -->
+						<div class="anim-item split-col" style="--delay: 150ms">
+							<h3 class="font-retro text-2xl mb-1">{lang === 'en' ? 'FORMAL PARAMETERS' : 'PARÁMETROS NOMINALES'}</h3>
+							<p class="text-xs opacity-60 mb-4">{lang === 'en' ? 'Those in the DEFINITION — are placeholders, local variables' : 'Los de la DEFINICIÓN — son placeholders, variables locales'}</p>
+
+							<div class="code-block text-sm mb-4">
+<span class="code-type">int</span> <span class="code-func">calcular</span>(<span class="code-type">int</span> <span style="border-bottom:2px solid var(--primary); color:var(--primary)">base</span>, <span class="code-type">int</span> <span style="border-bottom:2px solid var(--primary); color:var(--primary)">altura</span>) &lbrace;<br>
+<span style="padding-left:16px"><span class="code-keyword">return</span> <span style="color:var(--primary)">base</span> * <span style="color:var(--primary)">altura</span>;</span><br>
+&rbrace;
+							</div>
+
+							<div style="display:flex; gap:8px; flex-wrap:wrap">
+								<span class="param-badge-nominal">base</span>
+								<span class="param-badge-nominal">altura</span>
+							</div>
+							<p class="text-xs opacity-50 mt-3">{lang === 'en' ? 'They are like normal variables inside the function. They get assigned a value at the call.' : 'Son como variables normales dentro de la función. Se les asigna valor en la llamada.'}</p>
+						</div>
+
+						<!-- Efectivos -->
+						<div class="anim-item split-col-amber" style="--delay: 300ms">
+							<h3 class="font-retro text-2xl mb-1" style="color:#fcd34d">{lang === 'en' ? 'ACTUAL PARAMETERS' : 'PARÁMETROS EFECTIVOS'}</h3>
+							<p class="text-xs opacity-60 mb-4">{lang === 'en' ? 'Those in the CALL — the real values being passed' : 'Los de la LLAMADA — los valores reales que se pasan'}</p>
+
+							<div class="code-block text-sm mb-4">
+<span class="code-func">calcular</span>(<span style="border-bottom:2px solid #f59e0b; color:#fcd34d">10</span>, <span style="border-bottom:2px solid #f59e0b; color:#fcd34d">20</span>);
+							</div>
+
+							<div style="display:flex; gap:8px; flex-wrap:wrap">
+								<span class="param-badge-effective">10</span>
+								<span class="param-badge-effective">20</span>
+							</div>
+							<p class="text-xs opacity-50 mt-3">{lang === 'en' ? 'These are the concrete values (literals, variables or expressions) sent in the call.' : 'Son los valores concretos (literales, variables o expresiones) que se envían en la llamada.'}</p>
+						</div>
+					</div>
+
+					<div class="anim-item mt-8 type-card" style="--delay: 450ms">
+						<p class="text-xs opacity-50 mb-3">{lang === 'en' ? 'POSITIONAL CORRESPONDENCE — order matters' : 'CORRESPONDENCIA POSICIONAL — el orden importa'}</p>
+						<div class="code-block text-xs">
+<span class="code-func">calcular</span>(<span style="color:#fcd34d">10</span>, <span style="color:#fcd34d">20</span>);<br>
+<span class="code-comment">// base=10, altura=20 → result = 200</span><br><br>
+<span class="code-comment">// Order DOES matter in many cases:</span><br>
+<span class="code-func">dividir</span>(<span class="code-number">10</span>, <span class="code-number">2</span>);  <span class="code-comment">// 10 / 2 = 5</span><br>
+<span class="code-func">dividir</span>(<span class="code-number">2</span>, <span class="code-number">10</span>);  <span class="code-comment">// 2 / 10 = 0  (VERY different result)</span>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<hr class="section-divider" />
+
+			<!-- ======================== SECTION 12: EJEMPLO COMPLETO ======================== -->
+			<section class="section section-hidden" id="sec-ejemplo">
+				<div class="section-inner">
+					<div class="anim-item text-center mb-10" style="--delay: 0ms">
+						<h2 class="font-retro text-4xl md:text-6xl uppercase tracking-tight">{lang === 'en' ? 'Complete Example' : 'Ejemplo Completo'}</h2>
+						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'A program that uses EVERYTHING we saw' : 'Un programa que usa TODO lo que vimos'}</p>
+					</div>
+
+					<div class="anim-item code-block text-xs" style="--delay: 150ms; line-height: 1.8">
+<span class="code-keyword">#include</span> <span class="code-string">&lt;stdio.h&gt;</span><br><br>
+<span class="code-comment">// GLOBAL: visible in all functions</span><br>
+<span class="code-type">int</span> <span class="code-var" style="color:#fcd34d">llamadas</span> = <span class="code-number">0</span>;<br><br>
+<span class="code-comment">// FUNCTION: returns the area (by value)</span><br>
+<span class="code-type">int</span> <span class="code-func">areaRectangulo</span>(<span class="code-type">int</span> <span class="code-var">base</span>, <span class="code-type">int</span> <span class="code-var">altura</span>) &lbrace;<br>
+<span style="padding-left:16px"><span class="code-var" style="color:#fcd34d">llamadas</span>++;                          <span class="code-comment">// modifies global</span></span><br>
+<span style="padding-left:16px"><span class="code-type">int</span> <span class="code-var">area</span> = <span class="code-var">base</span> * <span class="code-var">altura</span>; <span class="code-comment">// LOCAL</span></span><br>
+<span style="padding-left:16px"><span class="code-keyword">return</span> <span class="code-var">area</span>;</span><br>
+&rbrace;<br><br>
+<span class="code-comment">// PROCEDURE: prints (void, no return)</span><br>
+<span class="code-keyword">void</span> <span class="code-func">imprimirResultado</span>(<span class="code-type">int</span> <span class="code-var">valor</span>) &lbrace;<br>
+<span style="padding-left:16px"><span class="code-func">printf</span>(<span class="code-string">"Resultado: %d\n"</span>, <span class="code-var">valor</span>);</span><br>
+&rbrace;<br><br>
+<span class="code-comment">// BY REFERENCE: duplicates the original</span><br>
+<span class="code-keyword">void</span> <span class="code-func">duplicar</span>(<span class="code-type">int</span> *<span class="code-var" style="color:#f0abfc">p</span>) &lbrace;<br>
+<span style="padding-left:16px">*<span class="code-var" style="color:#f0abfc">p</span> *= <span class="code-number">2</span>;</span><br>
+&rbrace;<br><br>
+<span class="code-type">int</span> <span class="code-func">main</span>() &lbrace;<br>
+<span style="padding-left:16px"><span class="code-comment">// formals: base, altura — actuals: 5, 10</span></span><br>
+<span style="padding-left:16px"><span class="code-type">int</span> <span class="code-var">area</span> = <span class="code-func">areaRectangulo</span>(<span class="code-number">5</span>, <span class="code-number">10</span>);</span><br>
+<span style="padding-left:16px"><span class="code-func">imprimirResultado</span>(<span class="code-var">area</span>); <span class="code-comment">// 50</span></span><br><br>
+<span style="padding-left:16px"><span class="code-func">duplicar</span>(&amp;<span class="code-var">area</span>);          <span class="code-comment">// passes address — by reference</span></span><br>
+<span style="padding-left:16px"><span class="code-func">imprimirResultado</span>(<span class="code-var">area</span>); <span class="code-comment">// 100</span></span><br><br>
+<span style="padding-left:16px"><span class="code-func">printf</span>(<span class="code-string">"Llamadas: %d\n"</span>, <span class="code-var" style="color:#fcd34d">llamadas</span>); <span class="code-comment">// 1</span></span><br>
+<span style="padding-left:16px"><span class="code-keyword">return</span> <span class="code-number">0</span>;</span><br>
+&rbrace;
+					</div>
+
+					<div class="flex gap-4 mt-6 flex-wrap">
+						<div class="anim-item type-card flex-1" style="--delay: 300ms; min-width:200px">
+							<p class="text-xs opacity-50 mb-1" style="color:#fcd34d">{lang === 'en' ? 'GLOBAL' : 'GLOBAL'}</p>
+							<p class="text-xs"><code style="color:#fcd34d">llamadas</code> &mdash; {lang === 'en' ? 'visible in all functions' : 'visible en todas las funciones'}</p>
+						</div>
+						<div class="anim-item type-card flex-1" style="--delay: 380ms; min-width:200px">
+							<p class="text-xs opacity-50 mb-1" style="color:#a5f3fc">{lang === 'en' ? 'LOCAL' : 'LOCAL'}</p>
+							<p class="text-xs"><code>area</code> {lang === 'en' ? 'inside' : 'dentro de'} <code style="color:#98c379">areaRectangulo</code> &mdash; {lang === 'en' ? 'only there' : 'solo ahí'}</p>
+						</div>
+						<div class="anim-item type-card flex-1" style="--delay: 460ms; min-width:200px">
+							<p class="text-xs opacity-50 mb-1" style="color:#f0abfc">{lang === 'en' ? 'POINTER' : 'PUNTERO'}</p>
+							<p class="text-xs"><code style="color:#f0abfc">*p</code> {lang === 'en' ? 'in' : 'en'} <code style="color:#98c379">duplicar</code> &mdash; {lang === 'en' ? 'modifies the original' : 'modifica el original'}</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<hr class="section-divider" />
+
+			<!-- ======================== SECTION 13: REGLAS DE ORO ======================== -->
+			<section class="section section-hidden" id="sec-reglas">
+				<div class="section-inner">
+					<div class="anim-item text-center mb-10" style="--delay: 0ms">
+						<h2 class="font-retro text-4xl md:text-6xl uppercase tracking-tight">{lang === 'en' ? 'Golden Rules' : 'Reglas de Oro'}</h2>
+						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'Burn them into memory. Forever.' : 'Grabátelas. Para siempre.'}</p>
+					</div>
+
+					<div class="space-y-4">
+						<div class="rule-card anim-item" style="--delay: 100ms">
+							<span class="rule-num">01</span>
+							<div>
+								<p class="font-retro text-xl">{lang === 'en' ? 'Modularize: short functions that do ONE thing' : 'Modularizá: funciones cortas que hacen UNA cosa'}</p>
+								<p class="text-xs opacity-50 mt-1">{lang === 'en' ? 'If your function needs a comment explaining what it does, its too long.' : 'Si tu función necesita un comentario explicando qué hace, es demasiado larga.'}</p>
+							</div>
+						</div>
+
+						<div class="rule-card anim-item" style="--delay: 200ms">
+							<span class="rule-num">02</span>
+							<div>
+								<p class="font-retro text-xl">{lang === 'en' ? 'Prefer local variables over globals' : 'Preferí variables locales sobre globales'}</p>
+								<p class="text-xs opacity-50 mt-1">{lang === 'en' ? 'Globals create hidden dependencies and impossible-to-track bugs.' : 'Las globales crean dependencias ocultas y bugs imposibles de rastrear.'}</p>
+							</div>
+						</div>
+
+						<div class="rule-card anim-item" style="--delay: 300ms">
+							<span class="rule-num">03</span>
+							<div>
+								<p class="font-retro text-xl">{lang === 'en' ? 'Pass by value: safe, the original does not change' : 'Paso por valor: seguro, el original no cambia'}</p>
+								<p class="text-xs opacity-50 mt-1">{lang === 'en' ? 'Use it when you only need to read or calculate something from the data.' : 'Usálo cuando solo necesitás leer o calcular algo a partir del dato.'}</p>
+							</div>
+						</div>
+
+						<div class="rule-card anim-item" style="--delay: 400ms">
+							<span class="rule-num">04</span>
+							<div>
+								<p class="font-retro text-xl">{lang === 'en' ? 'Pass by reference (*pointers): when you NEED to modify the original' : 'Paso por referencia (*punteros): cuando NECESITÁS modificar el original'}</p>
+								<p class="text-xs opacity-50 mt-1">{lang === 'en' ? 'Be explicit. Whoever reads the code needs to know the function has side effects.' : 'Sé explícito. Quien lee el código necesita saber que la función tiene efectos secundarios.'}</p>
+							</div>
+						</div>
+
+						<div class="rule-card anim-item" style="--delay: 500ms">
+							<span class="rule-num">05</span>
+							<div>
+								<p class="font-retro text-xl">{lang === 'en' ? 'Formal parameters = definition, actuals = call' : 'Parámetros nominales = definición, efectivos = llamada'}</p>
+								<p class="text-xs opacity-50 mt-1">{lang === 'en' ? 'The order of actuals must match the order of formals. Always.' : 'El orden de los efectivos tiene que coincidir con el de los nominales. Siempre.'}</p>
+							</div>
+						</div>
+
+						<div class="rule-card anim-item" style="--delay: 600ms">
+							<span class="rule-num">06</span>
+							<div>
+								<p class="font-retro text-xl">{lang === 'en' ? 'Each function = one responsibility' : 'Cada función = una responsabilidad'}</p>
+								<p class="text-xs opacity-50 mt-1">{lang === 'en' ? 'Single Responsibility Principle. It applies in C, in any language, in any paradigm.' : 'Single Responsibility Principle. Vale en C, vale en cualquier lenguaje, vale en cualquier paradigma.'}</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<hr class="section-divider" />
+
+			<!-- ======================== SECTION 14: FIN ======================== -->
+			<section class="section section-hidden" id="sec-fin">
+				<div class="section-inner text-center">
+					<div class="anim-item" style="--delay: 0ms">
+						<div class="text-xs tracking-widest opacity-30 font-retro text-lg mb-8">EOF // END_OF_PRESENTATION</div>
+					</div>
+
+					<div class="anim-item" style="--delay: 150ms">
+						<div class="font-retro" style="font-size:clamp(3rem,10vw,8rem); text-shadow: 0 0 30px rgba(13,242,89,0.6); animation: float-slow 4s ease-in-out infinite">
+							&gt;_
+						</div>
+					</div>
+
+					<div class="anim-item mt-4" style="--delay: 300ms">
+						<h2 class="font-retro text-4xl md:text-6xl uppercase tracking-tight">{lang === 'en' ? 'SESSION ENDED' : 'SESIÓN FINALIZADA'}</h2>
+					</div>
+
+					<div class="anim-item mt-4 mb-10" style="--delay: 450ms">
+						<p class="text-sm opacity-50">{lang === 'en' ? 'Now you know how to modularize in C. Now think in modules.' : 'Ahora sabés modularizar en C. Ahora pensá en módulos.'}</p>
+					</div>
+
+					<div class="anim-item" style="--delay: 600ms">
+						<a href={withBase(lang === 'en' ? '/en/presentaciones' : '/presentaciones')} class="terminal-btn">
+							&#x2190; {lang === 'en' ? 'Back to Presentations' : 'Volver a Presentaciones'}
+						</a>
+					</div>
+
+					<div class="anim-item mt-16 opacity-20" style="--delay: 800ms">
+						<p class="font-retro text-sm tracking-widest">PROGRAMIERDS &mdash; 2026</p>
+					</div>
+				</div>
+			</section>
+
+		</main>
+	</div>
+
+	<script>
+		// ==================== PROGRESS BAR ====================
+		const progressBar = document.getElementById('progress-bar') as HTMLElement;
+
+		function updateProgressBar(): void {
+			const scrollTop = window.scrollY;
+			const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+			const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+			progressBar.style.width = `${pct}%`;
+		}
+
+		window.addEventListener('scroll', updateProgressBar, { passive: true });
+
+		// ==================== INTRO TYPING ====================
+		function initIntroTyping(): void {
+			const el = document.getElementById('intro-subtitle');
+			if (el) el.classList.add('typing-active');
+		}
+
+		// ==================== INTERSECTION OBSERVER ====================
+		const hiddenSections = document.querySelectorAll<HTMLElement>('.section-hidden');
+
+		let valorAnimTriggered = false;
+		let refAnimTriggered   = false;
+
+		function triggerValorAnimation(): void {
+			if (valorAnimTriggered) return;
+			valorAnimTriggered = true;
+
+			const stepIds = ['valor-step-0', 'valor-step-1', 'valor-step-2', 'valor-step-3', 'valor-step-4'];
+
+			const boxN   = document.getElementById('box-inc-n') as HTMLElement | null;
+			const valN   = document.getElementById('val-inc-n') as HTMLElement | null;
+			const incFrm = document.getElementById('inc-frame') as HTMLElement | null;
+			const mainB  = document.getElementById('box-main-x') as HTMLElement | null;
+
+			setTimeout(() => {
+				const s = document.getElementById(stepIds[0]);
+				if (s) { s.classList.remove('step-hidden'); s.classList.add('step-active'); }
+			}, 300);
+
+			setTimeout(() => {
+				const s = document.getElementById(stepIds[1]);
+				if (s) { s.classList.remove('step-hidden'); s.classList.add('step-active'); }
+				if (boxN) boxN.style.animation = 'appear 0.6s ease forwards';
+			}, 1200);
+
+			setTimeout(() => {
+				const s = document.getElementById(stepIds[2]);
+				if (s) { s.classList.remove('step-hidden'); s.classList.add('step-active'); }
+				if (valN) { valN.textContent = '6'; valN.style.color = '#e06c75'; }
+				if (boxN) { boxN.style.borderColor = '#e06c75'; }
+			}, 2200);
+
+			setTimeout(() => {
+				const s = document.getElementById(stepIds[3]);
+				if (s) { s.classList.remove('step-hidden'); s.classList.add('step-active'); }
+				if (incFrm) incFrm.style.animation = 'dissolve 1s ease forwards';
+			}, 3200);
+
+			setTimeout(() => {
+				const s = document.getElementById(stepIds[4]);
+				if (s) { s.classList.remove('step-hidden'); s.classList.add('step-active'); }
+				if (mainB) {
+					mainB.style.borderColor = '#0df259';
+					mainB.style.boxShadow = '0 0 16px rgba(13,242,89,0.5)';
+				}
+			}, 4400);
+		}
+
+		function triggerRefAnimation(): void {
+			if (refAnimTriggered) return;
+			refAnimTriggered = true;
+
+			const stepIds = ['ref-step-0', 'ref-step-1', 'ref-step-2', 'ref-step-3', 'ref-step-4'];
+
+			const refX    = document.getElementById('box-ref-x') as HTMLElement | null;
+			const valRefX = document.getElementById('val-ref-x') as HTMLElement | null;
+			const refP    = document.getElementById('box-ref-p') as HTMLElement | null;
+			const refFrm  = document.getElementById('ref-frame') as HTMLElement | null;
+
+			setTimeout(() => {
+				const s = document.getElementById(stepIds[0]);
+				if (s) { s.classList.remove('step-hidden'); s.classList.add('step-active'); }
+			}, 300);
+
+			setTimeout(() => {
+				const s = document.getElementById(stepIds[1]);
+				if (s) { s.classList.remove('step-hidden'); s.classList.add('step-active'); }
+				if (refP) refP.style.animation = 'appear 0.6s ease forwards';
+			}, 1200);
+
+			setTimeout(() => {
+				const s = document.getElementById(stepIds[2]);
+				if (s) { s.classList.remove('step-hidden'); s.classList.add('step-active'); }
+				if (refP) refP.style.boxShadow = '0 0 20px rgba(217,70,239,0.8)';
+			}, 2200);
+
+			setTimeout(() => {
+				const s = document.getElementById(stepIds[3]);
+				if (s) { s.classList.remove('step-hidden'); s.classList.add('step-active'); }
+				if (refFrm) refFrm.style.animation = 'dissolve 1s ease forwards';
+			}, 3200);
+
+			setTimeout(() => {
+				const s = document.getElementById(stepIds[4]);
+				if (s) { s.classList.remove('step-hidden'); s.classList.add('step-active'); }
+				if (valRefX) { valRefX.textContent = '10'; valRefX.style.color = '#fca5a5'; }
+				if (refX) {
+					refX.style.borderColor = '#fca5a5';
+					refX.style.boxShadow = '0 0 16px rgba(252,165,165,0.5)';
+				}
+			}, 4400);
+		}
+
+		function triggerSectionAnimations(sectionId: string): void {
+			switch (sectionId) {
+				case 'sec-intro':
+					initIntroTyping();
+					break;
+				case 'sec-por-valor':
+					setTimeout(triggerValorAnimation, 400);
+					break;
+				case 'sec-por-ref':
+					setTimeout(triggerRefAnimation, 400);
+					break;
+				default:
+					break;
+			}
+		}
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						const section = entry.target as HTMLElement;
+						section.classList.remove('section-hidden');
+						section.classList.add('section-visible');
+						triggerSectionAnimations(section.id);
+					}
+				});
+			},
+			{ threshold: 0.2 }
+		);
+
+		hiddenSections.forEach((section) => observer.observe(section));
+
+		// Initial check for sections already visible on load
+		hiddenSections.forEach((section) => {
+			const rect = section.getBoundingClientRect();
+			if (rect.top < window.innerHeight * 0.85) {
+				section.classList.remove('section-hidden');
+				section.classList.add('section-visible');
+				triggerSectionAnimations(section.id);
+			}
+		});
+
+		updateProgressBar();
+	</script>

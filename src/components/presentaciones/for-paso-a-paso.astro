@@ -1,0 +1,221 @@
+---
+import Icon from '../Icon.astro';
+import { withBase } from '../../utils/withBase';
+
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+---
+
+
+	<style is:global>
+		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
+
+		.for-screen {
+			--for-bg: #07131a;
+			--for-panel: #10232e;
+			--for-primary: #22c55e;
+			--for-blue: #60a5fa;
+			--for-danger: #fb7185;
+			min-height: 100vh;
+			font-family: 'Chakra Petch', sans-serif;
+			background:
+				radial-gradient(circle at 80% 15%, rgba(96, 165, 250, 0.18), transparent 42%),
+				radial-gradient(circle at 10% 85%, rgba(34, 197, 94, 0.14), transparent 40%),
+				linear-gradient(145deg, #050b10 0%, var(--for-bg) 100%);
+			color: #e8fff3;
+		}
+
+.for-shell { max-width: 1200px; margin: 0 auto; padding: 1rem 0.5rem 2rem; }
+		.for-title { font-size: clamp(1.2rem, 2.5vw, 1.8rem); line-height: 1.05; font-weight: 700; }
+		.for-sub { max-width: 65ch; color: rgba(232, 255, 243, 0.83); font-size: 0.9rem; }
+		.for-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0.6rem; }
+		.for-card { border-radius: 1rem; border: 1px solid rgba(34, 197, 94, 0.25); background: linear-gradient(160deg, rgba(16, 35, 46, 0.92), rgba(8, 18, 24, 0.92)); padding: 0.6rem; }
+		.for-code { grid-column: span 12; }
+		.for-state { grid-column: span 12; }
+		.for-console { grid-column: span 12; }
+		@media (min-width: 1100px) {
+			.for-code { grid-column: span 6; }
+			.for-state { grid-column: span 3; }
+			.for-console { grid-column: span 3; }
+		}
+
+		.for-badge { border: 1px solid rgba(96, 165, 250, 0.4); background: rgba(96, 165, 250, 0.13); border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.72rem; font-family: 'Fira Code', monospace; }
+		.for-head { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
+
+		.for-code-panel { background: rgba(4, 9, 13, 0.9); border: 1px solid rgba(34, 197, 94, 0.22); border-radius: 0.8rem; padding: 0.75rem; }
+		.for-row { display: grid; grid-template-columns: 2rem 1fr; gap: 0.8rem; border-radius: 0.55rem; padding: 0.42rem 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.9rem; transition: all 0.2s ease; color: rgba(232, 255, 243, 0.86); }
+		.for-row.active { background: linear-gradient(90deg, rgba(34, 197, 94, 0.24), rgba(34, 197, 94, 0.08)); outline: 1px solid rgba(34, 197, 94, 0.38); transform: translateX(3px); }
+		.for-ln { color: rgba(232, 255, 243, 0.45); text-align: right; }
+
+		.for-state-item { display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(96, 165, 250, 0.26); background: rgba(96, 165, 250, 0.08); border-radius: 0.65rem; padding: 0.62rem 0.7rem; font-family: 'Fira Code', monospace; margin-bottom: 0.5rem; font-size: 0.84rem; }
+		.for-value { color: var(--for-primary); font-weight: 700; font-size: 1.02rem; }
+		.for-true { color: #86efac; }
+		.for-false { color: var(--for-danger); }
+
+		.for-console-win { border: 1px solid rgba(96, 165, 250, 0.34); border-radius: 0.8rem; overflow: hidden; background: rgba(4, 9, 13, 0.9); }
+		.for-console-head { display: flex; justify-content: space-between; padding: 0.5rem 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.72rem; background: rgba(96, 165, 250, 0.12); border-bottom: 1px solid rgba(96, 165, 250, 0.28); }
+		.for-console-body { min-height: 165px; padding: 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.83rem; }
+		.for-log { opacity: 0; transform: translateY(8px); animation: for-log-in 0.4s ease forwards; color: #d4edff; }
+		@keyframes for-log-in { to { opacity: 1; transform: translateY(0); } }
+
+		.for-copy { margin-top: 0.85rem; border: 1px solid rgba(34, 197, 94, 0.32); background: rgba(34, 197, 94, 0.1); border-radius: 0.7rem; padding: 0.75rem; }
+		.for-controls { margin-top: 0.9rem; display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; }
+		.for-btn { border: 1px solid rgba(34, 197, 94, 0.45); background: rgba(34, 197, 94, 0.12); color: #e8fff3; padding: 0.58rem 1rem; border-radius: 0.7rem; font-weight: 600; transition: all 0.2s ease; }
+		.for-btn:hover:not(:disabled) { background: rgba(34, 197, 94, 0.25); transform: translateY(-1px); box-shadow: 0 0 18px rgba(34, 197, 94, 0.22); }
+		.for-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+		.for-track { margin-top: 0.8rem; height: 0.55rem; border-radius: 999px; background: rgba(232, 255, 243, 0.14); overflow: hidden; }
+		.for-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--for-primary), var(--for-blue)); transition: width 0.25s ease; }
+
+		.for-back { display: inline-block; margin-top: 1.5rem; color: var(--for-blue); text-decoration: none; border-bottom: 1px dashed rgba(96, 165, 250, 0.5); }
+	</style>
+
+	<div class="for-screen">
+		<main class="for-shell">
+			<header class="mb-6">
+				<p class="for-badge">{lang === 'en' ? 'for / guided simulation' : 'for / simulacion guiada'}</p>
+				<h1 class="for-title mt-3">{lang === 'en' ? 'For loop step by step' : <>Ciclo <code>for</code> paso a paso</>}</h1>
+				<p class="for-sub mt-3">{lang === 'en' ? 'Here you understand perfectly the rhythm of the for: initialization, condition, block, and update. Everything in order, no magic.' : 'Aca se entiende perfecto el ritmo del <code>for</code>: inicializacion, condicion, bloque y actualizacion. Todo en orden y sin magia.'}</p>
+			</header>
+
+			<section class="for-grid" aria-live="polite">
+				<article class="for-card for-code">
+					<div class="for-head">
+						<strong>{lang === 'en' ? '1) Code and active line' : '1) Codigo y linea activa'}</strong>
+						<span class="for-badge" id="for-line">{lang === 'en' ? 'Active line: 1' : 'Linea activa: 1'}</span>
+					</div>
+					<div class="for-code-panel">
+						<div class="for-row" data-line="1"><span class="for-ln">1</span><span>for (int i = 1; i &lt;= 4; i++) &#123;</span></div>
+						<div class="for-row" data-line="2"><span class="for-ln">2</span><span>&nbsp;&nbsp;printf("Paso %d\n", i);</span></div>
+						<div class="for-row" data-line="3"><span class="for-ln">3</span><span>&#125;</span></div>
+						<div class="for-row" data-line="4"><span class="for-ln">4</span><span>printf("Fin for\n");</span></div>
+					</div>
+
+					<div class="for-copy" id="for-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'} {lang === 'en' ? 'Initializes i = 1.' : 'Arranca la inicializacion de i en 1.'}</div>
+					<div class="for-track"><div class="for-fill" id="for-fill"></div></div>
+					<div class="for-controls">
+						<button id="for-prev" class="for-btn" type="button">{lang === 'en' ? '⬅ Back' : '⬅ Retroceder'}</button>
+						<button id="for-next" class="for-btn" type="button">{lang === 'en' ? 'Next ➡' : 'Avanzar ➡'}</button>
+						<span class="for-badge" id="for-step">Paso 1 / 12</span>
+					</div>
+				</article>
+
+				<article class="for-card for-state">
+					<div class="for-head"><strong>{lang === 'en' ? '2) Internal state' : '2) Estado interno'}</strong></div>
+					<div class="for-state-item"><span>i actual</span><span id="for-i" class="for-value">1</span></div>
+					<div class="for-state-item"><span>Iteraciones ejecutadas</span><span id="for-iterations" class="for-value">0</span></div>
+					<div class="for-state-item"><span>Condicion i &lt;= 4</span><span id="for-condition" class="for-value">-</span></div>
+					<div class="for-state-item"><span>Fase actual</span><span id="for-phase" class="for-value">init</span></div>
+				</article>
+
+				<article class="for-card for-console">
+					<div class="for-head"><strong>{lang === 'en' ? '3) Simulated console' : '3) Consola simulada'}</strong></div>
+					<div class="for-console-win">
+						<div class="for-console-head"><span>./for-demo</span><span>stdout</span></div>
+						<div class="for-console-body" id="for-console"></div>
+					</div>
+				</article>
+			</section>
+
+</main>
+	</div>
+
+	<script>
+		type Step = {
+			line: number;
+			message: { es: string; en: string };
+			iValue: number;
+			iterations: number;
+			condition: 'true' | 'false' | '-';
+			phase: 'init' | 'condicion' | 'bloque' | 'incremento' | 'fin';
+			consoleLines: string[];
+		};
+
+		const steps: Step[] = [
+			{ line: 1, message: { es: 'Inicializa i = 1.', en: 'Initializes i = 1.' }, iValue: 1, iterations: 0, condition: '-', phase: 'init', consoleLines: [] },
+			{ line: 1, message: { es: 'Evalua condicion i <= 4. Da true.', en: 'Evaluates condition i <= 4. Result: true.' }, iValue: 1, iterations: 0, condition: 'true', phase: 'condicion', consoleLines: [] },
+			{ line: 2, message: { es: 'Ejecuta bloque: imprime Paso 1.', en: 'Executes block: prints Step 1.' }, iValue: 1, iterations: 1, condition: 'true', phase: 'bloque', consoleLines: ['Paso 1'] },
+			{ line: 1, message: { es: 'Incrementa i (i++). Ahora i = 2.', en: 'Increments i (i++). Now i = 2.' }, iValue: 2, iterations: 1, condition: 'true', phase: 'incremento', consoleLines: ['Paso 1'] },
+			{ line: 1, message: { es: 'Condicion de nuevo: 2 <= 4 da true.', en: 'Checks condition again: 2 <= 4 is true.' }, iValue: 2, iterations: 1, condition: 'true', phase: 'condicion', consoleLines: ['Paso 1'] },
+			{ line: 2, message: { es: 'Segunda iteracion: imprime Paso 2.', en: 'Second iteration: prints Step 2.' }, iValue: 2, iterations: 2, condition: 'true', phase: 'bloque', consoleLines: ['Paso 1', 'Paso 2'] },
+			{ line: 1, message: { es: 'Incrementa i a 3.', en: 'Increments i to 3.' }, iValue: 3, iterations: 2, condition: 'true', phase: 'incremento', consoleLines: ['Paso 1', 'Paso 2'] },
+			{ line: 2, message: { es: 'Tercera iteracion: imprime Paso 3.', en: 'Third iteration: prints Step 3.' }, iValue: 3, iterations: 3, condition: 'true', phase: 'bloque', consoleLines: ['Paso 1', 'Paso 2', 'Paso 3'] },
+			{ line: 1, message: { es: 'Incrementa i a 4 y vuelve a evaluar.', en: 'Increments i to 4 and checks again.' }, iValue: 4, iterations: 3, condition: 'true', phase: 'condicion', consoleLines: ['Paso 1', 'Paso 2', 'Paso 3'] },
+			{ line: 2, message: { es: 'Cuarta iteracion: imprime Paso 4.', en: 'Fourth iteration: prints Step 4.' }, iValue: 4, iterations: 4, condition: 'true', phase: 'bloque', consoleLines: ['Paso 1', 'Paso 2', 'Paso 3', 'Paso 4'] },
+			{ line: 1, message: { es: 'Incrementa a 5. 5 <= 4 da false y el for termina.', en: 'Increments to 5. 5 <= 4 is false, for loop ends.' }, iValue: 5, iterations: 4, condition: 'false', phase: 'fin', consoleLines: ['Paso 1', 'Paso 2', 'Paso 3', 'Paso 4'] },
+			{ line: 4, message: { es: 'Ejecuta lo que sigue despues del for.', en: 'Executes what comes after the for loop.' }, iValue: 5, iterations: 4, condition: 'false', phase: 'fin', consoleLines: ['Paso 1', 'Paso 2', 'Paso 3', 'Paso 4', 'Fin for'] },
+		];
+
+		let currentStep = 0;
+
+		const prevBtn = document.getElementById('for-prev') as HTMLButtonElement;
+		const nextBtn = document.getElementById('for-next') as HTMLButtonElement;
+		const lineBadge = document.getElementById('for-line') as HTMLElement;
+		const stepBadge = document.getElementById('for-step') as HTMLElement;
+		const copyEl = document.getElementById('for-copy') as HTMLElement;
+		const iEl = document.getElementById('for-i') as HTMLElement;
+		const iterEl = document.getElementById('for-iterations') as HTMLElement;
+		const condEl = document.getElementById('for-condition') as HTMLElement;
+		const phaseEl = document.getElementById('for-phase') as HTMLElement;
+		const consoleEl = document.getElementById('for-console') as HTMLElement;
+		const fillEl = document.getElementById('for-fill') as HTMLElement;
+
+		const isEnglish = document.documentElement.lang === 'en';
+
+		function renderStep(): void {
+			const step = steps[currentStep];
+
+			document.querySelectorAll<HTMLElement>('.for-row').forEach((row) => {
+				row.classList.toggle('active', Number(row.dataset.line) === step.line);
+			});
+
+			lineBadge.textContent = isEnglish ? `Active line: ${step.line}` : `Linea activa: ${step.line}`;
+			stepBadge.textContent = isEnglish ? `Step ${currentStep + 1} / ${steps.length}` : `Paso ${currentStep + 1} / ${steps.length}`;
+			copyEl.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${step.message[isEnglish ? 'en' : 'es']}`;
+			iEl.textContent = String(step.iValue);
+			iterEl.textContent = String(step.iterations);
+			condEl.textContent = step.condition;
+			phaseEl.textContent = step.phase;
+			condEl.classList.remove('for-true', 'for-false');
+			if (step.condition === 'true') condEl.classList.add('for-true');
+			if (step.condition === 'false') condEl.classList.add('for-false');
+
+			consoleEl.innerHTML = '';
+			step.consoleLines.forEach((line, index) => {
+				const entry = document.createElement('div');
+				entry.className = 'for-log';
+				entry.style.animationDelay = `${index * 80}ms`;
+				entry.textContent = `> ${line}`;
+				consoleEl.appendChild(entry);
+			});
+
+			fillEl.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
+			prevBtn.disabled = currentStep === 0;
+			nextBtn.disabled = currentStep === steps.length - 1;
+		}
+
+		prevBtn.addEventListener('click', () => {
+			if (currentStep > 0) {
+				currentStep -= 1;
+				renderStep();
+			}
+		});
+
+		nextBtn.addEventListener('click', () => {
+			if (currentStep < steps.length - 1) {
+				currentStep += 1;
+				renderStep();
+			}
+		});
+
+		document.addEventListener('keydown', (event: KeyboardEvent) => {
+			if (event.key === 'ArrowRight') nextBtn.click();
+			if (event.key === 'ArrowLeft') prevBtn.click();
+		});
+
+		renderStep();
+	</script>
+

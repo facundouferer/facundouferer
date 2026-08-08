@@ -1,0 +1,283 @@
+---
+import Icon from '../Icon.astro';
+import { withBase } from '../../utils/withBase';
+
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+---
+
+
+	<style is:global>
+		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
+		.sc-screen {
+			--sc-primary: #22d3ee;
+			--sc-accent: #0df259;
+			--sc-warn: #f59e0b;
+			--sc-danger: #ef4444;
+			--sc-bg: #071217;
+			min-height: 100vh;
+			font-family: 'Chakra Petch', sans-serif;
+			color: #e6feff;
+			background:
+				radial-gradient(circle at 82% 18%, rgba(34, 211, 238, 0.2), transparent 36%),
+				radial-gradient(circle at 18% 16%, rgba(13, 242, 89, 0.1), transparent 32%),
+				linear-gradient(140deg, #02090b 0%, var(--sc-bg) 100%);
+		}
+		.sc-shell { max-width: 1260px; margin: 0 auto; padding: 1rem 0.5rem 2rem; }
+		.sc-title { font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 700; line-height: 1.05; }
+		.sc-sub { max-width: 74ch; color: rgba(230, 254, 255, 0.84); font-size: 0.9rem; }
+		.sc-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0.6rem; }
+		.sc-card { border-radius: 1rem; border: 1px solid rgba(34, 211, 238, 0.28); background: linear-gradient(160deg, rgba(8, 25, 31, 0.92), rgba(4, 18, 24, 0.95)); padding: 0.6rem; }
+		.sc-code, .sc-state, .sc-memory, .sc-console { grid-column: span 12; }
+		@media (min-width: 1100px) {
+			.sc-code { grid-column: span 6; }
+			.sc-state { grid-column: span 3; }
+			.sc-memory { grid-column: span 3; }
+			.sc-console { grid-column: span 12; }
+		}
+		.sc-head { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
+		.sc-badge { border: 1px solid rgba(13, 242, 89, 0.4); background: rgba(13, 242, 89, 0.12); border-radius: 999px; padding: 0.1rem 0.5rem; font-size: 0.68rem; font-family: 'Fira Code', monospace; }
+		.sc-panel { background: rgba(3, 11, 15, 0.88); border: 1px solid rgba(34, 211, 238, 0.24); border-radius: 0.6rem; padding: 0.4rem; }
+		.sc-row { display: grid; grid-template-columns: 2rem 1fr; gap: 0.6rem; padding: 0.18rem 0.4rem; border-radius: 0.45rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; color: rgba(230, 254, 255, 0.92); transition: all 0.2s ease; }
+		.sc-row.active { background: linear-gradient(90deg, rgba(34, 211, 238, 0.3), rgba(34, 211, 238, 0.06)); outline: 1px solid rgba(34, 211, 238, 0.4); transform: translateX(3px); }
+		.sc-ln { color: rgba(230, 254, 255, 0.38); text-align: right; }
+		.sc-copy { margin-top: 0.5rem; border: 1px solid rgba(34, 211, 238, 0.34); background: rgba(34, 211, 238, 0.1); border-radius: 0.6rem; padding: 0.5rem; }
+		.sc-controls { margin-top: 0.6rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+		.sc-btn { border: 1px solid rgba(34, 211, 238, 0.45); background: rgba(34, 211, 238, 0.12); color: #e6feff; border-radius: 0.6rem; padding: 0.4rem 0.8rem; font-weight: 600; transition: all 0.2s ease; font-size: 0.78rem; }
+		.sc-btn:hover:not(:disabled) { background: rgba(34, 211, 238, 0.24); transform: translateY(-1px); }
+		.sc-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+		.sc-select { border: 1px solid rgba(13, 242, 89, 0.4); background: rgba(3, 11, 15, 0.92); color: #e6feff; border-radius: 0.6rem; padding: 0.45rem 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
+		.sc-track { margin-top: 0.5rem; height: 0.4rem; border-radius: 999px; background: rgba(230, 254, 255, 0.12); overflow: hidden; }
+		.sc-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--sc-primary), var(--sc-accent)); transition: width 0.25s ease; }
+		.sc-state-item { display: flex; justify-content: space-between; gap: 0.5rem; border: 1px solid rgba(13, 242, 89, 0.22); background: rgba(13, 242, 89, 0.08); border-radius: 0.5rem; padding: 0.4rem 0.55rem; margin-bottom: 0.35rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
+		.sc-value { color: var(--sc-primary); font-size: 0.92rem; font-weight: 700; text-align: right; }
+		.sc-memory-wrap { display: flex; flex-direction: column; gap: 0.5rem; }
+		.sc-word { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 0.25rem; }
+		.sc-cell { border: 1px solid rgba(230, 254, 255, 0.14); background: rgba(255, 255, 255, 0.03); border-radius: 0.5rem; padding: 0.35rem 0.15rem; text-align: center; transition: all 0.2s ease; }
+		.sc-cell.active { border-color: rgba(34, 211, 238, 0.52); background: rgba(34, 211, 238, 0.14); box-shadow: 0 0 18px rgba(34, 211, 238, 0.18); transform: translateY(-2px); }
+		.sc-char { font-family: 'Fira Code', monospace; font-size: 1rem; color: #fff; }
+		.sc-index { font-family: 'Fira Code', monospace; font-size: 0.66rem; color: rgba(230, 254, 255, 0.48); margin-top: 0.2rem; }
+		.sc-pointer { border: 1px solid rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.08); border-radius: 0.6rem; padding: 0.5rem; }
+		.sc-pointer-line { display: flex; justify-content: space-between; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; margin-bottom: 0.3rem; }
+		.sc-console-win { border: 1px solid rgba(13, 242, 89, 0.28); border-radius: 0.6rem; overflow: hidden; background: rgba(3, 11, 15, 0.9); }
+		.sc-console-head { display: flex; justify-content: space-between; padding: 0.35rem 0.6rem; font-family: 'Fira Code', monospace; font-size: 0.68rem; background: rgba(13, 242, 89, 0.12); border-bottom: 1px solid rgba(13, 242, 89, 0.2); }
+		.sc-console-body { min-height: 70px; padding: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; }
+		.sc-log { opacity: 0; transform: translateY(8px); animation: sc-log 0.35s ease forwards; color: #d6fff3; }
+		@keyframes sc-log { to { opacity: 1; transform: translateY(0); } }
+		.sc-back { display: inline-block; margin-top: 1.4rem; color: var(--sc-accent); text-decoration: none; border-bottom: 1px dashed rgba(13, 242, 89, 0.45); }
+	</style>
+
+	<div class="sc-screen">
+		<main class="sc-shell">
+			<header class="mb-4">
+				<p class="sc-badge">{lang === 'en' ? 'strings / pointers / strchr' : 'strings / punteros / strchr'}</p>
+				<h1 class="sc-title mt-3"><code>strchr</code> {lang === 'en' ? 'in C, step by step' : 'en C, paso a paso'}</h1>
+				<p class="sc-sub mt-3">{lang === 'en' ? 'This presentation shows how strchr() traverses palabra, returns a pointer to the found character, and how the position is calculated with ptr - palabra.' : 'Esta presentacion muestra como strchr() recorre palabra, devuelve un puntero al caracter encontrado y como se calcula la posicion con ptr - palabra.'}</p>
+			</header>
+
+			<section class="sc-grid" aria-live="polite">
+				<article class="sc-card sc-code">
+					<div class="sc-head"><strong>1) {lang === 'en' ? 'Code' : 'Codigo'}</strong><span class="sc-badge" id="sc-line">{lang === 'en' ? 'Active line: 1' : 'Linea activa: 1'}</span></div>
+					<div class="sc-panel">
+						<div class="sc-row" data-line="1"><span class="sc-ln">1</span><span>char palabra[] = "computadora";</span></div>
+						<div class="sc-row" data-line="2"><span class="sc-ln">2</span><span>char *ptr = strchr(palabra, 'u');</span></div>
+						<div class="sc-row" data-line="3"><span class="sc-ln">3</span><span>if (ptr != NULL) &#123;</span></div>
+						<div class="sc-row" data-line="4"><span class="sc-ln">4</span><span>&nbsp;&nbsp;printf("Encontrado: %c en la posicion %ld\n", *ptr, ptr - palabra);</span></div>
+						<div class="sc-row" data-line="5"><span class="sc-ln">5</span><span>&#125; else &#123;</span></div>
+						<div class="sc-row" data-line="6"><span class="sc-ln">6</span><span>&nbsp;&nbsp;printf("No se encontro el caracter\n");</span></div>
+						<div class="sc-row" data-line="7"><span class="sc-ln">7</span><span>&#125;</span></div>
+						<div class="sc-row" data-line="8"><span class="sc-ln">8</span><span>return 0;</span></div>
+					</div>
+					<div class="sc-copy" id="sc-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'The array palabra is created with the text' : 'Se crea el arreglo palabra con el texto'} <code>"computadora"</code>.</div>
+					<div class="sc-track"><div class="sc-fill" id="sc-fill"></div></div>
+					<div class="sc-controls">
+						<button class="sc-btn" id="sc-prev" type="button">{lang === 'en' ? '← Back' : '⬅ Retroceder'}</button>
+						<button class="sc-btn" id="sc-next" type="button">{lang === 'en' ? 'Next →' : 'Avanzar ➡'}</button>
+						<button class="sc-btn" id="sc-auto" type="button">{lang === 'en' ? 'Auto-play ▶' : 'Auto-play ▶'}</button>
+						<select class="sc-select" id="sc-level" aria-label={lang === 'en' ? 'Detail level' : 'Nivel de detalle'}>
+							<option value="basico" selected>{lang === 'en' ? 'Basic' : 'Basico'}</option>
+							<option value="intermedio">{lang === 'en' ? 'Intermediate' : 'Intermedio'}</option>
+						</select>
+						<span class="sc-badge" id="sc-step">{lang === 'en' ? 'Step 1 / 9' : 'Paso 1 / 9'}</span>
+					</div>
+				</article>
+
+				<article class="sc-card sc-state">
+					<div class="sc-head"><strong>2) {lang === 'en' ? 'State' : 'Estado'}</strong></div>
+					<div class="sc-state-item"><span>palabra</span><span class="sc-value" id="sc-palabra">computadora</span></div>
+					<div class="sc-state-item"><span>buscado</span><span class="sc-value" id="sc-char">'u'</span></div>
+					<div class="sc-state-item"><span>ptr</span><span class="sc-value" id="sc-ptr">NULL</span></div>
+					<div class="sc-state-item"><span>*ptr</span><span class="sc-value" id="sc-deref">-</span></div>
+					<div class="sc-state-item"><span>ptr - palabra</span><span class="sc-value" id="sc-pos">-</span></div>
+					<div class="sc-state-item"><span>condicion</span><span class="sc-value" id="sc-cond">-</span></div>
+				</article>
+
+				<article class="sc-card sc-memory">
+					<div class="sc-head"><strong>3) {lang === 'en' ? 'Memory' : 'Memoria'}</strong></div>
+					<div class="sc-memory-wrap">
+						<div class="sc-word" id="sc-word"></div>
+						<div class="sc-pointer">
+							<div class="sc-pointer-line"><span>{lang === 'en' ? 'ptr points to' : 'ptr apunta a'}</span><strong id="sc-pointer-target">{lang === 'en' ? 'nothing yet' : 'nada todavia'}</strong></div>
+							<div class="sc-pointer-line"><span>offset</span><strong id="sc-pointer-offset">-</strong></div>
+						</div>
+					</div>
+				</article>
+
+				<article class="sc-card sc-console">
+					<div class="sc-head"><strong>4) {lang === 'en' ? 'Simulated Console' : 'Consola simulada'}</strong></div>
+					<div class="sc-console-win">
+						<div class="sc-console-head"><span>./strchr-demo</span><span>stdout</span></div>
+						<div class="sc-console-body" id="sc-console"></div>
+					</div>
+				</article>
+			</section>
+
+			
+		</main>
+	</div>
+
+	<script>
+		type Step = {
+			line: number;
+			message: { es: string; en: string };
+			ptr: string;
+			deref: string;
+			position: string;
+			condition: string;
+			activeIndex: number | null;
+			pointerTarget: string;
+			pointerOffset: string;
+			logs: string[];
+		};
+
+		const letters = ['c', 'o', 'm', 'p', 'u', 't', 'a', 'd', 'o', 'r', 'a'];
+		const baseSteps: Step[] = [
+			{ line: 1, message: { es: 'Se declara el arreglo palabra con el texto "computadora".', en: 'The palabra array is declared with the text "computadora".' }, ptr: 'NULL', deref: '-', position: '-', condition: '-', activeIndex: null, pointerTarget: 'buffer completo en memoria', pointerOffset: '-', logs: [] },
+			{ line: 2, message: { es: 'strchr empieza a buscar el caracter u dentro de palabra.', en: 'strchr starts searching for character u inside palabra.' }, ptr: 'buscando...', deref: '-', position: '-', condition: '-', activeIndex: 0, pointerTarget: 'revisando desde palabra[0]', pointerOffset: '0', logs: [] },
+			{ line: 2, message: { es: 'Avanza por c, o, m y p hasta encontrar la primera u.', en: 'Advances through c, o, m and p until finding the first u.' }, ptr: 'buscando...', deref: '-', position: '-', condition: '-', activeIndex: 4, pointerTarget: 'comparando con palabra[4]', pointerOffset: '4', logs: [] },
+			{ line: 2, message: { es: 'Como encuentra u en el indice 4, strchr devuelve la direccion de esa celda.', en: 'Since it finds u at index 4, strchr returns the address of that cell.' }, ptr: '&palabra[4]', deref: 'u', position: '4', condition: '-', activeIndex: 4, pointerTarget: 'palabra[4]', pointerOffset: '4', logs: [] },
+			{ line: 3, message: { es: 'Se evalua ptr != NULL. Da true porque ptr si apunta a una direccion valida.', en: 'ptr != NULL evaluates to true because ptr does point to a valid address.' }, ptr: '&palabra[4]', deref: 'u', position: '4', condition: 'true', activeIndex: 4, pointerTarget: 'palabra[4]', pointerOffset: '4', logs: [] },
+			{ line: 4, message: { es: 'El operador *ptr lee el contenido donde apunta el puntero: el caracter u.', en: 'The *ptr operator reads the content where the pointer points: the character u.' }, ptr: '&palabra[4]', deref: 'u', position: '4', condition: 'true', activeIndex: 4, pointerTarget: 'palabra[4]', pointerOffset: '4', logs: [] },
+			{ line: 4, message: { es: 'La resta ptr - palabra calcula cuantas posiciones separan ambos punteros.', en: 'The subtraction ptr - palabra calculates how many positions separate both pointers.' }, ptr: '&palabra[4]', deref: 'u', position: '4', condition: 'true', activeIndex: 4, pointerTarget: 'palabra[4]', pointerOffset: '4', logs: [] },
+			{ line: 4, message: { es: 'printf muestra el caracter encontrado y su posicion dentro del arreglo.', en: 'printf displays the character found and its position within the array.' }, ptr: '&palabra[4]', deref: 'u', position: '4', condition: 'true', activeIndex: 4, pointerTarget: 'palabra[4]', pointerOffset: '4', logs: ['Encontrado: u en la posicion 4'] },
+			{ line: 8, message: { es: 'El programa termina normalmente con return 0.', en: 'The program ends normally with return 0.' }, ptr: '&palabra[4]', deref: 'u', position: '4', condition: 'true', activeIndex: 4, pointerTarget: 'palabra[4]', pointerOffset: '4', logs: ['Encontrado: u en la posicion 4'] },
+		];
+
+		const buildIntermediateSteps = (steps: Step[]): Step[] => {
+			const enriched: Step[] = [];
+			steps.forEach((stepState, index) => {
+				enriched.push(stepState);
+				if (index < steps.length - 1) {
+					enriched.push({ ...stepState, message: { es: `Detalle intermedio: ${stepState.message.es}`, en: `Intermediate detail: ${stepState.message.en}` } });
+				}
+			});
+			return enriched;
+		};
+
+		type Level = 'basico' | 'intermedio';
+		const stepSets: Record<Level, Step[]> = {
+			basico: baseSteps,
+			intermedio: buildIntermediateSteps(baseSteps),
+		};
+
+		let currentLevel: Level = 'basico';
+		let activeSteps: Step[] = stepSets[currentLevel];
+		let currentStep = 0;
+		let autoPlayTimer: number | null = null;
+
+		const prev = document.getElementById('sc-prev') as HTMLButtonElement;
+		const next = document.getElementById('sc-next') as HTMLButtonElement;
+		const auto = document.getElementById('sc-auto') as HTMLButtonElement;
+		const levelSelect = document.getElementById('sc-level') as HTMLSelectElement;
+		const line = document.getElementById('sc-line') as HTMLElement;
+		const step = document.getElementById('sc-step') as HTMLElement;
+		const copy = document.getElementById('sc-copy') as HTMLElement;
+		const ptr = document.getElementById('sc-ptr') as HTMLElement;
+		const deref = document.getElementById('sc-deref') as HTMLElement;
+		const pos = document.getElementById('sc-pos') as HTMLElement;
+		const cond = document.getElementById('sc-cond') as HTMLElement;
+		const pointerTarget = document.getElementById('sc-pointer-target') as HTMLElement;
+		const pointerOffset = document.getElementById('sc-pointer-offset') as HTMLElement;
+		const word = document.getElementById('sc-word') as HTMLElement;
+		const consoleBody = document.getElementById('sc-console') as HTMLElement;
+		const fill = document.getElementById('sc-fill') as HTMLElement;
+
+		letters.forEach((char, index) => {
+			const cell = document.createElement('div');
+			cell.className = 'sc-cell';
+			cell.dataset.index = String(index);
+			cell.innerHTML = `<div class="sc-char">${char}</div><div class="sc-index">${index}</div>`;
+			word.appendChild(cell);
+		});
+
+		function stopAutoPlay(): void {
+			if (autoPlayTimer !== null) {
+				window.clearInterval(autoPlayTimer);
+				autoPlayTimer = null;
+			}
+			auto.textContent = 'Auto-play ▶';
+		}
+
+		function toggleAutoPlay(): void {
+			if (autoPlayTimer !== null) {
+				stopAutoPlay();
+				return;
+			}
+			auto.textContent = 'Pausar ⏸';
+			autoPlayTimer = window.setInterval(() => {
+				if (currentStep < activeSteps.length - 1) {
+					currentStep += 1;
+					render();
+				} else {
+					stopAutoPlay();
+				}
+			}, 1400);
+		}
+
+		function render(): void {
+			const isEnglish = document.documentElement.lang === 'en';
+			const state = activeSteps[currentStep];
+			document.querySelectorAll<HTMLElement>('.sc-row').forEach((row) => row.classList.toggle('active', Number(row.dataset.line) === state.line));
+			document.querySelectorAll<HTMLElement>('.sc-cell').forEach((cell) => cell.classList.toggle('active', Number(cell.dataset.index) === state.activeIndex));
+			line.textContent = isEnglish ? `Active line: ${state.line}` : `Linea activa: ${state.line}`;
+			step.textContent = isEnglish ? `Step ${currentStep + 1} / ${activeSteps.length}` : `Paso ${currentStep + 1} / ${activeSteps.length}`;
+			copy.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${state.message[isEnglish ? 'en' : 'es']}`;
+			ptr.textContent = state.ptr;
+			deref.textContent = state.deref;
+			pos.textContent = state.position;
+			cond.textContent = state.condition;
+			pointerTarget.textContent = state.pointerTarget;
+			pointerOffset.textContent = state.pointerOffset;
+			consoleBody.innerHTML = '';
+			state.logs.forEach((entry, index) => {
+				const el = document.createElement('div');
+				el.className = 'sc-log';
+				el.style.animationDelay = `${index * 80}ms`;
+				el.textContent = `> ${entry}`;
+				consoleBody.appendChild(el);
+			});
+			fill.style.width = `${((currentStep + 1) / activeSteps.length) * 100}%`;
+			prev.disabled = currentStep === 0;
+			next.disabled = currentStep === activeSteps.length - 1;
+		}
+
+		prev.addEventListener('click', () => { if (currentStep > 0) { currentStep -= 1; render(); } });
+		next.addEventListener('click', () => { if (currentStep < activeSteps.length - 1) { currentStep += 1; render(); } });
+		auto.addEventListener('click', () => toggleAutoPlay());
+		levelSelect.addEventListener('change', () => {
+			currentLevel = levelSelect.value as Level;
+			activeSteps = stepSets[currentLevel];
+			currentStep = 0;
+			stopAutoPlay();
+			render();
+		});
+		document.addEventListener('keydown', (event: KeyboardEvent) => {
+			if (event.key === 'ArrowLeft') prev.click();
+			if (event.key === 'ArrowRight') next.click();
+		});
+
+		render();
+	</script>

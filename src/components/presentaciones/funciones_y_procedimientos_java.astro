@@ -1,0 +1,275 @@
+---
+import Icon from '../Icon.astro';
+import { withBase } from '../../utils/withBase';
+
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+---
+
+
+	<style is:global>
+		@import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&display=swap');
+
+		:root {
+			--primary: #0df259;
+		}
+
+		html { scroll-behavior: smooth; }
+
+		.section {
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 80px 24px 40px;
+		}
+
+		.section-inner {
+			width: 100%;
+			max-width: 1100px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			gap: 0;
+		}
+
+		.section-hidden {
+			opacity: 0;
+			transform: translateY(60px);
+			transition: opacity 0.8s ease, transform 0.8s ease;
+		}
+
+		.section-visible {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.section-visible .section-hidden,
+		.section-visible .anim-item {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.slide-label {
+			font-family: 'Space Mono', monospace;
+			font-size: 0.65rem;
+			letter-spacing: 0.15em;
+			text-transform: uppercase;
+			color: rgba(13, 242, 89, 0.35);
+			margin-bottom: 1.5rem;
+		}
+
+		.intro-title {
+			font-family: 'VT323', monospace;
+			font-size: clamp(2rem, 6vw, 5rem);
+			text-shadow: 0 0 15px rgba(13, 242, 89, 0.7);
+			line-height: 1;
+			text-align: center;
+		}
+
+		.slide-h2 {
+			font-family: 'VT323', monospace;
+			font-size: clamp(1.4rem, 3.5vw, 2.5rem);
+			color: var(--primary);
+			margin: 0 0 1rem;
+			line-height: 1.1;
+			text-align: center;
+		}
+
+		.slide-text {
+			color: rgba(13, 242, 89, 0.75);
+			font-size: clamp(0.9rem, 2vw, 1.1rem);
+			text-align: center;
+			max-width: 72ch;
+			line-height: 1.6;
+			margin-bottom: 1.5rem;
+		}
+
+		.code-block {
+			background: rgba(0, 0, 0, 0.5);
+			border: 1px solid rgba(13, 242, 89, 0.2);
+			border-radius: 4px;
+			padding: 16px 20px;
+			font-family: 'Space Mono', monospace;
+			font-size: 0.85rem;
+			line-height: 1.7;
+			width: 100%;
+			max-width: 700px;
+		}
+
+		ul { list-style: none; padding: 0; text-align: center; }
+		ul li { padding: 0.4rem 0; font-size: clamp(0.85rem, 2vw, 1rem); }
+		ul li::before {
+			content: '>';
+			color: var(--primary);
+			margin-right: 0.5rem;
+			font-family: 'Space Mono', monospace;
+		}
+
+		code {
+			font-family: 'Space Mono', monospace;
+			font-size: 0.8em;
+			background: rgba(13, 242, 89, 0.08);
+			border: 1px solid rgba(13, 242, 89, 0.2);
+			border-radius: 3px;
+			padding: 1px 5px;
+			color: var(--primary);
+		}
+
+		.code-comment { color: rgba(13, 242, 89, 0.4); font-style: italic; }
+		.code-keyword { color: #61afef; }
+		.code-string { color: #e5c07b; }
+		.code-number { color: #d19a66; }
+		.code-result { color: var(--primary); }
+		.code-type { color: #e06c75; }
+		.code-class { color: #98c379; }
+
+		.footer-text {
+			font-size: clamp(0.8rem, 1.8vw, 0.95rem);
+			color: rgba(13, 242, 89, 0.45);
+			text-align: center;
+			max-width: 60ch;
+			line-height: 1.6;
+		}
+
+		@media (max-width: 768px) {
+			.section { padding: 60px 16px 32px; }
+		}
+	</style>
+
+	<div class="relative" style="background: radial-gradient(circle, #0a1a0a 0%, #050a05 100%);">
+		<main class="relative">
+
+			<section class="section section-visible">
+				<div class="section-inner">
+					<div class="slide-label">PROGRAMIERDS_OS // JAVA_SUBPROGRAMS</div>
+					<h1 class="intro-title">{lang === 'en' ? 'Subprograms' : 'Subprogramas'}</h1>
+					<p class="slide-text anim-item" style="--delay:0ms;">
+						{lang === 'en'
+							? 'In Java, subprograms are reusable blocks of code that perform a specific task. They are mainly classified into functions (return a value) and procedures (do not return a value, typically declared with void).'
+							: 'En Java, los subprogramas son bloques de código reutilizables que realizan una tarea concreta. Se clasifican principalmente en funciones (devuelven un valor) y procedimientos (no devuelven valor, suelen declararse con void).'}
+					</p>
+				</div>
+			</section>
+
+			<section class="section section-visible">
+				<div class="section-inner">
+					<div class="slide-label">01 // {lang === 'en' ? 'BASIC STRUCTURE' : 'ESTRUCTURA BÁSICA'}</div>
+					<h2 class="slide-h2">{lang === 'en' ? '1. Basic Structure' : '1. Estructura básica'}</h2>
+					<p class="slide-text">{lang === 'en' ? 'General syntax of a function in Java:' : 'Sintaxis general de una función en Java:'}</p>
+					<div class="code-block">
+<pre><code><span class="code-type">tipoDeRetorno</span> <span class="code-class">nombreFuncion</span>(<span class="code-type">Tipo</span> parametro1, <span class="code-type">Tipo</span> parametro2) &lbrace;
+  // cuerpo del método
+  <span class="code-keyword">return</span> valor; <span class="code-comment">// solo si tipoDeRetorno no es void</span>
+&rbrace;</code></pre>
+					</div>
+				</div>
+			</section>
+
+			<section class="section section-visible">
+				<div class="section-inner">
+					<div class="slide-label">02 // {lang === 'en' ? 'PROCEDURE' : 'PROCEDIMIENTO'}</div>
+					<h2 class="slide-h2">{lang === 'en' ? '2. Procedure (void method)' : '2. Procedimiento (método void)'}</h2>
+					<p class="slide-text">{lang === 'en' ? 'A procedure performs actions but does not return a value:' : 'Un procedimiento realiza acciones pero no devuelve un valor:'}</p>
+					<div class="code-block">
+<pre><code><span class="code-keyword">void</span> imprimirMensaje(<span class="code-type">String</span> msg) &lbrace;
+  System.out.println(msg);
+&rbrace;
+
+<span class="code-keyword">public static void</span> main(<span class="code-type">String[]</span> args) &lbrace;
+  imprimirMensaje(<span class="code-string">"Hola desde un procedimiento"</span>);
+&rbrace;</code></pre>
+					</div>
+				</div>
+			</section>
+
+			<section class="section section-visible">
+				<div class="section-inner">
+					<div class="slide-label">03 // {lang === 'en' ? 'FUNCTION' : 'FUNCIÓN'}</div>
+					<h2 class="slide-h2">{lang === 'en' ? '3. Function (subprogram with return)' : '3. Función (subprograma con retorno)'}</h2>
+					<p class="slide-text">{lang === 'en' ? 'A function performs a calculation and returns a result:' : 'Una función realiza un cálculo y devuelve un resultado:'}</p>
+					<div class="code-block">
+<pre><code><span class="code-keyword">int</span> sumar(<span class="code-type">int</span> a, <span class="code-type">int</span> b) &lbrace;
+  <span class="code-keyword">return</span> a + b;
+&rbrace;
+
+<span class="code-keyword">public static void</span> main(<span class="code-type">String[]</span> args) &lbrace;
+  <span class="code-type">int</span> r = sumar(<span class="code-number">3</span>, <span class="code-number">5</span>);
+  System.out.println(<span class="code-string">"Suma: "</span> + r);
+&rbrace;</code></pre>
+					</div>
+				</div>
+			</section>
+
+			<section class="section section-visible">
+				<div class="section-inner">
+					<div class="slide-label">04 // {lang === 'en' ? 'PARAMETERS' : 'PARÁMETROS'}</div>
+					<h2 class="slide-h2">{lang === 'en' ? '4. Parameters and Pass by Value' : '4. Parámetros y paso por valor'}</h2>
+					<p class="slide-text">{lang === 'en' ? 'In Java, primitive types are passed by value. To modify the original data, you use references or wrapper objects.' : 'En Java, los tipos primitivos se pasan por valor. Si querés modificar el dato original, usás referencias u objetos wrapper.'}</p>
+					<div class="code-block">
+<pre><code><span class="code-keyword">void</span> incrementar(<span class="code-type">int</span> n) &lbrace;
+  n = n + <span class="code-number">1</span>; <span class="code-comment">// solo modifica la copia local</span>
+&rbrace;
+
+<span class="code-keyword">void</span> incrementarReal(<span class="code-type">int[]</span> n) &lbrace;
+  n[<span class="code-number">0</span>] = n[<span class="code-number">0</span>] + <span class="code-number">1</span>; <span class="code-comment">// modifica el original via referencia</span>
+&rbrace;</code></pre>
+					</div>
+				</div>
+			</section>
+
+			<section class="section section-visible">
+				<div class="section-inner">
+					<div class="slide-label">05 // {lang === 'en' ? 'BEST PRACTICES' : 'BUENAS PRÁCTICAS'}</div>
+					<h2 class="slide-h2">{lang === 'en' ? '5. Best Practices' : '5. Buenas prácticas'}</h2>
+					<ul>
+						<li>{lang === 'en' ? 'Name methods with descriptive verbs:' : 'Nombrar métodos con verbos descriptivos:'} <code>calcularTotal</code>, <code>imprimirReporte</code>.</li>
+						<li>{lang === 'en' ? 'Prefer small methods with a single responsibility.' : 'Preferir métodos pequeños y con una sola responsabilidad.'}</li>
+						<li>{lang === 'en' ? 'Document parameters and return values with clear comments.' : 'Documentar parámetros y valores de retorno con comentarios claros.'}</li>
+						<li>{lang === 'en' ? 'Use final when you don\'t want the function to alter the received data.' : 'Usar final cuando no querés que la función altere el dato recibido.'}</li>
+					</ul>
+				</div>
+			</section>
+
+			<section class="section section-visible">
+				<div class="section-inner">
+					<div class="slide-label">06 // {lang === 'en' ? 'COMPLETE EXAMPLE' : 'EJEMPLO COMPLETO'}</div>
+					<h2 class="slide-h2">{lang === 'en' ? '6. Complete Example' : '6. Ejemplo completo'}</h2>
+					<div class="code-block">
+<pre><code><span class="code-keyword">public class</span> Ejemplo &lbrace;
+  <span class="code-keyword">static void</span> imprimirBienvenida() &lbrace;
+    System.out.println(<span class="code-string">"Bienvenido a Programierds"</span>);
+  &rbrace;
+
+  <span class="code-keyword">static int</span> multiplicar(<span class="code-type">int</span> x, <span class="code-type">int</span> y) &lbrace;
+    <span class="code-keyword">return</span> x * y;
+  &rbrace;
+
+  <span class="code-keyword">public static void</span> main(<span class="code-type">String[]</span> args) &lbrace;
+    imprimirBienvenida();
+    <span class="code-type">int</span> res = multiplicar(<span class="code-number">6</span>, <span class="code-number">7</span>);
+    System.out.println(<span class="code-string">"6 * 7 = "</span> + res);
+  &rbrace;
+&rbrace;</code></pre>
+					</div>
+				</div>
+			</section>
+
+			<section class="section section-visible">
+				<div class="section-inner">
+					<div class="slide-label">END // {lang === 'en' ? 'MORE RESOURCES' : 'MÁS RECURSOS'}</div>
+					<p class="footer-text">
+						{lang === 'en'
+							? 'More resources: check the presentation "Pass by Value and Pointers in C" for memory examples and calls between subprograms.'
+							: 'Más recursos: consulta la presentación "Paso por Valor y Punteros en C" para ejemplos de memoria y llamadas entre subprogramas.'}
+					</p>
+				</div>
+			</section>
+
+		</main>
+	</div>
+

@@ -1,0 +1,80 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getLangFromUrl } from '../../i18n/utils';
+import { presentations } from '../../data/presentations';
+
+import ArbolesBinarios from '../../components/presentaciones/arboles-binarios.astro';
+import ArreglosEnC from '../../components/presentaciones/arreglos-en-c.astro';
+import BubbleSort from '../../components/presentaciones/bubble-sort.astro';
+import ContarPalabrasCadenasC from '../../components/presentaciones/contar-palabras-cadenas-c.astro';
+import DoWhilePasoAPaso from '../../components/presentaciones/do-while-paso-a-paso.astro';
+import ForAnidadoTablaMultiplicar from '../../components/presentaciones/for-anidado-tabla-multiplicar.astro';
+import ForPasoAPaso from '../../components/presentaciones/for-paso-a-paso.astro';
+import FuncionesYProcedimientosJava from '../../components/presentaciones/funciones_y_procedimientos_java.astro';
+import IfElsePasoAPaso from '../../components/presentaciones/if-else-paso-a-paso.astro';
+import IfPasoAPaso from '../../components/presentaciones/if-paso-a-paso.astro';
+import InsertionSort from '../../components/presentaciones/insertion-sort.astro';
+import ModularidadEnC from '../../components/presentaciones/modularidad_en_c.astro';
+import OperacionesConArreglos from '../../components/presentaciones/operaciones-con-arreglos.astro';
+import PasoPorValorYReferencia from '../../components/presentaciones/paso_por_valor_y_referencia.astro';
+import SelectionSort from '../../components/presentaciones/selection-sort.astro';
+import StrchrPasoAPaso from '../../components/presentaciones/strchr-paso-a-paso.astro';
+import StringNumerosPasoAPaso from '../../components/presentaciones/string-numeros-paso-a-paso.astro';
+import StringPasoAPaso from '../../components/presentaciones/string-paso-a-paso.astro';
+import SwitchPasoAPaso from '../../components/presentaciones/switch-paso-a-paso.astro';
+import TiposDeDatosEnJavascript from '../../components/presentaciones/tipos_de_datos_en_javascript.astro';
+import VariablesYConstantes from '../../components/presentaciones/variables_y_constantes.astro';
+import WhilePasoAPaso from '../../components/presentaciones/while-paso-a-paso.astro';
+
+export function getStaticPaths() {
+	return presentations.map((p) => ({
+		params: { slug: p.slug },
+	}));
+}
+
+const { slug } = Astro.params;
+const lang = getLangFromUrl(Astro.url);
+const pres = presentations.find((p) => p.slug === slug);
+
+if (!pres) {
+	throw new Error(`Presentation not found for slug: ${slug}`);
+}
+
+const componentMap: Record<string, any> = {
+	'arboles-binarios': ArbolesBinarios,
+	'arreglos-en-c': ArreglosEnC,
+	'bubble-sort': BubbleSort,
+	'contar-palabras-cadenas-c': ContarPalabrasCadenasC,
+	'do-while-paso-a-paso': DoWhilePasoAPaso,
+	'for-anidado-tabla-multiplicar': ForAnidadoTablaMultiplicar,
+	'for-paso-a-paso': ForPasoAPaso,
+	'funciones_y_procedimientos_java': FuncionesYProcedimientosJava,
+	'if-else-paso-a-paso': IfElsePasoAPaso,
+	'if-paso-a-paso': IfPasoAPaso,
+	'insertion-sort': InsertionSort,
+	'modularidad_en_c': ModularidadEnC,
+	'operaciones-con-arreglos': OperacionesConArreglos,
+	'paso_por_valor_y_referencia': PasoPorValorYReferencia,
+	'selection-sort': SelectionSort,
+	'strchr-paso-a-paso': StrchrPasoAPaso,
+	'string-numeros-paso-a-paso': StringNumerosPasoAPaso,
+	'string-paso-a-paso': StringPasoAPaso,
+	'switch-paso-a-paso': SwitchPasoAPaso,
+	'tipos_de_datos_en_javascript': TiposDeDatosEnJavascript,
+	'variables_y_constantes': VariablesYConstantes,
+	'while-paso-a-paso': WhilePasoAPaso,
+};
+
+const PresentationComponent = componentMap[slug];
+---
+
+<BaseLayout
+	title={`${pres.title[lang]} — Facundo Uferer`}
+	description={pres.description[lang]}
+	locale={lang}
+	esPath={`/presentaciones/${slug}`}
+	enPath={`/en/presentaciones/${slug}`}
+	canonicalPath={`/presentaciones/${slug}`}
+>
+	<PresentationComponent lang={lang} />
+</BaseLayout>

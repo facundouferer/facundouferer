@@ -1,0 +1,131 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+import { categories, presentations } from '../../data/presentations';
+import { withBase } from '../../utils/withBase';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<BaseLayout
+	title={t('seo.presentations.title')}
+	description={t('seo.presentations.description')}
+	locale={lang}
+	esPath="/presentaciones"
+	enPath="/en/presentaciones"
+	canonicalPath={lang === 'en' ? '/en/presentaciones' : '/presentaciones'}
+>
+	<style>
+		.glow-card {
+			box-shadow: 0 0 20px rgba(13, 242, 89, 0.05), inset 0 0 10px rgba(13, 242, 89, 0.05);
+			transition: all 0.3s ease;
+		}
+		.glow-card:hover {
+			box-shadow: 0 0 30px rgba(13, 242, 89, 0.25), inset 0 0 15px rgba(13, 242, 89, 0.1);
+			transform: translateY(-2px);
+		}
+	</style>
+
+	<div class="relative flex min-h-screen flex-col overflow-x-hidden">
+		<main class="flex-1 flex flex-col lg:flex-row mx-auto w-full relative z-10 max-w-7xl">
+			<aside class="hidden lg:block w-72 shrink-0 border-r border-emerald-500/10 p-8 bg-zinc-950/50">
+				<div class="sticky top-24 space-y-12">
+					<div>
+						<h3 class="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-emerald-400/60 mb-6 flex items-center gap-2">
+							<Icon name="description" class="w-4 h-4" />
+							{lang === 'en' ? 'DIRECTORIES' : 'DIRECTORIOS'}
+						</h3>
+						<ul class="space-y-2 font-mono text-sm" id="filter-list">
+							{categories.map((cat) => (
+								<li>
+									<button
+										data-filter={cat.filter}
+										class:list={[
+											'filter-btn flex items-center gap-3 px-3 py-2 rounded-md w-full text-left transition-all',
+											cat.filter === 'all'
+												? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+												: 'text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/5',
+										]}
+									>
+										<Icon name="description" class="w-5 h-5" />
+										{lang === 'en' ? cat.label.en : cat.label.es}
+									</button>
+								</li>
+							))}
+						</ul>
+					</div>
+				</div>
+			</aside>
+
+			<section class="flex-1 p-8 lg:p-12">
+				<header class="mb-12">
+					<h1 class="text-4xl lg:text-5xl font-black text-white mb-3">
+						{t('presentations.index.title')}
+					</h1>
+					<p class="text-zinc-400 text-lg font-mono">
+						{lang === 'en'
+							? 'Interactive step-by-step visualizers for algorithms, structures, and languages.'
+							: 'Visualizaciones interactivas paso a paso de algoritmos, estructuras de datos y conceptos.'}
+					</p>
+				</header>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="cards-grid">
+					{presentations.map((pres) => (
+						<a
+							class="group flex flex-col bg-zinc-950 border border-emerald-500/30 rounded-lg overflow-hidden glow-card focus:outline-none focus:ring-2 focus:ring-emerald-400/60"
+							href={withBase(lang === 'en' ? `/en/presentaciones/${pres.slug}` : `/presentaciones/${pres.slug}`)}
+							data-tag={lang === 'en' ? pres.tag.en : pres.tag.es}
+						>
+							<div class="bg-zinc-900/80 px-4 py-2 flex items-center justify-between border-b border-emerald-500/20">
+								<div class="flex items-center gap-1.5">
+									<div class="size-2.5 rounded-full bg-red-500/50"></div>
+									<div class="size-2.5 rounded-full bg-yellow-500/50"></div>
+									<div class="size-2.5 rounded-full bg-green-500/50"></div>
+								</div>
+								<span class="font-mono text-[10px] text-emerald-400/60 tracking-wider">{pres.file}</span>
+							</div>
+							<div class="p-6 flex flex-col h-full">
+								<div class="mb-4">
+									<span class={`font-mono text-[10px] uppercase px-2 py-0.5 rounded border ${pres.tagClass}`}>
+										{lang === 'en' ? pres.tag.en : pres.tag.es}
+									</span>
+								</div>
+								<h3 class="font-mono text-lg font-bold text-white mb-4 group-hover:text-emerald-400 transition-colors">
+									{lang === 'en' ? pres.title.en : pres.title.es}
+								</h3>
+								<p class="text-sm text-zinc-300 font-mono leading-relaxed flex-1">
+									{lang === 'en' ? pres.description.en : pres.description.es}
+								</p>
+								<div class="mt-6 flex items-center justify-end border-t border-emerald-500/10 pt-4">
+									<span class="font-mono text-xs font-bold text-emerald-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+										[ {t('presentations.card.open').toUpperCase()} ]
+									</span>
+								</div>
+							</div>
+						</a>
+					))}
+				</div>
+			</section>
+		</main>
+	</div>
+
+	<script>
+		const ACTIVE_CLASS = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+		const INACTIVE_CLASS = 'text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/5';
+
+		document.querySelectorAll<HTMLButtonElement>('.filter-btn').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const filter = btn.dataset.filter!;
+				document.querySelectorAll<HTMLButtonElement>('.filter-btn').forEach((b) => {
+					b.className = `filter-btn flex items-center gap-3 px-3 py-2 rounded-md w-full text-left transition-all ${INACTIVE_CLASS}`;
+				});
+				btn.className = `filter-btn flex items-center gap-3 px-3 py-2 rounded-md w-full text-left transition-all ${ACTIVE_CLASS}`;
+				document.querySelectorAll<HTMLElement>('#cards-grid > [data-tag]').forEach((card) => {
+					card.style.display = filter === 'all' || card.dataset.tag === filter ? '' : 'none';
+				});
+			});
+		});
+	</script>
+</BaseLayout>

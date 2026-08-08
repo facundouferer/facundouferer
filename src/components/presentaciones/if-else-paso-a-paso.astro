@@ -1,0 +1,213 @@
+---
+import Icon from '../Icon.astro';
+import { withBase } from '../../utils/withBase';
+
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+---
+
+
+	<style is:global>
+		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
+		.ife-screen {
+			--ife-primary: #f59e0b;
+			--ife-cyan: #22d3ee;
+			--ife-bg: #1a1208;
+			min-height: 100vh;
+			font-family: 'Chakra Petch', sans-serif;
+			color: #fff3df;
+			background: radial-gradient(circle at 85% 15%, rgba(245, 158, 11, 0.18), transparent 40%), linear-gradient(150deg, #090602 0%, var(--ife-bg) 100%);
+		}
+		.ife-shell { max-width: 1150px; margin: 0 auto; padding: 2.2rem 1rem 3rem; }
+		.ife-title { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; line-height: 1.05; }
+		.ife-sub { max-width: 65ch; color: rgba(255, 243, 223, 0.84); }
+		.ife-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
+		.ife-card { border-radius: 1rem; border: 1px solid rgba(245, 158, 11, 0.28); background: linear-gradient(155deg, rgba(43, 29, 15, 0.9), rgba(23, 16, 8, 0.94)); padding: 1rem; }
+		.ife-code, .ife-state, .ife-console { grid-column: span 12; }
+		@media (min-width: 1100px) { .ife-code { grid-column: span 6; } .ife-state, .ife-console { grid-column: span 3; } }
+		.ife-head { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
+		.ife-badge { border: 1px solid rgba(34, 211, 238, 0.45); background: rgba(34, 211, 238, 0.14); border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.72rem; font-family: 'Fira Code', monospace; }
+		.ife-panel { background: rgba(12, 7, 3, 0.88); border: 1px solid rgba(245, 158, 11, 0.26); border-radius: 0.8rem; padding: 0.75rem; }
+		.ife-row { display: grid; grid-template-columns: 2rem 1fr; gap: 0.8rem; padding: 0.42rem 0.5rem; border-radius: 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.89rem; color: rgba(255, 243, 223, 0.88); transition: all 0.2s ease; }
+		.ife-row.active { background: linear-gradient(90deg, rgba(245, 158, 11, 0.28), rgba(245, 158, 11, 0.08)); outline: 1px solid rgba(245, 158, 11, 0.42); transform: translateX(3px); }
+		.ife-ln { color: rgba(255, 243, 223, 0.42); text-align: right; }
+		.ife-state-item { display: flex; justify-content: space-between; border: 1px solid rgba(34, 211, 238, 0.28); background: rgba(34, 211, 238, 0.08); border-radius: 0.65rem; padding: 0.6rem 0.7rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.84rem; }
+		.ife-value { color: var(--ife-primary); font-size: 1rem; font-weight: 700; }
+		.ife-true { color: #86efac; }
+		.ife-false { color: #fb7185; }
+		.ife-copy { margin-top: 0.8rem; border: 1px solid rgba(245, 158, 11, 0.35); background: rgba(245, 158, 11, 0.11); border-radius: 0.7rem; padding: 0.75rem; }
+		.ife-controls { margin-top: 0.9rem; display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; }
+		.ife-btn { border: 1px solid rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.14); color: #fff3df; border-radius: 0.7rem; padding: 0.55rem 1rem; font-weight: 600; transition: all 0.2s ease; }
+		.ife-btn:hover:not(:disabled) { background: rgba(245, 158, 11, 0.26); transform: translateY(-1px); }
+		.ife-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+		.ife-select { border: 1px solid rgba(34, 211, 238, 0.45); background: rgba(12, 7, 3, 0.92); color: #fff3df; border-radius: 0.6rem; padding: 0.45rem 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
+		.ife-track { margin-top: 0.8rem; height: 0.55rem; border-radius: 999px; background: rgba(255, 243, 223, 0.14); overflow: hidden; }
+		.ife-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--ife-primary), var(--ife-cyan)); transition: width 0.25s ease; }
+		.ife-console-win { border: 1px solid rgba(34, 211, 238, 0.35); border-radius: 0.8rem; overflow: hidden; background: rgba(12, 7, 3, 0.88); }
+		.ife-console-head { display: flex; justify-content: space-between; padding: 0.5rem 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.72rem; background: rgba(34, 211, 238, 0.12); border-bottom: 1px solid rgba(34, 211, 238, 0.3); }
+		.ife-console-body { min-height: 150px; padding: 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+		.ife-log { opacity: 0; transform: translateY(8px); animation: ife-log 0.35s ease forwards; color: #d8f2ff; }
+		@keyframes ife-log { to { opacity: 1; transform: translateY(0); } }
+		.ife-back { display: inline-block; margin-top: 1.4rem; color: var(--ife-cyan); text-decoration: none; border-bottom: 1px dashed rgba(34, 211, 238, 0.5); }
+	</style>
+
+	<div class="ife-screen">
+		<main class="ife-shell">
+			<header class="mb-6">
+				<p class="ife-badge">{lang === 'en' ? 'if-else / step by step' : 'if-else / paso a paso'}</p>
+				<h1 class="ife-title mt-3">{lang === 'en' ? '<code>if-else</code> conditional, no detours' : 'Condicional <code>if-else</code>, sin vueltas'}</h1>
+				<p class="ife-sub mt-3">{lang === 'en' ? 'Watch how the program chooses one path or the other. We use <code>edad = 16</code> so you see the <code>else</code> block execute.' : 'Mira como el programa elige un camino u otro. Acá usamos <code>edad = 16</code> para que veas ejecutarse el <code>else</code>.'}</p>
+			</header>
+			<section class="ife-grid" aria-live="polite">
+				<article class="ife-card ife-code">
+					<div class="ife-head"><strong>{lang === 'en' ? '1) Code' : '1) Codigo'}</strong><span class="ife-badge" id="ife-line">{lang === 'en' ? 'Active line: 1' : 'Linea activa: 1'}</span></div>
+					<div class="ife-panel">
+						<div class="ife-row" data-line="1"><span class="ife-ln">1</span><span>int edad = 16;</span></div>
+						<div class="ife-row" data-line="2"><span class="ife-ln">2</span><span>if (edad &gt;= 18) &#123;</span></div>
+						<div class="ife-row" data-line="3"><span class="ife-ln">3</span><span>&nbsp;&nbsp;printf("Mayor de edad\n");</span></div>
+						<div class="ife-row" data-line="4"><span class="ife-ln">4</span><span>&#125; else &#123;</span></div>
+						<div class="ife-row" data-line="5"><span class="ife-ln">5</span><span>&nbsp;&nbsp;printf("Menor de edad\n");</span></div>
+						<div class="ife-row" data-line="6"><span class="ife-ln">6</span><span>&#125;</span></div>
+						<div class="ife-row" data-line="7"><span class="ife-ln">7</span><span>printf("Fin del ejemplo\n");</span></div>
+					</div>
+					<div class="ife-copy" id="ife-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'Creates variable <code>edad</code> with value 16.' : 'Se crea la variable <code>edad</code> en 16.'}</div>
+					<div class="ife-track"><div class="ife-fill" id="ife-fill"></div></div>
+					<div class="ife-controls">
+						<button class="ife-btn" id="ife-prev" type="button">{lang === 'en' ? '⬅ Back' : '⬅ Retroceder'}</button>
+						<button class="ife-btn" id="ife-next" type="button">{lang === 'en' ? 'Next ➡' : 'Avanzar ➡'}</button>
+						<button class="ife-btn" id="ife-auto" type="button">{lang === 'en' ? 'Auto-play ▶' : 'Auto-play ▶'}</button>
+						<select class="ife-select" id="ife-level" aria-label={lang === 'en' ? 'Detail level' : 'Nivel de detalle'}>
+							<option value="basico" selected>{lang === 'en' ? 'Basic' : 'Basico'}</option>
+							<option value="intermedio">{lang === 'en' ? 'Intermediate' : 'Intermedio'}</option>
+						</select>
+						<span class="ife-badge" id="ife-step">{lang === 'en' ? 'Step 1 / 7' : 'Paso 1 / 7'}</span>
+					</div>
+				</article>
+				<article class="ife-card ife-state">
+					<div class="ife-head"><strong>{lang === 'en' ? '2) Variables' : '2) Variables'}</strong></div>
+					<div class="ife-state-item"><span>edad</span><span id="ife-edad" class="ife-value">16</span></div>
+					<div class="ife-state-item"><span>{lang === 'en' ? 'Condition edad &gt;= 18' : 'Condicion edad &gt;= 18'}</span><span id="ife-cond" class="ife-value">-</span></div>
+				</article>
+				<article class="ife-card ife-console">
+					<div class="ife-head"><strong>{lang === 'en' ? '3) Simulated console' : '3) Consola simulada'}</strong></div>
+					<div class="ife-console-win">
+						<div class="ife-console-head"><span>./if-else-demo</span><span>stdout</span></div>
+						<div class="ife-console-body" id="ife-console"></div>
+					</div>
+				</article>
+			</section>
+</main>
+	</div>
+
+	<script>
+		type Step = { line: number; message: { es: string; en: string }; edad: number; cond: 'true' | 'false' | '-'; logs: string[] };
+		const baseSteps: Step[] = [
+			{ line: 1, message: { es: 'Se declara edad con valor 16.', en: 'Declares edad with value 16.' }, edad: 16, cond: '-', logs: [] },
+			{ line: 2, message: { es: 'Evalua condicion: 16 >= 18 da false.', en: 'Evaluates condition: 16 >= 18 is false.' }, edad: 16, cond: 'false', logs: [] },
+			{ line: 4, message: { es: 'Como dio false, salta al bloque else.', en: 'Since it was false, jumps to the else block.' }, edad: 16, cond: 'false', logs: [] },
+			{ line: 5, message: { es: 'Ejecuta el printf del else.', en: 'Executes the else printf.' }, edad: 16, cond: 'false', logs: ['Menor de edad'] },
+			{ line: 6, message: { es: 'Cierra el bloque else.', en: 'Closes the else block.' }, edad: 16, cond: 'false', logs: ['Menor de edad'] },
+			{ line: 7, message: { es: 'Sigue el flujo normal del programa.', en: 'Continues the normal program flow.' }, edad: 16, cond: 'false', logs: ['Menor de edad', 'Fin del ejemplo'] },
+			{ line: 7, message: { es: 'Resumen: el if no corrio porque la condicion era falsa.', en: 'Summary: the if did not run because the condition was false.' }, edad: 16, cond: 'false', logs: ['Menor de edad', 'Fin del ejemplo'] },
+		];
+
+		const buildIntermediateSteps = (steps: Step[]): Step[] => {
+			const enriched: Step[] = [];
+			steps.forEach((stepState, index) => {
+				enriched.push(stepState);
+				if (index < steps.length - 1) {
+					enriched.push({ ...stepState, message: { es: `Detalle intermedio: ${stepState.message.es}`, en: `Intermediate detail: ${stepState.message.en}` } });
+				}
+			});
+			return enriched;
+		};
+
+		type Level = 'basico' | 'intermedio';
+		const stepSets: Record<Level, Step[]> = {
+			basico: baseSteps,
+			intermedio: buildIntermediateSteps(baseSteps),
+		};
+
+		let currentLevel: Level = 'basico';
+		let activeSteps: Step[] = stepSets[currentLevel];
+
+		let currentStep = 0;
+		const prev = document.getElementById('ife-prev') as HTMLButtonElement;
+		const next = document.getElementById('ife-next') as HTMLButtonElement;
+		const auto = document.getElementById('ife-auto') as HTMLButtonElement;
+		const levelSelect = document.getElementById('ife-level') as HTMLSelectElement;
+		const line = document.getElementById('ife-line') as HTMLElement;
+		const step = document.getElementById('ife-step') as HTMLElement;
+		const copy = document.getElementById('ife-copy') as HTMLElement;
+		const edad = document.getElementById('ife-edad') as HTMLElement;
+		const cond = document.getElementById('ife-cond') as HTMLElement;
+		const consoleBody = document.getElementById('ife-console') as HTMLElement;
+		const fill = document.getElementById('ife-fill') as HTMLElement;
+		let autoPlayTimer: number | null = null;
+		const isEnglish = document.documentElement.lang === 'en';
+
+		function stopAutoPlay(): void {
+			if (autoPlayTimer !== null) {
+				window.clearInterval(autoPlayTimer);
+				autoPlayTimer = null;
+			}
+			auto.textContent = isEnglish ? 'Auto-play ▶' : 'Auto-play ▶';
+		}
+
+		function toggleAutoPlay(): void {
+			if (autoPlayTimer !== null) {
+				stopAutoPlay();
+				return;
+			}
+			auto.textContent = isEnglish ? 'Pause ⏸' : 'Pausar ⏸';
+			autoPlayTimer = window.setInterval(() => {
+				if (currentStep < activeSteps.length - 1) {
+					currentStep += 1;
+					render();
+				} else {
+					stopAutoPlay();
+				}
+			}, 1300);
+		}
+
+		function render(): void {
+			const state = activeSteps[currentStep];
+			document.querySelectorAll<HTMLElement>('.ife-row').forEach((row) => row.classList.toggle('active', Number(row.dataset.line) === state.line));
+			line.textContent = isEnglish ? `Active line: ${state.line}` : `Linea activa: ${state.line}`;
+			step.textContent = isEnglish ? `Step ${currentStep + 1} / ${activeSteps.length}` : `Paso ${currentStep + 1} / ${activeSteps.length}`;
+			copy.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${state.message[isEnglish ? 'en' : 'es']}`;
+			edad.textContent = String(state.edad);
+			cond.textContent = state.cond;
+			cond.classList.remove('ife-true', 'ife-false');
+			if (state.cond === 'true') cond.classList.add('ife-true');
+			if (state.cond === 'false') cond.classList.add('ife-false');
+			consoleBody.innerHTML = '';
+			state.logs.forEach((entry, index) => {
+				const el = document.createElement('div');
+				el.className = 'ife-log';
+				el.style.animationDelay = `${index * 80}ms`;
+				el.textContent = `> ${entry}`;
+				consoleBody.appendChild(el);
+			});
+			fill.style.width = `${((currentStep + 1) / activeSteps.length) * 100}%`;
+			prev.disabled = currentStep === 0;
+			next.disabled = currentStep === activeSteps.length - 1;
+		}
+
+		prev.addEventListener('click', () => { if (currentStep > 0) { currentStep -= 1; render(); } });
+		next.addEventListener('click', () => { if (currentStep < activeSteps.length - 1) { currentStep += 1; render(); } });
+		auto.addEventListener('click', () => toggleAutoPlay());
+		levelSelect.addEventListener('change', () => {
+			currentLevel = levelSelect.value as Level;
+			activeSteps = stepSets[currentLevel];
+			currentStep = 0;
+			stopAutoPlay();
+			render();
+		});
+		document.addEventListener('keydown', (event: KeyboardEvent) => { if (event.key === 'ArrowLeft') prev.click(); if (event.key === 'ArrowRight') next.click(); });
+		render();
+	</script>
+
