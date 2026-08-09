@@ -1,0 +1,50 @@
+<!-- @dsCard group="Theme" name="Parameters" subtitle="The parameters this system was derived from" viewport="640x520" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Organic — Parameters</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+/* Demo scaffolding only — everything visual comes from styles.css. */
+.demo { max-width: 620px; margin: 0 auto; padding: var(--space-6) var(--space-4) var(--space-8); }
+.demo-head {
+  font-family: var(--font-body); font-size: 11px; font-weight: inherit;
+  letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.55;
+  margin: var(--space-6) 0 var(--space-3);
+}
+.demo-head:first-child { margin-top: 0; }
+.row { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.stack { display: grid; gap: var(--space-3); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+.note { font-size: 12px; opacity: 0.6; max-width: 60ch; }
+code { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.92em; }
+.params { border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); }
+.def { display: flex; gap: var(--space-3); padding: var(--space-1) 0; }
+dl { margin: 0; } dt { flex: none; width: 140px; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.5; } dd { margin: 0; font-size: 14px; }
+</style>
+</head>
+<body>
+<main class="demo">
+<div class="demo-head">Theme parameters</div>
+  <section class="params" data-theme-ground="light" data-theme-scheme="mono" data-theme-hue="24">
+    <dl>
+    <div class="def"><dt>Ground</dt><dd>light (scheme: mono, hue 24°, saturation 0.55)</dd></div>
+    <div class="def"><dt>Fonts</dt><dd>Caprasimo / Figtree</dd></div>
+    <div class="def"><dt>Density</dt><dd>1.10×</dd></div>
+    <div class="def"><dt>Radius</dt><dd>16px</dd></div>
+    <div class="def"><dt>Layout</dt><dd>left</dd></div>
+    <div class="def"><dt>Dividers</dt><dd>none</dd></div>
+    <div class="def"><dt>Buttons</dt><dd>solid</dd></div>
+    <div class="def"><dt>Color use</dt><dd>fill</dd></div>
+    <div class="def"><dt>Frame</dt><dd>rounded</dd></div>
+    <div class="def"><dt>Image treatment</dt><dd>washed</dd></div>
+    <div class="def"><dt>Icons</dt><dd>Lucide</dd></div>
+    </dl>
+  </section>
+  <p class="note">These values are the seed this system was derived from: styles.css, every page in this project and the guide in readme.md were built from them (the machine-readable copy is <code>theme.json</code>). If you retune the system by hand — palette, type, radii, spacing — do it in styles.css (the one place tokens live) and keep this page and <code>theme.json</code> in step so the record stays true. The <code>data-theme-*</code> attributes above mirror the ground / scheme / hue knobs for a future theme-controls surface; today they are documentation, nothing reads them.</p>
+</main>
+</body>
+</html>

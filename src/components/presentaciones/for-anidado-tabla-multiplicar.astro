@@ -1,291 +1,253 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
-
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+const isEs = lang === 'es';
 ---
 
+<div class="fn-screen">
+	<div class="fn-shell">
+		<header class="fn-header">
+			<span class="fn-badge">{isEs ? 'Iteración Multidimensional' : 'Multidimensional Iteration'}</span>
+			<h1 class="fn-title">
+				{isEs ? 'For Anidado y Tabla de Multiplicar' : 'Nested For & Multiplication Table'}
+			</h1>
+			<p class="fn-sub">
+				{isEs 
+					? 'Bucles anidados, complejidad O(N²) y matrices en C, Java, JavaScript y Python.' 
+					: 'Nested loops, O(N²) complexity, and matrices in C, Java, JS, and Python.'}
+			</p>
+		</header>
 
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
+		<div class="fn-deck-card">
+			<div class="fn-nav-bar">
+				<div class="fn-slide-indicator">
+					<span class="fn-step-dot"></span>
+					<span id="fn-slide-label">SLIDE 1 / 6</span>
+				</div>
+				<div class="fn-pills">
+					<button class="fn-pill-btn active" data-target-slide="1">1. {isEs ? 'Concepto' : 'Concept'}</button>
+					<button class="fn-pill-btn" data-target-slide="2">2. C</button>
+					<button class="fn-pill-btn" data-target-slide="3">3. Java</button>
+					<button class="fn-pill-btn" data-target-slide="4">4. JavaScript</button>
+					<button class="fn-pill-btn" data-target-slide="5">5. Python</button>
+					<button class="fn-pill-btn" data-target-slide="6">6. {isEs ? 'Matriz' : 'Matrix'}</button>
+				</div>
+			</div>
 
-		.fn-screen {
-			--fn-bg: #0d101f;
-			--fn-panel: #191f3a;
-			--fn-primary: #a78bfa;
-			--fn-cyan: #22d3ee;
-			--fn-danger: #fb7185;
-			min-height: 100vh;
-			font-family: 'Chakra Petch', sans-serif;
-			background:
-				radial-gradient(circle at 85% 14%, rgba(167, 139, 250, 0.2), transparent 42%),
-				radial-gradient(circle at 12% 82%, rgba(34, 211, 238, 0.14), transparent 40%),
-				linear-gradient(145deg, #070913 0%, var(--fn-bg) 100%);
-			color: #f1ecff;
-		}
-
-		.fn-shell { max-width: 1280px; margin: 0 auto; padding: 2.5rem 1rem 3rem; }
-		.fn-title { font-size: clamp(1.5rem, 3vw, 2.2rem); line-height: 1.05; font-weight: 700; }
-		.fn-sub { max-width: 72ch; color: rgba(241, 236, 255, 0.84); }
-
-		.fn-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
-		.fn-card { border-radius: 1rem; border: 1px solid rgba(167, 139, 250, 0.32); background: linear-gradient(160deg, rgba(25, 31, 58, 0.92), rgba(12, 16, 32, 0.94)); padding: 1rem; }
-		.fn-code { grid-column: span 12; }
-		.fn-state { grid-column: span 12; }
-		.fn-table { grid-column: span 12; }
-		@media (min-width: 1200px) {
-			.fn-code { grid-column: span 5; }
-			.fn-state { grid-column: span 3; }
-			.fn-table { grid-column: span 4; }
-		}
-
-		.fn-badge { border: 1px solid rgba(34, 211, 238, 0.4); background: rgba(34, 211, 238, 0.12); border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.72rem; font-family: 'Fira Code', monospace; }
-		.fn-head { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
-
-		.fn-code-panel { background: rgba(8, 10, 21, 0.9); border: 1px solid rgba(167, 139, 250, 0.28); border-radius: 0.8rem; padding: 0.75rem; }
-		.fn-row { display: grid; grid-template-columns: 2rem 1fr; gap: 0.8rem; border-radius: 0.55rem; padding: 0.42rem 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.88rem; transition: all 0.2s ease; color: rgba(241, 236, 255, 0.88); }
-		.fn-row.active { background: linear-gradient(90deg, rgba(167, 139, 250, 0.28), rgba(167, 139, 250, 0.08)); outline: 1px solid rgba(167, 139, 250, 0.45); transform: translateX(3px); }
-		.fn-ln { color: rgba(241, 236, 255, 0.45); text-align: right; }
-
-		.fn-state-item { display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(34, 211, 238, 0.3); background: rgba(34, 211, 238, 0.08); border-radius: 0.65rem; padding: 0.62rem 0.7rem; font-family: 'Fira Code', monospace; margin-bottom: 0.5rem; font-size: 0.84rem; }
-		.fn-value { color: var(--fn-primary); font-weight: 700; font-size: 1.02rem; }
-		.fn-true { color: #86efac; }
-		.fn-false { color: var(--fn-danger); }
-
-		.fn-copy { margin-top: 0.85rem; border: 1px solid rgba(167, 139, 250, 0.36); background: rgba(167, 139, 250, 0.11); border-radius: 0.7rem; padding: 0.75rem; }
-		.fn-controls { margin-top: 0.9rem; display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; }
-		.fn-btn { border: 1px solid rgba(167, 139, 250, 0.46); background: rgba(167, 139, 250, 0.14); color: #f1ecff; padding: 0.58rem 1rem; border-radius: 0.7rem; font-weight: 600; transition: all 0.2s ease; }
-		.fn-btn:hover:not(:disabled) { background: rgba(167, 139, 250, 0.3); transform: translateY(-1px); box-shadow: 0 0 18px rgba(167, 139, 250, 0.26); }
-		.fn-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-		.fn-track { margin-top: 0.8rem; height: 0.55rem; border-radius: 999px; background: rgba(241, 236, 255, 0.14); overflow: hidden; }
-		.fn-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--fn-primary), var(--fn-cyan)); transition: width 0.25s ease; }
-
-		.fn-console { margin-top: 0.85rem; border: 1px solid rgba(34, 211, 238, 0.35); border-radius: 0.8rem; overflow: hidden; background: rgba(8, 10, 21, 0.9); }
-		.fn-console-head { display: flex; justify-content: space-between; padding: 0.5rem 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.72rem; background: rgba(34, 211, 238, 0.13); border-bottom: 1px solid rgba(34, 211, 238, 0.3); }
-		.fn-console-body { min-height: 140px; max-height: 220px; overflow: auto; padding: 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
-		.fn-log { opacity: 0; transform: translateY(8px); animation: fn-log-in 0.35s ease forwards; color: #d5efff; }
-		@keyframes fn-log-in { to { opacity: 1; transform: translateY(0); } }
-
-		.mult-table-wrap { overflow: auto; border: 1px solid rgba(167, 139, 250, 0.28); border-radius: 0.75rem; }
-		.mult-table { width: 100%; border-collapse: collapse; font-family: 'Fira Code', monospace; font-size: 0.8rem; }
-		.mult-table th, .mult-table td { border: 1px solid rgba(167, 139, 250, 0.2); padding: 0.35rem; text-align: center; min-width: 44px; }
-		.mult-table th { background: rgba(167, 139, 250, 0.18); position: sticky; top: 0; z-index: 1; }
-		.mult-cell-active { background: rgba(34, 211, 238, 0.3); box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.85); }
-
-		.fn-back { display: inline-block; margin-top: 1.5rem; color: var(--fn-cyan); text-decoration: none; border-bottom: 1px dashed rgba(34, 211, 238, 0.5); }
-	</style>
-
-	<div class="fn-screen">
-		<main class="fn-shell">
-			<header class="mb-6">
-				<p class="fn-badge">{lang === 'en' ? 'nested for / multiplication table' : 'for anidado / tabla de multiplicar'}</p>
-				<h1 class="fn-title mt-3"><code>for</code> {lang === 'en' ? 'nested + multiplication table' : 'anidado + tabla de multiplicar'}</h1>
-				<p class="fn-sub mt-3">{lang === 'en' ? 'Here you see two loops working together: <strong>row</strong> handles the table (1, 2, 3) and <strong>col</strong> goes from 1 to 10. Use Forward/Back to control how the table fills.' : 'Acá ves dos bucles trabajando en equipo: <strong>fila</strong> maneja la tabla (1, 2, 3) y <strong>col</strong> recorre del 1 al 10. Con Avanzar/Retroceder controlas como se llena la tabla.'}</p>
-			</header>
-
-			<section class="fn-grid" aria-live="polite">
-				<article class="fn-card fn-code">
-					<div class="fn-head">
-						<strong>{lang === 'en' ? '1) Code and active line' : '1) Código y línea activa'}</strong>
-						<span class="fn-badge" id="fn-line">{lang === 'en' ? 'Active line: 1' : 'Línea activa: 1'}</span>
+			<div class="fn-viewport">
+				<div class="fn-slide active" data-slide="1">
+					<div class="fn-slide-grid">
+						<div class="fn-col">
+							<h2 class="fn-slide-title">1. {isEs ? 'Mecánica de los Bucles Anidados' : 'Nested Loop Mechanics'}</h2>
+							<p class="fn-text">
+								{isEs 
+									? 'Por cada iteración del bucle externo (i), el bucle interno (j) se ejecuta completamente desde su inicio hasta el final.'
+									: 'For each iteration of the outer loop (i), the inner loop (j) completes all its iterations.'}
+							</p>
+						</div>
+						<div class="fn-col">
+							<div class="fn-card-box">
+								<div class="fn-card-head">{isEs ? 'COMPLEJIDAD TEMPORAL' : 'TIME COMPLEXITY'}</div>
+								<div class="fn-cell"><span>Bucle Externo (N veces)</span><span class="fn-tag">Filas (i)</span></div>
+								<div class="fn-cell"><span>Bucle Interno (M veces)</span><span class="fn-tag">Columnas (j)</span></div>
+								<div class="fn-cell"><span>Total Pasos: N × M</span><span class="fn-tag">O(N²) si N=M</span></div>
+							</div>
+						</div>
 					</div>
-					<div class="fn-code-panel">
-						<div class="fn-row" data-line="1"><span class="fn-ln">1</span><span>for (int fila = 1; fila &lt;= 3; fila++) &#123;</span></div>
-						<div class="fn-row" data-line="2"><span class="fn-ln">2</span><span>&nbsp;&nbsp;for (int col = 1; col &lt;= 10; col++) &#123;</span></div>
-						<div class="fn-row" data-line="3"><span class="fn-ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;int valor = fila * col;</span></div>
-						<div class="fn-row" data-line="4"><span class="fn-ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;printf("%d x %d = %d\n", fila, col, valor);</span></div>
-						<div class="fn-row" data-line="5"><span class="fn-ln">5</span><span>&nbsp;&nbsp;&#125;</span></div>
-						<div class="fn-row" data-line="6"><span class="fn-ln">6</span><span>&#125;</span></div>
+				</div>
+
+				<div class="fn-slide" data-slide="2">
+					<div class="fn-slide-grid">
+						<div class="fn-col">
+							<h2 class="fn-slide-title">2. C: Tabla de Multiplicar</h2>
+							<p class="fn-text">Uso clásico de for anidado para imprimir filas y columnas tabuladas con `\t` y saltos `\n`.</p>
+						</div>
+						<div class="fn-col">
+							<div class="fn-code-card">
+								<div class="fn-code-title">table.c</div>
+								<pre class="fn-code-block"><code><span class="token-keyword">for</span> (<span class="token-type">int</span> i = <span class="token-number">1</span>; i &lt;= <span class="token-number">5</span>; i++) &#123;
+    <span class="token-keyword">for</span> (<span class="token-type">int</span> j = <span class="token-number">1</span>; j &lt;= <span class="token-number">5</span>; j++) &#123;
+        printf(<span class="token-string">"%d\t"</span>, i * j);
+    &#125;
+    printf(<span class="token-string">"\n"</span>);
+&#125;</code></pre>
+							</div>
+						</div>
 					</div>
+				</div>
 
-					<div class="fn-copy" id="fn-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'The outer for starts with row = 1.' : 'Arranca el for externo con fila = 1.'}</div>
-					<div class="fn-track"><div class="fn-fill" id="fn-fill"></div></div>
-					<div class="fn-controls">
-						<button id="fn-prev" class="fn-btn" type="button">⬅ {lang === 'en' ? 'Back' : 'Retroceder'}</button>
-						<button id="fn-next" class="fn-btn" type="button">{lang === 'en' ? 'Forward' : 'Avanzar'} ➡</button>
-						<span class="fn-badge" id="fn-step">{lang === 'en' ? 'Step 1 / 13' : 'Paso 1 / 13'}</span>
+				<div class="fn-slide" data-slide="3">
+					<div class="fn-slide-grid">
+						<div class="fn-col">
+							<h2 class="fn-slide-title">3. Java: Recorrido de Matrices 2D</h2>
+							<p class="fn-text">Iteración sobre un array bidimensional `matrix[row][col]` mediante dos índices acoplados.</p>
+						</div>
+						<div class="fn-col">
+							<div class="fn-code-card">
+								<div class="fn-code-title">Matrix2D.java</div>
+								<pre class="fn-code-block"><code><span class="token-type">int</span>[][] grid = <span class="token-keyword">new</span> <span class="token-type">int</span>[<span class="token-number">3</span>][<span class="token-number">3</span>];
+<span class="token-keyword">for</span> (<span class="token-type">int</span> r = <span class="token-number">0</span>; r &lt; grid.length; r++) &#123;
+    <span class="token-keyword">for</span> (<span class="token-type">int</span> c = <span class="token-number">0</span>; c &lt; grid[r].length; c++) &#123;
+        grid[r][c] = r * c;
+    &#125;
+&#125;</code></pre>
+							</div>
+						</div>
 					</div>
+				</div>
 
-					<div class="fn-console">
-						<div class="fn-console-head"><span>./for-anidado</span><span>stdout</span></div>
-						<div class="fn-console-body" id="fn-console"></div>
+				<div class="fn-slide" data-slide="4">
+					<div class="fn-slide-grid">
+						<div class="fn-col">
+							<h2 class="fn-slide-title">4. JavaScript: Generación de Grillas</h2>
+							<p class="fn-text">JS usa for anidado para construir layouts bidimensionales, mapas de tiles o matrices de píxeles.</p>
+						</div>
+						<div class="fn-col">
+							<div class="fn-code-card">
+								<div class="fn-code-title">grid.js</div>
+								<pre class="fn-code-block"><code><span class="token-keyword">for</span> (<span class="token-keyword">let</span> x = <span class="token-number">0</span>; x &lt; <span class="token-number">3</span>; x++) &#123;
+    <span class="token-keyword">for</span> (<span class="token-keyword">let</span> y = <span class="token-number">0</span>; y &lt; <span class="token-number">3</span>; y++) &#123;
+        console.log(<span class="token-string">`Point: ($&#123;x&#125;, $&#123;y&#125;)`</span>);
+    &#125;
+&#125;</code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
+				</div>
 
-				<article class="fn-card fn-state">
-					<div class="fn-head"><strong>{lang === 'en' ? '2) Internal state' : '2) Estado interno'}</strong></div>
-					<div class="fn-state-item"><span>fila</span><span id="fn-fila" class="fn-value">1</span></div>
-					<div class="fn-state-item"><span>col</span><span id="fn-col" class="fn-value">1</span></div>
-					<div class="fn-state-item"><span>valor (fila * col)</span><span id="fn-valor" class="fn-value">1</span></div>
-					<div class="fn-state-item"><span>{lang === 'en' ? 'Outer condition' : 'Condición externa'}</span><span id="fn-outer" class="fn-value">true</span></div>
-					<div class="fn-state-item"><span>{lang === 'en' ? 'Inner condition' : 'Condición interna'}</span><span id="fn-inner" class="fn-value">true</span></div>
-				</article>
-
-				<article class="fn-card fn-table">
-					<div class="fn-head"><strong>{lang === 'en' ? '3) Live multiplication table' : '3) Tabla de multiplicar en vivo'}</strong></div>
-					<div class="mult-table-wrap">
-						<table class="mult-table" id="mult-table">
-							<thead>
-								<tr>
-									<th>x</th>
-									<th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr><th>1</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-								<tr><th>2</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-								<tr><th>3</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-							</tbody>
-						</table>
+				<div class="fn-slide" data-slide="5">
+					<div class="fn-slide-grid">
+						<div class="fn-col">
+							<h2 class="fn-slide-title">5. Python: List Comprehension Anidada</h2>
+							<p class="fn-text">Python permite expresar matrices bidimensionales concisamente mediante sintaxis de comprehensions.</p>
+						</div>
+						<div class="fn-col">
+							<div class="fn-code-card">
+								<div class="fn-code-title">matrix.py</div>
+								<pre class="fn-code-block"><code>matrix = [[i * j <span class="token-keyword">for</span> j <span class="token-keyword">in</span> range(<span class="token-number">1</span>, <span class="token-number">4</span>)] <span class="token-keyword">for</span> i <span class="token-keyword">in</span> range(<span class="token-number">1</span>, <span class="token-number">4</span>)]
+<span class="token-comment"># [[1, 2, 3], [2, 4, 6], [3, 6, 9]]</span></code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
-			</section>
+				</div>
 
-		</main>
+				<div class="fn-slide" data-slide="6">
+					<div class="fn-sim-container">
+						<h2 class="fn-slide-title center">{isEs ? '6. Simulador Interactivo de Matriz de Multiplicación' : '6. Matrix Simulator'}</h2>
+						<p class="fn-sub center">{isEs ? 'Visualizá la grilla 3x3 generada por los loops anidados:' : 'Visualize the 3x3 grid generated by nested loops:'}</p>
+
+						<div class="fn-grid-display">
+							<div class="fn-row-grid">
+								<span class="fn-cell-val">1×1=1</span><span class="fn-cell-val">1×2=2</span><span class="fn-cell-val">1×3=3</span>
+							</div>
+							<div class="fn-row-grid">
+								<span class="fn-cell-val">2×1=2</span><span class="fn-cell-val">2×2=4</span><span class="fn-cell-val">2×3=6</span>
+							</div>
+							<div class="fn-row-grid">
+								<span class="fn-cell-val">3×1=3</span><span class="fn-cell-val">3×2=6</span><span class="fn-cell-val">3×3=9</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="fn-footer">
+				<button class="btn btn-secondary" id="btn-prev-fn" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="fn-footer-meta"><span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span></div>
+				<button class="btn btn-primary" id="btn-next-fn">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
 	</div>
+</div>
 
-	<script>
-		type Step = {
-			line: number;
-			message: { es: string; en: string };
-			fila: number;
-			col: number;
-			valor: number;
-			outer: 'true' | 'false';
-			inner: 'true' | 'false';
-			consoleLines: string[];
-			table: string[][];
-			activeCell?: { row: number; col: number };
-		};
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+	.fn-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
+	.fn-shell { max-width: var(--container-max); margin: 0 auto; }
+	.fn-header { margin-bottom: 1.5rem; }
+	.fn-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
+	.fn-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.fn-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.fn-sub.center { text-align: center; }
+	.fn-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.fn-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.fn-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
+	.fn-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.fn-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+	.fn-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+	.fn-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.fn-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
+	.fn-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.fn-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.fn-slide.active { display: block; opacity: 1; transform: translateY(0); }
+	.fn-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+	.fn-col { grid-column: span 12; }
+	@media (min-width: 900px) { .fn-col { grid-column: span 6; } }
+	.fn-slide-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 400; color: var(--color-text); margin: 0 0 0.8rem; }
+	.fn-slide-title.center { text-align: center; }
+	.fn-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin-bottom: 1.2rem; }
+	.fn-card-box { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.fn-card-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; color: var(--color-accent-2-700); margin-bottom: 0.75rem; }
+	.fn-cell { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--color-divider); background: var(--color-surface); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+	.fn-tag { color: var(--color-accent-700); font-weight: 600; }
+	.fn-code-card { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.fn-code-title { background: #2b2722; color: #c0b6a5; padding: 0.4rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid #3a352e; }
+	.fn-code-block { margin: 0; padding: 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; color: #f9f4ed; overflow-x: auto; }
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.token-comment { color: #85929e; font-style: italic; }
+	.fn-sim-container { max-width: 500px; margin: 0 auto; }
+	.fn-grid-display { display: flex; flex-direction: column; gap: 0.5rem; background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.fn-row-grid { display: flex; justify-content: space-around; }
+	.fn-cell-val { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: #76d7c4; background: #141210; padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); border: 1px solid #2b2722; }
+	.fn-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.fn-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>
 
-		function createTable(): string[][] {
-			return Array.from({ length: 3 }, () => Array.from({ length: 10 }, () => ''));
-		}
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
 
-		function tableUntil(row: number, col: number): string[][] {
-			const table = createTable();
-			for (let r = 1; r <= 3; r += 1) {
-				for (let c = 1; c <= 10; c += 1) {
-					if (r < row || (r === row && c <= col)) {
-						table[r - 1][c - 1] = String(r * c);
-					}
-				}
-			}
-			return table;
-		}
-
-		const logsRow1 = Array.from({ length: 10 }, (_, i) => `1 x ${i + 1} = ${i + 1}`);
-		const logsRow2 = Array.from({ length: 10 }, (_, i) => `2 x ${i + 1} = ${(i + 1) * 2}`);
-		const logsRow3 = Array.from({ length: 10 }, (_, i) => `3 x ${i + 1} = ${(i + 1) * 3}`);
-
-		const steps: Step[] = [
-			{ line: 1, message: { es: 'Inicia el for externo con fila = 1.', en: 'The outer for starts with row = 1.' }, fila: 1, col: 1, valor: 1, outer: 'true', inner: 'true', consoleLines: [], table: createTable(), activeCell: { row: 1, col: 1 } },
-			{ line: 2, message: { es: 'Entra al for interno para la fila 1 con col = 1.', en: 'Enters the inner for for row 1 with col = 1.' }, fila: 1, col: 1, valor: 1, outer: 'true', inner: 'true', consoleLines: [], table: createTable(), activeCell: { row: 1, col: 1 } },
-			{ line: 4, message: { es: 'Calcula y muestra 1 x 1 = 1.', en: 'Calculates and shows 1 x 1 = 1.' }, fila: 1, col: 1, valor: 1, outer: 'true', inner: 'true', consoleLines: ['1 x 1 = 1'], table: tableUntil(1, 1), activeCell: { row: 1, col: 1 } },
-			{ line: 4, message: { es: 'Siguiente columna: 1 x 2 = 2.', en: 'Next column: 1 x 2 = 2.' }, fila: 1, col: 2, valor: 2, outer: 'true', inner: 'true', consoleLines: ['1 x 1 = 1', '1 x 2 = 2'], table: tableUntil(1, 2), activeCell: { row: 1, col: 2 } },
-			{ line: 4, message: { es: 'Siguiente columna: 1 x 3 = 3.', en: 'Next column: 1 x 3 = 3.' }, fila: 1, col: 3, valor: 3, outer: 'true', inner: 'true', consoleLines: ['1 x 1 = 1', '1 x 2 = 2', '1 x 3 = 3'], table: tableUntil(1, 3), activeCell: { row: 1, col: 3 } },
-			{ line: 5, message: { es: 'Se repite el mismo patrón hasta col = 10 y cierra la fila 1.', en: 'Repeats the same pattern until col = 10 and closes row 1.' }, fila: 1, col: 10, valor: 10, outer: 'true', inner: 'false', consoleLines: logsRow1, table: tableUntil(1, 10), activeCell: { row: 1, col: 10 } },
-			{ line: 1, message: { es: 'Incrementa fila a 2 y vuelve a entrar al for interno.', en: 'Increments row to 2 and enters the inner for again.' }, fila: 2, col: 1, valor: 2, outer: 'true', inner: 'true', consoleLines: logsRow1, table: tableUntil(1, 10), activeCell: { row: 2, col: 1 } },
-			{ line: 4, message: { es: 'Primera multiplicación de la fila 2: 2 x 1 = 2.', en: 'First multiplication of row 2: 2 x 1 = 2.' }, fila: 2, col: 1, valor: 2, outer: 'true', inner: 'true', consoleLines: [...logsRow1, '2 x 1 = 2'], table: tableUntil(2, 1), activeCell: { row: 2, col: 1 } },
-			{ line: 5, message: { es: 'Se completa la fila 2 hasta 2 x 10 = 20.', en: 'Row 2 completes up to 2 x 10 = 20.' }, fila: 2, col: 10, valor: 20, outer: 'true', inner: 'false', consoleLines: [...logsRow1, ...logsRow2], table: tableUntil(2, 10), activeCell: { row: 2, col: 10 } },
-			{ line: 1, message: { es: 'Incrementa fila a 3 y arranca la última pasada.', en: 'Increments row to 3 and starts the last pass.' }, fila: 3, col: 1, valor: 3, outer: 'true', inner: 'true', consoleLines: [...logsRow1, ...logsRow2], table: tableUntil(2, 10), activeCell: { row: 3, col: 1 } },
-			{ line: 4, message: { es: 'Primera multiplicación de fila 3: 3 x 1 = 3.', en: 'First multiplication of row 3: 3 x 1 = 3.' }, fila: 3, col: 1, valor: 3, outer: 'true', inner: 'true', consoleLines: [...logsRow1, ...logsRow2, '3 x 1 = 3'], table: tableUntil(3, 1), activeCell: { row: 3, col: 1 } },
-			{ line: 5, message: { es: 'Se completa la fila 3 y se termina toda la tabla del 1 al 3 por 10.', en: 'Row 3 completes and the entire table from 1 to 3 by 10 is finished.' }, fila: 3, col: 10, valor: 30, outer: 'true', inner: 'false', consoleLines: [...logsRow1, ...logsRow2, ...logsRow3], table: tableUntil(3, 10), activeCell: { row: 3, col: 10 } },
-			{ line: 1, message: { es: 'fila se incrementa a 4 y la condición externa 4 <= 3 da false. Fin del for anidado.', en: 'row increments to 4 and the outer condition 4 <= 3 is false. End of nested for.' }, fila: 4, col: 10, valor: 30, outer: 'false', inner: 'false', consoleLines: [...logsRow1, ...logsRow2, ...logsRow3], table: tableUntil(3, 10) },
-		];
-
-		let currentStep = 0;
-
-		const prevBtn = document.getElementById('fn-prev') as HTMLButtonElement;
-		const nextBtn = document.getElementById('fn-next') as HTMLButtonElement;
-		const lineBadge = document.getElementById('fn-line') as HTMLElement;
-		const stepBadge = document.getElementById('fn-step') as HTMLElement;
-		const copyEl = document.getElementById('fn-copy') as HTMLElement;
-		const filaEl = document.getElementById('fn-fila') as HTMLElement;
-		const colEl = document.getElementById('fn-col') as HTMLElement;
-		const valorEl = document.getElementById('fn-valor') as HTMLElement;
-		const outerEl = document.getElementById('fn-outer') as HTMLElement;
-		const innerEl = document.getElementById('fn-inner') as HTMLElement;
-		const consoleEl = document.getElementById('fn-console') as HTMLElement;
-		const fillEl = document.getElementById('fn-fill') as HTMLElement;
-		const tableEl = document.getElementById('mult-table') as HTMLTableElement;
-
-		function renderTable(step: Step): void {
-			const bodyRows = tableEl.querySelectorAll('tbody tr');
-			bodyRows.forEach((tr, rowIndex) => {
-				const cells = tr.querySelectorAll('td');
-				cells.forEach((cell, colIndex) => {
-					cell.textContent = step.table[rowIndex][colIndex];
-					cell.classList.remove('mult-cell-active');
-				});
-			});
-
-			if (step.activeCell) {
-				const row = bodyRows[step.activeCell.row - 1];
-				const cell = row?.querySelectorAll('td')[step.activeCell.col - 1];
-				cell?.classList.add('mult-cell-active');
-			}
-		}
-
-		function renderStep(): void {
-			const isEnglish = document.documentElement.lang === 'en';
-			const step = steps[currentStep];
-
-			document.querySelectorAll<HTMLElement>('.fn-row').forEach((row) => {
-				row.classList.toggle('active', Number(row.dataset.line) === step.line);
-			});
-
-			lineBadge.textContent = `${isEnglish ? 'Active line' : 'Línea activa'}: ${step.line}`;
-			stepBadge.textContent = `${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1} / ${steps.length}`;
-			copyEl.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${step.message[isEnglish ? 'en' : 'es']}`;
-			filaEl.textContent = String(step.fila);
-			colEl.textContent = String(step.col);
-			valorEl.textContent = String(step.valor);
-			outerEl.textContent = step.outer;
-			innerEl.textContent = step.inner;
-			outerEl.classList.toggle('fn-true', step.outer === 'true');
-			outerEl.classList.toggle('fn-false', step.outer === 'false');
-			innerEl.classList.toggle('fn-true', step.inner === 'true');
-			innerEl.classList.toggle('fn-false', step.inner === 'false');
-
-			consoleEl.innerHTML = '';
-			step.consoleLines.forEach((line, index) => {
-				const entry = document.createElement('div');
-				entry.className = 'fn-log';
-				entry.style.animationDelay = `${Math.min(index, 6) * 70}ms`;
-				entry.textContent = `> ${line}`;
-				consoleEl.appendChild(entry);
-			});
-
-			renderTable(step);
-			fillEl.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
-			prevBtn.disabled = currentStep === 0;
-			nextBtn.disabled = currentStep === steps.length - 1;
-		}
-
-		prevBtn.addEventListener('click', () => {
-			if (currentStep > 0) {
-				currentStep -= 1;
-				renderStep();
-			}
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+		document.querySelectorAll('.fn-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
 		});
-
-		nextBtn.addEventListener('click', () => {
-			if (currentStep < steps.length - 1) {
-				currentStep += 1;
-				renderStep();
-			}
+		document.querySelectorAll('.fn-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
 		});
+		const labelEl = document.getElementById('fn-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+		const prevBtn = document.getElementById('btn-prev-fn') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-fn') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
 
-		document.addEventListener('keydown', (event: KeyboardEvent) => {
-			if (event.key === 'ArrowRight') nextBtn.click();
-			if (event.key === 'ArrowLeft') prevBtn.click();
+	document.querySelectorAll('.fn-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
 		});
+	});
 
-		renderStep();
-	</script>
+	document.getElementById('btn-prev-fn')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-fn')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
+
+	goToSlide(1);
+</script>

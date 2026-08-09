@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+	<!-- Stack Frame -->
+	<g transform="translate(30, 30)">
+		<rect width="150" height="140" rx="16" fill="#f5ead8" stroke="#d9cbba" stroke-width="2"/>
+		<text x="75" y="25" font-family="'Fira Code', monospace" font-size="12" font-weight="700" fill="#8c491a" text-anchor="middle">STACK (Copia)</text>
+		<rect x="15" y="45" width="120" height="35" rx="8" fill="#ebddc5" stroke="#c67139" stroke-width="2"/>
+		<text x="75" y="67" font-family="'Fira Code', monospace" font-size="13" fill="#201e1d" text-anchor="middle">val = 10</text>
+		<rect x="15" y="90" width="120" height="35" rx="8" fill="#ebddc5" stroke="#7a8a5e" stroke-width="2"/>
+		<text x="75" y="112" font-family="'Fira Code', monospace" font-size="13" fill="#7a8a5e" text-anchor="middle">*ptr = 0x80</text>
+	</g>
+	<!-- Heap Memory Pointer Arrow -->
+	<path d="M 165 130 C 210 130, 210 90, 240 90" fill="none" stroke="#7a8a5e" stroke-width="4" stroke-dasharray="6,4"/>
+	<polygon points="245,90 235,84 235,96" fill="#7a8a5e"/>
+	<!-- Heap Target -->
+	<g transform="translate(245, 45)">
+		<rect width="125" height="90" rx="16" fill="#f5ead8" stroke="#7a8a5e" stroke-width="3"/>
+		<text x="62" y="25" font-family="'Fira Code', monospace" font-size="11" font-weight="700" fill="#7a8a5e" text-anchor="middle">HEAP (0x80)</text>
+		<text x="62" y="60" font-family="'Caprasimo', serif" font-size="24" fill="#201e1d" text-anchor="middle">99</text>
+	</g>
+</svg>

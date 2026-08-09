@@ -10,6 +10,8 @@ Follow it as the default unless a user request explicitly overrides it.
 - Node requirement: `>=22.12.0`.
 - Source root: `src/`.
 - Primary file types: `.astro`, `.ts` (if added), static assets.
+- Design system: **Organic** (`Organic/`), documented in `DESIGN.md`, implemented
+  in `src/styles/global.css`. All UI work derives from it — see §6.6.
 
 ## 2) Repository Rules Discovery
 
@@ -109,12 +111,50 @@ Run all commands from repository root.
 - Keep `<style>` blocks scoped and close to component usage unless global is required.
 - For assets, import and reference via `asset.src` pattern as used in existing code.
 
-### 6.6 CSS and UI rules
+### 6.6 CSS and UI rules — Organic Design System (MANDATORY)
 
-- Prefer component-local styles.
-- Reuse tokens/patterns when introduced (colors, spacing, typography variables).
+**`DESIGN.md` is the design contract for this repository. Read it before writing
+or modifying any component, page, layout, or style.**
+
+All design decisions — color, typography, spacing, radius, elevation, component
+markup, interaction states, iconography — MUST be derived from the **Organic**
+design system in `Organic/`. Its runtime implementation for this Astro site is
+`src/styles/global.css`, imported once from `src/layouts/BaseLayout.astro`.
+
+Non-negotiable rules:
+
+- Do not invent visual design. Consult `Organic/readme.md` and the matching
+  reference page in `Organic/components/*.html` or `Organic/foundations/*.html`
+  (plain HTML — view source and copy the markup) before building UI.
+- Use only design-system tokens: `var(--color-*)`, `var(--font-*)`,
+  `var(--space-*)`, `var(--radius-*)`, `var(--shadow-*)`. Never hard-code a hex,
+  a font family, or a px value a token already carries.
+- Use the existing system classes (`.btn*`, `.tag*`, `.card*`, `.input`, `.nav*`,
+  `.elev-*`, `.washed`, `.container`, `.section`, `.kicker`, `.section-title`,
+  `.badge`) instead of parallel one-off classes.
+- New shared classes go in `src/styles/global.css`, not into a component
+  `<style>` block. New tokens go in the single `:root` block there. Never create
+  a second `:root` token block.
+- Accent-colored text at body size uses `--color-accent-700` (the base accent is
+  ~3:1 against the ground — chrome and large text only).
+- Keep themed interaction states: accent-ramp hover/pressed, the 2px
+  `:focus-visible` accent ring, accent `::selection`, `0.45` disabled opacity.
+- Wrap every content photograph in `.washed`.
+- **All graphics come from Organic, not just components.** Icons are Lucide at
+  `stroke-width: 2.75`; illustrations, diagrams, inline SVG, OG cards and slide
+  visuals use the Organic palette, rounded geometry and the Caprasimo/Figtree
+  pairing. Never introduce a second palette, display face or icon set. See
+  `DESIGN.md` §6.
+- Component-local `<style>` blocks are for layout unique to that component only —
+  never to restyle a system class.
 - Keep responsive behavior intentional; include mobile breakpoints where needed.
-- Avoid introducing one-off values repeatedly; refactor into custom properties.
+
+If a needed component is documented in `Organic/` but not yet in
+`src/styles/global.css` (`.field`, `.radio`, `.seg`, `.table`, `.dialog`,
+`.btn-block`), port it from `Organic/styles.css` rather than reimplementing it.
+
+If the design system genuinely cannot express what the task requires, say so and
+propose a token/class addition — do not silently diverge.
 
 ### 6.7 Error handling and resilience
 
@@ -383,7 +423,10 @@ i18n verification commands:
 - Requested behavior/content is implemented.
 - A relevant verification command has been run (or limitation explicitly stated).
 - No obvious type/import/runtime issues remain in touched files.
+- UI work uses only Organic tokens and classes (`DESIGN.md` §7); no raw hex,
+  font family, or hard-coded px where a token exists.
 - AGENTS.md is updated if tooling/conventions changed.
+- DESIGN.md is updated if a token or shared class was added or changed.
 
 ## 10) Spec Lifecycle (`specs/`)
 

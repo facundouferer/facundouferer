@@ -1,322 +1,242 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
-
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+const isEs = lang === 'es';
 ---
 
+<div class="cw-screen">
+	<div class="cw-shell">
+		<header class="cw-header">
+			<span class="cw-badge">{isEs ? 'Tokenización' : 'Tokenization'}</span>
+			<h1 class="cw-title">
+				{isEs ? 'Conteo de Palabras en Cadenas' : 'Word Count in Strings'}
+			</h1>
+			<p class="cw-sub">
+				{isEs 
+					? 'Máquinas de estado, strtok, split() y tokenizadores en C, Java, JavaScript y Python.' 
+					: 'State machines, strtok, split(), and tokenizers in C, Java, JS, and Python.'}
+			</p>
+		</header>
 
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
-		.cw-screen {
-			--cw-primary: #facc15;
-			--cw-accent: #22d3ee;
-			--cw-ok: #0df259;
-			--cw-bg: #111006;
-			min-height: 100vh;
-			font-family: 'Chakra Petch', sans-serif;
-			color: #fff7d6;
-			background:
-				radial-gradient(circle at 78% 14%, rgba(250, 204, 21, 0.18), transparent 34%),
-				radial-gradient(circle at 16% 22%, rgba(34, 211, 238, 0.14), transparent 34%),
-				linear-gradient(140deg, #060703 0%, var(--cw-bg) 100%);
-		}
-		.cw-shell { max-width: 1280px; margin: 0 auto; padding: 1rem 0.5rem 2rem; }
-		.cw-title { font-size: clamp(1.7rem, 3.6vw, 2.6rem); font-weight: 700; line-height: 1.02; }
-		.cw-sub { max-width: 78ch; color: rgba(255, 247, 214, 0.84); font-size: 0.92rem; }
-		.cw-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0.65rem; }
-		.cw-card { border-radius: 1rem; border: 1px solid rgba(250, 204, 21, 0.26); background: linear-gradient(160deg, rgba(36, 32, 10, 0.92), rgba(16, 17, 8, 0.96)); padding: 0.65rem; }
-		.cw-code, .cw-state, .cw-memory, .cw-console { grid-column: span 12; }
-		@media (min-width: 1100px) {
-			.cw-code { grid-column: span 7; grid-row: span 3; }
-			.cw-state { grid-column: span 5; }
-			.cw-memory { grid-column: span 5; }
-			.cw-console { grid-column: span 5; }
-		}
-		.cw-head { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; margin-bottom: 0.65rem; }
-		.cw-badge { border: 1px solid rgba(34, 211, 238, 0.42); background: rgba(34, 211, 238, 0.12); border-radius: 999px; padding: 0.12rem 0.55rem; font-size: 0.68rem; font-family: 'Fira Code', monospace; }
-		.cw-panel { background: rgba(7, 8, 3, 0.9); border: 1px solid rgba(250, 204, 21, 0.24); border-radius: 0.65rem; padding: 0.45rem; }
-		.cw-row { display: grid; grid-template-columns: 2rem 1fr; gap: 0.62rem; padding: 0.16rem 0.42rem; border-radius: 0.45rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; color: rgba(255, 247, 214, 0.92); transition: all 0.2s ease; }
-		.cw-row.active { background: linear-gradient(90deg, rgba(250, 204, 21, 0.28), rgba(250, 204, 21, 0.06)); outline: 1px solid rgba(250, 204, 21, 0.44); transform: translateX(3px); }
-		.cw-ln { color: rgba(255, 247, 214, 0.4); text-align: right; }
-		.cw-copy { margin-top: 0.55rem; border: 1px solid rgba(34, 211, 238, 0.34); background: rgba(34, 211, 238, 0.1); border-radius: 0.65rem; padding: 0.55rem; color: rgba(255, 247, 214, 0.94); }
-		.cw-controls { margin-top: 0.6rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
-		.cw-btn { border: 1px solid rgba(250, 204, 21, 0.44); background: rgba(250, 204, 21, 0.12); color: #fff7d6; border-radius: 0.6rem; padding: 0.42rem 0.82rem; font-weight: 600; transition: all 0.2s ease; font-size: 0.78rem; }
-		.cw-btn:hover:not(:disabled) { background: rgba(250, 204, 21, 0.24); transform: translateY(-1px); }
-		.cw-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-		.cw-track { margin-top: 0.55rem; height: 0.42rem; border-radius: 999px; background: rgba(255, 247, 214, 0.13); overflow: hidden; }
-		.cw-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--cw-primary), var(--cw-accent), var(--cw-ok)); transition: width 0.25s ease; }
-		.cw-state-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.4rem; }
-		.cw-state-item { border: 1px solid rgba(13, 242, 89, 0.24); background: rgba(13, 242, 89, 0.08); border-radius: 0.55rem; padding: 0.42rem 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.72rem; }
-		.cw-state-label { display: block; color: rgba(255, 247, 214, 0.58); }
-		.cw-value { display: block; color: var(--cw-ok); font-size: 0.98rem; font-weight: 700; margin-top: 0.16rem; word-break: break-word; }
-		.cw-string { display: grid; grid-template-columns: repeat(15, minmax(0, 1fr)); gap: 0.22rem; }
-		.cw-cell { border: 1px solid rgba(255, 247, 214, 0.14); background: rgba(255, 255, 255, 0.03); border-radius: 0.42rem; padding: 0.3rem 0.08rem; text-align: center; transition: all 0.2s ease; }
-		.cw-cell.read { border-color: rgba(34, 211, 238, 0.42); background: rgba(34, 211, 238, 0.09); }
-		.cw-cell.active { border-color: rgba(250, 204, 21, 0.68); background: rgba(250, 204, 21, 0.18); box-shadow: 0 0 18px rgba(250, 204, 21, 0.18); transform: translateY(-2px); }
-		.cw-cell.space { border-style: dashed; }
-		.cw-char { font-family: 'Fira Code', monospace; font-size: 0.88rem; color: #fff; min-height: 1.25rem; }
-		.cw-index { font-family: 'Fira Code', monospace; font-size: 0.6rem; color: rgba(255, 247, 214, 0.46); margin-top: 0.16rem; }
-		.cw-readout { margin-top: 0.55rem; border: 1px solid rgba(250, 204, 21, 0.24); background: rgba(250, 204, 21, 0.08); border-radius: 0.55rem; padding: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
-		.cw-console-win { border: 1px solid rgba(13, 242, 89, 0.28); border-radius: 0.65rem; overflow: hidden; background: rgba(7, 8, 3, 0.92); }
-		.cw-console-head { display: flex; justify-content: space-between; padding: 0.38rem 0.65rem; font-family: 'Fira Code', monospace; font-size: 0.68rem; background: rgba(13, 242, 89, 0.12); border-bottom: 1px solid rgba(13, 242, 89, 0.2); }
-		.cw-console-body { min-height: 82px; padding: 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.8rem; }
-		.cw-log { opacity: 0; transform: translateY(8px); animation: cw-log 0.35s ease forwards; color: #d6fff3; }
-		@keyframes cw-log { to { opacity: 1; transform: translateY(0); } }
-		.cw-back { display: inline-block; margin-top: 1.2rem; color: var(--cw-accent); text-decoration: none; border-bottom: 1px dashed rgba(34, 211, 238, 0.5); }
-	</style>
+		<div class="cw-deck-card">
+			<div class="cw-nav-bar">
+				<div class="cw-slide-indicator">
+					<span class="cw-step-dot"></span>
+					<span id="cw-slide-label">SLIDE 1 / 6</span>
+				</div>
+				<div class="cw-pills">
+					<button class="cw-pill-btn active" data-target-slide="1">1. {isEs ? 'Concepto' : 'Concept'}</button>
+					<button class="cw-pill-btn" data-target-slide="2">2. C</button>
+					<button class="cw-pill-btn" data-target-slide="3">3. Java</button>
+					<button class="cw-pill-btn" data-target-slide="4">4. JavaScript</button>
+					<button class="cw-pill-btn" data-target-slide="5">5. Python</button>
+					<button class="cw-pill-btn" data-target-slide="6">6. {isEs ? 'Simulador' : 'Simulator'}</button>
+				</div>
+			</div>
 
-	<div class="cw-screen">
-		<main class="cw-shell">
-			<header class="mb-4">
-				<p class="cw-badge">{lang === 'en' ? 'strings / traversal / words' : 'cadenas / recorrido / palabras'}</p>
-				<h1 class="cw-title mt-3">{lang === 'en' ? 'Traverse a C string and count words' : 'Recorrer una cadena en C y contar palabras'}</h1>
-				<p class="cw-sub mt-3">{lang === 'en' ? 'The key is not memorizing code: it is detecting when the traversal enters a word. The loop reads each char until \\0, updates state, and prints the result at the end.' : 'La clave no es memorizar codigo: es detectar cuando el recorrido entra a una palabra. El ciclo lee cada char hasta \\0, actualiza el estado y recien al final imprime el resultado.'}</p>
-			</header>
-
-			<section class="cw-grid" aria-live="polite">
-				<article class="cw-card cw-code">
-					<div class="cw-head"><strong>1) {lang === 'en' ? 'Program' : 'Programa'}</strong><span class="cw-badge" id="cw-line">{lang === 'en' ? 'Active line: 1' : 'Linea activa: 1'}</span></div>
-					<div class="cw-panel">
-						<div class="cw-row" data-line="1"><span class="cw-ln">1</span><span>#include &lt;stdio.h&gt;</span></div>
-						<div class="cw-row" data-line="2"><span class="cw-ln">2</span><span>int main() &#123;</span></div>
-						<div class="cw-row" data-line="3"><span class="cw-ln">3</span><span>&nbsp;&nbsp;char frase[] = "Hola mundo en C";</span></div>
-						<div class="cw-row" data-line="4"><span class="cw-ln">4</span><span>&nbsp;&nbsp;int i = 0;</span></div>
-						<div class="cw-row" data-line="5"><span class="cw-ln">5</span><span>&nbsp;&nbsp;int palabras = 0;</span></div>
-						<div class="cw-row" data-line="6"><span class="cw-ln">6</span><span>&nbsp;&nbsp;int dentro = 0;</span></div>
-						<div class="cw-row" data-line="7"><span class="cw-ln">7</span><span>&nbsp;&nbsp;while (frase[i] != '\0') &#123;</span></div>
-						<div class="cw-row" data-line="8"><span class="cw-ln">8</span><span>&nbsp;&nbsp;&nbsp;&nbsp;if (frase[i] != ' ' &amp;&amp; dentro == 0) &#123;</span></div>
-						<div class="cw-row" data-line="9"><span class="cw-ln">9</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;palabras = palabras + 1;</span></div>
-						<div class="cw-row" data-line="10"><span class="cw-ln">10</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dentro = 1;</span></div>
-						<div class="cw-row" data-line="11"><span class="cw-ln">11</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&#125;</span></div>
-						<div class="cw-row" data-line="12"><span class="cw-ln">12</span><span>&nbsp;&nbsp;&nbsp;&nbsp;if (frase[i] == ' ') &#123;</span></div>
-						<div class="cw-row" data-line="13"><span class="cw-ln">13</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dentro = 0;</span></div>
-						<div class="cw-row" data-line="14"><span class="cw-ln">14</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&#125;</span></div>
-						<div class="cw-row" data-line="15"><span class="cw-ln">15</span><span>&nbsp;&nbsp;&nbsp;&nbsp;i = i + 1;</span></div>
-						<div class="cw-row" data-line="16"><span class="cw-ln">16</span><span>&nbsp;&nbsp;&#125;</span></div>
-						<div class="cw-row" data-line="17"><span class="cw-ln">17</span><span>&nbsp;&nbsp;printf("Palabras: %d\n", palabras);</span></div>
-						<div class="cw-row" data-line="18"><span class="cw-ln">18</span><span>&nbsp;&nbsp;return 0;</span></div>
-						<div class="cw-row" data-line="19"><span class="cw-ln">19</span><span>&#125;</span></div>
+			<div class="cw-viewport">
+				<div class="cw-slide active" data-slide="1">
+					<div class="cw-slide-grid">
+						<div class="cw-col">
+							<h2 class="cw-slide-title">1. {isEs ? 'Estrategia de Tokenización' : 'Tokenization Strategy'}</h2>
+							<p class="cw-text">
+								{isEs 
+									? 'Contar palabras requiere detectar transiciones entre espacios/delimitadores y caracteres imprimibles (Máquina de Estados).'
+									: 'Word counting requires detecting transitions between spaces/delimiters and printable characters (Finite State Machine).'}
+							</p>
+						</div>
+						<div class="cw-col">
+							<div class="cw-card-box">
+								<div class="cw-card-head">{isEs ? 'ESTADOS DE LA MÁQUINA' : 'MACHINE STATES'}</div>
+								<div class="cw-cell"><span>OUT_WORD (Fuera de Palabra)</span><span class="cw-tag">En espacio / tab / \\n</span></div>
+								<div class="cw-cell"><span>IN_WORD (Dentro de Palabra)</span><span class="cw-tag">Sumar +1 en transición</span></div>
+							</div>
+						</div>
 					</div>
-					<div class="cw-copy" id="cw-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'The program includes stdio.h to use printf.' : 'El programa incluye stdio.h para poder usar printf.'}</div>
-					<div class="cw-track"><div class="cw-fill" id="cw-fill"></div></div>
-					<div class="cw-controls">
-						<button class="cw-btn" id="cw-prev" type="button">{lang === 'en' ? 'Back' : 'Retroceder'}</button>
-						<button class="cw-btn" id="cw-next" type="button">{lang === 'en' ? 'Next' : 'Avanzar'}</button>
-						<button class="cw-btn" id="cw-auto" type="button">Auto-play</button>
-						<span class="cw-badge" id="cw-step">{lang === 'en' ? 'Step 1 / 1' : 'Paso 1 / 1'}</span>
+				</div>
+
+				<div class="cw-slide" data-slide="2">
+					<div class="cw-slide-grid">
+						<div class="cw-col">
+							<h2 class="cw-slide-title">2. C: Algoritmo con Máquina de Estados o strtok</h2>
+							<p class="cw-text">En C se puede usar `strtok(str, " ")` o recorrer byte a byte con un flag `in_word`.</p>
+						</div>
+						<div class="cw-col">
+							<div class="cw-code-card">
+								<div class="cw-code-title">count_words.c</div>
+								<pre class="cw-code-block"><code><span class="token-type">int</span> countWords(<span class="token-keyword">const</span> <span class="token-type">char</span> *s) &#123;
+    <span class="token-type">int</span> count = <span class="token-number">0</span>, in_word = <span class="token-number">0</span>;
+    <span class="token-keyword">while</span> (*s) &#123;
+        <span class="token-keyword">if</span> (isspace(*s)) in_word = <span class="token-number">0</span>;
+        <span class="token-keyword">else if</span> (!in_word) &#123; in_word = <span class="token-number">1</span>; count++; &#125;
+        s++;
+    &#125;
+    <span class="token-keyword">return</span> count;
+&#125;</code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
+				</div>
 
-				<article class="cw-card cw-state">
-					<div class="cw-head"><strong>2) {lang === 'en' ? 'Variables' : 'Variables'}</strong></div>
-					<div class="cw-state-grid">
-						<div class="cw-state-item"><span class="cw-state-label">frase[i]</span><span class="cw-value" id="cw-current">-</span></div>
-						<div class="cw-state-item"><span class="cw-state-label">i</span><span class="cw-value" id="cw-i">-</span></div>
-						<div class="cw-state-item"><span class="cw-state-label">palabras</span><span class="cw-value" id="cw-words">-</span></div>
-						<div class="cw-state-item"><span class="cw-state-label">dentro</span><span class="cw-value" id="cw-inside">-</span></div>
-						<div class="cw-state-item"><span class="cw-state-label">condicion while</span><span class="cw-value" id="cw-while">-</span></div>
-						<div class="cw-state-item"><span class="cw-state-label">accion</span><span class="cw-value" id="cw-action">-</span></div>
+				<div class="sc-slide" data-slide="3">
+					<div class="cw-slide-grid">
+						<div class="cw-col">
+							<h2 class="cw-slide-title">3. Java: split("\\s+")</h2>
+							<p class="cw-text">Java utiliza expresiones regulares `\\s+` para dividir por cualquier secuencia de espacios blancos.</p>
+						</div>
+						<div class="cw-col">
+							<div class="cw-code-card">
+								<div class="cw-code-title">WordCount.java</div>
+								<pre class="cw-code-block"><code>String text = <span class="token-string">"Hola  Mundo Java"</span>;
+String[] words = text.trim().split(<span class="token-string">"\\s+"</span>);
+<span class="token-type">int</span> total = words.length; <span class="token-comment">// 3</span></code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
+				</div>
 
-				<article class="cw-card cw-memory">
-					<div class="cw-head"><strong>3) {lang === 'en' ? 'String being read' : 'Cadena que se va leyendo'}</strong><span class="cw-badge">"Hola mundo en C"</span></div>
-					<div class="cw-string" id="cw-string"></div>
-					<div class="cw-readout" id="cw-readout">{lang === 'en' ? 'The traversal has not started yet.' : 'Todavia no empezo el recorrido.'}</div>
-				</article>
-
-				<article class="cw-card cw-console">
-					<div class="cw-head"><strong>4) {lang === 'en' ? 'Console' : 'Consola'}</strong></div>
-					<div class="cw-console-win">
-						<div class="cw-console-head"><span>./contar-palabras</span><span>stdout</span></div>
-						<div class="cw-console-body" id="cw-console"></div>
+				<div class="cw-slide" data-slide="4">
+					<div class="cw-slide-grid">
+						<div class="cw-col">
+							<h2 class="cw-slide-title">4. JavaScript: split(/\\s+/) y filter(Boolean)</h2>
+							<p class="cw-text">JS combina `split` con `filter(Boolean)` para eliminar tokens vacíos causados por espacios múltiples.</p>
+						</div>
+						<div class="cw-col">
+							<div class="cw-code-card">
+								<div class="cw-code-title">count.js</div>
+								<pre class="cw-code-block"><code><span class="token-keyword">const</span> text = <span class="token-string">"  Hola  JS  "</span>;
+<span class="token-keyword">const</span> words = text.trim().split(/\s+/).filter(Boolean);
+console.log(words.length); <span class="token-comment">// 2</span></code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
-			</section>
+				</div>
 
-		</main>
+				<div class="cw-slide" data-slide="5">
+					<div class="cw-slide-grid">
+						<div class="cw-col">
+							<h2 class="cw-slide-title">5. Python: len(text.split())</h2>
+							<p class="cw-text">En Python `text.split()` sin argumentos elimina automáticamente espacios continuos en los extremos e intermedios.</p>
+						</div>
+						<div class="cw-col">
+							<div class="cw-code-card">
+								<div class="cw-code-title">count.py</div>
+								<pre class="cw-code-block"><code>text = <span class="token-string">"  Hola   Python  "</span>
+words = text.split()
+count = len(words) <span class="token-comment"># 2</span></code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="cw-slide" data-slide="6">
+					<div class="cw-sim-container">
+						<h2 class="cw-slide-title center">{isEs ? '6. Inspector de Tokenización' : '6. Tokenization Inspector'}</h2>
+						<div class="cw-inspector-grid">
+							<div class="cw-lang-box"><span class="cw-lang-name">Entrada: "  Hola   Mundo  "</span><div class="cw-exp-res">C (in_word): 2 palabras | Java: 2 tokens | JS: 2 tokens | Python: ['Hola', 'Mundo'] (len=2)</div></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="cw-footer">
+				<button class="btn btn-secondary" id="btn-prev-cw" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="cw-footer-meta"><span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span></div>
+				<button class="btn btn-primary" id="btn-next-cw">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
 	</div>
+</div>
 
-	<script>
-		const STEP_ACTION = {
-			NONE: 'none',
-			ENTER_WORD: 'enter-word',
-			READ_LETTER: 'read-letter',
-			LEAVE_WORD: 'leave-word',
-			ADVANCE: 'advance',
-			PRINT: 'print',
-		} as const;
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+	.cw-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
+	.cw-shell { max-width: var(--container-max); margin: 0 auto; }
+	.cw-header { margin-bottom: 1.5rem; }
+	.cw-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
+	.cw-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.cw-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.cw-sub.center { text-align: center; }
+	.cw-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.cw-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.cw-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
+	.cw-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.cw-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+	.cw-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+	.cw-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.cw-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
+	.cw-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.cw-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.cw-slide.active { display: block; opacity: 1; transform: translateY(0); }
+	.cw-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+	.cw-col { grid-column: span 12; }
+	@media (min-width: 900px) { .cw-col { grid-column: span 6; } }
+	.cw-slide-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 400; color: var(--color-text); margin: 0 0 0.8rem; }
+	.cw-slide-title.center { text-align: center; }
+	.cw-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin-bottom: 1.2rem; }
+	.cw-card-box { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.cw-card-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; color: var(--color-accent-2-700); margin-bottom: 0.75rem; }
+	.cw-cell { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--color-divider); background: var(--color-surface); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+	.cw-tag { color: var(--color-accent-700); font-weight: 600; }
+	.cw-code-card { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.cw-code-title { background: #2b2722; color: #c0b6a5; padding: 0.4rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid #3a352e; }
+	.cw-code-block { margin: 0; padding: 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; color: #f9f4ed; overflow-x: auto; }
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.token-comment { color: #85929e; font-style: italic; }
+	.cw-sim-container { max-width: 800px; margin: 0 auto; }
+	.cw-inspector-grid { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 0.8rem; }
+	.cw-lang-box { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 0.8rem; }
+	.cw-lang-name { font-family: 'Fira Code', monospace; font-size: 0.75rem; font-weight: 700; color: #e59866; display: block; margin-bottom: 0.4rem; }
+	.cw-exp-res { font-family: 'Fira Code', monospace; font-size: 0.82rem; color: #f9f4ed; background: #141210; padding: 0.5rem 0.7rem; border-radius: var(--radius-sm); }
+	.cw-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.cw-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>
 
-		type StepAction = (typeof STEP_ACTION)[keyof typeof STEP_ACTION];
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
 
-		interface StepMessage {
-			es: string;
-			en: string;
-		}
-
-		interface Step {
-			line: number;
-			message: StepMessage;
-			i: string;
-			current: string;
-			words: string;
-			inside: string;
-			whileCondition: string;
-			action: StepAction;
-			activeIndex: number | null;
-			readUntil: number;
-			logs: string[];
-		}
-
-		const chars = ['H', 'o', 'l', 'a', ' ', 'm', 'u', 'n', 'd', 'o', ' ', 'e', 'n', ' ', 'C', '\\0'];
-		const baseSteps: Step[] = [
-			{ line: 1, message: { es: 'Se habilita printf. Todavia no hay recorrido ni salida.', en: 'printf is enabled. There is no traversal or output yet.' }, i: '-', current: '-', words: '-', inside: '-', whileCondition: '-', action: STEP_ACTION.NONE, activeIndex: null, readUntil: -1, logs: [] },
-			{ line: 3, message: { es: 'Se crea frase como arreglo de char. Al final existe el caracter \\0 aunque no lo escribamos visible.', en: 'frase is created as a char array. The \\0 character exists at the end even if we do not write it visibly.' }, i: '-', current: '-', words: '-', inside: '-', whileCondition: '-', action: STEP_ACTION.NONE, activeIndex: null, readUntil: -1, logs: [] },
-			{ line: 4, message: { es: 'i arranca en 0: vamos a leer desde frase[0].', en: 'i starts at 0: we are going to read from frase[0].' }, i: '0', current: 'H', words: '-', inside: '-', whileCondition: '-', action: STEP_ACTION.NONE, activeIndex: 0, readUntil: -1, logs: [] },
-			{ line: 5, message: { es: 'palabras arranca en 0 porque todavia no detectamos ninguna palabra.', en: 'palabras starts at 0 because we have not detected any word yet.' }, i: '0', current: 'H', words: '0', inside: '-', whileCondition: '-', action: STEP_ACTION.NONE, activeIndex: 0, readUntil: -1, logs: [] },
-			{ line: 6, message: { es: 'dentro vale 0: significa que estamos fuera de una palabra.', en: 'dentro is 0: it means we are outside a word.' }, i: '0', current: 'H', words: '0', inside: '0', whileCondition: '-', action: STEP_ACTION.NONE, activeIndex: 0, readUntil: -1, logs: [] },
-			{ line: 7, message: { es: 'frase[0] es H, no es \\0. El while entra.', en: 'frase[0] is H, not \\0. The while loop enters.' }, i: '0', current: 'H', words: '0', inside: '0', whileCondition: 'true', action: STEP_ACTION.READ_LETTER, activeIndex: 0, readUntil: 0, logs: [] },
-			{ line: 8, message: { es: 'H no es espacio y dentro vale 0: acabamos de entrar a una palabra.', en: 'H is not a space and dentro is 0: we have just entered a word.' }, i: '0', current: 'H', words: '0', inside: '0', whileCondition: 'true', action: STEP_ACTION.ENTER_WORD, activeIndex: 0, readUntil: 0, logs: [] },
-			{ line: 9, message: { es: 'Contamos la palabra Hola. palabras pasa de 0 a 1.', en: 'We count the word Hola. palabras goes from 0 to 1.' }, i: '0', current: 'H', words: '1', inside: '0', whileCondition: 'true', action: STEP_ACTION.ENTER_WORD, activeIndex: 0, readUntil: 0, logs: [] },
-			{ line: 10, message: { es: 'Marcamos dentro = 1 para no contar otra vez las letras o, l y a.', en: 'We set dentro = 1 so o, l and a are not counted again.' }, i: '0', current: 'H', words: '1', inside: '1', whileCondition: 'true', action: STEP_ACTION.ENTER_WORD, activeIndex: 0, readUntil: 0, logs: [] },
-			{ line: 15, message: { es: 'Avanzamos a i = 1. Ahora se leerá la o.', en: 'We advance to i = 1. Now o will be read.' }, i: '1', current: 'o', words: '1', inside: '1', whileCondition: 'true', action: STEP_ACTION.ADVANCE, activeIndex: 1, readUntil: 1, logs: [] },
-			{ line: 8, message: { es: 'o, l y a son letras, pero dentro ya vale 1. No se suma otra palabra.', en: 'o, l and a are letters, but dentro is already 1. No new word is added.' }, i: '3', current: 'a', words: '1', inside: '1', whileCondition: 'true', action: STEP_ACTION.READ_LETTER, activeIndex: 3, readUntil: 3, logs: [] },
-			{ line: 12, message: { es: 'En i = 4 aparece un espacio. Eso marca que salimos de la palabra Hola.', en: 'At i = 4 there is a space. That means we leave the word Hola.' }, i: '4', current: 'espacio', words: '1', inside: '1', whileCondition: 'true', action: STEP_ACTION.LEAVE_WORD, activeIndex: 4, readUntil: 4, logs: [] },
-			{ line: 13, message: { es: 'dentro vuelve a 0. El proximo caracter que no sea espacio puede iniciar otra palabra.', en: 'dentro goes back to 0. The next non-space character can start another word.' }, i: '4', current: 'espacio', words: '1', inside: '0', whileCondition: 'true', action: STEP_ACTION.LEAVE_WORD, activeIndex: 4, readUntil: 4, logs: [] },
-			{ line: 8, message: { es: 'En i = 5 aparece m: no es espacio y dentro vale 0. Empieza mundo.', en: 'At i = 5, m appears: it is not a space and dentro is 0. mundo starts.' }, i: '5', current: 'm', words: '1', inside: '0', whileCondition: 'true', action: STEP_ACTION.ENTER_WORD, activeIndex: 5, readUntil: 5, logs: [] },
-			{ line: 9, message: { es: 'Contamos la segunda palabra. palabras pasa a 2.', en: 'We count the second word. palabras becomes 2.' }, i: '5', current: 'm', words: '2', inside: '0', whileCondition: 'true', action: STEP_ACTION.ENTER_WORD, activeIndex: 5, readUntil: 5, logs: [] },
-			{ line: 10, message: { es: 'dentro vuelve a 1 mientras recorremos mundo.', en: 'dentro becomes 1 again while we traverse mundo.' }, i: '5', current: 'm', words: '2', inside: '1', whileCondition: 'true', action: STEP_ACTION.ENTER_WORD, activeIndex: 5, readUntil: 5, logs: [] },
-			{ line: 8, message: { es: 'u, n, d y o se leen, pero no suman porque seguimos dentro de la misma palabra.', en: 'u, n, d and o are read, but they do not add because we are still inside the same word.' }, i: '9', current: 'o', words: '2', inside: '1', whileCondition: 'true', action: STEP_ACTION.READ_LETTER, activeIndex: 9, readUntil: 9, logs: [] },
-			{ line: 13, message: { es: 'El espacio en i = 10 corta mundo. dentro vuelve a 0.', en: 'The space at i = 10 cuts mundo. dentro goes back to 0.' }, i: '10', current: 'espacio', words: '2', inside: '0', whileCondition: 'true', action: STEP_ACTION.LEAVE_WORD, activeIndex: 10, readUntil: 10, logs: [] },
-			{ line: 9, message: { es: 'En i = 11 empieza en. Contamos la tercera palabra.', en: 'At i = 11, en starts. We count the third word.' }, i: '11', current: 'e', words: '3', inside: '0', whileCondition: 'true', action: STEP_ACTION.ENTER_WORD, activeIndex: 11, readUntil: 11, logs: [] },
-			{ line: 8, message: { es: 'La n se lee como parte de en. No suma porque dentro ya vale 1.', en: 'n is read as part of en. It does not add because dentro is already 1.' }, i: '12', current: 'n', words: '3', inside: '1', whileCondition: 'true', action: STEP_ACTION.READ_LETTER, activeIndex: 12, readUntil: 12, logs: [] },
-			{ line: 13, message: { es: 'Otro espacio: salimos de en y dejamos dentro en 0.', en: 'Another space: we leave en and set dentro to 0.' }, i: '13', current: 'espacio', words: '3', inside: '0', whileCondition: 'true', action: STEP_ACTION.LEAVE_WORD, activeIndex: 13, readUntil: 13, logs: [] },
-			{ line: 9, message: { es: 'En i = 14 aparece C. Es el inicio de la cuarta palabra.', en: 'At i = 14, C appears. It is the start of the fourth word.' }, i: '14', current: 'C', words: '4', inside: '0', whileCondition: 'true', action: STEP_ACTION.ENTER_WORD, activeIndex: 14, readUntil: 14, logs: [] },
-			{ line: 15, message: { es: 'Se incrementa i y pasamos al caracter final \\0.', en: 'i is incremented and we move to the final \\0 character.' }, i: '15', current: '\\0', words: '4', inside: '1', whileCondition: 'true', action: STEP_ACTION.ADVANCE, activeIndex: 15, readUntil: 15, logs: [] },
-			{ line: 7, message: { es: 'frase[15] es \\0. La condicion del while da false y el recorrido termina.', en: 'frase[15] is \\0. The while condition is false and the traversal ends.' }, i: '15', current: '\\0', words: '4', inside: '1', whileCondition: 'false', action: STEP_ACTION.NONE, activeIndex: 15, readUntil: 15, logs: [] },
-			{ line: 17, message: { es: 'Ahora si hay algo para mostrar: printf imprime la cantidad final.', en: 'Now there is something to show: printf prints the final count.' }, i: '15', current: '\\0', words: '4', inside: '1', whileCondition: 'false', action: STEP_ACTION.PRINT, activeIndex: 15, readUntil: 15, logs: ['Palabras: 4'] },
-			{ line: 18, message: { es: 'El programa termina normalmente.', en: 'The program ends normally.' }, i: '15', current: '\\0', words: '4', inside: '1', whileCondition: 'false', action: STEP_ACTION.PRINT, activeIndex: 15, readUntil: 15, logs: ['Palabras: 4'] },
-		];
-
-		let currentStep = 0;
-		let autoPlayTimer: number | null = null;
-		const prev = document.getElementById('cw-prev') as HTMLButtonElement;
-		const next = document.getElementById('cw-next') as HTMLButtonElement;
-		const auto = document.getElementById('cw-auto') as HTMLButtonElement;
-		const line = document.getElementById('cw-line') as HTMLElement;
-		const step = document.getElementById('cw-step') as HTMLElement;
-		const copy = document.getElementById('cw-copy') as HTMLElement;
-		const fill = document.getElementById('cw-fill') as HTMLElement;
-		const current = document.getElementById('cw-current') as HTMLElement;
-		const index = document.getElementById('cw-i') as HTMLElement;
-		const words = document.getElementById('cw-words') as HTMLElement;
-		const inside = document.getElementById('cw-inside') as HTMLElement;
-		const whileCondition = document.getElementById('cw-while') as HTMLElement;
-		const action = document.getElementById('cw-action') as HTMLElement;
-		const string = document.getElementById('cw-string') as HTMLElement;
-		const readout = document.getElementById('cw-readout') as HTMLElement;
-		const consoleBody = document.getElementById('cw-console') as HTMLElement;
-
-		chars.forEach((char, charIndex) => {
-			const cell = document.createElement('div');
-			cell.className = `cw-cell${char === ' ' ? ' space' : ''}`;
-			cell.dataset.index = String(charIndex);
-			cell.innerHTML = `<div class="cw-char">${char === ' ' ? '&nbsp;' : char}</div><div class="cw-index">${charIndex}</div>`;
-			string.appendChild(cell);
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+		document.querySelectorAll('.cw-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
 		});
-
-		function getActionLabel(stepAction: StepAction, isEnglish: boolean): string {
-			const labels: Record<StepAction, StepMessage> = {
-				[STEP_ACTION.NONE]: { es: 'preparar', en: 'prepare' },
-				[STEP_ACTION.ENTER_WORD]: { es: 'entrar a palabra', en: 'enter word' },
-				[STEP_ACTION.READ_LETTER]: { es: 'leer caracter', en: 'read char' },
-				[STEP_ACTION.LEAVE_WORD]: { es: 'salir de palabra', en: 'leave word' },
-				[STEP_ACTION.ADVANCE]: { es: 'avanzar i', en: 'advance i' },
-				[STEP_ACTION.PRINT]: { es: 'imprimir', en: 'print' },
-			};
-			return labels[stepAction][isEnglish ? 'en' : 'es'];
-		}
-
-		function stopAutoPlay(): void {
-			if (autoPlayTimer !== null) {
-				window.clearInterval(autoPlayTimer);
-				autoPlayTimer = null;
-			}
-			auto.textContent = 'Auto-play';
-		}
-
-		function toggleAutoPlay(): void {
-			if (autoPlayTimer !== null) {
-				stopAutoPlay();
-				return;
-			}
-			auto.textContent = 'Pausar';
-			autoPlayTimer = window.setInterval(() => {
-				if (currentStep < baseSteps.length - 1) {
-					currentStep += 1;
-					render();
-				} else {
-					stopAutoPlay();
-				}
-			}, 1250);
-		}
-
-		function render(): void {
-			const isEnglish = document.documentElement.lang === 'en';
-			const state = baseSteps[currentStep];
-			document.querySelectorAll<HTMLElement>('.cw-row').forEach((row) => row.classList.toggle('active', Number(row.dataset.line) === state.line));
-			document.querySelectorAll<HTMLElement>('.cw-cell').forEach((cell) => {
-				const cellIndex = Number(cell.dataset.index);
-				cell.classList.toggle('active', state.activeIndex === cellIndex);
-				cell.classList.toggle('read', cellIndex <= state.readUntil);
-			});
-			line.textContent = isEnglish ? `Active line: ${state.line}` : `Linea activa: ${state.line}`;
-			step.textContent = isEnglish ? `Step ${currentStep + 1} / ${baseSteps.length}` : `Paso ${currentStep + 1} / ${baseSteps.length}`;
-			copy.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${state.message[isEnglish ? 'en' : 'es']}`;
-			current.textContent = state.current;
-			index.textContent = state.i;
-			words.textContent = state.words;
-			inside.textContent = state.inside;
-			whileCondition.textContent = state.whileCondition;
-			action.textContent = getActionLabel(state.action, isEnglish);
-			readout.textContent = isEnglish
-				? `Read up to index ${state.readUntil < 0 ? 'none' : state.readUntil}. Current char: ${state.current}.`
-				: `Leido hasta indice ${state.readUntil < 0 ? 'ninguno' : state.readUntil}. Caracter actual: ${state.current}.`;
-			consoleBody.innerHTML = '';
-			state.logs.forEach((entry, logIndex) => {
-				const el = document.createElement('div');
-				el.className = 'cw-log';
-				el.style.animationDelay = `${logIndex * 80}ms`;
-				el.textContent = `> ${entry}`;
-				consoleBody.appendChild(el);
-			});
-			fill.style.width = `${((currentStep + 1) / baseSteps.length) * 100}%`;
-			prev.disabled = currentStep === 0;
-			next.disabled = currentStep === baseSteps.length - 1;
-		}
-
-		prev.addEventListener('click', () => {
-			if (currentStep > 0) {
-				currentStep -= 1;
-				render();
-			}
+		document.querySelectorAll('.cw-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
 		});
-		next.addEventListener('click', () => {
-			if (currentStep < baseSteps.length - 1) {
-				currentStep += 1;
-				render();
-			}
-		});
-		auto.addEventListener('click', () => toggleAutoPlay());
-		document.addEventListener('keydown', (event: KeyboardEvent) => {
-			if (event.key === 'ArrowLeft') prev.click();
-			if (event.key === 'ArrowRight') next.click();
-		});
-		render();
-	</script>
+		const labelEl = document.getElementById('cw-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+		const prevBtn = document.getElementById('btn-prev-cw') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-cw') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
 
+	document.querySelectorAll('.cw-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
+		});
+	});
+
+	document.getElementById('btn-prev-cw')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-cw')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
+
+	goToSlide(1);
+</script>

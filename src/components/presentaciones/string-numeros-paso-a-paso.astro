@@ -1,227 +1,233 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
-
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+const isEs = lang === 'es';
 ---
 
+<div class="sn-screen">
+	<div class="sn-shell">
+		<header class="sn-header">
+			<span class="sn-badge">{isEs ? 'Conversión de Tipos' : 'Type Conversion'}</span>
+			<h1 class="sn-title">
+				{isEs ? 'Conversión entre Cadenas y Números' : 'String to Number Conversions'}
+			</h1>
+			<p class="sn-sub">
+				{isEs 
+					? 'Parsing, atoi, parseInt, Integer.parseInt e int() en C, Java, JavaScript y Python.' 
+					: 'Parsing, atoi, parseInt, Integer.parseInt, and int() in C, Java, JS, and Python.'}
+			</p>
+		</header>
 
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
-		.sn-screen {
-			--sn-primary: #ef4444;
-			--sn-cyan: #22d3ee;
-			--sn-bg: #1b0b0f;
-			min-height: 100vh;
-			font-family: 'Chakra Petch', sans-serif;
-			color: #ffe8ec;
-			background: radial-gradient(circle at 78% 18%, rgba(239, 68, 68, 0.2), transparent 40%), linear-gradient(145deg, #0d0406 0%, var(--sn-bg) 100%);
-		}
-		.sn-shell { max-width: 1180px; margin: 0 auto; padding: 2.2rem 1rem 3rem; }
-		.sn-title { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; line-height: 1.05; }
-		.sn-sub { max-width: 68ch; color: rgba(255, 232, 236, 0.85); }
-		.sn-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
-		.sn-card { border-radius: 1rem; border: 1px solid rgba(239, 68, 68, 0.32); background: linear-gradient(160deg, rgba(46, 16, 22, 0.9), rgba(24, 9, 12, 0.94)); padding: 1rem; }
-		.sn-code, .sn-state, .sn-console { grid-column: span 12; }
-		@media (min-width: 1100px) { .sn-code { grid-column: span 6; } .sn-state, .sn-console { grid-column: span 3; } }
-		.sn-head { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
-		.sn-badge { border: 1px solid rgba(34, 211, 238, 0.45); background: rgba(34, 211, 238, 0.14); border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.72rem; font-family: 'Fira Code', monospace; }
-		.sn-panel { background: rgba(12, 4, 6, 0.9); border: 1px solid rgba(239, 68, 68, 0.28); border-radius: 0.8rem; padding: 0.75rem; }
-		.sn-row { display: grid; grid-template-columns: 2rem 1fr; gap: 0.8rem; padding: 0.42rem 0.5rem; border-radius: 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.86rem; color: rgba(255, 232, 236, 0.9); transition: all 0.2s ease; }
-		.sn-row.active { background: linear-gradient(90deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.08)); outline: 1px solid rgba(239, 68, 68, 0.45); transform: translateX(3px); }
-		.sn-ln { color: rgba(255, 232, 236, 0.42); text-align: right; }
-		.sn-state-item { display: flex; justify-content: space-between; border: 1px solid rgba(34, 211, 238, 0.3); background: rgba(34, 211, 238, 0.08); border-radius: 0.65rem; padding: 0.6rem 0.7rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
-		.sn-value { color: var(--sn-primary); font-size: 0.95rem; font-weight: 700; text-align: right; }
-		.sn-copy { margin-top: 0.8rem; border: 1px solid rgba(239, 68, 68, 0.34); background: rgba(239, 68, 68, 0.12); border-radius: 0.7rem; padding: 0.75rem; }
-		.sn-controls { margin-top: 0.9rem; display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; }
-		.sn-btn { border: 1px solid rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.16); color: #ffe8ec; border-radius: 0.7rem; padding: 0.55rem 1rem; font-weight: 600; transition: all 0.2s ease; }
-		.sn-btn:hover:not(:disabled) { background: rgba(239, 68, 68, 0.3); transform: translateY(-1px); }
-		.sn-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-		.sn-select { border: 1px solid rgba(34, 211, 238, 0.45); background: rgba(12, 4, 6, 0.92); color: #ffe8ec; border-radius: 0.6rem; padding: 0.45rem 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
-		.sn-track { margin-top: 0.8rem; height: 0.55rem; border-radius: 999px; background: rgba(255, 232, 236, 0.14); overflow: hidden; }
-		.sn-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--sn-primary), var(--sn-cyan)); transition: width 0.25s ease; }
-		.sn-console-win { border: 1px solid rgba(34, 211, 238, 0.35); border-radius: 0.8rem; overflow: hidden; background: rgba(12, 4, 6, 0.9); }
-		.sn-console-head { display: flex; justify-content: space-between; padding: 0.5rem 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.72rem; background: rgba(34, 211, 238, 0.13); border-bottom: 1px solid rgba(34, 211, 238, 0.3); }
-		.sn-console-body { min-height: 160px; padding: 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
-		.sn-log { opacity: 0; transform: translateY(8px); animation: sn-log 0.35s ease forwards; color: #d8f2ff; }
-		@keyframes sn-log { to { opacity: 1; transform: translateY(0); } }
-		.sn-back { display: inline-block; margin-top: 1.4rem; color: var(--sn-cyan); text-decoration: none; border-bottom: 1px dashed rgba(34, 211, 238, 0.5); }
-	</style>
+		<div class="sn-deck-card">
+			<div class="sn-nav-bar">
+				<div class="sn-slide-indicator">
+					<span class="sn-step-dot"></span>
+					<span id="sn-slide-label">SLIDE 1 / 6</span>
+				</div>
+				<div class="sn-pills">
+					<button class="sn-pill-btn active" data-target-slide="1">1. {isEs ? 'Concepto' : 'Concept'}</button>
+					<button class="sn-pill-btn" data-target-slide="2">2. C</button>
+					<button class="sn-pill-btn" data-target-slide="3">3. Java</button>
+					<button class="sn-pill-btn" data-target-slide="4">4. JavaScript</button>
+					<button class="sn-pill-btn" data-target-slide="5">5. Python</button>
+					<button class="sn-pill-btn" data-target-slide="6">6. {isEs ? 'Simulador' : 'Simulator'}</button>
+				</div>
+			</div>
 
-	<div class="sn-screen">
-		<main class="sn-shell">
-			<header class="mb-6">
-				<p class="sn-badge">{lang === 'en' ? 'string of numbers / step by step' : 'string de numeros / paso a paso'}</p>
-				<h1 class="sn-title mt-3">{lang === 'en' ? 'Strings and numbers in C' : 'Strings y numeros en C'}</h1>
-				<p class="sn-sub mt-3">{lang === 'en' ? 'Here you learn the difference between concatenating strings and adding real numbers using sprintf() and atoi().' : 'Aca aprendes la diferencia entre concatenar strings y sumar numeros reales usando sprintf() y atoi().'}</p>
-			</header>
-			<section class="sn-grid" aria-live="polite">
-				<article class="sn-card sn-code">
-					<div class="sn-head"><strong>1) {lang === 'en' ? 'Code' : 'Codigo'}</strong><span class="sn-badge" id="sn-line">{lang === 'en' ? 'Active line: 1' : 'Linea activa: 1'}</span></div>
-					<div class="sn-panel">
-						<div class="sn-row" data-line="1"><span class="sn-ln">1</span><span>char a[] = "10";</span></div>
-						<div class="sn-row" data-line="2"><span class="sn-ln">2</span><span>char b[] = "5";</span></div>
-						<div class="sn-row" data-line="3"><span class="sn-ln">3</span><span>char concat[] = "105";</span></div>
-						<div class="sn-row" data-line="4"><span class="sn-ln">4</span><span>int suma = atoi(a) + atoi(b);</span></div>
-						<div class="sn-row" data-line="5"><span class="sn-ln">5</span><span>int parcial = atoi("20px");</span></div>
-						<div class="sn-row" data-line="6"><span class="sn-ln">6</span><span>printf("%s\n", concat);</span></div>
-						<div class="sn-row" data-line="7"><span class="sn-ln">7</span><span>printf("%d\n", suma);</span></div>
-						<div class="sn-row" data-line="8"><span class="sn-ln">8</span><span>printf("%d\n", parcial);</span></div>
+			<div class="sn-viewport">
+				<div class="sn-slide active" data-slide="1">
+					<div class="sn-slide-grid">
+						<div class="sn-col">
+							<h2 class="sn-slide-title">1. {isEs ? 'Parsing y Formateo' : 'Parsing & Formatting'}</h2>
+							<p class="sn-text">
+								{isEs 
+									? 'Convertir texto `"123"` a valor numérico `123` requiere analizar los caracteres ASCII/Unicode y calcular el valor posicional base 10.'
+									: 'Converting string `"123"` to integer `123` requires parsing digits and accumulating base 10 values.'}
+							</p>
+						</div>
+						<div class="sn-col">
+							<div class="sn-card-box">
+								<div class="sn-card-head">{isEs ? 'MANEJO DE ERRORES' : 'ERROR HANDLING'}</div>
+								<div class="sn-cell"><span>"123abc"</span><span class="sn-tag">Retorna 123 (C/JS) o Excepción (Java/Python)</span></div>
+							</div>
+						</div>
 					</div>
-					<div class="sn-copy" id="sn-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'a is defined as a char array with a number.' : 'Se define a como arreglo de chars con un numero.'}</div>
-					<div class="sn-track"><div class="sn-fill" id="sn-fill"></div></div>
-					<div class="sn-controls">
-						<button class="sn-btn" id="sn-prev" type="button">{lang === 'en' ? '← Back' : '⬅ Retroceder'}</button>
-						<button class="sn-btn" id="sn-next" type="button">{lang === 'en' ? 'Next →' : 'Avanzar ➡'}</button>
-						<button class="sn-btn" id="sn-auto" type="button">{lang === 'en' ? 'Auto-play ▶' : 'Auto-play ▶'}</button>
-						<select class="sn-select" id="sn-level" aria-label={lang === 'en' ? 'Detail level' : 'Nivel de detalle'}>
-							<option value="basico" selected>{lang === 'en' ? 'Basic' : 'Basico'}</option>
-							<option value="intermedio">{lang === 'en' ? 'Intermediate' : 'Intermedio'}</option>
-						</select>
-						<span class="sn-badge" id="sn-step">{lang === 'en' ? 'Step 1 / 8' : 'Paso 1 / 8'}</span>
+				</div>
+
+				<div class="sn-slide" data-slide="2">
+					<div class="sn-slide-grid">
+						<div class="sn-col">
+							<h2 class="sn-slide-title">2. C: atoi y strtol</h2>
+							<p class="sn-text">`atoi` convierte cadenas a enteros, mientras `strtol` provee detección avanzada de errores con puntero `endptr`.</p>
+						</div>
+						<div class="sn-col">
+							<div class="sn-code-card">
+								<div class="sn-code-title">parse.c</div>
+								<pre class="sn-code-block"><code><span class="token-type">char</span> text[] = <span class="token-string">"456"</span>;
+<span class="token-type">int</span> num = atoi(text); <span class="token-comment">// 456</span></code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
-				<article class="sn-card sn-state">
-					<div class="sn-head"><strong>2) {lang === 'en' ? 'Variables' : 'Variables'}</strong></div>
-					<div class="sn-state-item"><span>a</span><span id="sn-a" class="sn-value">'10'</span></div>
-					<div class="sn-state-item"><span>b</span><span id="sn-b" class="sn-value">-</span></div>
-					<div class="sn-state-item"><span>concat</span><span id="sn-concat" class="sn-value">-</span></div>
-					<div class="sn-state-item"><span>suma</span><span id="sn-suma" class="sn-value">-</span></div>
-					<div class="sn-state-item"><span>parcial</span><span id="sn-parcial" class="sn-value">-</span></div>
-				</article>
-				<article class="sn-card sn-console">
-					<div class="sn-head"><strong>3) {lang === 'en' ? 'Simulated Console' : 'Consola simulada'}</strong></div>
-					<div class="sn-console-win">
-						<div class="sn-console-head"><span>./string-numeros-demo</span><span>stdout</span></div>
-						<div class="sn-console-body" id="sn-console"></div>
+				</div>
+
+				<div class="sn-slide" data-slide="3">
+					<div class="sn-slide-grid">
+						<div class="sn-col">
+							<h2 class="sn-slide-title">3. Java: Integer.parseInt y String.valueOf</h2>
+							<p class="sn-text">`Integer.parseInt("123")` parsea la cadena o lanza `NumberFormatException` si contiene caracteres inválidos.</p>
+						</div>
+						<div class="sn-col">
+							<div class="sn-code-card">
+								<div class="sn-code-title">Parse.java</div>
+								<pre class="sn-code-block"><code><span class="token-type">int</span> val = Integer.parseInt(<span class="token-string">"789"</span>);
+String str = String.valueOf(val);</code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
-			</section>
-</main>
+				</div>
+
+				<div class="sn-slide" data-slide="4">
+					<div class="sn-slide-grid">
+						<div class="sn-col">
+							<h2 class="sn-slide-title">4. JavaScript: parseInt, parseFloat y Number()</h2>
+							<p class="sn-text">JS ofrece `parseInt("123", 10)` o el operador unario `+"123"`. Retorna `NaN` ante fallos de parseo.</p>
+						</div>
+						<div class="sn-col">
+							<div class="sn-code-card">
+								<div class="sn-code-title">parse.js</div>
+								<pre class="sn-code-block"><code><span class="token-keyword">const</span> n1 = parseInt(<span class="token-string">"100px"</span>, <span class="token-number">10</span>); <span class="token-comment">// 100</span>
+<span class="token-keyword">const</span> n2 = Number(<span class="token-string">"100px"</span>); <span class="token-comment">// NaN</span></code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="sn-slide" data-slide="5">
+					<div class="sn-slide-grid">
+						<div class="sn-col">
+							<h2 class="sn-slide-title">5. Python: int(), float() y str()</h2>
+							<p class="sn-text">En Python `int("123")` realiza la conversión directa. Si la cadena es inválida lanza `ValueError`.</p>
+						</div>
+						<div class="sn-col">
+							<div class="sn-code-card">
+								<div class="sn-code-title">parse.py</div>
+								<pre class="sn-code-block"><code>num = int(<span class="token-string">"42"</span>)
+s = str(<span class="token-number">42</span>)</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="sn-slide" data-slide="6">
+					<div class="sn-sim-container">
+						<h2 class="sn-slide-title center">{isEs ? '6. Inspector de Conversión' : '6. Conversion Inspector'}</h2>
+						<div class="sn-inspector-grid">
+							<div class="sn-lang-box"><span class="sn-lang-name">Entrada: "123"</span><div class="sn-exp-res">C: 123 | Java: 123 | JS: 123 | Python: 123</div></div>
+							<div class="sn-lang-box"><span class="sn-lang-name">Entrada: "123abc"</span><div class="sn-exp-res">C (atoi): 123 | Java: Exception | JS (parseInt): 123 | Python: ValueError</div></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="sn-footer">
+				<button class="btn btn-secondary" id="btn-prev-sn" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="sn-footer-meta"><span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span></div>
+				<button class="btn btn-primary" id="btn-next-sn">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
 	</div>
+</div>
 
-	<script>
-		type Step = {
-			line: number;
-			message: { es: string; en: string };
-			a: string;
-			b: string;
-			concat: string;
-			suma: string;
-			parcial: string;
-			logs: string[];
-		};
-		const baseSteps: Step[] = [
-			{ line: 1, message: { es: 'Se define a como arreglo de chars con un numero.', en: 'a is defined as a char array with a number.' }, a: "'10'", b: '-', concat: '-', suma: '-', parcial: '-', logs: [] },
-			{ line: 2, message: { es: 'Se define b como otro arreglo de chars numerico.', en: 'b is defined as another numeric char array.' }, a: "'10'", b: "'5'", concat: '-', suma: '-', parcial: '-', logs: [] },
-			{ line: 3, message: { es: 'concat representa la concatenacion de ambos textos.', en: 'concat represents the concatenation of both texts.' }, a: "'10'", b: "'5'", concat: "'105'", suma: '-', parcial: '-', logs: [] },
-			{ line: 4, message: { es: 'atoi(a) y atoi(b) convierten a numero y ahora si suman.', en: 'atoi(a) and atoi(b) convert to numbers and now actually add up.' }, a: "'10'", b: "'5'", concat: "'105'", suma: '15', parcial: '-', logs: [] },
-			{ line: 5, message: { es: 'atoi("20px") toma la parte numerica inicial hasta encontrar un caracter invalido.', en: 'atoi("20px") takes the initial numeric part until it finds an invalid character.' }, a: "'10'", b: "'5'", concat: "'105'", suma: '15', parcial: '20', logs: [] },
-			{ line: 6, message: { es: 'Imprime concat.', en: 'Prints concat.' }, a: "'10'", b: "'5'", concat: "'105'", suma: '15', parcial: '20', logs: ['105'] },
-			{ line: 7, message: { es: 'Imprime suma numerica real.', en: 'Prints actual numeric sum.' }, a: "'10'", b: "'5'", concat: "'105'", suma: '15', parcial: '20', logs: ['105', '15'] },
-			{ line: 8, message: { es: 'Imprime resultado de atoi.', en: 'Prints atoi result.' }, a: "'10'", b: "'5'", concat: "'105'", suma: '15', parcial: '20', logs: ['105', '15', '20'] },
-		];
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+	.sn-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
+	.sn-shell { max-width: var(--container-max); margin: 0 auto; }
+	.sn-header { margin-bottom: 1.5rem; }
+	.sn-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
+	.sn-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.sn-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.sn-sub.center { text-align: center; }
+	.sn-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.sn-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.sn-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
+	.sn-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.sn-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+	.sn-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+	.sn-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.sn-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
+	.sn-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.sn-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.sn-slide.active { display: block; opacity: 1; transform: translateY(0); }
+	.sn-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+	.sn-col { grid-column: span 12; }
+	@media (min-width: 900px) { .sn-col { grid-column: span 6; } }
+	.sn-slide-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 400; color: var(--color-text); margin: 0 0 0.8rem; }
+	.sn-slide-title.center { text-align: center; }
+	.sn-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin-bottom: 1.2rem; }
+	.sn-card-box { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.sn-card-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; color: var(--color-accent-2-700); margin-bottom: 0.75rem; }
+	.sn-cell { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--color-divider); background: var(--color-surface); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+	.sn-tag { color: var(--color-accent-700); font-weight: 600; }
+	.sn-code-card { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.sn-code-title { background: #2b2722; color: #c0b6a5; padding: 0.4rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid #3a352e; }
+	.sn-code-block { margin: 0; padding: 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; color: #f9f4ed; overflow-x: auto; }
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.token-comment { color: #85929e; font-style: italic; }
+	.sn-sim-container { max-width: 800px; margin: 0 auto; }
+	.sn-inspector-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+	@media (max-width: 600px) { .sn-inspector-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); } }
+	.sn-lang-box { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 0.8rem; }
+	.sn-lang-name { font-family: 'Fira Code', monospace; font-size: 0.75rem; font-weight: 700; color: #e59866; display: block; margin-bottom: 0.4rem; }
+	.sn-exp-res { font-family: 'Fira Code', monospace; font-size: 0.82rem; color: #f9f4ed; background: #141210; padding: 0.5rem 0.7rem; border-radius: var(--radius-sm); }
+	.sn-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.sn-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>
 
-		const buildIntermediateSteps = (steps: Step[]): Step[] => {
-			const enriched: Step[] = [];
-			steps.forEach((stepState, index) => {
-				enriched.push(stepState);
-				if (index < steps.length - 1) {
-					enriched.push({ ...stepState, message: { es: `Detalle intermedio: ${stepState.message.es}`, en: `Intermediate detail: ${stepState.message.en}` } });
-				}
-			});
-			return enriched;
-		};
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
 
-		type Level = 'basico' | 'intermedio';
-		const stepSets: Record<Level, Step[]> = {
-			basico: baseSteps,
-			intermedio: buildIntermediateSteps(baseSteps),
-		};
-
-		let currentLevel: Level = 'basico';
-		let activeSteps: Step[] = stepSets[currentLevel];
-
-		let currentStep = 0;
-		const prev = document.getElementById('sn-prev') as HTMLButtonElement;
-		const next = document.getElementById('sn-next') as HTMLButtonElement;
-		const auto = document.getElementById('sn-auto') as HTMLButtonElement;
-		const levelSelect = document.getElementById('sn-level') as HTMLSelectElement;
-		const line = document.getElementById('sn-line') as HTMLElement;
-		const step = document.getElementById('sn-step') as HTMLElement;
-		const copy = document.getElementById('sn-copy') as HTMLElement;
-		const a = document.getElementById('sn-a') as HTMLElement;
-		const b = document.getElementById('sn-b') as HTMLElement;
-		const concat = document.getElementById('sn-concat') as HTMLElement;
-		const suma = document.getElementById('sn-suma') as HTMLElement;
-		const parcial = document.getElementById('sn-parcial') as HTMLElement;
-		const consoleBody = document.getElementById('sn-console') as HTMLElement;
-		const fill = document.getElementById('sn-fill') as HTMLElement;
-		let autoPlayTimer: number | null = null;
-
-		function stopAutoPlay(): void {
-			if (autoPlayTimer !== null) {
-				window.clearInterval(autoPlayTimer);
-				autoPlayTimer = null;
-			}
-			auto.textContent = 'Auto-play ▶';
-		}
-
-		function toggleAutoPlay(): void {
-			if (autoPlayTimer !== null) {
-				stopAutoPlay();
-				return;
-			}
-			auto.textContent = 'Pausar ⏸';
-			autoPlayTimer = window.setInterval(() => {
-				if (currentStep < activeSteps.length - 1) {
-					currentStep += 1;
-					render();
-				} else {
-					stopAutoPlay();
-				}
-			}, 1300);
-		}
-
-		function render(): void {
-			const isEnglish = document.documentElement.lang === 'en';
-			const state = activeSteps[currentStep];
-			document.querySelectorAll<HTMLElement>('.sn-row').forEach((row) => row.classList.toggle('active', Number(row.dataset.line) === state.line));
-			line.textContent = isEnglish ? `Active line: ${state.line}` : `Linea activa: ${state.line}`;
-			step.textContent = isEnglish ? `Step ${currentStep + 1} / ${activeSteps.length}` : `Paso ${currentStep + 1} / ${activeSteps.length}`;
-			copy.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${state.message[isEnglish ? 'en' : 'es']}`;
-			a.textContent = state.a;
-			b.textContent = state.b;
-			concat.textContent = state.concat;
-			suma.textContent = state.suma;
-			parcial.textContent = state.parcial;
-			consoleBody.innerHTML = '';
-			state.logs.forEach((entry, index) => {
-				const el = document.createElement('div');
-				el.className = 'sn-log';
-				el.style.animationDelay = `${index * 80}ms`;
-				el.textContent = `> ${entry}`;
-				consoleBody.appendChild(el);
-			});
-			fill.style.width = `${((currentStep + 1) / activeSteps.length) * 100}%`;
-			prev.disabled = currentStep === 0;
-			next.disabled = currentStep === activeSteps.length - 1;
-		}
-
-		prev.addEventListener('click', () => { if (currentStep > 0) { currentStep -= 1; render(); } });
-		next.addEventListener('click', () => { if (currentStep < activeSteps.length - 1) { currentStep += 1; render(); } });
-		auto.addEventListener('click', () => toggleAutoPlay());
-		levelSelect.addEventListener('change', () => {
-			currentLevel = levelSelect.value as Level;
-			activeSteps = stepSets[currentLevel];
-			currentStep = 0;
-			stopAutoPlay();
-			render();
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+		document.querySelectorAll('.sn-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
 		});
-		document.addEventListener('keydown', (event: KeyboardEvent) => { if (event.key === 'ArrowLeft') prev.click(); if (event.key === 'ArrowRight') next.click(); });
-		render();
-	</script>
+		document.querySelectorAll('.sn-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
+		});
+		const labelEl = document.getElementById('sn-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+		const prevBtn = document.getElementById('btn-prev-sn') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-sn') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
+
+	document.querySelectorAll('.sn-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
+		});
+	});
+
+	document.getElementById('btn-prev-sn')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-sn')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
+
+	goToSlide(1);
+</script>

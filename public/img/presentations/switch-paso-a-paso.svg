@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+	<g transform="translate(200, 40)">
+		<rect x="-60" y="0" width="120" height="35" rx="8" fill="#f5ead8" stroke="#8c491a" stroke-width="3"/>
+		<text x="0" y="22" font-family="'Fira Code', monospace" font-size="12" font-weight="700" fill="#201e1d" text-anchor="middle">switch(op)</text>
+
+		<path d="M -40 35 L -100 80" stroke="#d9cbba" stroke-width="2"/>
+		<rect x="-140" y="80" width="80" height="35" rx="6" fill="#f5ead8" stroke="#d9cbba" stroke-width="2"/>
+		<text x="-100" y="102" font-family="'Fira Code', monospace" font-size="10" fill="#201e1d" text-anchor="middle">case 'A'</text>
+
+		<path d="M 0 35 L 0 80" stroke="#c67139" stroke-width="3"/>
+		<rect x="-40" y="80" width="80" height="35" rx="6" fill="#f5ead8" stroke="#c67139" stroke-width="3"/>
+		<text x="0" y="102" font-family="'Fira Code', monospace" font-size="10" font-weight="700" fill="#8c491a" text-anchor="middle">case 'B' ✓</text>
+
+		<path d="M 40 35 L 100 80" stroke="#d9cbba" stroke-width="2"/>
+		<rect x="60" y="80" width="80" height="35" rx="6" fill="#f5ead8" stroke="#d9cbba" stroke-width="2"/>
+		<text x="100" y="102" font-family="'Fira Code', monospace" font-size="10" fill="#201e1d" text-anchor="middle">default</text>
+	</g>
+</svg>

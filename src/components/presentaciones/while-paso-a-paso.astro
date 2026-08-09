@@ -1,418 +1,274 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
-
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+const isEs = lang === 'es';
 ---
 
+<div class="wh-screen">
+	<div class="wh-shell">
+		<header class="wh-header">
+			<span class="wh-badge">{isEs ? 'Ciclos de Repetición' : 'Iteration Loops'}</span>
+			<h1 class="wh-title">
+				{isEs ? 'Ciclo While Paso a Paso' : 'While Loop Step by Step'}
+			</h1>
+			<p class="wh-sub">
+				{isEs 
+					? 'Pre-evaluación condicional e iteración indeterminada en C, JavaScript, Python y Java.' 
+					: 'Pre-condition evaluation and indeterminate iteration in C, JavaScript, Python, and Java.'}
+			</p>
+		</header>
 
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
+		<div class="wh-deck-card">
+			<div class="wh-nav-bar">
+				<div class="wh-slide-indicator">
+					<span class="wh-step-dot"></span>
+					<span id="wh-slide-label">SLIDE 1 / 6</span>
+				</div>
+				<div class="wh-pills">
+					<button class="wh-pill-btn active" data-target-slide="1">1. {isEs ? 'Concepto' : 'Concept'}</button>
+					<button class="wh-pill-btn" data-target-slide="2">2. C</button>
+					<button class="wh-pill-btn" data-target-slide="3">3. Java</button>
+					<button class="wh-pill-btn" data-target-slide="4">4. JavaScript</button>
+					<button class="wh-pill-btn" data-target-slide="5">5. Python</button>
+					<button class="wh-pill-btn" data-target-slide="6">6. {isEs ? 'Simulador' : 'Simulator'}</button>
+				</div>
+			</div>
 
-		.while-screen {
-			--while-bg: #061016;
-			--while-surface: #0c1c24;
-			--while-panel: #102833;
-			--while-primary: #0df259;
-			--while-blue: #3b82f6;
-			--while-warning: #f59e0b;
-			--while-danger: #ef4444;
-			min-height: 100vh;
-			font-family: 'Chakra Petch', sans-serif;
-			background:
-				radial-gradient(circle at 10% 10%, rgba(13, 242, 89, 0.12), transparent 45%),
-				radial-gradient(circle at 85% 20%, rgba(59, 130, 246, 0.14), transparent 40%),
-				linear-gradient(135deg, #050b11 0%, var(--while-bg) 100%);
-			color: #e7fbe7;
-		}
-
-		.while-shell {
-			max-width: 1200px;
-			margin: 0 auto;
-			padding: 2.5rem 1rem 3rem;
-		}
-
-		.while-title {
-			font-size: clamp(1.5rem, 3vw, 2.2rem);
-			line-height: 1.05;
-			font-weight: 700;
-			letter-spacing: 0.02em;
-			text-shadow: 0 0 30px rgba(13, 242, 89, 0.28);
-		}
-
-		.while-subtitle {
-			max-width: 64ch;
-			font-size: 1rem;
-			color: rgba(231, 251, 231, 0.82);
-		}
-
-		.while-grid {
-			display: grid;
-			gap: 1rem;
-			grid-template-columns: repeat(12, minmax(0, 1fr));
-		}
-
-		.card {
-			background: linear-gradient(160deg, rgba(16, 40, 51, 0.9), rgba(8, 20, 26, 0.86));
-			border: 1px solid rgba(13, 242, 89, 0.18);
-			border-radius: 1rem;
-			box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28);
-		}
-
-		.code-card { grid-column: span 12; padding: 1rem; }
-		.data-card { grid-column: span 12; padding: 1rem; }
-		.console-card { grid-column: span 12; padding: 1rem; }
-
-		@media (min-width: 1100px) {
-			.code-card { grid-column: span 6; }
-			.data-card { grid-column: span 3; }
-			.console-card { grid-column: span 3; }
-		}
-
-		.code-header,
-		.panel-header {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			margin-bottom: 0.8rem;
-			gap: 0.75rem;
-		}
-
-		.badge {
-			display: inline-flex;
-			align-items: center;
-			border: 1px solid rgba(13, 242, 89, 0.25);
-			background: rgba(13, 242, 89, 0.1);
-			border-radius: 999px;
-			padding: 0.2rem 0.6rem;
-			font-size: 0.72rem;
-			font-family: 'Fira Code', monospace;
-			letter-spacing: 0.04em;
-		}
-
-		.code-panel {
-			background: rgba(4, 10, 14, 0.85);
-			border: 1px solid rgba(13, 242, 89, 0.14);
-			border-radius: 0.8rem;
-			padding: 0.75rem;
-		}
-
-		.code-row {
-			display: grid;
-			grid-template-columns: 2rem 1fr;
-			gap: 0.8rem;
-			padding: 0.42rem 0.5rem;
-			border-radius: 0.5rem;
-			font-family: 'Fira Code', monospace;
-			font-size: 0.92rem;
-			color: rgba(231, 251, 231, 0.84);
-			transition: background-color 0.25s ease, transform 0.25s ease;
-		}
-
-		.code-row.active {
-			background: linear-gradient(90deg, rgba(13, 242, 89, 0.2), rgba(13, 242, 89, 0.05));
-			outline: 1px solid rgba(13, 242, 89, 0.35);
-			transform: translateX(3px);
-		}
-
-		.line-number { color: rgba(231, 251, 231, 0.45); text-align: right; }
-
-		.state-item {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			padding: 0.6rem 0.7rem;
-			border: 1px solid rgba(13, 242, 89, 0.14);
-			background: rgba(13, 242, 89, 0.05);
-			border-radius: 0.65rem;
-			font-family: 'Fira Code', monospace;
-			font-size: 0.85rem;
-			margin-bottom: 0.5rem;
-		}
-
-		.state-value {
-			font-size: 1.05rem;
-			font-weight: 700;
-			color: var(--while-primary);
-		}
-
-		.condition-true { color: var(--while-primary); }
-		.condition-false { color: var(--while-danger); }
-
-		.console-window {
-			background: rgba(4, 10, 14, 0.86);
-			border: 1px solid rgba(59, 130, 246, 0.35);
-			border-radius: 0.8rem;
-			overflow: hidden;
-		}
-
-		.console-head {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			padding: 0.5rem 0.75rem;
-			font-size: 0.72rem;
-			font-family: 'Fira Code', monospace;
-			background: rgba(59, 130, 246, 0.1);
-			border-bottom: 1px solid rgba(59, 130, 246, 0.28);
-		}
-
-		.console-body {
-			padding: 0.75rem;
-			font-family: 'Fira Code', monospace;
-			font-size: 0.83rem;
-			min-height: 160px;
-		}
-
-		.console-line {
-			opacity: 0;
-			transform: translateY(8px);
-			animation: log-in 0.45s ease forwards;
-			color: #d7e9ff;
-		}
-
-		@keyframes log-in {
-			to {
-				opacity: 1;
-				transform: translateY(0);
-			}
-		}
-
-		.controls {
-			margin-top: 1rem;
-			display: flex;
-			gap: 0.8rem;
-			align-items: center;
-			flex-wrap: wrap;
-		}
-
-		.btn {
-			border: 1px solid rgba(13, 242, 89, 0.35);
-			background: rgba(13, 242, 89, 0.1);
-			color: #e7fbe7;
-			padding: 0.6rem 1rem;
-			border-radius: 0.7rem;
-			font-weight: 600;
-			letter-spacing: 0.03em;
-			transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-		}
-
-		.btn:hover:not(:disabled) {
-			transform: translateY(-1px);
-			box-shadow: 0 0 18px rgba(13, 242, 89, 0.25);
-			background: rgba(13, 242, 89, 0.2);
-		}
-
-		.btn:disabled {
-			opacity: 0.4;
-			cursor: not-allowed;
-		}
-
-		.progress-track {
-			height: 0.55rem;
-			border-radius: 999px;
-			background: rgba(231, 251, 231, 0.12);
-			overflow: hidden;
-			margin-top: 0.8rem;
-		}
-
-		.progress-fill {
-			height: 100%;
-			width: 0%;
-			background: linear-gradient(90deg, var(--while-primary), var(--while-blue));
-			transition: width 0.25s ease;
-		}
-
-		.step-copy {
-			margin-top: 0.8rem;
-			padding: 0.8rem;
-			border-radius: 0.7rem;
-			border: 1px solid rgba(245, 158, 11, 0.25);
-			background: rgba(245, 158, 11, 0.08);
-		}
-
-		.footer-link {
-			display: inline-block;
-			margin-top: 1.5rem;
-			color: var(--while-primary);
-			text-decoration: none;
-			border-bottom: 1px dashed rgba(13, 242, 89, 0.4);
-		}
-	</style>
-
-	<div class="while-screen">
-		<main class="while-shell">
-			<header class="mb-6">
-				<p class="badge">{lang === 'en' ? 'while / interactive simulator' : 'while / simulador interactivo'}</p>
-				<h1 class="while-title mt-3">{lang === 'en' ? <>While loop<br/>step by step</> : <>Ciclo <code>while</code><br/>paso a paso</>}</h1>
-				<p class="while-subtitle mt-3">
-					{lang === 'en' ? <>Here you see EXACTLY which line runs, what value the variable holds, and what appears on the console.<br/>Press <strong>Next</strong> or <strong>Back</strong> and control each iteration yourself.</> : <>Acá vas a ver EXACTAMENTE qué línea se ejecuta, qué valor tiene la variable y qué aparece en consola.<br/>Tocá <strong>Avanzar</strong> o <strong>Retroceder</strong> y controlá vos cada iteración.</>}
-				</p>
-			</header>
-
-			<section class="while-grid" aria-live="polite">
-				<article class="card code-card">
-					<div class="code-header">
-						<strong>{lang === 'en' ? '1) Code being executed' : '1) Código que estamos ejecutando'}</strong>
-						<span class="badge" id="line-badge">{lang === 'en' ? 'Active line: 1' : 'Línea activa: 1'}</span>
-					</div>
-					<div class="code-panel">
-						<div class="code-row" data-line="1"><span class="line-number">1</span><span>int i = 1;</span></div>
-						<div class="code-row" data-line="2"><span class="line-number">2</span><span>while (i &lt;= 4) &#123;</span></div>
-						<div class="code-row" data-line="3"><span class="line-number">3</span><span>&nbsp;&nbsp;printf("Iteracion %d\n", i);</span></div>
-						<div class="code-row" data-line="4"><span class="line-number">4</span><span>&nbsp;&nbsp;i = i + 1;</span></div>
-						<div class="code-row" data-line="5"><span class="line-number">5</span><span>&#125;</span></div>
-						<div class="code-row" data-line="6"><span class="line-number">6</span><span>printf("Fin del ciclo\n");</span></div>
-					</div>
-
-					<div class="step-copy" id="step-copy">
-						<strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'Program starts and creates variable i with value 1.' : 'Arranca el programa y crea la variable <code>i</code>.'}
-					</div>
-
-					<div class="progress-track" aria-hidden="true">
-						<div class="progress-fill" id="progress-fill"></div>
-					</div>
-
-					<div class="controls">
-						<button class="btn" id="prev-btn" type="button">{lang === 'en' ? '⬅ Back' : '⬅ Retroceder'}</button>
-						<button class="btn" id="next-btn" type="button">{lang === 'en' ? 'Next ➡' : 'Avanzar ➡'}</button>
-						<span class="badge" id="step-badge">{lang === 'en' ? 'Step 1 / 12' : 'Paso 1 / 12'}</span>
-					</div>
-				</article>
-
-				<article class="card data-card">
-					<div class="panel-header">
-						<strong>{lang === 'en' ? '2) Internal state' : '2) Estado interno'}</strong>
-					</div>
-					<div class="state-item">
-						<span>{lang === 'en' ? 'Value of <code>i</code>' : 'Valor de <code>i</code>'}</span>
-						<span class="state-value" id="state-i">1</span>
-					</div>
-					<div class="state-item">
-						<span>{lang === 'en' ? 'Iterations executed' : 'Iteraciones ejecutadas'}</span>
-						<span class="state-value" id="state-iterations">0</span>
-					</div>
-					<div class="state-item">
-						<span>{lang === 'en' ? 'Result of <code>i &lt;= 4</code>' : 'Resultado de <code>i &lt;= 4</code>'}</span>
-						<span class="state-value" id="state-condition">-</span>
-					</div>
-				</article>
-
-				<article class="card console-card">
-					<div class="panel-header">
-						<strong>{lang === 'en' ? '3) Simulated console' : '3) Consola simulada'}</strong>
-					</div>
-					<div class="console-window">
-						<div class="console-head">
-							<span>./while-demo</span>
-							<span>stdout</span>
+			<div class="wh-viewport">
+				<div class="wh-slide active" data-slide="1">
+					<div class="wh-slide-grid">
+						<div class="wh-col">
+							<h2 class="wh-slide-title">1. {isEs ? 'Mecanismo del Ciclo While' : 'While Loop Mechanics'}</h2>
+							<p class="wh-text">
+								{isEs 
+									? 'El ciclo `while` es una estructura de control con pre-prueba. La condición se evalúa ANTES de cada iteración.'
+									: 'The `while` loop is a pre-tested control structure. The condition is evaluated BEFORE each iteration.'}
+							</p>
 						</div>
-						<div class="console-body" id="console-body"></div>
+						<div class="wh-col">
+							<div class="wh-card-box">
+								<div class="wh-card-head">{isEs ? 'PASOS DE EJECUCIÓN' : 'EXECUTION STEPS'}</div>
+								<div class="wh-cell"><span>1. Evaluar Condición</span><span class="wh-tag">¿Es True?</span></div>
+								<div class="wh-cell"><span>2. Ejecutar Cuerpo</span><span class="wh-tag">Iteración</span></div>
+								<div class="wh-cell"><span>3. Incrementar / Modificar</span><span class="wh-tag">Evita bucle infinito</span></div>
+							</div>
+						</div>
 					</div>
-				</article>
-			</section>
+				</div>
 
-			<a class="footer-link" href={withBase(lang === 'en' ? '/en/presentaciones' : '/presentaciones')}>
-				{lang === 'en' ? '← Back to all presentations' : '← Volver a todas las presentaciones'}
-			</a>
-		</main>
+				<div class="wh-slide" data-slide="2">
+					<div class="wh-slide-grid">
+						<div class="wh-col">
+							<h2 class="wh-slide-title">2. C: While Loop</h2>
+							<p class="wh-text">En C se inicializa la variable de control antes del `while` y se actualiza manualmente en el cuerpo.</p>
+						</div>
+						<div class="wh-col">
+							<div class="wh-code-card">
+								<div class="wh-code-title">while_demo.c</div>
+								<pre class="wh-code-block"><code><span class="token-type">int</span> i = <span class="token-number">1</span>;
+<span class="token-keyword">while</span> (i &lt;= <span class="token-number">3</span>) &#123;
+    printf(<span class="token-string">"i = %d\n"</span>, i);
+    i++; <span class="token-comment">// Incremento</span>
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="wh-slide" data-slide="3">
+					<div class="wh-slide-grid">
+						<div class="wh-col">
+							<h2 class="wh-slide-title">3. Java: Control de Bucle</h2>
+							<p class="wh-text">Java exige una condición booleana estricta. Soporta sentencias `break` y `continue` para alterar el flujo.</p>
+						</div>
+						<div class="wh-col">
+							<div class="wh-code-card">
+								<div class="wh-code-title">WhileTest.java</div>
+								<pre class="wh-code-block"><code><span class="token-type">int</span> count = <span class="token-number">0</span>;
+<span class="token-keyword">while</span> (count &lt; <span class="token-number">5</span>) &#123;
+    System.out.println(count);
+    count++;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="wh-slide" data-slide="4">
+					<div class="wh-slide-grid">
+						<div class="wh-col">
+							<h2 class="wh-slide-title">4. JavaScript: While e Iteración sobre Colecciones</h2>
+							<p class="wh-text">JS permite evaluar expresiones truthy/falsy en la condición del `while` para procesar arrays y colas.</p>
+						</div>
+						<div class="wh-col">
+							<div class="wh-code-card">
+								<div class="wh-code-title">while_demo.js</div>
+								<pre class="wh-code-block"><code><span class="token-keyword">const</span> queue = [<span class="token-string">"task1"</span>, <span class="token-string">"task2"</span>];
+<span class="token-keyword">while</span> (queue.length &gt; <span class="token-number">0</span>) &#123;
+    <span class="token-keyword">const</span> item = queue.shift();
+    console.log(item);
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="wh-slide" data-slide="5">
+					<div class="wh-slide-grid">
+						<div class="wh-col">
+							<h2 class="wh-slide-title">5. Python: While con cláusula Else</h2>
+							<p class="wh-text">Python soporta una cláusula opcional `else` en los ciclos `while` que se ejecuta al finalizar la condición sin `break`.</p>
+						</div>
+						<div class="wh-col">
+							<div class="wh-code-card">
+								<div class="wh-code-title">while_else.py</div>
+								<pre class="wh-code-block"><code>n = <span class="token-number">3</span>
+<span class="token-keyword">while</span> n &gt; <span class="token-number">0</span>:
+    print(n)
+    n -= <span class="token-number">1</span>
+<span class="token-keyword">else</span>:
+    print(<span class="token-string">"Bucle completado sin break"</span>)</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="wh-slide" data-slide="6">
+					<div class="wh-sim-container">
+						<h2 class="wh-slide-title center">{isEs ? '6. Simulador Interactivo Iteración por Iteración' : '6. Iteration Simulator'}</h2>
+						<p class="wh-sub center">{isEs ? 'Avanzá paso a paso en el ciclo while:' : 'Step through while loop iterations:'}</p>
+
+						<div class="wh-sim-console">
+							<div class="wh-sim-head"><span class="wh-console-label">While Trace: count &lt;= 3</span></div>
+							<div class="wh-sim-body">
+								<div class="wh-trace-step" id="wh-sim-step">Iteración 1: count=1. Condición (1 &lt;= 3) es TRUE ➔ Imprime y count++</div>
+								<div class="wh-stack-display" id="wh-sim-state">Estado actual: count = 2</div>
+							</div>
+							<div class="wh-sim-actions">
+								<button class="btn btn-primary" id="btn-next-wh-step">▶ {isEs ? 'Siguiente Iteración' : 'Next Iteration'}</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="wh-footer">
+				<button class="btn btn-secondary" id="btn-prev-wh" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="wh-footer-meta"><span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span></div>
+				<button class="btn btn-primary" id="btn-next-wh">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
 	</div>
+</div>
 
-	<script>
-		type Step = {
-			line: number;
-			message: { es: string; en: string };
-			iValue: number;
-			iterations: number;
-			condition: 'true' | 'false' | '-';
-			consoleLines: string[];
-		};
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+	.wh-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
+	.wh-shell { max-width: var(--container-max); margin: 0 auto; }
+	.wh-header { margin-bottom: 1.5rem; }
+	.wh-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
+	.wh-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.wh-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.wh-sub.center { text-align: center; }
+	.wh-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.wh-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.wh-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
+	.wh-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.wh-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+	.wh-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+	.wh-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.wh-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
+	.wh-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.wh-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.wh-slide.active { display: block; opacity: 1; transform: translateY(0); }
+	.wh-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+	.wh-col { grid-column: span 12; }
+	@media (min-width: 900px) { .wh-col { grid-column: span 6; } }
+	.wh-slide-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 400; color: var(--color-text); margin: 0 0 0.8rem; }
+	.wh-slide-title.center { text-align: center; }
+	.wh-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin-bottom: 1.2rem; }
+	.wh-card-box { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.wh-card-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; color: var(--color-accent-2-700); margin-bottom: 0.75rem; }
+	.wh-cell { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--color-divider); background: var(--color-surface); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+	.wh-tag { color: var(--color-accent-700); font-weight: 600; }
+	.wh-code-card { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.wh-code-title { background: #2b2722; color: #c0b6a5; padding: 0.4rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid #3a352e; }
+	.wh-code-block { margin: 0; padding: 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; color: #f9f4ed; overflow-x: auto; }
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.token-comment { color: #85929e; font-style: italic; }
+	.wh-sim-container { max-width: 800px; margin: 0 auto; }
+	.wh-sim-console { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-md); }
+	.wh-sim-head { background: #2b2722; padding: 0.5rem 0.8rem; }
+	.wh-console-label { color: #c0b6a5; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
+	.wh-sim-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.8rem; }
+	.wh-trace-step { font-size: 0.88rem; line-height: 1.5; color: #f9f4ed; background: #2a2520; padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); }
+	.wh-stack-display { font-family: 'Fira Code', monospace; font-size: 0.8rem; color: #76d7c4; background: #141210; padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); }
+	.wh-sim-actions { padding: 0.8rem 1rem; background: #25211d; display: flex; justify-content: flex-end; border-top: 1px solid #3a352e; }
+	.wh-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.wh-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>
 
-		const steps: Step[] = [
-			{ line: 1, message: { es: 'Paso 1: Arranca el programa y crea la variable i con valor 1.', en: 'Step 1: Program starts and creates variable i with value 1.' }, iValue: 1, iterations: 0, condition: '-', consoleLines: [] },
-			{ line: 2, message: { es: 'Paso 2: Evalua while (i <= 4). Como i vale 1, la condicion da true y entra al bloque.', en: 'Step 2: Evaluates while (i <= 4). Since i is 1, the condition is true and enters the block.' }, iValue: 1, iterations: 0, condition: 'true', consoleLines: [] },
-			{ line: 3, message: { es: 'Paso 3: Ejecuta printf para mostrar la iteracion actual.', en: 'Step 3: Executes printf to show the current iteration.' }, iValue: 1, iterations: 1, condition: 'true', consoleLines: ['Iteracion 1'] },
-			{ line: 4, message: { es: 'Paso 4: Incrementa i en 1. Ahora i vale 2.', en: 'Step 4: Increments i by 1. Now i is 2.' }, iValue: 2, iterations: 1, condition: 'true', consoleLines: ['Iteracion 1'] },
-			{ line: 2, message: { es: 'Paso 5: Vuelve al while. 2 <= 4, asi que true y repite.', en: 'Step 5: Goes back to while. 2 <= 4, so true and repeats.' }, iValue: 2, iterations: 1, condition: 'true', consoleLines: ['Iteracion 1'] },
-			{ line: 3, message: { es: 'Paso 6: Segunda vuelta: imprime en consola la iteracion 2.', en: 'Step 6: Second iteration: prints iteration 2 to console.' }, iValue: 2, iterations: 2, condition: 'true', consoleLines: ['Iteracion 1', 'Iteracion 2'] },
-			{ line: 4, message: { es: 'Paso 7: Suma 1 otra vez. i pasa a valer 3.', en: 'Step 7: Adds 1 again. i becomes 3.' }, iValue: 3, iterations: 2, condition: 'true', consoleLines: ['Iteracion 1', 'Iteracion 2'] },
-			{ line: 3, message: { es: 'Paso 8: Avance rapido al mismo patron: se imprime iteracion 3.', en: 'Step 8: Fast forward to the same pattern: prints iteration 3.' }, iValue: 3, iterations: 3, condition: 'true', consoleLines: ['Iteracion 1', 'Iteracion 2', 'Iteracion 3'] },
-			{ line: 4, message: { es: 'Paso 9: Incrementa de nuevo. i ahora vale 4.', en: 'Step 9: Increments again. i is now 4.' }, iValue: 4, iterations: 3, condition: 'true', consoleLines: ['Iteracion 1', 'Iteracion 2', 'Iteracion 3'] },
-			{ line: 3, message: { es: 'Paso 10: Ultima vez que entra: imprime iteracion 4.', en: 'Step 10: Last time entering: prints iteration 4.' }, iValue: 4, iterations: 4, condition: 'true', consoleLines: ['Iteracion 1', 'Iteracion 2', 'Iteracion 3', 'Iteracion 4'] },
-			{ line: 2, message: { es: 'Paso 11: i se incrementa a 5 y while evalua 5 <= 4. Da false, entonces sale del ciclo.', en: 'Step 11: i increments to 5 and while evaluates 5 <= 4. False, exits the loop.' }, iValue: 5, iterations: 4, condition: 'false', consoleLines: ['Iteracion 1', 'Iteracion 2', 'Iteracion 3', 'Iteracion 4'] },
-			{ line: 6, message: { es: 'Paso 12: Continua con lo que sigue fuera del while y muestra el mensaje final.', en: 'Step 12: Continues with what comes after the while and shows the final message.' }, iValue: 5, iterations: 4, condition: 'false', consoleLines: ['Iteracion 1', 'Iteracion 2', 'Iteracion 3', 'Iteracion 4', 'Fin del ciclo'] },
-		];
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
+	let whStep = 0;
 
-		let currentStep = 0;
+	const whSteps = [
+		{ step: 'Iteración 1: count=1. Condición (1 <= 3) es TRUE ➔ Imprime y count++', state: 'Estado actual: count = 2' },
+		{ step: 'Iteración 2: count=2. Condición (2 <= 3) es TRUE ➔ Imprime y count++', state: 'Estado actual: count = 3' },
+		{ step: 'Iteración 3: count=3. Condición (3 <= 3) es TRUE ➔ Imprime y count++', state: 'Estado actual: count = 4' },
+		{ step: 'Iteración 4: count=4. Condición (4 <= 3) es FALSE ➔ Salida del bucle', state: 'Bucle finalizado' }
+	];
 
-		const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
-		const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
-		const lineBadge = document.getElementById('line-badge') as HTMLElement;
-		const stepBadge = document.getElementById('step-badge') as HTMLElement;
-		const stepCopy = document.getElementById('step-copy') as HTMLElement;
-		const stateI = document.getElementById('state-i') as HTMLElement;
-		const stateIterations = document.getElementById('state-iterations') as HTMLElement;
-		const stateCondition = document.getElementById('state-condition') as HTMLElement;
-		const consoleBody = document.getElementById('console-body') as HTMLElement;
-		const progressFill = document.getElementById('progress-fill') as HTMLElement;
-
-		const isEnglish = document.documentElement.lang === 'en';
-
-		function renderStep(): void {
-			const step = steps[currentStep];
-
-			document.querySelectorAll<HTMLElement>('.code-row').forEach((row) => {
-				row.classList.toggle('active', Number(row.dataset.line) === step.line);
-			});
-
-			lineBadge.textContent = isEnglish ? `Active line: ${step.line}` : `Línea activa: ${step.line}`;
-			stepBadge.textContent = isEnglish ? `Step ${currentStep + 1} / ${steps.length}` : `Paso ${currentStep + 1} / ${steps.length}`;
-			stepCopy.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${step.message[isEnglish ? 'en' : 'es']}`;
-
-			stateI.textContent = String(step.iValue);
-			stateIterations.textContent = String(step.iterations);
-			stateCondition.textContent = step.condition;
-			stateCondition.classList.remove('condition-true', 'condition-false');
-			if (step.condition === 'true') stateCondition.classList.add('condition-true');
-			if (step.condition === 'false') stateCondition.classList.add('condition-false');
-
-			consoleBody.innerHTML = '';
-			step.consoleLines.forEach((line, index) => {
-				const entry = document.createElement('div');
-				entry.className = 'console-line';
-				entry.style.animationDelay = `${index * 80}ms`;
-				entry.textContent = `> ${line}`;
-				consoleBody.appendChild(entry);
-			});
-
-			progressFill.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
-			prevBtn.disabled = currentStep === 0;
-			nextBtn.disabled = currentStep === steps.length - 1;
-		}
-
-		prevBtn.addEventListener('click', () => {
-			if (currentStep > 0) {
-				currentStep -= 1;
-				renderStep();
-			}
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+		document.querySelectorAll('.wh-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
 		});
-
-		nextBtn.addEventListener('click', () => {
-			if (currentStep < steps.length - 1) {
-				currentStep += 1;
-				renderStep();
-			}
+		document.querySelectorAll('.wh-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
 		});
+		const labelEl = document.getElementById('wh-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+		const prevBtn = document.getElementById('btn-prev-wh') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-wh') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
 
-		document.addEventListener('keydown', (event: KeyboardEvent) => {
-			if (event.key === 'ArrowRight') nextBtn.click();
-			if (event.key === 'ArrowLeft') prevBtn.click();
+	document.querySelectorAll('.wh-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
 		});
+	});
 
-		renderStep();
-	</script>
+	document.getElementById('btn-prev-wh')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-wh')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
 
+	document.getElementById('btn-next-wh-step')?.addEventListener('click', () => {
+		whStep = (whStep + 1) % whSteps.length;
+		const stepEl = document.getElementById('wh-sim-step');
+		const stateEl = document.getElementById('wh-sim-state');
+		if (stepEl) stepEl.textContent = whSteps[whStep].step;
+		if (stateEl) stateEl.textContent = whSteps[whStep].state;
+	});
+
+	goToSlide(1);
+</script>

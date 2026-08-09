@@ -1,275 +1,454 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
-
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+const isEs = lang === 'es';
 ---
 
+<div class="fj-screen">
+	<div class="fj-shell">
+		<header class="fj-header">
+			<span class="fj-badge">{isEs ? 'Programación Estructurada & POO' : 'Structured & OOP'}</span>
+			<h1 class="fj-title">
+				{isEs ? 'Funciones, Procedimientos y Métodos' : 'Functions, Procedures & Methods'}
+			</h1>
+			<p class="fj-sub">
+				{isEs 
+					? 'Análisis comparativo de subprogramas en Java, C, JavaScript y Python.' 
+					: 'Comparative analysis of subprograms in Java, C, JavaScript, and Python.'}
+			</p>
+		</header>
 
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&display=swap');
-
-		:root {
-			--primary: #0df259;
-		}
-
-		html { scroll-behavior: smooth; }
-
-		.section {
-			min-height: 100vh;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding: 80px 24px 40px;
-		}
-
-		.section-inner {
-			width: 100%;
-			max-width: 1100px;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			gap: 0;
-		}
-
-		.section-hidden {
-			opacity: 0;
-			transform: translateY(60px);
-			transition: opacity 0.8s ease, transform 0.8s ease;
-		}
-
-		.section-visible {
-			opacity: 1;
-			transform: translateY(0);
-		}
-
-		.section-visible .section-hidden,
-		.section-visible .anim-item {
-			opacity: 1;
-			transform: translateY(0);
-		}
-
-		.slide-label {
-			font-family: 'Space Mono', monospace;
-			font-size: 0.65rem;
-			letter-spacing: 0.15em;
-			text-transform: uppercase;
-			color: rgba(13, 242, 89, 0.35);
-			margin-bottom: 1.5rem;
-		}
-
-		.intro-title {
-			font-family: 'VT323', monospace;
-			font-size: clamp(2rem, 6vw, 5rem);
-			text-shadow: 0 0 15px rgba(13, 242, 89, 0.7);
-			line-height: 1;
-			text-align: center;
-		}
-
-		.slide-h2 {
-			font-family: 'VT323', monospace;
-			font-size: clamp(1.4rem, 3.5vw, 2.5rem);
-			color: var(--primary);
-			margin: 0 0 1rem;
-			line-height: 1.1;
-			text-align: center;
-		}
-
-		.slide-text {
-			color: rgba(13, 242, 89, 0.75);
-			font-size: clamp(0.9rem, 2vw, 1.1rem);
-			text-align: center;
-			max-width: 72ch;
-			line-height: 1.6;
-			margin-bottom: 1.5rem;
-		}
-
-		.code-block {
-			background: rgba(0, 0, 0, 0.5);
-			border: 1px solid rgba(13, 242, 89, 0.2);
-			border-radius: 4px;
-			padding: 16px 20px;
-			font-family: 'Space Mono', monospace;
-			font-size: 0.85rem;
-			line-height: 1.7;
-			width: 100%;
-			max-width: 700px;
-		}
-
-		ul { list-style: none; padding: 0; text-align: center; }
-		ul li { padding: 0.4rem 0; font-size: clamp(0.85rem, 2vw, 1rem); }
-		ul li::before {
-			content: '>';
-			color: var(--primary);
-			margin-right: 0.5rem;
-			font-family: 'Space Mono', monospace;
-		}
-
-		code {
-			font-family: 'Space Mono', monospace;
-			font-size: 0.8em;
-			background: rgba(13, 242, 89, 0.08);
-			border: 1px solid rgba(13, 242, 89, 0.2);
-			border-radius: 3px;
-			padding: 1px 5px;
-			color: var(--primary);
-		}
-
-		.code-comment { color: rgba(13, 242, 89, 0.4); font-style: italic; }
-		.code-keyword { color: #61afef; }
-		.code-string { color: #e5c07b; }
-		.code-number { color: #d19a66; }
-		.code-result { color: var(--primary); }
-		.code-type { color: #e06c75; }
-		.code-class { color: #98c379; }
-
-		.footer-text {
-			font-size: clamp(0.8rem, 1.8vw, 0.95rem);
-			color: rgba(13, 242, 89, 0.45);
-			text-align: center;
-			max-width: 60ch;
-			line-height: 1.6;
-		}
-
-		@media (max-width: 768px) {
-			.section { padding: 60px 16px 32px; }
-		}
-	</style>
-
-	<div class="relative" style="background: radial-gradient(circle, #0a1a0a 0%, #050a05 100%);">
-		<main class="relative">
-
-			<section class="section section-visible">
-				<div class="section-inner">
-					<div class="slide-label">PROGRAMIERDS_OS // JAVA_SUBPROGRAMS</div>
-					<h1 class="intro-title">{lang === 'en' ? 'Subprograms' : 'Subprogramas'}</h1>
-					<p class="slide-text anim-item" style="--delay:0ms;">
-						{lang === 'en'
-							? 'In Java, subprograms are reusable blocks of code that perform a specific task. They are mainly classified into functions (return a value) and procedures (do not return a value, typically declared with void).'
-							: 'En Java, los subprogramas son bloques de código reutilizables que realizan una tarea concreta. Se clasifican principalmente en funciones (devuelven un valor) y procedimientos (no devuelven valor, suelen declararse con void).'}
-					</p>
+		<div class="fj-deck-card">
+			<div class="fj-nav-bar">
+				<div class="fj-slide-indicator">
+					<span class="fj-step-dot"></span>
+					<span id="fj-slide-label">SLIDE 1 / 6</span>
 				</div>
-			</section>
+				<div class="fj-pills">
+					<button class="fj-pill-btn active" data-target-slide="1">1. {isEs ? 'Paradigmas' : 'Paradigms'}</button>
+					<button class="fj-pill-btn" data-target-slide="2">2. {isEs ? 'Declaración' : 'Syntax'}</button>
+					<button class="fj-pill-btn" data-target-slide="3">3. {isEs ? 'Estático vs Instancia' : 'Static vs Instance'}</button>
+					<button class="fj-pill-btn" data-target-slide="4">4. {isEs ? 'Sobrecarga' : 'Overloading'}</button>
+					<button class="fj-pill-btn" data-target-slide="5">5. {isEs ? 'Retorno Múltiple' : 'Returns'}</button>
+					<button class="fj-pill-btn" data-target-slide="6">6. {isEs ? 'Playground' : 'Playground'}</button>
+				</div>
+			</div>
 
-			<section class="section section-visible">
-				<div class="section-inner">
-					<div class="slide-label">01 // {lang === 'en' ? 'BASIC STRUCTURE' : 'ESTRUCTURA BÁSICA'}</div>
-					<h2 class="slide-h2">{lang === 'en' ? '1. Basic Structure' : '1. Estructura básica'}</h2>
-					<p class="slide-text">{lang === 'en' ? 'General syntax of a function in Java:' : 'Sintaxis general de una función en Java:'}</p>
-					<div class="code-block">
-<pre><code><span class="code-type">tipoDeRetorno</span> <span class="code-class">nombreFuncion</span>(<span class="code-type">Tipo</span> parametro1, <span class="code-type">Tipo</span> parametro2) &lbrace;
-  // cuerpo del método
-  <span class="code-keyword">return</span> valor; <span class="code-comment">// solo si tipoDeRetorno no es void</span>
-&rbrace;</code></pre>
+			<div class="fj-viewport">
+				<!-- SLIDE 1: PARADIGMS -->
+				<div class="fj-slide active" data-slide="1">
+					<div class="fj-slide-grid">
+						<div class="fj-col">
+							<h2 class="fj-slide-title">1. {isEs ? 'Funciones Puras vs Procedimientos' : 'Pure Functions vs Procedures'}</h2>
+							<p class="fj-text">
+								{isEs 
+									? 'Un subprograma puede comportarse como una función pura (evalúa entrada y retorna resultado) o como un procedimiento (realiza acciones con efectos secundarios).'
+									: 'A subprogram can act as a pure function (evaluates inputs & returns result) or as a procedure (executes side-effect actions).'}
+							</p>
+							<div class="fj-concept-box">
+								<div class="fj-concept-item">
+									<strong class="fj-accent-text">{isEs ? 'Función Pura:' : 'Pure Function:'}</strong>
+									<span>{isEs ? 'Sin efectos secundarios. Mismo input produce siempre mismo output.' : 'Zero side effects. Same input always produces same output.'}</span>
+								</div>
+								<div class="fj-concept-item">
+									<strong class="fj-accent-text">{isEs ? 'Procedimiento (void):' : 'Procedure (void):'}</strong>
+									<span>{isEs ? 'Modifica estado externo, imprime pantalla o escribe bases de datos sin retornar valor.' : 'Mutates external state, prints UI, or writes DB without returning a value.'}</span>
+								</div>
+							</div>
+						</div>
+						<div class="fj-col">
+							<div class="fj-card-box">
+								<div class="fj-card-head">{isEs ? 'RETORNOS SEGÚN EL LENGUAJE' : 'RETURN TYPES BY LANGUAGE'}</div>
+								<div class="fj-cell"><span>Java / C</span><span class="fj-tag">void</span></div>
+								<div class="fj-cell"><span>JavaScript</span><span class="fj-tag">undefined</span></div>
+								<div class="fj-cell"><span>Python</span><span class="fj-tag">None</span></div>
+							</div>
+						</div>
 					</div>
 				</div>
-			</section>
 
-			<section class="section section-visible">
-				<div class="section-inner">
-					<div class="slide-label">02 // {lang === 'en' ? 'PROCEDURE' : 'PROCEDIMIENTO'}</div>
-					<h2 class="slide-h2">{lang === 'en' ? '2. Procedure (void method)' : '2. Procedimiento (método void)'}</h2>
-					<p class="slide-text">{lang === 'en' ? 'A procedure performs actions but does not return a value:' : 'Un procedimiento realiza acciones pero no devuelve un valor:'}</p>
-					<div class="code-block">
-<pre><code><span class="code-keyword">void</span> imprimirMensaje(<span class="code-type">String</span> msg) &lbrace;
-  System.out.println(msg);
-&rbrace;
-
-<span class="code-keyword">public static void</span> main(<span class="code-type">String[]</span> args) &lbrace;
-  imprimirMensaje(<span class="code-string">"Hola desde un procedimiento"</span>);
-&rbrace;</code></pre>
+				<!-- SLIDE 2: SYNTAX -->
+				<div class="fj-slide" data-slide="2">
+					<div class="fj-slide-grid">
+						<div class="fj-col">
+							<h2 class="fj-slide-title">2. {isEs ? 'Sintaxis y Modificadores' : 'Syntax & Access Modifiers'}</h2>
+							<ul class="fj-list">
+								<li><strong>Java:</strong> public static int sumar(int a, int b)</li>
+								<li><strong>C:</strong> int sumar(int a, int b)</li>
+								<li><strong>JavaScript:</strong> function sumar(a, b) / const sumar = (a, b) =&gt; a + b</li>
+								<li><strong>Python:</strong> def sumar(a: int, b: int) -&gt; int:</li>
+							</ul>
+						</div>
+						<div class="fj-col">
+							<div class="fj-code-card">
+								<div class="fj-code-title">Methods.java</div>
+								<pre class="fj-code-block"><code><span class="token-keyword">public class</span> Operaciones &#123;
+    <span class="token-comment">// Método de clase (Estático)</span>
+    <span class="token-keyword">public static int</span> multiplicar(<span class="token-type">int</span> x, <span class="token-type">int</span> y) &#123;
+        <span class="token-keyword">return</span> x * y;
+    &#125;
+    
+    <span class="token-comment">// Procedimiento (void)</span>
+    <span class="token-keyword">public static void</span> saludar(String nombre) &#123;
+        System.out.println(<span class="token-string">"Hola "</span> + nombre);
+    &#125;
+&#125;</code></pre>
+							</div>
+						</div>
 					</div>
 				</div>
-			</section>
 
-			<section class="section section-visible">
-				<div class="section-inner">
-					<div class="slide-label">03 // {lang === 'en' ? 'FUNCTION' : 'FUNCIÓN'}</div>
-					<h2 class="slide-h2">{lang === 'en' ? '3. Function (subprogram with return)' : '3. Función (subprograma con retorno)'}</h2>
-					<p class="slide-text">{lang === 'en' ? 'A function performs a calculation and returns a result:' : 'Una función realiza un cálculo y devuelve un resultado:'}</p>
-					<div class="code-block">
-<pre><code><span class="code-keyword">int</span> sumar(<span class="code-type">int</span> a, <span class="code-type">int</span> b) &lbrace;
-  <span class="code-keyword">return</span> a + b;
-&rbrace;
+				<!-- SLIDE 3: STATIC VS INSTANCE -->
+				<div class="fj-slide" data-slide="3">
+					<div class="fj-slide-grid">
+						<div class="fj-col">
+							<h2 class="fj-slide-title">3. {isEs ? 'Métodos Estáticos vs de Instancia' : 'Static vs Instance Methods'}</h2>
+							<div class="fj-concept-box">
+								<div class="fj-concept-item"><strong class="fj-accent-text">Estáticos (Class Methods):</strong> Pertencen a la clase. Se invocan sin instanciar (`Math.max()`).</div>
+								<div class="fj-concept-item"><strong class="fj-accent-text">De Instancia:</strong> Operan sobre el estado interno del objeto (`this` en Java/JS, `self` en Python).</div>
+							</div>
+						</div>
+						<div class="fj-col">
+							<div class="fj-code-card">
+								<div class="fj-code-title">Car.java</div>
+								<pre class="fj-code-block"><code><span class="token-keyword">public class</span> Car &#123;
+    <span class="token-keyword">private int</span> speed;
 
-<span class="code-keyword">public static void</span> main(<span class="code-type">String[]</span> args) &lbrace;
-  <span class="code-type">int</span> r = sumar(<span class="code-number">3</span>, <span class="code-number">5</span>);
-  System.out.println(<span class="code-string">"Suma: "</span> + r);
-&rbrace;</code></pre>
+    <span class="token-comment">// Método de instancia</span>
+    <span class="token-keyword">public void</span> accelerate(<span class="token-type">int</span> increment) &#123;
+        <span class="token-keyword">this</span>.speed += increment;
+    &#125;
+&#125;</code></pre>
+							</div>
+						</div>
 					</div>
 				</div>
-			</section>
 
-			<section class="section section-visible">
-				<div class="section-inner">
-					<div class="slide-label">04 // {lang === 'en' ? 'PARAMETERS' : 'PARÁMETROS'}</div>
-					<h2 class="slide-h2">{lang === 'en' ? '4. Parameters and Pass by Value' : '4. Parámetros y paso por valor'}</h2>
-					<p class="slide-text">{lang === 'en' ? 'In Java, primitive types are passed by value. To modify the original data, you use references or wrapper objects.' : 'En Java, los tipos primitivos se pasan por valor. Si querés modificar el dato original, usás referencias u objetos wrapper.'}</p>
-					<div class="code-block">
-<pre><code><span class="code-keyword">void</span> incrementar(<span class="code-type">int</span> n) &lbrace;
-  n = n + <span class="code-number">1</span>; <span class="code-comment">// solo modifica la copia local</span>
-&rbrace;
+				<!-- SLIDE 4: OVERLOADING -->
+				<div class="fj-slide" data-slide="4">
+					<div class="fj-slide-grid">
+						<div class="fj-col">
+							<h2 class="fj-slide-title">4. {isEs ? 'Sobrecarga y Parámetros por Defecto' : 'Overloading & Default Params'}</h2>
+							<p class="fj-text">
+								{isEs 
+									? 'Java resuelve sobrecarga en compilación por tipos de parámetros. JS y Python usan parámetros por defecto y variádicos (*args, ...rest).'
+									: 'Java resolves overloading at compile time by parameter types. JS and Python use default & variadic params.'}
+							</p>
+						</div>
+						<div class="fj-col">
+							<div class="fj-code-card">
+								<div class="fj-code-title">default_params.py</div>
+								<pre class="fj-code-block"><code><span class="token-keyword">def</span> saludar(nombre, mensaje=<span class="token-string">"Bienvenido"</span>):
+    <span class="token-keyword">return</span> f<span class="token-string">"&#123;mensaje&#125;, &#123;nombre&#125;!"</span>
 
-<span class="code-keyword">void</span> incrementarReal(<span class="code-type">int[]</span> n) &lbrace;
-  n[<span class="code-number">0</span>] = n[<span class="code-number">0</span>] + <span class="code-number">1</span>; <span class="code-comment">// modifica el original via referencia</span>
-&rbrace;</code></pre>
+print(saludar(<span class="token-string">"Ana"</span>)) <span class="token-comment"># Bienvenido, Ana!</span>
+print(saludar(<span class="token-string">"Ana"</span>, <span class="token-string">"Hola"</span>)) <span class="token-comment"># Hola, Ana!</span></code></pre>
+							</div>
+						</div>
 					</div>
 				</div>
-			</section>
 
-			<section class="section section-visible">
-				<div class="section-inner">
-					<div class="slide-label">05 // {lang === 'en' ? 'BEST PRACTICES' : 'BUENAS PRÁCTICAS'}</div>
-					<h2 class="slide-h2">{lang === 'en' ? '5. Best Practices' : '5. Buenas prácticas'}</h2>
-					<ul>
-						<li>{lang === 'en' ? 'Name methods with descriptive verbs:' : 'Nombrar métodos con verbos descriptivos:'} <code>calcularTotal</code>, <code>imprimirReporte</code>.</li>
-						<li>{lang === 'en' ? 'Prefer small methods with a single responsibility.' : 'Preferir métodos pequeños y con una sola responsabilidad.'}</li>
-						<li>{lang === 'en' ? 'Document parameters and return values with clear comments.' : 'Documentar parámetros y valores de retorno con comentarios claros.'}</li>
-						<li>{lang === 'en' ? 'Use final when you don\'t want the function to alter the received data.' : 'Usar final cuando no querés que la función altere el dato recibido.'}</li>
-					</ul>
-				</div>
-			</section>
+				<!-- SLIDE 5: MULTIPLE RETURNS -->
+				<div class="fj-slide" data-slide="5">
+					<div class="fj-slide-grid">
+						<div class="fj-col">
+							<h2 class="fj-slide-title">5. {isEs ? 'Retornos Múltiples y Tuplas' : 'Multiple Returns & Tuples'}</h2>
+							<p class="pv-text">
+								{isEs 
+									? 'En C y Java una función solo retorna un único valor primitivo u objeto. Python y JS permiten desestructurar tuplas y arreglos.'
+									: 'C and Java functions return a single value/object. Python and JS allow tuple/array destructuring.'}
+							</p>
+						</div>
+						<div class="fj-col">
+							<div class="fj-code-card">
+								<div class="fj-code-title">destructure.js</div>
+								<pre class="fj-code-block"><code><span class="token-comment">// Retorno de múltiples valores mediante desestructuración</span>
+<span class="token-keyword">function</span> getCoords() &#123;
+    <span class="token-keyword">return</span> [<span class="token-number">10.5</span>, <span class="token-number">40.2</span>];
+&#125;
 
-			<section class="section section-visible">
-				<div class="section-inner">
-					<div class="slide-label">06 // {lang === 'en' ? 'COMPLETE EXAMPLE' : 'EJEMPLO COMPLETO'}</div>
-					<h2 class="slide-h2">{lang === 'en' ? '6. Complete Example' : '6. Ejemplo completo'}</h2>
-					<div class="code-block">
-<pre><code><span class="code-keyword">public class</span> Ejemplo &lbrace;
-  <span class="code-keyword">static void</span> imprimirBienvenida() &lbrace;
-    System.out.println(<span class="code-string">"Bienvenido a Programierds"</span>);
-  &rbrace;
-
-  <span class="code-keyword">static int</span> multiplicar(<span class="code-type">int</span> x, <span class="code-type">int</span> y) &lbrace;
-    <span class="code-keyword">return</span> x * y;
-  &rbrace;
-
-  <span class="code-keyword">public static void</span> main(<span class="code-type">String[]</span> args) &lbrace;
-    imprimirBienvenida();
-    <span class="code-type">int</span> res = multiplicar(<span class="code-number">6</span>, <span class="code-number">7</span>);
-    System.out.println(<span class="code-string">"6 * 7 = "</span> + res);
-  &rbrace;
-&rbrace;</code></pre>
+<span class="token-keyword">const</span> [lat, lng] = getCoords();</code></pre>
+							</div>
+						</div>
 					</div>
 				</div>
-			</section>
 
-			<section class="section section-visible">
-				<div class="section-inner">
-					<div class="slide-label">END // {lang === 'en' ? 'MORE RESOURCES' : 'MÁS RECURSOS'}</div>
-					<p class="footer-text">
-						{lang === 'en'
-							? 'More resources: check the presentation "Pass by Value and Pointers in C" for memory examples and calls between subprograms.'
-							: 'Más recursos: consulta la presentación "Paso por Valor y Punteros en C" para ejemplos de memoria y llamadas entre subprogramas.'}
-					</p>
+				<!-- SLIDE 6: PLAYGROUND -->
+				<div class="fj-slide" data-slide="6">
+					<div class="fj-sim-container">
+						<h2 class="fj-slide-title center">{isEs ? '6. Playground Interactivo de Métodos' : '6. Interactive Method Playground'}</h2>
+						<p class="fj-sub center">{isEs ? 'Seleccioná un patrón de subprograma para evaluar en los 4 lenguajes:' : 'Select a subprogram pattern to evaluate across languages:'}</p>
+
+						<div class="fj-sim-selector">
+							<button class="fj-pat-btn active" data-pat="pure">Función Pura (Suma)</button>
+							<button class="fj-pat-btn" data-pat="proc">Procedimiento (Void Log)</button>
+							<button class="fj-pat-btn" data-pat="overload">Sobrecarga / Default</button>
+						</div>
+
+						<div class="fj-playground-grid">
+							<div class="fj-lang-box">
+								<span class="fj-lang-name">Java</span>
+								<pre class="fj-code-small" id="pat-java">public static int add(int a, int b) &#123; return a + b; &#125;</pre>
+							</div>
+							<div class="fj-lang-box">
+								<span class="fj-lang-name">C</span>
+								<pre class="fj-code-small" id="pat-c">int add(int a, int b) &#123; return a + b; &#125;</pre>
+							</div>
+							<div class="fj-lang-box">
+								<span class="fj-lang-name">JavaScript</span>
+								<pre class="fj-code-small" id="pat-js">const add = (a, b) =&gt; a + b;</pre>
+							</div>
+							<div class="fj-lang-box">
+								<span class="fj-lang-name">Python</span>
+								<pre class="fj-code-small" id="pat-py">def add(a: int, b: int) -&gt; int: return a + b</pre>
+							</div>
+						</div>
+					</div>
 				</div>
-			</section>
+			</div>
 
-		</main>
+			<div class="fj-footer">
+				<button class="btn btn-secondary" id="btn-prev-fj" disabled>
+					← {isEs ? 'Anterior' : 'Previous'}
+				</button>
+				<div class="fj-footer-meta">
+					<span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span>
+				</div>
+				<button class="btn btn-primary" id="btn-next-fj">
+					{isEs ? 'Siguiente' : 'Next'} →
+				</button>
+			</div>
+		</div>
 	</div>
+</div>
 
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+
+	.fj-screen {
+		min-height: 80vh;
+		font-family: var(--font-body);
+		color: var(--color-text);
+		padding: 1.5rem 1rem 4rem;
+	}
+
+	.fj-shell { max-width: var(--container-max); margin: 0 auto; }
+	.fj-header { margin-bottom: 1.5rem; }
+
+	.fj-badge {
+		display: inline-flex;
+		align-items: center;
+		border: 1px solid var(--color-accent-2-300);
+		background: var(--color-accent-2-100);
+		color: var(--color-accent-2-700);
+		border-radius: 999px;
+		padding: 0.25rem 0.8rem;
+		font-size: 0.75rem;
+		font-family: 'Fira Code', monospace;
+		font-weight: 600;
+	}
+
+	.fj-title {
+		font-family: var(--font-heading);
+		font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+		font-weight: 400;
+		line-height: 1.15;
+		color: var(--color-text);
+		margin: 0.5rem 0 0.25rem;
+	}
+
+	.fj-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.fj-sub.center { text-align: center; }
+
+	.fj-deck-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+	}
+
+	.fj-nav-bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.8rem;
+		padding: 0.8rem 1.2rem;
+		border-bottom: 1px solid var(--color-divider);
+		background: color-mix(in srgb, var(--color-bg) 60%, transparent);
+	}
+
+	.fj-slide-indicator {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-family: 'Fira Code', monospace;
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	.fj-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.fj-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+	.fj-pill-btn {
+		border: 1px solid var(--color-divider);
+		background: var(--color-bg);
+		color: var(--color-text);
+		border-radius: 999px;
+		padding: 0.3rem 0.75rem;
+		font-size: 0.78rem;
+		font-family: var(--font-body);
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.fj-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.fj-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
+
+	.fj-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.fj-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.fj-slide.active { display: block; opacity: 1; transform: translateY(0); }
+
+	.fj-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+	.fj-col { grid-column: span 12; }
+	@media (min-width: 900px) { .fj-col { grid-column: span 6; } }
+
+	.fj-slide-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 400; color: var(--color-text); margin: 0 0 0.8rem; }
+	.fj-slide-title.center { text-align: center; }
+
+	.fj-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin-bottom: 1.2rem; }
+	.fj-concept-box { display: flex; flex-direction: column; gap: 0.6rem; }
+	.fj-concept-item { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 0.65rem 0.9rem; font-size: 0.88rem; line-height: 1.5; }
+	.fj-accent-text { color: var(--color-accent-700); }
+
+	.fj-list { padding-left: 1.2rem; margin: 0 0 1.2rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem; }
+
+	.fj-card-box { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.fj-card-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; color: var(--color-accent-2-700); margin-bottom: 0.75rem; }
+	.fj-cell { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--color-divider); background: var(--color-surface); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+	.fj-tag { color: var(--color-accent-700); font-weight: 600; }
+
+	.fj-code-card { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.fj-code-title { background: #2b2722; color: #c0b6a5; padding: 0.4rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid #3a352e; }
+	.fj-code-block { margin: 0; padding: 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; color: #f9f4ed; overflow-x: auto; }
+
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.token-comment { color: #85929e; font-style: italic; }
+
+	/* Simulator */
+	.fj-sim-container { max-width: 800px; margin: 0 auto; }
+	.fj-sim-selector { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+	.fj-pat-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.35rem 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+	.fj-pat-btn:hover { background: var(--color-accent-100); color: var(--color-accent-700); }
+	.fj-pat-btn.active { background: var(--color-accent-700); border-color: var(--color-accent-700); color: #ffffff; }
+
+	.fj-playground-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+	@media (max-width: 600px) { .fj-playground-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); } }
+
+	.fj-lang-box { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 0.8rem; }
+	.fj-lang-name { font-family: 'Fira Code', monospace; font-size: 0.75rem; font-weight: 700; color: #e59866; display: block; margin-bottom: 0.4rem; }
+	.fj-code-small { font-family: 'Fira Code', monospace; font-size: 0.78rem; color: #f9f4ed; background: #141210; padding: 0.5rem 0.7rem; border-radius: var(--radius-sm); margin: 0; white-space: pre-wrap; }
+
+	.fj-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.fj-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
+
+	const patternData = {
+		pure: {
+			java: 'public static int add(int a, int b) { return a + b; }',
+			c: 'int add(int a, int b) { return a + b; }',
+			js: 'const add = (a, b) => a + b;',
+			py: 'def add(a: int, b: int) -> int: return a + b'
+		},
+		proc: {
+			java: 'public static void log(String msg) { System.out.println(msg); }',
+			c: 'void log(const char *msg) { printf("%s\\n", msg); }',
+			js: 'function log(msg) { console.log(msg); }',
+			py: 'def log(msg: str) -> None: print(msg)'
+		},
+		overload: {
+			java: 'public int add(int a) { ... }\npublic int add(int a, int b) { ... }',
+			c: '// No nativo en C (requiere nombres distintos)',
+			js: 'function add(a, b = 0) { return a + b; }',
+			py: 'def add(a: int, b: int = 0) -> int: return a + b'
+		}
+	};
+
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+
+		document.querySelectorAll('.fj-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
+		});
+
+		document.querySelectorAll('.fj-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
+		});
+
+		const labelEl = document.getElementById('fj-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+
+		const prevBtn = document.getElementById('btn-prev-fj') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-fj') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
+
+	document.querySelectorAll('.fj-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
+		});
+	});
+
+	document.getElementById('btn-prev-fj')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-fj')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
+
+	document.querySelectorAll('.fj-pat-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			document.querySelectorAll('.fj-pat-btn').forEach(b => b.classList.remove('active'));
+			const targetBtn = e.currentTarget as HTMLElement;
+			targetBtn.classList.add('active');
+
+			const patKey = targetBtn.dataset.pat as keyof typeof patternData;
+			const data = patternData[patKey];
+			if (data) {
+				const patJava = document.getElementById('pat-java');
+				const patC = document.getElementById('pat-c');
+				const patJs = document.getElementById('pat-js');
+				const patPy = document.getElementById('pat-py');
+
+				if (patJava) patJava.textContent = data.java;
+				if (patC) patC.textContent = data.c;
+				if (patJs) patJs.textContent = data.js;
+				if (patPy) patPy.textContent = data.py;
+			}
+		});
+	});
+
+	goToSlide(1);
+</script>

@@ -63,7 +63,7 @@ const lessons = getLessonsForCourse(allLessons, courseSlug, 'en');
 
 		<section class="lessons-section">
 			<h2 class="lessons-heading">{t('courses.lessonsLabel')} ({lessons.length})</h2>
-			<LessonsList lessons={lessons.map((l) => l.data)} courseSlug={courseSlug} locale="en" />
+			<LessonsList lessons={lessons.map((l) => l.data)} courseSlug={courseSlug} locale="en" variant="cards" />
 		</section>
 	</div>
 </BaseLayout>

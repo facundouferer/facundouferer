@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import Icon from '../../../components/Icon.astro';
 import { useTranslations, type Locale } from '../../../i18n/utils';
 import { categories, presentations } from '../../../data/presentations';
 import { withBase } from '../../../utils/withBase';
@@ -24,115 +23,256 @@ const t = useTranslations(lang);
 	enPath="/en/presentaciones"
 	canonicalPath={lang === 'en' ? '/en/presentaciones' : '/presentaciones'}
 >
-	<style>
-		.glow-card {
-			box-shadow: 0 0 20px rgba(13, 242, 89, 0.05), inset 0 0 10px rgba(13, 242, 89, 0.05);
-			transition: all 0.3s ease;
-		}
-		.glow-card:hover {
-			box-shadow: 0 0 30px rgba(13, 242, 89, 0.25), inset 0 0 15px rgba(13, 242, 89, 0.1);
-			transform: translateY(-2px);
-		}
-	</style>
+	<section class="section">
+		<div class="container">
+			<header class="page-header">
+				<h1 class="section-title">
+					{t('presentations.index.title')}
+				</h1>
+				<p class="section-subtitle">
+					{lang === 'en'
+						? 'Interactive step-by-step visualizers for algorithms, structures, and languages.'
+						: 'Visualizaciones interactivas paso a paso de algoritmos, estructuras de datos y conceptos.'}
+				</p>
+			</header>
 
-	<div class="relative flex min-h-screen flex-col overflow-x-hidden">
-		<main class="flex-1 flex flex-col lg:flex-row mx-auto w-full relative z-10 max-w-7xl">
-			<aside class="hidden lg:block w-72 shrink-0 border-r border-emerald-500/10 p-8 bg-zinc-950/50">
-				<div class="sticky top-24 space-y-12">
-					<div>
-						<h3 class="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-emerald-400/60 mb-6 flex items-center gap-2">
-							<Icon name="description" class="w-4 h-4" />
-							{lang === 'en' ? 'DIRECTORIES' : 'DIRECTORIOS'}
-						</h3>
-						<ul class="space-y-2 font-mono text-sm" id="filter-list">
-							{categories.map((cat) => (
-								<li>
-									<button
-										data-filter={cat.filter}
-										class:list={[
-											'filter-btn flex items-center gap-3 px-3 py-2 rounded-md w-full text-left transition-all',
-											cat.filter === 'all'
-												? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-												: 'text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/5',
-										]}
-									>
-										<Icon name="description" class="w-5 h-5" />
-										{lang === 'en' ? cat.label.en : cat.label.es}
-									</button>
-								</li>
-							))}
-						</ul>
-					</div>
-				</div>
-			</aside>
-
-			<section class="flex-1 p-8 lg:p-12">
-				<header class="mb-12">
-					<h1 class="text-4xl lg:text-5xl font-black text-white mb-3">
-						{t('presentations.index.title')}
-					</h1>
-					<p class="text-zinc-400 text-lg font-mono">
-						{lang === 'en'
-							? 'Interactive step-by-step visualizers for algorithms, structures, and languages.'
-							: 'Visualizaciones interactivas paso a paso de algoritmos, estructuras de datos y conceptos.'}
-					</p>
-				</header>
-
-				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="cards-grid">
-					{presentations.map((pres) => (
-						<a
-							class="group flex flex-col bg-zinc-950 border border-emerald-500/30 rounded-lg overflow-hidden glow-card focus:outline-none focus:ring-2 focus:ring-emerald-400/60"
-							href={withBase(lang === 'en' ? `/en/presentaciones/${pres.slug}` : `/presentaciones/${pres.slug}`)}
-							data-tag={lang === 'en' ? pres.tag.en : pres.tag.es}
-						>
-							<div class="bg-zinc-900/80 px-4 py-2 flex items-center justify-between border-b border-emerald-500/20">
-								<div class="flex items-center gap-1.5">
-									<div class="size-2.5 rounded-full bg-red-500/50"></div>
-									<div class="size-2.5 rounded-full bg-yellow-500/50"></div>
-									<div class="size-2.5 rounded-full bg-green-500/50"></div>
-								</div>
-								<span class="font-mono text-[10px] text-emerald-400/60 tracking-wider">{pres.file}</span>
-							</div>
-							<div class="p-6 flex flex-col h-full">
-								<div class="mb-4">
-									<span class={`font-mono text-[10px] uppercase px-2 py-0.5 rounded border ${pres.tagClass}`}>
-										{lang === 'en' ? pres.tag.en : pres.tag.es}
-									</span>
-								</div>
-								<h3 class="font-mono text-lg font-bold text-white mb-4 group-hover:text-emerald-400 transition-colors">
-									{lang === 'en' ? pres.title.en : pres.title.es}
-								</h3>
-								<p class="text-sm text-zinc-300 font-mono leading-relaxed flex-1">
-									{lang === 'en' ? pres.description.en : pres.description.es}
-								</p>
-								<div class="mt-6 flex items-center justify-end border-t border-emerald-500/10 pt-4">
-									<span class="font-mono text-xs font-bold text-emerald-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-										[ {t('presentations.card.open').toUpperCase()} ]
-									</span>
-								</div>
-							</div>
-						</a>
+			<div class="category-filter-bar">
+				<ul class="filter-pills" id="filter-list">
+					{categories.map((cat) => (
+						<li>
+							<button
+								data-filter={cat.filter}
+								class:list={[
+									'filter-pill',
+									cat.filter === 'all' && 'is-active',
+								]}
+							>
+								{lang === 'en' ? cat.label.en : cat.label.es}
+							</button>
+						</li>
 					))}
-				</div>
-			</section>
-		</main>
-	</div>
+				</ul>
+			</div>
+
+			<main class="presentations-grid" id="cards-grid">
+				{presentations.map((pres) => (
+					<a
+						class="presentation-card card card-hover elev-sm"
+						href={withBase(lang === 'en' ? `/en/presentaciones/${pres.slug}` : `/presentaciones/${pres.slug}`)}
+						data-tag={lang === 'en' ? pres.tag.en : pres.tag.es}
+					>
+						<div class="card-header-bar">
+							<div class="mac-dots">
+								<div class="mac-dot mac-dot-red"></div>
+								<div class="mac-dot mac-dot-yellow"></div>
+								<div class="mac-dot mac-dot-green"></div>
+							</div>
+							<span class="file-name">{pres.file}</span>
+						</div>
+						<div class="card-image-wrap">
+							<img src={withBase(pres.image)} alt={lang === 'en' ? pres.title.en : pres.title.es} class="card-image" loading="lazy" />
+						</div>
+						<div class="card-content">
+							<span class="card-tag">
+								{lang === 'en' ? pres.tag.en : pres.tag.es}
+							</span>
+							<h3 class="card-title">
+								{lang === 'en' ? pres.title.en : pres.title.es}
+							</h3>
+							<p class="card-body">
+								{lang === 'en' ? pres.description.en : pres.description.es}
+							</p>
+							<div class="card-footer">
+								<span class="open-action">
+									[ {t('presentations.card.open').toUpperCase()} → ]
+								</span>
+							</div>
+						</div>
+					</a>
+				))}
+			</main>
+		</div>
+	</section>
 
 	<script>
-		const ACTIVE_CLASS = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-		const INACTIVE_CLASS = 'text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/5';
-
-		document.querySelectorAll<HTMLButtonElement>('.filter-btn').forEach((btn) => {
+		document.querySelectorAll<HTMLButtonElement>('.filter-pill').forEach((btn) => {
 			btn.addEventListener('click', () => {
 				const filter = btn.dataset.filter!;
-				document.querySelectorAll<HTMLButtonElement>('.filter-btn').forEach((b) => {
-					b.className = `filter-btn flex items-center gap-3 px-3 py-2 rounded-md w-full text-left transition-all ${INACTIVE_CLASS}`;
+				document.querySelectorAll<HTMLButtonElement>('.filter-pill').forEach((b) => {
+					b.classList.remove('is-active');
 				});
-				btn.className = `filter-btn flex items-center gap-3 px-3 py-2 rounded-md w-full text-left transition-all ${ACTIVE_CLASS}`;
+				btn.classList.add('is-active');
 				document.querySelectorAll<HTMLElement>('#cards-grid > [data-tag]').forEach((card) => {
 					card.style.display = filter === 'all' || card.dataset.tag === filter ? '' : 'none';
 				});
 			});
 		});
 	</script>
+
+	<style>
+		.page-header {
+			margin-bottom: var(--space-4);
+		}
+
+		.category-filter-bar {
+			margin-bottom: var(--space-6);
+		}
+
+		.filter-pills {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.5rem;
+		}
+
+		.filter-pill {
+			display: inline-flex;
+			align-items: center;
+			padding: 0.4rem 1rem;
+			border-radius: 999px;
+			border: 1px solid var(--color-divider);
+			background: var(--color-surface);
+			color: var(--color-text);
+			font-family: var(--font-body);
+			font-size: 0.85rem;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.2s ease;
+		}
+
+		.filter-pill:hover {
+			background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+			color: var(--color-accent-700);
+			border-color: var(--color-accent-300);
+		}
+
+		.filter-pill.is-active {
+			background: var(--color-accent);
+			color: var(--color-bg);
+			border-color: var(--color-accent);
+		}
+
+		.presentations-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: var(--space-4);
+		}
+
+		.presentation-card {
+			display: flex;
+			flex-direction: column;
+			text-decoration: none;
+			color: inherit;
+			overflow: hidden;
+			padding: 0;
+		}
+
+		.card-header-bar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0.5rem 0.75rem;
+			background: color-mix(in srgb, var(--color-text) 5%, transparent);
+			border-bottom: 1px solid var(--color-divider);
+			font-family: monospace;
+			font-size: 0.75rem;
+			color: color-mix(in srgb, var(--color-text) 60%, transparent);
+		}
+
+		.mac-dots {
+			display: flex;
+			gap: 5px;
+		}
+
+		.mac-dot {
+			width: 8px;
+			height: 8px;
+			border-radius: 50%;
+		}
+		.mac-dot-red { background: #ef4444; opacity: 0.7; }
+		.mac-dot-yellow { background: #f59e0b; opacity: 0.7; }
+		.mac-dot-green { background: #10b981; opacity: 0.7; }
+
+		.card-image-wrap {
+			width: 100%;
+			height: 140px;
+			background: var(--color-surface);
+			border-bottom: 1px solid var(--color-divider);
+			overflow: hidden;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.card-image {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			transition: transform 0.3s ease;
+		}
+
+		.presentation-card:hover .card-image {
+			transform: scale(1.04);
+		}
+
+		.card-content {
+			padding: var(--space-4);
+			display: flex;
+			flex-direction: column;
+			flex: 1;
+			gap: var(--space-2);
+		}
+
+		.card-tag {
+			align-self: flex-start;
+			font-size: 0.7rem;
+			font-family: monospace;
+			text-transform: uppercase;
+			padding: 2px 8px;
+			border-radius: var(--radius-sm);
+			background: var(--color-accent-100);
+			color: var(--color-accent-800);
+			border: 1px solid var(--color-accent-200);
+		}
+
+		.presentation-card .card-title {
+			margin: 0;
+			font-size: 1.15rem;
+			transition: color 0.2s ease;
+		}
+
+		.presentation-card:hover .card-title {
+			color: var(--color-accent-700);
+		}
+
+		.presentation-card .card-body {
+			font-size: 0.875rem;
+			margin: 0;
+			flex: 1;
+			line-height: 1.5;
+			color: color-mix(in srgb, var(--color-text) 75%, transparent);
+		}
+
+		.card-footer {
+			display: flex;
+			justify-content: flex-end;
+			padding-top: var(--space-2);
+			margin-top: var(--space-2);
+			border-top: 1px solid var(--color-divider);
+		}
+
+		.open-action {
+			font-family: monospace;
+			font-size: 0.8rem;
+			font-weight: 700;
+			color: var(--color-accent-700);
+			transition: transform 0.2s ease;
+		}
+
+		.presentation-card:hover .open-action {
+			transform: translateX(4px);
+		}
+	</style>
 </BaseLayout>

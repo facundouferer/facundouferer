@@ -1,531 +1,263 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
-
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+const isEs = lang === 'es';
 ---
 
+<div class="ss-screen">
+	<div class="ss-shell">
+		<header class="ss-header">
+			<span class="ss-badge">{isEs ? 'Algoritmos de Ordenamiento' : 'Sorting Algorithms'}</span>
+			<h1 class="ss-title">
+				{isEs ? 'Selection Sort (Selección) Paso a Paso' : 'Selection Sort Step by Step'}
+			</h1>
+			<p class="ss-sub">
+				{isEs 
+					? 'Búsqueda del mínimo, intercambios mínimos (N-1) en C, Java, JavaScript y Python.' 
+					: 'Minimum element lookup, minimal swaps (N-1) in C, Java, JS, and Python.'}
+			</p>
+		</header>
 
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
-
-		.selection-screen {
-			--sel-bg: #061016;
-			--sel-surface: #0c1c24;
-			--sel-panel: #102833;
-			--sel-primary: #0df259;
-			--sel-blue: #3b82f6;
-			--sel-amber: #f59e0b;
-			--sel-danger: #ef4444;
-			--sel-sorted: #a855f7;
-			--sel-min: #06b6d4;
-			min-height: 100vh;
-			font-family: 'Chakra Petch', sans-serif;
-			background:
-				radial-gradient(circle at 10% 10%, rgba(13, 242, 89, 0.12), transparent 45%),
-				radial-gradient(circle at 85% 20%, rgba(59, 130, 246, 0.14), transparent 40%),
-				linear-gradient(135deg, #050b11 0%, var(--sel-bg) 100%);
-			color: #e7fbe7;
-		}
-
-		.sel-shell {
-			max-width: 1200px;
-			margin: 0 auto;
-			padding: 2.5rem 1rem 3rem;
-		}
-
-		.sel-title {
-			font-size: clamp(1.5rem, 3vw, 2.2rem);
-			line-height: 1.05;
-			font-weight: 700;
-			letter-spacing: 0.02em;
-			text-shadow: 0 0 30px rgba(13, 242, 89, 0.28);
-		}
-
-		.sel-subtitle {
-			max-width: 64ch;
-			font-size: 1rem;
-			color: rgba(231, 251, 231, 0.82);
-		}
-
-		.sel-grid {
-			display: grid;
-			gap: 1rem;
-			grid-template-columns: repeat(12, minmax(0, 1fr));
-		}
-
-		.card {
-			background: linear-gradient(160deg, rgba(16, 40, 51, 0.9), rgba(8, 20, 26, 0.86));
-			border: 1px solid rgba(13, 242, 89, 0.18);
-			border-radius: 1rem;
-			box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28);
-			padding: 1.25rem;
-		}
-
-		.code-card { grid-column: span 12; }
-		.visual-card { grid-column: span 12; }
-		
-		@media (min-width: 1024px) {
-			.code-card { grid-column: span 6; }
-			.visual-card { grid-column: span 6; }
-		}
-
-		.panel-header {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			margin-bottom: 1rem;
-		}
-
-		.badge {
-			display: inline-flex;
-			align-items: center;
-			border: 1px solid rgba(13, 242, 89, 0.25);
-			background: rgba(13, 242, 89, 0.1);
-			border-radius: 999px;
-			padding: 0.2rem 0.6rem;
-			font-size: 0.72rem;
-			font-family: 'Fira Code', monospace;
-			letter-spacing: 0.04em;
-		}
-
-		.code-panel {
-			background: rgba(4, 10, 14, 0.85);
-			border: 1px solid rgba(13, 242, 89, 0.14);
-			border-radius: 0.8rem;
-			padding: 0.75rem;
-			font-family: 'Fira Code', monospace;
-			font-size: 0.85rem;
-			overflow-x: auto;
-		}
-
-		.code-row {
-			display: grid;
-			grid-template-columns: 2rem 1fr;
-			gap: 0.8rem;
-			padding: 0.25rem 0.5rem;
-			border-radius: 0.4rem;
-			color: rgba(231, 251, 231, 0.8);
-			transition: all 0.2s ease;
-		}
-
-		.code-row.active {
-			background: linear-gradient(90deg, rgba(13, 242, 89, 0.2), rgba(13, 242, 89, 0.05));
-			outline: 1px solid rgba(13, 242, 89, 0.3);
-			transform: translateX(4px);
-			color: #fff;
-		}
-
-		.line-num { color: rgba(231, 251, 231, 0.35); text-align: right; user-select: none; }
-
-		.array-container {
-			display: flex;
-			align-items: flex-end;
-			justify-content: center;
-			gap: 0.75rem;
-			height: 180px;
-			margin: 2rem 0;
-			padding-bottom: 1.5rem;
-			border-bottom: 1px solid rgba(13, 242, 89, 0.1);
-		}
-
-		.bar-wrapper {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: 0.5rem;
-			width: 45px;
-			transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-		}
-
-		.bar {
-			width: 100%;
-			background: rgba(59, 130, 246, 0.3);
-			border: 1px solid rgba(59, 130, 246, 0.5);
-			border-radius: 0.4rem 0.4rem 0 0;
-			transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-			position: relative;
-			display: flex;
-			align-items: flex-end;
-			justify-content: center;
-			padding-bottom: 0.5rem;
-			font-family: 'Fira Code', monospace;
-			font-weight: 700;
-			color: #fff;
-		}
-
-		.bar.comparing {
-			background: rgba(245, 158, 11, 0.4);
-			border-color: var(--sel-amber);
-			box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
-		}
-
-		.bar.is-min {
-			background: rgba(6, 182, 212, 0.4);
-			border-color: var(--sel-min);
-			box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
-			transform: scale(1.1);
-		}
-
-		.bar.swapping {
-			background: rgba(239, 68, 68, 0.4);
-			border-color: var(--sel-danger);
-			box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
-		}
-
-		.bar.sorted {
-			background: rgba(168, 85, 247, 0.3);
-			border-color: var(--sel-sorted);
-		}
-
-		.bar-index {
-			font-size: 0.75rem;
-			color: rgba(231, 251, 231, 0.5);
-			font-family: 'Fira Code', monospace;
-		}
-
-		.state-grid {
-			display: grid;
-			grid-template-columns: repeat(3, 1fr);
-			gap: 0.75rem;
-			margin-top: 1rem;
-		}
-
-		.state-item {
-			padding: 0.75rem;
-			border-radius: 0.8rem;
-			background: rgba(13, 242, 89, 0.05);
-			border: 1px solid rgba(13, 242, 89, 0.1);
-			text-align: center;
-		}
-
-		.state-label {
-			display: block;
-			font-size: 0.7rem;
-			text-transform: uppercase;
-			letter-spacing: 0.1em;
-			color: rgba(231, 251, 231, 0.6);
-			margin-bottom: 0.25rem;
-		}
-
-		.state-value {
-			font-family: 'Fira Code', monospace;
-			font-size: 1.25rem;
-			font-weight: 700;
-			color: var(--sel-primary);
-		}
-
-		.controls {
-			margin-top: 2rem;
-			display: flex;
-			gap: 0.75rem;
-			align-items: center;
-			flex-wrap: wrap;
-		}
-
-		.btn {
-			border: 1px solid rgba(13, 242, 89, 0.3);
-			background: rgba(13, 242, 89, 0.1);
-			color: #e7fbe7;
-			padding: 0.6rem 1.2rem;
-			border-radius: 0.75rem;
-			font-weight: 600;
-			transition: all 0.2s ease;
-			cursor: pointer;
-		}
-
-		.btn:hover:not(:disabled) {
-			background: rgba(13, 242, 89, 0.2);
-			transform: translateY(-1px);
-			box-shadow: 0 4px 12px rgba(13, 242, 89, 0.2);
-		}
-
-		.btn:disabled {
-			opacity: 0.3;
-			cursor: not-allowed;
-		}
-
-		.step-msg {
-			margin-top: 1.5rem;
-			padding: 1rem;
-			border-radius: 0.8rem;
-			background: rgba(59, 130, 246, 0.1);
-			border: 1px solid rgba(59, 130, 246, 0.25);
-			min-height: 80px;
-			display: flex;
-			align-items: center;
-		}
-
-		.progress-container {
-			margin-top: 1rem;
-			height: 6px;
-			background: rgba(255, 255, 255, 0.1);
-			border-radius: 3px;
-			overflow: hidden;
-		}
-
-		.progress-bar {
-			height: 100%;
-			background: linear-gradient(90deg, var(--sel-primary), var(--sel-blue));
-			width: 0%;
-			transition: width 0.3s ease;
-		}
-
-		.footer-link {
-			display: inline-block;
-			margin-top: 2rem;
-			color: var(--sel-primary);
-			text-decoration: none;
-			border-bottom: 1px dashed rgba(13, 242, 89, 0.4);
-		}
-	</style>
-
-	<div class="selection-screen">
-		<main class="sel-shell">
-			<header class="mb-8">
-				<p class="badge">{lang === 'en' ? 'algorithms / sorting' : 'algoritmos / ordenamiento'}</p>
-				<h1 class="sel-title mt-3">
-					{lang === 'en' ? <>Selection Sort<br/>Step by Step</> : <>Ordenamiento por Selección<br/>Paso a Paso</>}
-				</h1>
-				<p class="sel-subtitle mt-4">
-					{lang === 'en' 
-						? "Find the smallest element in the unsorted part and swap it with the first unsorted position."
-						: "Buscá el elemento más chico en la parte desordenada e intercambialo con la primera posición desordenada."}
-				</p>
-			</header>
-
-			<div class="sel-grid">
-				<!-- Código -->
-				<article class="card code-card">
-					<div class="panel-header">
-						<strong>{lang === 'en' ? 'C Implementation' : 'Implementación en C'}</strong>
-						<span class="badge" id="line-info">Line: -</span>
-					</div>
-					<div class="code-panel">
-						<div class="code-row" data-line="1"><span class="line-num">1</span><span>int arr[] = &#123;29, 10, 14, 37, 13&#125;;</span></div>
-						<div class="code-row" data-line="2"><span class="line-num">2</span><span>int n = 5;</span></div>
-						<div class="code-row" data-line="3"><span class="line-num">3</span><span>for (int i = 0; i &lt; n - 1; i++) &#123;</span></div>
-						<div class="code-row" data-line="4"><span class="line-num">4</span><span>&nbsp;&nbsp;int min_idx = i;</span></div>
-						<div class="code-row" data-line="5"><span class="line-num">5</span><span>&nbsp;&nbsp;for (int j = i + 1; j &lt; n; j++) &#123;</span></div>
-						<div class="code-row" data-line="6"><span class="line-num">6</span><span>&nbsp;&nbsp;&nbsp;&nbsp;if (arr[j] &lt; arr[min_idx]) &#123;</span></div>
-						<div class="code-row" data-line="7"><span class="line-num">7</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;min_idx = j;</span></div>
-						<div class="code-row" data-line="8"><span class="line-num">8</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&#125;</span></div>
-						<div class="code-row" data-line="9"><span class="line-num">9</span><span>&nbsp;&nbsp;&#125;</span></div>
-						<div class="code-row" data-line="10"><span class="line-num">10</span><span>&nbsp;&nbsp;int temp = arr[min_idx];</span></div>
-						<div class="code-row" data-line="11"><span class="line-num">11</span><span>&nbsp;&nbsp;arr[min_idx] = arr[i];</span></div>
-						<div class="code-row" data-line="12"><span class="line-num">12</span><span>&nbsp;&nbsp;arr[i] = temp;</span></div>
-						<div class="code-row" data-line="13"><span class="line-num">13</span><span>&#125;</span></div>
-					</div>
-
-					<div class="state-grid">
-						<div class="state-item">
-							<span class="state-label">i</span>
-							<span class="state-value" id="val-i">-</span>
-						</div>
-						<div class="state-item">
-							<span class="state-label">j</span>
-							<span class="state-value" id="val-j">-</span>
-						</div>
-						<div class="state-item">
-							<span class="state-label">min_idx</span>
-							<span class="state-value" id="val-min">-</span>
-						</div>
-					</div>
-				</article>
-
-				<!-- Visualización -->
-				<article class="card visual-card">
-					<div class="panel-header">
-						<strong>{lang === 'en' ? 'Array Visualization' : 'Visualización del Arreglo'}</strong>
-					</div>
-					
-					<div class="array-container" id="array-viz">
-						<!-- Bars -->
-					</div>
-
-					<div class="step-msg" id="step-msg">
-						{lang === 'en' ? 'Click "Start" to begin.' : 'Hacé clic en "Comenzar" para iniciar.'}
-					</div>
-
-					<div class="progress-container">
-						<div class="progress-bar" id="progress-bar"></div>
-					</div>
-
-					<div class="controls">
-						<button class="btn" id="prev-btn" disabled>{lang === 'en' ? '⬅ Back' : '⬅ Retroceder'}</button>
-						<button class="btn" id="next-btn">{lang === 'en' ? 'Next ➡' : 'Avanzar ➡'}</button>
-						<button class="btn" id="reset-btn">{lang === 'en' ? 'Reset ↺' : 'Reiniciar ↺'}</button>
-						<span class="badge" id="step-counter">Paso 0 / 0</span>
-					</div>
-				</article>
+		<div class="ss-deck-card">
+			<div class="ss-nav-bar">
+				<div class="ss-slide-indicator">
+					<span class="ss-step-dot"></span>
+					<span id="ss-slide-label">SLIDE 1 / 6</span>
+				</div>
+				<div class="ss-pills">
+					<button class="ss-pill-btn active" data-target-slide="1">1. {isEs ? 'Concepto' : 'Concept'}</button>
+					<button class="ss-pill-btn" data-target-slide="2">2. C</button>
+					<button class="ss-pill-btn" data-target-slide="3">3. Java</button>
+					<button class="ss-pill-btn" data-target-slide="4">4. JavaScript</button>
+					<button class="ss-pill-btn" data-target-slide="5">5. Python</button>
+					<button class="ss-pill-btn" data-target-slide="6">6. {isEs ? 'Simulador' : 'Simulator'}</button>
+				</div>
 			</div>
 
-			<a class="footer-link" href={withBase(lang === 'en' ? '/en/presentaciones' : '/presentaciones')}>
-				{lang === 'en' ? '← Back to all presentations' : '← Volver a todas las presentaciones'}
-			</a>
-		</main>
+			<div class="ss-viewport">
+				<div class="ss-slide active" data-slide="1">
+					<div class="ss-slide-grid">
+						<div class="ss-col">
+							<h2 class="ss-slide-title">1. {isEs ? 'Mecánica de Selección del Mínimo' : 'Minimum Selection Mechanics'}</h2>
+							<p class="ss-text">
+								{isEs 
+									? 'Selection Sort divide la lista en dos partes: la sublista ordenada y la desordenada. En cada paso busca el elemento mínimo de la parte desordenada y lo intercambia con la primera posición disponible.'
+									: 'Selection Sort divides the list into sorted and unsorted sublists. In each step it finds the minimum in the unsorted part and swaps it to the front.'}
+							</p>
+						</div>
+						<div class="ss-col">
+							<div class="ss-card-box">
+								<div class="ss-card-head">{isEs ? 'ANÁLISIS ALGORÍTMICO' : 'ALGORITHMIC ANALYSIS'}</div>
+								<div class="ss-cell"><span>Comparaciones</span><span class="ss-tag">O(N²) siempre</span></div>
+								<div class="ss-cell"><span>Intercambios (Swaps)</span><span class="ss-tag">O(N) máximo (exactamente N-1)</span></div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="ss-slide" data-slide="2">
+					<div class="ss-slide-grid">
+						<div class="ss-col">
+							<h2 class="ss-slide-title">2. C: Selection Sort</h2>
+							<p class="ss-text">Ideal cuando el costo de escritura en memoria/flash es alto, ya que realiza como máximo `N-1` escrituras.</p>
+						</div>
+						<div class="ss-col">
+							<div class="ss-code-card">
+								<div class="ss-code-title">selection.c</div>
+								<pre class="ss-code-block"><code><span class="token-keyword">void</span> selectionSort(<span class="token-type">int</span> arr[], <span class="token-type">int</span> n) &#123;
+    <span class="token-keyword">for</span> (<span class="token-type">int</span> i = <span class="token-number">0</span>; i &lt; n - <span class="token-number">1</span>; i++) &#123;
+        <span class="token-type">int</span> minIdx = i;
+        <span class="token-keyword">for</span> (<span class="token-type">int</span> j = i + <span class="token-number">1</span>; j &lt; n; j++) &#123;
+            <span class="token-keyword">if</span> (arr[j] &lt; arr[minIdx]) minIdx = j;
+        &#125;
+        <span class="token-type">int</span> temp = arr[minIdx];
+        arr[minIdx] = arr[i];
+        arr[i] = temp;
+    &#125;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="ss-slide" data-slide="3">
+					<div class="ss-slide-grid">
+						<div class="ss-col">
+							<h2 class="ss-slide-title">3. Java: Selección con Búsqueda de Mínimo</h2>
+							<p class="ss-text">Mantiene `minIdx` actualizado durante el bucle interno antes de llamar a la rutina de swap.</p>
+						</div>
+						<div class="ss-col">
+							<div class="ss-code-card">
+								<div class="ss-code-title">SelectionSort.java</div>
+								<pre class="ss-code-block"><code><span class="token-keyword">public static void</span> sort(<span class="token-type">int</span>[] arr) &#123;
+    <span class="token-keyword">for</span> (<span class="token-type">int</span> i = <span class="token-number">0</span>; i &lt; arr.length - <span class="token-number">1</span>; i++) &#123;
+        <span class="token-type">int</span> min = i;
+        <span class="token-keyword">for</span> (<span class="token-type">int</span> j = i + <span class="token-number">1</span>; j &lt; arr.length; j++) &#123;
+            <span class="token-keyword">if</span> (arr[j] &lt; arr[min]) min = j;
+        &#125;
+        <span class="token-type">int</span> t = arr[min]; arr[min] = arr[i]; arr[i] = t;
+    &#125;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="ss-slide" data-slide="4">
+					<div class="ss-slide-grid">
+						<div class="ss-col">
+							<h2 class="ss-slide-title">4. JavaScript: Selection Sort</h2>
+							<p class="ss-text">Implemetación directa en JS manteniendo legibilidad en el seguimiento de índices.</p>
+						</div>
+						<div class="ss-col">
+							<div class="ss-code-card">
+								<div class="ss-code-title">selection.js</div>
+								<pre class="ss-code-block"><code><span class="token-keyword">function</span> selectionSort(arr) &#123;
+    <span class="token-keyword">for</span> (<span class="token-keyword">let</span> i = <span class="token-number">0</span>; i &lt; arr.length - <span class="token-number">1</span>; i++) &#123;
+        <span class="token-keyword">let</span> min = i;
+        <span class="token-keyword">for</span> (<span class="token-keyword">let</span> j = i + <span class="token-number">1</span>; j &lt; arr.length; j++) &#123;
+            <span class="token-keyword">if</span> (arr[j] &lt; arr[min]) min = j;
+        &#125;
+        <span class="token-keyword">if</span> (min !== i) [arr[i], arr[min]] = [arr[min], arr[i]];
+    &#125;
+    <span class="token-keyword">return</span> arr;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="ss-slide" data-slide="5">
+					<div class="ss-slide-grid">
+						<div class="ss-col">
+							<h2 class="ss-slide-title">5. Python: Selection Sort</h2>
+							<p class="ss-text">En Python el ordenamiento in-place por selección reduce las escrituras en la estructura.</p>
+						</div>
+						<div class="ss-col">
+							<div class="ss-code-card">
+								<div class="ss-code-title">selection.py</div>
+								<pre class="ss-code-block"><code><span class="token-keyword">def</span> selection_sort(arr):
+    n = len(arr)
+    <span class="token-keyword">for</span> i <span class="token-keyword">in</span> range(n - <span class="token-number">1</span>):
+        min_idx = i
+        <span class="token-keyword">for</span> j <span class="token-keyword">in</span> range(i + <span class="token-number">1</span>, n):
+            <span class="token-keyword">if</span> arr[j] &lt; arr[min_idx]:
+                min_idx = j
+        arr[i], arr[min_idx] = arr[min_idx], arr[i]
+    <span class="token-keyword">return</span> arr</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="ss-slide" data-slide="6">
+					<div class="ss-sim-container">
+						<h2 class="ss-slide-title center">{isEs ? '6. Inspector de Selección de Mínimo' : '6. Minimum Inspector'}</h2>
+						<div class="ss-inspector-grid">
+							<div class="ss-lang-box"><span class="ss-lang-name">Array: [29, 10, 14]</span><div class="ss-exp-res">Busca mínimo ➔ 10 (pos 1) ➔ Swap con pos 0 ➔ [10, 29, 14]</div></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="ss-footer">
+				<button class="btn btn-secondary" id="btn-prev-ss" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="ss-footer-meta"><span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span></div>
+				<button class="btn btn-primary" id="btn-next-ss">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
 	</div>
+</div>
 
-	<script>
-		interface Step {
-			line: number;
-			i: number | string;
-			j: number | string;
-			minIdx: number | string;
-			array: number[];
-			comparing: number[];
-			swapping: number[];
-			sortedIndices: number[];
-			msg: { es: string; en: string };
-		}
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+	.ss-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
+	.ss-shell { max-width: var(--container-max); margin: 0 auto; }
+	.ss-header { margin-bottom: 1.5rem; }
+	.ss-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
+	.ss-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.ss-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.ss-sub.center { text-align: center; }
+	.ss-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.ss-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.ss-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
+	.ss-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.ss-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+	.ss-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+	.ss-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.ss-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
+	.ss-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.ss-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.ss-slide.active { display: block; opacity: 1; transform: translateY(0); }
+	.ss-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+	.ss-col { grid-column: span 12; }
+	@media (min-width: 900px) { .ss-col { grid-column: span 6; } }
+	.ss-slide-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 400; color: var(--color-text); margin: 0 0 0.8rem; }
+	.ss-slide-title.center { text-align: center; }
+	.ss-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin-bottom: 1.2rem; }
+	.ss-card-box { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.ss-card-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; color: var(--color-accent-2-700); margin-bottom: 0.75rem; }
+	.ss-cell { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--color-divider); background: var(--color-surface); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+	.ss-tag { color: var(--color-accent-700); font-weight: 600; }
+	.ss-code-card { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.ss-code-title { background: #2b2722; color: #c0b6a5; padding: 0.4rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid #3a352e; }
+	.ss-code-block { margin: 0; padding: 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; color: #f9f4ed; overflow-x: auto; }
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.token-comment { color: #85929e; font-style: italic; }
+	.ss-sim-container { max-width: 800px; margin: 0 auto; }
+	.ss-inspector-grid { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 0.8rem; }
+	.ss-lang-box { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 0.8rem; }
+	.ss-lang-name { font-family: 'Fira Code', monospace; font-size: 0.75rem; font-weight: 700; color: #e59866; display: block; margin-bottom: 0.4rem; }
+	.ss-exp-res { font-family: 'Fira Code', monospace; font-size: 0.82rem; color: #f9f4ed; background: #141210; padding: 0.5rem 0.7rem; border-radius: var(--radius-sm); }
+	.ss-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.ss-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>
 
-		const initialArray = [29, 10, 14, 37, 13];
-		const steps: Step[] = [];
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
 
-		function generateSteps() {
-			let arr = [...initialArray];
-			let n = arr.length;
-			let sorted: number[] = [];
-
-			steps.push({
-				line: 1, i: '-', j: '-', minIdx: '-', array: [...arr],
-				comparing: [], swapping: [], sortedIndices: [],
-				msg: { es: "Iniciamos con el arreglo desordenado.", en: "Starting with the unsorted array." }
-			});
-
-			for (let i = 0; i < n - 1; i++) {
-				steps.push({
-					line: 3, i: i, j: '-', minIdx: '-', array: [...arr],
-					comparing: [], swapping: [], sortedIndices: [...sorted],
-					msg: { es: `Iteración externa i = ${i}. Buscaremos el mínimo desde la posición ${i}.`, en: `Outer iteration i = ${i}. Searching for the minimum from position ${i}.` }
-				});
-
-				let min_idx = i;
-				steps.push({
-					line: 4, i: i, j: '-', minIdx: min_idx, array: [...arr],
-					comparing: [], swapping: [], sortedIndices: [...sorted],
-					msg: { es: `Asumimos que el mínimo es arr[${i}] = ${arr[i]}.`, en: `Assuming the minimum is arr[${i}] = ${arr[i]}.` }
-				});
-
-				for (let j = i + 1; j < n; j++) {
-					steps.push({
-						line: 5, i: i, j: j, minIdx: min_idx, array: [...arr],
-						comparing: [j], swapping: [], sortedIndices: [...sorted],
-						msg: { es: `Comparamos arr[j] (${arr[j]}) con el mínimo actual arr[min_idx] (${arr[min_idx]}).`, en: `Comparing arr[j] (${arr[j]}) with current minimum arr[min_idx] (${arr[min_idx]}).` }
-					});
-
-					if (arr[j] < arr[min_idx]) {
-						min_idx = j;
-						steps.push({
-							line: 7, i: i, j: j, minIdx: min_idx, array: [...arr],
-							comparing: [j], swapping: [], sortedIndices: [...sorted],
-							msg: { es: `¡Encontramos uno más chico! El nuevo min_idx es ${min_idx}.`, en: `Found a smaller one! New min_idx is ${min_idx}.` }
-						});
-					}
-				}
-
-				steps.push({
-					line: 10, i: i, j: '-', minIdx: min_idx, array: [...arr],
-					comparing: [], swapping: [i, min_idx], sortedIndices: [...sorted],
-					msg: { es: `El mínimo encontrado es ${arr[min_idx]}. Procedemos al intercambio.`, en: `The minimum found is ${arr[min_idx]}. Proceeding to swap.` }
-				});
-
-				let temp = arr[min_idx];
-				arr[min_idx] = arr[i];
-				arr[i] = temp;
-
-				steps.push({
-					line: 12, i: i, j: '-', minIdx: min_idx, array: [...arr],
-					comparing: [], swapping: [i, min_idx], sortedIndices: [...sorted],
-					msg: { es: "Intercambio realizado.", en: "Swap completed." }
-				});
-
-				sorted.push(i);
-			}
-			sorted.push(n - 1);
-			steps.push({
-				line: 13, i: 'end', j: 'end', minIdx: 'end', array: [...arr],
-				comparing: [], swapping: [], sortedIndices: [...sorted],
-				msg: { es: "¡Arreglo ordenado correctamente!", en: "Array sorted successfully!" }
-			});
-		}
-
-		generateSteps();
-
-		let currentStep = 0;
-		const isEnglish = document.documentElement.lang === 'en';
-
-		const arrayViz = document.getElementById('array-viz')!;
-		const stepMsg = document.getElementById('step-msg')!;
-		const valI = document.getElementById('val-i')!;
-		const valJ = document.getElementById('val-j')!;
-		const valMin = document.getElementById('val-min')!;
-		const lineInfo = document.getElementById('line-info')!;
-		const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
-		const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
-		const resetBtn = document.getElementById('reset-btn') as HTMLButtonElement;
-		const stepCounter = document.getElementById('step-counter')!;
-		const progressBar = document.getElementById('progress-bar')!;
-		const codeRows = document.querySelectorAll('.code-row');
-
-		function render() {
-			const step = steps[currentStep];
-
-			valI.textContent = String(step.i);
-			valJ.textContent = String(step.j);
-			valMin.textContent = String(step.minIdx);
-			lineInfo.textContent = isEnglish ? `Line: ${step.line}` : `Línea: ${step.line}`;
-			stepMsg.textContent = isEnglish ? step.msg.en : step.msg.es;
-			stepCounter.textContent = isEnglish 
-				? `Step ${currentStep + 1} / ${steps.length}`
-				: `Paso ${currentStep + 1} / ${steps.length}`;
-			
-			progressBar.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
-
-			codeRows.forEach(row => {
-				row.classList.toggle('active', Number((row as HTMLElement).dataset.line) === step.line);
-			});
-
-			arrayViz.innerHTML = '';
-			step.array.forEach((val, idx) => {
-				const wrapper = document.createElement('div');
-				wrapper.className = 'bar-wrapper';
-
-				const bar = document.createElement('div');
-				bar.className = 'bar';
-				bar.style.height = `${val * 3 + 20}px`;
-				bar.textContent = String(val);
-
-				if (idx === step.minIdx) bar.classList.add('is-min');
-				if (step.comparing.includes(idx)) bar.classList.add('comparing');
-				if (step.swapping.includes(idx)) bar.classList.add('swapping');
-				if (step.sortedIndices.includes(idx)) bar.classList.add('sorted');
-
-				const label = document.createElement('span');
-				label.className = 'bar-index';
-				label.textContent = `[${idx}]`;
-
-				wrapper.appendChild(bar);
-				wrapper.appendChild(label);
-				arrayViz.appendChild(wrapper);
-			});
-
-			prevBtn.disabled = currentStep === 0;
-			nextBtn.disabled = currentStep === steps.length - 1;
-		}
-
-		nextBtn.addEventListener('click', () => { if (currentStep < steps.length - 1) { currentStep++; render(); } });
-		prevBtn.addEventListener('click', () => { if (currentStep > 0) { currentStep--; render(); } });
-		resetBtn.addEventListener('click', () => { currentStep = 0; render(); });
-		document.addEventListener('keydown', (e) => {
-			if (e.key === 'ArrowRight') nextBtn.click();
-			if (e.key === 'ArrowLeft') prevBtn.click();
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+		document.querySelectorAll('.ss-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
 		});
+		document.querySelectorAll('.ss-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
+		});
+		const labelEl = document.getElementById('ss-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+		const prevBtn = document.getElementById('btn-prev-ss') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-ss') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
 
-		render();
-	</script>
+	document.querySelectorAll('.ss-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
+		});
+	});
 
+	document.getElementById('btn-prev-ss')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-ss')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
+
+	goToSlide(1);
+</script>

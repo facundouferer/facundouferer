@@ -1,214 +1,301 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
-
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+const isEs = lang === 'es';
 ---
 
+<div class="sw-screen">
+	<div class="sw-shell">
+		<header class="sw-header">
+			<span class="sw-badge">{isEs ? 'Selección Múltiple' : 'Pattern Matching'}</span>
+			<h1 class="sw-title">
+				{isEs ? 'Switch-Case y Pattern Matching' : 'Switch-Case & Pattern Matching'}
+			</h1>
+			<p class="sw-sub">
+				{isEs 
+					? 'Mecanismos de selección por caso en C, Java, JavaScript y Python.' 
+					: 'Case selection mechanisms in C, Java, JavaScript, and Python.'}
+			</p>
+		</header>
 
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
-		.sw-screen {
-			--sw-primary: #8b5cf6;
-			--sw-cyan: #22d3ee;
-			--sw-bg: #120b22;
-			min-height: 100vh;
-			font-family: 'Chakra Petch', sans-serif;
-			color: #f4edff;
-			background: radial-gradient(circle at 80% 18%, rgba(139, 92, 246, 0.2), transparent 40%), linear-gradient(150deg, #07040f 0%, var(--sw-bg) 100%);
-		}
-		.sw-shell { max-width: 1150px; margin: 0 auto; padding: 2.2rem 1rem 3rem; }
-		.sw-title { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; line-height: 1.05; }
-		.sw-sub { max-width: 66ch; color: rgba(244, 237, 255, 0.84); }
-		.sw-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
-		.sw-card { border-radius: 1rem; border: 1px solid rgba(139, 92, 246, 0.3); background: linear-gradient(155deg, rgba(35, 24, 62, 0.9), rgba(18, 11, 34, 0.94)); padding: 1rem; }
-		.sw-code, .sw-state, .sw-console { grid-column: span 12; }
-		@media (min-width: 1100px) { .sw-code { grid-column: span 6; } .sw-state, .sw-console { grid-column: span 3; } }
-		.sw-head { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
-		.sw-badge { border: 1px solid rgba(34, 211, 238, 0.45); background: rgba(34, 211, 238, 0.14); border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.72rem; font-family: 'Fira Code', monospace; }
-		.sw-panel { background: rgba(9, 6, 18, 0.9); border: 1px solid rgba(139, 92, 246, 0.28); border-radius: 0.8rem; padding: 0.75rem; }
-		.sw-row { display: grid; grid-template-columns: 2rem 1fr; gap: 0.8rem; padding: 0.42rem 0.5rem; border-radius: 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.87rem; color: rgba(244, 237, 255, 0.9); transition: all 0.2s ease; }
-		.sw-row.active { background: linear-gradient(90deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.08)); outline: 1px solid rgba(139, 92, 246, 0.45); transform: translateX(3px); }
-		.sw-ln { color: rgba(244, 237, 255, 0.42); text-align: right; }
-		.sw-state-item { display: flex; justify-content: space-between; border: 1px solid rgba(34, 211, 238, 0.3); background: rgba(34, 211, 238, 0.08); border-radius: 0.65rem; padding: 0.6rem 0.7rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.84rem; }
-		.sw-value { color: var(--sw-primary); font-size: 1rem; font-weight: 700; }
-		.sw-copy { margin-top: 0.8rem; border: 1px solid rgba(139, 92, 246, 0.35); background: rgba(139, 92, 246, 0.12); border-radius: 0.7rem; padding: 0.75rem; }
-		.sw-controls { margin-top: 0.9rem; display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; }
-		.sw-btn { border: 1px solid rgba(139, 92, 246, 0.45); background: rgba(139, 92, 246, 0.15); color: #f4edff; border-radius: 0.7rem; padding: 0.55rem 1rem; font-weight: 600; transition: all 0.2s ease; }
-		.sw-btn:hover:not(:disabled) { background: rgba(139, 92, 246, 0.28); transform: translateY(-1px); }
-		.sw-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-		.sw-select { border: 1px solid rgba(34, 211, 238, 0.45); background: rgba(9, 6, 18, 0.92); color: #f4edff; border-radius: 0.6rem; padding: 0.45rem 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
-		.sw-track { margin-top: 0.8rem; height: 0.55rem; border-radius: 999px; background: rgba(244, 237, 255, 0.14); overflow: hidden; }
-		.sw-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--sw-primary), var(--sw-cyan)); transition: width 0.25s ease; }
-		.sw-console-win { border: 1px solid rgba(34, 211, 238, 0.35); border-radius: 0.8rem; overflow: hidden; background: rgba(9, 6, 18, 0.9); }
-		.sw-console-head { display: flex; justify-content: space-between; padding: 0.5rem 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.72rem; background: rgba(34, 211, 238, 0.12); border-bottom: 1px solid rgba(34, 211, 238, 0.3); }
-		.sw-console-body { min-height: 150px; padding: 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
-		.sw-log { opacity: 0; transform: translateY(8px); animation: sw-log 0.35s ease forwards; color: #d8f2ff; }
-		@keyframes sw-log { to { opacity: 1; transform: translateY(0); } }
-		.sw-back { display: inline-block; margin-top: 1.4rem; color: var(--sw-cyan); text-decoration: none; border-bottom: 1px dashed rgba(34, 211, 238, 0.5); }
-	</style>
+		<div class="sw-deck-card">
+			<div class="sw-nav-bar">
+				<div class="sw-slide-indicator">
+					<span class="sw-step-dot"></span>
+					<span id="sw-slide-label">SLIDE 1 / 6</span>
+				</div>
+				<div class="sw-pills">
+					<button class="sw-pill-btn active" data-target-slide="1">1. {isEs ? 'Concepto' : 'Concept'}</button>
+					<button class="sw-pill-btn" data-target-slide="2">2. C</button>
+					<button class="sw-pill-btn" data-target-slide="3">3. Java</button>
+					<button class="sw-pill-btn" data-target-slide="4">4. JavaScript</button>
+					<button class="sw-pill-btn" data-target-slide="5">5. Python</button>
+					<button class="sw-pill-btn" data-target-slide="6">6. {isEs ? 'Simulador' : 'Simulator'}</button>
+				</div>
+			</div>
 
-	<div class="sw-screen">
-		<main class="sw-shell">
-			<header class="mb-6">
-				<p class="sw-badge">{lang === 'en' ? 'switch / step by step' : 'switch / paso a paso'}</p>
-				<h1 class="sw-title mt-3">{lang === 'en' ? '<code>switch</code> line by line' : '<code>switch</code> linea por linea'}</h1>
-				<p class="sw-sub mt-3">{lang === 'en' ? 'See how <code>switch</code> compares cases, finds a match, and breaks.' : 'Aca se ve como <code>switch</code> compara casos, encuentra coincidencia y corta con <code>break</code>.'}</p>
-			</header>
-			<section class="sw-grid" aria-live="polite">
-				<article class="sw-card sw-code">
-					<div class="sw-head"><strong>{lang === 'en' ? '1) Code' : '1) Codigo'}</strong><span class="sw-badge" id="sw-line">{lang === 'en' ? 'Active line: 1' : 'Linea activa: 1'}</span></div>
-					<div class="sw-panel">
-						<div class="sw-row" data-line="1"><span class="sw-ln">1</span><span>char dia[] = "martes";</span></div>
-						<div class="sw-row" data-line="2"><span class="sw-ln">2</span><span>switch (dia) &#123;</span></div>
-						<div class="sw-row" data-line="3"><span class="sw-ln">3</span><span>&nbsp;&nbsp;case 'lunes':</span></div>
-						<div class="sw-row" data-line="4"><span class="sw-ln">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;printf("Comienza la semana\n");</span></div>
-						<div class="sw-row" data-line="5"><span class="sw-ln">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;break;</span></div>
-						<div class="sw-row" data-line="6"><span class="sw-ln">6</span><span>&nbsp;&nbsp;case 'martes':</span></div>
-						<div class="sw-row" data-line="7"><span class="sw-ln">7</span><span>&nbsp;&nbsp;&nbsp;&nbsp;printf("Seguimos con energia\n");</span></div>
-						<div class="sw-row" data-line="8"><span class="sw-ln">8</span><span>&nbsp;&nbsp;&nbsp;&nbsp;break;</span></div>
-						<div class="sw-row" data-line="9"><span class="sw-ln">9</span><span>&nbsp;&nbsp;default:</span></div>
-						<div class="sw-row" data-line="10"><span class="sw-ln">10</span><span>&nbsp;&nbsp;&nbsp;&nbsp;printf("Dia no contemplado\n");</span></div>
-						<div class="sw-row" data-line="11"><span class="sw-ln">11</span><span>&#125;</span></div>
-						<div class="sw-row" data-line="12"><span class="sw-ln">12</span><span>printf("Fin del switch\n");</span></div>
+			<div class="sw-viewport">
+				<div class="sw-slide active" data-slide="1">
+					<div class="sw-slide-grid">
+						<div class="sw-col">
+							<h2 class="sw-slide-title">1. {isEs ? 'Evaluación de Múltiples Casos' : 'Multiple Case Evaluation'}</h2>
+							<p class="sw-text">
+								{isEs 
+									? 'Un `switch` evalúa una expresión y busca coincidencia directa entre múltiples etiquetas `case`, evitando cadenas extensas de `if-else`.'
+									: 'A `switch` evaluates an expression matching against multiple `case` labels, avoiding long `if-else` chains.'}
+							</p>
+						</div>
+						<div class="sw-col">
+							<div class="sw-card-box">
+								<div class="sw-card-head">{isEs ? 'MECANISMO DE MATCH' : 'MATCHING MECHANISM'}</div>
+								<div class="sw-cell"><span>case 'A':</span><span class="sw-tag">Acción A + break</span></div>
+								<div class="sw-cell"><span>default:</span><span class="sw-tag">Fallback por defecto</span></div>
+							</div>
+						</div>
 					</div>
-					<div class="sw-copy" id="sw-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'Defines <code>dia</code> as \'martes\'.' : 'Se define <code>dia</code> como \'martes\'.'}</div>
-					<div class="sw-track"><div class="sw-fill" id="sw-fill"></div></div>
-					<div class="sw-controls">
-						<button class="sw-btn" id="sw-prev" type="button">{lang === 'en' ? '⬅ Back' : '⬅ Retroceder'}</button>
-						<button class="sw-btn" id="sw-next" type="button">{lang === 'en' ? 'Next ➡' : 'Avanzar ➡'}</button>
-						<button class="sw-btn" id="sw-auto" type="button">{lang === 'en' ? 'Auto-play ▶' : 'Auto-play ▶'}</button>
-						<select class="sw-select" id="sw-level" aria-label={lang === 'en' ? 'Detail level' : 'Nivel de detalle'}>
-							<option value="basico" selected>{lang === 'en' ? 'Basic' : 'Basico'}</option>
-							<option value="intermedio">{lang === 'en' ? 'Intermediate' : 'Intermedio'}</option>
-						</select>
-						<span class="sw-badge" id="sw-step">{lang === 'en' ? 'Step 1 / 8' : 'Paso 1 / 8'}</span>
+				</div>
+
+				<div class="sw-slide" data-slide="2">
+					<div class="sw-slide-grid">
+						<div class="sw-col">
+							<h2 class="sw-slide-title">2. C: Switch con Enteros y Chars</h2>
+							<p class="sw-text">En C `switch` solo acepta expresiones enteras o caracteres (`int`, `char`, `enum`). Requiere `break` obligatorio para evitar fallthrough.</p>
+						</div>
+						<div class="sw-col">
+							<div class="sw-code-card">
+								<div class="sw-code-title">switch.c</div>
+								<pre class="sw-code-block"><code><span class="token-type">char</span> opcion = <span class="token-string">'B'</span>;
+<span class="token-keyword">switch</span> (opcion) &#123;
+    <span class="token-keyword">case</span> <span class="token-string">'A'</span>: printf(<span class="token-string">"Opción A\n"</span>); <span class="token-keyword">break</span>;
+    <span class="token-keyword">case</span> <span class="token-string">'B'</span>: printf(<span class="token-string">"Opción B\n"</span>); <span class="token-keyword">break</span>;
+    <span class="token-keyword">default</span>: printf(<span class="token-string">"Desconocido\n"</span>);
+&#125;</code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
-				<article class="sw-card sw-state">
-					<div class="sw-head"><strong>{lang === 'en' ? '2) Variables' : '2) Variables'}</strong></div>
-					<div class="sw-state-item"><span>dia</span><span id="sw-dia" class="sw-value">martes</span></div>
-					<div class="sw-state-item"><span>{lang === 'en' ? 'Current case' : 'Case actual'}</span><span id="sw-case" class="sw-value">-</span></div>
-				</article>
-				<article class="sw-card sw-console">
-					<div class="sw-head"><strong>{lang === 'en' ? '3) Simulated console' : '3) Consola simulada'}</strong></div>
-					<div class="sw-console-win">
-						<div class="sw-console-head"><span>./switch-demo</span><span>stdout</span></div>
-						<div class="sw-console-body" id="sw-console"></div>
+				</div>
+
+				<div class="sw-slide" data-slide="3">
+					<div class="sw-slide-grid">
+						<div class="sw-col">
+							<h2 class="sw-slide-title">3. Java: Switch Expressions (Arrow Syntax)</h2>
+							<p class="sw-text">Java moderno incorpora expresiones switch con sintaxis `case X -&gt;`, eliminando el riesgo de fallthrough.</p>
+						</div>
+						<div class="sw-col">
+							<div class="sw-code-card">
+								<div class="sw-code-title">SwitchExpr.java</div>
+								<pre class="sw-code-block"><code>String dia = <span class="token-string">"LUNES"</span>;
+String tipo = <span class="token-keyword">switch</span> (dia) &#123;
+    <span class="token-keyword">case</span> <span class="token-string">"SABADO"</span>, <span class="token-string">"DOMINGO"</span> -&gt; <span class="token-string">"Finde"</span>;
+    <span class="token-keyword">default</span> -&gt; <span class="token-string">"Laboral"</span>;
+&#125;;</code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
-			</section>
-</main>
+				</div>
+
+				<div class="sw-slide" data-slide="4">
+					<div class="sw-slide-grid">
+						<div class="sw-col">
+							<h2 class="sw-slide-title">4. JavaScript: Switch con Comparación Estricta (===)</h2>
+							<p class="sw-text">JS evalúa expresiones arbitrarias mediante comparación estricta de tipo y valor (`===`).</p>
+						</div>
+						<div class="sw-col">
+							<div class="sw-code-card">
+								<div class="sw-code-title">switch.js</div>
+								<pre class="sw-code-block"><code><span class="token-keyword">const</span> estado = <span class="token-number">200</span>;
+<span class="token-keyword">switch</span> (estado) &#123;
+    <span class="token-keyword">case</span> <span class="token-number">200</span>: console.log(<span class="token-string">"OK"</span>); <span class="token-keyword">break</span>;
+    <span class="token-keyword">case</span> <span class="token-number">404</span>: console.log(<span class="token-string">"Not Found"</span>); <span class="token-keyword">break</span>;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="sw-slide" data-slide="5">
+					<div class="pv-slide-grid">
+						<div class="sw-col">
+							<h2 class="sw-slide-title">5. Python: Structural Pattern Matching (match-case)</h2>
+							<p class="sw-text">Python 3.10+ introdujo `match-case` permitiendo Pattern Matching avanzado sobre tuplas, diccionarios y tipos.</p>
+						</div>
+						<div class="sw-col">
+							<div class="sw-code-card">
+								<div class="sw-code-title">pattern_matching.py</div>
+								<pre class="sw-code-block"><code>command = [<span class="token-string">"quit"</span>]
+<span class="token-keyword">match</span> command:
+    <span class="token-keyword">case</span> [<span class="token-string">"load"</span>, filename]: print(f<span class="token-string">"Cargando &#123;filename&#125;"</span>)
+    <span class="token-keyword">case</span> [<span class="token-string">"quit"</span>]: print(<span class="token-string">"Saliendo..."</span>)
+    <span class="token-keyword">case</span> _: print(<span class="token-string">"Comando invalido"</span>)</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="sw-slide" data-slide="6">
+					<div class="sw-sim-container">
+						<h2 class="sw-slide-title center">{isEs ? '6. Simulador Interactivo de Casos' : '6. Case Match Simulator'}</h2>
+						<p class="sw-sub center">{isEs ? 'Seleccioná una opción para simular el caso ejecutado:' : 'Select an option to simulate the matched case:'}</p>
+
+						<div class="sw-sim-selector">
+							<button class="sw-opt-btn active" data-opt="200">Estado HTTP = 200</button>
+							<button class="sw-opt-btn" data-opt="404">Estado HTTP = 404</button>
+							<button class="sw-opt-btn" data-opt="500">Estado HTTP = 500</button>
+						</div>
+
+						<div class="sw-inspector-grid">
+							<div class="sw-lang-box"><span class="sw-lang-name">C</span><div class="sw-exp-res" id="sw-res-c">case 200: printf("OK"); break;</div></div>
+							<div class="sw-lang-box"><span class="sw-lang-name">Java</span><div class="sw-exp-res" id="sw-res-java">case 200 -&gt; "OK";</div></div>
+							<div class="sw-lang-box"><span class="sw-lang-name">JavaScript</span><div class="sw-exp-res" id="sw-res-js">case 200: console.log("OK"); break;</div></div>
+							<div class="sw-lang-box"><span class="sw-lang-name">Python</span><div class="sw-exp-res" id="sw-res-py">case 200: print("OK")</div></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="sw-footer">
+				<button class="btn btn-secondary" id="btn-prev-sw" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="sw-footer-meta"><span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span></div>
+				<button class="btn btn-primary" id="btn-next-sw">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
 	</div>
+</div>
 
-	<script>
-		type Step = { line: number; message: { es: string; en: string }; dia: string; selectedCase: string; logs: string[] };
-		const baseSteps: Step[] = [
-			{ line: 1, message: { es: 'Se declara dia = martes.', en: 'Declares dia = martes.' }, dia: 'martes', selectedCase: '-', logs: [] },
-			{ line: 2, message: { es: 'Comienza switch y compara contra cada case.', en: 'Switch starts and compares against each case.' }, dia: 'martes', selectedCase: 'comparando', logs: [] },
-			{ line: 3, message: { es: 'Case lunes no coincide.', en: 'Case lunes does not match.' }, dia: 'martes', selectedCase: 'lunes (no)', logs: [] },
-			{ line: 6, message: { es: 'Case martes SI coincide.', en: 'Case martes DOES match.' }, dia: 'martes', selectedCase: 'martes (si)', logs: [] },
-			{ line: 7, message: { es: 'Ejecuta el bloque del case martes.', en: 'Executes the martes case block.' }, dia: 'martes', selectedCase: 'martes (si)', logs: ['Seguimos con energia'] },
-			{ line: 8, message: { es: 'El break corta y evita seguir al default.', en: 'The break cuts and avoids falling through to default.' }, dia: 'martes', selectedCase: 'break', logs: ['Seguimos con energia'] },
-			{ line: 11, message: { es: 'Cierra switch.', en: 'Closes switch.' }, dia: 'martes', selectedCase: 'break', logs: ['Seguimos con energia'] },
-			{ line: 12, message: { es: 'Sigue el flujo del programa.', en: 'Continues the program flow.' }, dia: 'martes', selectedCase: 'final', logs: ['Seguimos con energia', 'Fin del switch'] },
-		];
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+	.sw-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
+	.sw-shell { max-width: var(--container-max); margin: 0 auto; }
+	.sw-header { margin-bottom: 1.5rem; }
+	.sw-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
+	.sw-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.sw-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.sw-sub.center { text-align: center; }
+	.sw-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.sw-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.sw-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
+	.sw-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.sw-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+	.sw-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+	.sw-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.sw-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
+	.sw-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.sw-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.sw-slide.active { display: block; opacity: 1; transform: translateY(0); }
+	.sw-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+	.sw-col { grid-column: span 12; }
+	@media (min-width: 900px) { .sw-col { grid-column: span 6; } }
+	.sw-slide-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 400; color: var(--color-text); margin: 0 0 0.8rem; }
+	.sw-slide-title.center { text-align: center; }
+	.sw-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin-bottom: 1.2rem; }
+	.sw-card-box { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.sw-card-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; color: var(--color-accent-2-700); margin-bottom: 0.75rem; }
+	.sw-cell { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--color-divider); background: var(--color-surface); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+	.sw-tag { color: var(--color-accent-700); font-weight: 600; }
+	.sw-code-card { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.sw-code-title { background: #2b2722; color: #c0b6a5; padding: 0.4rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid #3a352e; }
+	.sw-code-block { margin: 0; padding: 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; color: #f9f4ed; overflow-x: auto; }
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.sw-sim-container { max-width: 800px; margin: 0 auto; }
+	.sw-sim-selector { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+	.sw-opt-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.35rem 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+	.sw-opt-btn:hover { background: var(--color-accent-100); color: var(--color-accent-700); }
+	.sw-opt-btn.active { background: var(--color-accent-700); border-color: var(--color-accent-700); color: #ffffff; }
+	.sw-inspector-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+	@media (max-width: 600px) { .sw-inspector-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); } }
+	.sw-lang-box { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 0.8rem; }
+	.sw-lang-name { font-family: 'Fira Code', monospace; font-size: 0.75rem; font-weight: 700; color: #e59866; display: block; margin-bottom: 0.4rem; }
+	.sw-exp-res { font-family: 'Fira Code', monospace; font-size: 0.82rem; color: #f9f4ed; background: #141210; padding: 0.5rem 0.7rem; border-radius: var(--radius-sm); }
+	.sw-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.sw-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>
 
-		const buildIntermediateSteps = (steps: Step[]): Step[] => {
-			const enriched: Step[] = [];
-			steps.forEach((stepState, index) => {
-				enriched.push(stepState);
-				if (index < steps.length - 1) {
-					enriched.push({ ...stepState, message: { es: `Detalle intermedio: ${stepState.message.es}`, en: `Intermediate detail: ${stepState.message.en}` } });
-				}
-			});
-			return enriched;
-		};
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
 
-		type Level = 'basico' | 'intermedio';
-		const stepSets: Record<Level, Step[]> = {
-			basico: baseSteps,
-			intermedio: buildIntermediateSteps(baseSteps),
-		};
-
-		let currentLevel: Level = 'basico';
-		let activeSteps: Step[] = stepSets[currentLevel];
-
-		let currentStep = 0;
-		const prev = document.getElementById('sw-prev') as HTMLButtonElement;
-		const next = document.getElementById('sw-next') as HTMLButtonElement;
-		const auto = document.getElementById('sw-auto') as HTMLButtonElement;
-		const levelSelect = document.getElementById('sw-level') as HTMLSelectElement;
-		const line = document.getElementById('sw-line') as HTMLElement;
-		const step = document.getElementById('sw-step') as HTMLElement;
-		const copy = document.getElementById('sw-copy') as HTMLElement;
-		const dia = document.getElementById('sw-dia') as HTMLElement;
-		const selected = document.getElementById('sw-case') as HTMLElement;
-		const consoleBody = document.getElementById('sw-console') as HTMLElement;
-		const fill = document.getElementById('sw-fill') as HTMLElement;
-		let autoPlayTimer: number | null = null;
-		const isEnglish = document.documentElement.lang === 'en';
-
-		function stopAutoPlay(): void {
-			if (autoPlayTimer !== null) {
-				window.clearInterval(autoPlayTimer);
-				autoPlayTimer = null;
-			}
-			auto.textContent = isEnglish ? 'Auto-play ▶' : 'Auto-play ▶';
+	const switchData = {
+		200: {
+			c: 'case 200: printf("OK"); break;',
+			java: 'case 200 -> "OK";',
+			js: 'case 200: console.log("OK"); break;',
+			py: 'case 200: print("OK")'
+		},
+		404: {
+			c: 'case 404: printf("Not Found"); break;',
+			java: 'case 404 -> "Not Found";',
+			js: 'case 404: console.log("Not Found"); break;',
+			py: 'case 404: print("Not Found")'
+		},
+		500: {
+			c: 'default: printf("Error");',
+			java: 'default -> "Error";',
+			js: 'default: console.log("Error");',
+			py: 'case _: print("Error")'
 		}
+	};
 
-		function toggleAutoPlay(): void {
-			if (autoPlayTimer !== null) {
-				stopAutoPlay();
-				return;
-			}
-			auto.textContent = isEnglish ? 'Pause ⏸' : 'Pausar ⏸';
-			autoPlayTimer = window.setInterval(() => {
-				if (currentStep < activeSteps.length - 1) {
-					currentStep += 1;
-					render();
-				} else {
-					stopAutoPlay();
-				}
-			}, 1300);
-		}
-
-		function render(): void {
-			const state = activeSteps[currentStep];
-			document.querySelectorAll<HTMLElement>('.sw-row').forEach((row) => row.classList.toggle('active', Number(row.dataset.line) === state.line));
-			line.textContent = isEnglish ? `Active line: ${state.line}` : `Linea activa: ${state.line}`;
-			step.textContent = isEnglish ? `Step ${currentStep + 1} / ${activeSteps.length}` : `Paso ${currentStep + 1} / ${activeSteps.length}`;
-			copy.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${state.message[isEnglish ? 'en' : 'es']}`;
-			dia.textContent = state.dia;
-			selected.textContent = state.selectedCase;
-			consoleBody.innerHTML = '';
-			state.logs.forEach((entry, index) => {
-				const el = document.createElement('div');
-				el.className = 'sw-log';
-				el.style.animationDelay = `${index * 80}ms`;
-				el.textContent = `> ${entry}`;
-				consoleBody.appendChild(el);
-			});
-			fill.style.width = `${((currentStep + 1) / activeSteps.length) * 100}%`;
-			prev.disabled = currentStep === 0;
-			next.disabled = currentStep === activeSteps.length - 1;
-		}
-
-		prev.addEventListener('click', () => { if (currentStep > 0) { currentStep -= 1; render(); } });
-		next.addEventListener('click', () => { if (currentStep < activeSteps.length - 1) { currentStep += 1; render(); } });
-		auto.addEventListener('click', () => toggleAutoPlay());
-		levelSelect.addEventListener('change', () => {
-			currentLevel = levelSelect.value as Level;
-			activeSteps = stepSets[currentLevel];
-			currentStep = 0;
-			stopAutoPlay();
-			render();
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+		document.querySelectorAll('.sw-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
 		});
-		document.addEventListener('keydown', (event: KeyboardEvent) => { if (event.key === 'ArrowLeft') prev.click(); if (event.key === 'ArrowRight') next.click(); });
-		render();
-	</script>
+		document.querySelectorAll('.sw-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
+		});
+		const labelEl = document.getElementById('sw-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+		const prevBtn = document.getElementById('btn-prev-sw') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-sw') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
 
+	document.querySelectorAll('.sw-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
+		});
+	});
+
+	document.getElementById('btn-prev-sw')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-sw')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
+
+	document.querySelectorAll('.sw-opt-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			document.querySelectorAll('.sw-opt-btn').forEach(b => b.classList.remove('active'));
+			const targetBtn = e.currentTarget as HTMLElement;
+			targetBtn.classList.add('active');
+			const optKey = Number(targetBtn.dataset.opt) as keyof typeof switchData;
+			const data = switchData[optKey];
+			if (data) {
+				const resC = document.getElementById('sw-res-c');
+				const resJava = document.getElementById('sw-res-java');
+				const resJs = document.getElementById('sw-res-js');
+				const resPy = document.getElementById('sw-res-py');
+				if (resC) resC.textContent = data.c;
+				if (resJava) resJava.textContent = data.java;
+				if (resJs) resJs.textContent = data.js;
+				if (resPy) resPy.textContent = data.py;
+			}
+		});
+	});
+
+	goToSlide(1);
+</script>

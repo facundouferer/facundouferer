@@ -1,1346 +1,555 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
-
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+const isEs = lang === 'es';
 ---
 
-
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&display=swap');
-
-		:root {
-			--primary: #0df259;
-			--crt-black: #050a05;
-			--crt-dark: #0a140a;
-			--cyan: #22d3ee;
-			--amber: #f59e0b;
-			--orange: #fb923c;
-		}
-
-		html {
-			scroll-behavior: smooth;
-		}
-
-		.crt-wrapper {
-			background: radial-gradient(circle, #0a1a0a 0%, #050a05 100%);
-			position: relative;
-		}
-
-		.crt-main {
-			font-family: 'Space Mono', monospace;
-			color: var(--primary);
-			position: relative;
-		}
-
-		.font-retro {
-			font-family: 'VT323', monospace;
-		}
-
-		/* Progress bar */
-		#progress-bar {
-			position: fixed;
-			top: 0;
-			left: 0;
-			height: 3px;
-			width: 0%;
-			background: var(--primary);
-			box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
-			z-index: 200;
-			transition: width 0.1s linear;
-		}
-
-		/* Sections */
-		.section {
-			min-height: 100vh;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding: 80px 24px 40px;
-			position: relative;
-			z-index: 10;
-		}
-
-		.section-inner {
-			width: 100%;
-			max-width: 1100px;
-		}
-
-		/* Reveal animations */
-		.section-hidden {
-			opacity: 0;
-			transform: translateY(60px);
-			transition: opacity 0.8s ease, transform 0.8s ease;
-		}
-
-		.section-visible {
-			opacity: 1;
-			transform: translateY(0);
-		}
-
-		.anim-item {
-			opacity: 0;
-			transform: translateY(30px);
-			transition: opacity 0.6s ease, transform 0.6s ease;
-			transition-delay: var(--delay, 0ms);
-		}
-
-		.section-visible .anim-item {
-			opacity: 1;
-			transform: translateY(0);
-		}
-
-		/* Divider */
-		.section-divider {
-			border: none;
-			border-top: 1px solid rgba(13, 242, 89, 0.15);
-			margin: 0 24px;
-		}
-
-		/* Code block */
-		.code-block {
-			background: rgba(0, 0, 0, 0.5);
-			border: 1px solid rgba(13, 242, 89, 0.2);
-			border-radius: 4px;
-			padding: 16px 20px;
-			font-family: 'Space Mono', monospace;
-			font-size: 0.85rem;
-			line-height: 1.7;
-		}
-
-		.code-comment { color: rgba(13, 242, 89, 0.4); font-style: italic; }
-		.code-keyword { color: #61afef; }
-		.code-string { color: #e5c07b; }
-		.code-number { color: #d19a66; }
-		.code-result { color: var(--primary); }
-		.code-type { color: #f59e0b; }
-		.code-class { color: #c678dd; }
-
-		/* ==================== KEYFRAMES ==================== */
-
-		@keyframes float {
-			0%, 100% { transform: translateY(0px); }
-			50% { transform: translateY(-12px); }
-		}
-
-		@keyframes float-slow {
-			0%, 100% { transform: translateY(0px) rotate(0deg); }
-			50% { transform: translateY(-18px) rotate(3deg); }
-		}
-
-		@keyframes blink-cursor {
-			0%, 100% { opacity: 1; }
-			50% { opacity: 0; }
-		}
-
-		@keyframes typing-sub {
-			from { width: 0; opacity: 1; }
-			to { width: 100%; opacity: 1; }
-		}
-
-		@keyframes glow-amber {
-			0%, 100% { box-shadow: 0 0 8px rgba(245,158,11,0.4); }
-			50% { box-shadow: 0 0 25px rgba(245,158,11,0.9), 0 0 50px rgba(245,158,11,0.5); }
-		}
-
-		@keyframes glow-cyan {
-			0%, 100% { box-shadow: 0 0 8px rgba(34,211,238,0.4); }
-			50% { box-shadow: 0 0 25px rgba(34,211,238,0.9), 0 0 50px rgba(34,211,238,0.5); }
-		}
-
-		@keyframes gold-pulse {
-			0%, 100% {
-				box-shadow: 0 0 15px rgba(245,158,11,0.6), 0 0 30px rgba(245,158,11,0.3);
-				border-color: rgba(245,158,11,0.8);
-			}
-			50% {
-				box-shadow: 0 0 40px rgba(245,158,11,1), 0 0 80px rgba(245,158,11,0.6);
-				border-color: #f59e0b;
-			}
-		}
-
-		@keyframes card-pop {
-			from { opacity: 0; transform: translateY(40px) scale(0.9); }
-			to { opacity: 1; transform: translateY(0) scale(1); }
-		}
-
-		/* ==================== SECTION 1: INTRO ==================== */
-
-		.intro-title {
-			font-family: 'VT323', monospace;
-			font-size: clamp(2rem, 6vw, 5rem);
-			text-shadow: 0 0 15px rgba(13, 242, 89, 0.7);
-			line-height: 1;
-		}
-
-		.intro-subtitle {
-			font-size: clamp(0.9rem, 2vw, 1.1rem);
-			opacity: 0;
-			overflow: hidden;
-			white-space: nowrap;
-			border-right: 2px solid var(--primary);
-		}
-
-		.intro-subtitle.typing-active {
-			animation: typing-sub 3s steps(52) 0.5s forwards, blink-cursor 0.7s step-end infinite;
-			width: 0;
-		}
-
-		.c-logo {
-			font-family: 'VT323', monospace;
-			font-size: 7rem;
-			color: #f59e0b;
-			text-shadow: 0 0 30px rgba(245,158,11,0.8);
-			animation: float-slow 4s ease-in-out infinite;
-			line-height: 1;
-		}
-
-		.intro-box {
-			border: 2px solid;
-			border-radius: 8px;
-			padding: 20px 24px;
-			text-align: center;
-			min-width: 140px;
-		}
-
-		.intro-box-valor {
-			border-color: rgba(245,158,11,0.6);
-			background: rgba(245,158,11,0.06);
-			animation: glow-amber 2.5s ease-in-out infinite;
-		}
-
-		.intro-box-ref {
-			border-color: rgba(34,211,238,0.6);
-			background: rgba(34,211,238,0.06);
-			animation: glow-cyan 2.5s ease-in-out infinite;
-			animation-delay: 1.2s;
-		}
-
-		/* ==================== MEMORY LAYOUTS ==================== */
-
-		.memory-col {
-			border: 2px solid;
-			border-radius: 8px;
-			padding: 20px;
-			min-height: 300px;
-			position: relative;
-		}
-
-		.stack-col {
-			border-color: rgba(13,242,89,0.4);
-			background: rgba(13,242,89,0.03);
-		}
-
-		.heap-col {
-			border-color: rgba(34,211,238,0.4);
-			background: rgba(34,211,238,0.03);
-		}
-
-		.memory-label {
-			font-family: 'VT323', monospace;
-			font-size: 1.5rem;
-			letter-spacing: 0.1em;
-			text-align: center;
-			margin-bottom: 16px;
-		}
-
-		.stack-frame {
-			border: 1px solid rgba(13,242,89,0.3);
-			background: rgba(13,242,89,0.05);
-			border-radius: 4px;
-			padding: 8px 12px;
-			margin-bottom: 8px;
-			font-size: 0.8rem;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-		}
-
-		.stack-frame.prim-frame {
-			border-color: rgba(245,158,11,0.4);
-			background: rgba(245,158,11,0.05);
-		}
-
-		.stack-frame.ref-frame {
-			border-color: rgba(34,211,238,0.4);
-			background: rgba(34,211,238,0.05);
-		}
-
-		.heap-object {
-			border: 2px solid rgba(13,242,89,0.4);
-			border-radius: 6px;
-			padding: 10px 14px;
-			margin: 8px;
-			font-size: 0.78rem;
-			display: inline-block;
-		}
-
-		.heap-addr {
-			font-size: 0.65rem;
-			opacity: 0.4;
-			font-family: 'Space Mono', monospace;
-		}
-
-		/* ==================== STEP ANIMATIONS ==================== */
-
-		.anim-box {
-			border: 2px solid;
-			border-radius: 8px;
-			padding: 20px 24px;
-			text-align: center;
-			min-width: 110px;
-			transition: all 0.5s ease;
-		}
-
-		.anim-box-prim {
-			border-color: rgba(245,158,11,0.5);
-			background: rgba(245,158,11,0.05);
-		}
-
-		.anim-box-ref {
-			border-color: rgba(34,211,238,0.5);
-			background: rgba(34,211,238,0.05);
-		}
-
-		.anim-box-var {
-			font-family: 'VT323', monospace;
-			font-size: 0.9rem;
-			opacity: 0.5;
-			margin-bottom: 4px;
-		}
-
-		.anim-box-val {
-			font-family: 'VT323', monospace;
-			font-size: 2.5rem;
-			line-height: 1;
-			transition: color 0.5s ease;
-		}
-
-		.anim-box-val.changed {
-			color: #ef4444;
-		}
-
-		.anim-arrow {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			padding: 0 8px;
-			opacity: 0;
-			transition: opacity 0.5s ease;
-		}
-
-		.anim-arrow.visible {
-			opacity: 1;
-		}
-
-		.step-result {
-			opacity: 0;
-			transition: opacity 0.6s ease;
-		}
-
-		.step-result.visible {
-			opacity: 1;
-		}
-
-		.step-badge {
-			display: inline-block;
-			font-family: 'Space Mono', monospace;
-			font-size: 0.7rem;
-			padding: 2px 8px;
-			border-radius: 3px;
-		}
-
-		.step-badge-ok {
-			background: rgba(13,242,89,0.15);
-			border: 1px solid rgba(13,242,89,0.4);
-			color: var(--primary);
-		}
-
-		.step-badge-warn {
-			background: rgba(245,158,11,0.15);
-			border: 1px solid rgba(245,158,11,0.4);
-			color: #f59e0b;
-		}
-
-		/* ==================== SECTION 9: REGLAS ==================== */
-
-		.rule-card {
-			border: 1px solid;
-			border-radius: 8px;
-			padding: 16px 20px;
-			opacity: 0;
-		}
-
-		.rule-card.gold {
-			border-color: rgba(245,158,11,0.7);
-			background: rgba(245,158,11,0.06);
-		}
-
-		.rule-card.green {
-			border-color: rgba(13,242,89,0.35);
-			background: rgba(13,242,89,0.04);
-		}
-
-		.rule-card.cyan {
-			border-color: rgba(34,211,238,0.35);
-			background: rgba(34,211,238,0.04);
-		}
-
-		.rule-card.red {
-			border-color: rgba(239,68,68,0.35);
-			background: rgba(239,68,68,0.04);
-		}
-
-		.rule-card.pop-simple {
-			animation: card-pop 0.5s ease forwards;
-			animation-delay: var(--pop-delay, 0ms);
-		}
-
-		.rule-card.gold.pop-simple {
-			animation: card-pop 0.5s ease forwards, gold-pulse 2s ease-in-out 0.5s infinite;
-		}
-
-		.rule-num {
-			font-family: 'VT323', monospace;
-			font-size: 3rem;
-			line-height: 1;
-			flex-shrink: 0;
-		}
-
-		/* ==================== TERMINAL STYLES ==================== */
-
-		.terminal-btn {
-			border: 1px solid var(--primary);
-			padding: 8px 24px;
-			text-transform: uppercase;
-			font-size: 0.875rem;
-			font-weight: 700;
-			transition: all 0.3s;
-			background-color: rgba(13, 242, 89, 0.05);
-			color: var(--primary);
-			text-decoration: none;
-			display: inline-block;
-			font-family: 'Space Mono', monospace;
-			letter-spacing: 0.05em;
-		}
-
-		.terminal-btn:hover {
-			background-color: var(--primary);
-			color: black;
-			box-shadow: 0 0 20px rgba(13, 242, 89, 0.5);
-		}
-
-		.split-col {
-			border: 1px solid rgba(13, 242, 89, 0.2);
-			border-radius: 8px;
-			padding: 24px;
-			background: rgba(13, 242, 89, 0.03);
-		}
-
-		.type-card {
-			border: 1px solid rgba(13, 242, 89, 0.25);
-			background: rgba(13, 242, 89, 0.04);
-			border-radius: 6px;
-			padding: 12px 16px;
-			transition: border-color 0.3s, box-shadow 0.3s;
-		}
-
-		.type-card:hover {
-			border-color: var(--primary);
-			box-shadow: 0 0 12px rgba(13, 242, 89, 0.2);
-		}
-
-		/* Responsive */
-		@media (max-width: 768px) {
-			.split-grid { flex-direction: column; }
-			.c-logo { font-size: 5rem; }
-			.step-visual { flex-direction: column; align-items: center; }
-		}
-	</style>
-
-	<div class="relative min-h-screen flex flex-col crt-wrapper">
-		<!-- Progress bar -->
-		<div id="progress-bar"></div>
-
-		<div class="relative z-[200]">
+<div class="pv-screen">
+	<div class="pv-shell">
+		<header class="pv-header">
+			<span class="pv-badge">{isEs ? 'Manejo de Memoria' : 'Memory Management'}</span>
+			<h1 class="pv-title">
+				{isEs ? 'Paso por Valor vs Paso por Referencia' : 'Pass by Value vs Pass by Reference'}
+			</h1>
+			<p class="pv-sub">
+				{isEs 
+					? 'Comparativa del comportamiento de parámetros en C, JavaScript, Python y Java.' 
+					: 'Comparing parameter passing behavior across C, JavaScript, Python, and Java.'}
+			</p>
+		</header>
+
+		<div class="pv-deck-card">
+			<div class="pv-nav-bar">
+				<div class="pv-slide-indicator">
+					<span class="pv-step-dot"></span>
+					<span id="pv-slide-label">SLIDE 1 / 6</span>
+				</div>
+				<div class="pv-pills">
+					<button class="pv-pill-btn active" data-target-slide="1">1. {isEs ? 'Concepto' : 'Concept'}</button>
+					<button class="pv-pill-btn" data-target-slide="2">2. C</button>
+					<button class="pv-pill-btn" data-target-slide="3">3. Java</button>
+					<button class="pv-pill-btn" data-target-slide="4">4. JavaScript</button>
+					<button class="pv-pill-btn" data-target-slide="5">5. Python</button>
+					<button class="pv-pill-btn" data-target-slide="6">6. {isEs ? 'Simulador Stack' : 'Stack Sim'}</button>
+				</div>
+			</div>
+
+			<div class="pv-viewport">
+				<!-- SLIDE 1: CONCEPT -->
+				<div class="pv-slide active" data-slide="1">
+					<div class="pv-slide-grid">
+						<div class="pv-col">
+							<h2 class="pv-slide-title">1. {isEs ? '¿Cómo se pasan los datos a una función?' : 'How are arguments passed to functions?'}</h2>
+							<p class="pv-text">
+								{isEs 
+									? 'Al invocar una función, los argumentos pueden pasarse por copia del valor o compartiendo la referencia directa a la celda de memoria original.'
+									: 'When invoking a function, arguments are either copied by value or share a direct memory reference.'}
+							</p>
+							<div class="pv-concept-box">
+								<div class="pv-concept-item">
+									<strong class="pv-accent-text">{isEs ? 'Paso por Valor:' : 'Pass by Value:'}</strong>
+									<span>{isEs ? 'La función recibe una copia independiente. Modificar el parámetro NO altera la variable original.' : 'Function receives an independent copy. Modifying the parameter DOES NOT alter original.'}</span>
+								</div>
+								<div class="pv-concept-item">
+									<strong class="pv-accent-text">{isEs ? 'Paso por Referencia:' : 'Pass by Reference:'}</strong>
+									<span>{isEs ? 'La función recibe un alias a la variable del llamador. Cualquier cambio altera directamente el valor original.' : 'Function receives an alias to caller variable. Any change mutates the caller value.'}</span>
+								</div>
+							</div>
+						</div>
+						<div class="pv-col">
+							<div class="pv-stack-viz">
+								<div class="pv-viz-head">{isEs ? 'ESQUEMA DE MEMORIA EN PILA (STACK)' : 'STACK MEMORY LAYOUT'}</div>
+								<div class="pv-frame">
+									<span class="pv-frame-label">Stack Frame: main()</span>
+									<div class="pv-var-row"><span>x = 10</span><span class="pv-tag-val">0x7FF01</span></div>
+								</div>
+								<div class="pv-arrow-down">⬇️ {isEs ? 'Copia de valor' : 'Value Copy'}</div>
+								<div class="pv-frame sub">
+									<span class="pv-frame-label">Stack Frame: update(val)</span>
+									<div class="pv-var-row"><span>val = 10</span><span class="pv-tag-val">{isEs ? 'Copia independiente' : 'Isolated Copy'}</span></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 2: C -->
+				<div class="pv-slide" data-slide="2">
+					<div class="pv-slide-grid">
+						<div class="pv-col">
+							<h2 class="pv-slide-title">2. C: {isEs ? 'Paso por Valor Estricto y Punteros' : 'Strict Pass-by-Value & Pointers'}</h2>
+							<p class="pv-text">
+								{isEs 
+									? 'En C TODO es paso por valor. Para modificar una variable externa, pasamos la dirección de memoria (puntero `&var`) por valor.'
+									: 'In C EVERYTHING is pass-by-value. To modify an external variable, we pass the memory address (`&var`) by value.'}
+							</p>
+							<ul class="pv-list">
+								<li><strong>swap(int a, int b):</strong> {isEs ? 'Intercambia copias locales, sin efecto en main.' : 'Swaps local copies, no effect in main.'}</li>
+								<li><strong>swap(int *a, int *b):</strong> {isEs ? 'Desreferencia direcciones para modificar la memoria del llamador.' : 'Dereferences addresses to modify caller memory.'}</li>
+							</ul>
+						</div>
+						<div class="pv-col">
+							<div class="pv-code-card">
+								<div class="pv-code-title">pointers.c</div>
+								<pre class="pv-code-block"><code><span class="token-keyword">void</span> swap(<span class="token-type">int</span> *a, <span class="token-type">int</span> *b) &#123;
+    <span class="token-type">int</span> temp = *a;
+    *a = *b;  <span class="token-comment">// Modifica memoria original</span>
+    *b = temp;
+&#125;
+
+<span class="token-type">int</span> main() &#123;
+    <span class="token-type">int</span> x = <span class="token-number">5</span>, y = <span class="token-number">10</span>;
+    swap(&amp;x, &amp;y); <span class="token-comment">// x=10, y=5</span>
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 3: JAVA -->
+				<div class="pv-slide" data-slide="3">
+					<div class="pv-slide-grid">
+						<div class="pv-col">
+							<h2 class="pv-slide-title">3. Java: {isEs ? 'Siempre por Valor (Primitivos vs Referencias)' : 'Always Pass-by-Value (Primitives vs References)'}</h2>
+							<p class="pv-text">
+								{isEs 
+									? 'Java es SIEMPRE paso por valor. En primitivos copia el valor. En objetos copia el handle de referencia.'
+									: 'Java is ALWAYS pass-by-value. For primitives it copies the value. For objects it copies the reference handle.'}
+							</p>
+							<div class="pv-concept-box">
+								<div class="pv-concept-item">
+									<strong class="pv-accent-text">Mutar atributos:</strong> {isEs ? 'Afecta al objeto en el Heap.' : 'Affects the Heap object.'}
+								</div>
+								<div class="pv-concept-item">
+									<strong class="pv-accent-text">Reasignar referencia:</strong> {isEs ? 'Solo cambia la copia local del puntero, no el objeto original.' : 'Only updates local handle copy, not original caller handle.'}
+								</div>
+							</div>
+						</div>
+						<div class="pv-col">
+							<div class="pv-code-card">
+								<div class="pv-code-title">PassTest.java</div>
+								<pre class="pv-code-block"><code><span class="token-keyword">public static void</span> modify(<span class="token-type">Dog</span> d) &#123;
+    d.setName(<span class="token-string">"Rex"</span>); <span class="token-comment">// Mutación en Heap</span>
+    d = <span class="token-keyword">new</span> <span class="token-type">Dog</span>(<span class="token-string">"Fido"</span>); <span class="token-comment">// No afecta al caller</span>
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 4: JAVASCRIPT -->
+				<div class="pv-slide" data-slide="4">
+					<div class="pv-slide-grid">
+						<div class="pv-col">
+							<h2 class="pv-slide-title">4. JavaScript: {isEs ? 'Paso por Valor de Referencias' : 'Call-by-Sharing (Reference Copy)'}</h2>
+							<p class="pv-text">
+								{isEs 
+									? 'Los primitivos en JS son inmutables y se pasan por valor. Los objetos y arreglos se pasan por valor de referencia.'
+									: 'Primitives in JS are immutable and passed by value. Objects and arrays are passed by reference copy.'}
+							</p>
+							<ul class="pv-list">
+								<li><strong>obj.prop = val:</strong> {isEs ? 'Muta el objeto real.' : 'Mutates actual object.'}</li>
+								<li><strong>obj = &#123;&#125;:</strong> {isEs ? 'Reasigna solo la variable local de la función.' : 'Rebinds function-local variable only.'}</li>
+							</ul>
+						</div>
+						<div class="pv-col">
+							<div class="pv-code-card">
+								<div class="pv-code-title">app.js</div>
+								<pre class="pv-code-block"><code><span class="token-keyword">function</span> update(user) &#123;
+    user.age = <span class="token-number">30</span>;     <span class="token-comment">// Objeto original actualizado</span>
+    user = &#123; age: <span class="token-number">99</span> &#125;; <span class="token-comment">// Sin efecto fuera</span>
+&#125;
+<span class="token-keyword">const</span> u = &#123; age: <span class="token-number">20</span> &#125;;
+update(u); <span class="token-comment">// u.age es 30</span></code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 5: PYTHON -->
+				<div class="pv-slide" data-slide="5">
+					<div class="pv-slide-grid">
+						<div class="pv-col">
+							<h2 class="pv-slide-title">5. Python: {isEs ? 'Paso por Asignación (Pass-by-Object-Reference)' : 'Pass-by-Assignment'}</h2>
+							<p class="pv-text">
+								{isEs 
+									? 'En Python los argumentos se pasan por asignación. La función vincula un nombre local al objeto recibido.'
+									: 'In Python arguments are passed by assignment. The function binds a local name to the received object.'}
+							</p>
+							<div class="pv-concept-box">
+								<div class="pv-concept-item">
+									<strong class="pv-accent-text">list.append():</strong> {isEs ? 'Mutación in-place en Heap.' : 'In-place mutation in Heap.'}
+								</div>
+								<div class="pv-concept-item">
+									<strong class="pv-accent-text">lst = lst + [x]:</strong> {isEs ? 'Crea un nuevo objeto y re-vincula el nombre local.' : 'Creates a new object and rebinds local name.'}
+								</div>
+							</div>
+						</div>
+						<div class="pv-col">
+							<div class="pv-code-card">
+								<div class="pv-code-title">script.py</div>
+								<pre class="pv-code-block"><code><span class="token-keyword">def</span> process(lst):
+    lst.append(<span class="token-number">100</span>) <span class="token-comment"># Mutación real</span>
+    lst = [<span class="token-number">1</span>, <span class="token-number">2</span>]    <span class="token-comment"># Re-binding local</span>
+
+data = [<span class="token-number">1</span>]
+process(data) <span class="token-comment"># data es [1, 100]</span></code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 6: SIMULATOR -->
+				<div class="pv-slide" data-slide="6">
+					<div class="pv-sim-container">
+						<h2 class="pv-slide-title center">{isEs ? '6. Simulador Interactivo de Pila (Stack Frame)' : '6. Live Call Stack Simulator'}</h2>
+						<p class="pv-sub center">{isEs ? 'Probá cómo se comporta el pasaje en cada lenguaje:' : 'Test parameter passing behavior across languages:'}</p>
+
+						<div class="pv-sim-selector">
+							<button class="pv-lang-btn active" data-lang="c">C (Punteros)</button>
+							<button class="pv-lang-btn" data-lang="java">Java (Objetos)</button>
+							<button class="pv-lang-btn" data-lang="js">JavaScript</button>
+							<button class="pv-lang-btn" data-lang="py">Python</button>
+						</div>
+
+						<div class="pv-sim-console">
+							<div class="pv-sim-head">
+								<span class="pv-console-label" id="pv-sim-title">C: swap(&amp;a, &amp;b) Execution Trace</span>
+							</div>
+							<div class="pv-sim-body">
+								<div class="pv-trace-step" id="pv-sim-step">
+									<strong class="pv-accent-text">Paso 1:</strong> main() crea `a=5` (0x10) y `b=10` (0x14). Pasa direcciones `&a` y `&b`.
+								</div>
+								<div class="pv-stack-display" id="pv-sim-stack">
+									[main frame: a=5, b=10] -&gt; [swap frame: *a=&gt;0x10, *b=&gt;0x14]
+								</div>
+								<div class="pv-res-box" id="pv-sim-result">
+									{isEs ? 'Resultado en el caller: a=10, b=5 (Mutación Exitosa)' : 'Caller result: a=10, b=5 (Successful Mutation)'}
+								</div>
+							</div>
+							<div class="pv-sim-actions">
+								<button class="btn btn-primary" id="btn-next-trace">
+									▶ {isEs ? 'Siguiente Paso de Ejecución' : 'Next Execution Step'}
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="pv-footer">
+				<button class="btn btn-secondary" id="btn-prev-pv" disabled>
+					← {isEs ? 'Anterior' : 'Previous'}
+				</button>
+				<div class="pv-footer-meta">
+					<span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span>
+				</div>
+				<button class="btn btn-primary" id="btn-next-pv">
+					{isEs ? 'Siguiente' : 'Next'} →
+				</button>
+			</div>
 		</div>
-
-		<main class="flex-1 relative crt-main">
-
-			<!-- ======================== SECTION 1: INTRO ======================== -->
-			<section class="section section-hidden" id="sec-intro">
-				<div class="section-inner text-center">
-					<div class="anim-item" style="--delay: 0ms">
-						<div class="text-xs tracking-widest opacity-40 mb-6 font-retro text-lg">PROGRAMIERDS_OS v1.0.4 // TOPIC: C_MEMORY</div>
-					</div>
-
-					<div class="anim-item mb-4" style="--delay: 100ms">
-						<div class="c-logo">C</div>
-					</div>
-
-					<div class="anim-item" style="--delay: 200ms">
-						<h1 class="intro-title uppercase tracking-tight mb-2">
-							&gt; {lang === 'en' ? 'Pass by Value' : 'Paso por Valor'}
-						</h1>
-						<h1 class="intro-title uppercase tracking-tight mb-8" style="color: rgba(13,242,89,0.6)">
-							{lang === 'en' ? 'and Reference' : 'y Referencia'}
-						</h1>
-					</div>
-
-					<div class="anim-item flex justify-center mb-8" style="--delay: 400ms">
-						<p class="intro-subtitle" id="intro-subtitle">
-							{lang === 'en' ? 'In C, everything is passed by value. Pointers make it seem like magic, but they are still copies of addresses.' : 'En C, todo se pasa por valor. Los punteros hacen que parezca magia, pero siguen siendo copias de direcciones.'}
-						</p>
-					</div>
-
-					<!-- Dos cajas intro -->
-					<div class="anim-item flex justify-center gap-6 flex-wrap items-center" style="--delay: 550ms">
-						<div class="intro-box intro-box-valor">
-							<div class="font-retro text-3xl" style="color: #f59e0b">&#x2750;</div>
-							<div class="font-retro text-xl mt-1" style="color: #f59e0b">{lang === 'en' ? 'VALUE' : 'VALOR'}</div>
-							<div class="text-xs opacity-50 mt-1">{lang === 'en' ? 'direct copy' : 'copia directa'}</div>
-						</div>
-						<div class="font-retro text-3xl opacity-30">&#8596;</div>
-						<div class="intro-box intro-box-ref">
-							<div class="font-retro text-3xl" style="color: #22d3ee">&#x2794;</div>
-							<div class="font-retro text-xl mt-1" style="color: #22d3ee">{lang === 'en' ? 'REFERENCE' : 'REFERENCIA'}</div>
-							<div class="text-xs opacity-50 mt-1">{lang === 'en' ? 'memory address' : 'direcci&oacute;n de memoria'}</div>
-						</div>
-					</div>
-
-					<div class="anim-item mt-12 opacity-50" style="--delay: 700ms">
-						<p class="text-sm" style="animation: float 2s ease-in-out infinite">&#8595; {lang === 'en' ? 'scroll to continue' : 'scroll para continuar'}</p>
-					</div>
-				</div>
-			</section>
-
-			<hr class="section-divider" />
-
-			<!-- ======================== SECTION 2: STACK vs HEAP ======================== -->
-			<section class="section section-hidden" id="sec-memoria">
-				<div class="section-inner">
-					<div class="anim-item text-center mb-10" style="--delay: 0ms">
-						<span class="text-xs tracking-widest opacity-40 font-retro text-lg">{lang === 'en' ? 'FUNDAMENTAL' : 'FUNDAMENTO'}</span>
-						<h2 class="font-retro text-5xl uppercase tracking-tight">Stack vs Heap</h2>
-						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'First understand how C organizes memory. Without this, nothing that follows makes sense.' : 'Primero entend&eacute; c&oacute;mo C organiza la memoria. Sin esto, nada de lo que viene tiene sentido.'}</p>
-					</div>
-
-					<div class="flex gap-6 split-grid">
-						<!-- STACK -->
-						<div class="flex-1 anim-item memory-col stack-col" style="--delay: 150ms">
-							<div class="memory-label" style="color: var(--primary)">STACK</div>
-							<p class="text-xs opacity-50 text-center mb-4">{lang === 'en' ? 'Local variables and references. LIFO.' : 'Variables locales y referencias. LIFO.'}</p>
-
-							<div class="stack-frame prim-frame anim-item" style="--delay: 300ms">
-								<span style="color: #f59e0b">int x</span>
-								<span style="color: #f59e0b">42</span>
-							</div>
-							<div class="stack-frame prim-frame anim-item" style="--delay: 400ms">
-								<span style="color: #f59e0b">boolean b</span>
-								<span style="color: #f59e0b">true</span>
-							</div>
-							<div class="stack-frame ref-frame anim-item" style="--delay: 500ms">
-								<span style="color: #22d3ee">int[] nums</span>
-								<span style="color: #22d3ee" class="text-xs">&#x2192; 0x4A2F</span>
-							</div>
-							<div class="stack-frame ref-frame anim-item" style="--delay: 600ms">
-								<span style="color: #22d3ee">Persona p</span>
-								<span style="color: #22d3ee" class="text-xs">&#x2192; 0x8C1D</span>
-							</div>
-
-							<p class="text-xs opacity-40 mt-4 text-center">
-								{lang === 'en' ? 'Primitives: the value lives here.' : 'Primitivos: el valor vive ac&aacute;.'}<br>
-								{lang === 'en' ? 'Objects: only the address (reference).' : 'Objetos: solo la direcci&oacute;n (referencia).'}
-							</p>
-						</div>
-
-						<!-- HEAP -->
-						<div class="flex-1 anim-item memory-col heap-col" style="--delay: 300ms">
-							<div class="memory-label" style="color: #22d3ee">HEAP</div>
-							<p class="text-xs opacity-50 text-center mb-4">{lang === 'en' ? 'Real objects. Managed by the GC.' : 'Objetos reales. Gestionado por el GC.'}</p>
-
-							<div class="flex flex-wrap justify-around">
-								<div class="heap-object anim-item" style="--delay: 500ms">
-									<div class="heap-addr">0x4A2F</div>
-									<div class="font-retro text-xl" style="color: var(--primary)">int[ ]</div>
-									<div class="text-xs mt-1 opacity-70">[ 1, 2, 3 ]</div>
-								</div>
-								<div class="heap-object anim-item" style="--delay: 650ms">
-									<div class="heap-addr">0x8C1D</div>
-									<div class="font-retro text-xl" style="color: #c678dd">Persona</div>
-									<div class="text-xs mt-1 opacity-70">nombre: "Ana"</div>
-								</div>
-								<div class="heap-object anim-item" style="--delay: 800ms">
-									<div class="heap-addr">0x3F0B</div>
-									<div class="font-retro text-xl" style="color: #f59e0b">char *</div>
-									<div class="text-xs mt-1 opacity-70">"Hola"</div>
-								</div>
-							</div>
-
-							<p class="text-xs opacity-40 mt-4 text-center">
-								{lang === 'en' ? 'Real objects live here.' : 'Los objetos reales viven ac&aacute;.'}<br>
-								{lang === 'en' ? 'The Stack holds the address to reach them.' : 'El Stack guarda la direcci&oacute;n para llegar.'}
-							</p>
-						</div>
-					</div>
-
-					<div class="anim-item mt-6 type-card" style="--delay: 700ms">
-						<p class="text-xs opacity-50 mb-2">{lang === 'en' ? 'THE FUNDAMENTAL RULE' : 'LA REGLA FUNDAMENTAL'}</p>
-						<p class="text-sm">
-							{lang === 'en' ? 'When C passes something to a function, what travels is the content of the variable on the Stack.' : 'Cuando C pasa algo a una funci&oacute;n, lo que viaja es el contenido de la variable en el Stack.'}
-							{lang === 'en' ? 'For primitives, that is the' : 'Para primitivos eso es el'} <strong style="color: #f59e0b">{lang === 'en' ? 'direct value' : 'valor directo'}</strong>.
-							{lang === 'en' ? 'For objects, that is the' : 'Para objetos eso es la'} <strong style="color: #22d3ee">{lang === 'en' ? 'memory address' : 'direcci&oacute;n de memoria'}</strong> ({lang === 'en' ? 'the reference' : 'la referencia'}).
-							{lang === 'en' ? 'In BOTH cases: it is copied.' : 'En AMBOS casos: se copia.'}
-						</p>
-					</div>
-				</div>
-			</section>
-
-			<hr class="section-divider" />
-
-			<!-- ======================== SECTION 3: PASO POR VALOR (primitivos) ======================== -->
-			<section class="section section-hidden" id="sec-primitivos">
-				<div class="section-inner">
-					<div class="anim-item text-center mb-10" style="--delay: 0ms">
-						<span class="text-xs tracking-widest opacity-40 font-retro text-lg">{lang === 'en' ? 'CASE 01' : 'CASO 01'}</span>
-						<h2 class="font-retro text-5xl uppercase tracking-tight">{lang === 'en' ? 'Pass by Value' : 'Paso por Valor'}</h2>
-						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'With primitives (int, double, boolean, char...)' : 'Con primitivos (int, double, boolean, char...)'}</p>
-					</div>
-
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-						<!-- C&oacute;digo -->
-						<div>
-							<div class="anim-item code-block text-xs mb-4" style="--delay: 150ms">
-								<span class="code-keyword">void</span> <span class="code-result">cambiar</span>(<span class="code-type">int</span> x) &lbrace;<br>
-								&nbsp;&nbsp;x = <span class="code-number">99</span>;<br>
-								&nbsp;&nbsp;<span class="code-comment">// x es una COPIA local</span><br>
-								&rbrace;<br>
-								<br>
-								<span class="code-type">int</span> a = <span class="code-number">5</span>;<br>
-								<span class="code-result">cambiar</span>(a);<br>
-								printf("%d\n", a); <span class="code-comment">// 5 &larr; no cambi&oacute;</span>
-							</div>
-
-							<div class="anim-item type-card" style="--delay: 300ms">
-								<p class="text-xs opacity-50 mb-1">{lang === 'en' ? 'WHY' : 'POR QU&Eacute;'}</p>
-								<p class="text-sm opacity-80">
-									{lang === 'en' ? 'C copies the value' : 'C copia el valor'} <span style="color: #f59e0b">5</span> {lang === 'en' ? 'into a new variable' : 'en una nueva variable'} <span style="color: #f59e0b">x</span>.
-									{lang === 'en' ? 'Any change to' : 'Cualquier cambio a'} <code style="color: #f59e0b">x</code> {lang === 'en' ? 'is local to the method.' : 'es local al m&eacute;todo.'}
-									<code style="color: var(--primary)">a</code> {lang === 'en' ? 'is never touched.' : 'nunca se toca.'}
-								</p>
-							</div>
-						</div>
-
-						<!-- Animaci&oacute;n paso a paso -->
-						<div class="anim-item" style="--delay: 200ms">
-							<p class="text-xs opacity-40 mb-4 tracking-widest text-center">{lang === 'en' ? 'VISUALIZATION' : 'VISUALIZACI&Oacute;N'}</p>
-
-							<div class="flex justify-center gap-4 items-center step-visual" id="prim-visual">
-								<!-- Caja a -->
-								<div class="anim-box anim-box-prim" id="prim-box-a">
-									<div class="anim-box-var">a</div>
-									<div class="anim-box-val" id="prim-val-a" style="color: #f59e0b">5</div>
-								</div>
-
-								<!-- Flecha -->
-								<div class="anim-arrow" id="prim-arrow">
-									<span style="color: #f59e0b; font-family: 'VT323', monospace; font-size: 2rem">&#x2500;&#x2500;&#x2500;&gt;</span>
-									<span style="color: #f59e0b; font-size: 0.6rem; margin-top: -8px">{lang === 'en' ? 'copy' : 'copia'}</span>
-								</div>
-
-								<!-- Caja x -->
-								<div class="anim-box anim-box-prim" id="prim-box-x" style="opacity: 0">
-									<div class="anim-box-var">{lang === 'en' ? 'x (copy)' : 'x (copia)'}</div>
-									<div class="anim-box-val" id="prim-val-x" style="color: #f59e0b">5</div>
-								</div>
-							</div>
-
-							<div class="step-result text-center mt-4" id="prim-step2">
-								<p class="text-xs opacity-50 mb-2">{lang === 'en' ? 'x changes to 99...' : 'x cambia a 99...'}</p>
-								<p class="text-sm opacity-80">{lang === 'en' ? '...but a is still' : '...pero a sigue siendo'} <span class="font-retro text-2xl" style="color: var(--primary)">5</span> &nbsp;<span style="color: var(--primary)">&#10003;</span></p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			<hr class="section-divider" />
-
-			<!-- ======================== SECTION 4: PASO POR VALOR (objetos) ======================== -->
-			<section class="section section-hidden" id="sec-objetos">
-				<div class="section-inner">
-					<div class="anim-item text-center mb-10" style="--delay: 0ms">
-						<span class="text-xs tracking-widest font-retro text-lg" style="color: #f59e0b">{lang === 'en' ? 'CASE 02 — THE TRICKY' : 'CASO 02 &mdash; EL TRICKY'}</span>
-						<h2 class="font-retro text-5xl uppercase tracking-tight">{lang === 'en' ? 'Objects: The Reference is Copied' : 'Objetos: La Referencia se Copia'}</h2>
-						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'Both variables point to the SAME object in the heap' : 'Ambas variables apuntan al MISMO objeto en el heap'}</p>
-					</div>
-
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-						<div>
-							<div class="anim-item code-block text-xs mb-4" style="--delay: 150ms">
-								<span class="code-keyword">void</span> <span class="code-result">modificar</span>(<span class="code-type">int</span>[] arr) &lbrace;<br>
-								&nbsp;&nbsp;arr[<span class="code-number">0</span>] = <span class="code-number">99</span>;<br>
-								&nbsp;&nbsp;<span class="code-comment">// arr apunta al MISMO objeto</span><br>
-								&rbrace;<br>
-								<br>
-								<span class="code-type">int</span>[] nums = &lbrace;<span class="code-number">1</span>,<span class="code-number">2</span>,<span class="code-number">3</span>&rbrace;;<br>
-								<span class="code-result">modificar</span>(nums);<br>
-								printf("%d\n", nums[<span class="code-number">0</span>]); <span class="code-comment">// 99!</span>
-							</div>
-
-							<div class="anim-item type-card" style="--delay: 300ms">
-								<p class="text-xs opacity-50 mb-1">{lang === 'en' ? 'WHY' : 'POR QU&Eacute;'}</p>
-								<p class="text-sm opacity-80">
-									<code style="color: #22d3ee">arr</code> {lang === 'en' ? 'receives a COPY of the reference (the address' : 'recibe una COPIA de la referencia (la direcci&oacute;n'} <code>0x4A2F</code>).
-									{lang === 'en' ? 'Both point to the same array in the heap.' : 'Ambas apuntan al mismo array en el heap.'}
-									{lang === 'en' ? 'Modifying' : 'Modificar'} <code style="color: #22d3ee">arr[0]</code> {lang === 'en' ? 'modifies the real object, and' : 'modifica el objeto real, y'}
-									<code style="color: var(--primary)">nums</code> {lang === 'en' ? 'sees it.' : 'lo ve.'}
-								</p>
-							</div>
-						</div>
-
-						<!-- Diagrama de referencias -->
-						<div class="anim-item" style="--delay: 200ms">
-							<p class="text-xs opacity-40 mb-4 tracking-widest text-center">{lang === 'en' ? 'MEMORY DIAGRAM' : 'DIAGRAMA DE MEMORIA'}</p>
-
-							<div id="obj-visual" class="space-y-4">
-								<!-- Stack -->
-								<div class="memory-col stack-col" style="min-height: auto; padding: 12px 16px;">
-									<div class="memory-label" style="font-size: 1rem; margin-bottom: 8px">STACK</div>
-									<div class="flex gap-4 flex-wrap">
-										<div class="stack-frame ref-frame flex-1" style="margin-bottom: 0">
-											<span style="color: #22d3ee">nums</span>
-											<span style="color: #22d3ee; font-size: 0.75rem">&#x2192; 0x4A2F</span>
-										</div>
-										<div class="stack-frame ref-frame flex-1" style="margin-bottom: 0; opacity: 0" id="obj-arr-frame">
-											<span style="color: #22d3ee">{lang === 'en' ? 'arr (copy)' : 'arr (copia)'}</span>
-											<span style="color: #22d3ee; font-size: 0.75rem">&#x2192; 0x4A2F</span>
-										</div>
-									</div>
-								</div>
-
-								<!-- Heap -->
-								<div class="memory-col heap-col" style="min-height: auto; padding: 12px 16px;">
-									<div class="memory-label" style="font-size: 1rem; margin-bottom: 8px">HEAP</div>
-									<div class="heap-object" id="obj-heap-arr">
-										<div class="heap-addr">0x4A2F</div>
-										<div class="font-retro text-lg" style="color: var(--primary)" id="obj-heap-content">[ 1, 2, 3 ]</div>
-									</div>
-								</div>
-
-								<div class="step-result text-center" id="obj-step-result">
-									<span class="step-badge step-badge-warn">arr[0] = 99 &rarr; nums[0] == 99</span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			<hr class="section-divider" />
-
-			<!-- ======================== SECTION 5: LA TRAMPA ======================== -->
-			<section class="section section-hidden" id="sec-trampa">
-				<div class="section-inner">
-					<div class="anim-item text-center mb-10" style="--delay: 0ms">
-						<span class="text-xs tracking-widest font-retro text-lg" style="color: #ef4444">{lang === 'en' ? 'CASE 03 — THE TEST' : 'CASO 03 &mdash; LA PRUEBA'}</span>
-						<h2 class="font-retro text-5xl uppercase tracking-tight" style="color: #ef4444">{lang === 'en' ? 'Reassigning the Reference' : 'Reasignar la Referencia'}</h2>
-						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'This proves THAT C copies pointers by value' : 'Esto prueba QUE C copia los punteros por valor'}</p>
-					</div>
-
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-						<div>
-							<div class="anim-item code-block text-xs mb-4" style="--delay: 150ms">
-								<span class="code-keyword">void</span> <span class="code-result">reasignar</span>(<span class="code-type">int</span>[] arr) &lbrace;<br>
-								&nbsp;&nbsp;arr = <span class="code-keyword">new</span> <span class="code-type">int</span>[]&lbrace;<span class="code-number">99</span>,<span class="code-number">99</span>,<span class="code-number">99</span>&rbrace;;<br>
-								&nbsp;&nbsp;<span class="code-comment">// arr ahora apunta a OTRO objeto</span><br>
-								&nbsp;&nbsp;<span class="code-comment">// nums NO se entera</span><br>
-								&rbrace;<br>
-								<br>
-								<span class="code-type">int</span>[] nums = &lbrace;<span class="code-number">1</span>,<span class="code-number">2</span>,<span class="code-number">3</span>&rbrace;;<br>
-								<span class="code-result">reasignar</span>(nums);<br>
-								printf("%d\n", nums[<span class="code-number">0</span>]); <span class="code-comment">// 1 &larr; no cambi&oacute;</span>
-							</div>
-
-							<div class="anim-item type-card" style="--delay: 300ms">
-								<p class="text-xs opacity-50 mb-1">{lang === 'en' ? 'THE KEY' : 'LA CLAVE'}</p>
-								<p class="text-sm opacity-80">
-									<code style="color: #ef4444">arr = new int[]...</code> {lang === 'en' ? 'only changes where the local COPY points.' : 'solo cambia a d&oacute;nde apunta la COPIA local.'}
-									{lang === 'en' ? 'The original reference' : 'La referencia original'} <code style="color: var(--primary)">nums</code> {lang === 'en' ? 'in the caller\'s Stack' : 'en el Stack del llamador'}
-									{lang === 'en' ? 'is not modified. It still points to the original object.' : 'no se modifica. Sigue apuntando al objeto original.'}
-									<strong>{lang === 'en' ? 'This is the proof that in C pointers are also passed BY VALUE.' : 'Esta es la prueba de que en C los punteros tambi&eacute;n se pasan POR VALOR.'}</strong>
-								</p>
-							</div>
-						</div>
-
-						<!-- Diagrama trampa -->
-						<div class="anim-item" style="--delay: 200ms">
-							<p class="text-xs opacity-40 mb-4 tracking-widest text-center">{lang === 'en' ? 'DIAGRAM' : 'DIAGRAMA'}</p>
-
-							<div id="trap-visual" class="space-y-4">
-								<div class="memory-col stack-col" style="min-height: auto; padding: 12px 16px;">
-									<div class="memory-label" style="font-size: 1rem; margin-bottom: 8px">STACK</div>
-									<div class="flex gap-4 flex-wrap">
-										<div class="stack-frame ref-frame flex-1" style="margin-bottom: 0">
-											<span style="color: var(--primary)">nums</span>
-											<span style="color: var(--primary); font-size: 0.75rem">&#x2192; 0x4A2F</span>
-										</div>
-										<div class="stack-frame flex-1" style="margin-bottom: 0; border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.05); opacity: 0" id="trap-arr-frame">
-											<span style="color: #ef4444">{lang === 'en' ? 'arr (copy)' : 'arr (copia)'}</span>
-											<span style="color: #ef4444; font-size: 0.75rem" id="trap-arr-addr">&#x2192; 0x4A2F</span>
-										</div>
-									</div>
-								</div>
-
-								<div class="memory-col heap-col" style="min-height: auto; padding: 12px 16px;">
-									<div class="memory-label" style="font-size: 1rem; margin-bottom: 8px">HEAP</div>
-									<div class="flex gap-4 flex-wrap">
-										<div class="heap-object">
-											<div class="heap-addr">0x4A2F</div>
-											<div class="font-retro text-lg" style="color: var(--primary)">[1, 2, 3]</div>
-											<div class="text-xs opacity-50">&larr; {lang === 'en' ? 'nums points here' : 'nums apunta ac&aacute;'}</div>
-										</div>
-										<div class="heap-object" style="opacity: 0; border-color: rgba(239,68,68,0.4)" id="trap-new-obj">
-											<div class="heap-addr">0x9E3C</div>
-											<div class="font-retro text-lg" style="color: #ef4444">[99,99,99]</div>
-											<div class="text-xs opacity-50" style="color: #ef4444">&larr; {lang === 'en' ? 'arr reassigned' : 'arr reasignado'}</div>
-										</div>
-									</div>
-								</div>
-
-								<div class="step-result text-center" id="trap-step-result">
-									<span class="step-badge step-badge-ok">{lang === 'en' ? 'nums[0] is still 1' : 'nums[0] sigue siendo 1'}</span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			<hr class="section-divider" />
-
-			<!-- ======================== SECTION 6: OBJETOS CUSTOM ======================== -->
-			<section class="section section-hidden" id="sec-persona">
-				<div class="section-inner">
-					<div class="anim-item text-center mb-10" style="--delay: 0ms">
-						<span class="text-xs tracking-widest opacity-40 font-retro text-lg">{lang === 'en' ? 'CASE 04' : 'CASO 04'}</span>
-						<h2 class="font-retro text-5xl uppercase tracking-tight">{lang === 'en' ? 'Person Class' : 'Clase Persona'}</h2>
-						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'Modifying fields vs reassigning the object' : 'Modificar campos vs reasignar el objeto'}</p>
-					</div>
-
-					<div class="flex gap-8 split-grid">
-						<!-- Modificar campo: S&Iacute; afecta -->
-						<div class="split-col flex-1 anim-item" style="--delay: 150ms">
-							<h3 class="font-retro text-2xl mb-3" style="color: var(--primary)">&#10003; {lang === 'en' ? 'Modify the field' : 'Modifica el campo'}</h3>
-							<div class="code-block text-xs mb-3">
-								<span class="code-keyword">class</span> <span class="code-class">Persona</span> &lbrace;<br>
-								&nbsp;&nbsp;<span class="code-type">char</span> nombre[<span class="code-number">20</span>];<br>
-								&rbrace;<br>
-								<br>
-								<span class="code-keyword">void</span> <span class="code-result">cambiarNombre</span>(<span class="code-class">Persona</span> p) &lbrace;<br>
-								&nbsp;&nbsp;p.nombre = <span class="code-string">"Nuevo"</span>;<br>
-								&rbrace;<br>
-								<br>
-								<span class="code-class">Persona</span> ana = <span class="code-keyword">new</span> <span class="code-class">Persona</span>();<br>
-								ana.nombre = <span class="code-string">"Ana"</span>;<br>
-								<span class="code-result">cambiarNombre</span>(ana);<br>
-								<span class="code-comment">// ana.nombre == "Nuevo" &#10003;</span>
-							</div>
-							<div class="type-card">
-								<p class="text-xs opacity-50 mb-1">{lang === 'en' ? 'RESULT' : 'RESULTADO'}</p>
-								<p class="text-sm"><code style="color: #22d3ee">p</code> {lang === 'en' ? 'points to the same object as' : 'apunta al mismo objeto que'} <code style="color: var(--primary)">ana</code>. {lang === 'en' ? 'Modifying' : 'Modificar'} <code style="color: #22d3ee">p.nombre</code> {lang === 'en' ? 'changes the shared object.' : 'cambia el objeto compartido.'}</p>
-							</div>
-						</div>
-
-						<!-- Reasignar: NO afecta -->
-						<div class="split-col flex-1 anim-item" style="--delay: 300ms">
-							<h3 class="font-retro text-2xl mb-3" style="color: #ef4444">&#10007; {lang === 'en' ? 'Reassign the reference' : 'Reasigna la referencia'}</h3>
-							<div class="code-block text-xs mb-3">
-								<span class="code-keyword">void</span> <span class="code-result">reemplazar</span>(<span class="code-class">Persona</span> p) &lbrace;<br>
-								&nbsp;&nbsp;p = <span class="code-keyword">new</span> <span class="code-class">Persona</span>();<br>
-								&nbsp;&nbsp;p.nombre = <span class="code-string">"Otro"</span>;<br>
-								&nbsp;&nbsp;<span class="code-comment">// p apunta a un objeto nuevo</span><br>
-								&rbrace;<br>
-								<br>
-								<span class="code-class">Persona</span> ana = <span class="code-keyword">new</span> <span class="code-class">Persona</span>();<br>
-								ana.nombre = <span class="code-string">"Ana"</span>;<br>
-								<span class="code-result">reemplazar</span>(ana);<br>
-								<span class="code-comment">// ana.nombre == "Ana" (sin cambios)</span>
-							</div>
-							<div class="type-card" style="border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.04)">
-								<p class="text-xs opacity-50 mb-1">{lang === 'en' ? 'RESULT' : 'RESULTADO'}</p>
-								<p class="text-sm">{lang === 'en' ? 'The local copy' : 'La copia local'} <code style="color: #ef4444">p</code> {lang === 'en' ? 'points to another object.' : 'apunta a otro objeto.'} <code style="color: var(--primary)">ana</code> {lang === 'en' ? 'still points to the original.' : 'sigue apuntando al original.'}</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			<hr class="section-divider" />
-
-			<!-- ======================== SECTION 7: STRINGS ======================== -->
-			<section class="section section-hidden" id="sec-strings">
-				<div class="section-inner">
-					<div class="anim-item text-center mb-10" style="--delay: 0ms">
-						<span class="text-xs tracking-widest font-retro text-lg" style="color: #f59e0b">{lang === 'en' ? 'SPECIAL CASE' : 'CASO ESPECIAL'}</span>
-						<h2 class="font-retro text-5xl uppercase tracking-tight">{lang === 'en' ? 'Strings in C: Mutable Arrays' : 'Strings en C: arreglos mutables'}</h2>
-						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'In C, a char[] array can be modified character by character if you have writable memory.' : 'En C, un arreglo de char se puede modificar car&aacute;cter por car&aacute;cter si ten&eacute;s memoria escribible.'}</p>
-					</div>
-
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-						<div>
-							<div class="anim-item code-block text-xs mb-4" style="--delay: 150ms">
-								<span class="code-keyword">void</span> <span class="code-result">cambiar</span>(<span class="code-type">char</span> s[]) &lbrace;<br>
-								&nbsp;&nbsp;s[<span class="code-number">0</span>] = <span class="code-string">'Z'</span>;<br>
-								&nbsp;&nbsp;<span class="code-comment">// modifica el arreglo original</span><br>
-								&rbrace;<br>
-								<br>
-								<span class="code-type">char</span> nombre[] = <span class="code-string">"Ana"</span>;<br>
-								<span class="code-result">cambiar</span>(nombre);<br>
-								printf("%s\n", nombre); <span class="code-comment">// "Zna"</span>
-							</div>
-
-							<div class="anim-item mb-4" style="--delay: 300ms">
-								<div class="type-card mb-3">
-									<p class="text-xs opacity-50 mb-1">{lang === 'en' ? 'IMMUTABILITY' : 'INMUTABILIDAD'}</p>
-									<p class="text-sm opacity-80">
-										<code style="color: #f59e0b">char[]</code> {lang === 'en' ? 'in C is mutable if the memory is writable.' : 'en C es mutable si la memoria es escribible.'}
-										<code>s[0] = 'Z'</code> {lang === 'en' ? 'modifies the same received array.' : 'modifica el mismo arreglo recibido.'}
-										{lang === 'en' ? 'The function writes directly on the same shared memory.' : 'La funci&oacute;n escribe directamente sobre la misma memoria compartida.'}
-									</p>
-								</div>
-								<div class="type-card">
-									<p class="text-xs opacity-50 mb-1">{lang === 'en' ? 'CHAR ARRAY' : 'ARREGLO DE CHARS'}</p>
-									<p class="text-sm opacity-80">
-										{lang === 'en' ? 'Literals are often read-only; if you want to mutate them, use your own char array.' : 'Los literales suelen ser de solo lectura; si quer&eacute;s mutarlos, us&aacute; un arreglo de chars propio.'}
-										{lang === 'en' ? 'Use' : 'Us&aacute;'} <code>strcmp()</code> {lang === 'en' ? 'to compare content, don\'t compare addresses if you want to know if they say the same.' : 'para comparar contenido, no compares direcciones si quer&eacute;s saber si dicen lo mismo.'}
-									</p>
-								</div>
-							</div>
-						</div>
-
-						<!-- Visual String immutability -->
-						<div class="anim-item" style="--delay: 200ms">
-							<p class="text-xs opacity-40 mb-4 tracking-widest text-center">{lang === 'en' ? 'WHAT HAPPENS IN MEMORY' : 'QU&Eacute; PASA EN MEMORIA'}</p>
-
-							<div class="space-y-3">
-								<div class="memory-col stack-col" style="min-height: auto; padding: 12px 16px;">
-									<div class="memory-label" style="font-size: 1rem; margin-bottom: 8px">STACK</div>
-									<div class="flex gap-4 flex-wrap">
-										<div class="stack-frame ref-frame flex-1" style="margin-bottom: 0">
-											<span style="color: var(--primary)">nombre</span>
-											<span style="color: var(--primary); font-size: 0.75rem">&#x2192; 0xA1B2 &nbsp;&#10003;</span>
-										</div>
-										<div class="stack-frame flex-1" style="margin-bottom: 0; border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.05)">
-											<span style="color: #f59e0b">{lang === 'en' ? 's (copy)' : 's (copia)'}</span>
-											<span style="color: #ef4444; font-size: 0.7rem">&#x2192; 0xC3D4 (new)</span>
-										</div>
-									</div>
-								</div>
-
-								<div class="memory-col heap-col" style="min-height: auto; padding: 12px 16px;">
-									<div class="memory-label" style="font-size: 1rem; margin-bottom: 8px">HEAP</div>
-									<div class="flex gap-4 flex-wrap">
-										<div class="heap-object">
-											<div class="heap-addr">0xA1B2 (buffer char[])</div>
-											<div class="font-retro text-xl" style="color: var(--primary)">"Ana"</div>
-											<div class="text-xs opacity-50">{lang === 'en' ? 'original, immutable' : 'original, inmutable'}</div>
-										</div>
-										<div class="heap-object" style="border-color: rgba(245,158,11,0.5)">
-											<div class="heap-addr">0xC3D4</div>
-											<div class="font-retro text-xl" style="color: #f59e0b">"Nuevo"</div>
-											<div class="text-xs opacity-50">{lang === 'en' ? 'new object' : 'objeto nuevo'}</div>
-										</div>
-									</div>
-								</div>
-
-								<div class="text-center">
-									<span class="step-badge step-badge-ok">{lang === 'en' ? 'nombre is still "Ana"' : 'nombre sigue siendo "Ana"'}</span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			<hr class="section-divider" />
-
-			<!-- ======================== SECTION 8: DIAGRAMA COMPLETO ======================== -->
-			<section class="section section-hidden" id="sec-diagrama">
-				<div class="section-inner">
-					<div class="anim-item text-center mb-10" style="--delay: 0ms">
-						<span class="text-xs tracking-widest opacity-40 font-retro text-lg">{lang === 'en' ? 'SNAPSHOT' : 'SNAPSHOT'}</span>
-						<h2 class="font-retro text-5xl uppercase tracking-tight">{lang === 'en' ? 'Complete Memory Diagram' : 'Diagrama de Memoria Completo'}</h2>
-						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'Everything together. Primitives and references in action.' : 'Todo junto. Primitivos y referencias en acci&oacute;n.'}</p>
-					</div>
-
-					<div class="flex gap-6 split-grid">
-						<!-- Stack completo -->
-						<div class="flex-1 anim-item memory-col stack-col" style="--delay: 150ms">
-							<div class="memory-label" style="color: var(--primary)">STACK</div>
-
-							<div class="stack-frame prim-frame anim-item" style="--delay: 250ms">
-								<span style="color: #f59e0b">int edad</span>
-								<span style="color: #f59e0b">25</span>
-							</div>
-							<div class="stack-frame prim-frame anim-item" style="--delay: 350ms">
-								<span style="color: #f59e0b">double sueldo</span>
-								<span style="color: #f59e0b">3500.0</span>
-							</div>
-							<div class="stack-frame prim-frame anim-item" style="--delay: 450ms">
-								<span style="color: #f59e0b">boolean activo</span>
-								<span style="color: #f59e0b">true</span>
-							</div>
-							<div class="stack-frame ref-frame anim-item" style="--delay: 550ms">
-								<span style="color: #22d3ee">char nombre[]</span>
-								<span style="color: #22d3ee; font-size: 0.75rem">&#x2192; 0xA1B2</span>
-							</div>
-							<div class="stack-frame ref-frame anim-item" style="--delay: 650ms">
-								<span style="color: #22d3ee">int[] scores</span>
-								<span style="color: #22d3ee; font-size: 0.75rem">&#x2192; 0x4A2F</span>
-							</div>
-							<div class="stack-frame ref-frame anim-item" style="--delay: 750ms">
-								<span style="color: #22d3ee">Persona p</span>
-								<span style="color: #22d3ee; font-size: 0.75rem">&#x2192; 0x8C1D</span>
-							</div>
-
-							<div class="mt-4 text-xs opacity-30 text-center">
-								<span style="color: #f59e0b">&#9632;</span> {lang === 'en' ? 'primitives: direct value' : 'primitivos: valor directo'} &nbsp;
-								<span style="color: #22d3ee">&#9632;</span> {lang === 'en' ? 'objects: address' : 'objetos: direcci&oacute;n'}
-							</div>
-						</div>
-
-						<!-- Heap completo -->
-						<div class="flex-1 anim-item memory-col heap-col" style="--delay: 300ms">
-							<div class="memory-label" style="color: #22d3ee">HEAP</div>
-
-							<div class="flex flex-wrap gap-2">
-								<div class="heap-object anim-item" style="--delay: 500ms">
-									<div class="heap-addr">0xA1B2</div>
-									<div class="font-retro text-lg" style="color: #f59e0b">char[]</div>
-									<div class="text-xs opacity-70">"Ana"</div>
-								</div>
-								<div class="heap-object anim-item" style="--delay: 650ms">
-									<div class="heap-addr">0x4A2F</div>
-									<div class="font-retro text-lg" style="color: var(--primary)">int[]</div>
-									<div class="text-xs opacity-70">[90, 85, 78]</div>
-								</div>
-								<div class="heap-object anim-item" style="--delay: 800ms">
-									<div class="heap-addr">0x8C1D</div>
-									<div class="font-retro text-lg" style="color: #c678dd">Persona</div>
-									<div class="text-xs opacity-70">nombre: &#x2192; 0xA1B2</div>
-									<div class="text-xs opacity-70">edad: 25</div>
-								</div>
-							</div>
-
-							<p class="text-xs opacity-30 mt-4 text-center">
-								{lang === 'en' ? 'Objects do not live in the Stack.' : 'Los objetos no viven en el Stack.'}<br>
-								{lang === 'en' ? 'Only the address to find them.' : 'Solo la direcci&oacute;n para encontrarlos.'}
-							</p>
-						</div>
-					</div>
-
-					<div class="anim-item mt-6 type-card" style="--delay: 800ms">
-						<p class="text-xs opacity-50 mb-2">{lang === 'en' ? 'NOTE ABOUT PRIMITIVES' : 'NOTA SOBRE PRIMITIVOS'}</p>
-						<p class="text-sm opacity-80">
-							{lang === 'en' ? 'Primitives (' : 'Los primitivos ('}<code style="color: #f59e0b">int</code>, <code style="color: #f59e0b">double</code>, <code style="color: #f59e0b">boolean</code>, <code style="color: #f59e0b">char</code>, <code style="color: #f59e0b">long</code>, <code style="color: #f59e0b">float</code>, <code style="color: #f59e0b">short</code>, <code style="color: #f59e0b">byte</code>)
-							{lang === 'en' ? ' are the ONLY ones that live directly on the Stack. Everything else — including dynamic buffers, arrays allocated on the heap, and structs managed with pointers — lives on the Heap.' : ' son los &Uacute;NICOS que viven directamente en el Stack. Todo lo dem&aacute;s &mdash; incluyendo buffers din&aacute;micos, arrays reservados en heap y structs gestionados con punteros &mdash; vive en el Heap.'}
-						</p>
-					</div>
-				</div>
-			</section>
-
-			<hr class="section-divider" />
-
-			<!-- ======================== SECTION 9: REGLAS DE ORO ======================== -->
-			<section class="section section-hidden" id="sec-reglas">
-				<div class="section-inner">
-					<div class="anim-item text-center mb-10" style="--delay: 0ms">
-						<span class="text-xs tracking-widest opacity-40 font-retro text-lg">{lang === 'en' ? 'SYNTHESIS' : 'S&Iacute;NTESIS'}</span>
-						<h2 class="font-retro text-5xl uppercase tracking-tight">{lang === 'en' ? 'Golden Rules' : 'Reglas de Oro'}</h2>
-						<p class="text-sm opacity-50 mt-2">{lang === 'en' ? 'Write them down. They are immutable.' : 'Grab&aacute;telas. Son inamovibles.'}</p>
-					</div>
-
-					<div class="space-y-4" id="rules-container">
-						<!-- Regla 1 - gold -->
-						<div class="rule-card gold" id="rule-1">
-							<div class="flex items-center gap-4">
-								<div class="rule-num" style="color: #f59e0b">01</div>
-								<div>
-									<p class="font-bold text-lg" style="color: #f59e0b">{lang === 'en' ? 'C ALWAYS passes by value' : 'C SIEMPRE pasa por valor'}</p>
-									<p class="text-sm opacity-70 mt-1">{lang === 'en' ? 'No exceptions. Pointers don\'t change this rule: they just copy addresses.' : 'Sin excepciones. Los punteros no cambian esta regla: solo copian direcciones.'}</p>
-								</div>
-							</div>
-						</div>
-
-						<!-- Regla 2 -->
-						<div class="rule-card green" id="rule-2">
-							<div class="flex items-center gap-4">
-								<div class="rule-num" style="color: var(--primary)">02</div>
-								<div>
-									<p class="font-bold" style="color: var(--primary)">{lang === 'en' ? 'For primitives: the VALUE is copied' : 'Para primitivos: se copia el VALOR'}</p>
-									<p class="text-sm opacity-70 mt-1">{lang === 'en' ? 'The method receives a copy. Changing it does not affect the original.' : 'El m&eacute;todo recibe una copia. Cambiarla no afecta al original.'}</p>
-								</div>
-							</div>
-						</div>
-
-						<!-- Regla 3 -->
-						<div class="rule-card cyan" id="rule-3">
-							<div class="flex items-center gap-4">
-								<div class="rule-num" style="color: #22d3ee">03</div>
-								<div>
-									<p class="font-bold" style="color: #22d3ee">{lang === 'en' ? 'For objects: the REFERENCE is copied' : 'Para objetos: se copia la REFERENCIA'}</p>
-									<p class="text-sm opacity-70 mt-1">{lang === 'en' ? 'The copy contains the same memory address. Both point to the same object.' : 'La copia contiene la misma direcci&oacute;n de memoria. Ambas apuntan al mismo objeto.'}</p>
-								</div>
-							</div>
-						</div>
-
-						<!-- Regla 4 -->
-						<div class="rule-card green" id="rule-4">
-							<div class="flex items-center gap-4">
-								<div class="rule-num" style="color: var(--primary)">04</div>
-								<div>
-									<p class="font-bold" style="color: var(--primary)">{lang === 'en' ? 'Modifying the object through the copy: DOES affect the original' : 'Modificar el objeto a trav&eacute;s de la copia: S&Iacute; afecta al original'}</p>
-									<p class="text-sm opacity-70 mt-1"><code>arr[0] = 99</code>, <code>p.nombre = "X"</code> &mdash; {lang === 'en' ? 'both references see the change.' : 'ambas referencias ven el cambio.'}</p>
-								</div>
-							</div>
-						</div>
-
-						<!-- Regla 5 -->
-						<div class="rule-card red" id="rule-5">
-							<div class="flex items-center gap-4">
-								<div class="rule-num" style="color: #ef4444">05</div>
-								<div>
-									<p class="font-bold" style="color: #ef4444">{lang === 'en' ? 'Reassigning the copied reference: does NOT affect the original' : 'Reasignar la referencia copiada: NO afecta al original'}</p>
-									<p class="text-sm opacity-70 mt-1"><code>arr = new int[]...</code>, <code>p = new Persona()</code> &mdash; {lang === 'en' ? 'only moves the local copy.' : 'solo mueve la copia local.'}</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			<hr class="section-divider" />
-
-			<!-- ======================== SECTION 10: FIN ======================== -->
-			<section class="section section-hidden" id="sec-fin">
-				<div class="section-inner text-center">
-					<div class="anim-item mb-6" style="--delay: 0ms">
-						<div class="text-xs tracking-widest opacity-40 font-retro text-xl">ESTADO: SESION_COMPLETADA</div>
-					</div>
-
-					<div class="anim-item mb-4" style="--delay: 150ms">
-						<h2 class="font-retro text-6xl uppercase tracking-tight" style="text-shadow: 0 0 30px rgba(13,242,89,0.7)">
-							{lang === 'en' ? 'SESSION COMPLETED' : 'SESION FINALIZADA'}
-						</h2>
-					</div>
-
-					<div class="anim-item mb-10" style="--delay: 300ms">
-						<p class="text-sm opacity-50">
-							{lang === 'en' ? 'Now you know the difference between pass by value and use of pointers in C.' : 'Ahora sab&eacute;s la diferencia entre paso por valor y uso de punteros en C.'}<br>
-							{lang === 'en' ? 'Don\'t confuse it with "pass by reference" from other languages.' : 'No la vayas a confundir con "paso por referencia" de otros lenguajes.'}
-						</p>
-					</div>
-
-					<div class="anim-item flex justify-center gap-6 mb-10 flex-wrap" style="--delay: 450ms">
-						<div class="type-card text-left" style="min-width: 200px">
-							<p class="text-xs opacity-50 mb-1" style="color: #f59e0b">{lang === 'en' ? 'PRIMITIVES' : 'PRIMITIVOS'}</p>
-							<p class="text-sm opacity-80">int, double, boolean, char, long, float, short, byte</p>
-							<p class="text-xs opacity-50 mt-1">&#x2192; {lang === 'en' ? 'copy of the value' : 'copia del valor'}</p>
-						</div>
-						<div class="type-card text-left" style="min-width: 200px; border-color: rgba(34,211,238,0.3); background: rgba(34,211,238,0.04)">
-							<p class="text-xs opacity-50 mb-1" style="color: #22d3ee">{lang === 'en' ? 'OBJECTS' : 'OBJETOS'}</p>
-							<p class="text-sm opacity-80">punteros, arrays, structs</p>
-							<p class="text-xs opacity-50 mt-1">&#x2192; {lang === 'en' ? 'copy of the reference' : 'copia de la referencia'}</p>
-						</div>
-					</div>
-
-					<div class="anim-item" style="--delay: 600ms">
-						<p class="text-xs opacity-30 mb-6 tracking-widest">{lang === 'en' ? 'END OF SESSION // DATA PROCESSED CORRECTLY' : 'FIN DE SESION // DATOS PROCESADOS CORRECTAMENTE'}</p>
-						<a href={withBase(lang === 'en' ? '/en/presentaciones' : '/presentaciones')} class="terminal-btn">
-							&#8592; {lang === 'en' ? 'BACK TO PRESENTATIONS' : 'VOLVER A PRESENTACIONES'}
-						</a>
-					</div>
-				</div>
-			</section>
-
-		</main>
 	</div>
+</div>
 
-	<script>
-		// ——— Progress bar ———
-		const progressBar = document.getElementById('progress-bar') as HTMLElement;
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
 
-		function updateProgress(): void {
-			const scrollTop = window.scrollY;
-			const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-			const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-			if (progressBar) progressBar.style.width = `${progress}%`;
+	.pv-screen {
+		min-height: 80vh;
+		font-family: var(--font-body);
+		color: var(--color-text);
+		padding: 1.5rem 1rem 4rem;
+	}
+
+	.pv-shell { max-width: var(--container-max); margin: 0 auto; }
+	.pv-header { margin-bottom: 1.5rem; }
+
+	.pv-badge {
+		display: inline-flex;
+		align-items: center;
+		border: 1px solid var(--color-accent-2-300);
+		background: var(--color-accent-2-100);
+		color: var(--color-accent-2-700);
+		border-radius: 999px;
+		padding: 0.25rem 0.8rem;
+		font-size: 0.75rem;
+		font-family: 'Fira Code', monospace;
+		font-weight: 600;
+	}
+
+	.pv-title {
+		font-family: var(--font-heading);
+		font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+		font-weight: 400;
+		line-height: 1.15;
+		color: var(--color-text);
+		margin: 0.5rem 0 0.25rem;
+	}
+
+	.pv-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.pv-sub.center { text-align: center; }
+
+	.pv-deck-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+	}
+
+	.pv-nav-bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.8rem;
+		padding: 0.8rem 1.2rem;
+		border-bottom: 1px solid var(--color-divider);
+		background: color-mix(in srgb, var(--color-bg) 60%, transparent);
+	}
+
+	.pv-slide-indicator {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-family: 'Fira Code', monospace;
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	.pv-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.pv-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+	.pv-pill-btn {
+		border: 1px solid var(--color-divider);
+		background: var(--color-bg);
+		color: var(--color-text);
+		border-radius: 999px;
+		padding: 0.3rem 0.75rem;
+		font-size: 0.78rem;
+		font-family: var(--font-body);
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.pv-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.pv-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
+
+	.pv-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.pv-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.pv-slide.active { display: block; opacity: 1; transform: translateY(0); }
+
+	.pv-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+	.pv-col { grid-column: span 12; }
+	@media (min-width: 900px) { .pv-col { grid-column: span 6; } }
+
+	.pv-slide-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 400; color: var(--color-text); margin: 0 0 0.8rem; }
+	.pv-slide-title.center { text-align: center; }
+
+	.pv-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin-bottom: 1.2rem; }
+	.pv-concept-box { display: flex; flex-direction: column; gap: 0.6rem; }
+	.pv-concept-item { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 0.65rem 0.9rem; font-size: 0.88rem; line-height: 1.5; }
+	.pv-accent-text { color: var(--color-accent-700); }
+
+	.pv-list { padding-left: 1.2rem; margin: 0 0 1.2rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem; }
+
+	.pv-stack-viz { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.pv-viz-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; color: var(--color-accent-2-700); margin-bottom: 0.75rem; }
+	.pv-frame { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-sm); padding: 0.75rem; }
+	.pv-frame.sub { background: color-mix(in srgb, var(--color-accent-100) 50%, transparent); }
+	.pv-frame-label { font-family: 'Fira Code', monospace; font-size: 0.75rem; font-weight: 700; color: var(--color-accent-700); display: block; margin-bottom: 0.4rem; }
+	.pv-var-row { display: flex; justify-content: space-between; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+	.pv-tag-val { color: var(--color-accent-2-700); font-weight: 600; }
+	.pv-arrow-down { text-align: center; margin: 0.5rem 0; font-size: 0.8rem; font-family: 'Fira Code', monospace; color: var(--color-accent-700); }
+
+	.pv-code-card { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.pv-code-title { background: #2b2722; color: #c0b6a5; padding: 0.4rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid #3a352e; }
+	.pv-code-block { margin: 0; padding: 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; color: #f9f4ed; overflow-x: auto; }
+
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.token-comment { color: #85929e; font-style: italic; }
+
+	/* Simulator */
+	.pv-sim-container { max-width: 800px; margin: 0 auto; }
+	.pv-sim-selector { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+	.pv-lang-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.35rem 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+	.pv-lang-btn:hover { background: var(--color-accent-100); color: var(--color-accent-700); }
+	.pv-lang-btn.active { background: var(--color-accent-700); border-color: var(--color-accent-700); color: #ffffff; }
+
+	.pv-sim-console { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-md); }
+	.pv-sim-head { background: #2b2722; padding: 0.5rem 0.8rem; }
+	.pv-console-label { color: #c0b6a5; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
+	.pv-sim-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.8rem; }
+	.pv-trace-step { font-size: 0.88rem; line-height: 1.5; color: #f9f4ed; background: #2a2520; padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); }
+	.pv-stack-display { font-family: 'Fira Code', monospace; font-size: 0.8rem; color: #76d7c4; background: #141210; padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); }
+	.pv-res-box { background: #1b2e22; border-left: 3px solid #2ecc71; color: #abebc6; padding: 0.6rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.8rem; border-radius: var(--radius-sm); }
+	.pv-sim-actions { padding: 0.8rem 1rem; background: #25211d; display: flex; justify-content: flex-end; border-top: 1px solid #3a352e; }
+
+	.pv-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.pv-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
+	let currentTraceIndex = 0;
+
+	const traceData = {
+		c: {
+			title: 'C: swap(&a, &b) - Punteros',
+			steps: [
+				'Paso 1: main() instancia a=5 (0x10) y b=10 (0x14). Invoca swap(&a, &b).',
+				'Paso 2: swap desreferencia *a y *b modificando las direcciones 0x10 y 0x14 directamente.',
+				'Paso 3: swap finaliza y destruye su stack frame.'
+			],
+			stacks: [
+				'[main: a=5 (0x10), b=10 (0x14)] -> [swap: *a=>0x10, *b=>0x14]',
+				'[main: a=10 (0x10), b=5 (0x14)] (Mutación en proceso)',
+				'[main: a=10, b=5]'
+			],
+			results: [
+				'En proceso...',
+				'En proceso...',
+				'Resultado final en caller: a=10, b=5 (Punteros modificaron el caller)'
+			]
+		},
+		java: {
+			title: 'Java: modify(Dog d) - Copia de Referencia',
+			steps: [
+				'Paso 1: main() crea Dog("Rex") en Heap (ref #101). Invoca modify(d).',
+				'Paso 2: modify() recibe una copia de ref #101. d.setName("Max") muta Heap #101.',
+				'Paso 3: d = new Dog("Fido") reasigna el puntero local a #102. main() mantiene ref #101.'
+			],
+			stacks: [
+				'[main: d=>#101] -> [modify: d=>#101]',
+				'[Heap #101: Dog name="Max"]',
+				'[main: d=>#101 (Dog name="Max")] (re-assignment local destruida)'
+			],
+			results: [
+				'En proceso...',
+				'En proceso...',
+				'Resultado final en caller: Dog name="Max" (Atributo mutó, reasignación ignorada)'
+			]
+		},
+		js: {
+			title: 'JavaScript: update(user) - Value of Reference',
+			steps: [
+				'Paso 1: main invoca update(user) pasando la copia de la referencia del objeto.',
+				'Paso 2: user.age = 30 modifica las propiedades de la referencia compartida.',
+				'Paso 3: user = { age: 99 } reasigna el parámetro local. La referencia externa u no cambia.'
+			],
+			stacks: [
+				'[caller: u=>RefA] -> [update: user=>RefA]',
+				'[RefA: { age: 30 }]',
+				'[caller: u=>RefA ({ age: 30 })]'
+			],
+			results: [
+				'En proceso...',
+				'En proceso...',
+				'Resultado final: u.age es 30 (Propiedad mutada, objeto no reemplazado)'
+			]
+		},
+		py: {
+			title: 'Python: process(lst) - Pass by Assignment',
+			steps: [
+				'Paso 1: data = [1] crea un objeto list en Heap. Invoca process(data).',
+				'Paso 2: lst.append(100) ejecuta mutación in-place en el objeto list.',
+				'Paso 3: lst = [1, 2] crea una lista nueva y re-vincula la etiqueta local lst.'
+			],
+			stacks: [
+				'[caller: data=>List#1] -> [process: lst=>List#1]',
+				'[Heap List#1: [1, 100]]',
+				'[caller: data=>List#1 ([1, 100])]'
+			],
+			results: [
+				'En proceso...',
+				'En proceso...',
+				'Resultado final: data es [1, 100] (Lista mutó in-place)'
+			]
 		}
+	};
 
-		window.addEventListener('scroll', updateProgress, { passive: true });
-		updateProgress();
+	let selectedLang: keyof typeof traceData = 'c';
 
-		// ——— IntersectionObserver for section reveals ———
-		const sections = document.querySelectorAll('.section-hidden');
+	const updateTraceView = () => {
+		const langInfo = traceData[selectedLang];
+		const stepEl = document.getElementById('pv-sim-step');
+		const stackEl = document.getElementById('pv-sim-stack');
+		const resultEl = document.getElementById('pv-sim-result');
+		const titleEl = document.getElementById('pv-sim-title');
 
-		const sectionObserver = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						const el = entry.target as HTMLElement;
-						el.classList.add('section-visible');
-						triggerSectionAnimations(el.id);
-						sectionObserver.unobserve(el);
-					}
-				});
-			},
-			{ threshold: 0.2 }
-		);
+		if (titleEl) titleEl.textContent = langInfo.title;
+		if (stepEl) stepEl.textContent = langInfo.steps[currentTraceIndex];
+		if (stackEl) stackEl.textContent = langInfo.stacks[currentTraceIndex];
+		if (resultEl) resultEl.textContent = langInfo.results[currentTraceIndex];
+	};
 
-		sections.forEach((section) => sectionObserver.observe(section));
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
 
-		// ——— Section-specific animations ———
-		function triggerSectionAnimations(sectionId: string): void {
-			switch (sectionId) {
-				case 'sec-intro':
-					triggerIntroTyping();
-					break;
-				case 'sec-primitivos':
-					triggerPrimAnim();
-					break;
-				case 'sec-objetos':
-					triggerObjAnim();
-					break;
-				case 'sec-trampa':
-					triggerTrampaAnim();
-					break;
-				case 'sec-reglas':
-					triggerRulesAnim();
-					break;
-			}
-		}
-
-		// INTRO: typing animation
-		function triggerIntroTyping(): void {
-			const el = document.getElementById('intro-subtitle') as HTMLElement | null;
-			if (el) {
-				setTimeout(() => {
-					el.classList.add('typing-active');
-				}, 600);
-			}
-		}
-
-		// PRIMITIVOS: step by step animation
-		function triggerPrimAnim(): void {
-			const boxX = document.getElementById('prim-box-x') as HTMLElement | null;
-			const arrow = document.getElementById('prim-arrow') as HTMLElement | null;
-			const valX = document.getElementById('prim-val-x') as HTMLElement | null;
-			const step2 = document.getElementById('prim-step2') as HTMLElement | null;
-
-			setTimeout(() => {
-				if (arrow) arrow.classList.add('visible');
-			}, 600);
-
-			setTimeout(() => {
-				if (boxX) {
-					boxX.style.opacity = '1';
-					boxX.style.transition = 'opacity 0.5s ease';
-				}
-			}, 1000);
-
-			setTimeout(() => {
-				if (valX) {
-					valX.textContent = '99';
-					valX.classList.add('changed');
-				}
-			}, 2000);
-
-			setTimeout(() => {
-				if (step2) step2.classList.add('visible');
-			}, 2800);
-		}
-
-		// OBJETOS: mostrar que arr se copia y ambas apuntan al mismo heap
-		function triggerObjAnim(): void {
-			const arrFrame = document.getElementById('obj-arr-frame') as HTMLElement | null;
-			const heapContent = document.getElementById('obj-heap-content') as HTMLElement | null;
-			const stepResult = document.getElementById('obj-step-result') as HTMLElement | null;
-
-			setTimeout(() => {
-				if (arrFrame) {
-					arrFrame.style.opacity = '1';
-					arrFrame.style.transition = 'opacity 0.5s ease';
-				}
-			}, 600);
-
-			setTimeout(() => {
-				if (heapContent) {
-					heapContent.textContent = '[ 99, 2, 3 ]';
-					heapContent.style.color = '#ef4444';
-				}
-			}, 1600);
-
-			setTimeout(() => {
-				if (stepResult) stepResult.classList.add('visible');
-			}, 2400);
-		}
-
-		// TRAMPA: mostrar que arr se reasigna y nums no cambia
-		function triggerTrampaAnim(): void {
-			const arrFrame = document.getElementById('trap-arr-frame') as HTMLElement | null;
-			const newObj = document.getElementById('trap-new-obj') as HTMLElement | null;
-			const arrAddr = document.getElementById('trap-arr-addr') as HTMLElement | null;
-			const stepResult = document.getElementById('trap-step-result') as HTMLElement | null;
-
-			setTimeout(() => {
-				if (arrFrame) {
-					arrFrame.style.opacity = '1';
-					arrFrame.style.transition = 'opacity 0.5s ease';
-				}
-			}, 600);
-
-			setTimeout(() => {
-				if (newObj) {
-					newObj.style.opacity = '1';
-					newObj.style.transition = 'opacity 0.5s ease';
-				}
-			}, 1400);
-
-			setTimeout(() => {
-				if (arrAddr) {
-					arrAddr.textContent = '\u2192 0x9E3C (new)';
-					arrAddr.style.color = '#ef4444';
-				}
-			}, 2200);
-
-			setTimeout(() => {
-				if (stepResult) stepResult.classList.add('visible');
-			}, 3000);
-		}
-
-		// REGLAS: aparecen las cards una por una
-		function triggerRulesAnim(): void {
-			['rule-1', 'rule-2', 'rule-3', 'rule-4', 'rule-5'].forEach((id, i) => {
-				setTimeout(() => {
-					const el = document.getElementById(id) as HTMLElement | null;
-					if (el) el.classList.add('pop-simple');
-				}, i * 250);
-			});
-		}
-
-		// Initial check for sections already visible on load
-		sections.forEach((section) => {
-			const rect = section.getBoundingClientRect();
-			if (rect.top < window.innerHeight * 0.8) {
-				const el = section as HTMLElement;
-				el.classList.add('section-visible');
-				triggerSectionAnimations(el.id);
-				sectionObserver.unobserve(el);
-			}
+		document.querySelectorAll('.pv-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
 		});
-	</script>
+
+		document.querySelectorAll('.pv-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
+		});
+
+		const labelEl = document.getElementById('pv-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+
+		const prevBtn = document.getElementById('btn-prev-pv') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-pv') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
+
+	document.querySelectorAll('.pv-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
+		});
+	});
+
+	document.getElementById('btn-prev-pv')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-pv')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
+
+	document.querySelectorAll('.pv-lang-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			document.querySelectorAll('.pv-lang-btn').forEach(b => b.classList.remove('active'));
+			const targetBtn = e.currentTarget as HTMLElement;
+			targetBtn.classList.add('active');
+			selectedLang = (targetBtn.dataset.lang || 'c') as keyof typeof traceData;
+			currentTraceIndex = 0;
+			updateTraceView();
+		});
+	});
+
+	document.getElementById('btn-next-trace')?.addEventListener('click', () => {
+		currentTraceIndex = (currentTraceIndex + 1) % traceData[selectedLang].steps.length;
+		updateTraceView();
+	});
+
+	goToSlide(1);
+	updateTraceView();
+</script>

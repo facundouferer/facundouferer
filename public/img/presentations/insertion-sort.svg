@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+	<g transform="translate(80, 40)">
+		<rect x="0" y="30" width="35" height="90" rx="6" fill="#f5ead8" stroke="#7a8a5e" stroke-width="2"/>
+		<rect x="45" y="10" width="35" height="110" rx="6" fill="#f5ead8" stroke="#7a8a5e" stroke-width="2"/>
+		<!-- Key element sliding in -->
+		<g transform="translate(90, -10)">
+			<rect width="35" height="70" rx="6" fill="#f5ead8" stroke="#c67139" stroke-width="3"/>
+			<text x="17" y="-10" font-family="'Fira Code', monospace" font-size="11" font-weight="700" fill="#c67139" text-anchor="middle">Key</text>
+		</g>
+		<path d="M 107 65 C 60 65, 30 65, 0 65" fill="none" stroke="#c67139" stroke-width="3" stroke-dasharray="4,3"/>
+	</g>
+</svg>

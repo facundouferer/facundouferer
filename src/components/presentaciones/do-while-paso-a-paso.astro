@@ -1,220 +1,246 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
-
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+const isEs = lang === 'es';
 ---
 
+<div class="dw-screen">
+	<div class="dw-shell">
+		<header class="dw-header">
+			<span class="dw-badge">{isEs ? 'Ciclos Post-Prueba' : 'Post-Test Loops'}</span>
+			<h1 class="dw-title">
+				{isEs ? 'Ciclo Do-While Paso a Paso' : 'Do-While Loop Step by Step'}
+			</h1>
+			<p class="dw-sub">
+				{isEs 
+					? 'Garantía de ejecución mínima e iteración post-evaluada en C, Java, JavaScript y Python.' 
+					: 'Guaranteed minimum single execution and post-evaluated iteration in C, Java, JS, and Python.'}
+			</p>
+		</header>
 
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
+		<div class="dw-deck-card">
+			<div class="dw-nav-bar">
+				<div class="dw-slide-indicator">
+					<span class="dw-step-dot"></span>
+					<span id="dw-slide-label">SLIDE 1 / 6</span>
+				</div>
+				<div class="dw-pills">
+					<button class="dw-pill-btn active" data-target-slide="1">1. {isEs ? 'Concepto' : 'Concept'}</button>
+					<button class="dw-pill-btn" data-target-slide="2">2. C</button>
+					<button class="dw-pill-btn" data-target-slide="3">3. Java</button>
+					<button class="dw-pill-btn" data-target-slide="4">4. JavaScript</button>
+					<button class="dw-pill-btn" data-target-slide="5">5. Python (Emulación)</button>
+					<button class="dw-pill-btn" data-target-slide="6">6. {isEs ? 'Simulador' : 'Simulator'}</button>
+				</div>
+			</div>
 
-		.dw-screen {
-			--dw-bg: #0f0b1c;
-			--dw-panel: #1a1330;
-			--dw-primary: #f97316;
-			--dw-cyan: #22d3ee;
-			--dw-danger: #fb7185;
-			min-height: 100vh;
-			font-family: 'Chakra Petch', sans-serif;
-			background:
-				radial-gradient(circle at 85% 15%, rgba(34, 211, 238, 0.18), transparent 40%),
-				radial-gradient(circle at 10% 80%, rgba(249, 115, 22, 0.16), transparent 42%),
-				linear-gradient(150deg, #080611 0%, var(--dw-bg) 100%);
-			color: #ffeedd;
-		}
-
-		.dw-shell { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1rem 3rem; }
-		.dw-title { font-size: clamp(1.5rem, 3vw, 2.2rem); line-height: 1.05; font-weight: 700; }
-		.dw-sub { max-width: 65ch; color: rgba(255, 238, 221, 0.84); }
-
-		.dw-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
-		.dw-card { border-radius: 1rem; border: 1px solid rgba(249, 115, 22, 0.3); background: linear-gradient(155deg, rgba(26, 19, 48, 0.9), rgba(13, 10, 24, 0.95)); padding: 1rem; }
-		.dw-code { grid-column: span 12; }
-		.dw-state { grid-column: span 12; }
-		.dw-console { grid-column: span 12; }
-		@media (min-width: 1100px) {
-			.dw-code { grid-column: span 6; }
-			.dw-state { grid-column: span 3; }
-			.dw-console { grid-column: span 3; }
-		}
-
-		.dw-badge { border: 1px solid rgba(34, 211, 238, 0.4); background: rgba(34, 211, 238, 0.12); border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.72rem; font-family: 'Fira Code', monospace; }
-		.dw-head { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
-
-		.dw-code-panel { background: rgba(6, 5, 14, 0.88); border: 1px solid rgba(249, 115, 22, 0.24); border-radius: 0.8rem; padding: 0.75rem; }
-		.dw-row { display: grid; grid-template-columns: 2rem 1fr; gap: 0.8rem; border-radius: 0.55rem; padding: 0.42rem 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.9rem; transition: all 0.2s ease; color: rgba(255, 238, 221, 0.86); }
-		.dw-row.active { background: linear-gradient(90deg, rgba(249, 115, 22, 0.26), rgba(249, 115, 22, 0.06)); outline: 1px solid rgba(249, 115, 22, 0.4); transform: translateX(3px); }
-		.dw-ln { color: rgba(255, 238, 221, 0.45); text-align: right; }
-
-		.dw-state-item { display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(34, 211, 238, 0.24); background: rgba(34, 211, 238, 0.07); border-radius: 0.65rem; padding: 0.62rem 0.7rem; font-family: 'Fira Code', monospace; margin-bottom: 0.5rem; font-size: 0.84rem; }
-		.dw-value { color: var(--dw-primary); font-weight: 700; font-size: 1.02rem; }
-		.dw-true { color: #86efac; }
-		.dw-false { color: var(--dw-danger); }
-
-		.dw-console-win { border: 1px solid rgba(34, 211, 238, 0.36); border-radius: 0.8rem; overflow: hidden; background: rgba(6, 5, 14, 0.88); }
-		.dw-console-head { display: flex; justify-content: space-between; padding: 0.5rem 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.72rem; background: rgba(34, 211, 238, 0.12); border-bottom: 1px solid rgba(34, 211, 238, 0.3); }
-		.dw-console-body { min-height: 165px; padding: 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.83rem; }
-		.dw-log { opacity: 0; transform: translateY(8px); animation: dw-log-in 0.4s ease forwards; color: #cdeaff; }
-		@keyframes dw-log-in { to { opacity: 1; transform: translateY(0); } }
-
-		.dw-copy { margin-top: 0.85rem; border: 1px solid rgba(249, 115, 22, 0.32); background: rgba(249, 115, 22, 0.11); border-radius: 0.7rem; padding: 0.75rem; }
-		.dw-controls { margin-top: 0.9rem; display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; }
-		.dw-btn { border: 1px solid rgba(249, 115, 22, 0.45); background: rgba(249, 115, 22, 0.13); color: #ffeedd; padding: 0.58rem 1rem; border-radius: 0.7rem; font-weight: 600; transition: all 0.2s ease; }
-		.dw-btn:hover:not(:disabled) { background: rgba(249, 115, 22, 0.26); transform: translateY(-1px); box-shadow: 0 0 18px rgba(249, 115, 22, 0.24); }
-		.dw-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-		.dw-track { margin-top: 0.8rem; height: 0.55rem; border-radius: 999px; background: rgba(255, 238, 221, 0.14); overflow: hidden; }
-		.dw-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--dw-primary), var(--dw-cyan)); transition: width 0.25s ease; }
-
-		.dw-back { display: inline-block; margin-top: 1.5rem; color: var(--dw-cyan); text-decoration: none; border-bottom: 1px dashed rgba(34, 211, 238, 0.5); }
-	</style>
-
-	<div class="dw-screen">
-		<main class="dw-shell">
-			<header class="mb-6">
-				<p class="dw-badge">{lang === 'en' ? 'do-while / guided simulation' : 'do-while / simulacion guiada'}</p>
-				<h1 class="dw-title mt-3">{lang === 'en' ? <>Do-while loop<br/>step by step</> : <>Ciclo <code>do-while</code><br/>paso a paso</>}</h1>
-				<p class="dw-sub mt-3">{lang === 'en' ? 'Here you can clearly see what makes <code>do-while</code> special: it executes the block at least once and only then evaluates the condition.' : 'Aca se ve clarito lo que hace especial al <code>do-while</code>: ejecuta el bloque al menos una vez y recien despues evalua la condicion.'}</p>
-			</header>
-
-			<section class="dw-grid" aria-live="polite">
-				<article class="dw-card dw-code">
-					<div class="dw-head">
-						<strong>{lang === 'en' ? '1) Code and active line' : '1) Codigo y linea activa'}</strong>
-						<span class="dw-badge" id="dw-line">{lang === 'en' ? 'Active line: 1' : 'Linea activa: 1'}</span>
+			<div class="dw-viewport">
+				<div class="dw-slide active" data-slide="1">
+					<div class="dw-slide-grid">
+						<div class="dw-col">
+							<h2 class="dw-slide-title">1. {isEs ? 'Garantía de Ejecución Mínima (At least once)' : 'At Least Once Guarantee'}</h2>
+							<p class="dw-text">
+								{isEs 
+									? 'A diferencia de `while`, el ciclo `do-while` ejecuta su bloque de código al menos una vez antes de verificar la condición.'
+									: 'Unlike `while`, the `do-while` loop executes its code block at least once before checking the condition.'}
+							</p>
+						</div>
+						<div class="dw-col">
+							<div class="dw-card-box">
+								<div class="dw-card-head">{isEs ? 'ORDEN DE PASOS' : 'STEP ORDER'}</div>
+								<div class="dw-cell"><span>1. Ejecutar Cuerpo</span><span class="dw-tag">Garantizado</span></div>
+								<div class="dw-cell"><span>2. Evaluar Condición</span><span class="dw-tag">Post-Prueba</span></div>
+							</div>
+						</div>
 					</div>
-					<div class="dw-code-panel">
-						<div class="dw-row" data-line="1"><span class="dw-ln">1</span><span>int i = 1;</span></div>
-						<div class="dw-row" data-line="2"><span class="dw-ln">2</span><span>do &#123;</span></div>
-						<div class="dw-row" data-line="3"><span class="dw-ln">3</span><span>&nbsp;&nbsp;printf("Vuelta %d\n", i);</span></div>
-						<div class="dw-row" data-line="4"><span class="dw-ln">4</span><span>&nbsp;&nbsp;i = i + 1;</span></div>
-						<div class="dw-row" data-line="5"><span class="dw-ln">5</span><span>&#125; while (i &lt;= 4);</span></div>
-						<div class="dw-row" data-line="6"><span class="dw-ln">6</span><span>printf("Fin do-while\n");</span></div>
+				</div>
+
+				<div class="dw-slide" data-slide="2">
+					<div class="dw-slide-grid">
+						<div class="dw-col">
+							<h2 class="dw-slide-title">2. C: do &#123; ... &#125; while(cond);</h2>
+							<p class="dw-text">En C requiere punto y coma final `;` tras la condición `while(cond);`.</p>
+						</div>
+						<div class="dw-col">
+							<div class="dw-code-card">
+								<div class="dw-code-title">do_while.c</div>
+								<pre class="dw-code-block"><code><span class="token-type">int</span> opcion;
+<span class="token-keyword">do</span> &#123;
+    printf(<span class="token-string">"Ingrese opcion (0 para salir): "</span>);
+    scanf(<span class="token-string">"%d"</span>, &amp;opcion);
+&#125; <span class="token-keyword">while</span> (opcion != <span class="token-number">0</span>);</code></pre>
+							</div>
+						</div>
 					</div>
+				</div>
 
-					<div class="dw-copy" id="dw-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'Declares i with value 1.' : 'Se declara <code>i</code> con valor 1.'}</div>
-					<div class="dw-track"><div class="dw-fill" id="dw-fill"></div></div>
-
-					<div class="dw-controls">
-						<button id="dw-prev" class="dw-btn" type="button">{lang === 'en' ? '⬅ Back' : '⬅ Retroceder'}</button>
-						<button id="dw-next" class="dw-btn" type="button">{lang === 'en' ? 'Next ➡' : 'Avanzar ➡'}</button>
-						<span class="dw-badge" id="dw-step">{lang === 'en' ? 'Step 1 / 11' : 'Paso 1 / 11'}</span>
+				<div class="dw-slide" data-slide="3">
+					<div class="dw-slide-grid">
+						<div class="dw-col">
+							<h2 class="dw-slide-title">3. Java: Menús Interactivos</h2>
+							<p class="dw-text">Ideal para validación de entrada de usuario y menús interactivos donde se necesita al menos una interacción inicial.</p>
+						</div>
+						<div class="dw-col">
+							<div class="dw-code-card">
+								<div class="dw-code-title">DoWhileTest.java</div>
+								<pre class="dw-code-block"><code><span class="token-type">int</span> input;
+<span class="token-keyword">do</span> &#123;
+    input = readInput();
+&#125; <span class="token-keyword">while</span> (input &lt; <span class="token-number">0</span>);</code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
+				</div>
 
-				<article class="dw-card dw-state">
-					<div class="dw-head"><strong>{lang === 'en' ? '2) Internal state' : '2) Estado interno'}</strong></div>
-					<div class="dw-state-item"><span>{lang === 'en' ? 'Current i' : 'i actual'}</span><span id="dw-i" class="dw-value">1</span></div>
-					<div class="dw-state-item"><span>{lang === 'en' ? 'Iterations executed' : 'Vueltas ejecutadas'}</span><span id="dw-iterations" class="dw-value">0</span></div>
-					<div class="dw-state-item"><span>{lang === 'en' ? 'Condition i &lt;= 4' : 'Condicion i &lt;= 4'}</span><span id="dw-condition" class="dw-value">-</span></div>
-				</article>
-
-				<article class="dw-card dw-console">
-					<div class="dw-head"><strong>{lang === 'en' ? '3) Simulated console' : '3) Consola simulada'}</strong></div>
-					<div class="dw-console-win">
-						<div class="dw-console-head"><span>./do-while-demo</span><span>stdout</span></div>
-						<div class="dw-console-body" id="dw-console"></div>
+				<div class="dw-slide" data-slide="4">
+					<div class="dw-slide-grid">
+						<div class="dw-col">
+							<h2 class="dw-slide-title">4. JavaScript: do &#123; ... &#125; while</h2>
+							<p class="dw-text">JS soporta `do-while` nativo para reintentos de red o promesas con al menos un intento primario.</p>
+						</div>
+						<div class="dw-col">
+							<div class="dw-code-card">
+								<div class="dw-code-title">do_while.js</div>
+								<pre class="dw-code-block"><code><span class="token-keyword">let</span> intentos = <span class="token-number">0</span>;
+<span class="token-keyword">do</span> &#123;
+    intentos++;
+    console.log(<span class="token-string">`Intento $&#123;intentos&#125;`</span>);
+&#125; <span class="token-keyword">while</span> (intentos &lt; <span class="token-number">3</span>);</code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
-			</section>
+				</div>
 
-</main>
+				<div class="dw-slide" data-slide="5">
+					<div class="dw-slide-grid">
+						<div class="dw-col">
+							<h2 class="dw-slide-title">5. Python: Emulación de do-while (while True + break)</h2>
+							<p class="dw-text">Python NO tiene `do-while` nativo. Se emula usando `while True:` con una condición `if ...: break` al final del cuerpo.</p>
+						</div>
+						<div class="dw-col">
+							<div class="dw-code-card">
+								<div class="dw-code-title">do_while_emulated.py</div>
+								<pre class="dw-code-block"><code><span class="token-keyword">while</span> <span class="token-keyword">True</span>:
+    user_input = input(<span class="token-string">"Password: "</span>)
+    <span class="token-keyword">if</span> user_input == <span class="token-string">"secret"</span>:
+        <span class="token-keyword">break</span> <span class="token-comment"># Post-condición de salida</span></code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="dw-slide" data-slide="6">
+					<div class="dw-sim-container">
+						<h2 class="dw-slide-title center">{isEs ? '6. Simulador Comparativo (while vs do-while)' : '6. Comparative Simulator'}</h2>
+						<p class="dw-sub center">{isEs ? 'Mirá la diferencia cuando la condición inicial es falsa (condicion = false):' : 'Observe the difference when initial condition is false:'}</p>
+
+						<div class="dw-inspector-grid">
+							<div class="dw-lang-box"><span class="dw-lang-name">While Loop (Pre-prueba)</span><div class="dw-exp-res">Ejecuciones del cuerpo: 0 veces (Se saltea inmediatamente)</div></div>
+							<div class="dw-lang-box"><span class="dw-lang-name">Do-While Loop (Post-prueba)</span><div class="dw-exp-res">Ejecuciones del cuerpo: 1 vez (Garantizado)</div></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="dw-footer">
+				<button class="btn btn-secondary" id="btn-prev-dw" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="dw-footer-meta"><span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span></div>
+				<button class="btn btn-primary" id="btn-next-dw">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
 	</div>
+</div>
 
-	<script>
-		type Step = {
-			line: number;
-			message: { es: string; en: string };
-			iValue: number;
-			iterations: number;
-			condition: 'true' | 'false' | '-';
-			consoleLines: string[];
-		};
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+	.dw-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
+	.dw-shell { max-width: var(--container-max); margin: 0 auto; }
+	.dw-header { margin-bottom: 1.5rem; }
+	.dw-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
+	.dw-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.dw-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.dw-sub.center { text-align: center; }
+	.dw-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.dw-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.dw-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
+	.dw-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.dw-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+	.dw-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+	.dw-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.dw-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
+	.dw-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.dw-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.dw-slide.active { display: block; opacity: 1; transform: translateY(0); }
+	.dw-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+	.dw-col { grid-column: span 12; }
+	@media (min-width: 900px) { .dw-col { grid-column: span 6; } }
+	.dw-slide-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 400; color: var(--color-text); margin: 0 0 0.8rem; }
+	.dw-slide-title.center { text-align: center; }
+	.dw-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin-bottom: 1.2rem; }
+	.dw-card-box { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.dw-card-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; color: var(--color-accent-2-700); margin-bottom: 0.75rem; }
+	.dw-cell { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--color-divider); background: var(--color-surface); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+	.dw-tag { color: var(--color-accent-700); font-weight: 600; }
+	.dw-code-card { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.dw-code-title { background: #2b2722; color: #c0b6a5; padding: 0.4rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid #3a352e; }
+	.dw-code-block { margin: 0; padding: 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; color: #f9f4ed; overflow-x: auto; }
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.token-comment { color: #85929e; font-style: italic; }
+	.dw-sim-container { max-width: 800px; margin: 0 auto; }
+	.dw-inspector-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+	@media (max-width: 600px) { .dw-inspector-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); } }
+	.dw-lang-box { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 0.8rem; }
+	.dw-lang-name { font-family: 'Fira Code', monospace; font-size: 0.75rem; font-weight: 700; color: #e59866; display: block; margin-bottom: 0.4rem; }
+	.dw-exp-res { font-family: 'Fira Code', monospace; font-size: 0.82rem; color: #f9f4ed; background: #141210; padding: 0.5rem 0.7rem; border-radius: var(--radius-sm); }
+	.dw-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.dw-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>
 
-		const steps: Step[] = [
-			{ line: 1, message: { es: 'Se declara i en 1.', en: 'Declares i as 1.' }, iValue: 1, iterations: 0, condition: '-', consoleLines: [] },
-			{ line: 2, message: { es: 'Entra al bloque do. Este bloque SIEMPRE corre al menos una vez.', en: 'Enters the do block. This block ALWAYS runs at least once.' }, iValue: 1, iterations: 0, condition: '-', consoleLines: [] },
-			{ line: 3, message: { es: 'Imprime la primera vuelta en consola.', en: 'Prints the first iteration to console.' }, iValue: 1, iterations: 1, condition: '-', consoleLines: ['Vuelta 1'] },
-			{ line: 4, message: { es: 'Incrementa i. Ahora i vale 2.', en: 'Increments i. Now i is 2.' }, iValue: 2, iterations: 1, condition: '-', consoleLines: ['Vuelta 1'] },
-			{ line: 5, message: { es: 'Recien ahora evalua la condicion. 2 <= 4 da true.', en: 'Only now evaluates the condition. 2 <= 4 is true.' }, iValue: 2, iterations: 1, condition: 'true', consoleLines: ['Vuelta 1'] },
-			{ line: 3, message: { es: 'Segunda vuelta: vuelve al bloque y loguea Vuelta 2.', en: 'Second iteration: goes back to the block and logs Vuelta 2.' }, iValue: 2, iterations: 2, condition: 'true', consoleLines: ['Vuelta 1', 'Vuelta 2'] },
-			{ line: 4, message: { es: 'Incrementa a i = 3.', en: 'Increments to i = 3.' }, iValue: 3, iterations: 2, condition: 'true', consoleLines: ['Vuelta 1', 'Vuelta 2'] },
-			{ line: 3, message: { es: 'Tercera vuelta: imprime Vuelta 3.', en: 'Third iteration: prints Vuelta 3.' }, iValue: 3, iterations: 3, condition: 'true', consoleLines: ['Vuelta 1', 'Vuelta 2', 'Vuelta 3'] },
-			{ line: 3, message: { es: 'Cuarta vuelta: imprime Vuelta 4.', en: 'Fourth iteration: prints Vuelta 4.' }, iValue: 4, iterations: 4, condition: 'true', consoleLines: ['Vuelta 1', 'Vuelta 2', 'Vuelta 3', 'Vuelta 4'] },
-			{ line: 5, message: { es: 'Despues de incrementar a 5, 5 <= 4 da false. Sale del ciclo.', en: 'After incrementing to 5, 5 <= 4 is false. Exits the loop.' }, iValue: 5, iterations: 4, condition: 'false', consoleLines: ['Vuelta 1', 'Vuelta 2', 'Vuelta 3', 'Vuelta 4'] },
-			{ line: 6, message: { es: 'Ejecuta lo que sigue fuera del do-while.', en: 'Executes what comes after the do-while.' }, iValue: 5, iterations: 4, condition: 'false', consoleLines: ['Vuelta 1', 'Vuelta 2', 'Vuelta 3', 'Vuelta 4', 'Fin do-while'] },
-		];
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
 
-		let currentStep = 0;
-
-		const prevBtn = document.getElementById('dw-prev') as HTMLButtonElement;
-		const nextBtn = document.getElementById('dw-next') as HTMLButtonElement;
-		const lineBadge = document.getElementById('dw-line') as HTMLElement;
-		const stepBadge = document.getElementById('dw-step') as HTMLElement;
-		const copyEl = document.getElementById('dw-copy') as HTMLElement;
-		const iEl = document.getElementById('dw-i') as HTMLElement;
-		const iterEl = document.getElementById('dw-iterations') as HTMLElement;
-		const condEl = document.getElementById('dw-condition') as HTMLElement;
-		const consoleEl = document.getElementById('dw-console') as HTMLElement;
-		const fillEl = document.getElementById('dw-fill') as HTMLElement;
-
-		const isEnglish = document.documentElement.lang === 'en';
-
-		function renderStep(): void {
-			const step = steps[currentStep];
-
-			document.querySelectorAll<HTMLElement>('.dw-row').forEach((row) => {
-				row.classList.toggle('active', Number(row.dataset.line) === step.line);
-			});
-
-			lineBadge.textContent = isEnglish ? `Active line: ${step.line}` : `Linea activa: ${step.line}`;
-			stepBadge.textContent = isEnglish ? `Step ${currentStep + 1} / ${steps.length}` : `Paso ${currentStep + 1} / ${steps.length}`;
-			copyEl.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${step.message[isEnglish ? 'en' : 'es']}`;
-			iEl.textContent = String(step.iValue);
-			iterEl.textContent = String(step.iterations);
-			condEl.textContent = step.condition;
-			condEl.classList.remove('dw-true', 'dw-false');
-			if (step.condition === 'true') condEl.classList.add('dw-true');
-			if (step.condition === 'false') condEl.classList.add('dw-false');
-
-			consoleEl.innerHTML = '';
-			step.consoleLines.forEach((line, index) => {
-				const entry = document.createElement('div');
-				entry.className = 'dw-log';
-				entry.style.animationDelay = `${index * 80}ms`;
-				entry.textContent = `> ${line}`;
-				consoleEl.appendChild(entry);
-			});
-
-			fillEl.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
-			prevBtn.disabled = currentStep === 0;
-			nextBtn.disabled = currentStep === steps.length - 1;
-		}
-
-		prevBtn.addEventListener('click', () => {
-			if (currentStep > 0) {
-				currentStep -= 1;
-				renderStep();
-			}
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+		document.querySelectorAll('.dw-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
 		});
-
-		nextBtn.addEventListener('click', () => {
-			if (currentStep < steps.length - 1) {
-				currentStep += 1;
-				renderStep();
-			}
+		document.querySelectorAll('.dw-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
 		});
+		const labelEl = document.getElementById('dw-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+		const prevBtn = document.getElementById('btn-prev-dw') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-dw') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
 
-		document.addEventListener('keydown', (event: KeyboardEvent) => {
-			if (event.key === 'ArrowRight') nextBtn.click();
-			if (event.key === 'ArrowLeft') prevBtn.click();
+	document.querySelectorAll('.dw-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
 		});
+	});
 
-		renderStep();
-	</script>
+	document.getElementById('btn-prev-dw')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-dw')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
 
+	goToSlide(1);
+</script>

@@ -1,549 +1,510 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
-
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+const isEs = lang === 'es';
 ---
 
+<div class="bs-screen">
+	<div class="bs-shell">
+		<header class="bs-header">
+			<span class="bs-badge">{isEs ? 'Algoritmos de Ordenamiento' : 'Sorting Algorithms'}</span>
+			<h1 class="bs-title">
+				{isEs ? 'Bubble Sort (Burbuja) Paso a Paso' : 'Bubble Sort Step by Step'}
+			</h1>
+			<p class="bs-sub">
+				{isEs 
+					? 'Comparación de adyacentes, burbujeo y complejidad O(N²) en C, Java, JavaScript y Python.' 
+					: 'Adjacent comparison, bubbling, and O(N²) complexity in C, Java, JS, and Python.'}
+			</p>
+		</header>
 
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
-
-		.bubble-screen {
-			--bubble-bg: #061016;
-			--bubble-surface: #0c1c24;
-			--bubble-panel: #102833;
-			--bubble-primary: #0df259;
-			--bubble-blue: #3b82f6;
-			--bubble-amber: #f59e0b;
-			--bubble-danger: #ef4444;
-			--bubble-sorted: #a855f7;
-			min-height: 100vh;
-			font-family: 'Chakra Petch', sans-serif;
-			background:
-				radial-gradient(circle at 10% 10%, rgba(13, 242, 89, 0.12), transparent 45%),
-				radial-gradient(circle at 85% 20%, rgba(59, 130, 246, 0.14), transparent 40%),
-				linear-gradient(135deg, #050b11 0%, var(--bubble-bg) 100%);
-			color: #e7fbe7;
-		}
-
-		.bubble-shell {
-			max-width: 1200px;
-			margin: 0 auto;
-			padding: 2.5rem 1rem 3rem;
-		}
-
-		.bubble-title {
-			font-size: clamp(1.5rem, 3vw, 2.2rem);
-			line-height: 1.05;
-			font-weight: 700;
-			letter-spacing: 0.02em;
-			text-shadow: 0 0 30px rgba(13, 242, 89, 0.28);
-		}
-
-		.bubble-subtitle {
-			max-width: 64ch;
-			font-size: 1rem;
-			color: rgba(231, 251, 231, 0.82);
-		}
-
-		.bubble-grid {
-			display: grid;
-			gap: 1rem;
-			grid-template-columns: repeat(12, minmax(0, 1fr));
-		}
-
-		.card {
-			background: linear-gradient(160deg, rgba(16, 40, 51, 0.9), rgba(8, 20, 26, 0.86));
-			border: 1px solid rgba(13, 242, 89, 0.18);
-			border-radius: 1rem;
-			box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28);
-			padding: 1.25rem;
-		}
-
-		.code-card { grid-column: span 12; }
-		.visual-card { grid-column: span 12; }
-		
-		@media (min-width: 1024px) {
-			.code-card { grid-column: span 6; }
-			.visual-card { grid-column: span 6; }
-		}
-
-		.panel-header {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			margin-bottom: 1rem;
-		}
-
-		.badge {
-			display: inline-flex;
-			align-items: center;
-			border: 1px solid rgba(13, 242, 89, 0.25);
-			background: rgba(13, 242, 89, 0.1);
-			border-radius: 999px;
-			padding: 0.2rem 0.6rem;
-			font-size: 0.72rem;
-			font-family: 'Fira Code', monospace;
-			letter-spacing: 0.04em;
-		}
-
-		.code-panel {
-			background: rgba(4, 10, 14, 0.85);
-			border: 1px solid rgba(13, 242, 89, 0.14);
-			border-radius: 0.8rem;
-			padding: 0.75rem;
-			font-family: 'Fira Code', monospace;
-			font-size: 0.85rem;
-			overflow-x: auto;
-		}
-
-		.code-row {
-			display: grid;
-			grid-template-columns: 2rem 1fr;
-			gap: 0.8rem;
-			padding: 0.25rem 0.5rem;
-			border-radius: 0.4rem;
-			color: rgba(231, 251, 231, 0.8);
-			transition: all 0.2s ease;
-		}
-
-		.code-row.active {
-			background: linear-gradient(90deg, rgba(13, 242, 89, 0.2), rgba(13, 242, 89, 0.05));
-			outline: 1px solid rgba(13, 242, 89, 0.3);
-			transform: translateX(4px);
-			color: #fff;
-		}
-
-		.line-num { color: rgba(231, 251, 231, 0.35); text-align: right; user-select: none; }
-
-		.array-container {
-			display: flex;
-			align-items: flex-end;
-			justify-content: center;
-			gap: 0.75rem;
-			height: 180px;
-			margin: 2rem 0;
-			padding-bottom: 1.5rem;
-			border-bottom: 1px solid rgba(13, 242, 89, 0.1);
-		}
-
-		.bar-wrapper {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: 0.5rem;
-			width: 45px;
-			transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-		}
-
-		.bar {
-			width: 100%;
-			background: rgba(59, 130, 246, 0.3);
-			border: 1px solid rgba(59, 130, 246, 0.5);
-			border-radius: 0.4rem 0.4rem 0 0;
-			transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-			position: relative;
-			display: flex;
-			align-items: flex-end;
-			justify-content: center;
-			padding-bottom: 0.5rem;
-			font-family: 'Fira Code', monospace;
-			font-weight: 700;
-			color: #fff;
-		}
-
-		.bar.comparing {
-			background: rgba(245, 158, 11, 0.4);
-			border-color: var(--bubble-amber);
-			box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
-			transform: scale(1.05);
-		}
-
-		.bar.swapping {
-			background: rgba(239, 68, 68, 0.4);
-			border-color: var(--bubble-danger);
-			box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
-		}
-
-		.bar.sorted {
-			background: rgba(168, 85, 247, 0.3);
-			border-color: var(--bubble-sorted);
-		}
-
-		.bar-index {
-			font-size: 0.75rem;
-			color: rgba(231, 251, 231, 0.5);
-			font-family: 'Fira Code', monospace;
-		}
-
-		.state-grid {
-			display: grid;
-			grid-template-columns: repeat(2, 1fr);
-			gap: 0.75rem;
-			margin-top: 1rem;
-		}
-
-		.state-item {
-			padding: 0.75rem;
-			border-radius: 0.8rem;
-			background: rgba(13, 242, 89, 0.05);
-			border: 1px solid rgba(13, 242, 89, 0.1);
-			text-align: center;
-		}
-
-		.state-label {
-			display: block;
-			font-size: 0.7rem;
-			text-transform: uppercase;
-			letter-spacing: 0.1em;
-			color: rgba(231, 251, 231, 0.6);
-			margin-bottom: 0.25rem;
-		}
-
-		.state-value {
-			font-family: 'Fira Code', monospace;
-			font-size: 1.25rem;
-			font-weight: 700;
-			color: var(--bubble-primary);
-		}
-
-		.controls {
-			margin-top: 2rem;
-			display: flex;
-			gap: 0.75rem;
-			align-items: center;
-			flex-wrap: wrap;
-		}
-
-		.btn {
-			border: 1px solid rgba(13, 242, 89, 0.3);
-			background: rgba(13, 242, 89, 0.1);
-			color: #e7fbe7;
-			padding: 0.6rem 1.2rem;
-			border-radius: 0.75rem;
-			font-weight: 600;
-			transition: all 0.2s ease;
-			cursor: pointer;
-		}
-
-		.btn:hover:not(:disabled) {
-			background: rgba(13, 242, 89, 0.2);
-			transform: translateY(-1px);
-			box-shadow: 0 4px 12px rgba(13, 242, 89, 0.2);
-		}
-
-		.btn:disabled {
-			opacity: 0.3;
-			cursor: not-allowed;
-		}
-
-		.step-msg {
-			margin-top: 1.5rem;
-			padding: 1rem;
-			border-radius: 0.8rem;
-			background: rgba(59, 130, 246, 0.1);
-			border: 1px solid rgba(59, 130, 246, 0.25);
-			min-height: 80px;
-			display: flex;
-			align-items: center;
-		}
-
-		.progress-container {
-			margin-top: 1rem;
-			height: 6px;
-			background: rgba(255, 255, 255, 0.1);
-			border-radius: 3px;
-			overflow: hidden;
-		}
-
-		.progress-bar {
-			height: 100%;
-			background: linear-gradient(90deg, var(--bubble-primary), var(--bubble-blue));
-			width: 0%;
-			transition: width 0.3s ease;
-		}
-
-		.footer-link {
-			display: inline-block;
-			margin-top: 2rem;
-			color: var(--bubble-primary);
-			text-decoration: none;
-			border-bottom: 1px dashed rgba(13, 242, 89, 0.4);
-		}
-	</style>
-
-	<div class="bubble-screen">
-		<main class="bubble-shell">
-			<header class="mb-8">
-				<p class="badge">{lang === 'en' ? 'algorithms / sorting' : 'algoritmos / ordenamiento'}</p>
-				<h1 class="bubble-title mt-3">
-					{lang === 'en' ? <>Bubble Sort<br/>Step by Step</> : <>Ordenamiento Burbuja<br/>Paso a Paso</>}
-				</h1>
-				<p class="bubble-subtitle mt-4">
-					{lang === 'en' 
-						? "Visualize how elements 'bubble up' to their correct positions. Use the controls to follow the logic line by line."
-						: "Visualizá cómo los elementos 'burbujean' hasta su posición correcta. Usá los controles para seguir la lógica línea por línea."}
-				</p>
-			</header>
-
-			<div class="bubble-grid">
-				<!-- Código -->
-				<article class="card code-card">
-					<div class="panel-header">
-						<strong>{lang === 'en' ? 'C Implementation' : 'Implementación en C'}</strong>
-						<span class="badge" id="line-info">Line: -</span>
-					</div>
-					<div class="code-panel">
-						<div class="code-row" data-line="1"><span class="line-num">1</span><span>int arr[] = &#123;5, 1, 4, 2, 8&#125;;</span></div>
-						<div class="code-row" data-line="2"><span class="line-num">2</span><span>int n = 5;</span></div>
-						<div class="code-row" data-line="3"><span class="line-num">3</span><span>for (int i = 0; i &lt; n - 1; i++) &#123;</span></div>
-						<div class="code-row" data-line="4"><span class="line-num">4</span><span>&nbsp;&nbsp;for (int j = 0; j &lt; n - i - 1; j++) &#123;</span></div>
-						<div class="code-row" data-line="5"><span class="line-num">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;if (arr[j] > arr[j + 1]) &#123;</span></div>
-						<div class="code-row" data-line="6"><span class="line-num">6</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int temp = arr[j];</span></div>
-						<div class="code-row" data-line="7"><span class="line-num">7</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;arr[j] = arr[j + 1];</span></div>
-						<div class="code-row" data-line="8"><span class="line-num">8</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;arr[j + 1] = temp;</span></div>
-						<div class="code-row" data-line="9"><span class="line-num">9</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&#125;</span></div>
-						<div class="code-row" data-line="10"><span class="line-num">10</span><span>&nbsp;&nbsp;&#125;</span></div>
-						<div class="code-row" data-line="11"><span class="line-num">11</span><span>&#125;</span></div>
-					</div>
-
-					<div class="state-grid">
-						<div class="state-item">
-							<span class="state-label">i</span>
-							<span class="state-value" id="val-i">-</span>
-						</div>
-						<div class="state-item">
-							<span class="state-label">j</span>
-							<span class="state-value" id="val-j">-</span>
-						</div>
-					</div>
-				</article>
-
-				<!-- Visualización -->
-				<article class="card visual-card">
-					<div class="panel-header">
-						<strong>{lang === 'en' ? 'Array Visualization' : 'Visualización del Arreglo'}</strong>
-					</div>
-					
-					<div class="array-container" id="array-viz">
-						<!-- Bars will be injected here -->
-					</div>
-
-					<div class="step-msg" id="step-msg">
-						{lang === 'en' ? 'Click "Start" to begin the animation.' : 'Hacé clic en "Comenzar" para iniciar la animación.'}
-					</div>
-
-					<div class="progress-container">
-						<div class="progress-bar" id="progress-bar"></div>
-					</div>
-
-					<div class="controls">
-						<button class="btn" id="prev-btn" disabled>{lang === 'en' ? '⬅ Back' : '⬅ Retroceder'}</button>
-						<button class="btn" id="next-btn">{lang === 'en' ? 'Next ➡' : 'Avanzar ➡'}</button>
-						<button class="btn" id="reset-btn">{lang === 'en' ? 'Reset ↺' : 'Reiniciar ↺'}</button>
-						<span class="badge" id="step-counter">Paso 0 / 0</span>
-					</div>
-				</article>
+		<div class="bs-deck-card">
+			<div class="bs-nav-bar">
+				<div class="bs-slide-indicator">
+					<span class="bs-step-dot"></span>
+					<span id="bs-slide-label">SLIDE 1 / 6</span>
+				</div>
+				<div class="bs-pills">
+					<button class="bs-pill-btn active" data-target-slide="1">1. {isEs ? 'Concepto' : 'Concept'}</button>
+					<button class="bs-pill-btn" data-target-slide="2">2. C</button>
+					<button class="bs-pill-btn" data-target-slide="3">3. Java</button>
+					<button class="bs-pill-btn" data-target-slide="4">4. JavaScript</button>
+					<button class="bs-pill-btn" data-target-slide="5">5. Python</button>
+					<button class="bs-pill-btn" data-target-slide="6">6. {isEs ? 'Simulador' : 'Simulator'}</button>
+				</div>
 			</div>
 
-			<a class="footer-link" href={withBase(lang === 'en' ? '/en/presentaciones' : '/presentaciones')}>
-				{lang === 'en' ? '← Back to all presentations' : '← Volver a todas las presentaciones'}
-			</a>
-		</main>
+			<div class="bs-viewport">
+				<div class="bs-slide active" data-slide="1">
+					<div class="bs-slide-grid">
+						<div class="bs-col">
+							<h2 class="bs-slide-title">1. {isEs ? 'Mecánica de Burbujeo' : 'Bubbling Mechanics'}</h2>
+							<p class="bs-text">
+								{isEs 
+									? 'Bubble Sort compara pares de elementos adyacentes e intercambia sus posiciones si están en orden incorrecto. El elemento mayor "burbujea" hasta el final de la lista en cada pasada.'
+									: 'Bubble Sort repeatedly compares adjacent elements swapping them if out of order. The largest element bubbles up to the end in each pass.'}
+							</p>
+						</div>
+						<div class="bs-col">
+							<div class="bs-card-box">
+								<div class="bs-card-head">{isEs ? 'ANÁLISIS ALGORÍTMICO' : 'ALGORITHMIC ANALYSIS'}</div>
+								<div class="bs-cell"><span>Peor Caso / Promedio</span><span class="bs-tag">O(N²)</span></div>
+								<div class="bs-cell"><span>Mejor Caso (Optimizado con flag)</span><span class="bs-tag">O(N)</span></div>
+								<div class="bs-cell"><span>Espacio Auxiliar</span><span class="bs-tag">O(1) in-place</span></div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="bs-slide" data-slide="2">
+					<div class="bs-slide-grid">
+						<div class="bs-col">
+							<h2 class="bs-slide-title">2. C: Bubble Sort In-Place</h2>
+							<p class="bs-text">Implementación clásica con punteros o arreglos y variable auxiliar de swap.</p>
+						</div>
+						<div class="bs-col">
+							<div class="bs-code-card">
+								<div class="bs-code-title">bubble.c</div>
+								<pre class="bs-code-block"><code><span class="token-keyword">void</span> bubbleSort(<span class="token-type">int</span> arr[], <span class="token-type">int</span> n) &#123;
+    <span class="token-keyword">for</span> (<span class="token-type">int</span> i = <span class="token-number">0</span>; i &lt; n - <span class="token-number">1</span>; i++) &#123;
+        <span class="token-keyword">for</span> (<span class="token-type">int</span> j = <span class="token-number">0</span>; j &lt; n - i - <span class="token-number">1</span>; j++) &#123;
+            <span class="token-keyword">if</span> (arr[j] &gt; arr[j + <span class="token-number">1</span>]) &#123;
+                <span class="token-type">int</span> temp = arr[j];
+                arr[j] = arr[j + <span class="token-number">1</span>];
+                arr[j + <span class="token-number">1</span>] = temp;
+            &#125;
+        &#125;
+    &#125;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="bs-slide" data-slide="3">
+					<div class="bs-slide-grid">
+						<div class="bs-col">
+							<h2 class="bs-slide-title">3. Java: Optimización con Flag swapped</h2>
+							<p class="bs-text">Si en una pasada no se realiza ningún intercambio, el arreglo ya está ordenado y podemos cortar tempranamente.</p>
+						</div>
+						<div class="bs-col">
+							<div class="bs-code-card">
+								<div class="bs-code-title">BubbleSort.java</div>
+								<pre class="bs-code-block"><code><span class="token-keyword">public static void</span> bubbleSort(<span class="token-type">int</span>[] arr) &#123;
+    <span class="token-type">boolean</span> swapped;
+    <span class="token-keyword">for</span> (<span class="token-type">int</span> i = <span class="token-number">0</span>; i &lt; arr.length - <span class="token-number">1</span>; i++) &#123;
+        swapped = <span class="token-keyword">false</span>;
+        <span class="token-keyword">for</span> (<span class="token-type">int</span> j = <span class="token-number">0</span>; j &lt; arr.length - i - <span class="token-number">1</span>; j++) &#123;
+            <span class="token-keyword">if</span> (arr[j] &gt; arr[j + <span class="token-number">1</span>]) &#123;
+                <span class="token-type">int</span> tmp = arr[j]; arr[j] = arr[j+<span class="token-number">1</span>]; arr[j+<span class="token-number">1</span>] = tmp;
+                swapped = <span class="token-keyword">true</span>;
+            &#125;
+        &#125;
+        <span class="token-keyword">if</span> (!swapped) <span class="token-keyword">break</span>;
+    &#125;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="bs-slide" data-slide="4">
+					<div class="bs-slide-grid">
+						<div class="bs-col">
+							<h2 class="bs-slide-title">4. JavaScript: Destructuring Swap</h2>
+							<p class="bs-text">JS permite intercambiar dos posiciones usando sintaxis de desestructuración `[a, b] = [b, a]`.</p>
+						</div>
+						<div class="bs-col">
+							<div class="bs-code-card">
+								<div class="bs-code-title">bubble.js</div>
+								<pre class="bs-code-block"><code><span class="token-keyword">function</span> bubbleSort(arr) &#123;
+    <span class="token-keyword">const</span> n = arr.length;
+    <span class="token-keyword">for</span> (<span class="token-keyword">let</span> i = <span class="token-number">0</span>; i &lt; n - <span class="token-number">1</span>; i++) &#123;
+        <span class="token-keyword">for</span> (<span class="token-keyword">let</span> j = <span class="token-number">0</span>; j &lt; n - i - <span class="token-number">1</span>; j++) &#123;
+            <span class="token-keyword">if</span> (arr[j] &gt; arr[j + <span class="token-number">1</span>]) &#123;
+                [arr[j], arr[j + <span class="token-number">1</span>]] = [arr[j + <span class="token-number">1</span>], arr[j]];
+            &#125;
+        &#125;
+    &#125;
+    <span class="token-keyword">return</span> arr;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="bs-slide" data-slide="5">
+					<div class="bs-slide-grid">
+						<div class="bs-col">
+							<h2 class="bs-slide-title">5. Python: Tuple Swapping</h2>
+							<p class="bs-text">Python realiza el intercambio de elementos en una sola línea `arr[j], arr[j+1] = arr[j+1], arr[j]`.</p>
+						</div>
+						<div class="bs-col">
+							<div class="bs-code-card">
+								<div class="bs-code-title">bubble.py</div>
+								<pre class="bs-code-block"><code><span class="token-keyword">def</span> bubble_sort(arr):
+    n = len(arr)
+    <span class="token-keyword">for</span> i <span class="token-keyword">in</span> range(n - <span class="token-number">1</span>):
+        <span class="token-keyword">for</span> j <span class="token-keyword">in</span> range(n - i - <span class="token-number">1</span>):
+            <span class="token-keyword">if</span> arr[j] &gt; arr[j + <span class="token-number">1</span>]:
+                arr[j], arr[j + <span class="token-number">1</span>] = arr[j + <span class="token-number">1</span>], arr[j]
+    <span class="token-keyword">return</span> arr</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="bs-slide" data-slide="6">
+					<div class="bs-sim-container">
+						<h2 class="bs-slide-title center">{isEs ? '6. Simulador' : '6. Simulator'}</h2>
+						<p class="bs-sub center">{isEs ? 'Visualización espacial 3D del burbujeo de barras en tiempo real:' : 'Real-time 3D spatial visualization of bubbling bars:'}</p>
+
+						<div class="bs-3d-wrapper">
+							<div id="three-bubble-container" class="bs-three-canvas-container"></div>
+							
+							<div class="bs-sim-console">
+								<div class="bs-sim-head">
+									<span class="bs-console-label" id="bs-3d-array-label">Array: [5, 2, 8, 1, 4]</span>
+								</div>
+								<div class="bs-sim-body">
+									<div class="bs-trace-step" id="bs-sim-step">Hacé clic en "Siguiente Paso" o "Auto Play" para iniciar el ordenamiento 3D.</div>
+									<div class="bs-stack-display" id="bs-sim-state">Estado: Listo</div>
+								</div>
+								<div class="bs-sim-actions">
+									<button class="btn btn-secondary" id="btn-shuffle-bs">🔀 {isEs ? 'Mezclar' : 'Shuffle'}</button>
+									<button class="btn btn-secondary" id="btn-autoplay-bs">▶ {isEs ? 'Auto Play' : 'Auto Play'}</button>
+									<button class="btn btn-primary" id="btn-next-bs-step">⏭ {isEs ? 'Siguiente Paso' : 'Next Step'}</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="bs-footer">
+				<button class="btn btn-secondary" id="btn-prev-bs" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="bs-footer-meta"><span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span></div>
+				<button class="btn btn-primary" id="btn-next-bs">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
 	</div>
+</div>
 
-	<script>
-		interface Step {
-			line: number;
-			i: number | string;
-			j: number | string;
-			array: number[];
-			comparing: number[]; // indices
-			swapping: boolean;
-			sortedIndices: number[];
-			msg: { es: string; en: string };
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+	.bs-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
+	.bs-shell { max-width: var(--container-max); margin: 0 auto; }
+	.bs-header { margin-bottom: 1.5rem; }
+	.bs-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
+	.bs-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.bs-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.bs-sub.center { text-align: center; }
+	.bs-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.bs-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.bs-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
+	.bs-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.bs-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+	.bs-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+	.bs-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.bs-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
+	.bs-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.bs-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.bs-slide.active { display: block; opacity: 1; transform: translateY(0); }
+	.bs-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+	.bs-col { grid-column: span 12; }
+	@media (min-width: 900px) { .bs-col { grid-column: span 6; } }
+	.bs-slide-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 400; color: var(--color-text); margin: 0 0 0.8rem; }
+	.bs-slide-title.center { text-align: center; }
+	.bs-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin-bottom: 1.2rem; }
+	.bs-card-box { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.bs-card-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; color: var(--color-accent-2-700); margin-bottom: 0.75rem; }
+	.bs-cell { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--color-divider); background: var(--color-surface); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+	.bs-tag { color: var(--color-accent-700); font-weight: 600; }
+	.bs-code-card { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.bs-code-title { background: #2b2722; color: #c0b6a5; padding: 0.4rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid #3a352e; }
+	.bs-code-block { margin: 0; padding: 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; color: #f9f4ed; overflow-x: auto; }
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.token-comment { color: #85929e; font-style: italic; }
+	.bs-sim-container { max-width: 840px; margin: 0 auto; }
+	.bs-3d-wrapper { display: flex; flex-direction: column; gap: 1rem; }
+	.bs-three-canvas-container { width: 100%; height: 280px; background: #181512; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-md); position: relative; }
+	.bs-sim-console { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-md); }
+	.bs-sim-head { background: #2b2722; padding: 0.5rem 0.8rem; }
+	.bs-console-label { color: #c0b6a5; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
+	.bs-sim-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.8rem; }
+	.bs-trace-step { font-size: 0.88rem; line-height: 1.5; color: #f9f4ed; background: #2a2520; padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); }
+	.bs-stack-display { font-family: 'Fira Code', monospace; font-size: 0.8rem; color: #76d7c4; background: #141210; padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); }
+	.bs-sim-actions { padding: 0.8rem 1rem; background: #25211d; display: flex; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap; border-top: 1px solid #3a352e; }
+	.bs-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.bs-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>
+
+<script>
+	import * as THREE from 'three';
+
+	let currentSlide = 1;
+	const totalSlides = 6;
+
+	// Slide Navigation Logic
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+		document.querySelectorAll('.bs-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
+		});
+		document.querySelectorAll('.bs-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
+		});
+		const labelEl = document.getElementById('bs-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+		const prevBtn = document.getElementById('btn-prev-bs') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-bs') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+
+		if (currentSlide === 6) {
+			initThreeScene();
 		}
+	};
 
-		const initialArray = [5, 1, 4, 2, 8];
-		const steps: Step[] = [];
+	document.querySelectorAll('.bs-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
+		});
+	});
 
-		function generateSteps() {
-			let arr = [...initialArray];
-			let n = arr.length;
-			let sorted: number[] = [];
+	document.getElementById('btn-prev-bs')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-bs')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
 
-			// Step 0: Initialization
-			steps.push({
-				line: 1, i: '-', j: '-', array: [...arr],
-				comparing: [], swapping: false, sortedIndices: [],
-				msg: { es: "Comenzamos con el arreglo desordenado.", en: "We start with the unsorted array." }
+	// --- THREE.JS BUBBLE SORT 3D ENGINE ---
+	let scene: THREE.Scene, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer;
+	let barMeshes: THREE.Mesh[] = [];
+	let isSceneInitialized = false;
+	let autoPlayInterval: number | null = null;
+
+	let arrayData = [5, 2, 8, 1, 4];
+	let iIdx = 0;
+	let jIdx = 0;
+	let isSorted = false;
+
+	const COLOR_NEUTRAL = 0xebddc5;  // Warm Cream / Organic surface
+	const COLOR_COMPARE_J = 0xc67139; // Organic Terracota Accent
+	const COLOR_COMPARE_J1 = 0x7a8a5e; // Organic Sabia Accent 2
+	const COLOR_SORTED = 0x5b9b73;    // Sealed Green
+
+	const initThreeScene = () => {
+		const container = document.getElementById('three-bubble-container');
+		if (!container || isSceneInitialized) return;
+
+		isSceneInitialized = true;
+		const width = container.clientWidth || 700;
+		const height = container.clientHeight || 280;
+
+		// 1. Scene & Camera
+		scene = new THREE.Scene();
+		scene.background = new THREE.Color(0x181512);
+
+		camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+		camera.position.set(0, 5.5, 9);
+		camera.lookAt(0, 1.2, 0);
+
+		// 2. Lights
+		const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+		scene.add(ambientLight);
+
+		const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+		dirLight.position.set(5, 10, 7);
+		dirLight.castShadow = true;
+		scene.add(dirLight);
+
+		// 3. Ground plane
+		const groundGeo = new THREE.PlaneGeometry(16, 8);
+		const groundMat = new THREE.MeshStandardMaterial({ color: 0x221e1a, roughness: 0.8 });
+		const ground = new THREE.Mesh(groundGeo, groundMat);
+		ground.rotation.x = -Math.PI / 2;
+		ground.position.y = 0;
+		scene.add(ground);
+
+		// 4. Renderer
+		renderer = new THREE.WebGLRenderer({ antialias: true });
+		renderer.setSize(width, height);
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+		renderer.shadowMap.enabled = true;
+		container.appendChild(renderer.domElement);
+
+		// 5. Create 3D Bars
+		buildBars();
+
+		// 6. Animation Loop
+		const animate = () => {
+			requestAnimationFrame(animate);
+			// Smooth position interpolation for bars
+			barMeshes.forEach((mesh, index) => {
+				const targetX = (index - (arrayData.length - 1) / 2) * 1.3;
+				mesh.position.x += (targetX - mesh.position.x) * 0.15;
 			});
+			renderer.render(scene, camera);
+		};
+		animate();
 
-			steps.push({
-				line: 2, i: '-', j: '-', array: [...arr],
-				comparing: [], swapping: false, sortedIndices: [],
-				msg: { es: "Definimos n = 5 como el tamaño del arreglo.", en: "We define n = 5 as the array size." }
+		// Handle Window Resize
+		window.addEventListener('resize', () => {
+			if (!container) return;
+			const w = container.clientWidth;
+			const h = container.clientHeight;
+			camera.aspect = w / h;
+			camera.updateProjectionMatrix();
+			renderer.setSize(w, h);
+		});
+	};
+
+	const buildBars = () => {
+		// Remove existing bars
+		barMeshes.forEach(mesh => scene.remove(mesh));
+		barMeshes = [];
+
+		const spacing = 1.3;
+
+		arrayData.forEach((val, index) => {
+			const height = val * 0.55;
+			const geo = new THREE.BoxGeometry(0.85, height, 0.85);
+			const mat = new THREE.MeshStandardMaterial({
+				color: COLOR_NEUTRAL,
+				roughness: 0.35,
+				metalness: 0.1
 			});
+			const mesh = new THREE.Mesh(geo, mat);
+			mesh.position.x = (index - (arrayData.length - 1) / 2) * spacing;
+			mesh.position.y = height / 2;
+			mesh.position.z = 0;
+			mesh.castShadow = true;
+			mesh.receiveShadow = true;
 
-			for (let i = 0; i < n - 1; i++) {
-				steps.push({
-					line: 3, i: i, j: '-', array: [...arr],
-					comparing: [], swapping: false, sortedIndices: [...sorted],
-					msg: { es: `Inicia ciclo externo (i = ${i}).`, en: `Outer loop starts (i = ${i}).` }
-				});
+			scene.add(mesh);
+			barMeshes.push(mesh);
+		});
 
-				for (let j = 0; j < n - i - 1; j++) {
-					steps.push({
-						line: 4, i: i, j: j, array: [...arr],
-						comparing: [], swapping: false, sortedIndices: [...sorted],
-						msg: { es: `Inicia ciclo interno (j = ${j}). Comparamos arr[j] y arr[j+1].`, en: `Inner loop starts (j = ${j}). We compare arr[j] and arr[j+1].` }
-					});
+		updateLabels(`Array actual: [${arrayData.join(', ')}]`, `Estado: Listo para iniciar`, `Hacé clic en "Siguiente Paso"`);
+	};
 
-					steps.push({
-						line: 5, i: i, j: j, array: [...arr],
-						comparing: [j, j + 1], swapping: false, sortedIndices: [...sorted],
-						msg: { es: `¿Es ${arr[j]} > ${arr[j+1]}?`, en: `Is ${arr[j]} > ${arr[j+1]}?` }
-					});
+	const highlightBars = () => {
+		barMeshes.forEach((mesh, idx) => {
+			const mat = mesh.material as THREE.MeshStandardMaterial;
+			if (isSorted || idx >= arrayData.length - iIdx) {
+				mat.color.setHex(COLOR_SORTED);
+			} else if (idx === jIdx) {
+				mat.color.setHex(COLOR_COMPARE_J);
+			} else if (idx === jIdx + 1) {
+				mat.color.setHex(COLOR_COMPARE_J1);
+			} else {
+				mat.color.setHex(COLOR_NEUTRAL);
+			}
+		});
+	};
 
-					if (arr[j] > arr[j + 1]) {
-						steps.push({
-							line: 6, i: i, j: j, array: [...arr],
-							comparing: [j, j + 1], swapping: true, sortedIndices: [...sorted],
-							msg: { es: `Sí, ${arr[j]} es mayor. Empezamos el intercambio.`, en: `Yes, ${arr[j]} is greater. We start the swap.` }
-						});
+	const stepBubbleSort = () => {
+		if (isSorted) return;
 
-						let temp = arr[j];
-						arr[j] = arr[j + 1];
-						arr[j + 1] = temp;
+		const n = arrayData.length;
+		if (iIdx < n - 1) {
+			if (jIdx < n - iIdx - 1) {
+				const valA = arrayData[jIdx];
+				const valB = arrayData[jIdx + 1];
 
-						steps.push({
-							line: 8, i: i, j: j, array: [...arr],
-							comparing: [j, j + 1], swapping: true, sortedIndices: [...sorted],
-							msg: { es: `Intercambio completo. Los elementos cambiaron de lugar.`, en: `Swap complete. The elements changed places.` }
-						});
-					} else {
-						steps.push({
-							line: 5, i: i, j: j, array: [...arr],
-							comparing: [j, j + 1], swapping: false, sortedIndices: [...sorted],
-							msg: { es: `No, ${arr[j]} no es mayor que ${arr[j+1]}. No hay intercambio.`, en: `No, ${arr[j]} is not greater than ${arr[j+1]}. No swap needed.` }
-						});
+				highlightBars();
+
+				if (valA > valB) {
+					// Swap in array data
+					arrayData[jIdx] = valB;
+					arrayData[jIdx + 1] = valA;
+
+					// Swap 3D meshes reference
+					const tempMesh = barMeshes[jIdx];
+					barMeshes[jIdx] = barMeshes[jIdx + 1];
+					barMeshes[jIdx + 1] = tempMesh;
+
+					updateLabels(
+						`Array: [${arrayData.join(', ')}]`,
+						`Pasada i=${iIdx}, j=${jIdx}`,
+						`Comparar ${valA} > ${valB} ➔ SWAP de posiciones`
+					);
+				} else {
+					updateLabels(
+						`Array: [${arrayData.join(', ')}]`,
+						`Pasada i=${iIdx}, j=${jIdx}`,
+						`Comparar ${valA} <= ${valB} ➔ Mantener orden`
+					);
+				}
+
+				jIdx++;
+			} else {
+				jIdx = 0;
+				iIdx++;
+				if (iIdx >= n - 1) {
+					isSorted = true;
+					highlightBars();
+					updateLabels(
+						`Array Final: [${arrayData.join(', ')}]`,
+						`¡Ordenamiento Completado!`,
+						`Todas las barras se encuentran ordenadas.`
+					);
+					if (autoPlayInterval) {
+						clearInterval(autoPlayInterval);
+						autoPlayInterval = null;
 					}
 				}
-				sorted.unshift(n - i - 1);
-				steps.push({
-					line: 10, i: i, j: 'end', array: [...arr],
-					comparing: [], swapping: false, sortedIndices: [...sorted],
-					msg: { es: `El elemento ${arr[n-i-1]} ya está en su posición final.`, en: `Element ${arr[n-i-1]} is now in its final position.` }
-				});
 			}
-			sorted.unshift(0);
-			steps.push({
-				line: 11, i: 'end', j: 'end', array: [...arr],
-				comparing: [], swapping: false, sortedIndices: [...sorted],
-				msg: { es: "¡Arreglo ordenado correctamente!", en: "Array sorted successfully!" }
-			});
 		}
+	};
 
-		generateSteps();
+	const updateLabels = (arrayStr: string, stateStr: string, stepStr: string) => {
+		const arrLabel = document.getElementById('bs-3d-array-label');
+		const stateLabel = document.getElementById('bs-sim-state');
+		const stepLabel = document.getElementById('bs-sim-step');
+		if (arrLabel) arrLabel.textContent = arrayStr;
+		if (stateLabel) stateLabel.textContent = stateStr;
+		if (stepLabel) stepLabel.textContent = stepStr;
+	};
 
-		let currentStep = 0;
-		const isEnglish = document.documentElement.lang === 'en';
+	// Button Listeners
+	document.getElementById('btn-next-bs-step')?.addEventListener('click', stepBubbleSort);
 
-		// DOM elements
-		const arrayViz = document.getElementById('array-viz')!;
-		const stepMsg = document.getElementById('step-msg')!;
-		const valI = document.getElementById('val-i')!;
-		const valJ = document.getElementById('val-j')!;
-		const lineInfo = document.getElementById('line-info')!;
-		const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
-		const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
-		const resetBtn = document.getElementById('reset-btn') as HTMLButtonElement;
-		const stepCounter = document.getElementById('step-counter')!;
-		const progressBar = document.getElementById('progress-bar')!;
-		const codeRows = document.querySelectorAll('.code-row');
-
-		function render() {
-			const step = steps[currentStep];
-
-			// Update watches
-			valI.textContent = String(step.i);
-			valJ.textContent = String(step.j === 'end' ? '-' : step.j);
-			lineInfo.textContent = isEnglish ? `Line: ${step.line}` : `Línea: ${step.line}`;
-			stepMsg.textContent = isEnglish ? step.msg.en : step.msg.es;
-			stepCounter.textContent = isEnglish 
-				? `Step ${currentStep + 1} / ${steps.length}`
-				: `Paso ${currentStep + 1} / ${steps.length}`;
-			
-			progressBar.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
-
-			// Update code highlight
-			codeRows.forEach(row => {
-				row.classList.toggle('active', Number((row as HTMLElement).dataset.line) === step.line);
-			});
-
-			// Update array visualization
-			arrayViz.innerHTML = '';
-			step.array.forEach((val, idx) => {
-				const wrapper = document.createElement('div');
-				wrapper.className = 'bar-wrapper';
-
-				const bar = document.createElement('div');
-				bar.className = 'bar';
-				bar.style.height = `${val * 20 + 20}px`;
-				bar.textContent = String(val);
-
-				if (step.comparing.includes(idx)) {
-					bar.classList.add('comparing');
-					if (step.swapping) bar.classList.add('swapping');
-				}
-				if (step.sortedIndices.includes(idx)) {
-					bar.classList.add('sorted');
-				}
-
-				const label = document.createElement('span');
-				label.className = 'bar-index';
-				label.textContent = `[${idx}]`;
-
-				wrapper.appendChild(bar);
-				wrapper.appendChild(label);
-				arrayViz.appendChild(wrapper);
-			});
-
-			// Update buttons
-			prevBtn.disabled = currentStep === 0;
-			nextBtn.disabled = currentStep === steps.length - 1;
+	document.getElementById('btn-shuffle-bs')?.addEventListener('click', () => {
+		if (autoPlayInterval) {
+			clearInterval(autoPlayInterval);
+			autoPlayInterval = null;
 		}
+		arrayData = [Math.floor(Math.random() * 8) + 2, Math.floor(Math.random() * 8) + 2, Math.floor(Math.random() * 8) + 2, Math.floor(Math.random() * 8) + 2, Math.floor(Math.random() * 8) + 2];
+		iIdx = 0;
+		jIdx = 0;
+		isSorted = false;
+		if (isSceneInitialized) buildBars();
+	});
 
-		nextBtn.addEventListener('click', () => {
-			if (currentStep < steps.length - 1) {
-				currentStep++;
-				render();
-			}
-		});
+	document.getElementById('btn-autoplay-bs')?.addEventListener('click', () => {
+		if (autoPlayInterval) {
+			clearInterval(autoPlayInterval);
+			autoPlayInterval = null;
+		} else {
+			autoPlayInterval = window.setInterval(stepBubbleSort, 600);
+		}
+	});
 
-		prevBtn.addEventListener('click', () => {
-			if (currentStep > 0) {
-				currentStep--;
-				render();
-			}
-		});
-
-		resetBtn.addEventListener('click', () => {
-			currentStep = 0;
-			render();
-		});
-
-		// Keyboard nav
-		document.addEventListener('keydown', (e) => {
-			if (e.key === 'ArrowRight') nextBtn.click();
-			if (e.key === 'ArrowLeft') prevBtn.click();
-		});
-
-		render();
-	</script>
-
+	goToSlide(1);
+</script>

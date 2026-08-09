@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+	<!-- Constant Box -->
+	<g transform="translate(40, 40)">
+		<rect width="140" height="120" rx="16" fill="#f5ead8" stroke="#8c491a" stroke-width="3"/>
+		<rect width="140" height="32" rx="14" fill="#8c491a"/>
+		<text x="70" y="22" font-family="'Fira Code', monospace" font-size="12" font-weight="700" fill="#f5ead8" text-anchor="middle">const MAX = 100</text>
+		<text x="70" y="75" font-family="'Caprasimo', serif" font-size="28" fill="#201e1d" text-anchor="middle">100</text>
+		<text x="70" y="102" font-family="'Figtree', sans-serif" font-size="11" fill="#7a8a5e" font-weight="600" text-anchor="middle">🔒 Inmutable</text>
+	</g>
+	<!-- Variable Box -->
+	<g transform="translate(220, 40)">
+		<rect width="140" height="120" rx="16" fill="#f5ead8" stroke="#c67139" stroke-width="3"/>
+		<rect width="140" height="32" rx="14" fill="#c67139"/>
+		<text x="70" y="22" font-family="'Fira Code', monospace" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">let count = 42</text>
+		<text x="70" y="75" font-family="'Caprasimo', serif" font-size="28" fill="#201e1d" text-anchor="middle">42</text>
+		<text x="70" y="102" font-family="'Figtree', sans-serif" font-size="11" fill="#8c491a" font-weight="600" text-anchor="middle">⚡ Mutable</text>
+	</g>
+</svg>

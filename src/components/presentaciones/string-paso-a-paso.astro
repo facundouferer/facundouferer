@@ -1,213 +1,233 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
-
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+const isEs = lang === 'es';
 ---
 
+<div class="st-screen">
+	<div class="st-shell">
+		<header class="st-header">
+			<span class="st-badge">{isEs ? 'Procesamiento de Cadenas' : 'String Processing'}</span>
+			<h1 class="st-title">
+				{isEs ? 'Cadenas de Texto Paso a Paso' : 'Strings Step by Step'}
+			</h1>
+			<p class="st-sub">
+				{isEs 
+					? 'Arrays de caracteres, terminadores nulos y objetos String en C, Java, JavaScript y Python.' 
+					: 'Character arrays, null terminators, and String objects in C, Java, JS, and Python.'}
+			</p>
+		</header>
 
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
-		.st-screen {
-			--st-primary: #06b6d4;
-			--st-accent: #10b981;
-			--st-bg: #05141a;
-			min-height: 100vh;
-			font-family: 'Chakra Petch', sans-serif;
-			color: #e6feff;
-			background: radial-gradient(circle at 78% 18%, rgba(6, 182, 212, 0.18), transparent 40%), linear-gradient(140deg, #02090b 0%, var(--st-bg) 100%);
-		}
-		.st-shell { max-width: 1180px; margin: 0 auto; padding: 2.2rem 1rem 3rem; }
-		.st-title { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; line-height: 1.05; }
-		.st-sub { max-width: 66ch; color: rgba(230, 254, 255, 0.84); }
-		.st-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
-		.st-card { border-radius: 1rem; border: 1px solid rgba(6, 182, 212, 0.32); background: linear-gradient(160deg, rgba(7, 30, 37, 0.9), rgba(4, 19, 24, 0.94)); padding: 1rem; }
-		.st-code, .st-state, .st-console { grid-column: span 12; }
-		@media (min-width: 1100px) { .st-code { grid-column: span 6; } .st-state, .st-console { grid-column: span 3; } }
-		.st-head { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
-		.st-badge { border: 1px solid rgba(16, 185, 129, 0.45); background: rgba(16, 185, 129, 0.15); border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.72rem; font-family: 'Fira Code', monospace; }
-		.st-panel { background: rgba(2, 10, 13, 0.88); border: 1px solid rgba(6, 182, 212, 0.28); border-radius: 0.8rem; padding: 0.75rem; }
-		.st-row { display: grid; grid-template-columns: 2rem 1fr; gap: 0.8rem; padding: 0.42rem 0.5rem; border-radius: 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.87rem; color: rgba(230, 254, 255, 0.9); transition: all 0.2s ease; }
-		.st-row.active { background: linear-gradient(90deg, rgba(6, 182, 212, 0.3), rgba(6, 182, 212, 0.08)); outline: 1px solid rgba(6, 182, 212, 0.45); transform: translateX(3px); }
-		.st-ln { color: rgba(230, 254, 255, 0.42); text-align: right; }
-		.st-state-item { display: flex; justify-content: space-between; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.08); border-radius: 0.65rem; padding: 0.6rem 0.7rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
-		.st-value { color: var(--st-primary); font-size: 0.95rem; font-weight: 700; text-align: right; }
-		.st-copy { margin-top: 0.8rem; border: 1px solid rgba(6, 182, 212, 0.34); background: rgba(6, 182, 212, 0.11); border-radius: 0.7rem; padding: 0.75rem; }
-		.st-controls { margin-top: 0.9rem; display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; }
-		.st-btn { border: 1px solid rgba(6, 182, 212, 0.45); background: rgba(6, 182, 212, 0.14); color: #e6feff; border-radius: 0.7rem; padding: 0.55rem 1rem; font-weight: 600; transition: all 0.2s ease; }
-		.st-btn:hover:not(:disabled) { background: rgba(6, 182, 212, 0.28); transform: translateY(-1px); }
-		.st-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-		.st-select { border: 1px solid rgba(16, 185, 129, 0.45); background: rgba(2, 10, 13, 0.92); color: #e6feff; border-radius: 0.6rem; padding: 0.45rem 0.55rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
-		.st-track { margin-top: 0.8rem; height: 0.55rem; border-radius: 999px; background: rgba(230, 254, 255, 0.14); overflow: hidden; }
-		.st-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--st-primary), var(--st-accent)); transition: width 0.25s ease; }
-		.st-console-win { border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 0.8rem; overflow: hidden; background: rgba(2, 10, 13, 0.88); }
-		.st-console-head { display: flex; justify-content: space-between; padding: 0.5rem 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.72rem; background: rgba(16, 185, 129, 0.13); border-bottom: 1px solid rgba(16, 185, 129, 0.3); }
-		.st-console-body { min-height: 160px; padding: 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
-		.st-log { opacity: 0; transform: translateY(8px); animation: st-log 0.35s ease forwards; color: #d6fff3; }
-		@keyframes st-log { to { opacity: 1; transform: translateY(0); } }
-		.st-back { display: inline-block; margin-top: 1.4rem; color: var(--st-accent); text-decoration: none; border-bottom: 1px dashed rgba(16, 185, 129, 0.5); }
-	</style>
+		<div class="st-deck-card">
+			<div class="st-nav-bar">
+				<div class="st-slide-indicator">
+					<span class="st-step-dot"></span>
+					<span id="st-slide-label">SLIDE 1 / 6</span>
+				</div>
+				<div class="st-pills">
+					<button class="st-pill-btn active" data-target-slide="1">1. {isEs ? 'Concepto' : 'Concept'}</button>
+					<button class="st-pill-btn" data-target-slide="2">2. C</button>
+					<button class="st-pill-btn" data-target-slide="3">3. Java</button>
+					<button class="st-pill-btn" data-target-slide="4">4. JavaScript</button>
+					<button class="st-pill-btn" data-target-slide="5">5. Python</button>
+					<button class="st-pill-btn" data-target-slide="6">6. {isEs ? 'Simulador' : 'Simulator'}</button>
+				</div>
+			</div>
 
-	<div class="st-screen">
-		<main class="st-shell">
-			<header class="mb-6">
-				<p class="st-badge">{lang === 'en' ? 'string / step by step' : 'string / paso a paso'}</p>
-				<h1 class="st-title mt-3">{lang === 'en' ? 'Strings in C, line by line' : 'Strings en C, linea por linea'}</h1>
-				<p class="st-sub mt-3">{lang === 'en' ? 'This example shows strlen(), an uppercase copy, and a manual string slice with the value of each variable on every line.' : 'En este ejemplo ves strlen(), una copia en mayusculas y un recorte manual del string con el valor de cada variable en cada linea.'}</p>
-			</header>
-			<section class="st-grid" aria-live="polite">
-				<article class="st-card st-code">
-					<div class="st-head"><strong>1) {lang === 'en' ? 'Code' : 'Codigo'}</strong><span class="st-badge" id="st-line">{lang === 'en' ? 'Active line: 1' : 'Linea activa: 1'}</span></div>
-					<div class="st-panel">
-						<div class="st-row" data-line="1"><span class="st-ln">1</span><span>char texto[] = "Programierds";</span></div>
-						<div class="st-row" data-line="2"><span class="st-ln">2</span><span>int largo = strlen(texto);</span></div>
-						<div class="st-row" data-line="3"><span class="st-ln">3</span><span>char mayus[] = "PROGRAMIERDS";</span></div>
-						<div class="st-row" data-line="4"><span class="st-ln">4</span><span>char parte[5] = "Prog";</span></div>
-						<div class="st-row" data-line="5"><span class="st-ln">5</span><span>printf("%d\n", largo);</span></div>
-						<div class="st-row" data-line="6"><span class="st-ln">6</span><span>printf("%s\n", mayus);</span></div>
-						<div class="st-row" data-line="7"><span class="st-ln">7</span><span>printf("%s\n", parte);</span></div>
+			<div class="st-viewport">
+				<div class="st-slide active" data-slide="1">
+					<div class="st-slide-grid">
+						<div class="st-col">
+							<h2 class="st-slide-title">1. {isEs ? 'Representación Interna de Texto' : 'Internal Text Representation'}</h2>
+							<p class="st-text">
+								{isEs 
+									? 'Una cadena de texto es una secuencia de caracteres (ASCII / UTF-8 / UTF-16). En C termina con un carácter nulo (`\\0`), mientras que en Java/JS/Python son objetos con longitud explícita.'
+									: 'A string is a sequence of characters (ASCII/UTF-8/UTF-16). In C it ends with null `\\0`, whereas Java/JS/Python use explicit length objects.'}
+							</p>
+						</div>
+						<div class="st-col">
+							<div class="st-card-box">
+								<div class="st-card-head">{isEs ? 'CADENA "HOLA" EN C' : '"HOLA" STRING IN C'}</div>
+								<div class="st-cell"><span>[0] 'H' | [1] 'o' | [2] 'l' | [3] 'a'</span><span class="st-tag">['\0' en pos 4]</span></div>
+							</div>
+						</div>
 					</div>
-					<div class="st-copy" id="st-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'texto is created with' : 'Se crea'} <code>texto</code> {lang === 'en' ? 'with' : 'con'} 'Programierds'.</div>
-					<div class="st-track"><div class="st-fill" id="st-fill"></div></div>
-					<div class="st-controls">
-						<button class="st-btn" id="st-prev" type="button">{lang === 'en' ? '← Back' : '⬅ Retroceder'}</button>
-						<button class="st-btn" id="st-next" type="button">{lang === 'en' ? 'Next →' : 'Avanzar ➡'}</button>
-						<button class="st-btn" id="st-auto" type="button">{lang === 'en' ? 'Auto-play ▶' : 'Auto-play ▶'}</button>
-						<select class="st-select" id="st-level" aria-label={lang === 'en' ? 'Detail level' : 'Nivel de detalle'}>
-							<option value="basico" selected>{lang === 'en' ? 'Basic' : 'Basico'}</option>
-							<option value="intermedio">{lang === 'en' ? 'Intermediate' : 'Intermedio'}</option>
-						</select>
-						<span class="st-badge" id="st-step">{lang === 'en' ? 'Step 1 / 7' : 'Paso 1 / 7'}</span>
+				</div>
+
+				<div class="st-slide" data-slide="2">
+					<div class="st-slide-grid">
+						<div class="st-col">
+							<h2 class="st-slide-title">2. C: Arrays de char y '\0'</h2>
+							<p class="st-text">En C las cadenas son mutables si se declaran como `char str[]`, pero requieren `strlen` para calcular longitud hasta encontrar `\0`.</p>
+						</div>
+						<div class="st-col">
+							<div class="st-code-card">
+								<div class="st-code-title">string.c</div>
+								<pre class="st-code-block"><code><span class="token-type">char</span> saludo[] = <span class="token-string">"Hola"</span>; <span class="token-comment">// 5 bytes en RAM (con \0)</span>
+saludo[<span class="token-number">0</span>] = <span class="token-string">'h'</span>; <span class="token-comment">// Mutación directa</span></code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
-				<article class="st-card st-state">
-					<div class="st-head"><strong>2) {lang === 'en' ? 'Variables' : 'Variables'}</strong></div>
-					<div class="st-state-item"><span>texto</span><span id="st-texto" class="st-value">Programierds</span></div>
-					<div class="st-state-item"><span>largo</span><span id="st-largo" class="st-value">-</span></div>
-					<div class="st-state-item"><span>mayus</span><span id="st-mayus" class="st-value">-</span></div>
-					<div class="st-state-item"><span>parte</span><span id="st-parte" class="st-value">-</span></div>
-				</article>
-				<article class="st-card st-console">
-					<div class="st-head"><strong>3) {lang === 'en' ? 'Simulated Console' : 'Consola simulada'}</strong></div>
-					<div class="st-console-win">
-						<div class="st-console-head"><span>./string-demo</span><span>stdout</span></div>
-						<div class="st-console-body" id="st-console"></div>
+				</div>
+
+				<div class="st-slide" data-slide="3">
+					<div class="st-slide-grid">
+						<div class="st-col">
+							<h2 class="st-slide-title">3. Java: String Pool e Inmutabilidad</h2>
+							<p class="st-text">Java almacena literales en el String Pool y sus instancias son 100% inmutables. Modificar un String crea un objeto nuevo.</p>
+						</div>
+						<div class="st-col">
+							<div class="st-code-card">
+								<div class="st-code-title">StringPool.java</div>
+								<pre class="st-code-block"><code>String s1 = <span class="token-string">"Hola"</span>;
+String s2 = s1.concat(<span class="token-string">" Mundo"</span>); <span class="token-comment">// Nuevo objeto</span></code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
-			</section>
-</main>
+				</div>
+
+				<div class="st-slide" data-slide="4">
+					<div class="st-slide-grid">
+						<div class="st-col">
+							<h2 class="st-slide-title">4. JavaScript: Template Literals</h2>
+							<p class="st-text">JS soporta interpolación directa con template literals (`"Hola " + usuario`) e inmutabilidad de caracteres primarios.</p>
+						</div>
+						<div class="st-col">
+							<div class="st-code-card">
+								<div class="st-code-title">template.js</div>
+								<pre class="st-code-block"><code><span class="token-keyword">const</span> user = <span class="token-string">"Ana"</span>;
+<span class="token-keyword">const</span> msg = <span class="token-string">`Bienvenido $&#123;user&#125;`</span>;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="st-slide" data-slide="5">
+					<div class="st-slide-grid">
+						<div class="st-col">
+							<h2 class="st-slide-title">5. Python: Slicing e Inmutabilidad</h2>
+							<p class="st-text">Python ofrece slicing súper expresivo `str[::-1]` para revertir cadenas de forma inmutable.</p>
+						</div>
+						<div class="st-col">
+							<div class="st-code-card">
+								<div class="st-code-title">slicing.py</div>
+								<pre class="st-code-block"><code>texto = <span class="token-string">"Python"</span>
+reversed_text = texto[::-<span class="token-number">1</span>] <span class="token-comment"># "nohtyP"</span></code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="st-slide" data-slide="6">
+					<div class="st-sim-container">
+						<h2 class="st-slide-title center">{isEs ? '6. Inspector de Terminador Nulo' : '6. Null Terminator Inspector'}</h2>
+						<div class="st-inspector-grid">
+							<div class="st-lang-box"><span class="st-lang-name">C String</span><div class="st-exp-res">['H', 'o', 'l', 'a', '\0'] ➔ Longitud: 4 (5 bytes)</div></div>
+							<div class="st-lang-box"><span class="st-lang-name">Java / JS / Python</span><div class="st-exp-res">Objeto Inmutable con atributo `length` o `len()`</div></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="st-footer">
+				<button class="btn btn-secondary" id="btn-prev-st" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="st-footer-meta"><span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span></div>
+				<button class="btn btn-primary" id="btn-next-st">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
 	</div>
+</div>
 
-	<script>
-		type Step = { line: number; message: { es: string; en: string }; texto: string; largo: string; mayus: string; parte: string; logs: string[] };
-		const baseSteps: Step[] = [
-			{ line: 1, message: { es: 'Se define texto.', en: 'texto is defined.' }, texto: 'Programierds', largo: '-', mayus: '-', parte: '-', logs: [] },
-			{ line: 2, message: { es: 'Calcula strlen: Programierds tiene 11 caracteres.', en: 'Calculates strlen: Programierds has 11 characters.' }, texto: 'Programierds', largo: '11', mayus: '-', parte: '-', logs: [] },
-			{ line: 3, message: { es: 'Se prepara una copia en mayusculas del string original.', en: 'An uppercase copy of the original string is prepared.' }, texto: 'Programierds', largo: '11', mayus: 'PROGRAMIERDS', parte: '-', logs: [] },
-			{ line: 4, message: { es: 'Se arma un recorte manual con los primeros 4 caracteres.', en: 'A manual slice with the first 4 characters is assembled.' }, texto: 'Programierds', largo: '11', mayus: 'PROGRAMIERDS', parte: 'Prog', logs: [] },
-			{ line: 5, message: { es: 'Imprime largo.', en: 'Prints largo.' }, texto: 'Programierds', largo: '11', mayus: 'PROGRAMIERDS', parte: 'Prog', logs: ['11'] },
-			{ line: 6, message: { es: 'Imprime mayus.', en: 'Prints mayus.' }, texto: 'Programierds', largo: '11', mayus: 'PROGRAMIERDS', parte: 'Prog', logs: ['11', 'PROGRAMIERDS'] },
-			{ line: 7, message: { es: 'Imprime parte.', en: 'Prints parte.' }, texto: 'Programierds', largo: '11', mayus: 'PROGRAMIERDS', parte: 'Prog', logs: ['11', 'PROGRAMIERDS', 'Prog'] },
-		];
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+	.st-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
+	.st-shell { max-width: var(--container-max); margin: 0 auto; }
+	.st-header { margin-bottom: 1.5rem; }
+	.st-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
+	.st-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.st-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.st-sub.center { text-align: center; }
+	.st-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.st-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.st-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
+	.st-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.st-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+	.st-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+	.st-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.st-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
+	.st-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.st-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.st-slide.active { display: block; opacity: 1; transform: translateY(0); }
+	.st-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+	.st-col { grid-column: span 12; }
+	@media (min-width: 900px) { .st-col { grid-column: span 6; } }
+	.st-slide-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 400; color: var(--color-text); margin: 0 0 0.8rem; }
+	.st-slide-title.center { text-align: center; }
+	.st-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin-bottom: 1.2rem; }
+	.st-card-box { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.st-card-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; color: var(--color-accent-2-700); margin-bottom: 0.75rem; }
+	.st-cell { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--color-divider); background: var(--color-surface); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+	.st-tag { color: var(--color-accent-700); font-weight: 600; }
+	.st-code-card { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.st-code-title { background: #2b2722; color: #c0b6a5; padding: 0.4rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid #3a352e; }
+	.st-code-block { margin: 0; padding: 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; color: #f9f4ed; overflow-x: auto; }
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.token-comment { color: #85929e; font-style: italic; }
+	.st-sim-container { max-width: 800px; margin: 0 auto; }
+	.st-inspector-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+	@media (max-width: 600px) { .st-inspector-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); } }
+	.st-lang-box { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 0.8rem; }
+	.st-lang-name { font-family: 'Fira Code', monospace; font-size: 0.75rem; font-weight: 700; color: #e59866; display: block; margin-bottom: 0.4rem; }
+	.st-exp-res { font-family: 'Fira Code', monospace; font-size: 0.82rem; color: #f9f4ed; background: #141210; padding: 0.5rem 0.7rem; border-radius: var(--radius-sm); }
+	.st-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.st-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>
 
-		const buildIntermediateSteps = (steps: Step[]): Step[] => {
-			const enriched: Step[] = [];
-			steps.forEach((stepState, index) => {
-				enriched.push(stepState);
-				if (index < steps.length - 1) {
-					enriched.push({ ...stepState, message: { es: `Detalle intermedio: ${stepState.message.es}`, en: `Intermediate detail: ${stepState.message.en}` } });
-				}
-			});
-			return enriched;
-		};
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
 
-		type Level = 'basico' | 'intermedio';
-		const stepSets: Record<Level, Step[]> = {
-			basico: baseSteps,
-			intermedio: buildIntermediateSteps(baseSteps),
-		};
-
-		let currentLevel: Level = 'basico';
-		let activeSteps: Step[] = stepSets[currentLevel];
-
-		let currentStep = 0;
-		const prev = document.getElementById('st-prev') as HTMLButtonElement;
-		const next = document.getElementById('st-next') as HTMLButtonElement;
-		const auto = document.getElementById('st-auto') as HTMLButtonElement;
-		const levelSelect = document.getElementById('st-level') as HTMLSelectElement;
-		const line = document.getElementById('st-line') as HTMLElement;
-		const step = document.getElementById('st-step') as HTMLElement;
-		const copy = document.getElementById('st-copy') as HTMLElement;
-		const texto = document.getElementById('st-texto') as HTMLElement;
-		const largo = document.getElementById('st-largo') as HTMLElement;
-		const mayus = document.getElementById('st-mayus') as HTMLElement;
-		const parte = document.getElementById('st-parte') as HTMLElement;
-		const consoleBody = document.getElementById('st-console') as HTMLElement;
-		const fill = document.getElementById('st-fill') as HTMLElement;
-		let autoPlayTimer: number | null = null;
-
-		function stopAutoPlay(): void {
-			if (autoPlayTimer !== null) {
-				window.clearInterval(autoPlayTimer);
-				autoPlayTimer = null;
-			}
-			auto.textContent = 'Auto-play ▶';
-		}
-
-		function toggleAutoPlay(): void {
-			if (autoPlayTimer !== null) {
-				stopAutoPlay();
-				return;
-			}
-			auto.textContent = 'Pausar ⏸';
-			autoPlayTimer = window.setInterval(() => {
-				if (currentStep < activeSteps.length - 1) {
-					currentStep += 1;
-					render();
-				} else {
-					stopAutoPlay();
-				}
-			}, 1300);
-		}
-
-		function render(): void {
-			const isEnglish = document.documentElement.lang === 'en';
-			const state = activeSteps[currentStep];
-			document.querySelectorAll<HTMLElement>('.st-row').forEach((row) => row.classList.toggle('active', Number(row.dataset.line) === state.line));
-			line.textContent = isEnglish ? `Active line: ${state.line}` : `Linea activa: ${state.line}`;
-			step.textContent = isEnglish ? `Step ${currentStep + 1} / ${activeSteps.length}` : `Paso ${currentStep + 1} / ${activeSteps.length}`;
-			copy.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${state.message[isEnglish ? 'en' : 'es']}`;
-			texto.textContent = state.texto;
-			largo.textContent = state.largo;
-			mayus.textContent = state.mayus;
-			parte.textContent = state.parte;
-			consoleBody.innerHTML = '';
-			state.logs.forEach((entry, index) => {
-				const el = document.createElement('div');
-				el.className = 'st-log';
-				el.style.animationDelay = `${index * 80}ms`;
-				el.textContent = `> ${entry}`;
-				consoleBody.appendChild(el);
-			});
-			fill.style.width = `${((currentStep + 1) / activeSteps.length) * 100}%`;
-			prev.disabled = currentStep === 0;
-			next.disabled = currentStep === activeSteps.length - 1;
-		}
-
-		prev.addEventListener('click', () => { if (currentStep > 0) { currentStep -= 1; render(); } });
-		next.addEventListener('click', () => { if (currentStep < activeSteps.length - 1) { currentStep += 1; render(); } });
-		auto.addEventListener('click', () => toggleAutoPlay());
-		levelSelect.addEventListener('change', () => {
-			currentLevel = levelSelect.value as Level;
-			activeSteps = stepSets[currentLevel];
-			currentStep = 0;
-			stopAutoPlay();
-			render();
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+		document.querySelectorAll('.st-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
 		});
-		document.addEventListener('keydown', (event: KeyboardEvent) => { if (event.key === 'ArrowLeft') prev.click(); if (event.key === 'ArrowRight') next.click(); });
-		render();
-	</script>
+		document.querySelectorAll('.st-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
+		});
+		const labelEl = document.getElementById('st-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+		const prevBtn = document.getElementById('btn-prev-st') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-st') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
+
+	document.querySelectorAll('.st-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
+		});
+	});
+
+	document.getElementById('btn-prev-st')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-st')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
+
+	goToSlide(1);
+</script>

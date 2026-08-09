@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+	<g transform="translate(25, 60)">
+		<text x="175" y="-20" font-family="'Fira Code', monospace" font-size="13" font-weight="700" fill="#8c491a" text-anchor="middle">int arr[5] = {10, 20, 30, 40, 50}</text>
+		<!-- 5 Cells -->
+		<g transform="translate(0, 0)">
+			<rect width="65" height="65" rx="8" fill="#f5ead8" stroke="#c67139" stroke-width="2"/>
+			<text x="32" y="38" font-family="'Caprasimo', serif" font-size="18" fill="#201e1d" text-anchor="middle">10</text>
+			<text x="32" y="85" font-family="'Fira Code', monospace" font-size="11" fill="#7a8a5e" font-weight="700" text-anchor="middle">[0]</text>
+		</g>
+		<g transform="translate(72, 0)">
+			<rect width="65" height="65" rx="8" fill="#f5ead8" stroke="#c67139" stroke-width="2"/>
+			<text x="32" y="38" font-family="'Caprasimo', serif" font-size="18" fill="#201e1d" text-anchor="middle">20</text>
+			<text x="32" y="85" font-family="'Fira Code', monospace" font-size="11" fill="#7a8a5e" font-weight="700" text-anchor="middle">[1]</text>
+		</g>
+		<g transform="translate(144, 0)">
+			<rect width="65" height="65" rx="8" fill="#f5ead8" stroke="#c67139" stroke-width="2"/>
+			<text x="32" y="38" font-family="'Caprasimo', serif" font-size="18" fill="#201e1d" text-anchor="middle">30</text>
+			<text x="32" y="85" font-family="'Fira Code', monospace" font-size="11" fill="#7a8a5e" font-weight="700" text-anchor="middle">[2]</text>
+		</g>
+		<g transform="translate(216, 0)">
+			<rect width="65" height="65" rx="8" fill="#f5ead8" stroke="#c67139" stroke-width="2"/>
+			<text x="32" y="38" font-family="'Caprasimo', serif" font-size="18" fill="#201e1d" text-anchor="middle">40</text>
+			<text x="32" y="85" font-family="'Fira Code', monospace" font-size="11" fill="#7a8a5e" font-weight="700" text-anchor="middle">[3]</text>
+		</g>
+		<g transform="translate(288, 0)">
+			<rect width="65" height="65" rx="8" fill="#f5ead8" stroke="#c67139" stroke-width="2"/>
+			<text x="32" y="38" font-family="'Caprasimo', serif" font-size="18" fill="#201e1d" text-anchor="middle">50</text>
+			<text x="32" y="85" font-family="'Fira Code', monospace" font-size="11" fill="#7a8a5e" font-weight="700" text-anchor="middle">[4]</text>
+		</g>
+	</g>
+</svg>

@@ -1,587 +1,237 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
-
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+const isEs = lang === 'es';
 ---
 
+<div class="ac-screen">
+	<div class="ac-shell">
+		<header class="ac-header">
+			<span class="ac-badge">{isEs ? 'Estructuras de Datos' : 'Data Structures'}</span>
+			<h1 class="ac-title">
+				{isEs ? 'Arreglos y Vectores Paso a Paso' : 'Arrays & Vectors Step by Step'}
+			</h1>
+			<p class="ac-sub">
+				{isEs 
+					? 'Contigüidad en memoria, indexación cero y tipos de arrays en C, Java, JavaScript y Python.' 
+					: 'Memory contiguity, zero-indexing, and array models in C, Java, JS, and Python.'}
+			</p>
+		</header>
 
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
-
-		:root {
-			--arr-bg: #071018;
-			--arr-panel: #0f1a24;
-			--arr-card: rgba(15, 26, 36, 0.86);
-			--arr-primary: #0df259;
-			--arr-cyan: #22d3ee;
-			--arr-amber: #f59e0b;
-			--arr-pink: #fb7185;
-			--arr-text: #e9fff1;
-		}
-
-		html { scroll-behavior: smooth; }
-
-		.arr-page {
-			min-height: 100vh;
-			font-family: 'Chakra Petch', sans-serif;
-			color: var(--arr-text);
-			background:
-				radial-gradient(circle at 15% 20%, rgba(13, 242, 89, 0.12), transparent 30%),
-				radial-gradient(circle at 85% 15%, rgba(34, 211, 238, 0.16), transparent 32%),
-				linear-gradient(155deg, #03080d 0%, var(--arr-bg) 100%);
-		}
-
-		#arr-progress {
-			position: fixed;
-			top: 0;
-			left: 0;
-			height: 4px;
-			width: 0%;
-			background: linear-gradient(90deg, var(--arr-primary), var(--arr-cyan));
-			box-shadow: 0 0 14px rgba(13, 242, 89, 0.7);
-			z-index: 200;
-		}
-
-		.arr-shell { max-width: 1180px; margin: 0 auto; padding: 2rem 1rem 4rem; }
-		.arr-hero { min-height: 92vh; display: grid; align-items: center; gap: 2rem; grid-template-columns: repeat(12, minmax(0, 1fr)); }
-		.arr-hero-copy { grid-column: span 12; }
-		.arr-hero-visual { grid-column: span 12; }
-		@media (min-width: 1280px) {
-			.arr-hero-copy { grid-column: span 6; }
-			.arr-hero-visual { grid-column: span 6; }
-		}
-
-		.arr-badge {
-			display: inline-flex;
-			align-items: center;
-			gap: 0.5rem;
-			border-radius: 999px;
-			padding: 0.28rem 0.8rem;
-			border: 1px solid rgba(34, 211, 238, 0.35);
-			background: rgba(34, 211, 238, 0.1);
-			font-family: 'Fira Code', monospace;
-			font-size: 0.76rem;
-		}
-
-		.arr-title { font-size: clamp(1.5rem, 4vw, 3rem); line-height: 0.98; font-weight: 700; margin-top: 1rem; max-width: 10.5ch; }
-		.arr-sub { max-width: 60ch; color: rgba(233, 255, 241, 0.82); font-size: 1.02rem; }
-		.arr-kpis { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 1.2rem; }
-		.arr-kpi {
-			padding: 0.85rem 1rem;
-			border-radius: 1rem;
-			border: 1px solid rgba(13, 242, 89, 0.25);
-			background: rgba(13, 242, 89, 0.06);
-			min-width: 150px;
-		}
-		.arr-kpi strong { display: block; font-size: 1.2rem; color: var(--arr-primary); }
-		.arr-kpi span { color: rgba(233, 255, 241, 0.75); font-size: 0.9rem; }
-		@media (max-width: 1279px) {
-			.arr-hero { min-height: auto; }
-			.arr-hero-visual { margin-top: 0.75rem; }
-			.arr-title { max-width: none; }
-		}
-
-
-		.arr-visual-box {
-			border-radius: 1.4rem;
-			border: 1px solid rgba(13, 242, 89, 0.24);
-			background: linear-gradient(155deg, rgba(14, 29, 35, 0.95), rgba(7, 15, 22, 0.95));
-			padding: 1.2rem;
-			box-shadow: 0 0 40px rgba(13, 242, 89, 0.08);
-		}
-
-		.arr-memory-title { font-family: 'Fira Code', monospace; font-size: clamp(0.62rem, 1.5vw, 0.76rem); line-height: 1.45; color: rgba(233, 255, 241, 0.72); margin-bottom: 0.8rem; overflow-wrap: anywhere; }
-		.arr-memory-title code { font-size: 0.95em; white-space: normal; }
-		.arr-cells { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.55rem; }
-		.arr-cell {
-			border: 1px solid rgba(34, 211, 238, 0.3);
-			background: rgba(34, 211, 238, 0.08);
-			border-radius: 0.9rem;
-			padding: 0.85rem 0.5rem;
-			text-align: center;
-			transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-			animation: arr-float 4s ease-in-out infinite;
-		}
-		.arr-cell:nth-child(2) { animation-delay: 0.2s; }
-		.arr-cell:nth-child(3) { animation-delay: 0.4s; }
-		.arr-cell:nth-child(4) { animation-delay: 0.6s; }
-		.arr-cell:nth-child(5) { animation-delay: 0.8s; }
-		.arr-cell.active {
-			border-color: var(--arr-primary);
-			box-shadow: 0 0 18px rgba(13, 242, 89, 0.25);
-			transform: translateY(-4px);
-		}
-		.arr-index { font-family: 'Fira Code', monospace; color: var(--arr-cyan); font-size: 0.78rem; }
-		.arr-value { font-size: 1.3rem; font-weight: 700; margin-top: 0.35rem; }
-
-		.arr-section {
-			padding: 2.5rem 0;
-			opacity: 0;
-			transform: translateY(40px);
-			transition: opacity 0.8s ease, transform 0.8s ease;
-		}
-		.arr-section.visible { opacity: 1; transform: translateY(0); }
-		.arr-section-title { font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.05; margin-bottom: 0.8rem; }
-		.arr-section-sub { max-width: 65ch; color: rgba(233, 255, 241, 0.8); }
-		.arr-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; margin-top: 1.2rem; }
-		.arr-card { grid-column: span 12; border-radius: 1.2rem; border: 1px solid rgba(13, 242, 89, 0.2); background: var(--arr-card); padding: 1rem; }
-		@media (min-width: 1024px) {
-			.arr-card.span-4 { grid-column: span 4; }
-			.arr-card.span-5 { grid-column: span 5; }
-			.arr-card.span-6 { grid-column: span 6; }
-			.arr-card.span-7 { grid-column: span 7; }
-			.arr-card.span-8 { grid-column: span 8; }
-		}
-
-		.arr-card h3 { font-size: 1.15rem; margin-bottom: 0.6rem; }
-		.arr-card p, .arr-card li { color: rgba(233, 255, 241, 0.82); }
-		.arr-card ul { padding-left: 1.1rem; display: grid; gap: 0.45rem; }
-
-		.arr-code {
-			border-radius: 1rem;
-			background: rgba(4, 10, 14, 0.88);
-			border: 1px solid rgba(34, 211, 238, 0.25);
-			padding: 1rem;
-			font-family: 'Fira Code', monospace;
-			font-size: 0.86rem;
-			line-height: 1.75;
-			overflow-x: auto;
-		}
-		.arr-code .kw { color: #7dd3fc; }
-		.arr-code .tp { color: #fbbf24; }
-		.arr-code .fn { color: #86efac; }
-		.arr-code .st { color: #fde68a; }
-		.arr-code .nu { color: #fca5a5; }
-
-		.arr-stepper {
-			border-radius: 1rem;
-			border: 1px solid rgba(13, 242, 89, 0.22);
-			background: rgba(13, 242, 89, 0.06);
-			padding: 1rem;
-		}
-		.arr-stepper-head { display: flex; justify-content: space-between; gap: 1rem; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; }
-		.arr-stepper-copy { border-radius: 0.9rem; border: 1px solid rgba(34, 211, 238, 0.22); background: rgba(34, 211, 238, 0.08); padding: 0.85rem; min-height: 82px; }
-		.arr-controls { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-top: 0.8rem; }
-		.arr-btn {
-			border-radius: 0.8rem;
-			border: 1px solid rgba(13, 242, 89, 0.36);
-			background: rgba(13, 242, 89, 0.12);
-			color: var(--arr-text);
-			padding: 0.58rem 0.95rem;
-			font-weight: 600;
-			transition: all 0.2s ease;
-		}
-		.arr-btn:hover:not(:disabled) { transform: translateY(-1px); background: rgba(13, 242, 89, 0.2); }
-		.arr-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-		.arr-track { height: 0.55rem; border-radius: 999px; background: rgba(233, 255, 241, 0.12); overflow: hidden; margin-top: 0.9rem; }
-		.arr-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--arr-primary), var(--arr-cyan)); transition: width 0.25s ease; }
-
-		.arr-console {
-			border-radius: 1rem;
-			overflow: hidden;
-			border: 1px solid rgba(34, 211, 238, 0.25);
-			background: rgba(4, 10, 14, 0.88);
-		}
-		.arr-console-head { display: flex; justify-content: space-between; padding: 0.55rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.74rem; background: rgba(34, 211, 238, 0.12); }
-		.arr-console-body { min-height: 120px; padding: 0.85rem; font-family: 'Fira Code', monospace; font-size: 0.84rem; }
-		.arr-log { opacity: 0; transform: translateY(8px); animation: arr-log-in 0.35s ease forwards; color: #dffeff; }
-
-		.arr-matrix {
-			display: grid;
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-			gap: 0.6rem;
-			max-width: 360px;
-		}
-		.arr-matrix-cell {
-			border-radius: 0.9rem;
-			padding: 0.95rem 0.5rem;
-			text-align: center;
-			background: rgba(245, 158, 11, 0.08);
-			border: 1px solid rgba(245, 158, 11, 0.28);
-			transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-		}
-		.arr-matrix-cell.active {
-			border-color: var(--arr-amber);
-			box-shadow: 0 0 18px rgba(245, 158, 11, 0.25);
-			transform: scale(1.04);
-		}
-		.arr-mini-label { display: block; font-family: 'Fira Code', monospace; font-size: 0.72rem; color: rgba(255,255,255,0.66); }
-		.arr-mini-value { display: block; font-size: 1.15rem; font-weight: 700; margin-top: 0.28rem; }
-
-		.arr-warning {
-			border-left: 4px solid var(--arr-pink);
-			padding: 0.9rem 1rem;
-			background: rgba(251, 113, 133, 0.08);
-			border-radius: 0 1rem 1rem 0;
-		}
-
-		.arr-back {
-			display: inline-block;
-			margin-top: 2rem;
-			text-decoration: none;
-			color: var(--arr-cyan);
-			border-bottom: 1px dashed rgba(34, 211, 238, 0.5);
-		}
-
-		@keyframes arr-float {
-			0%, 100% { transform: translateY(0); }
-			50% { transform: translateY(-6px); }
-		}
-		@keyframes arr-log-in { to { opacity: 1; transform: translateY(0); } }
-	</style>
-
-	<div class="arr-page">
-		<div id="arr-progress"></div>
-		<main class="arr-shell">
-			<section class="arr-hero">
-				<div class="arr-hero-copy">
-					<span class="arr-badge">{lang === 'en' ? 'c / arrays / matrices' : 'c / arreglos / matrices'}</span>
-					<h1 class="arr-title">{lang === 'en' ? 'One-dimensional and multidimensional arrays in C' : 'Arreglos unidimensionales y multidimensionales en C'}</h1>
-					<p class="arr-sub mt-4">{lang === 'en' ? 'This presentation is designed for someone just starting out. We go from the problem of having many separate variables to understanding why an array organizes data better and how a matrix adds rows and columns.' : 'Esta presentación está pensada para alguien que recién empieza. Vamos desde el problema de tener muchas variables sueltas hasta entender por qué un arreglo organiza mejor los datos y cómo una matriz agrega filas y columnas.'}</p>
-					<div class="arr-kpis">
-						<div class="arr-kpi"><strong>{lang === 'en' ? '1 name' : '1 nombre'}</strong><span>{lang === 'en' ? 'many data of the same type' : 'muchos datos del mismo tipo'}</span></div>
-						<div class="arr-kpi"><strong>{lang === 'en' ? 'index 0' : 'índice 0'}</strong><span>{lang === 'en' ? 'always starts from zero' : 'siempre se arranca desde cero'}</span></div>
-						<div class="arr-kpi"><strong>{lang === 'en' ? '2 indices' : '2 índices'}</strong><span>{lang === 'en' ? 'row and column in matrices' : 'fila y columna en matrices'}</span></div>
-					</div>
+		<div class="ac-deck-card">
+			<div class="ac-nav-bar">
+				<div class="ac-slide-indicator">
+					<span class="ac-step-dot"></span>
+					<span id="ac-slide-label">SLIDE 1 / 6</span>
 				</div>
-				<div class="arr-hero-visual">
-					<div class="arr-visual-box">
-						<div class="arr-memory-title">{lang === 'en' ? 'Memory concept of an array:' : 'Memoria conceptual de un arreglo:'} <code>int notas[5] = &#123;8, 9, 6, 10, 7&#125;;</code></div>
-						<div class="arr-cells" id="hero-array">
-							<div class="arr-cell active"><span class="arr-index">notas[0]</span><div class="arr-value">8</div></div>
-							<div class="arr-cell"><span class="arr-index">notas[1]</span><div class="arr-value">9</div></div>
-							<div class="arr-cell"><span class="arr-index">notas[2]</span><div class="arr-value">6</div></div>
-							<div class="arr-cell"><span class="arr-index">notas[3]</span><div class="arr-value">10</div></div>
-							<div class="arr-cell"><span class="arr-index">notas[4]</span><div class="arr-value">7</div></div>
+				<div class="ac-pills">
+					<button class="ac-pill-btn active" data-target-slide="1">1. {isEs ? 'Concepto' : 'Concept'}</button>
+					<button class="ac-pill-btn" data-target-slide="2">2. C</button>
+					<button class="ac-pill-btn" data-target-slide="3">3. Java</button>
+					<button class="ac-pill-btn" data-target-slide="4">4. JavaScript</button>
+					<button class="ac-pill-btn" data-target-slide="5">5. Python</button>
+					<button class="ac-pill-btn" data-target-slide="6">6. {isEs ? 'Simulador' : 'Simulator'}</button>
+				</div>
+			</div>
+
+			<div class="ac-viewport">
+				<div class="ac-slide active" data-slide="1">
+					<div class="ac-slide-grid">
+						<div class="ac-col">
+							<h2 class="ac-slide-title">1. {isEs ? 'Contigüidad e Indexación Base Cero' : 'Contiguity & Zero Indexing'}</h2>
+							<p class="ac-text">
+								{isEs 
+									? 'Un arreglo almacena una secuencia fija de elementos en posiciones consecutivas de memoria RAM. Su dirección base se calcula con el índice multiplicando por el tamaño en bytes del tipo de dato.'
+									: 'An array stores elements in consecutive RAM locations. The address is derived from base_addr + index * element_size.'}
+							</p>
+						</div>
+						<div class="ac-col">
+							<div class="ac-card-box">
+								<div class="ac-card-head">{isEs ? 'ESTRUCTURA DE CELDAS EN RAM' : 'RAM CELL STRUCTURE'}</div>
+								<div class="ac-cell"><span>arr[0]</span><span class="ac-tag">Valor: 10 (0x1000)</span></div>
+								<div class="ac-cell"><span>arr[1]</span><span class="ac-tag">Valor: 20 (0x1004)</span></div>
+								<div class="ac-cell"><span>arr[2]</span><span class="ac-tag">Valor: 30 (0x1008)</span></div>
+							</div>
 						</div>
 					</div>
 				</div>
-			</section>
 
-			<section class="arr-section" data-reveal>
-				<h2 class="arr-section-title">1. {lang === 'en' ? 'Why do arrays exist?' : '¿Por qué existen los arreglos?'}</h2>
-				<p class="arr-section-sub">{lang === 'en' ? 'Because having many separate variables is chaos. An array lets you store several values of the same type under a single name and access each one using its position.' : 'Porque tener muchas variables separadas es un caos. Un arreglo te permite guardar varios valores del mismo tipo bajo un mismo nombre y acceder a cada uno usando su posición.'}</p>
-				<div class="arr-grid">
-					<article class="arr-card span-6">
-						<h3>{lang === 'en' ? 'Bad approach with lots of data' : 'Mal enfoque cuando hay muchos datos'}</h3>
-						<div class="arr-code"><span class="tp">int</span> nota1;<br /><span class="tp">int</span> nota2;<br /><span class="tp">int</span> nota3;<br /><span class="tp">int</span> nota4;<br /><span class="tp">int</span> nota5;</div>
-						<p class="mt-3">{lang === 'en' ? 'This becomes repetitive, hard to maintain, and later it is very difficult to traverse or process the information.' : 'Esto se vuelve repetitivo, difícil de mantener y después cuesta muchísimo recorrer o procesar la información.'}</p>
-					</article>
-					<article class="arr-card span-6">
-						<h3>{lang === 'en' ? 'Better approach with array' : 'Mejor enfoque con arreglo'}</h3>
-						<div class="arr-code"><span class="tp">int</span> notas[<span class="nu">5</span>];</div>
-						<ul class="mt-3">
-							<li>{lang === 'en' ? 'Single name:' : 'Un solo nombre:'} <code>notas</code>.</li>
-							<li>{lang === 'en' ? 'All elements are the same type.' : 'Todos los elementos son del mismo tipo.'}</li>
-							<li>{lang === 'en' ? 'Each value lives at a position:' : 'Cada valor vive en una posición:'} <code>notas[0]</code>, <code>notas[1]</code>, {lang === 'en' ? 'etc.' : 'etc.'}</li>
-						</ul>
-					</article>
-				</div>
-			</section>
-
-			<section class="arr-section" data-reveal>
-				<h2 class="arr-section-title">2. {lang === 'en' ? 'One-dimensional array: a row of lockers' : 'Arreglo unidimensional: una fila de casilleros'}</h2>
-				<p class="arr-section-sub">{lang === 'en' ? 'A one-dimensional array can be thought of as a single row. It has several positions but only one dimension. The important thing is to understand that the index starts at <strong>0</strong>.' : 'Un arreglo unidimensional se puede pensar como una sola fila. Tiene varias posiciones, pero una sola dimensión. Lo importante es entender que el índice arranca en <strong>0</strong>.'}</p>
-				<div class="arr-grid">
-					<article class="arr-card span-7">
-						<div class="arr-code">
-<span class="tp">int</span> numeros[<span class="nu">5</span>] = &#123;<span class="nu">10</span>, <span class="nu">20</span>, <span class="nu">30</span>, <span class="nu">40</span>, <span class="nu">50</span>&#125;;
-<br /><br />
-<span class="tp">printf</span>(<span class="st">"%d\n"</span>, numeros[<span class="nu">0</span>]);
-<br /><span class="tp">printf</span>(<span class="st">"%d\n"</span>, numeros[<span class="nu">2</span>]);
+				<div class="ac-slide" data-slide="2">
+					<div class="ac-slide-grid">
+						<div class="ac-col">
+							<h2 class="ac-slide-title">2. C: Arrays Fijos e Índices</h2>
+							<p class="ac-text">En C el tamaño del arreglo es fijo en tiempo de compilación (salvo VLA/malloc). No hay chequeo de límites (out-of-bounds).</p>
 						</div>
-						<ul class="mt-3">
-							<li><code>numeros[0]</code> {lang === 'en' ? 'is' : 'vale'} 10.</li>
-							<li><code>numeros[2]</code> {lang === 'en' ? 'is' : 'vale'} 30.</li>
-							<li>{lang === 'en' ? 'If the array has 5 elements, the last valid index is 4.' : 'Si el arreglo tiene 5 elementos, el último índice válido es 4.'}</li>
-						</ul>
-					</article>
-					<article class="arr-card span-5">
-						<h3>{lang === 'en' ? 'Correct mental model' : 'Idea mental correcta'}</h3>
-						<div class="arr-cells">
-							<div class="arr-cell active"><span class="arr-index">0</span><div class="arr-value">10</div></div>
-							<div class="arr-cell"><span class="arr-index">1</span><div class="arr-value">20</div></div>
-							<div class="arr-cell"><span class="arr-index">2</span><div class="arr-value">30</div></div>
-							<div class="arr-cell"><span class="arr-index">3</span><div class="arr-value">40</div></div>
-							<div class="arr-cell"><span class="arr-index">4</span><div class="arr-value">50</div></div>
-						</div>
-						<p class="mt-3">{lang === 'en' ? 'Don\'t think "5 values → last index 5". That\'s a classic mistake. Think like this: <strong>count = 5</strong>, <strong>last index = 4</strong>.' : 'No pienses "5 valores → último índice 5". Eso es un error clásico. Pensá así: <strong>cantidad = 5</strong>, <strong>último índice = 4</strong>.'}</p>
-					</article>
-				</div>
-			</section>
-
-			<section class="arr-section" data-reveal>
-				<h2 class="arr-section-title">3. {lang === 'en' ? 'Step by step: load and read an array' : 'Paso a paso: cargar y leer un arreglo'}</h2>
-				<p class="arr-section-sub">{lang === 'en' ? 'Here you can see how an array is filled with a loop. Notice that we don\'t write one line per position: we let the index do the repetitive work.' : 'Acá podés ver cómo se llena un arreglo con un ciclo. Fijate que no escribimos una línea por cada posición: dejamos que el índice haga el trabajo repetitivo.'}</p>
-				<div class="arr-grid">
-					<article class="arr-card span-7">
-						<div class="arr-stepper">
-							<div class="arr-stepper-head">
-								<strong>{lang === 'en' ? 'Guided code' : 'Código guiado'}</strong>
-								<span class="arr-badge" id="arr-line-badge">{lang === 'en' ? 'Active line: 1' : 'Línea activa: 1'}</span>
-							</div>
-							<div class="arr-code">
-<div data-line="1"><span class="tp">int</span> numeros[<span class="nu">3</span>];</div>
-<div data-line="2"><span class="tp">int</span> i;</div>
-<div data-line="3"><span class="kw">for</span> (i = <span class="nu">0</span>; i &lt; <span class="nu">3</span>; i = i + <span class="nu">1</span>) &#123;</div>
-<div data-line="4">&nbsp;&nbsp;numeros[i] = i + <span class="nu">1</span>;</div>
-<div data-line="5">&#125;</div>
-<div data-line="6"><span class="tp">printf</span>(<span class="st">"%d %d %d\n"</span>, numeros[<span class="nu">0</span>], numeros[<span class="nu">1</span>], numeros[<span class="nu">2</span>]);</div>
-							</div>
-							<div class="arr-stepper-copy" id="arr-step-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'}</strong> {lang === 'en' ? 'Space is reserved for 3 integers.' : 'Se reserva espacio para 3 enteros.'}</div>
-							<div class="arr-track"><div class="arr-fill" id="arr-step-fill"></div></div>
-							<div class="arr-controls">
-								<button class="arr-btn" id="arr-prev" type="button">⬅ {lang === 'en' ? 'Back' : 'Retroceder'}</button>
-								<button class="arr-btn" id="arr-next" type="button">{lang === 'en' ? 'Forward' : 'Avanzar'} ➡</button>
-								<button class="arr-btn" id="arr-auto" type="button">{lang === 'en' ? 'Auto-play ▶' : 'Auto-play ▶'}</button>
-								<span class="arr-badge" id="arr-step-badge">{lang === 'en' ? 'Step 1 / 6' : 'Paso 1 / 6'}</span>
+						<div class="ac-col">
+							<div class="ac-code-card">
+								<div class="ac-code-title">array.c</div>
+								<pre class="ac-code-block"><code><span class="token-type">int</span> numeros[<span class="token-number">5</span>] = &#123;<span class="token-number">10</span>, <span class="token-number">20</span>, <span class="token-number">30</span>, <span class="token-number">40</span>, <span class="token-number">50</span>&#125;;
+<span class="token-type">int</span> primer = numeros[<span class="token-number">0</span>]; <span class="token-comment">// 10</span></code></pre>
 							</div>
 						</div>
-					</article>
-					<article class="arr-card span-5">
-						<h3>{lang === 'en' ? 'Array state' : 'Estado del arreglo'}</h3>
-						<div class="arr-cells" id="arr-dynamic-cells">
-							<div class="arr-cell"><span class="arr-index">numeros[0]</span><div class="arr-value" data-value="0">-</div></div>
-							<div class="arr-cell"><span class="arr-index">numeros[1]</span><div class="arr-value" data-value="1">-</div></div>
-							<div class="arr-cell"><span class="arr-index">numeros[2]</span><div class="arr-value" data-value="2">-</div></div>
-						</div>
-						<div class="arr-console mt-4">
-							<div class="arr-console-head"><span>./arreglo-demo</span><span>stdout</span></div>
-							<div class="arr-console-body" id="arr-console"></div>
-						</div>
-					</article>
+					</div>
 				</div>
-			</section>
 
-			<section class="arr-section" data-reveal>
-				<h2 class="arr-section-title">4. {lang === 'en' ? 'Two-dimensional array: a table with rows and columns' : 'Arreglo bidimensional: una tabla con filas y columnas'}</h2>
-				<p class="arr-section-sub">{lang === 'en' ? 'When one row is not enough, the matrix appears. A matrix is an array with two dimensions. To access its data you need two indices: one for the row and one for the column.' : 'Cuando ya no alcanza con una sola fila, aparece la matriz. Una matriz es un arreglo con dos dimensiones. Para acceder a sus datos necesitás dos índices: uno para la fila y otro para la columna.'}</p>
-				<div class="arr-grid">
-					<article class="arr-card span-6">
-						<div class="arr-code"><span class="tp">int</span> matriz[<span class="nu">2</span>][<span class="nu">3</span>] = &#123;<br />&nbsp;&nbsp;&#123;<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>&#125;,<br />&nbsp;&nbsp;&#123;<span class="nu">4</span>, <span class="nu">5</span>, <span class="nu">6</span>&#125;<br />&#125;;<br /><br /><span class="tp">printf</span>(<span class="st">"%d\n"</span>, matriz[<span class="nu">1</span>][<span class="nu">2</span>]);</div>
-						<p class="mt-3">{lang === 'en' ? 'That access returns <strong>6</strong>, because row 1 is the second row and column 2 is the third column.' : 'Ese acceso devuelve <strong>6</strong>, porque fila 1 es la segunda fila y columna 2 es la tercera columna.'}</p>
-					</article>
-					<article class="arr-card span-6">
-						<h3>{lang === 'en' ? 'Matrix visualization' : 'Visualización de la matriz'}</h3>
-						<div class="arr-matrix" id="arr-matrix-grid">
-							<div class="arr-matrix-cell"><span class="arr-mini-label">[0][0]</span><span class="arr-mini-value">1</span></div>
-							<div class="arr-matrix-cell"><span class="arr-mini-label">[0][1]</span><span class="arr-mini-value">2</span></div>
-							<div class="arr-matrix-cell"><span class="arr-mini-label">[0][2]</span><span class="arr-mini-value">3</span></div>
-							<div class="arr-matrix-cell"><span class="arr-mini-label">[1][0]</span><span class="arr-mini-value">4</span></div>
-							<div class="arr-matrix-cell"><span class="arr-mini-label">[1][1]</span><span class="arr-mini-value">5</span></div>
-							<div class="arr-matrix-cell active"><span class="arr-mini-label">[1][2]</span><span class="arr-mini-value">6</span></div>
+				<div class="ac-slide" data-slide="3">
+					<div class="ac-slide-grid">
+						<div class="ac-col">
+							<h2 class="ac-slide-title">3. Java: Arrays como Objetos (.length)</h2>
+							<p class="ac-text">En Java los arrays son objetos en el Heap con una propiedad fija `.length` y lanzan `ArrayIndexOutOfBoundsException` si el índice es inválido.</p>
 						</div>
-						<p class="mt-3">{lang === 'en' ? 'Think of it as a table: first you choose the row, then the column. If you mix up that order, you get lost.' : 'Pensala como una tabla: primero elegís la fila, después la columna. Si mezclás ese orden, te perdés.'}</p>
-					</article>
+						<div class="ac-col">
+							<div class="ac-code-card">
+								<div class="ac-code-title">ArrayTest.java</div>
+								<pre class="ac-code-block"><code><span class="token-type">int</span>[] nums = <span class="token-keyword">new</span> <span class="token-type">int</span>[]&#123;<span class="token-number">1</span>, <span class="token-number">2</span>, <span class="token-number">3</span>&#125;;
+System.out.println(nums.length); <span class="token-comment">// 3</span></code></pre>
+							</div>
+						</div>
+					</div>
 				</div>
-			</section>
 
-			<section class="arr-section" data-reveal>
-				<h2 class="arr-section-title">5. {lang === 'en' ? 'When to use an array and when a matrix?' : '¿Cuándo usar un arreglo y cuándo una matriz?'}</h2>
-				<div class="arr-grid">
-					<article class="arr-card span-4">
-						<h3>{lang === 'en' ? 'Simple array' : 'Arreglo simple'}</h3>
-						<ul>
-							<li>{lang === 'en' ? 'List of ages.' : 'Lista de edades.'}</li>
-							<li>{lang === 'en' ? 'Student grades.' : 'Notas de un alumno.'}</li>
-							<li>{lang === 'en' ? 'Week temperatures.' : 'Temperaturas de una semana.'}</li>
-						</ul>
-					</article>
-					<article class="arr-card span-4">
-						<h3>{lang === 'en' ? 'Matrix' : 'Matriz'}</h3>
-						<ul>
-							<li>{lang === 'en' ? 'Grades of several students in several subjects.' : 'Notas de varios alumnos en varias materias.'}</li>
-							<li>{lang === 'en' ? 'Game board.' : 'Tablero de juego.'}</li>
-							<li>{lang === 'en' ? 'Seats in rows and columns.' : 'Asientos en filas y columnas.'}</li>
-						</ul>
-					</article>
-					<article class="arr-card span-4">
-						<h3>{lang === 'en' ? 'Simple rule' : 'Regla simple'}</h3>
-						<p>{lang === 'en' ? 'If the data can be imagined as a single list, use a one-dimensional array. If the data is organized like a table, use a matrix.' : 'Si los datos se pueden imaginar como una sola lista, usás un arreglo unidimensional. Si los datos se organizan como una tabla, usás una matriz.'}</p>
-					</article>
+				<div class="ac-slide" data-slide="4">
+					<div class="ac-slide-grid">
+						<div class="ac-col">
+							<h2 class="ac-slide-title">4. JavaScript: Arrays Dinámicos y Heterogéneos</h2>
+							<p class="ac-text">JS ofrece arrays dinámicos que pueden cambiar de tamaño automáticamente y contener tipos mixtos.</p>
+						</div>
+						<div class="ac-col">
+							<div class="ac-code-card">
+								<div class="ac-code-title">array.js</div>
+								<pre class="ac-code-block"><code><span class="token-keyword">const</span> lista = [<span class="token-number">10</span>, <span class="token-string">"Hola"</span>, <span class="token-keyword">true</span>];
+lista.push(<span class="token-number">99</span>); <span class="token-comment">// Crecimiento dinámico</span></code></pre>
+							</div>
+						</div>
+					</div>
 				</div>
-			</section>
 
-			<section class="arr-section" data-reveal>
-				<h2 class="arr-section-title">6. {lang === 'en' ? 'Typical beginner mistakes' : 'Errores típicos de principiante'}</h2>
-				<div class="arr-grid">
-					<article class="arr-card span-6">
-						<div class="arr-warning">
-							<strong>{lang === 'en' ? 'Error 1:' : 'Error 1:'}</strong> {lang === 'en' ? 'thinking that if an array has 5 elements, the last index is 5. NO. The last index is 4.' : 'pensar que si un arreglo tiene 5 elementos, el último índice es 5. NO. El último índice es 4.'}
+				<div class="ac-slide" data-slide="5">
+					<div class="ac-slide-grid">
+						<div class="ac-col">
+							<h2 class="ac-slide-title">5. Python: Listas y Slicing</h2>
+							<p class="ac-text">Las listas en Python son arrays dinámicos de referencias a objetos y soportan slicing avanzado `list[start:stop:step]`.</p>
 						</div>
-						<div class="arr-warning mt-4">
-							<strong>{lang === 'en' ? 'Error 2:' : 'Error 2:'}</strong> {lang === 'en' ? 'using a position that does not exist, for example' : 'usar una posición que no existe, por ejemplo'} <code>numeros[5]</code> {lang === 'en' ? 'in an array of 5 elements.' : 'en un arreglo de 5 elementos.'}
+						<div class="ac-col">
+							<div class="ac-code-card">
+								<div class="ac-code-title">lists.py</div>
+								<pre class="ac-code-block"><code>nums = [<span class="token-number">10</span>, <span class="token-number">20</span>, <span class="token-number">30</span>, <span class="token-number">40</span>, <span class="token-number">50</span>]
+sub = nums[<span class="token-number">1</span>:<span class="token-number">4</span>] <span class="token-comment"># [20, 30, 40]</span></code></pre>
+							</div>
 						</div>
-					</article>
-					<article class="arr-card span-6">
-						<div class="arr-warning">
-							<strong>{lang === 'en' ? 'Error 3:' : 'Error 3:'}</strong> {lang === 'en' ? 'believing that a matrix is accessed with a single index. You need two: row and column.' : 'creer que una matriz se accede con un solo índice. Necesitás dos: fila y columna.'}
-						</div>
-						<div class="arr-warning mt-4">
-							<strong>{lang === 'en' ? 'Error 4:' : 'Error 4:'}</strong> {lang === 'en' ? 'not understanding that all array elements must be of the same type.' : 'no entender que todos los elementos del arreglo deben ser del mismo tipo.'}
-						</div>
-					</article>
+					</div>
 				</div>
-			</section>
 
-			<section class="arr-section" data-reveal>
-				<h2 class="arr-section-title">7. {lang === 'en' ? 'Final idea' : 'Idea final'}</h2>
-				<div class="arr-grid">
-					<article class="arr-card span-8">
-						<p>{lang === 'en' ? 'An array in C is not just "many data together". It is an orderly way of representing related information. When you understand that each data has a position and that position is accessed by index, you start thinking about problems better.' : 'Un arreglo en C no es solo "muchos datos juntos". Es una forma ordenada de representar información relacionada. Cuando entendés que cada dato tiene una posición y que esa posición se accede por índice, empezás a pensar mejor los problemas.'}</p>
-						<p class="mt-4">{lang === 'en' ? 'And when a second dimension appears, the idea does not change: you simply go from a list to a table. No magic. Just data organization.' : 'Y cuando aparece una segunda dimensión, la idea no cambia: simplemente pasás de una lista a una tabla. Nada de magia. Solo organización de datos.'}</p>
-					</article>
-					<article class="arr-card span-4">
-						<h3>{lang === 'en' ? 'What you should take away' : 'Qué deberías llevarte'}</h3>
-						<ul>
-							<li>{lang === 'en' ? 'An array stores several data of the same type.' : 'Un arreglo guarda varios datos del mismo tipo.'}</li>
-							<li>{lang === 'en' ? 'The index starts at 0.' : 'El índice arranca en 0.'}</li>
-							<li>{lang === 'en' ? 'A matrix uses row and column.' : 'Una matriz usa fila y columna.'}</li>
-							<li>{lang === 'en' ? 'Without understanding indexes, everything later becomes complicated.' : 'Sin entender índices, después todo se complica.'}</li>
-						</ul>
-					</article>
+				<div class="ac-slide" data-slide="6">
+					<div class="ac-sim-container">
+						<h2 class="ac-slide-title center">{isEs ? '6. Inspector Interactivo de Arreglos' : '6. Array Inspector'}</h2>
+						<p class="ac-sub center">{isEs ? 'Visualizá la búsqueda por índice:' : 'Visualize indexing by location:'}</p>
+
+						<div class="ac-inspector-grid">
+							<div class="ac-lang-box"><span class="ac-lang-name">Índice arr[0]</span><div class="ac-exp-res">Dirección Base ➔ 0x1000 ➔ Valor: 10</div></div>
+							<div class="ac-lang-box"><span class="ac-lang-name">Índice arr[2]</span><div class="ac-exp-res">Dirección Base + (2 × 4 bytes) ➔ 0x1008 ➔ Valor: 30</div></div>
+						</div>
+					</div>
 				</div>
-</section>
-		</main>
+			</div>
+
+			<div class="ac-footer">
+				<button class="btn btn-secondary" id="btn-prev-ac" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="ac-footer-meta"><span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span></div>
+				<button class="btn btn-primary" id="btn-next-ac">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
 	</div>
+</div>
 
-	<script>
-		type ArrayStep = {
-			line: number;
-			message: { es: string; en: string };
-			values: string[];
-			logs: string[];
-		};
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+	.ac-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
+	.ac-shell { max-width: var(--container-max); margin: 0 auto; }
+	.ac-header { margin-bottom: 1.5rem; }
+	.ac-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
+	.ac-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.ac-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.ac-sub.center { text-align: center; }
+	.ac-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.ac-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.ac-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
+	.ac-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.ac-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+	.ac-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+	.ac-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.ac-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
+	.ac-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.ac-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.ac-slide.active { display: block; opacity: 1; transform: translateY(0); }
+	.ac-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+	.ac-col { grid-column: span 12; }
+	@media (min-width: 900px) { .ac-col { grid-column: span 6; } }
+	.ac-slide-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 400; color: var(--color-text); margin: 0 0 0.8rem; }
+	.ac-slide-title.center { text-align: center; }
+	.ac-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin-bottom: 1.2rem; }
+	.ac-card-box { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.ac-card-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; color: var(--color-accent-2-700); margin-bottom: 0.75rem; }
+	.ac-cell { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--color-divider); background: var(--color-surface); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+	.ac-tag { color: var(--color-accent-700); font-weight: 600; }
+	.ac-code-card { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.ac-code-title { background: #2b2722; color: #c0b6a5; padding: 0.4rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid #3a352e; }
+	.ac-code-block { margin: 0; padding: 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; color: #f9f4ed; overflow-x: auto; }
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.token-comment { color: #85929e; font-style: italic; }
+	.ac-sim-container { max-width: 800px; margin: 0 auto; }
+	.ac-inspector-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+	@media (max-width: 600px) { .ac-inspector-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); } }
+	.ac-lang-box { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 0.8rem; }
+	.ac-lang-name { font-family: 'Fira Code', monospace; font-size: 0.75rem; font-weight: 700; color: #e59866; display: block; margin-bottom: 0.4rem; }
+	.ac-exp-res { font-family: 'Fira Code', monospace; font-size: 0.82rem; color: #f9f4ed; background: #141210; padding: 0.5rem 0.7rem; border-radius: var(--radius-sm); }
+	.ac-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.ac-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>
 
-		const heroCells = Array.from(document.querySelectorAll<HTMLElement>('#hero-array .arr-cell'));
-		let heroIndex = 0;
-		window.setInterval(() => {
-			heroCells.forEach((cell, index) => cell.classList.toggle('active', index === heroIndex));
-			heroIndex = (heroIndex + 1) % heroCells.length;
-		}, 1200);
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
 
-		const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
-		const observer = new IntersectionObserver((entries) => {
-			entries.forEach((entry) => {
-				if (entry.isIntersecting) entry.target.classList.add('visible');
-			});
-		}, { threshold: 0.2 });
-		sections.forEach((section) => observer.observe(section));
-
-		const progressBar = document.getElementById('arr-progress') as HTMLElement;
-		const updateProgress = (): void => {
-			const scrollTop = window.scrollY;
-			const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-			const progress = maxScroll > 0 ? (scrollTop / maxScroll) * 100 : 0;
-			progressBar.style.width = `${progress}%`;
-		};
-		window.addEventListener('scroll', updateProgress, { passive: true });
-		updateProgress();
-
-		const steps: ArrayStep[] = [
-			{ line: 1, message: { es: 'Se reserva espacio para 3 enteros. Todavía no mostramos valores cargados.', en: 'Space is reserved for 3 integers. We haven\'t shown loaded values yet.' }, values: ['-', '-', '-'], logs: [] },
-			{ line: 2, message: { es: 'Se declara la variable i, que nos va a servir como índice del arreglo.', en: 'The variable i is declared, which will serve as the array index.' }, values: ['-', '-', '-'], logs: [] },
-			{ line: 3, message: { es: 'El ciclo empieza con i = 0. Vamos a llenar la primera posición.', en: 'The loop starts with i = 0. We are going to fill the first position.' }, values: ['-', '-', '-'], logs: [] },
-			{ line: 4, message: { es: 'Se guarda i + 1 en numeros[i]. Como i vale 0, se guarda 1 en numeros[0].', en: 'i + 1 is saved in numeros[i]. Since i is 0, 1 is saved in numeros[0].' }, values: ['1', '-', '-'], logs: [] },
-			{ line: 4, message: { es: 'Siguiente vuelta: ahora i vale 1, entonces se guarda 2 en numeros[1].', en: 'Next iteration: now i is 1, so 2 is saved in numeros[1].' }, values: ['1', '2', '-'], logs: [] },
-			{ line: 4, message: { es: 'Tercera vuelta: ahora i vale 2, entonces se guarda 3 en numeros[2].', en: 'Third iteration: now i is 2, so 3 is saved in numeros[2].' }, values: ['1', '2', '3'], logs: [] },
-			{ line: 6, message: { es: 'El arreglo ya quedó cargado y ahora se imprime completo.', en: 'The array is now loaded and is printed in full.' }, values: ['1', '2', '3'], logs: ['1 2 3'] },
-		];
-
-		let currentStep = 0;
-		let timer: number | null = null;
-		const prevBtn = document.getElementById('arr-prev') as HTMLButtonElement;
-		const nextBtn = document.getElementById('arr-next') as HTMLButtonElement;
-		const autoBtn = document.getElementById('arr-auto') as HTMLButtonElement;
-		const stepBadge = document.getElementById('arr-step-badge') as HTMLElement;
-		const lineBadge = document.getElementById('arr-line-badge') as HTMLElement;
-		const copy = document.getElementById('arr-step-copy') as HTMLElement;
-		const fill = document.getElementById('arr-step-fill') as HTMLElement;
-		const consoleBody = document.getElementById('arr-console') as HTMLElement;
-		const valueNodes = Array.from(document.querySelectorAll<HTMLElement>('#arr-dynamic-cells [data-value]'));
-		const codeLines = Array.from(document.querySelectorAll<HTMLElement>('.arr-stepper .arr-code [data-line]'));
-
-		function stopAuto(): void {
-			if (timer !== null) {
-				window.clearInterval(timer);
-				timer = null;
-			}
-			autoBtn.textContent = 'Auto-play ▶';
-		}
-
-		function toggleAuto(): void {
-			if (timer !== null) {
-				stopAuto();
-				return;
-			}
-			autoBtn.textContent = 'Pausar ⏸';
-			timer = window.setInterval(() => {
-				if (currentStep < steps.length - 1) {
-					currentStep += 1;
-					renderStep();
-				} else {
-					stopAuto();
-				}
-			}, 1500);
-		}
-
-		function renderStep(): void {
-			const isEnglish = document.documentElement.lang === 'en';
-			const state = steps[currentStep];
-			lineBadge.textContent = `${isEnglish ? 'Active line' : 'Línea activa'}: ${state.line}`;
-			stepBadge.textContent = `${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1} / ${steps.length}`;
-			copy.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${state.message[isEnglish ? 'en' : 'es']}`;
-			fill.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
-			valueNodes.forEach((node, index) => {
-				node.textContent = state.values[index];
-				node.parentElement?.classList.toggle('active', state.values[index] !== '-');
-			});
-			codeLines.forEach((line) => {
-				line.style.background = Number(line.dataset.line) === state.line ? 'linear-gradient(90deg, rgba(13,242,89,0.2), rgba(13,242,89,0.03))' : 'transparent';
-				line.style.borderRadius = '0.55rem';
-				line.style.padding = '0.12rem 0.4rem';
-			});
-			consoleBody.innerHTML = '';
-			state.logs.forEach((entry, index) => {
-				const el = document.createElement('div');
-				el.className = 'arr-log';
-				el.style.animationDelay = `${index * 90}ms`;
-				el.textContent = `> ${entry}`;
-				consoleBody.appendChild(el);
-			});
-			prevBtn.disabled = currentStep === 0;
-			nextBtn.disabled = currentStep === steps.length - 1;
-		}
-
-		prevBtn?.addEventListener('click', () => {
-			if (currentStep > 0) {
-				currentStep -= 1;
-				renderStep();
-			}
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+		document.querySelectorAll('.ac-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
 		});
-		nextBtn?.addEventListener('click', () => {
-			if (currentStep < steps.length - 1) {
-				currentStep += 1;
-				renderStep();
-			}
+		document.querySelectorAll('.ac-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
 		});
-		autoBtn?.addEventListener('click', () => toggleAuto());
-		document.addEventListener('keydown', (event: KeyboardEvent) => {
-			if (event.key === 'ArrowRight') nextBtn?.click();
-			if (event.key === 'ArrowLeft') prevBtn?.click();
-		});
-		renderStep();
+		const labelEl = document.getElementById('ac-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+		const prevBtn = document.getElementById('btn-prev-ac') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-ac') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
 
-		const matrixCells = Array.from(document.querySelectorAll<HTMLElement>('#arr-matrix-grid .arr-matrix-cell'));
-		let matrixIndex = 0;
-		window.setInterval(() => {
-			matrixCells.forEach((cell, index) => cell.classList.toggle('active', index === matrixIndex));
-			matrixIndex = (matrixIndex + 1) % matrixCells.length;
-		}, 1500);
-	</script>
+	document.querySelectorAll('.ac-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
+		});
+	});
+
+	document.getElementById('btn-prev-ac')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-ac')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
+
+	goToSlide(1);
+</script>

@@ -1,668 +1,259 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
-
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+const isEs = lang === 'es';
 ---
 
+<div class="bt-screen">
+	<div class="bt-shell">
+		<header class="bt-header">
+			<span class="bt-badge">{isEs ? 'Estructuras No Lineales' : 'Non-Linear Structures'}</span>
+			<h1 class="bt-title">
+				{isEs ? 'Árboles Binarios de Búsqueda (BST)' : 'Binary Search Trees (BST)'}
+			</h1>
+			<p class="bt-sub">
+				{isEs 
+					? 'Nodos, punteros, referencias e in-order traversal en C, Java, JavaScript y Python.' 
+					: 'Nodes, pointers, references, and in-order traversal in C, Java, JS, and Python.'}
+			</p>
+		</header>
 
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
+		<div class="bt-deck-card">
+			<div class="bt-nav-bar">
+				<div class="bt-slide-indicator">
+					<span class="bt-step-dot"></span>
+					<span id="bt-slide-label">SLIDE 1 / 6</span>
+				</div>
+				<div class="bt-pills">
+					<button class="bt-pill-btn active" data-target-slide="1">1. {isEs ? 'Concepto' : 'Concept'}</button>
+					<button class="bt-pill-btn" data-target-slide="2">2. C</button>
+					<button class="bt-pill-btn" data-target-slide="3">3. Java</button>
+					<button class="bt-pill-btn" data-target-slide="4">4. JavaScript</button>
+					<button class="bt-pill-btn" data-target-slide="5">5. Python</button>
+					<button class="bt-pill-btn" data-target-slide="6">6. {isEs ? 'Simulador' : 'Simulator'}</button>
+				</div>
+			</div>
 
-		.bt-screen {
-			--bt-bg: #0b1510;
-			--bt-panel: #112216;
-			--bt-primary: #0df259;
-			--bt-cyan: #3b82f6;
-			--bt-danger: #fb7185;
-			min-height: 100vh;
-			font-family: 'Chakra Petch', sans-serif;
-			background:
-				radial-gradient(circle at 85% 15%, rgba(13, 242, 89, 0.12), transparent 40%),
-				radial-gradient(circle at 10% 80%, rgba(59, 130, 246, 0.10), transparent 42%),
-				linear-gradient(150deg, #050a06 0%, var(--bt-bg) 100%);
-			color: #ffeedd;
-		}
-
-		.bt-shell { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1rem 3rem; }
-		.bt-title { font-size: clamp(1.5rem, 3vw, 2.2rem); line-height: 1.05; font-weight: 700; }
-		.bt-sub { max-width: 65ch; color: rgba(255, 238, 221, 0.84); }
-
-		.bt-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
-		.bt-card { border-radius: 1rem; border: 1px solid rgba(13, 242, 89, 0.3); background: linear-gradient(155deg, rgba(17, 34, 22, 0.9), rgba(8, 16, 10, 0.95)); padding: 1rem; }
-		.bt-code { grid-column: span 12; }
-		.bt-viz { grid-column: span 12; }
-		.bt-state { grid-column: span 12; }
-		.bt-console { grid-column: span 12; }
-		@media (min-width: 1100px) {
-			.bt-code { grid-column: span 6; }
-			.bt-viz { grid-column: span 6; }
-			.bt-state { grid-column: span 6; }
-			.bt-console { grid-column: span 6; }
-		}
-
-		.bt-badge { border: 1px solid rgba(13, 242, 89, 0.4); background: rgba(13, 242, 89, 0.12); border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.72rem; font-family: 'Fira Code', monospace; }
-		.bt-head { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
-
-		.bt-code-panel { background: rgba(5, 10, 6, 0.88); border: 1px solid rgba(13, 242, 89, 0.24); border-radius: 0.8rem; padding: 0.75rem; min-height: 290px; }
-		.bt-row { display: grid; grid-template-columns: 2rem 1fr; gap: 0.8rem; border-radius: 0.55rem; padding: 0.25rem 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; transition: all 0.2s ease; color: rgba(255, 238, 221, 0.86); }
-		.bt-row.active { background: linear-gradient(90deg, rgba(13, 242, 89, 0.26), rgba(13, 242, 89, 0.06)); outline: 1px solid rgba(13, 242, 89, 0.4); transform: translateX(3px); }
-		.bt-ln { color: rgba(13, 242, 89, 0.45); text-align: right; }
-
-		.bt-state-item { display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(13, 242, 89, 0.24); background: rgba(13, 242, 89, 0.07); border-radius: 0.65rem; padding: 0.62rem 0.7rem; font-family: 'Fira Code', monospace; margin-bottom: 0.5rem; font-size: 0.84rem; }
-		.bt-value { color: var(--bt-primary); font-weight: 700; font-size: 1.02rem; }
-
-		.bt-console-win { border: 1px solid rgba(13, 242, 89, 0.36); border-radius: 0.8rem; overflow: hidden; background: rgba(5, 10, 6, 0.88); }
-		.bt-console-head { display: flex; justify-content: space-between; padding: 0.5rem 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.72rem; background: rgba(13, 242, 89, 0.12); border-bottom: 1px solid rgba(13, 242, 89, 0.3); }
-		.bt-console-body { min-height: 120px; padding: 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.83rem; }
-		.bt-log { opacity: 0; transform: translateY(8px); animation: bt-log-in 0.4s ease forwards; color: #a3f4b8; }
-		@keyframes bt-log-in { to { opacity: 1; transform: translateY(0); } }
-
-		.bt-copy { margin-top: 0.85rem; border: 1px solid rgba(13, 242, 89, 0.32); background: rgba(13, 242, 89, 0.11); border-radius: 0.7rem; padding: 0.75rem; font-size: 0.95rem; line-height: 1.4; }
-		.bt-controls { margin-top: 0.9rem; display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; }
-		.bt-btn { border: 1px solid rgba(13, 242, 89, 0.45); background: rgba(13, 242, 89, 0.13); color: #ffeedd; padding: 0.58rem 1rem; border-radius: 0.7rem; font-weight: 600; transition: all 0.2s ease; cursor: pointer; }
-		.bt-btn:hover:not(:disabled) { background: rgba(13, 242, 89, 0.26); transform: translateY(-1px); box-shadow: 0 0 18px rgba(13, 242, 89, 0.24); }
-		.bt-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-		.bt-track { margin-top: 0.8rem; height: 0.55rem; border-radius: 999px; background: rgba(255, 238, 221, 0.14); overflow: hidden; }
-		.bt-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--bt-primary), var(--bt-cyan)); transition: width 0.25s ease; }
-
-		.bt-back { display: inline-block; margin-top: 1.5rem; color: var(--bt-primary); text-decoration: none; border-bottom: 1px dashed rgba(13, 242, 89, 0.5); font-family: monospace; font-size: 0.9rem; }
-
-		/* Animaciones de Nodos */
-		.node-g {
-			transition: opacity 0.4s ease, transform 0.4s ease;
-		}
-		.node-circle {
-			transition: fill 0.3s ease, stroke 0.3s ease, filter 0.3s ease;
-		}
-		.node-circle.active {
-			fill: var(--bt-primary) !important;
-			stroke: #fff !important;
-			filter: drop-shadow(0 0 8px var(--bt-primary));
-		}
-		.node-circle.printing {
-			fill: var(--bt-cyan) !important;
-			stroke: #fff !important;
-			filter: drop-shadow(0 0 8px var(--bt-cyan));
-		}
-		.edge-line {
-			transition: opacity 0.4s ease, stroke-dashoffset 0.6s ease;
-			stroke-dasharray: 100;
-			stroke-dashoffset: 100;
-		}
-		.edge-line.visible {
-			stroke-dashoffset: 0;
-		}
-	</style>
-
-	<div class="bt-screen">
-		<main class="bt-shell">
-			<header class="mb-6">
-				<p class="bt-badge">{lang === 'en' ? 'C / Binary Search Tree (BST) Simulation' : 'C / Simulacion de Arbol Binario de Busqueda'}</p>
-				<h1 class="bt-title mt-3">{lang === 'en' ? <>Binary Trees<br/>step by step</> : <>Árboles Binarios<br/>paso a paso</>}</h1>
-				<p class="bt-sub mt-3">
-					{lang === 'en' 
-						? 'See graphically how nodes are created and connected in a BST using recursion, followed by an in-order traversal.' 
-						: 'Mira graficamente como se crean y conectan los nodos en un BST usando recursividad, y como funciona el recorrido inorden.'
-					}
-				</p>
-			</header>
-
-			<section class="bt-grid" aria-live="polite">
-				<!-- Panel de Código C -->
-				<article class="bt-card bt-code">
-					<div class="bt-head">
-						<strong>{lang === 'en' ? '1) Code & Execution Context' : '1) Codigo y Contexto de Ejecucion'}</strong>
-						<span class="bt-badge" id="bt-func-badge">main()</span>
+			<div class="bt-viewport">
+				<div class="bt-slide active" data-slide="1">
+					<div class="bt-slide-grid">
+						<div class="bt-col">
+							<h2 class="bt-slide-title">1. {isEs ? 'Propiedad Fundamental del BST' : 'BST Fundamental Property'}</h2>
+							<p class="bt-text">
+								{isEs 
+									? 'En un BST, para todo nodo X: los valores del subárbol izquierdo son menores (< X) y los del subárbol derecho son mayores (> X). El recorrido In-Order produce los elementos ordenados.'
+									: 'In a BST, for any node X: left subtree values are smaller (< X) and right subtree values are larger (> X). In-order traversal yields sorted elements.'}
+							</p>
+						</div>
+						<div class="bt-col">
+							<div class="bt-card-box">
+								<div class="bt-card-head">{isEs ? 'ESTRUCTURA DE UN NODO' : 'NODE STRUCTURE'}</div>
+								<div class="bt-cell"><span>Valor / Key</span><span class="bt-tag">Dato del nodo</span></div>
+								<div class="bt-cell"><span>Puntero / Ref Izquierda</span><span class="bt-tag">Subárbol &lt; Key</span></div>
+								<div class="bt-cell"><span>Puntero / Ref Derecha</span><span class="bt-tag">Subárbol &gt; Key</span></div>
+							</div>
+						</div>
 					</div>
-					
-					<!-- Código de insertar() -->
-					<div class="bt-code-panel" id="code-insertar">
-						<div class="bt-row" data-line="1"><span class="bt-ln">1</span><span>struct Nodo* insertar(struct Nodo* raiz, int valor) &#123;</span></div>
-						<div class="bt-row" data-line="2"><span class="bt-ln">2</span><span>&nbsp;&nbsp;if (raiz == NULL) &#123;</span></div>
-						<div class="bt-row" data-line="3"><span class="bt-ln">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;return crearNodo(valor);</span></div>
-						<div class="bt-row" data-line="4"><span class="bt-ln">4</span><span>&nbsp;&nbsp;&#125;</span></div>
-						<div class="bt-row" data-line="5"><span class="bt-ln">5</span><span>&nbsp;&nbsp;if (valor &lt; raiz-&gt;dato) &#123;</span></div>
-						<div class="bt-row" data-line="6"><span class="bt-ln">6</span><span>&nbsp;&nbsp;&nbsp;&nbsp;raiz-&gt;izquierdo = insertar(raiz-&gt;izquierdo, valor);</span></div>
-						<div class="bt-row" data-line="7"><span class="bt-ln">7</span><span>&nbsp;&nbsp;&#125; else if (valor &gt; raiz-&gt;dato) &#123;</span></div>
-						<div class="bt-row" data-line="8"><span class="bt-ln">8</span><span>&nbsp;&nbsp;&nbsp;&nbsp;raiz-&gt;derecho = insertar(raiz-&gt;derecho, valor);</span></div>
-						<div class="bt-row" data-line="9"><span class="bt-ln">9</span><span>&nbsp;&nbsp;&#125;</span></div>
-						<div class="bt-row" data-line="10"><span class="bt-ln">10</span><span>&nbsp;&nbsp;return raiz;</span></div>
-						<div class="bt-row" data-line="11"><span class="bt-ln">11</span><span>&#125;</span></div>
+				</div>
+
+				<div class="bt-slide" data-slide="2">
+					<div class="bt-slide-grid">
+						<div class="bt-col">
+							<h2 class="bt-slide-title">2. C: struct Node con Punteros</h2>
+							<p class="bt-text">En C se define con `struct Node` y punteros auto-referenciados `struct Node *left, *right`.</p>
+						</div>
+						<div class="bt-col">
+							<div class="bt-code-card">
+								<div class="bt-code-title">bst.c</div>
+								<pre class="bt-code-block"><code><span class="token-keyword">typedef struct</span> Node &#123;
+    <span class="token-type">int</span> data;
+    <span class="token-keyword">struct</span> Node *left;
+    <span class="token-keyword">struct</span> Node *right;
+&#125; Node;
+
+Node* createNode(<span class="token-type">int</span> val) &#123;
+    Node* n = (Node*)malloc(<span class="token-keyword">sizeof</span>(Node));
+    n-&gt;data = val; n-&gt;left = n-&gt;right = NULL;
+    <span class="token-keyword">return</span> n;
+&#125;</code></pre>
+							</div>
+						</div>
 					</div>
+				</div>
 
-					<!-- Código de inorden() -->
-					<div class="bt-code-panel hidden" id="code-inorden">
-						<div class="bt-row" data-line="12"><span class="bt-ln">12</span><span>void inorden(struct Nodo* raiz) &#123;</span></div>
-						<div class="bt-row" data-line="13"><span class="bt-ln">13</span><span>&nbsp;&nbsp;if (raiz != NULL) &#123;</span></div>
-						<div class="bt-row" data-line="14"><span class="bt-ln">14</span><span>&nbsp;&nbsp;&nbsp;&nbsp;inorden(raiz-&gt;izquierdo);</span></div>
-						<div class="bt-row" data-line="15"><span class="bt-ln">15</span><span>&nbsp;&nbsp;&nbsp;&nbsp;printf("%d ", raiz-&gt;dato);</span></div>
-						<div class="bt-row" data-line="16"><span class="bt-ln">16</span><span>&nbsp;&nbsp;&nbsp;&nbsp;inorden(raiz-&gt;derecho);</span></div>
-						<div class="bt-row" data-line="17"><span class="bt-ln">17</span><span>&nbsp;&nbsp;&#125;</span></div>
-						<div class="bt-row" data-line="18"><span class="bt-ln">18</span><span>&#125;</span></div>
+				<div class="bt-slide" data-slide="3">
+					<div class="bt-slide-grid">
+						<div class="bt-col">
+							<h2 class="bt-slide-title">3. Java: Clase TreeNode</h2>
+							<p class="bt-text">Java maneja las conexiones del árbol mediante referencias a objetos en el Heap.</p>
+						</div>
+						<div class="bt-col">
+							<div class="bt-code-card">
+								<div class="bt-code-title">BST.java</div>
+								<pre class="bt-code-block"><code><span class="token-keyword">class</span> TreeNode &#123;
+    <span class="token-type">int</span> val;
+    TreeNode left, right;
+    TreeNode(<span class="token-type">int</span> val) &#123; <span class="token-keyword">this</span>.val = val; &#125;
+&#125;</code></pre>
+							</div>
+						</div>
 					</div>
+				</div>
 
-					<!-- Código de main() -->
-					<div class="bt-code-panel hidden" id="code-main">
-						<div class="bt-row" data-line="19"><span class="bt-ln">19</span><span>int main() &#123;</span></div>
-						<div class="bt-row" data-line="20"><span class="bt-ln">20</span><span>&nbsp;&nbsp;struct Nodo* raiz = NULL;</span></div>
-						<div class="bt-row" data-line="21"><span class="bt-ln">21</span><span>&nbsp;&nbsp;raiz = insertar(raiz, 50);</span></div>
-						<div class="bt-row" data-line="22"><span class="bt-ln">22</span><span>&nbsp;&nbsp;insertar(raiz, 30);</span></div>
-						<div class="bt-row" data-line="23"><span class="bt-ln">23</span><span>&nbsp;&nbsp;insertar(raiz, 70);</span></div>
-						<div class="bt-row" data-line="24"><span class="bt-ln">24</span><span>&nbsp;&nbsp;insertar(raiz, 40);</span></div>
-						<div class="bt-row" data-line="25"><span class="bt-ln">25</span><span>&nbsp;&nbsp;inorden(raiz);</span></div>
-						<div class="bt-row" data-line="26"><span class="bt-ln">26</span><span>&nbsp;&nbsp;return 0;</span></div>
-						<div class="bt-row" data-line="27"><span class="bt-ln">27</span><span>&#125;</span></div>
+				<div class="bt-slide" data-slide="4">
+					<div class="bt-slide-grid">
+						<div class="bt-col">
+							<h2 class="bt-slide-title">4. JavaScript: Clases ES6</h2>
+							<p class="bt-text">JS implementa la estructura con clases de ES6 y punteros `null` para hojas.</p>
+						</div>
+						<div class="bt-col">
+							<div class="bt-code-card">
+								<div class="bt-code-title">bst.js</div>
+								<pre class="bt-code-block"><code><span class="token-keyword">class</span> Node &#123;
+    constructor(value) &#123;
+        <span class="token-keyword">this</span>.value = value;
+        <span class="token-keyword">this</span>.left = <span class="token-keyword">null</span>;
+        <span class="token-keyword">this</span>.right = <span class="token-keyword">null</span>;
+    &#125;
+&#125;</code></pre>
+							</div>
+						</div>
 					</div>
+				</div>
 
-					<div class="bt-copy" id="bt-copy"><strong>Paso 1:</strong> ...</div>
-					<div class="bt-track"><div class="bt-fill" id="bt-fill"></div></div>
+				<div class="bt-slide" data-slide="5">
+					<div class="bt-slide-grid">
+						<div class="bt-col">
+							<h2 class="bt-slide-title">5. Python: Recorrido In-Order Recursivo</h2>
+							<p class="bt-text">El recorrido In-Order (Izquierda ➔ Raíz ➔ Derecha) visita los nodos de menor a mayor valor.</p>
+						</div>
+						<div class="bt-col">
+							<div class="bt-code-card">
+								<div class="bt-code-title">bst.py</div>
+								<pre class="bt-code-block"><code><span class="token-keyword">class</span> Node:
+    <span class="token-keyword">def</span> __init__(self, val):
+        self.val = val
+        self.left = None
+        self.right = None
 
-					<div class="bt-controls">
-						<button id="bt-prev" class="bt-btn" type="button">{lang === 'en' ? '⬅ Back' : '⬅ Retroceder'}</button>
-						<button id="bt-next" class="bt-btn" type="button">{lang === 'en' ? 'Next ➡' : 'Avanzar ➡'}</button>
-						<span class="bt-badge" id="bt-step">{lang === 'en' ? 'Step 1 / 19' : 'Paso 1 / 19'}</span>
+<span class="token-keyword">def</span> in_order(root):
+    <span class="token-keyword">if</span> root:
+        in_order(root.left)
+        print(root.val)
+        in_order(root.right)</code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
+				</div>
 
-				<!-- Visualización Gráfica SVG -->
-				<article class="bt-card bt-viz flex flex-col justify-between">
-					<div class="bt-head">
-						<strong>{lang === 'en' ? '2) Visual Tree Representation' : '2) Representacion Visual del Arbol'}</strong>
-						<span class="text-xs text-primary font-mono">// BST</span>
+				<div class="bt-slide" data-slide="6">
+					<div class="bt-sim-container">
+						<h2 class="bt-slide-title center">{isEs ? '6. Inspector de Árbol BST' : '6. BST Inspector'}</h2>
+						<div class="bt-inspector-grid">
+							<div class="bt-lang-box"><span class="bt-lang-name">Árbol con Raíz 10, Izq 5, Der 15</span><div class="bt-exp-res">Recorrido In-Order ➔ 5, 10, 15 (Secuencia Ordenada)</div></div>
+						</div>
 					</div>
-					
-					<div class="flex-1 flex items-center justify-center p-4 bg-black/40 rounded-lg min-h-[300px]">
-						<svg viewBox="0 0 400 300" class="w-full h-full max-w-[400px]">
-							<!-- Conexiones (Edges) -->
-							<line id="edge-50-30" x1="200" y1="60" x2="100" y2="140" stroke="rgba(13, 242, 89, 0.4)" stroke-width="3" class="edge-line opacity-0" />
-							<line id="edge-50-70" x1="200" y1="60" x2="300" y2="140" stroke="rgba(13, 242, 89, 0.4)" stroke-width="3" class="edge-line opacity-0" />
-							<line id="edge-30-40" x1="100" y1="140" x2="170" y2="220" stroke="rgba(13, 242, 89, 0.4)" stroke-width="3" class="edge-line opacity-0" />
+				</div>
+			</div>
 
-							<!-- Nodos -->
-							<g id="node-50" class="node-g opacity-0 scale-50" style="transform-origin: 200px 60px;">
-								<circle cx="200" cy="60" r="22" fill="#050a06" stroke="#0df259" stroke-width="3" class="node-circle" />
-								<text x="200" y="66" fill="#fff" font-family="monospace" font-size="14" font-weight="bold" text-anchor="middle">50</text>
-							</g>
-
-							<g id="node-30" class="node-g opacity-0 scale-50" style="transform-origin: 100px 140px;">
-								<circle cx="100" cy="140" r="22" fill="#050a06" stroke="#0df259" stroke-width="3" class="node-circle" />
-								<text x="100" y="146" fill="#fff" font-family="monospace" font-size="14" font-weight="bold" text-anchor="middle">30</text>
-							</g>
-
-							<g id="node-70" class="node-g opacity-0 scale-50" style="transform-origin: 300px 140px;">
-								<circle cx="300" cy="140" r="22" fill="#050a06" stroke="#0df259" stroke-width="3" class="node-circle" />
-								<text x="300" y="146" fill="#fff" font-family="monospace" font-size="14" font-weight="bold" text-anchor="middle">70</text>
-							</g>
-
-							<g id="node-40" class="node-g opacity-0 scale-50" style="transform-origin: 170px 220px;">
-								<circle cx="170" cy="220" r="22" fill="#050a06" stroke="#0df259" stroke-width="3" class="node-circle" />
-								<text x="170" y="226" fill="#fff" font-family="monospace" font-size="14" font-weight="bold" text-anchor="middle">40</text>
-							</g>
-						</svg>
-					</div>
-				</article>
-
-				<!-- Estado Interno -->
-				<article class="bt-card bt-state">
-					<div class="bt-head"><strong>{lang === 'en' ? '3) Memory & Scope State' : '3) Estado de Memoria y Scope'}</strong></div>
-					<div class="bt-state-item"><span>{lang === 'en' ? 'Parameter: valor' : 'Parametro: valor'}</span><span id="bt-state-val" class="bt-value">-</span></div>
-					<div class="bt-state-item"><span>{lang === 'en' ? 'Parameter: raiz' : 'Parametro: raiz'}</span><span id="bt-state-raiz" class="bt-value">-</span></div>
-					<div class="bt-state-item"><span>{lang === 'en' ? 'Comparison / Action' : 'Comparacion / Accion'}</span><span id="bt-state-comp" class="bt-value">-</span></div>
-				</article>
-
-				<!-- Consola Simulada -->
-				<article class="bt-card bt-console">
-					<div class="bt-head"><strong>{lang === 'en' ? '4) Standard Output (stdout)' : '4) Salida Estandar (stdout)'}</strong></div>
-					<div class="bt-console-win">
-						<div class="bt-console-head"><span>./arboles-binarios-demo</span><span>stdout</span></div>
-						<div class="bt-console-body" id="bt-console"></div>
-					</div>
-				</article>
-			</section>
-
-			<a href={withBase(lang === 'en' ? '/en/presentaciones' : '/presentaciones')} class="bt-back">
-				[ {lang === 'en' ? 'BACK TO DIRECTORY' : 'VOLVER AL DIRECTORIO'} ]
-			</a>
-		</main>
+			<div class="bt-footer">
+				<button class="btn btn-secondary" id="btn-prev-bt" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="bt-footer-meta"><span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span></div>
+				<button class="btn btn-primary" id="btn-next-bt">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
 	</div>
+</div>
 
-	<script>
-		type Step = {
-			line: number;
-			codeType: 'insertar' | 'inorden' | 'main';
-			message: { es: string; en: string };
-			activeNode: number | null;
-			nodeStatus: 'active' | 'printing' | null;
-			visibleNodes: number[];
-			visibleEdges: string[];
-			consoleLines: string[];
-			stateVars: {
-				valor: string;
-				raiz: string;
-				comparacion: string;
-			};
-		};
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+	.bt-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
+	.bt-shell { max-width: var(--container-max); margin: 0 auto; }
+	.bt-header { margin-bottom: 1.5rem; }
+	.bt-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
+	.bt-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.bt-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.bt-sub.center { text-align: center; }
+	.bt-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.bt-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.bt-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
+	.bt-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.bt-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+	.bt-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+	.bt-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.bt-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
+	.bt-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.bt-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.bt-slide.active { display: block; opacity: 1; transform: translateY(0); }
+	.bt-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+	.bt-col { grid-column: span 12; }
+	@media (min-width: 900px) { .bt-col { grid-column: span 6; } }
+	.bt-slide-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 400; color: var(--color-text); margin: 0 0 0.8rem; }
+	.bt-slide-title.center { text-align: center; }
+	.bt-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin-bottom: 1.2rem; }
+	.bt-card-box { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.bt-card-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; color: var(--color-accent-2-700); margin-bottom: 0.75rem; }
+	.bt-cell { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--color-divider); background: var(--color-surface); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+	.bt-tag { color: var(--color-accent-700); font-weight: 600; }
+	.bt-code-card { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.bt-code-title { background: #2b2722; color: #c0b6a5; padding: 0.4rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid #3a352e; }
+	.bt-code-block { margin: 0; padding: 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; color: #f9f4ed; overflow-x: auto; }
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.token-comment { color: #85929e; font-style: italic; }
+	.bt-sim-container { max-width: 800px; margin: 0 auto; }
+	.bt-inspector-grid { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 0.8rem; }
+	.bt-lang-box { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 0.8rem; }
+	.bt-lang-name { font-family: 'Fira Code', monospace; font-size: 0.75rem; font-weight: 700; color: #e59866; display: block; margin-bottom: 0.4rem; }
+	.bt-exp-res { font-family: 'Fira Code', monospace; font-size: 0.82rem; color: #f9f4ed; background: #141210; padding: 0.5rem 0.7rem; border-radius: var(--radius-sm); }
+	.bt-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.bt-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>
 
-		const steps: Step[] = [
-			{
-				line: 20,
-				codeType: 'main',
-				message: {
-					es: 'Inicializamos la raíz del árbol en NULL. El árbol está completamente vacío.',
-					en: 'We initialize the tree root to NULL. The tree is completely empty.'
-				},
-				activeNode: null,
-				nodeStatus: null,
-				visibleNodes: [],
-				visibleEdges: [],
-				consoleLines: [],
-				stateVars: { valor: '-', raiz: 'NULL', comparacion: '-' }
-			},
-			{
-				line: 2,
-				codeType: 'insertar',
-				message: {
-					es: 'Llamamos a insertar(raiz, 50). Como raiz es NULL, la condición se cumple y creamos el nodo.',
-					en: 'We call insert(root, 50). Since root is NULL, the condition is met and we create the node.'
-				},
-				activeNode: 50,
-				nodeStatus: 'active',
-				visibleNodes: [50],
-				visibleEdges: [],
-				consoleLines: [],
-				stateVars: { valor: '50', raiz: 'NULL', comparacion: 'raiz == NULL -> TRUE' }
-			},
-			{
-				line: 21,
-				codeType: 'main',
-				message: {
-					es: 'El nodo 50 se asigna a "raiz" en la función main. Ya tenemos la raíz del árbol.',
-					en: 'Node 50 is assigned to "root" in the main function. We now have the root of the tree.'
-				},
-				activeNode: 50,
-				nodeStatus: null,
-				visibleNodes: [50],
-				visibleEdges: [],
-				consoleLines: [],
-				stateVars: { valor: '-', raiz: '50', comparacion: 'Asignacion en main' }
-			},
-			{
-				line: 5,
-				codeType: 'insertar',
-				message: {
-					es: 'Llamamos a insertar(raiz, 30). Comparamos: 30 < 50. Es verdadero, navegamos al subárbol izquierdo.',
-					en: 'We call insert(root, 30). We compare: 30 < 50. This is true, so we navigate to the left subtree.'
-				},
-				activeNode: 50,
-				nodeStatus: 'active',
-				visibleNodes: [50],
-				visibleEdges: [],
-				consoleLines: [],
-				stateVars: { valor: '30', raiz: '50', comparacion: '30 < 50 -> TRUE (Izquierda)' }
-			},
-			{
-				line: 2,
-				codeType: 'insertar',
-				message: {
-					es: 'Llamada recursiva con raiz->izquierdo (que es NULL). Como es NULL, creamos el nodo 30 aquí.',
-					en: 'Recursive call with root->left (which is NULL). Since it is NULL, we create node 30 here.'
-				},
-				activeNode: 30,
-				nodeStatus: 'active',
-				visibleNodes: [50, 30],
-				visibleEdges: ['50-30'],
-				consoleLines: [],
-				stateVars: { valor: '30', raiz: 'NULL', comparacion: 'raiz == NULL -> TRUE' }
-			},
-			{
-				line: 22,
-				codeType: 'main',
-				message: {
-					es: 'El nodo 30 queda enlazado como hijo izquierdo de 50. Regresamos a la función main.',
-					en: 'Node 30 is linked as the left child of 50. We return to the main function.'
-				},
-				activeNode: null,
-				nodeStatus: null,
-				visibleNodes: [50, 30],
-				visibleEdges: ['50-30'],
-				consoleLines: [],
-				stateVars: { valor: '-', raiz: '50', comparacion: 'Insercion de 30 lista' }
-			},
-			{
-				line: 7,
-				codeType: 'insertar',
-				message: {
-					es: 'Llamamos a insertar(raiz, 70). Comparamos: 70 > 50. Es verdadero, vamos al subárbol derecho.',
-					en: 'We call insert(root, 70). We compare: 70 > 50. This is true, so we go to the right subtree.'
-				},
-				activeNode: 50,
-				nodeStatus: 'active',
-				visibleNodes: [50, 30],
-				visibleEdges: ['50-30'],
-				consoleLines: [],
-				stateVars: { valor: '70', raiz: '50', comparacion: '70 > 50 -> TRUE (Derecha)' }
-			},
-			{
-				line: 2,
-				codeType: 'insertar',
-				message: {
-					es: 'Llamada recursiva con raiz->derecho (NULL). Creamos el nodo 70 en esa posición.',
-					en: 'Recursive call with root->right (NULL). We create node 70 in that position.'
-				},
-				activeNode: 70,
-				nodeStatus: 'active',
-				visibleNodes: [50, 30, 70],
-				visibleEdges: ['50-30', '50-70'],
-				consoleLines: [],
-				stateVars: { valor: '70', raiz: 'NULL', comparacion: 'raiz == NULL -> TRUE' }
-			},
-			{
-				line: 23,
-				codeType: 'main',
-				message: {
-					es: 'El nodo 70 queda enlazado como hijo derecho de 50. Volvemos a main.',
-					en: 'Node 70 is linked as the right child of 50. We return to main.'
-				},
-				activeNode: null,
-				nodeStatus: null,
-				visibleNodes: [50, 30, 70],
-				visibleEdges: ['50-30', '50-70'],
-				consoleLines: [],
-				stateVars: { valor: '-', raiz: '50', comparacion: 'Insercion de 70 lista' }
-			},
-			{
-				line: 5,
-				codeType: 'insertar',
-				message: {
-					es: 'Insertamos 40. Primera comparación en la raíz: 40 < 50. Vamos hacia el hijo izquierdo (30).',
-					en: 'We insert 40. First comparison at root: 40 < 50. We go towards the left child (30).'
-				},
-				activeNode: 50,
-				nodeStatus: 'active',
-				visibleNodes: [50, 30, 70],
-				visibleEdges: ['50-30', '50-70'],
-				consoleLines: [],
-				stateVars: { valor: '40', raiz: '50', comparacion: '40 < 50 -> TRUE (Izquierda)' }
-			},
-			{
-				line: 7,
-				codeType: 'insertar',
-				message: {
-					es: 'Segunda comparación (en el nodo 30): 40 > 30. Es verdadero, navegamos hacia la derecha de 30.',
-					en: 'Second comparison (at node 30): 40 > 30. This is true, so we navigate to the right of 30.'
-				},
-				activeNode: 30,
-				nodeStatus: 'active',
-				visibleNodes: [50, 30, 70],
-				visibleEdges: ['50-30', '50-70'],
-				consoleLines: [],
-				stateVars: { valor: '40', raiz: '30', comparacion: '40 > 30 -> TRUE (Derecha)' }
-			},
-			{
-				line: 2,
-				codeType: 'insertar',
-				message: {
-					es: 'Llamada recursiva con el hijo derecho de 30 (que es NULL). Creamos el nodo 40 aquí.',
-					en: 'Recursive call with the right child of 30 (which is NULL). We create node 40 here.'
-				},
-				activeNode: 40,
-				nodeStatus: 'active',
-				visibleNodes: [50, 30, 70, 40],
-				visibleEdges: ['50-30', '50-70', '30-40'],
-				consoleLines: [],
-				stateVars: { valor: '40', raiz: 'NULL', comparacion: 'raiz == NULL -> TRUE' }
-			},
-			{
-				line: 24,
-				codeType: 'main',
-				message: {
-					es: 'El nodo 40 queda enlazado como hijo derecho de 30. Regresamos a la función main.',
-					en: 'Node 40 is linked as the right child of 30. We return to the main function.'
-				},
-				activeNode: null,
-				nodeStatus: null,
-				visibleNodes: [50, 30, 70, 40],
-				visibleEdges: ['50-30', '50-70', '30-40'],
-				consoleLines: [],
-				stateVars: { valor: '-', raiz: '50', comparacion: 'Insercion de 40 lista' }
-			},
-			{
-				line: 14,
-				codeType: 'inorden',
-				message: {
-					es: 'Llamamos a inorden(raiz). Comienza en 50 y va recursivamente a la izquierda (nodo 30).',
-					en: 'We call inorder(root). It starts at 50 and recursively goes left (node 30).'
-				},
-				activeNode: 50,
-				nodeStatus: 'active',
-				visibleNodes: [50, 30, 70, 40],
-				visibleEdges: ['50-30', '50-70', '30-40'],
-				consoleLines: [],
-				stateVars: { valor: '-', raiz: '50', comparacion: 'Inorden(50) -> Izquierda' }
-			},
-			{
-				line: 14,
-				codeType: 'inorden',
-				message: {
-					es: 'En el nodo 30, intenta ir a la izquierda. Como es NULL, regresa a 30 sin imprimir nada.',
-					en: 'At node 30, it tries to go left. Since it is NULL, it returns to 30 without printing anything.'
-				},
-				activeNode: 30,
-				nodeStatus: 'active',
-				visibleNodes: [50, 30, 70, 40],
-				visibleEdges: ['50-30', '50-70', '30-40'],
-				consoleLines: [],
-				stateVars: { valor: '-', raiz: '30', comparacion: 'Inorden(30) -> Izq es NULL' }
-			},
-			{
-				line: 15,
-				codeType: 'inorden',
-				message: {
-					es: 'Imprime el valor del nodo actual: 30.',
-					en: 'Prints the value of the current node: 30.'
-				},
-				activeNode: 30,
-				nodeStatus: 'printing',
-				visibleNodes: [50, 30, 70, 40],
-				visibleEdges: ['50-30', '50-70', '30-40'],
-				consoleLines: ['30'],
-				stateVars: { valor: '-', raiz: '30', comparacion: 'Imprimiendo dato' }
-			},
-			{
-				line: 15,
-				codeType: 'inorden',
-				message: {
-					es: 'En el nodo 30, va a la derecha (40). Como la izquierda de 40 es NULL, imprime el nodo 40.',
-					en: 'At node 30, it goes right (40). Since the left of 40 is NULL, it prints node 40.'
-				},
-				activeNode: 40,
-				nodeStatus: 'printing',
-				visibleNodes: [50, 30, 70, 40],
-				visibleEdges: ['50-30', '50-70', '30-40'],
-				consoleLines: ['30', '40'],
-				stateVars: { valor: '-', raiz: '40', comparacion: 'Imprimiendo dato' }
-			},
-			{
-				line: 15,
-				codeType: 'inorden',
-				message: {
-					es: 'Terminamos el subárbol izquierdo de la raíz. Regresamos a 50 e imprimimos su valor.',
-					en: 'We finished the left subtree of the root. We return to 50 and print its value.'
-				},
-				activeNode: 50,
-				nodeStatus: 'printing',
-				visibleNodes: [50, 30, 70, 40],
-				visibleEdges: ['50-30', '50-70', '30-40'],
-				consoleLines: ['30', '40', '50'],
-				stateVars: { valor: '-', raiz: '50', comparacion: 'Imprimiendo dato' }
-			},
-			{
-				line: 15,
-				codeType: 'inorden',
-				message: {
-					es: 'Finalmente va a la derecha (70). La izquierda es NULL, imprime 70 y la derecha es NULL. Termina.',
-					en: 'Finally goes right (70). Left is NULL, prints 70 and right is NULL. Terminated.'
-				},
-				activeNode: 70,
-				nodeStatus: 'printing',
-				visibleNodes: [50, 30, 70, 40],
-				visibleEdges: ['50-30', '50-70', '30-40'],
-				consoleLines: ['30', '40', '50', '70'],
-				stateVars: { valor: '-', raiz: '70', comparacion: 'Imprimiendo dato' }
-			},
-			{
-				line: 26,
-				codeType: 'main',
-				message: {
-					es: 'Recorrido finalizado. Notá cómo el inorden procesó todos los elementos de menor a mayor.',
-					en: 'Traversal completed. Notice how the in-order processed all elements from smallest to largest.'
-				},
-				activeNode: null,
-				nodeStatus: null,
-				visibleNodes: [50, 30, 70, 40],
-				visibleEdges: ['50-30', '50-70', '30-40'],
-				consoleLines: ['30', '40', '50', '70', '\n[Proceso terminado]'],
-				stateVars: { valor: '-', raiz: '50', comparacion: 'Fin de main' }
-			}
-		];
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
 
-		let currentStep = 0;
-
-		const prevBtn = document.getElementById('bt-prev') as HTMLButtonElement;
-		const nextBtn = document.getElementById('bt-next') as HTMLButtonElement;
-		const stepBadge = document.getElementById('bt-step') as HTMLElement;
-		const funcBadge = document.getElementById('bt-func-badge') as HTMLElement;
-		const copyEl = document.getElementById('bt-copy') as HTMLElement;
-		const valEl = document.getElementById('bt-state-val') as HTMLElement;
-		const raizEl = document.getElementById('bt-state-raiz') as HTMLElement;
-		const compEl = document.getElementById('bt-state-comp') as HTMLElement;
-		const consoleEl = document.getElementById('bt-console') as HTMLElement;
-		const fillEl = document.getElementById('bt-fill') as HTMLElement;
-
-		const codeInsertar = document.getElementById('code-insertar') as HTMLElement;
-		const codeInorden = document.getElementById('code-inorden') as HTMLElement;
-		const codeMain = document.getElementById('code-main') as HTMLElement;
-
-		const isEnglish = document.documentElement.lang === 'en';
-
-		function renderStep(): void {
-			const step = steps[currentStep];
-
-			// 1. Mostrar/Ocultar paneles de código según corresponda
-			codeInsertar.classList.add('hidden');
-			codeInorden.classList.add('hidden');
-			codeMain.classList.add('hidden');
-
-			let activePanel: HTMLElement;
-			if (step.codeType === 'insertar') {
-				activePanel = codeInsertar;
-				funcBadge.textContent = 'insertar()';
-			} else if (step.codeType === 'inorden') {
-				activePanel = codeInorden;
-				funcBadge.textContent = 'inorden()';
-			} else {
-				activePanel = codeMain;
-				funcBadge.textContent = 'main()';
-			}
-			activePanel.classList.remove('hidden');
-
-			// Resaltar línea de código activa
-			activePanel.querySelectorAll('.bt-row').forEach((row) => {
-				row.classList.toggle('active', Number((row as HTMLElement).dataset.line) === step.line);
-			});
-
-			// 2. Controlar la visibilidad de los nodos y conexiones SVG
-			const allNodes = [50, 30, 70, 40];
-			allNodes.forEach((id) => {
-				const nodeEl = document.getElementById(`node-${id}`);
-				if (nodeEl) {
-					if (step.visibleNodes.includes(id)) {
-						nodeEl.classList.remove('opacity-0', 'scale-50');
-						nodeEl.style.opacity = '1';
-						nodeEl.style.transform = 'scale(1)';
-					} else {
-						nodeEl.classList.add('opacity-0', 'scale-50');
-						nodeEl.style.opacity = '0';
-						nodeEl.style.transform = 'scale(0.5)';
-					}
-
-					// Resetear estilos de círculos
-					const circle = nodeEl.querySelector('.node-circle');
-					if (circle) {
-						circle.classList.remove('active', 'printing');
-						if (step.activeNode === id) {
-							if (step.nodeStatus === 'active') circle.classList.add('active');
-							if (step.nodeStatus === 'printing') circle.classList.add('printing');
-						}
-					}
-				}
-			});
-
-			const allEdges = ['50-30', '50-70', '30-40'];
-			allEdges.forEach((edgeId) => {
-				const edgeEl = document.getElementById(`edge-${edgeId}`);
-				if (edgeEl) {
-					if (step.visibleEdges.includes(edgeId)) {
-						edgeEl.classList.remove('opacity-0');
-						edgeEl.classList.add('visible');
-						edgeEl.style.opacity = '1';
-					} else {
-						edgeEl.classList.add('opacity-0');
-						edgeEl.classList.remove('visible');
-						edgeEl.style.opacity = '0';
-					}
-				}
-			});
-
-			// 3. Actualizar textos, estados e inputs
-			stepBadge.textContent = isEnglish ? `Step ${currentStep + 1} / ${steps.length}` : `Paso ${currentStep + 1} / ${steps.length}`;
-			copyEl.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${step.message[isEnglish ? 'en' : 'es']}`;
-
-			valEl.textContent = step.stateVars.valor;
-			raizEl.textContent = step.stateVars.raiz;
-			compEl.textContent = step.stateVars.comparacion;
-
-			// Actualizar la consola
-			consoleEl.innerHTML = '';
-			step.consoleLines.forEach((line, index) => {
-				const entry = document.createElement('div');
-				entry.className = 'bt-log';
-				entry.style.animationDelay = `${index * 80}ms`;
-				entry.textContent = line.includes('\n') ? line : `> ${line}`;
-				consoleEl.appendChild(entry);
-			});
-
-			// Progress bar
-			fillEl.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
-			prevBtn.disabled = currentStep === 0;
-			nextBtn.disabled = currentStep === steps.length - 1;
-		}
-
-		prevBtn.addEventListener('click', () => {
-			if (currentStep > 0) {
-				currentStep -= 1;
-				renderStep();
-			}
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+		document.querySelectorAll('.bt-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
 		});
-
-		nextBtn.addEventListener('click', () => {
-			if (currentStep < steps.length - 1) {
-				currentStep += 1;
-				renderStep();
-			}
+		document.querySelectorAll('.bt-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
 		});
+		const labelEl = document.getElementById('bt-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+		const prevBtn = document.getElementById('btn-prev-bt') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-bt') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
 
-		document.addEventListener('keydown', (event: KeyboardEvent) => {
-			if (event.key === 'ArrowRight') nextBtn.click();
-			if (event.key === 'ArrowLeft') prevBtn.click();
+	document.querySelectorAll('.bt-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
 		});
+	});
 
-		renderStep();
-	</script>
+	document.getElementById('btn-prev-bt')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-bt')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
 
+	goToSlide(1);
+</script>

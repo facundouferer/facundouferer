@@ -1,0 +1,55 @@
+<!-- @dsCard group="Components" name="Forms" subtitle="Text inputs, a segmented control and radios — native elements, themed states" viewport="640x520" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Organic — Forms</title>
+<link rel="stylesheet" href="../styles.css" />
+<style>
+/* Demo scaffolding only — everything visual comes from ../styles.css. */
+.demo { max-width: 620px; margin: 0 auto; padding: var(--space-6) var(--space-4) var(--space-8); }
+.demo-head {
+  font-family: var(--font-body); font-size: 11px; font-weight: inherit;
+  letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.55;
+  margin: var(--space-6) 0 var(--space-3);
+}
+.demo-head:first-child { margin-top: 0; }
+.row { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.stack { display: grid; gap: var(--space-3); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+.note { font-size: 12px; opacity: 0.6; max-width: 60ch; }
+code { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.92em; }
+</style>
+</head>
+<body>
+<main class="demo">
+<div class="demo-head">Fields</div>
+  <div class="grid-2">
+    <div class="stack">
+      <div class="field"><label for="ds-name">Project name</label>
+        <input class="input" id="ds-name" value="Untitled project" /></div>
+      <div class="field"><label for="ds-notes">Notes</label>
+        <textarea class="input" id="ds-notes" rows="3">A couple of lines of placeholder copy, long enough to wrap.</textarea></div>
+    </div>
+    <div class="stack">
+      <div class="field"><label id="ds-view-label">View</label>
+        <div class="seg" role="radiogroup" aria-labelledby="ds-view-label">
+          <label class="seg-opt"><input type="radio" name="view" checked /><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></svg>Grid</label>
+          <label class="seg-opt"><input type="radio" name="view" /><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>List</label>
+          <label class="seg-opt"><input type="radio" name="view" /><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>Board</label>
+        </div></div>
+      <div class="field"><label id="ds-apply-label">Apply to</label>
+        <div class="stack" style="gap: var(--space-1)" role="radiogroup" aria-labelledby="ds-apply-label">
+          <label class="radio"><input type="radio" name="apply" checked /><span class="dot"></span>Every page</label>
+          <label class="radio"><input type="radio" name="apply" /><span class="dot"></span>Only new pages</label>
+          <label class="radio"><input type="radio" name="apply" /><span class="dot"></span>Ask each time</label>
+        </div></div>
+    </div>
+  </div>
+  <button type="button" class="btn btn-primary btn-block">Save changes</button>
+  <p class="note">Labels sit above their fields. Inputs are <code>.input</code> on the native element; the segmented control and radios are native radio inputs, so focus, arrow keys and checked state need no script.</p>
+</main>
+</body>
+</html>

@@ -3,6 +3,7 @@ export type PresentationTag = 'Algoritmos' | 'C' | 'Java';
 export interface Presentation {
 	slug: string;
 	file: string;
+	image: string;
 	tag: {
 		es: PresentationTag;
 		en: string;
@@ -36,6 +37,7 @@ export const categories: CategoryFilter[] = [
 export const presentations: Presentation[] = [
 	{
 		file: 'lesson_01.sh',
+		image: '/img/presentations/variables_y_constantes.svg',
 		tag: { es: 'Algoritmos', en: 'Algorithms' },
 		tagClass: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
 		title: { es: 'Variables y Constantes', en: 'Variables and Constants' },
@@ -47,6 +49,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'paso_por_valor_y_referencia.c',
+		image: '/img/presentations/paso_por_valor_y_referencia.svg',
 		tag: { es: 'C', en: 'C' },
 		tagClass: 'text-sky-400 bg-sky-400/10 border-sky-400/20',
 		title: { es: 'Paso por valor y paso por referencia', en: 'Pass by Value and Pass by Reference' },
@@ -58,6 +61,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'tipos_de_datos.c',
+		image: '/img/presentations/tipos_de_datos_en_javascript.svg',
 		tag: { es: 'C', en: 'C' },
 		tagClass: 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20',
 		title: { es: 'Tipos de Datos', en: 'Data Types' },
@@ -69,6 +73,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'modularidad.c',
+		image: '/img/presentations/modularidad_en_c.svg',
 		tag: { es: 'C', en: 'C' },
 		tagClass: 'text-purple-500 bg-purple-500/10 border-purple-500/20',
 		title: { es: 'Modularidad', en: 'Modularity' },
@@ -80,6 +85,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'funciones.java',
+		image: '/img/presentations/funciones_y_procedimientos_java.svg',
 		tag: { es: 'Java', en: 'Java' },
 		tagClass: 'text-orange-500 bg-orange-500/10 border-orange-500/20',
 		title: { es: 'Funciones y procedimientos en Java', en: 'Functions and Procedures in Java' },
@@ -91,6 +97,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'arreglos.c',
+		image: '/img/presentations/arreglos-en-c.svg',
 		tag: { es: 'C', en: 'C' },
 		tagClass: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20',
 		title: { es: 'Arreglos en C', en: 'Arrays in C' },
@@ -102,6 +109,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'operaciones_arreglos.c',
+		image: '/img/presentations/operaciones-con-arreglos.svg',
 		tag: { es: 'C', en: 'C' },
 		tagClass: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
 		title: { es: 'Operaciones con Arreglos', en: 'Array Operations' },
@@ -113,6 +121,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'while_loop.c',
+		image: '/img/presentations/while-paso-a-paso.svg',
 		tag: { es: 'Algoritmos', en: 'Algorithms' },
 		tagClass: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
 		title: { es: 'While paso a paso', en: 'While step by step' },
@@ -124,6 +133,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'do_while_loop.c',
+		image: '/img/presentations/do-while-paso-a-paso.svg',
 		tag: { es: 'Algoritmos', en: 'Algorithms' },
 		tagClass: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
 		title: { es: 'Do-while paso a paso', en: 'Do-while step by step' },
@@ -135,6 +145,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'for_loop.c',
+		image: '/img/presentations/for-paso-a-paso.svg',
 		tag: { es: 'Algoritmos', en: 'Algorithms' },
 		tagClass: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
 		title: { es: 'For paso a paso', en: 'For step by step' },
@@ -146,6 +157,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'nested_for_table.c',
+		image: '/img/presentations/for-anidado-tabla-multiplicar.svg',
 		tag: { es: 'Algoritmos', en: 'Algorithms' },
 		tagClass: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
 		title: { es: 'For anidado y tabla de multiplicar', en: 'Nested for and multiplication table' },
@@ -157,6 +169,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'if_condition.c',
+		image: '/img/presentations/if-paso-a-paso.svg',
 		tag: { es: 'Algoritmos', en: 'Algorithms' },
 		tagClass: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
 		title: { es: 'If paso a paso', en: 'If step by step' },
@@ -168,6 +181,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'if_else_condition.c',
+		image: '/img/presentations/if-else-paso-a-paso.svg',
 		tag: { es: 'Algoritmos', en: 'Algorithms' },
 		tagClass: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
 		title: { es: 'If-else paso a paso', en: 'If-else step by step' },
@@ -179,6 +193,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'switch_case.c',
+		image: '/img/presentations/switch-paso-a-paso.svg',
 		tag: { es: 'Algoritmos', en: 'Algorithms' },
 		tagClass: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
 		title: { es: 'Switch paso a paso', en: 'Switch step by step' },
@@ -190,6 +205,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'string_methods.c',
+		image: '/img/presentations/string-paso-a-paso.svg',
 		tag: { es: 'C', en: 'C' },
 		tagClass: 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20',
 		title: { es: 'String paso a paso', en: 'String step by step' },
@@ -201,6 +217,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'string_numbers.c',
+		image: '/img/presentations/string-numeros-paso-a-paso.svg',
 		tag: { es: 'C', en: 'C' },
 		tagClass: 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20',
 		title: { es: 'String de números paso a paso', en: 'String of numbers step by step' },
@@ -212,6 +229,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'strchr_demo.c',
+		image: '/img/presentations/strchr-paso-a-paso.svg',
 		tag: { es: 'C', en: 'C' },
 		tagClass: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20',
 		title: { es: 'strchr paso a paso', en: 'strchr step by step' },
@@ -223,6 +241,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'contar_palabras.c',
+		image: '/img/presentations/contar-palabras-cadenas-c.svg',
 		tag: { es: 'C', en: 'C' },
 		tagClass: 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20',
 		title: { es: 'Contar palabras en cadenas', en: 'Counting words in strings' },
@@ -234,6 +253,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'bubble_sort.c',
+		image: '/img/presentations/bubble-sort.svg',
 		tag: { es: 'Algoritmos', en: 'Algorithms' },
 		tagClass: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
 		title: { es: 'Bubble Sort paso a paso', en: 'Bubble Sort step by step' },
@@ -245,6 +265,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'selection_sort.c',
+		image: '/img/presentations/selection-sort.svg',
 		tag: { es: 'Algoritmos', en: 'Algorithms' },
 		tagClass: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
 		title: { es: 'Selection Sort paso a paso', en: 'Selection Sort step by step' },
@@ -256,6 +277,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'insertion_sort.c',
+		image: '/img/presentations/insertion-sort.svg',
 		tag: { es: 'Algoritmos', en: 'Algorithms' },
 		tagClass: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
 		title: { es: 'Insertion Sort paso a paso', en: 'Insertion Sort step by step' },
@@ -267,6 +289,7 @@ export const presentations: Presentation[] = [
 	},
 	{
 		file: 'arboles_binarios.c',
+		image: '/img/presentations/arboles-binarios.svg',
 		tag: { es: 'C', en: 'C' },
 		tagClass: 'text-sky-400 bg-sky-400/10 border-sky-400/20',
 		title: { es: 'Árboles Binarios paso a paso', en: 'Binary Trees step by step' },

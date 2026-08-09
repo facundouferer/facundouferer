@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+	<g transform="translate(40, 50)">
+		<text x="160" y="-15" font-family="'Figtree', sans-serif" font-size="14" font-weight="700" fill="#201e1d" text-anchor="middle">Búsqueda, Inserción &amp; Recorrido</text>
+		<rect x="0" y="0" width="60" height="50" rx="8" fill="#f5ead8" stroke="#d9cbba" stroke-width="2"/>
+		<text x="30" y="30" font-family="'Fira Code', monospace" font-size="14" fill="#201e1d" text-anchor="middle">10</text>
+		<rect x="68" y="0" width="60" height="50" rx="8" fill="#f5ead8" stroke="#c67139" stroke-width="3"/>
+		<text x="98" y="30" font-family="'Fira Code', monospace" font-size="14" font-weight="700" fill="#8c491a" text-anchor="middle">25</text>
+		<rect x="136" y="0" width="60" height="50" rx="8" fill="#f5ead8" stroke="#d9cbba" stroke-width="2"/>
+		<text x="166" y="30" font-family="'Fira Code', monospace" font-size="14" fill="#201e1d" text-anchor="middle">30</text>
+		<rect x="204" y="0" width="60" height="50" rx="8" fill="#f5ead8" stroke="#d9cbba" stroke-width="2"/>
+		<text x="234" y="30" font-family="'Fira Code', monospace" font-size="14" fill="#201e1d" text-anchor="middle">40</text>
+		<!-- Insertion Arrow -->
+		<path d="M 98 90 L 98 58" fill="none" stroke="#c67139" stroke-width="3"/>
+		<polygon points="98,53 92,63 104,63" fill="#c67139"/>
+		<text x="98" y="112" font-family="'Fira Code', monospace" font-size="11" font-weight="700" fill="#c67139" text-anchor="middle">+ Insert(25)</text>
+	</g>
+</svg>

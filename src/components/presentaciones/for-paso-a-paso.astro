@@ -1,221 +1,268 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
-
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+const isEs = lang === 'es';
 ---
 
+<div class="fo-screen">
+	<div class="fo-shell">
+		<header class="fo-header">
+			<span class="fo-badge">{isEs ? 'Iteración Determinada' : 'Determinate Iteration'}</span>
+			<h1 class="fo-title">
+				{isEs ? 'Ciclo For Paso a Paso' : 'For Loop Step by Step'}
+			</h1>
+			<p class="fo-sub">
+				{isEs 
+					? 'Contadores, rangos e iteradores en C, Java, JavaScript y Python.' 
+					: 'Counters, ranges, and iterators in C, Java, JavaScript, and Python.'}
+			</p>
+		</header>
 
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&display=swap');
+		<div class="fo-deck-card">
+			<div class="fo-nav-bar">
+				<div class="fo-slide-indicator">
+					<span class="fo-step-dot"></span>
+					<span id="fo-slide-label">SLIDE 1 / 6</span>
+				</div>
+				<div class="fo-pills">
+					<button class="fo-pill-btn active" data-target-slide="1">1. {isEs ? 'Concepto' : 'Concept'}</button>
+					<button class="fo-pill-btn" data-target-slide="2">2. C</button>
+					<button class="fo-pill-btn" data-target-slide="3">3. Java</button>
+					<button class="fo-pill-btn" data-target-slide="4">4. JavaScript</button>
+					<button class="fo-pill-btn" data-target-slide="5">5. Python</button>
+					<button class="fo-pill-btn" data-target-slide="6">6. {isEs ? 'Simulador' : 'Simulator'}</button>
+				</div>
+			</div>
 
-		.for-screen {
-			--for-bg: #07131a;
-			--for-panel: #10232e;
-			--for-primary: #22c55e;
-			--for-blue: #60a5fa;
-			--for-danger: #fb7185;
-			min-height: 100vh;
-			font-family: 'Chakra Petch', sans-serif;
-			background:
-				radial-gradient(circle at 80% 15%, rgba(96, 165, 250, 0.18), transparent 42%),
-				radial-gradient(circle at 10% 85%, rgba(34, 197, 94, 0.14), transparent 40%),
-				linear-gradient(145deg, #050b10 0%, var(--for-bg) 100%);
-			color: #e8fff3;
-		}
-
-.for-shell { max-width: 1200px; margin: 0 auto; padding: 1rem 0.5rem 2rem; }
-		.for-title { font-size: clamp(1.2rem, 2.5vw, 1.8rem); line-height: 1.05; font-weight: 700; }
-		.for-sub { max-width: 65ch; color: rgba(232, 255, 243, 0.83); font-size: 0.9rem; }
-		.for-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0.6rem; }
-		.for-card { border-radius: 1rem; border: 1px solid rgba(34, 197, 94, 0.25); background: linear-gradient(160deg, rgba(16, 35, 46, 0.92), rgba(8, 18, 24, 0.92)); padding: 0.6rem; }
-		.for-code { grid-column: span 12; }
-		.for-state { grid-column: span 12; }
-		.for-console { grid-column: span 12; }
-		@media (min-width: 1100px) {
-			.for-code { grid-column: span 6; }
-			.for-state { grid-column: span 3; }
-			.for-console { grid-column: span 3; }
-		}
-
-		.for-badge { border: 1px solid rgba(96, 165, 250, 0.4); background: rgba(96, 165, 250, 0.13); border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.72rem; font-family: 'Fira Code', monospace; }
-		.for-head { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; margin-bottom: 0.75rem; }
-
-		.for-code-panel { background: rgba(4, 9, 13, 0.9); border: 1px solid rgba(34, 197, 94, 0.22); border-radius: 0.8rem; padding: 0.75rem; }
-		.for-row { display: grid; grid-template-columns: 2rem 1fr; gap: 0.8rem; border-radius: 0.55rem; padding: 0.42rem 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.9rem; transition: all 0.2s ease; color: rgba(232, 255, 243, 0.86); }
-		.for-row.active { background: linear-gradient(90deg, rgba(34, 197, 94, 0.24), rgba(34, 197, 94, 0.08)); outline: 1px solid rgba(34, 197, 94, 0.38); transform: translateX(3px); }
-		.for-ln { color: rgba(232, 255, 243, 0.45); text-align: right; }
-
-		.for-state-item { display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(96, 165, 250, 0.26); background: rgba(96, 165, 250, 0.08); border-radius: 0.65rem; padding: 0.62rem 0.7rem; font-family: 'Fira Code', monospace; margin-bottom: 0.5rem; font-size: 0.84rem; }
-		.for-value { color: var(--for-primary); font-weight: 700; font-size: 1.02rem; }
-		.for-true { color: #86efac; }
-		.for-false { color: var(--for-danger); }
-
-		.for-console-win { border: 1px solid rgba(96, 165, 250, 0.34); border-radius: 0.8rem; overflow: hidden; background: rgba(4, 9, 13, 0.9); }
-		.for-console-head { display: flex; justify-content: space-between; padding: 0.5rem 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.72rem; background: rgba(96, 165, 250, 0.12); border-bottom: 1px solid rgba(96, 165, 250, 0.28); }
-		.for-console-body { min-height: 165px; padding: 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.83rem; }
-		.for-log { opacity: 0; transform: translateY(8px); animation: for-log-in 0.4s ease forwards; color: #d4edff; }
-		@keyframes for-log-in { to { opacity: 1; transform: translateY(0); } }
-
-		.for-copy { margin-top: 0.85rem; border: 1px solid rgba(34, 197, 94, 0.32); background: rgba(34, 197, 94, 0.1); border-radius: 0.7rem; padding: 0.75rem; }
-		.for-controls { margin-top: 0.9rem; display: flex; gap: 0.7rem; flex-wrap: wrap; align-items: center; }
-		.for-btn { border: 1px solid rgba(34, 197, 94, 0.45); background: rgba(34, 197, 94, 0.12); color: #e8fff3; padding: 0.58rem 1rem; border-radius: 0.7rem; font-weight: 600; transition: all 0.2s ease; }
-		.for-btn:hover:not(:disabled) { background: rgba(34, 197, 94, 0.25); transform: translateY(-1px); box-shadow: 0 0 18px rgba(34, 197, 94, 0.22); }
-		.for-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-		.for-track { margin-top: 0.8rem; height: 0.55rem; border-radius: 999px; background: rgba(232, 255, 243, 0.14); overflow: hidden; }
-		.for-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--for-primary), var(--for-blue)); transition: width 0.25s ease; }
-
-		.for-back { display: inline-block; margin-top: 1.5rem; color: var(--for-blue); text-decoration: none; border-bottom: 1px dashed rgba(96, 165, 250, 0.5); }
-	</style>
-
-	<div class="for-screen">
-		<main class="for-shell">
-			<header class="mb-6">
-				<p class="for-badge">{lang === 'en' ? 'for / guided simulation' : 'for / simulacion guiada'}</p>
-				<h1 class="for-title mt-3">{lang === 'en' ? 'For loop step by step' : <>Ciclo <code>for</code> paso a paso</>}</h1>
-				<p class="for-sub mt-3">{lang === 'en' ? 'Here you understand perfectly the rhythm of the for: initialization, condition, block, and update. Everything in order, no magic.' : 'Aca se entiende perfecto el ritmo del <code>for</code>: inicializacion, condicion, bloque y actualizacion. Todo en orden y sin magia.'}</p>
-			</header>
-
-			<section class="for-grid" aria-live="polite">
-				<article class="for-card for-code">
-					<div class="for-head">
-						<strong>{lang === 'en' ? '1) Code and active line' : '1) Codigo y linea activa'}</strong>
-						<span class="for-badge" id="for-line">{lang === 'en' ? 'Active line: 1' : 'Linea activa: 1'}</span>
+			<div class="fo-viewport">
+				<div class="fo-slide active" data-slide="1">
+					<div class="fo-slide-grid">
+						<div class="fo-col">
+							<h2 class="fo-slide-title">1. {isEs ? 'Anatomía del Ciclo For' : 'Anatomy of the For Loop'}</h2>
+							<p class="fo-text">
+								{isEs 
+									? 'El ciclo `for` agrupa inicialización, condición de parada e incremento en una sola línea compacta.'
+									: 'The `for` loop combines initialization, stop condition, and step increment in one line.'}
+							</p>
+						</div>
+						<div class="fo-col">
+							<div class="fo-card-box">
+								<div class="fo-card-head">{isEs ? 'FASES DEL FOR' : 'FOR PHASES'}</div>
+								<div class="fo-cell"><span>1. Inicialización</span><span class="fo-tag">i = 0 (1 sola vez)</span></div>
+								<div class="fo-cell"><span>2. Condición</span><span class="fo-tag">i &lt; N (Antes de cada paso)</span></div>
+								<div class="fo-cell"><span>3. Pasos / Incremento</span><span class="fo-tag">i++ (Tras cada paso)</span></div>
+							</div>
+						</div>
 					</div>
-					<div class="for-code-panel">
-						<div class="for-row" data-line="1"><span class="for-ln">1</span><span>for (int i = 1; i &lt;= 4; i++) &#123;</span></div>
-						<div class="for-row" data-line="2"><span class="for-ln">2</span><span>&nbsp;&nbsp;printf("Paso %d\n", i);</span></div>
-						<div class="for-row" data-line="3"><span class="for-ln">3</span><span>&#125;</span></div>
-						<div class="for-row" data-line="4"><span class="for-ln">4</span><span>printf("Fin for\n");</span></div>
+				</div>
+
+				<div class="fo-slide" data-slide="2">
+					<div class="fo-slide-grid">
+						<div class="fo-col">
+							<h2 class="fo-slide-title">2. C: for(int i=0; i&lt;n; i++)</h2>
+							<p class="fo-text">En C99+ se declara la variable directamente en la inicialización del `for`.</p>
+						</div>
+						<div class="fo-col">
+							<div class="fo-code-card">
+								<div class="fo-code-title">for.c</div>
+								<pre class="fo-code-block"><code><span class="token-keyword">for</span> (<span class="token-type">int</span> i = <span class="token-number">0</span>; i &lt; <span class="token-number">5</span>; i++) &#123;
+    printf(<span class="token-string">"Contador: %d\n"</span>, i);
+&#125;</code></pre>
+							</div>
+						</div>
 					</div>
+				</div>
 
-					<div class="for-copy" id="for-copy"><strong>{lang === 'en' ? 'Step 1:' : 'Paso 1:'} {lang === 'en' ? 'Initializes i = 1.' : 'Arranca la inicializacion de i en 1.'}</div>
-					<div class="for-track"><div class="for-fill" id="for-fill"></div></div>
-					<div class="for-controls">
-						<button id="for-prev" class="for-btn" type="button">{lang === 'en' ? '⬅ Back' : '⬅ Retroceder'}</button>
-						<button id="for-next" class="for-btn" type="button">{lang === 'en' ? 'Next ➡' : 'Avanzar ➡'}</button>
-						<span class="for-badge" id="for-step">Paso 1 / 12</span>
+				<div class="fo-slide" data-slide="3">
+					<div class="fo-slide-grid">
+						<div class="fo-col">
+							<h2 class="fo-slide-title">3. Java: For Tradicional y Enhanced For (For-Each)</h2>
+							<p class="fo-text">Java incluye `for(Type x : collection)` para iterar colecciones y arrays limpiamente.</p>
+						</div>
+						<div class="fo-col">
+							<div class="fo-code-card">
+								<div class="fo-code-title">ForEach.java</div>
+								<pre class="fo-code-block"><code>String[] frutas = &#123;<span class="token-string">"Manzana"</span>, <span class="token-string">"Banana"</span>&#125;;
+<span class="token-keyword">for</span> (String f : frutas) &#123;
+    System.out.println(f);
+&#125;</code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
+				</div>
 
-				<article class="for-card for-state">
-					<div class="for-head"><strong>{lang === 'en' ? '2) Internal state' : '2) Estado interno'}</strong></div>
-					<div class="for-state-item"><span>i actual</span><span id="for-i" class="for-value">1</span></div>
-					<div class="for-state-item"><span>Iteraciones ejecutadas</span><span id="for-iterations" class="for-value">0</span></div>
-					<div class="for-state-item"><span>Condicion i &lt;= 4</span><span id="for-condition" class="for-value">-</span></div>
-					<div class="for-state-item"><span>Fase actual</span><span id="for-phase" class="for-value">init</span></div>
-				</article>
-
-				<article class="for-card for-console">
-					<div class="for-head"><strong>{lang === 'en' ? '3) Simulated console' : '3) Consola simulada'}</strong></div>
-					<div class="for-console-win">
-						<div class="for-console-head"><span>./for-demo</span><span>stdout</span></div>
-						<div class="for-console-body" id="for-console"></div>
+				<div class="fo-slide" data-slide="4">
+					<div class="fo-slide-grid">
+						<div class="fo-col">
+							<h2 class="fo-slide-title">4. JavaScript: for...of y for...in</h2>
+							<p class="fo-text">`for...of` itera valores de iterables; `for...in` itera claves/propiedades de objetos.</p>
+						</div>
+						<div class="fo-col">
+							<div class="fo-code-card">
+								<div class="fo-code-title">for_of.js</div>
+								<pre class="fo-code-block"><code><span class="token-keyword">const</span> nums = [<span class="token-number">10</span>, <span class="token-number">20</span>, <span class="token-number">30</span>];
+<span class="token-keyword">for</span> (<span class="token-keyword">const</span> num <span class="token-keyword">of</span> nums) &#123;
+    console.log(num);
+&#125;</code></pre>
+							</div>
+						</div>
 					</div>
-				</article>
-			</section>
+				</div>
 
-</main>
+				<div class="fo-slide" data-slide="5">
+					<div class="fo-slide-grid">
+						<div class="fo-col">
+							<h2 class="fo-slide-title">5. Python: for in range()</h2>
+							<p class="fo-text">En Python `for` es intrínsecamente un iterador de colecciones o secuencias producidas por `range(start, stop, step)`.</p>
+						</div>
+						<div class="fo-col">
+							<div class="fo-code-card">
+								<div class="fo-code-title">for_range.py</div>
+								<pre class="fo-code-block"><code><span class="token-keyword">for</span> i <span class="token-keyword">in</span> range(<span class="token-number">0</span>, <span class="token-number">5</span>, <span class="token-number">1</span>):
+    print(f<span class="token-string">"i = &#123;i&#125;"</span>)</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="fo-slide" data-slide="6">
+					<div class="fo-sim-container">
+						<h2 class="fo-slide-title center">{isEs ? '6. Simulador Interactivo de Contador' : '6. Counter Simulator'}</h2>
+						<p class="fo-sub center">{isEs ? 'Avanzá paso a paso en el incremento del contador:' : 'Step through counter increments:'}</p>
+
+						<div class="fo-sim-console">
+							<div class="fo-sim-head"><span class="fo-console-label">For Trace: i = 0 a 4</span></div>
+							<div class="fo-sim-body">
+								<div class="fo-trace-step" id="fo-sim-step">Fase 1: Inicialización i = 0. Condición (0 &lt; 5) es TRUE ➔ Ejecuta cuerpo</div>
+								<div class="fo-stack-display" id="fo-sim-state">i = 0</div>
+							</div>
+							<div class="fo-sim-actions">
+								<button class="btn btn-primary" id="btn-next-fo-step">▶ {isEs ? 'Siguiente Paso (i++)' : 'Next Step (i++)'}</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="fo-footer">
+				<button class="btn btn-secondary" id="btn-prev-fo" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="fo-footer-meta"><span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span></div>
+				<button class="btn btn-primary" id="btn-next-fo">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
 	</div>
+</div>
 
-	<script>
-		type Step = {
-			line: number;
-			message: { es: string; en: string };
-			iValue: number;
-			iterations: number;
-			condition: 'true' | 'false' | '-';
-			phase: 'init' | 'condicion' | 'bloque' | 'incremento' | 'fin';
-			consoleLines: string[];
-		};
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+	.fo-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
+	.fo-shell { max-width: var(--container-max); margin: 0 auto; }
+	.fo-header { margin-bottom: 1.5rem; }
+	.fo-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
+	.fo-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.fo-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.fo-sub.center { text-align: center; }
+	.fo-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.fo-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.fo-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
+	.fo-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.fo-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+	.fo-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+	.fo-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.fo-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
+	.fo-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.fo-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.fo-slide.active { display: block; opacity: 1; transform: translateY(0); }
+	.fo-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+	.fo-col { grid-column: span 12; }
+	@media (min-width: 900px) { .fo-col { grid-column: span 6; } }
+	.fo-slide-title { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 400; color: var(--color-text); margin: 0 0 0.8rem; }
+	.fo-slide-title.center { text-align: center; }
+	.fo-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin-bottom: 1.2rem; }
+	.fo-card-box { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
+	.fo-card-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; color: var(--color-accent-2-700); margin-bottom: 0.75rem; }
+	.fo-cell { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--color-divider); background: var(--color-surface); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; }
+	.fo-tag { color: var(--color-accent-700); font-weight: 600; }
+	.fo-code-card { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.fo-code-title { background: #2b2722; color: #c0b6a5; padding: 0.4rem 0.8rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid #3a352e; }
+	.fo-code-block { margin: 0; padding: 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; line-height: 1.6; color: #f9f4ed; overflow-x: auto; }
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.token-comment { color: #85929e; font-style: italic; }
+	.fo-sim-container { max-width: 800px; margin: 0 auto; }
+	.fo-sim-console { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-md); }
+	.fo-sim-head { background: #2b2722; padding: 0.5rem 0.8rem; }
+	.fo-console-label { color: #c0b6a5; font-family: 'Fira Code', monospace; font-size: 0.75rem; }
+	.fo-sim-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.8rem; }
+	.fo-trace-step { font-size: 0.88rem; line-height: 1.5; color: #f9f4ed; background: #2a2520; padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); }
+	.fo-stack-display { font-family: 'Fira Code', monospace; font-size: 0.8rem; color: #76d7c4; background: #141210; padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); }
+	.fo-sim-actions { padding: 0.8rem 1rem; background: #25211d; display: flex; justify-content: flex-end; border-top: 1px solid #3a352e; }
+	.fo-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.fo-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+</style>
 
-		const steps: Step[] = [
-			{ line: 1, message: { es: 'Inicializa i = 1.', en: 'Initializes i = 1.' }, iValue: 1, iterations: 0, condition: '-', phase: 'init', consoleLines: [] },
-			{ line: 1, message: { es: 'Evalua condicion i <= 4. Da true.', en: 'Evaluates condition i <= 4. Result: true.' }, iValue: 1, iterations: 0, condition: 'true', phase: 'condicion', consoleLines: [] },
-			{ line: 2, message: { es: 'Ejecuta bloque: imprime Paso 1.', en: 'Executes block: prints Step 1.' }, iValue: 1, iterations: 1, condition: 'true', phase: 'bloque', consoleLines: ['Paso 1'] },
-			{ line: 1, message: { es: 'Incrementa i (i++). Ahora i = 2.', en: 'Increments i (i++). Now i = 2.' }, iValue: 2, iterations: 1, condition: 'true', phase: 'incremento', consoleLines: ['Paso 1'] },
-			{ line: 1, message: { es: 'Condicion de nuevo: 2 <= 4 da true.', en: 'Checks condition again: 2 <= 4 is true.' }, iValue: 2, iterations: 1, condition: 'true', phase: 'condicion', consoleLines: ['Paso 1'] },
-			{ line: 2, message: { es: 'Segunda iteracion: imprime Paso 2.', en: 'Second iteration: prints Step 2.' }, iValue: 2, iterations: 2, condition: 'true', phase: 'bloque', consoleLines: ['Paso 1', 'Paso 2'] },
-			{ line: 1, message: { es: 'Incrementa i a 3.', en: 'Increments i to 3.' }, iValue: 3, iterations: 2, condition: 'true', phase: 'incremento', consoleLines: ['Paso 1', 'Paso 2'] },
-			{ line: 2, message: { es: 'Tercera iteracion: imprime Paso 3.', en: 'Third iteration: prints Step 3.' }, iValue: 3, iterations: 3, condition: 'true', phase: 'bloque', consoleLines: ['Paso 1', 'Paso 2', 'Paso 3'] },
-			{ line: 1, message: { es: 'Incrementa i a 4 y vuelve a evaluar.', en: 'Increments i to 4 and checks again.' }, iValue: 4, iterations: 3, condition: 'true', phase: 'condicion', consoleLines: ['Paso 1', 'Paso 2', 'Paso 3'] },
-			{ line: 2, message: { es: 'Cuarta iteracion: imprime Paso 4.', en: 'Fourth iteration: prints Step 4.' }, iValue: 4, iterations: 4, condition: 'true', phase: 'bloque', consoleLines: ['Paso 1', 'Paso 2', 'Paso 3', 'Paso 4'] },
-			{ line: 1, message: { es: 'Incrementa a 5. 5 <= 4 da false y el for termina.', en: 'Increments to 5. 5 <= 4 is false, for loop ends.' }, iValue: 5, iterations: 4, condition: 'false', phase: 'fin', consoleLines: ['Paso 1', 'Paso 2', 'Paso 3', 'Paso 4'] },
-			{ line: 4, message: { es: 'Ejecuta lo que sigue despues del for.', en: 'Executes what comes after the for loop.' }, iValue: 5, iterations: 4, condition: 'false', phase: 'fin', consoleLines: ['Paso 1', 'Paso 2', 'Paso 3', 'Paso 4', 'Fin for'] },
-		];
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
+	let foStep = 0;
 
-		let currentStep = 0;
+	const foSteps = [
+		{ step: 'Inicialización: i = 0. Condición (0 < 5) es TRUE ➔ Ejecuta cuerpo', state: 'i = 0' },
+		{ step: 'Incremento: i++ ➔ i = 1. Condición (1 < 5) es TRUE ➔ Ejecuta cuerpo', state: 'i = 1' },
+		{ step: 'Incremento: i++ ➔ i = 2. Condición (2 < 5) es TRUE ➔ Ejecuta cuerpo', state: 'i = 2' },
+		{ step: 'Incremento: i++ ➔ i = 3. Condición (3 < 5) es TRUE ➔ Ejecuta cuerpo', state: 'i = 3' },
+		{ step: 'Incremento: i++ ➔ i = 4. Condición (4 < 5) es TRUE ➔ Ejecuta cuerpo', state: 'i = 4' },
+		{ step: 'Incremento: i++ ➔ i = 5. Condición (5 < 5) es FALSE ➔ Salida del for', state: 'For completado' }
+	];
 
-		const prevBtn = document.getElementById('for-prev') as HTMLButtonElement;
-		const nextBtn = document.getElementById('for-next') as HTMLButtonElement;
-		const lineBadge = document.getElementById('for-line') as HTMLElement;
-		const stepBadge = document.getElementById('for-step') as HTMLElement;
-		const copyEl = document.getElementById('for-copy') as HTMLElement;
-		const iEl = document.getElementById('for-i') as HTMLElement;
-		const iterEl = document.getElementById('for-iterations') as HTMLElement;
-		const condEl = document.getElementById('for-condition') as HTMLElement;
-		const phaseEl = document.getElementById('for-phase') as HTMLElement;
-		const consoleEl = document.getElementById('for-console') as HTMLElement;
-		const fillEl = document.getElementById('for-fill') as HTMLElement;
-
-		const isEnglish = document.documentElement.lang === 'en';
-
-		function renderStep(): void {
-			const step = steps[currentStep];
-
-			document.querySelectorAll<HTMLElement>('.for-row').forEach((row) => {
-				row.classList.toggle('active', Number(row.dataset.line) === step.line);
-			});
-
-			lineBadge.textContent = isEnglish ? `Active line: ${step.line}` : `Linea activa: ${step.line}`;
-			stepBadge.textContent = isEnglish ? `Step ${currentStep + 1} / ${steps.length}` : `Paso ${currentStep + 1} / ${steps.length}`;
-			copyEl.innerHTML = `<strong>${isEnglish ? 'Step' : 'Paso'} ${currentStep + 1}:</strong> ${step.message[isEnglish ? 'en' : 'es']}`;
-			iEl.textContent = String(step.iValue);
-			iterEl.textContent = String(step.iterations);
-			condEl.textContent = step.condition;
-			phaseEl.textContent = step.phase;
-			condEl.classList.remove('for-true', 'for-false');
-			if (step.condition === 'true') condEl.classList.add('for-true');
-			if (step.condition === 'false') condEl.classList.add('for-false');
-
-			consoleEl.innerHTML = '';
-			step.consoleLines.forEach((line, index) => {
-				const entry = document.createElement('div');
-				entry.className = 'for-log';
-				entry.style.animationDelay = `${index * 80}ms`;
-				entry.textContent = `> ${line}`;
-				consoleEl.appendChild(entry);
-			});
-
-			fillEl.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
-			prevBtn.disabled = currentStep === 0;
-			nextBtn.disabled = currentStep === steps.length - 1;
-		}
-
-		prevBtn.addEventListener('click', () => {
-			if (currentStep > 0) {
-				currentStep -= 1;
-				renderStep();
-			}
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+		document.querySelectorAll('.fo-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
 		});
-
-		nextBtn.addEventListener('click', () => {
-			if (currentStep < steps.length - 1) {
-				currentStep += 1;
-				renderStep();
-			}
+		document.querySelectorAll('.fo-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
 		});
+		const labelEl = document.getElementById('fo-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+		const prevBtn = document.getElementById('btn-prev-fo') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-fo') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
 
-		document.addEventListener('keydown', (event: KeyboardEvent) => {
-			if (event.key === 'ArrowRight') nextBtn.click();
-			if (event.key === 'ArrowLeft') prevBtn.click();
+	document.querySelectorAll('.fo-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
 		});
+	});
 
-		renderStep();
-	</script>
+	document.getElementById('btn-prev-fo')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-fo')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
 
+	document.getElementById('btn-next-fo-step')?.addEventListener('click', () => {
+		foStep = (foStep + 1) % foSteps.length;
+		const stepEl = document.getElementById('fo-sim-step');
+		const stateEl = document.getElementById('fo-sim-state');
+		if (stepEl) stepEl.textContent = foSteps[foStep].step;
+		if (stateEl) stateEl.textContent = foSteps[foStep].state;
+	});
+
+	goToSlide(1);
+</script>

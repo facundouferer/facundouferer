@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+	<g transform="translate(200, 30)">
+		<!-- Lines -->
+		<line x1="0" y1="0" x2="-60" y2="55" stroke="#8c491a" stroke-width="3"/>
+		<line x1="0" y1="0" x2="60" y2="55" stroke="#8c491a" stroke-width="3"/>
+		<line x1="-60" y1="55" x2="-90" y2="110" stroke="#7a8a5e" stroke-width="3"/>
+		<line x1="-60" y1="55" x2="-30" y2="110" stroke="#7a8a5e" stroke-width="3"/>
+
+		<!-- Root Node -->
+		<circle cx="0" cy="0" r="22" fill="#f5ead8" stroke="#8c491a" stroke-width="3"/>
+		<text x="0" y="6" font-family="'Caprasimo', serif" font-size="16" fill="#201e1d" text-anchor="middle">10</text>
+
+		<!-- Left Subtree -->
+		<circle cx="-60" cy="55" r="20" fill="#f5ead8" stroke="#7a8a5e" stroke-width="3"/>
+		<text x="-60" y="60" font-family="'Caprasimo', serif" font-size="14" fill="#201e1d" text-anchor="middle">5</text>
+
+		<!-- Right Subtree -->
+		<circle cx="60" cy="55" r="20" fill="#f5ead8" stroke="#c67139" stroke-width="3"/>
+		<text x="60" y="60" font-family="'Caprasimo', serif" font-size="14" fill="#201e1d" text-anchor="middle">15</text>
+
+		<!-- Leaf Nodes -->
+		<circle cx="-90" cy="110" r="16" fill="#f5ead8" stroke="#d9cbba" stroke-width="2"/>
+		<text x="-90" y="114" font-family="'Caprasimo', serif" font-size="12" fill="#201e1d" text-anchor="middle">2</text>
+		<circle cx="-30" cy="110" r="16" fill="#f5ead8" stroke="#d9cbba" stroke-width="2"/>
+		<text x="-30" y="114" font-family="'Caprasimo', serif" font-size="12" fill="#201e1d" text-anchor="middle">7</text>
+	</g>
+</svg>

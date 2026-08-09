@@ -1,0 +1,790 @@
+<!-- @template name="Deck" description="A twenty-one-slide presentation starter: cover, contents, dividers, bullets, column and quadrant layouts, a data table, charts and a timeline in static SVG, full- and half-bleed imagery, a quote and a close, with page furniture, on the theme's tokens" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Organic — deck</title>
+<script src="./ds-base.js"></script>
+<style>
+deck-stage:not(:defined) { visibility: hidden; }
+
+/* Template scaffolding — slide layout and projection-scale sizing only; every
+   color, font, radius and shadow comes from ../../styles.css. Change one
+   number here to re-size the whole deck. */
+deck-stage {
+  --type-display: 126px;
+  --type-title: 72px;
+  --type-subtitle: 42px;
+  --type-body: 36px;
+  --type-small: 30px;
+  --type-kicker: 24px;
+  --pad-x: 144px;
+  --page-foot-note: "Confidential — July 2026"; /* the deck-wide folio text (page furniture; see the PAGE FURNITURE note below) */
+  --pad-top: 108px;
+  --pad-bottom: 108px;
+  --baseline: 54px; /* grid unit — one default-text line: the 36px Figtree body at a 1.5 deck
+     leading (the system's airy spacing carried to projection scale; 20 gridlines tile the
+     1080 stage exactly, and the pinned footer baseline lands on the 18th at 972). */
+}
+
+.slide {
+  display: flex; flex-direction: column;
+  background: var(--color-bg); color: var(--color-text);
+  font-family: var(--font-body);
+  text-wrap: pretty; /* inherited: better breaks, no orphans on wrapped blocks */
+  padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+  print-color-adjust: exact; -webkit-print-color-adjust: exact;
+}
+
+/* — shared pieces — */
+/* Baseline grid: text sits on a 54px rhythm (--baseline) measured from the
+   slide's top edge. Snapped text blocks are trimmed to their cap and baseline
+   edges (text-box), so a block's bottom edge IS its last baseline and the next
+   block's first baseline lands N gridlines down with
+   margin-top: calc(N * var(--baseline) - 1cap). Compact rhythms (table rows,
+   chart axes and ticks) sit on the 27px half-step. Review the rhythm with
+   ?baselines in the URL, or press B (script at the end of the page) —
+   half-step lines draw fainter than full ones. */
+/* Soft shapes carry the look: this system structures with air and rounded
+   geometry, never sharp corners or hairline-only drawing — so this deck
+   spaces its contents rows with whitespace (no rules), rounds every drawn
+   mark into a circle (bullet dots, timeline nodes, circular swatches), pills
+   the tops of its chart bars, and lets the second accent — the sage — be a
+   genuine second voice in the dataviz. The table's hairline rules are the
+   one exception: they belong to the system's own .table component. */
+/* No kicker row: review round 2 cut the typographic eyebrows — the uppercase
+   slugs over every title were furniture, and on this deck's now-dominant
+   centered axis a pinned top-left label would fight every centered
+   composition besides. The title carries the slide; wayfinding stays with
+   the contents page and the dividers' ghost numerals. */
+/* — the centered axis — */
+/* Organic is the centered system the shared one-axis rule reserved judgment
+   for (deck-templates.md: "revisit for a centered system"). Center is the
+   DOMINANT axis: the cover and close, the contents page, the four dividers,
+   the hero, the split copy, the full bleed, the mirrored half-bleed copy and
+   the quote all center — twelve of twenty-one slides; the working list, the
+   data table, both charts, the timeline and the bulleted half-bleed keep the
+   flush-left axis (a centered plot, ruled column or hanging-marked list has
+   no honest center), one axis per slide either way. Centered display type
+   drops the optical-left margin terms: a left-bearing return would shift a
+   CENTERED line sideways, and Caprasimo's small bearings (see the optical
+   note) leave under 3px of first-vs-last-glyph asymmetry at display size —
+   below what a template could reliably correct without knowing its glyphs.
+   Centered blocks stay optically centered as blocks (the shared contract's
+   centered-slides exception); their internal line-heights remain grid
+   multiples. */
+.centered { text-align: center; align-items: center; }
+.centered > .slide-title { margin-left: 0; } /* centered display drops the optical term */
+.slide-title {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: var(--type-title); line-height: calc(1.5 * var(--baseline)); letter-spacing: 0; margin: 0;
+  margin-left: -0.028em; /* optical left alignment — see the note below */
+  text-box: trim-both cap alphabetic;
+}
+/* Optical left alignment — the deliberate exception to box-edge alignment
+   the reviewed decks share, re-derived for this face (the rules generalize,
+   the numbers never do — see ../../../deck-templates.md). Caprasimo's
+   rounded display cut carries small bearings that tuck under its bowls:
+   measured from its hmtx (upm 2048, normalized; cross-checked against
+   render scans), rounds O/C/G sit at 0.034em, R at 0.033em, E/F/S at
+   0.044-0.045em, H/P at 0.019-0.020em, T at 0.014em, I at 0.022em, and the
+   splayed M and W at -0.002 and -0.004em. One value per class anchors the
+   rounds: -0.028em lands O/C/G/R just shy of flush, T/H/P a hair past
+   (0.008-0.014em over — soft overhang suits a soft face), E/F keep a
+   0.017em inset, and M/W overhang the way wide splayed letters always
+   have. Digits are MONO-WIDTH in this face (every advance 0.600em) with
+   bearings 0.018-0.052em; the ghost and hero numerals measured -0.030em
+   while they sat on the left axis — both now CENTER and drop the term
+   (see the centered-axis note), so the optical-left machinery in this
+   deck survives only on the left-axis slides' titles. Text digits in
+   Figtree are proportional by default, so COLUMNS opt into "tnum" (see
+   .toc-num and the chart text). */
+.pin-bottom { position: absolute; left: var(--pad-x); right: var(--pad-x); bottom: var(--pad-bottom); }
+.meta { display: flex; align-items: baseline; gap: 18px; font-size: var(--type-kicker); color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+.meta span { text-box: trim-both cap alphabetic; } /* pinned at pad-bottom: baseline lands on the 18th gridline at 972 */
+
+/* — page furniture (review round 8, every deck) — */
+/* PAGE FURNITURE — on by default. To remove the page numbers and footer
+   text deck-wide, add the no-page-furniture attribute to the <deck-stage>
+   tag (a one-line tweak); to change the text, edit --page-foot-note in
+   the deck's token block. Organic's folio is a soft pill in the margin
+   band below the 972 footer gridline — the system rounds everything that
+   can be round — at the muted meta ink on the surface tint. Content
+   slides carry it; the covers keep their meta rows, the sage dividers
+   stay a clean colophon page, and the full bleed's photograph owns its
+   edges — every slide still counts, so the number stays truthful. */
+deck-stage { counter-reset: page; }
+.slide { counter-increment: page; }
+.page-foot {
+  position: absolute; right: var(--pad-x); bottom: 34px;
+  font-size: var(--type-kicker); letter-spacing: 0.02em; /* 24px — the six decks share the kicker-scale folio (WCAG large text; measured 4.2:1 on the pill at the 62% ink, ≥3) */
+  color: color-mix(in srgb, var(--color-text) 62%, transparent);
+  background: var(--color-surface); border-radius: 999px;
+  padding: 8px 18px;
+}
+.page-foot::before { content: counter(page) " · "; font-feature-settings: "tnum" 1; }
+.page-foot::after { content: var(--page-foot-note); }
+deck-stage[no-page-furniture] .page-foot, deck-stage[no-page-furniture] .page-head { display: none !important; }
+.half-bleed.flip .page-foot { right: auto; left: var(--pad-x); } /* the folio follows the copy half — type never sits on the photograph */
+
+/* — cover and close — */
+.cover { justify-content: center; align-items: center; text-align: center; }
+.cover .rise { display: flex; flex-direction: column; align-items: center; gap: 42px; }
+.cover .meta { justify-content: center; } /* the pinned row centers with the rest */
+.display {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: var(--type-display); line-height: calc(2.5 * var(--baseline)); letter-spacing: 0; margin: 0;
+  /* no optical-left term: the display centers — see the centered-axis note */
+}
+.cover-sub { font-size: var(--type-subtitle); line-height: var(--baseline); max-width: 38ch; margin: 0; text-wrap: balance; /* centered blocks read best with evened lines; balance keeps the line count, so the rhythm holds */ }
+
+/* — contents — */
+/* Whitespace rows, not ruled ones: rounded shapes need air (the readme's own
+   words), and this system never structures with hairlines — so the row
+   baselines sit straight on every third gridline, the rule-less decks' way;
+   the optical-centering exception ruled rows need does not arise here. */
+.toc { display: flex; flex-direction: column; max-width: 1040px;
+  font-size: var(--type-subtitle); }
+.centered .toc { align-items: center; } /* each row centers as a unit — the ragged-centered list, this system's soft take on a contents page */
+.toc-row { display: flex; align-items: baseline; justify-content: center; gap: 28px; } /* a tighter number-gap than the left-axis decks: on a centered row a wide gap reads as drift */
+.toc-row > span { text-box: trim-both cap alphabetic; }
+.toc-row + .toc-row { margin-top: calc(3 * var(--baseline) - 1cap); }
+.toc-num { font-size: var(--type-kicker); color: var(--color-accent); font-feature-settings: "tnum" 1; }
+
+/* — section dividers — */
+/* Dividers sit on a ground of their own — the shared deck contract (see
+   ../../../deck-templates.md): the ground change is what makes sections read
+   as breaks when flipping the deck. Review round 8 (Barron: use the sage
+   more, maybe for the dividers): the ground moves from the deep clay to
+   the deep SAGE (--color-accent-2-800) — the second voice finally gets a
+   page of its own — with parchment type and a soft circle rising past
+   the edge, the readme's "soft circles and blobs as decoration" at page
+   scale. Contrast re-derived for the sage ground (printed values are
+   per-ground): parchment type 8.3:1, ghost re-pinned below, the
+   decoration circle a 1.5:1 whisper. */
+.divider { justify-content: center; background: var(--color-accent-2-800); color: var(--color-bg); overflow: hidden; }
+.divider::before { content: ""; position: absolute; right: -320px; bottom: -420px;
+  width: 1040px; height: 1040px; border-radius: 999px;
+  background: var(--color-accent-2-700); }
+.divider { align-items: center; text-align: center; } /* the centered axis — the decoration circle keeps its corner, asymmetry balancing the centered type */
+.divider .slide-title { margin-left: 0; } /* centered display drops the optical term */
+.divider .rise { display: flex; flex-direction: column; align-items: center; gap: 54px; }
+.ghost-num {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 280px; line-height: 0.9; letter-spacing: 0;
+  color: var(--color-accent-2-600); /* ghost on the sage ground: 2.3:1 — green on green,
+     present without shouting (the round-8 sage move carries the whole
+     divider family: ground 2-800, circle 2-700, ghost 2-600) */
+  /* no optical term: the ghost centers with the divider title — see the
+     centered-axis note (digits are mono-width in this face) */
+}
+
+/* — content slides — */
+.content { padding-top: calc(4 * var(--baseline)); /* title baseline on the 4th gridline — with the kicker row cut the head closes up; the first-element margins below grew a gridline each, so the body rhythm holds its old gridlines */ }
+.content > .slide-title, .content > .chart-head { margin-top: -1cap; } /* cap-trimmed: the baseline, not the cap top, sits on the gridline */
+.content > .bullets { margin-top: calc(4 * var(--baseline) - 1cap); }
+.content > .table { margin-top: calc(3 * var(--baseline)); } /* top edge on a gridline */
+.content > .toc { margin-top: calc(4 * var(--baseline) - 1cap); } /* first row's baseline four gridlines below the title's (the title rose a gridline; the rows did not) */
+.content > figure { margin-top: calc(2 * var(--baseline)); }
+.content > .chart-caption { margin-top: calc(2 * var(--baseline) - 1cap); }
+.bullets { display: flex; flex-direction: column; max-width: 1200px; margin: 0; padding: 0; list-style: none; font-size: var(--type-body); }
+.bullets li { position: relative; line-height: var(--baseline); text-box: trim-both cap alphabetic; }
+.bullets li + li { margin-top: calc(2 * var(--baseline) - 1cap); } /* every other gridline */
+
+/* — column and quadrant layouts (review round 8, every deck) — */
+/* Organic's columns breathe — ragged right (justified slabs are another
+   system's voice), heads in the display face at body size — and the
+   quadrant matrix takes the system's own grammar of soft shapes: four
+   rounded surface-tinted cells (the tag fills at card scale), the sage
+   and clay tints pairing the diagonals, axis poles set as muted type. */
+.cols { display: grid; gap: calc(2 * var(--baseline)) 96px; margin-top: calc(4 * var(--baseline) - 1cap); }
+.cols-2 { grid-template-columns: 1fr 1fr; }
+.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.cols p { font-size: var(--type-small); line-height: var(--baseline); margin: 0; text-box: trim-both cap alphabetic; }
+.cols h3 { font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: var(--type-body); margin: 0 0 calc(1 * var(--baseline) - 1cap);
+  text-box: trim-both cap alphabetic; }
+.quad { display: grid; grid-template-columns: 1fr 1fr; gap: 42px;
+  margin-top: calc(3 * var(--baseline)); }
+.quad > div { border-radius: var(--radius-lg); padding: 42px 48px; }
+.quad .q-clay { background: var(--color-accent-100); }
+.quad .q-sage { background: var(--color-accent-2-100); }
+.quad h3 { font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: var(--type-body); margin: 0 0 18px; }
+.quad p { font-size: var(--type-small); line-height: 1.35; margin: 0; }
+.quad-axis { display: flex; justify-content: space-between; margin-top: calc(1 * var(--baseline));
+  font-size: var(--type-kicker); color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+/* the bullet mark is a drawn terracotta dot — the system's soft circle at
+   marker scale (border-radius 999px, the pill token's limit) — hanging in
+   the left margin (the text never indents; one alignment axis), optically
+   centered on the first line's cap */
+.bullets li::before { content: ""; position: absolute; left: -44px; top: calc(0.5cap - 7px); width: 14px; height: 14px; border-radius: 999px; background: var(--color-accent); }
+
+/* — data table (component class at projection scale) — */
+.slide .table { max-width: 1560px; font-size: 30px; font-feature-settings: "tnum" 1; }
+/* 108px row pitch (two gridlines): the component's own hairline rules land on
+   gridlines, and — the deliberate optical exception the ruled-row decks
+   share — the cell text centers its cap box between rule centerlines (the
+   collapsed 1px rules paint centered on cell boundaries at gridline-0.5px,
+   hence the 0.5px terms; the cap terms cancel, so the pitch holds in any
+   font). The rules themselves are the system's .table component's — its one
+   hairline exception to the soft grammar; this deck adds none of its own. */
+.slide .table th, .slide .table td {
+  text-box: trim-both cap alphabetic;
+  padding: calc(var(--baseline) - 0.5cap - 0.5px) 28px calc(var(--baseline) - 0.5cap - 0.5px);
+}
+.slide .table th { font-size: var(--type-kicker); }
+.slide .table tbody tr:hover { background: none; } /* a projected slide has no hover state */
+.slide .table th:first-child, .slide .table td:first-child { padding-left: 0; }
+.slide .table th:last-child, .slide .table td:last-child { padding-right: 0; }
+.slide .table td:first-child { width: 64px; position: relative; }
+/* Out of flow so its 40px box can't stretch the cap-trimmed row; centered on
+   the 108px row band like the row text. Transform-free so exporters that
+   read offsets stay exact. */
+.slide .table .swatch { position: absolute; left: 0; top: calc(var(--baseline) - 20px); }
+.swatch { display: inline-block; width: 40px; height: 40px; border-radius: 999px; /* the
+   swatch is a soft circle — the system's shape, not the scaffolding's corner token */
+   box-shadow: var(--shadow-sm); }
+
+/* — hero figure — */
+.hero { justify-content: center; align-items: center; text-align: center; gap: 42px; }
+.hero-num {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 300px; line-height: 1; letter-spacing: 0; margin: 0;
+  color: var(--color-accent); /* the terracotta as one huge warm figure */
+  /* no optical term: the figure centers — see the centered-axis note */
+}
+.hero-caption { font-size: var(--type-small); line-height: var(--baseline); max-width: 44ch; margin: 0; text-wrap: balance; }
+
+/* — charts (static SVG on the tokens; no script, no chart library) — */
+/* Soft charts: bars rise as pills (tops rounded at the bar's own radius,
+   bottoms square on the axis under the plot clip), the line chart speaks in
+   the system's two genuine voices — terracotta lead, sage second, both
+   solid: the one deck whose palette needs no dash to separate series — and
+   nodes are filled circles. Grid and axis hairlines carry the divider token
+   (data furniture, like the table's rules). */
+.chart { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text {
+  font-family: var(--font-body); font-size: 24px;
+  fill: color-mix(in srgb, var(--color-text) 55%, transparent);
+  font-feature-settings: "tnum" 1; /* chart text is columns — the tabular opt-in, see the optical note */
+}
+.chart .grid, .chart .axis { stroke: var(--color-divider); stroke-width: 1; }
+.chart .bar { fill: var(--color-neutral-600); }
+.chart .bar-hi { fill: var(--color-accent); }
+.chart .bar, .chart .bar-hi { rx: var(--radius-lg); } /* pill tops at the system's radius-lg token; bottoms stay square under the plot clip */
+.chart .val { fill: color-mix(in srgb, var(--color-text) 70%, transparent); }
+.chart .ref { stroke: var(--color-accent-700); stroke-width: 1; stroke-dasharray: 8 8; }
+.chart .ref-label { fill: var(--color-accent-700); }
+.chart .hi-label { fill: var(--color-accent-700); }
+.chart .series-a, .key .series-a { stroke: var(--color-accent); stroke-width: 4; stroke-linecap: round; fill: none; }
+.chart .series-b, .key .series-b { stroke: var(--color-accent-2-600); stroke-width: 4; stroke-linecap: round; fill: none; }
+.chart-caption { font-size: 27px; line-height: var(--baseline); max-width: 82ch; margin: 0; text-box: trim-both cap alphabetic; }
+/* Chart title row — title left, legend right, sharing one baseline. The
+   family is pinned so the -1cap margin resolves in the heading face (the
+   two-family lesson); the legend backs out to the body face. */
+.chart-head { display: flex; align-items: baseline; justify-content: space-between;
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: var(--type-title); }
+.chart-legend { display: flex; align-items: baseline; gap: 16px; font-family: var(--font-body); font-size: var(--type-kicker); color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+.chart-legend span { text-box: trim-both cap alphabetic; }
+.chart-legend .key { width: 60px; height: 4px; overflow: visible; position: relative; top: -7px; } /* flex sits the box bottom on the baseline; the nudge lifts the key line to the label's optical center */
+.chart-legend .key:not(:first-child) { margin-left: 24px; }
+/* Timeline (same .chart text defaults as the other SVGs). These classes
+   carry color and size only; the geometry — one left edge per column and
+   the optically-set vertical cluster — is documented where it lives, in
+   the pattern comment inside the timeline SVG. The nodes are filled sage
+   circles — the second voice as quiet waypoints — with the current
+   milestone the one terracotta. */
+.chart .tl-line { stroke: var(--color-divider); stroke-width: 1; }
+.chart .tl-node { fill: var(--color-accent-2-500); }
+.chart .tl-node-hi { fill: var(--color-accent); }
+.chart .tl-date { fill: color-mix(in srgb, var(--color-text) 55%, transparent); letter-spacing: 0.08em; }
+.chart .tl-date-hi { fill: var(--color-accent-700); letter-spacing: 0.08em; }
+.chart .tl-label { fill: var(--color-text); font-size: 30px; font-weight: 600; }
+
+/* — image slide — */
+.split { flex-direction: row; align-items: center; gap: 96px; }
+.split-copy { flex: none; width: 640px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 42px; } /* the centered axis */
+.split-copy .slide-title { margin-left: 0; } /* centered display drops the optical term */
+.split-copy .note { font-size: var(--type-small); line-height: var(--baseline); margin: 0; }
+/* The on-page photograph crops in a soft bouba shape (review round 2:
+   "softly curving bouba style shapes instead of clinical divisions") —
+   a gentle blob drawn with asymmetric corner radii, so the shape scales
+   with its box instead of pinning to pixels; the wash stays, and the
+   radius-lg rounding this figure used to take is superseded by the blob
+   on image crops only (cards and buttons keep the token). Edge-bleeding
+   photographs curve their INNER edge instead — a shape at the stage edge
+   would read as a die-cut (see the bleed slides). The reference
+   photograph is a tall portrait, so the figure takes a fixed 14-gridline
+   height and crops within its shape. */
+.split-figure { flex: 1; height: 756px; border-radius: 58% 42% 63% 37% / 45% 55% 48% 52%; overflow: hidden; }
+.split-figure image-slot { width: 100%; height: 100%; } /* the blob clip lives on the figure; the slot fills it (cover framing is the component's own) */
+
+/* — full-bleed image slide — */
+/* Review round 2 (Barron): the top two-thirds is image, closed by a fluid
+   curving border — not a gradient. The washed photograph fills the head of
+   the page and ends in the soft bouba line this system crops every image
+   with (a clip path in stage pixels: the deck stage is authored fixed at
+   1920x1080, and the wave meanders around the 640 line inside a 720
+   envelope — its actual lowest reach is ~677);
+   the parchment ground holds the foot, and the type sits ON it — the
+   type-over-photography rule (deck-templates.md) is passed by construction
+   (the title measures 13.9:1 on the parchment; the note keeps the system's
+   muted caption voice, 3.6:1 at 30px — WCAG AA large-text on the plain
+   ground, where the over-photography thresholds no longer apply), and the
+   old scrim left with the kicker row. The copy centers, pinned to
+   the bottom padding edge like the cover's meta row: note baselines 918 and
+   972, title baseline on the 15th gridline at 810, its cap top 40px clear
+   of the wave's 720 envelope (~83px clear of its actual reach). */
+.bleed-figure { position: absolute; inset: 0; margin: 0;
+  clip-path: path("M0 0 H1920 V620 C1680 700 1460 560 1200 640 C940 720 700 580 460 650 C280 702 120 640 0 680 Z"); }
+.bleed-figure image-slot { width: 100%; height: 100%; }
+.bleed-copy { position: absolute; left: var(--pad-x); right: var(--pad-x); bottom: var(--pad-bottom); text-align: center; pointer-events: none; } /* text over the slot — must not eat its hover/drop events (no interactive children here) */
+.bleed-copy .slide-title { margin-left: 0; } /* centered display drops the optical term */
+.bleed-copy .note {
+  font-size: var(--type-small); line-height: var(--baseline); max-width: 58ch;
+  margin: calc(2 * var(--baseline) - 1cap) auto 0; /* note's first baseline two gridlines below the title's; auto centers the measure */
+  text-box: trim-both cap alphabetic; /* bottom edge = last baseline, pinned to 972 */
+}
+
+/* — half-bleed image slides — */
+/* The photograph bleeds to three edges and holds roughly half the stage,
+   but its INNER edge is the bouba line (review round 2): a soft S-curve
+   clip in stage pixels meandering around x=960, in place of the old
+   clinical half division. The copy takes the other half: the bulleted
+   half-bleed keeps the flush-left axis (hanging dot marks need one), and
+   the mirrored note slide centers its copy — see the centered-axis note.
+   Title baseline on the 4th gridline, body below as on any content slide.
+   The .flip mirror flips the CLIP with scaleX(-1) and un-mirrors the
+   photograph by flipping the img back, so one path serves both sides. */
+.half-bleed { padding-top: calc(4 * var(--baseline)); }
+.half-bleed > .slide-title { margin-top: -1cap; max-width: 640px; }
+.half-bleed .note {
+  font-size: var(--type-small); line-height: var(--baseline); max-width: 640px;
+  margin: calc(3 * var(--baseline) - 1cap) 0 0; /* grew a gridline with the title's rise, holding the note's gridline */
+  text-box: trim-both cap alphabetic; /* the margin calc presupposes the trim */
+}
+.half-bleed .bullets { margin-top: calc(4 * var(--baseline) - 1cap); max-width: 640px; }
+.half-bleed-figure { position: absolute; inset: 0 auto 0 0; width: 1040px; margin: 0;
+  clip-path: path("M0 0 H930 C1010 140 870 320 950 500 C1030 680 890 860 970 1080 H0 Z"); }
+.half-bleed-figure image-slot { width: 100%; height: 100%; }
+.half-bleed:not(.flip) > .slide-title { margin-left: calc(960px - 0.028em); } /* the copy column offset, preserving the optical shift */
+.half-bleed:not(.flip) .note,
+.half-bleed:not(.flip) .bullets { margin-left: 960px; }
+.half-bleed.flip .half-bleed-figure { inset: 0 0 0 auto; transform: scaleX(-1); }
+.half-bleed.flip .half-bleed-figure image-slot { transform: scaleX(-1); } /* the photograph un-mirrors; only the clip mirrors — and the slot's hover controls come out upright (figure × slot = identity) */
+.half-bleed.flip { text-align: center; } /* the mirrored note slide centers its copy half */
+.half-bleed.flip > .slide-title { margin-left: 0; }
+
+/* — quote — */
+.quote { justify-content: center; align-items: center; text-align: center; gap: 54px; }
+.quote .rise { display: flex; flex-direction: column; align-items: center; gap: 54px; }
+.quote blockquote {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight); /* the display
+     voice — Caprasimo is the system's only display face and ships one upright cut (no
+     italic exists for it at all) */
+  font-size: 60px; line-height: calc(1.5 * var(--baseline)); letter-spacing: 0;
+  max-width: 28ch; margin: 0;
+  /* no hanging “ on the centered axis: a hang shifts the first line left of
+     center — the mark rides inside the measure, and the centered block
+     carries the asymmetry the way centered settings always have */
+}
+.quote figcaption { font-size: var(--type-small); margin: 0; /* the leading em-dash centers with the line — no hang on the centered axis */ }
+
+/* Review aid: the baseline grid drawn as a hairline under every --baseline
+   step. Debug-only — toggled by ?baselines or the B key; not part of the look. */
+deck-stage[data-baselines] .slide::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    repeating-linear-gradient(to bottom,
+      color-mix(in srgb, var(--color-accent) 35%, transparent) 0 1px,
+      transparent 1px var(--baseline)),
+    repeating-linear-gradient(to bottom,
+      transparent 0 calc(var(--baseline) / 2),
+      color-mix(in srgb, var(--color-accent) 16%, transparent) calc(var(--baseline) / 2) calc(var(--baseline) / 2 + 1px),
+      transparent calc(var(--baseline) / 2 + 1px) var(--baseline));
+}
+
+/* Entrance — end-state is the base style; animate from hidden, gated on the
+   active slide and the motion preference, so print and reduced-motion are safe. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-deck-active] .rise { animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+  <section class="slide cover" data-label="Title">
+    <div class="rise">
+      <h1 class="display">Organic</h1>
+      <p class="cover-sub text-muted">Warm, rounded and a little playful: a cream-and-sand ground with a terracotta accent and a sage second voice, soft shapes and airy spacing.</p>
+    </div>
+    <div class="pin-bottom meta"><span>Your name</span><span>·</span><span>July 2026</span></div>
+  </section>
+
+  <section class="slide content centered" data-label="Contents">
+    <h2 class="slide-title">Contents</h2>
+    <div class="toc rise">
+      <div class="toc-row"><span class="toc-num">01</span><span>Principles</span></div>
+      <div class="toc-row"><span class="toc-num">02</span><span>The ramps</span></div>
+      <div class="toc-row"><span class="toc-num">03</span><span>Imagery</span></div>
+      <div class="toc-row"><span class="toc-num">04</span><span>Roadmap</span></div>
+    </div>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide divider" data-label="Principles">
+    <div class="rise">
+      <div class="ghost-num">01</div>
+      <h2 class="slide-title">Principles</h2>
+    </div>
+  </section>
+
+  <section class="slide content" data-label="Working rules">
+    <h2 class="slide-title">Working rules</h2>
+    <ul class="bullets rise">
+      <li>Round everything that can be round — pills, circles, soft shapes.</li>
+      <li>Caprasimo speaks display; Figtree carries the reading.</li>
+      <li>Terracotta leads and the sage is a genuine second voice, not a highlight.</li>
+    </ul>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-label="Two columns">
+    <h2 class="slide-title">Two columns</h2>
+    <div class="cols cols-2 rise">
+      <div>
+        <h3>Let the text breathe</h3>
+        <p>Two easy columns with a generous gutter — ragged right, because this system never squares text into slabs. Each column keeps its own flush-left axis, and the whitespace between them is the divider.</p>
+      </div>
+      <div>
+        <h3>Partners, not mirrors</h3>
+        <p>The columns share their top gridline and baseline rhythm, but their endings fall where the copy falls — soft, uneven edges are part of the voice, like the blobs and circles of the decoration grammar.</p>
+      </div>
+    </div>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-label="Three columns">
+    <h2 class="slide-title">Three columns</h2>
+    <div class="cols cols-3 rise">
+      <div>
+        <h3>Seed</h3>
+        <p>Three narrow columns read as cards without the boxes — the gutters do the framing.</p>
+      </div>
+      <div>
+        <h3>Grow</h3>
+        <p>Heads take Caprasimo at body size, so the display voice labels each column.</p>
+      </div>
+      <div>
+        <h3>Harvest</h3>
+        <p>Keep the copy short here; the white below the shortest column is air, not error.</p>
+      </div>
+    </div>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-label="Quadrants">
+    <h2 class="slide-title">Quadrants</h2>
+    <div class="quad rise">
+      <div class="q-sage">
+        <h3>Let it grow</h3>
+        <p>Low care, high reward — plant it, water it occasionally, come back in spring.</p>
+      </div>
+      <div class="q-clay">
+        <h3>Nurture now</h3>
+        <p>High care, high reward — the work the terracotta was made to flag.</p>
+      </div>
+      <div class="q-clay">
+        <h3>Compost</h3>
+        <p>Low care, low reward — let it feed something better.</p>
+      </div>
+      <div class="q-sage">
+        <h3>Tend lightly</h3>
+        <p>High care, low reward — prune these back before they take the whole bed.</p>
+      </div>
+    </div>
+    <div class="quad-axis" aria-hidden="true"><span>← less care</span><span>more care →</span></div>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide divider" data-label="The ramps">
+    <div class="rise">
+      <div class="ghost-num">02</div>
+      <h2 class="slide-title">The ramps</h2>
+    </div>
+  </section>
+
+  <section class="slide content" data-label="Color roles">
+    <h2 class="slide-title">Color roles</h2>
+    <table class="table rise">
+      <thead>
+        <tr><th></th><th>Role</th><th>Value</th><th>On the ground</th><th>Use</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="swatch" style="background: var(--color-text)"></span></td><td>Text</td><td>#201e1d</td><td>13.9:1</td><td>Body copy and headings</td></tr>
+        <tr><td><span class="swatch" style="background: var(--color-accent)"></span></td><td>Terracotta</td><td>#c67139</td><td>3.0:1</td><td>The lead accent, warm and up front</td></tr>
+        <tr><td><span class="swatch" style="background: var(--color-accent-2)"></span></td><td>Sage</td><td>#7a8a5e</td><td>3.1:1</td><td>The second voice — a real one</td></tr>
+        <tr><td><span class="swatch" style="background: var(--color-accent-700)"></span></td><td>Terracotta 700</td><td>#8c491a</td><td>5.7:1</td><td>Accent-colored body copy</td></tr>
+      </tbody>
+    </table>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide hero" data-label="Contrast">
+    <p class="hero-num rise">13.9:1</p>
+    <p class="hero-caption text-muted">Body text against the warm parchment ground — softer than a white page, still carrying full reading contrast.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-label="Contrast by step">
+    <h2 class="slide-title">Contrast by ramp step</h2>
+    <figure class="rise">
+      <svg class="chart" viewBox="0 0 1632 486" role="img" aria-label="Bar chart: WCAG contrast of each terracotta ramp step against the Organic ground, from about 1 at the light steps up to 12.0:1 at step 900; on this warm ground step 100 sits slightly farther from the ground than step 200">
+      <defs>
+        <clipPath id="bar-plot"><rect x="0" y="0" width="1632" height="405"/></clipPath>
+      </defs>
+      <!-- Plot scale is grid-native: 27px (a half-grid step) per contrast unit, axis on a
+           half-grid line, gridlines every 81px, y-tick baselines on their gridlines. The
+           caption's baselines land on gridlines (918 and 972 — the second exactly ON the
+           pinned-footer gridline, the budget's "on or above") — checked per deck-templates.md.
+           Bars run 28 past the axis and are clipped back to it, so the rx pills only
+           their tops and each bar still meets the axis square. NOTE the honest data:
+           on this parchment ground the 100 step measures FARTHER from the ground than
+           the 200 step (1.09 vs 1.04) — the light steps barely separate from a warm
+           ground, and the chart plots the truth (see the deck's findings notes). -->
+      <line class="grid" x1="0" y1="324" x2="1632" y2="324"/>
+      <line class="grid" x1="0" y1="243" x2="1632" y2="243"/>
+      <line class="grid" x1="0" y1="162" x2="1632" y2="162"/>
+      <line class="grid" x1="0" y1="81" x2="1632" y2="81"/>
+      <line class="ref" x1="0" y1="324" x2="1632" y2="324"/>
+      <!-- the label sits at the left, over the short bars: the ramp's tall
+           bars are at the right on this light ground -->
+      <text class="ref-label" x="0" y="297">3:1 interface minimum</text>
+      <text x="-16" y="324" text-anchor="end">3</text>
+      <text x="-16" y="243" text-anchor="end">6</text>
+      <text x="-16" y="162" text-anchor="end">9</text>
+      <text x="-16" y="81" text-anchor="end">12</text>
+      <text x="-16" y="405" text-anchor="end">0</text>
+      <g clip-path="url(#bar-plot)">
+      <rect class="bar" x="40.7" y="375.7" width="100" height="57.3"/>
+      <rect class="bar" x="222" y="376.9" width="100" height="56.1"/>
+      <rect class="bar" x="403.3" y="370.7" width="100" height="62.3"/>
+      <rect class="bar" x="584.7" y="358.1" width="100" height="74.9"/>
+      <rect class="bar" x="766" y="336.8" width="100" height="96.2"/>
+      <rect class="bar" x="947.3" y="303.2" width="100" height="129.8"/>
+      <rect class="bar-hi" x="1128.7" y="250.5" width="100" height="182.5"/>
+      <rect class="bar" x="1310" y="169.7" width="100" height="263.3"/>
+      <rect class="bar" x="1491.3" y="80" width="100" height="353"/>
+      </g>
+      <text class="val" x="90.7" y="363.7" text-anchor="middle">1.1</text>
+      <text class="val" x="272" y="364.9" text-anchor="middle">1.0</text>
+      <text class="val" x="453.3" y="358.7" text-anchor="middle">1.3</text>
+      <text class="val" x="634.7" y="346.1" text-anchor="middle">1.7</text>
+      <!-- the step-500 value rides 9px higher than its siblings: the 3:1
+           reference line passes just above its bar, through the label's
+           default position -->
+      <text class="val" x="816" y="315.8" text-anchor="middle">2.5</text>
+      <text class="val" x="997.3" y="291.2" text-anchor="middle">3.8</text>
+      <text class="val" x="1178.7" y="238.5" text-anchor="middle">5.7</text>
+      <text class="val" x="1360" y="157.7" text-anchor="middle">8.7</text>
+      <text class="val" x="1541.3" y="68" text-anchor="middle">12.0</text>
+      <text class="hi-label" x="1178.7" y="202.5" text-anchor="middle">body copy</text>
+      <text x="90.7" y="459" text-anchor="middle">100</text>
+      <text x="272" y="459" text-anchor="middle">200</text>
+      <text x="453.3" y="459" text-anchor="middle">300</text>
+      <text x="634.7" y="459" text-anchor="middle">400</text>
+      <text x="816" y="459" text-anchor="middle">500</text>
+      <text x="997.3" y="459" text-anchor="middle">600</text>
+      <text x="1178.7" y="459" text-anchor="middle">700</text>
+      <text x="1360" y="459" text-anchor="middle">800</text>
+      <text x="1541.3" y="459" text-anchor="middle">900</text>
+      <line class="axis" x1="0" y1="405" x2="1632" y2="405"/>
+    </svg>
+    </figure>
+    <p class="chart-caption text-muted">WCAG contrast of each terracotta-ramp step against the ground (#f5ead8) — on this warm ground the lightest steps barely separate (step 100 even sits farther out than 200), and the dashed line marks the 3:1 interface minimum.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide content" data-label="Weekly sessions">
+    <div class="chart-head">
+      <h2 class="slide-title">Weekly sessions</h2>
+      <div class="chart-legend">
+        <svg class="key" viewBox="0 0 60 4" aria-hidden="true"><line class="series-a" x1="0" y1="2" x2="60" y2="2"/></svg><span>Desktop</span>
+        <svg class="key" viewBox="0 0 60 4" aria-hidden="true"><line class="series-b" x1="0" y1="2" x2="60" y2="2"/></svg><span>Mobile</span>
+      </div>
+    </div>
+    <figure class="rise">
+      <svg class="chart" viewBox="0 0 1632 486" role="img" aria-label="Line chart: sample weekly sessions in thousands over twelve weeks, desktop rising from about 18 to 26 in terracotta, mobile from about 9 to 18 in sage">
+      <!-- Plot scale is grid-native: 13.5px per thousand puts the 10k gridlines every
+           135px, the axis on a half-grid line, and y-tick baselines on their gridlines
+           (the scale tops out above the data rather than at a 30k line, keeping the
+           figure inside the slide's vertical budget — deck-templates.md). Two solid
+           hues: this system's second accent is a genuine second voice rather than a
+           spot color (the readme's own framing), so the second series speaks sage
+           instead of borrowing ink and dashes — the one deck in the set that does. -->
+      <line class="grid" x1="0" y1="270" x2="1632" y2="270"/>
+      <line class="grid" x1="0" y1="135" x2="1632" y2="135"/>
+      <text x="-16" y="270" text-anchor="end">10</text>
+      <text x="-16" y="135" text-anchor="end">20</text>
+      <text x="-16" y="405" text-anchor="end">0</text>
+      <polyline class="series-a" points="0,159.30 148.4,147.15 296.7,153.90 445.1,130.95 593.5,116.10 741.8,121.50 890.2,99.90 1038.5,93.15 1186.9,81.00 1335.3,71.55 1483.6,63.45 1632,52.65"/>
+      <polyline class="series-b" points="0,278.10 148.4,267.30 296.7,249.75 445.1,255.15 593.5,232.20 741.8,221.40 890.2,203.85 1038.5,199.80 1186.9,183.60 1335.3,189.00 1483.6,174.15 1632,157.95"/>
+      <text x="0" y="459" text-anchor="middle">1</text>
+      <text x="148.4" y="459" text-anchor="middle">2</text>
+      <text x="296.7" y="459" text-anchor="middle">3</text>
+      <text x="445.1" y="459" text-anchor="middle">4</text>
+      <text x="593.5" y="459" text-anchor="middle">5</text>
+      <text x="741.8" y="459" text-anchor="middle">6</text>
+      <text x="890.2" y="459" text-anchor="middle">7</text>
+      <text x="1038.5" y="459" text-anchor="middle">8</text>
+      <text x="1186.9" y="459" text-anchor="middle">9</text>
+      <text x="1335.3" y="459" text-anchor="middle">10</text>
+      <text x="1483.6" y="459" text-anchor="middle">11</text>
+      <text x="1632" y="459" text-anchor="middle">12</text>
+      <line class="axis" x1="0" y1="405" x2="1632" y2="405"/>
+    </svg>
+    </figure>
+    <p class="chart-caption text-muted">Sample data, in thousands — the sage is a genuine second voice rather than a spot color, so the second series takes it, solid: terracotta leads, sage answers.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide divider" data-label="Imagery">
+    <div class="rise">
+      <div class="ghost-num">03</div>
+      <h2 class="slide-title">Imagery</h2>
+    </div>
+  </section>
+
+  <section class="slide split" data-label="The washed treatment">
+    <div class="split-copy">
+      <h2 class="slide-title">The washed treatment</h2>
+      <p class="note text-muted">Every photograph is washed — desaturated, lower-contrast and lifted — and an on-page figure crops in a soft organic shape, never a hard box.</p>
+    </div>
+    <figure class="split-figure washed rise">
+      <image-slot id="photo-split" shape="rect" src="../../assets/photo.jpg" role="img" aria-label="The Organic reference photograph, washed and cropped in a soft organic shape"></image-slot>
+    </figure>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide bleed" data-label="Full bleed">
+    <figure class="bleed-figure washed">
+      <image-slot id="photo-bleed" shape="rect" src="../../assets/photo.jpg" role="img" aria-label="The Organic reference photograph filling the top of the page, ending in a soft curve"></image-slot>
+    </figure>
+    <div class="bleed-copy rise">
+      <h2 class="slide-title">Full bleed</h2>
+      <p class="note text-muted">One photograph holds the top of the page and ends in a soft curve — the type rests on the parchment, not on the image.</p>
+    </div>
+  </section>
+
+  <section class="slide half-bleed" data-label="Half bleed · copy right">
+    <figure class="half-bleed-figure washed">
+      <image-slot id="photo-half-left" shape="rect" src="../../assets/photo.jpg" role="img" aria-label="The Organic reference photograph holding the left of the stage behind a soft curved edge"></image-slot>
+    </figure>
+    <h2 class="slide-title rise">Half bleed</h2>
+    <ul class="bullets rise">
+      <li>The photograph bleeds to three edges and holds half the stage</li>
+      <li>The copy keeps the content rhythm — same gridlines as every slide</li>
+      <li>Dots still hang left of the text, whatever sits behind them</li>
+    </ul>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide half-bleed flip" data-label="Half bleed · copy left">
+    <figure class="half-bleed-figure washed">
+      <image-slot id="photo-half-right" shape="rect" src="../../assets/photo.jpg" role="img" aria-label="The Organic reference photograph holding the right of the stage behind a soft curved edge"></image-slot>
+    </figure>
+    <h2 class="slide-title rise">Mirrored</h2>
+    <p class="note text-muted rise">The flip class mirrors the soft edge to the other side and the copy centers in the open half — one pattern, both directions.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide quote" data-label="Quote">
+    <figure class="rise">
+      <!-- the leading “ rides inside the centered measure — no hang on the centered axis (see .quote blockquote) -->
+      <blockquote>“Use soft shapes — circles and blobs — as decoration and imagery masks.”</blockquote>
+      <!-- the leading "— " centers with the line — no hang on the centered axis (see .quote figcaption) -->
+      <figcaption class="text-muted">— the Organic readme</figcaption>
+    </figure>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide divider" data-label="Roadmap">
+    <div class="rise">
+      <div class="ghost-num">04</div>
+      <h2 class="slide-title">Roadmap</h2>
+    </div>
+  </section>
+
+  <section class="slide content" data-label="Timeline">
+    <h2 class="slide-title">The year, by milestone</h2>
+    <figure class="rise">
+      <svg class="chart" viewBox="0 0 1632 270" role="img" aria-label="Timeline of five milestones from research in January to scale the following January; the beta milestone in July is current">
+      <!-- One optical left edge per column: the texts anchor at the column
+           axis and each node's LEFT EDGE sits on the same axis (cx = x + r),
+           so type and circle align. Vertically the figure top and the line
+           (y=108) sit on full gridlines, the notes on the half-step at
+           y=243; the dates (y=72) and labels (y=174) sit off the 27px
+           lattice on purpose — the reviewed decks chose optical spacing
+           over the mechanical grid here: ink-to-ink the cluster opens
+           gently downward from date to node to label to note. The node
+           lattice is inset from the right edge (pitch 350) so the last
+           milestone's text flows right like the others, while the line runs
+           the full width — time continues past the last node. Notes up to
+           about 24 characters at this size stay clear of the next column;
+           longer ones need a wider pitch or fewer milestones. -->
+      <line class="tl-line" x1="0" y1="108" x2="1632" y2="108"/>
+      <text class="tl-date" x="0" y="72">JAN</text>
+      <text class="tl-date" x="350" y="72">APR</text>
+      <text class="tl-date-hi" x="700" y="72">JUL</text>
+      <text class="tl-date" x="1050" y="72">OCT</text>
+      <text class="tl-date" x="1400" y="72">JAN</text>
+      <circle class="tl-node" cx="8" cy="108" r="8"/>
+      <circle class="tl-node" cx="358" cy="108" r="8"/>
+      <circle class="tl-node-hi" cx="708" cy="108" r="8"/>
+      <circle class="tl-node" cx="1058" cy="108" r="8"/>
+      <circle class="tl-node" cx="1408" cy="108" r="8"/>
+      <text class="tl-label" x="0" y="174">Research</text>
+      <text class="tl-label" x="350" y="174">Prototype</text>
+      <text class="tl-label" x="700" y="174">Beta</text>
+      <text class="tl-label" x="1050" y="174">Launch</text>
+      <text class="tl-label" x="1400" y="174">Scale</text>
+      <text x="0" y="243">scope and interviews</text>
+      <text x="350" y="243">first working build</text>
+      <text x="700" y="243">fifty design partners</text>
+      <text x="1050" y="243">general availability</text>
+      <text x="1400" y="243">second platform</text>
+      </svg>
+    </figure>
+    <p class="chart-caption text-muted">Each milestone keeps one left edge — type and circle aligned — with the spacing opening gently downward from date to note, and the current step the one terracotta dot.</p>
+    <div class="page-foot" aria-hidden="true"></div>
+  </section>
+
+  <section class="slide cover" data-label="Close">
+    <div class="rise">
+      <h2 class="display">Thank you</h2>
+      <p class="cover-sub text-muted">Copy this folder for your next deck — the tokens and markup patterns carry the look.</p>
+    </div>
+    <div class="pin-bottom meta"><span>you@example.com</span></div>
+  </section>
+
+</deck-stage>
+<script src="deck-stage.js"></script>
+<script src="image-slot.js"></script>
+<script>
+// Review aid: baseline-grid overlay — add ?baselines to the URL, or press B to toggle.
+(() => {
+  const stage = document.querySelector('deck-stage');
+  if (new URLSearchParams(location.search).has('baselines')) stage.setAttribute('data-baselines', '');
+  addEventListener('keydown', (e) => {
+    const t = e.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return; // typing guard, as in deck-stage's own keys
+    if ((e.key === 'b' || e.key === 'B') && !e.metaKey && !e.ctrlKey && !e.altKey) stage.toggleAttribute('data-baselines');
+  });
+})();
+</script>
+</body>
+</html>

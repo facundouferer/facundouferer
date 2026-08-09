@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+	<g transform="translate(200, 50)">
+		<polygon points="0,-25 45,0 0,25 -45,0" fill="#f5ead8" stroke="#c67139" stroke-width="3"/>
+		<text x="0" y="4" font-family="'Fira Code', monospace" font-size="11" font-weight="700" fill="#201e1d" text-anchor="middle">if-else</text>
+		<!-- True Branch -->
+		<path d="M -30 15 L -80 70" fill="none" stroke="#7a8a5e" stroke-width="3"/>
+		<rect x="-130" y="70" width="100" height="40" rx="8" fill="#f5ead8" stroke="#7a8a5e" stroke-width="2"/>
+		<text x="-80" y="94" font-family="'Fira Code', monospace" font-size="11" font-weight="700" fill="#7a8a5e" text-anchor="middle">Rama TRUE</text>
+
+		<!-- False Branch -->
+		<path d="M 30 15 L 80 70" fill="none" stroke="#8c491a" stroke-width="3"/>
+		<rect x="30" y="70" width="100" height="40" rx="8" fill="#f5ead8" stroke="#8c491a" stroke-width="2"/>
+		<text x="80" y="94" font-family="'Fira Code', monospace" font-size="11" font-weight="700" fill="#8c491a" text-anchor="middle">Rama FALSE</text>
+	</g>
+</svg>

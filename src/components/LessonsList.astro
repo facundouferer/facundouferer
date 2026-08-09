@@ -13,36 +13,149 @@ type Props = {
 	courseSlug: string;
 	locale: 'es' | 'en';
 	currentSlug?: string;
+	variant?: 'cards' | 'list';
 };
 
-const { lessons, courseSlug, locale, currentSlug } = Astro.props;
+const { lessons, courseSlug, locale, currentSlug, variant = 'cards' } = Astro.props;
 ---
 
-<ol class="lessons-list">
-	{lessons.map((lesson) => {
-		const href = locale === 'es'
-			? `/cursos/${courseSlug}/${lesson.slug}`
-			: `/en/courses/${courseSlug}/${lesson.slug}`;
-		const isActive = currentSlug === lesson.slug;
-		return (
-			<li class="lesson-item">
-				<a
-					href={withBase(href)}
-					class:list={{ 'lesson-link': true, 'lesson-link--active': isActive }}
-					aria-current={isActive ? 'page' : undefined}
-				>
-					<span class="lesson-order">{lesson.order}</span>
-					<span class="lesson-info">
-						<span class="lesson-title">{lesson.title}</span>
-						{lesson.description && <span class="lesson-desc">{lesson.description}</span>}
-					</span>
-				</a>
-			</li>
-		);
-	})}
-</ol>
+{
+	variant === 'cards' ? (
+		<ol class="lessons-cards-grid">
+			{lessons.map((lesson) => {
+				const href =
+					locale === 'es'
+						? `/cursos/${courseSlug}/${lesson.slug}`
+						: `/en/courses/${courseSlug}/${lesson.slug}`;
+				const isActive = currentSlug === lesson.slug;
+				return (
+					<li class="lesson-card-item">
+						<a
+							href={withBase(href)}
+							class:list={[
+								'card',
+								'elev-sm',
+								'card-hover',
+								'lesson-card',
+								{ 'lesson-card--active': isActive },
+							]}
+							aria-current={isActive ? 'page' : undefined}
+						>
+							<div class="card-header-row">
+								<span class="card-kicker">
+									{locale === 'es' ? `Lección ${lesson.order}` : `Lesson ${lesson.order}`}
+								</span>
+								<span class="tag tag-accent">{lesson.order}</span>
+							</div>
+							<h3 class="card-title">{lesson.title}</h3>
+							{lesson.description && <p class="card-body">{lesson.description}</p>}
+							<div class="card-meta lesson-card-footer">
+								<span class="read-link">
+									{locale === 'es' ? 'Ver lección' : 'View lesson'} →
+								</span>
+							</div>
+						</a>
+					</li>
+				);
+			})}
+		</ol>
+	) : (
+		<ol class="lessons-list">
+			{lessons.map((lesson) => {
+				const href =
+					locale === 'es'
+						? `/cursos/${courseSlug}/${lesson.slug}`
+						: `/en/courses/${courseSlug}/${lesson.slug}`;
+				const isActive = currentSlug === lesson.slug;
+				return (
+					<li class="lesson-item">
+						<a
+							href={withBase(href)}
+							class:list={{ 'lesson-link': true, 'lesson-link--active': isActive }}
+							aria-current={isActive ? 'page' : undefined}
+						>
+							<span class="lesson-order">{lesson.order}</span>
+							<span class="lesson-info">
+								<span class="lesson-title">{lesson.title}</span>
+								{lesson.description && <span class="lesson-desc">{lesson.description}</span>}
+							</span>
+						</a>
+					</li>
+				);
+			})}
+		</ol>
+	)
+}
 
 <style>
+	/* Grid Cards Layout */
+	.lessons-cards-grid {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (min-width: 640px) {
+		.lessons-cards-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (min-width: 900px) {
+		.lessons-cards-grid {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+
+	.lesson-card-item {
+		margin: 0;
+		display: flex;
+	}
+
+	.lesson-card {
+		width: 100%;
+		text-decoration: none;
+		color: var(--color-text);
+		border: 1px solid var(--color-divider);
+		transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+	}
+
+	.lesson-card:hover {
+		border-color: var(--color-accent-700);
+	}
+
+	.lesson-card--active {
+		border-color: var(--color-accent-700);
+		background: color-mix(in srgb, var(--color-accent-700) 8%, var(--color-surface));
+	}
+
+	.card-header-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.lesson-card-footer {
+		margin-top: auto;
+		padding-top: var(--space-2);
+		border-top: 1px dashed var(--color-divider);
+	}
+
+	.read-link {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--color-accent-700);
+		transition: color 200ms ease;
+	}
+
+	.lesson-card:hover .read-link {
+		color: var(--color-accent-800);
+	}
+
+	/* Compact List Layout (Sidebar) */
 	.lessons-list {
 		list-style: none;
 		padding: 0;
@@ -60,7 +173,7 @@ const { lessons, courseSlug, locale, currentSlug } = Astro.props;
 		align-items: flex-start;
 		gap: var(--space-3);
 		padding: var(--space-2) var(--space-3);
-		border-radius: 8px;
+		border-radius: var(--radius-sm);
 		text-decoration: none;
 		color: var(--color-text);
 		transition: background 200ms ease;
@@ -84,7 +197,7 @@ const { lessons, courseSlug, locale, currentSlug } = Astro.props;
 		height: 1.7rem;
 		border-radius: 50%;
 		background: var(--color-accent-700);
-		color: #fff;
+		color: var(--color-bg);
 		font-size: 0.75rem;
 		font-weight: 600;
 		flex-shrink: 0;
@@ -113,3 +226,4 @@ const { lessons, courseSlug, locale, currentSlug } = Astro.props;
 		max-width: 220px;
 	}
 </style>
+

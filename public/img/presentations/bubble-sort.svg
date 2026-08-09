@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+	<g transform="translate(80, 40)">
+		<!-- Bars -->
+		<rect x="0" y="40" width="35" height="80" rx="6" fill="#f5ead8" stroke="#d9cbba" stroke-width="2"/>
+		<rect x="45" y="10" width="35" height="110" rx="6" fill="#f5ead8" stroke="#c67139" stroke-width="3"/>
+		<rect x="90" y="60" width="35" height="60" rx="6" fill="#f5ead8" stroke="#7a8a5e" stroke-width="3"/>
+		<rect x="135" y="30" width="35" height="90" rx="6" fill="#f5ead8" stroke="#d9cbba" stroke-width="2"/>
+
+		<!-- Swap Curve -->
+		<path d="M 62 5 C 62 -20, 107 -20, 107 5" fill="none" stroke="#c67139" stroke-width="3" stroke-dasharray="4,3"/>
+		<polygon points="107,10 102,0 112,0" fill="#c67139"/>
+		<text x="85" y="-22" font-family="'Fira Code', monospace" font-size="11" font-weight="700" fill="#c67139" text-anchor="middle">SWAP</text>
+	</g>
+</svg>

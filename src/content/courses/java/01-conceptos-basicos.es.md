@@ -1,55 +1,62 @@
 ---
-title: 'Conceptos Básicos y Algoritmos'
 course: 'java'
-slug: 'conceptos-basicos'
+slug: '01-conceptos-basicos'
+title: 'Conceptos Básicos y Tu Primer Programa en Java'
+description: 'Comprendé la plataforma Java (JDK, JRE, JVM), la estructura de una clase y escribí tu primer programa Hola Mundo.'
 order: 1
 lang: 'es'
 published: true
 ---
 
-# Conceptos Básicos de Programación
+# Conceptos Básicos y Tu Primer Programa en Java
 
-## El Algoritmo
+¡Bienvenido al curso de Java! Java es uno de los lenguajes de programación más populares, robustos y utilizados en el mundo laboral, desde desarrollo web backend empresarial hasta aplicaciones móviles y de alto rendimiento.
 
-Un algoritmo es un conjunto de pasos que nos ayudan a resolver un problema. Es como una receta de cocina, donde cada paso tiene que ser seguido en orden para obtener el resultado deseado.
+## 1. La Arquitectura de Java: Write Once, Run Anywhere
 
-Por ejemplo, si queremos hacer una torta, tenemos que seguir un algoritmo que nos indica los pasos a seguir: mezclar los ingredientes, poner la mezcla en un molde, hornear la torta, y luego decorarla. Si seguimos los pasos correctamente, tendremos una deliciosa torta para disfrutar.
+Java funciona bajo la filosofía de "Escribir una vez, ejecutar en cualquier lugar". Esto se logra a través de tres componentes clave:
 
-En Java, podemos escribir algoritmos en forma de código:
+- **JDK (Java Development Kit)**: El kit de herramientas de desarrollo. Contiene el compilador (`javac`), librerías y utilidades para programar en Java.
+- **JRE (Java Runtime Environment)**: Entorno de ejecución necesario para correr programas Java (incluye la JVM y las librerías base).
+- **JVM (Java Virtual Machine)**: La Máquina Virtual de Java. Interpreta y ejecuta el código en bytecode de Java en cualquier sistema operativo (Windows, Linux, macOS).
 
-```java
-int numero1 = 5;
-int numero2 = 3;
-int resultado = numero1 + numero2;
-System.out.println("El resultado es: " + resultado);
+```
+Código Fuente (.java) ──[javac]──> Bytecode (.class) ──[JVM]──> Ejecución en OS
 ```
 
-Aquí, estamos declarando dos variables, `numero1` y `numero2`, sumándolas y almacenando el resultado en una tercera variable, `resultado`.
+## 2. Estructura de un Programa en Java
 
-## Las Instrucciones
+En Java, **todo el código vive dentro de una clase**. La estructura mínima de un programa ejecutable es la siguiente:
 
-Las instrucciones son el conjunto de órdenes que le damos a un programa de computadora para que realice una tarea específica. Cada instrucción representa una acción que el programa debe llevar a cabo.
-
-### Algunos ejemplos:
-
-- **Asignación de valores:** `int numero = 5;`
-- **Operaciones matemáticas:** `int resultado = 5 + 3;`
-- **Condiciones:**
 ```java
-if (numero1 > numero2) {
-    System.out.println("El número 1 es mayor que el número 2");
+public class HolaMundo {
+    public static void main(String[] args) {
+        System.out.println("¡Hola, Mundo desde Java!");
+    }
 }
 ```
 
-## Buenas Prácticas de Programación
+### Desglose paso a paso:
+- `public class HolaMundo`: Define una clase pública llamada `HolaMundo`. El nombre del archivo DEBE ser idéntico al nombre de la clase (`HolaMundo.java`).
+- `public static void main(String[] args)`: Es el **punto de entrada** (entry point) de la aplicación.
+  - `public`: Accesible desde cualquier lugar.
+  - `static`: Se puede ejecutar sin necesidad de crear una instancia (objeto) de la clase.
+  - `void`: No retorna ningún valor.
+  - `String[] args`: Parámetros o argumentos pasados desde la consola de comandos.
+- `System.out.println(...)`: Imprime un texto en la consola y agrega un salto de línea.
 
-1. **Nombres descriptivos:** Utiliza nombres que reflejen el propósito de la variable o función.
-2. **Comentarios claros:** Explica el "por qué" y no solo el "qué".
-3. **Divide y vencerás:** Divide tu código en funciones pequeñas y cohesivas.
-4. **Evita la duplicación:** Si ves código repetido, encapsúlalo.
-5. **Mantén la simplicidad:** Evita soluciones excesivamente complicadas.
-6. **Gestión de errores:** Usa mecanismos como `try-catch`.
-7. **Formato y estilo:** Mantén una indentación y estilo consistentes.
-8. **Prueba tu código:** Realiza pruebas exhaustivas.
-9. **Aprende de los demás:** Lee código de otros desarrolladores.
-10. **Practica regularmente:** La clave para mejorar es la constancia.
+## 3. Compilación y Ejecución desde la Consola
+
+1. Guardá el código en un archivo llamado `HolaMundo.java`.
+2. Abrí la terminal y compilá el archivo:
+   ```bash
+   javac HolaMundo.java
+   ```
+   Esto generará un archivo `HolaMundo.class` con el bytecode.
+3. Ejecutá el programa compilado:
+   ```bash
+   java HolaMundo
+   ```
+
+## 4. Ejercicio Práctico
+Creá un programa en Java que imprima en la consola tu nombre, tu lenguaje de programación favorito y tu meta principal con este curso.

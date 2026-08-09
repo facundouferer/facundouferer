@@ -1,314 +1,795 @@
 ---
-import Icon from '../Icon.astro';
-import { withBase } from '../../utils/withBase';
 
 type Props = {
 	lang: 'es' | 'en';
 };
 
 const { lang } = Astro.props;
+
+const isEs = lang === 'es';
 ---
 
+<div class="vc-screen">
+	<div class="vc-shell">
+		<!-- Header / Title -->
+		<header class="vc-header">
+			<span class="vc-badge">{isEs ? 'Conceptos Fundamentales' : 'Core Concepts'}</span>
+			<h1 class="vc-title">
+				{isEs ? 'Variables, Constantes y Mutabilidad' : 'Variables, Constants & Mutability'}
+			</h1>
+			<p class="vc-sub">
+				{isEs 
+					? 'Comparativa interactiva multilenguaje: C, JavaScript, Python y Java.' 
+					: 'Interactive multi-language comparison: C, JavaScript, Python, and Java.'}
+			</p>
+		</header>
 
-	<!-- CRT Styles -->
-	<style is:global>
-		@import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&display=swap');
-
-		.crt-container {
-			--primary: #0df259;
-			--crt-black: #050a05;
-			--crt-dark: #0a140a;
-			font-family: 'Space Mono', monospace;
-			background: radial-gradient(circle, #0a1a0a 0%, #050a05 100%);
-			color: var(--primary);
-			position: relative;
-			overflow: hidden;
-		}
-
-
-
-		.font-retro {
-			font-family: 'VT323', monospace;
-		}
-
-		.terminal-btn {
-			border: 1px solid var(--primary);
-			padding: 4px 16px;
-			text-transform: uppercase;
-			font-size: 0.875rem;
-			font-weight: 700;
-			transition: all 0.3s;
-			background-color: rgba(13, 242, 89, 0.05);
-			color: var(--primary);
-		}
-
-		.terminal-btn:hover:not(:disabled) {
-			background-color: var(--primary);
-			color: black;
-			box-shadow: 0 0 15px rgba(13, 242, 89, 0.4);
-		}
-
-		.terminal-btn:disabled {
-			opacity: 0.2;
-			cursor: not-allowed;
-			border-color: rgba(13, 242, 89, 0.2);
-		}
-
-		.slide-content {
-			text-shadow: 0 0 8px rgba(13, 242, 89, 0.6);
-		}
-
-		/* Animations */
-		@keyframes pulse {
-			0%, 100% { transform: scale(1); opacity: 1; }
-			50% { transform: scale(1.05); opacity: 0.8; }
-		}
-
-		.animate-pulse-slow {
-			animation: pulse 3s ease-in-out infinite;
-		}
-
-		@keyframes move-box {
-			0% { transform: translateX(-10px); }
-			100% { transform: translateX(10px); }
-		}
-
-		.box-anim {
-			animation: move-box 2s ease-in-out infinite alternate;
-		}
-
-		.slide {
-			display: none;
-		}
-
-		.slide.active {
-			display: flex;
-		}
-	</style>
-
-	<div class="relative flex min-h-screen flex-col overflow-x-hidden">
-
-		<main class="flex-1 crt-container flex flex-col relative">
-
-			<div class="flex-1 px-6 md:px-16 py-6 md:py-10 relative z-20 flex flex-col">
-				<!-- Terminal Header -->
-				<div class="flex justify-between items-start mb-8 border-b border-primary/30 pb-4">
-					<div class="text-xs font-bold" id="slide-number">SLIDE: 01 / 04</div>
-					<div class="text-xs font-bold tracking-widest font-retro text-lg">PROGRAMIERDS_OS v1.0.4</div>
-					<div class="text-xs font-bold">TOPIC: BASICS_01</div>
+		<!-- Main Interactive Deck Container -->
+		<div class="vc-deck-card">
+			<!-- Top Slide Controls & Navigation Bar -->
+			<div class="vc-nav-bar">
+				<div class="vc-slide-indicator">
+					<span class="vc-step-dot"></span>
+					<span id="vc-slide-label">SLIDE 1 / 6</span>
 				</div>
+				<div class="vc-pills">
+					<button class="vc-pill-btn active" data-target-slide="1">1. {isEs ? 'Memoria' : 'Memory'}</button>
+					<button class="vc-pill-btn" data-target-slide="2">2. C</button>
+					<button class="vc-pill-btn" data-target-slide="3">3. JavaScript</button>
+					<button class="vc-pill-btn" data-target-slide="4">4. Python</button>
+					<button class="vc-pill-btn" data-target-slide="5">5. Java</button>
+					<button class="vc-pill-btn" data-target-slide="6">6. {isEs ? 'Simulador' : 'Simulator'}</button>
+				</div>
+			</div>
 
-				<!-- Slides Container -->
-				<div class="flex-1 overflow-hidden relative slide-content">
-					
-					<!-- SLIDE 1: INTRO -->
-					<div class="slide active flex-col justify-center items-center text-center h-full" data-slide="1">
-						<h1 class="font-retro text-5xl md:text-7xl mb-6 uppercase tracking-tighter">
-							> {lang === 'en' ? 'Variables and Constants' : 'Variables y Constantes'}
-						</h1>
-						<p class="text-xl md:text-2xl mb-8 opacity-80 max-w-2xl">
-							{lang === 'en' ? 'Welcome to the core of the system. Today we will learn how programs remember things.' : 'Bienvenidos al núcleo del sistema. Hoy aprenderemos cómo el programa recuerda cosas.'}
-						</p>
-						<div class="flex gap-4 items-center justify-center mt-8">
-							<div class="size-16 border-2 border-dashed border-primary/40 rounded-lg flex items-center justify-center animate-pulse-slow">
-								<span class="text-2xl">📦</span>
-							</div>
-							<div class="w-12 h-0.5 bg-primary/20"></div>
-							<div class="size-16 border-2 border-primary rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(13,242,89,0.3)]">
-								<span class="text-2xl">💾</span>
-							</div>
-						</div>
-					</div>
-
-					<!-- SLIDE 2: VARIABLES -->
-					<div class="slide flex-col justify-center h-full" data-slide="2">
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-							<div>
-								<h2 class="text-4xl font-retro mb-6 uppercase tracking-tight flex items-center gap-4">
-									<span class="text-primary">#</span> {lang === 'en' ? 'Variables' : 'Variables'}
-								</h2>
-								<p class="text-lg md:text-xl leading-relaxed mb-6">
-									{lang === 'en' ? 'A' : 'Una'} <span class="bg-primary/20 px-2 rounded">variable</span> {lang === 'en' ? 'is a space in memory with a name. Its value can' : 'es un espacio en memoria con un nombre. Su valor puede'} <span class="italic text-white">{lang === 'en' ? 'change' : 'cambiar'}</span> {lang === 'en' ? 'during execution.' : 'durante la ejecución.'}
-								</p>
-								<div class="bg-black/40 border border-primary/20 p-4 rounded font-mono text-sm mb-6">
-									<p class="text-primary/60 mb-2">// Código C</p>
-									<p><span class="text-blue-400">int</span> score = <span class="text-yellow-400">0</span>;</p>
-									<p>score = <span class="text-yellow-400">10</span>; <span class="text-primary/40 italic">// ¡Cambió!</span></p>
+			<!-- Slides Viewport -->
+			<div class="vc-viewport">
+				<!-- SLIDE 1: INTRO TO MEMORY & IDENTIFIERS -->
+				<div class="vc-slide active" data-slide="1">
+					<div class="vc-slide-grid">
+						<div class="vc-col">
+							<h2 class="vc-slide-title">
+								{isEs ? '1. Memoria, Identificadores y Valores' : '1. Memory, Identifiers & Values'}
+							</h2>
+							<p class="vc-text">
+								{isEs 
+									? 'Toda variable o constante es una posición en la memoria RAM que guarda un valor bajo un nombre asignado (identificador).'
+									: 'Every variable or constant is a RAM memory location storing a value under a named identifier.'}
+							</p>
+							<div class="vc-concept-box">
+								<div class="vc-concept-item">
+									<strong class="vc-accent-text">{isEs ? 'Identificador:' : 'Identifier:'}</strong>
+									<span>{isEs ? 'El nombre simbólico en tu código (ej. score).' : 'The symbolic name in code (e.g. score).'}</span>
 								</div>
-							</div>
-							<div class="flex flex-col items-center justify-center border-2 border-primary/10 rounded-2xl p-8 bg-primary/5 relative overflow-hidden">
-								<div class="absolute inset-0 opacity-10 pointer-events-none">
-									<div class="absolute top-0 left-0 w-full h-full" style="background-image: radial-gradient(var(--primary) 1px, transparent 1px); background-size: 20px 20px;"></div>
+								<div class="vc-concept-item">
+									<strong class="vc-accent-text">{isEs ? 'Dirección:' : 'Address:'}</strong>
+									<span>{isEs ? 'La ubicación física en RAM (ej. 0x7ffd9).' : 'Physical RAM location (e.g. 0x7ffd9).'}</span>
 								</div>
-								<div class="relative z-10 flex flex-col items-center">
-									<div class="text-6xl mb-4 box-anim">📦</div>
-									<div class="text-center">
-										<div class="text-xs uppercase opacity-50 mb-1">{lang === 'en' ? 'Name: score' : 'Nombre: score'}</div>
-										<div class="text-2xl font-bold bg-primary text-black px-4 py-1 border-2 border-primary/20 rounded" id="var-value">0</div>
-									</div>
+								<div class="vc-concept-item">
+									<strong class="vc-accent-text">{isEs ? 'Valor:' : 'Value:'}</strong>
+									<span>{isEs ? 'Los datos binarios almacenados internamente.' : 'The binary data stored inside.'}</span>
 								</div>
 							</div>
 						</div>
-					</div>
-
-					<!-- SLIDE 3: CONSTANTES -->
-					<div class="slide flex-col justify-center h-full" data-slide="3">
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-							<div class="order-2 md:order-1 flex flex-col items-center justify-center border-2 border-primary/10 rounded-2xl p-8 bg-primary/5 relative overflow-hidden">
-								<div class="relative z-10 flex flex-col items-center">
-									<div class="text-6xl mb-4 opacity-50">🧊</div>
-									<div class="text-center">
-										<div class="text-xs uppercase opacity-50 mb-1">{lang === 'en' ? 'Name: PI' : 'Nombre: PI'}</div>
-										<div class="text-2xl font-bold border-2 border-primary px-4 py-1 text-white">3.14159</div>
-										<div class="mt-4 flex gap-2">
-											<span class="material-symbols-outlined text-red-500">lock</span>
-											<span class="text-[10px] uppercase text-red-500 font-bold">READ_ONLY</span>
-										</div>
-									</div>
+						<div class="vc-col">
+							<div class="vc-memory-viz">
+								<div class="vc-viz-head">{isEs ? 'VISUALIZADOR DE RAM SIMULADO' : 'SIMULATED RAM VISUALIZER'}</div>
+								<div class="vc-cell">
+									<span class="vc-addr">0x7FFD01</span>
+									<span class="vc-name">score (int)</span>
+									<span class="vc-val" id="ram-score-val">100</span>
+								</div>
+								<div class="vc-cell">
+									<span class="vc-addr">0x7FFD05</span>
+									<span class="vc-name">MAX_LIMIT (const)</span>
+									<span class="vc-val lock">999 🔒</span>
+								</div>
+								<div class="vc-cell">
+									<span class="vc-addr">0x7FFD09</span>
+									<span class="vc-name">user_name (string)</span>
+									<span class="vc-val font-mono">"Facundo"</span>
 								</div>
 							</div>
-							<div class="order-1 md:order-2">
-								<h2 class="text-4xl font-retro mb-6 uppercase tracking-tight flex items-center gap-4">
-									<span class="text-primary">#</span> {lang === 'en' ? 'Constants' : 'Constantes'}
-								</h2>
-								<p class="text-lg md:text-xl leading-relaxed mb-6">
-									{lang === 'en' ? 'A' : 'Una'} <span class="bg-primary/20 px-2 rounded">constant</span> {lang === 'en' ? 'is a value that' : 'es un valor que'} <span class="text-white font-bold underline">{lang === 'en' ? 'cannot change' : 'no puede cambiar'}</span> {lang === 'en' ? 'once defined.' : 'una vez definido.'}
-								</p>
-								<div class="bg-black/40 border border-primary/20 p-4 rounded font-mono text-sm mb-6">
-									<p class="text-primary/60 mb-2">// Definición</p>
-									<p><span class="text-blue-400">const float</span> PI = <span class="text-yellow-400">3.14159</span>;</p>
-									<p class="text-red-400/60 mt-2">// ERROR: PI = 4.0;</p>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<!-- SLIDE 4: RESUMEN -->
-					<div class="slide flex-col justify-center h-full" data-slide="4">
-						<h2 class="text-4xl font-retro mb-10 text-center uppercase">{lang === 'en' ? 'FINAL REPORT' : 'REPORTE FINAL'}</h2>
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-							<div class="border border-primary/40 p-6 bg-primary/5 rounded-lg">
-								<h3 class="text-2xl font-retro mb-4">{lang === 'en' ? 'VARIABLE' : 'VARIABLE'}</h3>
-								<ul class="space-y-4">
-									<li class="flex items-center gap-3">
-										<span class="text-lg">✅</span>
-										<span>{lang === 'en' ? 'Dynamic values' : 'Valores dinámicos'}</span>
-									</li>
-									<li class="flex items-center gap-3">
-										<span class="text-lg">✅</span>
-										<span>{lang === 'en' ? 'Updatable' : 'Actualizable'}</span>
-									</li>
-									<li class="flex items-center gap-3 italic opacity-60">
-										{lang === 'en' ? '"Like your bank balance"' : '"Como tu saldo bancario"'}
-									</li>
-								</ul>
-							</div>
-							<div class="border border-primary/40 p-6 bg-primary/5 rounded-lg">
-								<h3 class="text-2xl font-retro mb-4">{lang === 'en' ? 'CONSTANT' : 'CONSTANTE'}</h3>
-								<ul class="space-y-4">
-									<li class="flex items-center gap-3">
-										<span class="text-lg">✅</span>
-										<span>{lang === 'en' ? 'Fixed values' : 'Valores fijos'}</span>
-									</li>
-									<li class="flex items-center gap-3">
-										<span class="text-lg">✅</span>
-										<span>{lang === 'en' ? 'Immutable' : 'Inmutable'}</span>
-									</li>
-									<li class="flex items-center gap-3 italic opacity-60">
-										{lang === 'en' ? '"Like the laws of physics"' : '"Como las leyes de la física"'}
-									</li>
-								</ul>
-							</div>
-						</div>
-						<div class="mt-12 text-center">
-							<a href={withBase(lang === 'en' ? '/en/presentaciones' : '/presentaciones')} class="terminal-btn inline-block bg-primary text-black">
-								{lang === 'en' ? 'END SESSION' : 'FINALIZAR SESIÓN'}
-							</a>
 						</div>
 					</div>
 				</div>
 
-				<!-- Terminal Footer -->
-				<div class="mt-8 pt-4 border-t border-primary/10 flex flex-col md:flex-row justify-between items-center gap-6">
-					<div class="flex gap-4">
-						<button id="prev-btn" class="terminal-btn flex items-center gap-2">
-							<Icon name="arrow_back" class="w-4 h-4" />
-							[P] {lang === 'en' ? 'PREV' : 'PREV'}
-						</button>
-						<button id="next-btn" class="terminal-btn flex items-center gap-2 bg-primary text-black">
-							[N] {lang === 'en' ? 'NEXT' : 'NEXT'}
-							<Icon name="arrow_forward" class="w-4 h-4" />
-						</button>
+				<!-- SLIDE 2: C LANGUAGE -->
+				<div class="vc-slide" data-slide="2">
+					<div class="vc-slide-grid">
+						<div class="vc-col">
+							<h2 class="vc-slide-title">2. C: {isEs ? 'Tipado Estático y Asignación Directa' : 'Static Typing & Direct Memory'}</h2>
+							<p class="vc-text">
+								{isEs 
+									? 'En C se declara el tipo exacto de dato antes de usar la variable. El compilador reserva un espacio en bytes fijo.'
+									: 'In C, exact data types are declared before use. The compiler allocates fixed byte space.'}
+							</p>
+							<ul class="vc-list">
+								<li><strong>int / float:</strong> {isEs ? 'Variables modificables en cualquier momento.' : 'Modifiable variables anytime.'}</li>
+								<li><strong>const:</strong> {isEs ? 'Instrucción al compilador para prohibir reasignaciones.' : 'Compiler instruction forbidding reassignment.'}</li>
+							</ul>
+						</div>
+						<div class="vc-col">
+							<div class="vc-code-card">
+								<div class="vc-code-title">main.c</div>
+								<pre class="vc-code-block"><code><span class="token-keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="token-type">int</span> main() &#123;
+    <span class="token-type">int</span> contador = <span class="token-number">0</span>;        <span class="token-comment">// Variable mutable</span>
+    <span class="token-keyword">const float</span> PI = <span class="token-number">3.14159f</span>; <span class="token-comment">// Constante inmutable</span>
+
+    contador = <span class="token-number">10</span>;          <span class="token-comment">// OK: Cambia valor</span>
+    <span class="token-comment">// PI = 3.0;            // Error de compilación GCC</span>
+    <span class="token-keyword">return</span> <span class="token-number">0</span>;
+&#125;</code></pre>
+							</div>
+						</div>
 					</div>
-					<div class="text-[10px] uppercase tracking-widest opacity-40 font-mono hidden md:block">
-						CRT_MODE: ACTIVE // MEMORY_BUFFER: OPTIMAL
+				</div>
+
+				<!-- SLIDE 3: JAVASCRIPT -->
+				<div class="vc-slide" data-slide="3">
+					<div class="vc-slide-grid">
+						<div class="vc-col">
+							<h2 class="vc-slide-title">3. JavaScript: var, let, const & {isEs ? 'Referencias' : 'References'}</h2>
+							<p class="vc-text">
+								{isEs 
+									? 'JS usa tipado dinámico. const evita reasignar la variable, pero NO congela las propiedades de un objeto.'
+									: 'JS uses dynamic typing. const prevents variable reassignment, but DOES NOT freeze object properties.'}
+							</p>
+							<div class="vc-concept-box">
+								<div class="vc-concept-item">
+									<strong class="vc-accent-text">let:</strong> {isEs ? 'Variable con alcance de bloque.' : 'Block-scoped variable.'}
+								</div>
+								<div class="vc-concept-item">
+									<strong class="vc-accent-text">const (Primitivo):</strong> {isEs ? 'Impedimento total de cambio.' : 'Completely immutable.'}
+								</div>
+								<div class="vc-concept-item">
+									<strong class="vc-accent-text">const (Objeto):</strong> {isEs ? 'La referencia es fija, pero sus claves pueden mutar.' : 'Reference is fixed, but object properties can mutate.'}
+								</div>
+							</div>
+						</div>
+						<div class="vc-col">
+							<div class="vc-code-card">
+								<div class="vc-code-title">app.js</div>
+								<pre class="vc-code-block"><code><span class="token-keyword">let</span> edad = <span class="token-number">25</span>;
+edad = <span class="token-number">26</span>; <span class="token-comment">// OK</span>
+
+<span class="token-keyword">const</span> config = &#123; tema: <span class="token-string">'oscuro'</span> &#125;;
+config.tema = <span class="token-string">'claro'</span>; <span class="token-comment">// ¡Mutación permitida!</span>
+<span class="token-comment">// config = &#123;&#125;;       // TypeError en V8</span>
+
+Object.freeze(config); <span class="token-comment">// Inmutabilidad real</span></code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 4: PYTHON -->
+				<div class="vc-slide" data-slide="4">
+					<div class="vc-slide-grid">
+						<div class="vc-col">
+							<h2 class="vc-slide-title">4. Python: {isEs ? 'Nombres como Referencias a Objetos' : 'Names as Object References'}</h2>
+							<p class="vc-text">
+								{isEs 
+									? 'En Python todo es un objeto. Las variables no contienen datos, sino etiquetas (referencias) a objetos en el Heap.'
+									: 'In Python everything is an object. Variables are labels referencing objects in the Heap.'}
+							</p>
+							<ul class="vc-list">
+								<li><strong>{isEs ? 'Inmutables:' : 'Immutables:'}</strong> int, float, str, tuple (create new object on change).</li>
+								<li><strong>{isEs ? 'Mutables:' : 'Mutables:'}</strong> list, dict, set (modify in-place).</li>
+								<li><strong>typing.Final:</strong> {isEs ? 'Aviso para verificadores estáticos (Mypy).' : 'Hint for static checkers (Mypy).'}</li>
+							</ul>
+						</div>
+						<div class="vc-col">
+							<div class="vc-code-card">
+								<div class="vc-code-title">script.py</div>
+								<pre class="vc-code-block"><code><span class="token-keyword">from</span> typing <span class="token-keyword">import</span> Final
+
+MAX_USERS: Final[<span class="token-type">int</span>] = <span class="token-number">500</span>
+
+numeros = [<span class="token-number">1</span>, <span class="token-number">2</span>, <span class="token-number">3</span>]
+numeros.append(<span class="token-number">4</span>) <span class="token-comment"># Mutación in-place en Heap</span>
+
+texto = <span class="token-string">"Hola"</span>
+<span class="token-comment"># texto[0] = "h"  # TypeError: str es inmutable</span></code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 5: JAVA -->
+				<div class="vc-slide" data-slide="5">
+					<div class="vc-slide-grid">
+						<div class="vc-col">
+							<h2 class="vc-slide-title">5. Java: {isEs ? 'Primitivos, Objetos y final' : 'Primitives, Objects & final'}</h2>
+							<p class="vc-text">
+								{isEs 
+									? 'Java distingue estrictamente entre tipos primitivos (guardados por valor) y objetos (guardados por referencia en el Heap).'
+									: 'Java strictly distinguishes primitive types (stored by value) and objects (stored by heap reference).'}
+							</p>
+							<div class="vc-concept-box">
+								<div class="vc-concept-item">
+									<strong class="vc-accent-text">final:</strong> {isEs ? 'Evita reasignación de variable o puntero.' : 'Prevents variable or pointer reassignment.'}
+								</div>
+								<div class="vc-concept-item">
+									<strong class="vc-accent-text">String:</strong> {isEs ? 'Clase inmutable por diseño (String Pool).' : 'Immutable class by design (String Pool).'}
+								</div>
+							</div>
+						</div>
+						<div class="vc-col">
+							<div class="vc-code-card">
+								<div class="vc-code-title">Main.java</div>
+								<pre class="vc-code-block"><code><span class="token-keyword">public class</span> Main &#123;
+    <span class="token-keyword">public static void</span> main(String[] args) &#123;
+        <span class="token-keyword">final double</span> IVA = <span class="token-number">0.21</span>;
+        <span class="token-comment">// IVA = 0.15; // Error de compilador javac</span>
+
+        <span class="token-keyword">final</span> StringBuilder sb = <span class="token-keyword">new</span> StringBuilder(<span class="token-string">"Hi"</span>);
+        sb.append(<span class="token-string">" World"</span>); <span class="token-comment">// OK: Contenido muta</span>
+    &#125;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 6: SIMULATOR MATRIX -->
+				<div class="vc-slide" data-slide="6">
+					<div class="vc-sim-container">
+						<h2 class="vc-slide-title center">{isEs ? '6. Simulador Interactivo de Mutación' : '6. Live Mutation Simulator'}</h2>
+						<p class="vc-sub center">{isEs ? 'Seleccioná un lenguaje e intentá forzar una mutación inválida:' : 'Select a language and trigger an invalid mutation:'}</p>
+
+						<div class="vc-sim-selector">
+							<button class="vc-lang-btn active" data-lang="c">C (GCC)</button>
+							<button class="vc-lang-btn" data-lang="js">JavaScript (V8)</button>
+							<button class="vc-lang-btn" data-lang="py">Python (Mypy)</button>
+							<button class="vc-lang-btn" data-lang="java">Java (Javac)</button>
+						</div>
+
+						<div class="vc-sim-console">
+							<div class="vc-sim-head">
+								<span class="vc-dot red"></span>
+								<span class="vc-dot yellow"></span>
+								<span class="vc-dot green"></span>
+								<span class="vc-console-label" id="sim-console-label">C / GCC Compiler</span>
+							</div>
+							<div class="vc-sim-body">
+								<div class="vc-code-preview" id="sim-code-preview">const float PI = 3.14159f;
+PI = 3.0f; // Intentando reasignar...</div>
+								<div class="vc-sim-output" id="sim-output">
+									<span class="vc-err-badge">{isEs ? 'ERROR DE COMPILACIÓN' : 'COMPILER ERROR'}</span>
+									<p class="vc-err-msg">main.c:6:5: error: assignment of read-only variable 'PI'</p>
+								</div>
+							</div>
+							<div class="vc-sim-actions">
+								<button class="btn btn-primary" id="btn-trigger-mutate">
+									⚡ {isEs ? 'Ejecutar Intento de Mutación' : 'Trigger Mutation Attempt'}
+								</button>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
-		</main>
+
+			<!-- Footer Controls -->
+			<div class="vc-footer">
+				<button class="btn btn-secondary" id="btn-prev-slide" disabled>
+					← {isEs ? 'Anterior' : 'Previous'}
+				</button>
+				<div class="vc-footer-meta">
+					<span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span>
+				</div>
+				<button class="btn btn-primary" id="btn-next-slide">
+					{isEs ? 'Siguiente' : 'Next'} →
+				</button>
+			</div>
+		</div>
 	</div>
+</div>
 
-	<script>
-		let currentSlide = 1;
-		const totalSlides = 4;
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
 
-		const updateSlides = () => {
-			document.querySelectorAll('.slide').forEach(slide => {
-				const s = slide as HTMLElement;
-				s.classList.remove('active');
-				if (s.dataset.slide && parseInt(s.dataset.slide) === currentSlide) {
-					s.classList.add('active');
-				}
-			});
+	.vc-screen {
+		min-height: 80vh;
+		font-family: var(--font-body);
+		color: var(--color-text);
+		padding: 1.5rem 1rem 4rem;
+	}
 
-			const slideNumberEl = document.getElementById('slide-number');
-			if (slideNumberEl) {
-				slideNumberEl.innerText = `SLIDE: ${String(currentSlide).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`;
-			}
-			
-			const prevBtn = document.getElementById('prev-btn');
-			const nextBtn = document.getElementById('next-btn');
+	.vc-shell {
+		max-width: var(--container-max);
+		margin: 0 auto;
+	}
 
-			if (prevBtn instanceof HTMLButtonElement) prevBtn.disabled = currentSlide === 1;
-			if (nextBtn instanceof HTMLButtonElement) nextBtn.disabled = currentSlide === totalSlides;
-		};
+	.vc-header {
+		margin-bottom: 1.5rem;
+	}
 
-		document.getElementById('next-btn')?.addEventListener('click', () => {
-			if (currentSlide < totalSlides) {
-				currentSlide++;
-				updateSlides();
+	.vc-badge {
+		display: inline-flex;
+		align-items: center;
+		border: 1px solid var(--color-accent-2-300);
+		background: var(--color-accent-2-100);
+		color: var(--color-accent-2-700);
+		border-radius: 999px;
+		padding: 0.25rem 0.8rem;
+		font-size: 0.75rem;
+		font-family: 'Fira Code', monospace;
+		font-weight: 600;
+	}
+
+	.vc-title {
+		font-family: var(--font-heading);
+		font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+		font-weight: 400;
+		line-height: 1.15;
+		color: var(--color-text);
+		margin: 0.5rem 0 0.25rem;
+	}
+
+	.vc-sub {
+		color: color-mix(in srgb, var(--color-text) 75%, transparent);
+		font-size: 0.95rem;
+		margin: 0;
+	}
+
+	.vc-sub.center { text-align: center; }
+
+	.vc-deck-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+	}
+
+	.vc-nav-bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.8rem;
+		padding: 0.8rem 1.2rem;
+		border-bottom: 1px solid var(--color-divider);
+		background: color-mix(in srgb, var(--color-bg) 60%, transparent);
+	}
+
+	.vc-slide-indicator {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-family: 'Fira Code', monospace;
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	.vc-step-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--color-accent);
+	}
+
+	.vc-pills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+
+	.vc-pill-btn {
+		border: 1px solid var(--color-divider);
+		background: var(--color-bg);
+		color: var(--color-text);
+		border-radius: 999px;
+		padding: 0.3rem 0.75rem;
+		font-size: 0.78rem;
+		font-family: var(--font-body);
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.vc-pill-btn:hover {
+		background: var(--color-accent-100);
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.vc-pill-btn.active {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		color: #ffffff;
+	}
+
+	.vc-viewport {
+		padding: 1.5rem 1.25rem;
+		min-height: 420px;
+	}
+
+	.vc-slide {
+		display: none;
+		opacity: 0;
+		transform: translateY(8px);
+		transition: opacity 0.35s ease, transform 0.35s ease;
+	}
+
+	.vc-slide.active {
+		display: block;
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	.vc-slide-grid {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		gap: 1.5rem;
+		align-items: start;
+	}
+
+	.vc-col {
+		grid-column: span 12;
+	}
+
+	@media (min-width: 900px) {
+		.vc-col {
+			grid-column: span 6;
+		}
+	}
+
+	.vc-slide-title {
+		font-family: var(--font-heading);
+		font-size: 1.35rem;
+		font-weight: 400;
+		color: var(--color-text);
+		margin: 0 0 0.8rem;
+	}
+
+	.vc-slide-title.center { text-align: center; }
+
+	.vc-text {
+		font-size: 0.95rem;
+		line-height: 1.6;
+		color: color-mix(in srgb, var(--color-text) 85%, transparent);
+		margin-bottom: 1.2rem;
+	}
+
+	.vc-concept-box {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	.vc-concept-item {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: 0.65rem 0.9rem;
+		font-size: 0.88rem;
+		line-height: 1.5;
+	}
+
+	.vc-accent-text {
+		color: var(--color-accent-700);
+	}
+
+	.vc-list {
+		padding-left: 1.2rem;
+		margin: 0 0 1.2rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		font-size: 0.9rem;
+	}
+
+	.vc-memory-viz {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: 1rem;
+		box-shadow: var(--shadow-sm);
+	}
+
+	.vc-viz-head {
+		font-family: 'Fira Code', monospace;
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: var(--color-accent-2-700);
+		margin-bottom: 0.75rem;
+		letter-spacing: 0.05em;
+	}
+
+	.vc-cell {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		border: 1px solid var(--color-divider);
+		background: var(--color-surface);
+		border-radius: var(--radius-sm);
+		padding: 0.6rem 0.8rem;
+		margin-bottom: 0.5rem;
+		font-family: 'Fira Code', monospace;
+		font-size: 0.82rem;
+	}
+
+	.vc-addr { color: color-mix(in srgb, var(--color-text) 50%, transparent); }
+	.vc-name { color: var(--color-text); font-weight: 500; }
+	.vc-val { color: var(--color-accent-700); font-weight: 700; }
+	.vc-val.lock { color: var(--color-accent-2-700); }
+
+	.vc-code-card {
+		background: #1e1b18;
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		overflow: hidden;
+		box-shadow: var(--shadow-sm);
+	}
+
+	.vc-code-title {
+		background: #2b2722;
+		color: #c0b6a5;
+		padding: 0.4rem 0.8rem;
+		font-family: 'Fira Code', monospace;
+		font-size: 0.75rem;
+		border-bottom: 1px solid #3a352e;
+	}
+
+	.vc-code-block {
+		margin: 0;
+		padding: 0.9rem;
+		font-family: 'Fira Code', monospace;
+		font-size: 0.82rem;
+		line-height: 1.6;
+		color: #f9f4ed;
+		overflow-x: auto;
+	}
+
+	.token-keyword { color: #e59866; font-weight: 600; }
+	.token-type { color: #76d7c4; }
+	.token-number { color: #f8c471; }
+	.token-string { color: #abebc6; }
+	.token-comment { color: #85929e; font-style: italic; }
+
+	/* Simulator styling */
+	.vc-sim-container { max-width: 800px; margin: 0 auto; }
+
+	.vc-sim-selector {
+		display: flex;
+		justify-content: center;
+		gap: 0.5rem;
+		margin-bottom: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.vc-lang-btn {
+		border: 1px solid var(--color-divider);
+		background: var(--color-bg);
+		color: var(--color-text);
+		border-radius: 999px;
+		padding: 0.35rem 0.9rem;
+		font-family: 'Fira Code', monospace;
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.vc-lang-btn:hover { background: var(--color-accent-100); color: var(--color-accent-700); }
+	.vc-lang-btn.active { background: var(--color-accent-700); border-color: var(--color-accent-700); color: #ffffff; }
+
+	.vc-sim-console {
+		background: #1e1b18;
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		overflow: hidden;
+		box-shadow: var(--shadow-md);
+	}
+
+	.vc-sim-head {
+		background: #2b2722;
+		padding: 0.5rem 0.8rem;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.vc-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+	.vc-dot.red { background: #e74c3c; }
+	.vc-dot.yellow { background: #f1c40f; }
+	.vc-dot.green { background: #2ecc71; }
+
+	.vc-console-label {
+		color: #c0b6a5;
+		font-family: 'Fira Code', monospace;
+		font-size: 0.75rem;
+		margin-left: 0.4rem;
+	}
+
+	.vc-sim-body { padding: 1rem; }
+
+	.vc-code-preview {
+		font-family: 'Fira Code', monospace;
+		font-size: 0.85rem;
+		color: #e59866;
+		background: #141210;
+		padding: 0.6rem 0.8rem;
+		border-radius: var(--radius-sm);
+		margin-bottom: 0.8rem;
+		white-space: pre-wrap;
+	}
+
+	.vc-sim-output {
+		background: #2d1414;
+		border-left: 3px solid #e74c3c;
+		border-radius: var(--radius-sm);
+		padding: 0.6rem 0.8rem;
+	}
+
+	.vc-err-badge {
+		display: inline-block;
+		font-family: 'Fira Code', monospace;
+		font-size: 0.68rem;
+		font-weight: 700;
+		color: #ec7063;
+		margin-bottom: 0.2rem;
+	}
+
+	.vc-err-msg {
+		margin: 0;
+		font-family: 'Fira Code', monospace;
+		font-size: 0.8rem;
+		color: #fadbd8;
+	}
+
+	.vc-sim-actions {
+		padding: 0.8rem 1rem;
+		background: #25211d;
+		display: flex;
+		justify-content: flex-end;
+		border-top: 1px solid #3a352e;
+	}
+
+	.vc-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.8rem 1.2rem;
+		border-top: 1px solid var(--color-divider);
+		background: color-mix(in srgb, var(--color-bg) 60%, transparent);
+	}
+
+	.vc-footer-meta {
+		font-size: 0.78rem;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
+
+	const simData = {
+		c: {
+			label: 'C / GCC Compiler',
+			preview: 'const float PI = 3.14159f;\nPI = 3.0f; // Intentando reasignar constante',
+			badge: 'COMPILER ERROR (GCC)',
+			msg: 'main.c:6:5: error: assignment of read-only variable \'PI\''
+		},
+		js: {
+			label: 'JavaScript / V8 Engine',
+			preview: 'const PI = 3.14159;\nPI = 3.0; // Intentando reasignar constante',
+			badge: 'RUNTIME ERROR (V8)',
+			msg: 'Uncaught TypeError: Assignment to constant variable at app.js:2:1'
+		},
+		py: {
+			label: 'Python / Mypy Static Checker',
+			preview: 'from typing import Final\nPI: Final[float] = 3.14159\nPI = 3.0 # Intentando reasignar',
+			badge: 'MYPY TYPE CHECKER ERROR',
+			msg: 'script.py:3: error: Cannot assign to final attribute "PI"'
+		},
+		java: {
+			label: 'Java / Javac Compiler',
+			preview: 'final double PI = 3.14159;\nPI = 3.0; // Intentando reasignar constante final',
+			badge: 'COMPILER ERROR (JAVAC)',
+			msg: 'Main.java:5: error: cannot assign a value to final variable PI'
+		}
+	};
+
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+
+		document.querySelectorAll('.vc-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) {
+				el.classList.add('active');
 			}
 		});
 
-		document.getElementById('prev-btn')?.addEventListener('click', () => {
-			if (currentSlide > 1) {
-				currentSlide--;
-				updateSlides();
+		document.querySelectorAll('.vc-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) {
+				btn.classList.add('active');
 			}
 		});
 
-		// Variable animation logic for slide 2
-		setInterval(() => {
-			const valEl = document.getElementById('var-value');
-			if (valEl && currentSlide === 2) {
-				valEl.innerText = Math.floor(Math.random() * 100).toString();
-			}
-		}, 1000);
+		const labelEl = document.getElementById('vc-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
 
-		// Keyboard navigation
-		document.addEventListener('keydown', (e) => {
-			if (e.key === 'ArrowRight' || e.key === 'n') {
-				if (currentSlide < totalSlides) {
-					currentSlide++;
-					updateSlides();
-				}
-			} else if (e.key === 'ArrowLeft' || e.key === 'p') {
-				if (currentSlide > 1) {
-					currentSlide--;
-					updateSlides();
-				}
+		const prevBtn = document.getElementById('btn-prev-slide') as HTMLButtonElement;
+		const nextBtn = document.getElementById('btn-next-slide') as HTMLButtonElement;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
+
+	document.querySelectorAll('.vc-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
+		});
+	});
+
+	document.getElementById('btn-prev-slide')?.addEventListener('click', () => {
+		goToSlide(currentSlide - 1);
+	});
+
+	document.getElementById('btn-next-slide')?.addEventListener('click', () => {
+		goToSlide(currentSlide + 1);
+	});
+
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
+
+	// Simulator logic
+	document.querySelectorAll('.vc-lang-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const targetBtn = e.currentTarget as HTMLElement;
+			document.querySelectorAll('.vc-lang-btn').forEach(b => b.classList.remove('active'));
+			targetBtn.classList.add('active');
+
+			const langKey = targetBtn.dataset.lang as keyof typeof simData;
+			const data = simData[langKey];
+			if (data) {
+				const consoleLabel = document.getElementById('sim-console-label');
+				const previewEl = document.getElementById('sim-code-preview');
+				const outputBadge = document.querySelector('.vc-err-badge');
+				const outputMsg = document.querySelector('.vc-err-msg');
+
+				if (consoleLabel) consoleLabel.textContent = data.label;
+				if (previewEl) previewEl.textContent = data.preview;
+				if (outputBadge) outputBadge.textContent = data.badge;
+				if (outputMsg) outputMsg.textContent = data.msg;
 			}
 		});
+	});
 
-		updateSlides();
-	</script>
+	document.getElementById('btn-trigger-mutate')?.addEventListener('click', () => {
+		const outputEl = document.getElementById('sim-output');
+		if (outputEl) {
+			outputEl.style.transform = 'scale(1.02)';
+			outputEl.style.transition = 'transform 0.15s ease';
+			setTimeout(() => { outputEl.style.transform = 'scale(1)'; }, 150);
+		}
+	});
+
+	// Dynamic memory score simulation for Slide 1
+	setInterval(() => {
+		const scoreValEl = document.getElementById('ram-score-val');
+		if (scoreValEl && currentSlide === 1) {
+			scoreValEl.textContent = Math.floor(100 + Math.random() * 900).toString();
+		}
+	}, 1500);
+
+	goToSlide(1);
+</script>
