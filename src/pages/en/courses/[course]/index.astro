@@ -2,8 +2,8 @@
 import { getCollection } from 'astro:content';
 import { getLangFromUrl, useTranslations } from '../../../../i18n/utils';
 import { getCourseSlugsForLocale, getCoursesForLocale, getLessonsForCourse } from '../../../../utils/courses';
+import { buildCourseBreadcrumbSchema } from '../../../../seo/schema';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
-import CourseBreadcrumb from '../../../../components/CourseBreadcrumb.astro';
 import LessonsList from '../../../../components/LessonsList.astro';
 import { withBase } from '../../../../utils/withBase';
 
@@ -28,6 +28,12 @@ if (!course) {
 }
 
 const lessons = getLessonsForCourse(allLessons, courseSlug, 'en');
+
+const schema = buildCourseBreadcrumbSchema({
+	locale: 'en',
+	courseSlug,
+	courseTitle: course.data.title_en,
+});
 ---
 
 <BaseLayout
@@ -37,14 +43,9 @@ const lessons = getLessonsForCourse(allLessons, courseSlug, 'en');
 	esPath={`/cursos/${courseSlug}`}
 	enPath={`/en/courses/${courseSlug}`}
 	canonicalPath={`/en/courses/${courseSlug}`}
+	schema={schema}
 >
 	<div class="container">
-		<CourseBreadcrumb
-			courseSlug={courseSlug}
-			courseTitle={course.data.title_en}
-			locale="en"
-		/>
-
 		<div class="course-header">
 			{course.data.image && (
 				<div class="course-logo">

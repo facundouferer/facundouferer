@@ -1,8 +1,8 @@
 ---
 import { getCollection, render } from 'astro:content';
 import { getLangFromUrl, useTranslations } from '../../../../i18n/utils';
+import { buildCourseBreadcrumbSchema } from '../../../../seo/schema';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
-import CourseBreadcrumb from '../../../../components/CourseBreadcrumb.astro';
 import LessonsList from '../../../../components/LessonsList.astro';
 
 const lang = getLangFromUrl(Astro.url);
@@ -53,6 +53,14 @@ const { Content } = await render(entry);
 
 const prevLesson = courseLessons.find((l) => l.data.order === entry.data.order - 1);
 const nextLesson = courseLessons.find((l) => l.data.order === entry.data.order + 1);
+
+const schema = buildCourseBreadcrumbSchema({
+	locale: 'en',
+	courseSlug,
+	courseTitle: course.data.title_en,
+	lessonSlug,
+	lessonTitle: entry.data.title,
+});
 ---
 
 <BaseLayout
@@ -62,22 +70,16 @@ const nextLesson = courseLessons.find((l) => l.data.order === entry.data.order +
 	esPath={`/cursos/${courseSlug}/${lessonSlug}`}
 	enPath={`/en/courses/${courseSlug}/${lessonSlug}`}
 	canonicalPath={`/en/courses/${courseSlug}/${lessonSlug}`}
+	schema={schema}
 >
 	<div class="container lesson-page">
-		<CourseBreadcrumb
-			courseSlug={courseSlug}
-			courseTitle={course.data.title_en}
-			lessonTitle={entry.data.title}
-			locale="en"
-		/>
-
 		<div class="lesson-layout">
 			<aside class="lesson-sidebar">
 				<div class="sidebar-header">
 					<span class="sidebar-course-name">{course.data.title_en}</span>
 					<span class="sidebar-course-meta">{course.data.technology} · {course.data.difficulty}</span>
 				</div>
-				<nav aria-label="Lessons">
+				<nav class="sidebar-lessons scroll-organic" aria-label="Lessons">
 					<LessonsList
 						lessons={courseLessons.map((l) => ({
 							slug: l.data.slug,
@@ -216,8 +218,16 @@ const nextLesson = courseLessons.find((l) => l.data.order === entry.data.order +
 			position: sticky;
 			top: 5.5rem;
 			align-self: start;
-			max-height: calc(100vh - 7rem);
-			overflow-y: auto;
+			max-height: calc(100vh - 7rem - 15px);
+			display: flex;
+			flex-direction: column;
+		}
+
+		/* Only the lesson list scrolls — course name and back link stay put. */
+		.sidebar-lessons {
+			flex: 1;
+			min-height: 0;
+			margin-right: calc(var(--space-2) * -1);
 		}
 	}
 </style>

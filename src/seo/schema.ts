@@ -30,6 +30,14 @@ type CollectionPageSchemaInput = {
 	breadcrumbs: BreadcrumbItem[];
 };
 
+type CourseBreadcrumbInput = {
+	locale: Locale;
+	courseSlug: string;
+	courseTitle: string;
+	lessonSlug?: string;
+	lessonTitle?: string;
+};
+
 type ArticleSchemaInput = {
 	locale: Locale;
 	path: string;
@@ -109,6 +117,32 @@ export function buildBreadcrumbSchema(items: BreadcrumbItem[]): SchemaNode {
 			item: toAbsoluteUrl(item.path),
 		})),
 	};
+}
+
+export function buildCourseBreadcrumbSchema({
+	locale,
+	courseSlug,
+	courseTitle,
+	lessonSlug,
+	lessonTitle,
+}: CourseBreadcrumbInput): SchemaNode {
+	const coursePath =
+		locale === 'es' ? `/cursos/${courseSlug}` : `/en/courses/${courseSlug}`;
+
+	const items: BreadcrumbItem[] = [
+		{ name: locale === 'es' ? 'Inicio' : 'Home', path: locale === 'es' ? '/' : '/en/' },
+		{
+			name: locale === 'es' ? 'Cursos' : 'Courses',
+			path: locale === 'es' ? '/cursos' : '/en/courses',
+		},
+		{ name: courseTitle, path: coursePath },
+	];
+
+	if (lessonSlug && lessonTitle) {
+		items.push({ name: lessonTitle, path: `${coursePath}/${lessonSlug}` });
+	}
+
+	return buildBreadcrumbSchema(items);
 }
 
 export function buildPersonSchema(locale: Locale): SchemaNode {

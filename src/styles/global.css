@@ -246,3 +246,73 @@ table { width: 100%; border-collapse: collapse; margin-block: 1.5rem; }
 .badge-dot {
 	width: 6px; height: 6px; border-radius: 50%; background: var(--color-accent-2-600);
 }
+
+/* Scroll — soft, pill-shaped scrollbar with edges that dissolve instead of
+   cutting off. Fades are driven by scroll position where supported, and are
+   simply absent where it is not. */
+@property --scroll-fade-top {
+	syntax: '<length>';
+	inherits: false;
+	initial-value: 0px;
+}
+@property --scroll-fade-bottom {
+	syntax: '<length>';
+	inherits: false;
+	initial-value: 0px;
+}
+
+.scroll-organic {
+	--scroll-fade: var(--space-6);
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	scroll-behavior: smooth;
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-accent-300) transparent;
+	padding-right: var(--space-2);
+}
+
+.scroll-organic::-webkit-scrollbar {
+	width: 10px;
+}
+.scroll-organic::-webkit-scrollbar-track {
+	background: transparent;
+}
+.scroll-organic::-webkit-scrollbar-thumb {
+	background: var(--color-accent-300);
+	background-clip: content-box;
+	border: 3px solid transparent;
+	border-radius: 999px;
+	transition: background-color 220ms ease;
+}
+.scroll-organic::-webkit-scrollbar-thumb:hover {
+	background: var(--color-accent-500);
+	background-clip: content-box;
+}
+
+@supports (animation-timeline: scroll(self block)) {
+	.scroll-organic {
+		mask-image: linear-gradient(
+			to bottom,
+			transparent 0,
+			#000 var(--scroll-fade-top),
+			#000 calc(100% - var(--scroll-fade-bottom)),
+			transparent 100%
+		);
+		animation: scroll-fade-top linear both, scroll-fade-bottom linear both;
+		animation-timeline: scroll(self block), scroll(self block);
+		animation-range: 0 var(--scroll-fade), calc(100% - var(--scroll-fade)) 100%;
+	}
+}
+
+@keyframes scroll-fade-top {
+	from { --scroll-fade-top: 0px; }
+	to { --scroll-fade-top: var(--scroll-fade); }
+}
+@keyframes scroll-fade-bottom {
+	from { --scroll-fade-bottom: var(--scroll-fade); }
+	to { --scroll-fade-bottom: 0px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.scroll-organic { scroll-behavior: auto; }
+}
