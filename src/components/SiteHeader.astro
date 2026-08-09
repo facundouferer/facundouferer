@@ -24,7 +24,8 @@ const homeHref = locale === "es" ? "/" : "/en/";
 			<img class="brand-logo" src={withBase("/logos.svg")} alt="" aria-hidden="true" />
 			Facundo Uferer
 		</a>
-		<nav aria-label="Primary" class="nav-links">
+
+		<nav aria-label="Primary" id="primary-nav" class="nav-links">
 			<ul>
 				{
 					navItems.map((item) => (
@@ -35,12 +36,64 @@ const homeHref = locale === "es" ? "/" : "/en/";
 				}
 			</ul>
 		</nav>
+
 		<div class="header-actions">
 			<LanguageSwitch locale={locale} esPath={esPath} enPath={enPath} />
 			<a class="btn btn-primary" href={withBase(hireHref)}>{hireLabel}</a>
+			<button
+				type="button"
+				class="btn btn-icon nav-toggle"
+				aria-expanded="false"
+				aria-controls="primary-nav"
+				aria-label={t("nav.toggle")}
+			>
+				<svg class="icon-menu" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<line x1="4" x2="20" y1="12" y2="12"></line>
+					<line x1="4" x2="20" y1="6" y2="6"></line>
+					<line x1="4" x2="20" y1="18" y2="18"></line>
+				</svg>
+				<svg class="icon-close" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<line x1="18" x2="6" y1="6" y2="18"></line>
+					<line x1="6" x2="18" y1="6" y2="18"></line>
+				</svg>
+			</button>
 		</div>
 	</div>
 </header>
+
+<script>
+	const header = document.querySelector('.site-header');
+	const toggleBtn = document.querySelector('.nav-toggle');
+	const navLinks = document.querySelector('#primary-nav');
+
+	if (toggleBtn && navLinks && header) {
+		const toggleMenu = (open?: boolean) => {
+			const isOpen = open ?? toggleBtn.getAttribute('aria-expanded') !== 'true';
+			toggleBtn.setAttribute('aria-expanded', String(isOpen));
+			navLinks.classList.toggle('is-open', isOpen);
+			header.classList.toggle('is-open', isOpen);
+		};
+
+		toggleBtn.addEventListener('click', () => toggleMenu());
+
+		navLinks.querySelectorAll('a').forEach((link) => {
+			link.addEventListener('click', () => toggleMenu(false));
+		});
+
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape' && toggleBtn.getAttribute('aria-expanded') === 'true') {
+				toggleMenu(false);
+				(toggleBtn as HTMLButtonElement).focus();
+			}
+		});
+
+		document.addEventListener('click', (e) => {
+			if (!header.contains(e.target as Node) && toggleBtn.getAttribute('aria-expanded') === 'true') {
+				toggleMenu(false);
+			}
+		});
+	}
+</script>
 
 <style>
 	.site-header {
@@ -52,6 +105,9 @@ const homeHref = locale === "es" ? "/" : "/en/";
 	}
 
 	.nav {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
 		justify-content: space-between;
 		min-height: 4.2rem;
 	}
@@ -62,38 +118,114 @@ const homeHref = locale === "es" ? "/" : "/en/";
 		width: auto;
 	}
 
-	.nav-links ul {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		gap: var(--space-3);
-	}
-
-	.nav-links a {
-		font-size: 0.92rem;
-		font-weight: 600;
-		color: var(--color-text);
-		text-decoration: none;
-		transition: color 0.2s ease;
-	}
-
-	.nav-links a:hover {
-		color: var(--color-accent-700);
-	}
-
 	.header-actions {
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-3);
 	}
 
-	@media (width >= 960px) {
+	.nav-toggle {
+		display: inline-flex;
+	}
+
+	.nav-toggle .icon-close {
+		display: none;
+	}
+
+	.nav-toggle[aria-expanded="true"] .icon-menu {
+		display: none;
+	}
+
+	.nav-toggle[aria-expanded="true"] .icon-close {
+		display: block;
+	}
+
+	.nav-links {
+		display: none;
+		width: 100%;
+		order: 3;
+		background: var(--color-surface);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		margin-top: var(--space-2);
+		margin-bottom: var(--space-3);
+		box-shadow: var(--shadow-md);
+		border: 1px solid var(--color-divider);
+	}
+
+	.nav-links.is-open {
+		display: block;
+	}
+
+	.nav-links ul {
+		display: flex;
+		flex-direction: column;
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		gap: var(--space-1);
+	}
+
+	.nav-links a {
+		display: block;
+		font-size: 1rem;
+		font-weight: 600;
+		color: var(--color-text);
+		text-decoration: none;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+		transition: background 0.15s ease, color 0.15s ease;
+	}
+
+	.nav-links a:hover,
+	.nav-links a:focus-visible {
+		background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+		color: var(--color-accent-700);
+	}
+
+	@media (min-width: 768px) {
+		.nav-toggle {
+			display: none;
+		}
+
+		.nav-links {
+			display: block;
+			order: initial;
+			width: auto;
+			background: transparent;
+			border-radius: 0;
+			padding: 0;
+			margin: 0;
+			box-shadow: none;
+			border: none;
+		}
+
+		.nav-links ul {
+			flex-direction: row;
+			align-items: center;
+			gap: var(--space-3);
+		}
+
+		.nav-links a {
+			display: inline;
+			font-size: 0.92rem;
+			padding: 0;
+			background: transparent;
+			transition: color 0.2s ease;
+		}
+
+		.nav-links a:hover,
+		.nav-links a:focus-visible {
+			background: transparent;
+			color: var(--color-accent-700);
+		}
+	}
+
+	@media (min-width: 960px) {
 		.nav-links ul {
 			gap: var(--space-4);
 		}
+
 		.nav-links a {
 			font-size: 1rem;
 		}

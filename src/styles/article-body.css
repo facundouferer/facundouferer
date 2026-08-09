@@ -63,16 +63,18 @@
 
 .article-body :global(img) {
 	display: block;
-	float: right;
-	width: min(48%, 320px);
+	float: none;
+	width: 100%;
+	max-width: 100%;
 	height: auto;
-	margin: 0 0 1rem 1.5rem;
+	margin: 1.5rem auto;
 	border-radius: var(--radius-lg);
-	shape-margin: 1rem;
+	box-shadow: var(--shadow-sm);
 }
 
 .article-body :global(p:has(> img)) {
-	margin: 0;
+	margin: 1.5rem 0;
+	text-align: center;
 }
 
 .article-body :global(h1),
@@ -136,14 +138,4 @@
 	max-width: 1024px;
 }
 
-@media (width < 760px) {
-	.article-body :global(img) {
-		float: none;
-		width: 100%;
-		margin: 0 0 1.25rem;
-	}
 
-	.article-body :global(p:has(> img)) {
-		margin: 0 0 1rem;
-	}
-}
