@@ -1,6 +1,5 @@
 ---
 title: 'TweakCN: diseño visual para shadcn/ui con IA útil de verdad'
-title_en: 'TweakCN: visual design for shadcn/ui with genuinely useful AI'
 slug: 'tweakcn-visual-design-shadcn-ui'
 date: 2026-04-21
 author: 'Facundo Uferer'
@@ -11,7 +10,6 @@ tags:
   - AI
   - Tailwind
 excerpt: 'En el ecosistema de shadcn/ui, muchas aplicaciones terminan viéndose parecidas. TweakCN aparece como una solución práctica: un editor visual para personalizar temas sin pelearse con variables a mano.'
-excerpt_en: 'In the shadcn/ui ecosystem, many applications end up looking alike. TweakCN appears as a practical solution: a visual editor to customize themes without fighting with variables by hand.'
 readingTime: 4
 lang: 'es'
 published: true

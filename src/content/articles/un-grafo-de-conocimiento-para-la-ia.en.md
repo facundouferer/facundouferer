@@ -1,6 +1,5 @@
 ---
-title: 'Un grafo de conocimiento para la IA'
-title_en: 'A Knowledge Graph for AI'
+title: "A Knowledge Graph for AI"
 slug: 'un-grafo-de-conocimiento-para-la-ia'
 date: 2026-07-04
 author: 'Facundo Uferer'
@@ -10,8 +9,7 @@ tags:
   - Graphify
   - Knowledge Graphs
   - Developer Tools
-excerpt: 'Graphify convierte un proyecto completo en un grafo de conocimiento que ayuda a personas y asistentes de IA a entender arquitectura, dependencias y contexto.'
-excerpt_en: 'Graphify turns a full project into a knowledge graph that helps people and AI assistants understand architecture, dependencies, and context.'
+excerpt: "Graphify turns a full project into a knowledge graph that helps people and AI assistants understand architecture, dependencies, and context."
 readingTime: 10
 lang: 'en'
 published: true

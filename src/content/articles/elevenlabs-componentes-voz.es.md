@@ -1,6 +1,5 @@
 ---
 title: 'ElevenLabs UI: componentes para productos con voz listos para usar'
-title_en: 'ElevenLabs UI: ready-to-use voice product components'
 slug: 'elevenlabs-componentes-voz'
 date: 2026-04-21
 author: 'Facundo Uferer'
@@ -11,7 +10,6 @@ tags:
   - React
   - ElevenLabs
 excerpt: 'ElevenLabs UI busca simplificar eso con una colección open source de componentes React para experiencias de voz, agentes conversacionales y audio en tiempo real.'
-excerpt_en: 'ElevenLabs UI seeks to simplify that with an open source collection of React components for voice experiences, conversational agents, and real-time audio.'
 readingTime: 4
 lang: 'es'
 published: true

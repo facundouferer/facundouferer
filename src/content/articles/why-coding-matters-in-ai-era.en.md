@@ -1,13 +1,11 @@
 ---
-title: 'Del programador que escribe codigo al arquitecto de sistemas'
-title_en: 'From the Programmer Who Writes Code to the Systems Architect'
+title: "From the Programmer Who Writes Code to the Systems Architect"
 slug: 'why-coding-matters-in-ai-era'
 date: 2025-03-05
 author: 'Facundo Uferer'
 category: 'Technical Essay'
 tags: ['Education', 'AI', 'Programming']
-excerpt: 'Como esta cambiando la profesion del desarrollo de software en la era de la inteligencia artificial.'
-excerpt_en: 'How the software profession is changing in the age of artificial intelligence.'
+excerpt: "How the software profession is changing in the age of artificial intelligence."
 readingTime: 9
 lang: 'en'
 published: true

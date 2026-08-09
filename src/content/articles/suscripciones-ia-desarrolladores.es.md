@@ -1,6 +1,5 @@
 ---
 title: "Suscripciones de IA para Desarrolladores: ¿Cuál conviene realmente en 2026?"
-title_en: "AI Subscriptions for Developers: Which One is Really Worth It in 2026?"
 slug: suscripciones-ia-desarrolladores
 date: 2026-06-09
 author: Facundo Uferer
@@ -11,7 +10,6 @@ tags:
   - Comparativa
   - Suscripciones
 excerpt: Análisis profundo de las opciones de suscripción de IA para desarrolladores de $10 y $20 en 2026, evaluando rendimiento, contexto y costo.
-excerpt_en: In-depth analysis of $10 and $20 AI subscription options for developers in 2026, evaluating performance, context, and cost.
 readingTime: 8
 lang: es
 published: true

@@ -1,6 +1,5 @@
 ---
 title: 'Las 4 D de Anthropic: el marco de fluidez en IA'
-title_en: "Anthropic's 4 Ds: The AI Fluency Framework"
 slug: 'las-4-d-de-anthropic'
 date: 2026-07-20
 author: 'Facundo Uferer'
@@ -11,7 +10,6 @@ tags:
   - Prompt Engineering
   - AI Development
 excerpt: 'Anthropic propone un marco de cuatro competencias (Descripción, Discernimiento, Delegación y Diligencia debida) para usar la IA con criterio en vez de solo escribir buenos prompts. Así se aplica, también, a construir software.'
-excerpt_en: "Anthropic proposes a four-competency framework (Delineation, Discernment, Delegation, and Diligence) for using AI with judgment instead of just writing good prompts. Here's how it applies to building software too."
 readingTime: 14
 image: '/img/articles/las-4-d-de-anthropic.svg'
 lang: 'es'

@@ -1,6 +1,5 @@
 ---
 title: 'mapcn: mapas útiles para desarrolladores cansados de pelear con SDKs'
-title_en: 'mapcn: useful maps for developers tired of fighting with SDKs'
 slug: 'mapcn-mapas-utiles-desarrolladores'
 date: 2026-04-21
 author: 'Facundo Uferer'
@@ -11,7 +10,6 @@ tags:
   - UI Design
   - React
 excerpt: 'mapcn propone algo más práctico: aplicar la filosofía de shadcn/ui al terreno geoespacial. En vez de depender de una librería cerrada, ofrece componentes copy-paste para React.'
-excerpt_en: 'mapcn proposes something more practical: applying the shadcn/ui philosophy to the geospatial terrain. Instead of depending on a closed library, it offers copy-paste components for React.'
 readingTime: 4
 lang: 'es'
 published: true

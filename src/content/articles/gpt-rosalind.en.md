@@ -1,6 +1,5 @@
 ---
 title: "GPT-Rosalind"
-title_en: "GPT-Rosalind"
 slug: gpt-rosalind
 date: 2026-04-19
 author: Facundo Uferer
@@ -11,7 +10,6 @@ tags:
   - Medicine
   - Research
 excerpt: OpenAI presentó GPT-Rosalind para investigación en ciencias de la vida y refuerza la transición de modelos generales hacia herramientas verticales de alto valor.
-excerpt_en: OpenAI introduced GPT-Rosalind for life sciences research, reinforcing the shift from general-purpose models toward high-value vertical tools.
 readingTime: 4
 lang: en
 published: true

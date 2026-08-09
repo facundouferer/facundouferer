@@ -1,6 +1,5 @@
 ---
-title: "Productividad sin demanda"
-title_en: "Productivity Without Demand"
+title: "Productivity Without Demand"
 slug: productivity-without-demand
 date: 2026-04-18
 author: Facundo Uferer
@@ -11,7 +10,6 @@ tags:
   - Labor Market
   - Productivity
 excerpt: La IA puede ampliar la capacidad de producir, pero si los ingresos se debilitan también puede erosionar la demanda que sostiene a la economía.
-excerpt_en: AI can expand the capacity to produce, but if incomes weaken it can also erode the demand that sustains the economy.
 readingTime: 5
 lang: en
 published: true

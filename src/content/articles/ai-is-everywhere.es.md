@@ -1,6 +1,5 @@
 ---
 title: "IA en todas partes"
-title_en: "AI Is Everywhere"
 slug: ai-is-everywhere
 date: 2026-04-18
 author: Facundo Uferer
@@ -11,7 +10,6 @@ tags:
   - Transformation
   - Strategy
 excerpt: La IA ya está en todas partes, pero transformar procesos de verdad sigue siendo bastante más difícil.
-excerpt_en: AI is already everywhere, but truly transforming processes is still much harder.
 readingTime: 5
 lang: es
 published: true

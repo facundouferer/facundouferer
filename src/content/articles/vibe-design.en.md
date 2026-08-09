@@ -1,6 +1,5 @@
 ---
 title: "Vibe Design"
-title_en: "Vibe Design"
 slug: vibe-design
 date: 2026-04-19
 author: Facundo Uferer
@@ -11,7 +10,6 @@ tags:
   - UX
   - Product
 excerpt: Si una interfaz aceptable aparece en minutos, el verdadero valor deja de estar en dibujar pantallas y pasa a descubrir bien el problema.
-excerpt_en: If an acceptable interface appears in minutes, the real value stops being in drawing screens and shifts to discovering the problem well.
 readingTime: 5
 lang: en
 published: true

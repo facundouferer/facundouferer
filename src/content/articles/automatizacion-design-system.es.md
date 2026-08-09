@@ -1,6 +1,5 @@
 ---
 title: "Automatización del Design System"
-title_en: "Design System Automation"
 slug: automatizacion-design-system
 date: 2026-04-24
 author: Facundo Uferer
@@ -11,7 +10,6 @@ tags:
   - Claude
   - Figma
 excerpt: En mi compilado de design systems convertí referencias visuales en pequeños sistemas navegables y usé Claude Design como bisturí para documentar, no para improvisar.
-excerpt_en: In my design systems compilation, I turned visual references into small navigable systems and used Claude Design like a scalpel for documentation, not improvisation.
 readingTime: 4
 image: /img/articles/designsystems.png
 lang: es

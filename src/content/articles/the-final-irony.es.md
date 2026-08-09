@@ -1,6 +1,5 @@
 ---
 title: "La ironía final"
-title_en: "The Final Irony"
 slug: the-final-irony
 date: 2026-04-18
 author: Facundo Uferer
@@ -11,7 +10,6 @@ tags:
   - Ghost Work
   - Future of Work
 excerpt: Trabajadores con iPhones sujetos a la cabeza entrenan robots que mañana podrían reemplazarlos. La escena ocurre hoy en Villa Mercedes y Córdoba.
-excerpt_en: Workers with iPhones strapped to their heads train robots that might replace them tomorrow. This is happening today in Villa Mercedes and Córdoba.
 readingTime: 4
 lang: es
 published: true

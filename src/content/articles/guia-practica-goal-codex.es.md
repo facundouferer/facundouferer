@@ -1,6 +1,5 @@
 ---
 title: 'Guía práctica de /goal en Codex'
-title_en: 'Practical Guide to /goal in Codex'
 slug: guia-practica-goal-codex
 date: 2026-06-01
 author: Facundo Uferer
@@ -11,7 +10,6 @@ tags:
   - Developer Tools
   - Workflow
 excerpt: Cómo usar /goal en Codex para convertir conversaciones largas en objetivos persistentes con criterio verificable de finalización.
-excerpt_en: How to use /goal in Codex to turn long-running conversations into persistent objectives with verifiable completion criteria.
 readingTime: 7
 lang: es
 published: true

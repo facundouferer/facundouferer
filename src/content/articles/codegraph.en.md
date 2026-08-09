@@ -1,6 +1,5 @@
 ---
-title: "CodeGraph: el mapa que tu código necesita"
-title_en: "CodeGraph: The Map Your Codebase Needs"
+title: "CodeGraph: The Map Your Codebase Needs"
 slug: codegraph
 date: 2026-07-06
 author: Facundo Uferer
@@ -11,7 +10,6 @@ tags:
   - MCP
   - Developer Tools
 excerpt: CodeGraph crea un grafo local de símbolos, llamadas y dependencias para que los agentes de IA entiendan el código sin pasearse por el repo como arqueólogos cansados.
-excerpt_en: CodeGraph builds a local graph of symbols, calls, and dependencies so AI agents understand the codebase without wandering through the repo like tired archaeologists.
 readingTime: 5
 image: /img/articles/CodeGraph.png
 lang: en

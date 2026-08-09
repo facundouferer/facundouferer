@@ -1,6 +1,5 @@
 ---
 title: "Anthropic's 4 Ds: The AI Fluency Framework"
-title_en: "Anthropic's 4 Ds: The AI Fluency Framework"
 slug: 'las-4-d-de-anthropic'
 date: 2026-07-20
 author: 'Facundo Uferer'
@@ -11,7 +10,6 @@ tags:
   - Prompt Engineering
   - AI Development
 excerpt: "Anthropic proposes a four-competency framework (Delineation, Discernment, Delegation, and Diligence) for using AI with judgment instead of just writing good prompts. Here's how it applies to building software too."
-excerpt_en: "Anthropic proposes a four-competency framework (Delineation, Discernment, Delegation, and Diligence) for using AI with judgment instead of just writing good prompts. Here's how it applies to building software too."
 readingTime: 13
 image: '/img/articles/las-4-d-de-anthropic-en.svg'
 lang: 'en'
