@@ -17,7 +17,7 @@ test('project and article seed files exist', async () => {
 	const projects = await readdir('src/content/projects');
 	const articles = await readdir('src/content/articles');
 	assert.equal(projects.length, 8);
-	assert.equal(articles.length, 32);
+	assert.equal(articles.length, 36);
 });
 
 test('articles schema does not include title_en or excerpt_en (RED until B-12)', async () => {
