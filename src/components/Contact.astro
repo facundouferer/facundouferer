@@ -60,7 +60,7 @@ const copy = {
 <footer class="site-footer">
 	<div class="container footer-inner">
 		<a href={withBase(locale === 'es' ? '/' : '/en/')} class="footer-brand">Facundo Uferer</a>
-		<p class="footer-copy">© {new Date().getFullYear()} Facundo Uferer. {t('contact.footerCopy')}</p>
+		<p class="footer-copy text-muted">© {new Date().getFullYear()} Facundo Uferer. {t('contact.footerCopy')}</p>
 	</div>
 </footer>
 
@@ -124,7 +124,6 @@ const copy = {
 	.footer-copy {
 		margin: 0;
 		font-size: 0.8rem;
-		color: color-mix(in srgb, var(--color-text) 55%, transparent);
 	}
 
 	@media (width < 760px) {

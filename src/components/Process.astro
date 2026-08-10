@@ -36,12 +36,10 @@ const content = {
 		<ol class="steps">
 			{
 				content.steps.map((step) => (
-					<li class="step-item">
+					<li class="step-item card card-hover">
 						<span class="step-num">{step.num}</span>
-						<div class="step-content">
-							<strong>{step.name}</strong>
-							<p>{step.desc}</p>
-						</div>
+						<h3 class="card-title">{step.name}</h3>
+						<p class="card-body">{step.desc}</p>
 					</li>
 				))
 			}
@@ -59,44 +57,13 @@ const content = {
 		gap: var(--space-4);
 	}
 
-	.step-item {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-2);
-		padding: var(--space-4);
-		background: var(--color-surface);
-		border-radius: calc(var(--radius-lg) * 1.15);
-		transition: transform 220ms ease, box-shadow 220ms ease;
-	}
-
-	.step-item:hover {
-		transform: translateY(-4px);
-		box-shadow: var(--shadow-md);
-	}
-
 	.step-num {
 		font-family: var(--font-heading);
 		font-weight: var(--font-heading-weight);
 		font-size: 2.4rem;
 		line-height: 1;
 		color: var(--color-accent);
-	}
-
-	.step-content {
-		display: grid;
-		gap: 0.3rem;
-	}
-
-	.step-content strong {
-		font-family: var(--font-heading);
-		font-weight: var(--font-heading-weight);
-		font-size: 1.1rem;
-	}
-
-	.step-content p {
-		margin: 0;
-		color: color-mix(in srgb, var(--color-text) 78%, transparent);
-		font-size: 0.9rem;
-		line-height: 1.55;
+		/* Optical left alignment — digits carry their own bearings. */
+		margin-left: -0.03em;
 	}
 </style>

@@ -56,7 +56,9 @@ const icons: Record<string, string> = {
 			{
 				stacks.map((stack) => (
 					<article class="card card-hover">
-						<span class:list={['card-icon', { 'accent-2': stack.accent2 }]} set:html={icons[stack.icon]} />
+						<span class:list={['card-icon', { 'accent-2': stack.accent2 }]}>
+							<svg viewBox="0 0 24 24" aria-hidden="true" set:html={icons[stack.icon]} />
+						</span>
 						<h3 class="card-title">{stack.title}</h3>
 						<p class="card-body">{stack.items}</p>
 					</article>
@@ -72,15 +74,5 @@ const icons: Record<string, string> = {
 		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 		gap: var(--space-4);
 		margin-top: var(--space-6);
-	}
-
-	.card svg {
-		width: 20px;
-		height: 20px;
-		fill: none;
-		stroke: currentColor;
-		stroke-width: 2.75;
-		stroke-linecap: round;
-		stroke-linejoin: round;
 	}
 </style>

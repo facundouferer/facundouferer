@@ -52,66 +52,40 @@ public class Producto {
 El constructor no es el primer paso de `new`, es el cuarto. Entender el orden completo explica por qué un atributo puede valer `0` incluso cuando en el constructor le asignás otra cosa.
 
 <figure class="diagram">
-<svg viewBox="0 0 900 250" role="img" aria-labelledby="d-new-title">
-<title id="d-new-title">Las cinco etapas que ejecuta la JVM al evaluar el operador new</title>
-<defs>
-<marker id="ar-new" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-<path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent)"/>
-</marker>
-</defs>
-<text x="4" y="20" font-size="14" font-weight="700" fill="var(--color-accent-700)">Producto p = new Producto("Yerba", 3200);</text>
-
-<rect x="3" y="58" width="158" height="140" rx="18" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
-<circle cx="27" cy="58" r="14" fill="var(--color-accent)"/>
-<text x="27" y="63" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-neutral-100)">1</text>
-<text x="20" y="100" font-size="12.5" font-weight="700" fill="var(--color-accent-700)">Reserva en Heap</text>
-<text x="20" y="124" font-size="10.5" fill="var(--color-text)">La JVM aparta un</text>
-<text x="20" y="140" font-size="10.5" fill="var(--color-text)">bloque del tamaño</text>
-<text x="20" y="156" font-size="10.5" fill="var(--color-text)">de todos los</text>
-<text x="20" y="172" font-size="10.5" fill="var(--color-text)">atributos.</text>
-
-<rect x="187" y="58" width="158" height="140" rx="18" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
-<circle cx="211" cy="58" r="14" fill="var(--color-accent)"/>
-<text x="211" y="63" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-neutral-100)">2</text>
-<text x="204" y="100" font-size="12.5" font-weight="700" fill="var(--color-accent-700)">Valores por</text>
-<text x="204" y="116" font-size="12.5" font-weight="700" fill="var(--color-accent-700)">defecto</text>
-<text x="204" y="140" font-size="10.5" fill="var(--color-text)">numéricos = 0</text>
-<text x="204" y="156" font-size="10.5" fill="var(--color-text)">boolean = false</text>
-<text x="204" y="172" font-size="10.5" fill="var(--color-text)">referencias = null</text>
-
-<rect x="371" y="58" width="158" height="140" rx="18" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
-<circle cx="395" cy="58" r="14" fill="var(--color-accent)"/>
-<text x="395" y="63" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-neutral-100)">3</text>
-<text x="388" y="100" font-size="12.5" font-weight="700" fill="var(--color-accent-700)">Inicializadores</text>
-<text x="388" y="124" font-size="10.5" fill="var(--color-text)">Campos declarados</text>
-<text x="388" y="140" font-size="10.5" fill="var(--color-text)">con valor y bloques</text>
-<text x="388" y="156" font-size="10.5" fill="var(--color-text)">de instancia { },</text>
-<text x="388" y="172" font-size="10.5" fill="var(--color-text)">en orden textual.</text>
-
-<rect x="555" y="58" width="158" height="140" rx="18" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
-<circle cx="579" cy="58" r="14" fill="var(--color-accent-700)"/>
-<text x="579" y="63" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-neutral-100)">4</text>
-<text x="572" y="100" font-size="12.5" font-weight="700" fill="var(--color-accent-700)">Constructor</text>
-<text x="572" y="124" font-size="10.5" fill="var(--color-text)">Recién acá corre</text>
-<text x="572" y="140" font-size="10.5" fill="var(--color-text)">tu código: validar,</text>
-<text x="572" y="156" font-size="10.5" fill="var(--color-text)">asignar, calcular</text>
-<text x="572" y="172" font-size="10.5" fill="var(--color-text)">derivados.</text>
-
-<rect x="739" y="58" width="158" height="140" rx="18" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2)"/>
-<circle cx="763" cy="58" r="14" fill="var(--color-accent-2-700)"/>
-<text x="763" y="63" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-neutral-100)">5</text>
-<text x="756" y="100" font-size="12.5" font-weight="700" fill="var(--color-accent-2-700)">Devuelve la</text>
-<text x="756" y="116" font-size="12.5" font-weight="700" fill="var(--color-accent-2-700)">referencia</text>
-<text x="756" y="140" font-size="10.5" fill="var(--color-text)">La variable p del</text>
-<text x="756" y="156" font-size="10.5" fill="var(--color-text)">Stack ya apunta al</text>
-<text x="756" y="172" font-size="10.5" fill="var(--color-text)">objeto del Heap.</text>
-
-<line x1="165" y1="128" x2="183" y2="128" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-new)"/>
-<line x1="349" y1="128" x2="367" y2="128" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-new)"/>
-<line x1="533" y1="128" x2="551" y2="128" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-new)"/>
-<line x1="717" y1="128" x2="735" y2="128" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-new)"/>
-
-<text x="4" y="228" font-size="11" fill="var(--color-neutral-700)">Si el constructor lanza una excepción, la ejecución muere en la etapa 4: la variable p nunca llega a apuntar al objeto.</text>
+<svg viewBox="0 0 720 500" role="img" aria-labelledby="d-new-t">
+<title id="d-new-t">Las cinco etapas que ejecuta la JVM al evaluar el operador new</title>
+<defs><marker id="ar-new" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent)"/></marker></defs>
+<text x="2" y="22" font-size="15" font-weight="700" fill="var(--color-accent-700)">Producto p = new Producto("Yerba", 3200);</text>
+<rect x="0" y="40" width="720" height="72" rx="16" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<circle cx="34" cy="76" r="17" fill="var(--color-accent)"/>
+<text x="34" y="82" font-size="15" font-weight="700" text-anchor="middle" fill="var(--color-neutral-100)">1</text>
+<text x="68" y="70" font-size="15" font-weight="700" fill="var(--color-accent-700)">Reserva en el Heap</text>
+<text x="68" y="93" font-size="13" fill="var(--color-text)">La JVM aparta un bloque de memoria del tamaño de todos los atributos declarados.</text>
+<line x1="34" y1="115" x2="34" y2="125" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-new)"/>
+<rect x="0" y="128" width="720" height="72" rx="16" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<circle cx="34" cy="164" r="17" fill="var(--color-accent)"/>
+<text x="34" y="170" font-size="15" font-weight="700" text-anchor="middle" fill="var(--color-neutral-100)">2</text>
+<text x="68" y="158" font-size="15" font-weight="700" fill="var(--color-accent-700)">Valores por defecto</text>
+<text x="68" y="181" font-size="13" fill="var(--color-text)">Todo campo numérico queda en 0, los boolean en false y las referencias en null.</text>
+<line x1="34" y1="203" x2="34" y2="213" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-new)"/>
+<rect x="0" y="216" width="720" height="72" rx="16" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<circle cx="34" cy="252" r="17" fill="var(--color-accent)"/>
+<text x="34" y="258" font-size="15" font-weight="700" text-anchor="middle" fill="var(--color-neutral-100)">3</text>
+<text x="68" y="246" font-size="15" font-weight="700" fill="var(--color-accent-700)">Inicializadores de instancia</text>
+<text x="68" y="269" font-size="13" fill="var(--color-text)">Campos declarados con valor y bloques { }, en el orden en que aparecen en el archivo.</text>
+<line x1="34" y1="291" x2="34" y2="301" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-new)"/>
+<rect x="0" y="304" width="720" height="72" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
+<circle cx="34" cy="340" r="17" fill="var(--color-accent-700)"/>
+<text x="34" y="346" font-size="15" font-weight="700" text-anchor="middle" fill="var(--color-neutral-100)">4</text>
+<text x="68" y="334" font-size="15" font-weight="700" fill="var(--color-accent-700)">Cuerpo del constructor</text>
+<text x="68" y="357" font-size="13" fill="var(--color-text)">Recién acá corre tu código: validar argumentos, asignar atributos, calcular derivados.</text>
+<line x1="34" y1="379" x2="34" y2="389" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-new)"/>
+<rect x="0" y="392" width="720" height="72" rx="16" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-600)"/>
+<circle cx="34" cy="428" r="17" fill="var(--color-accent-2-700)"/>
+<text x="34" y="434" font-size="15" font-weight="700" text-anchor="middle" fill="var(--color-neutral-100)">5</text>
+<text x="68" y="422" font-size="15" font-weight="700" fill="var(--color-accent-2-800)">Devuelve la referencia</text>
+<text x="68" y="445" font-size="13" fill="var(--color-text)">La variable p, que vive en el Stack, ya apunta al objeto terminado en el Heap.</text>
+<text x="2" y="486" font-size="12" fill="var(--color-neutral-700)">Si el constructor lanza una excepción, todo muere en la etapa 4: la variable p nunca llega a apuntar al objeto.</text>
 </svg>
 <figcaption>El operador <code>new</code> ejecuta cinco etapas. El constructor es la cuarta, no la primera: el objeto ya existe en memoria cuando tu código empieza a correr.</figcaption>
 </figure>
@@ -183,35 +157,26 @@ Si mañana agregás una regla nueva —que el nombre no pueda estar vacío— te
 La solución es **`this(...)`**: un constructor puede llamar a otro constructor de la misma clase y delegarle todo el trabajo. Se elige **un único constructor canónico** que concentra la validación, y el resto simplemente le pasa valores por defecto.
 
 <figure class="diagram">
-<svg viewBox="0 0 900 250" role="img" aria-labelledby="d-this-title">
-<title id="d-this-title">Constructores sobrecargados delegando en un único constructor canónico</title>
-<defs>
-<marker id="ar-this" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-<path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent)"/>
-</marker>
-</defs>
-
-<rect x="4" y="26" width="330" height="66" rx="18" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
-<text x="24" y="52" font-size="12.5" font-weight="700" fill="var(--color-text)">Producto()</text>
-<text x="24" y="74" font-size="11" fill="var(--color-neutral-700)">this("Sin nombre", 0);</text>
-
-<rect x="4" y="116" width="330" height="66" rx="18" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
-<text x="24" y="142" font-size="12.5" font-weight="700" fill="var(--color-text)">Producto(String nombre)</text>
-<text x="24" y="164" font-size="11" fill="var(--color-neutral-700)">this(nombre, 0);</text>
-
-<rect x="470" y="40" width="426" height="150" rx="22" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
-<text x="494" y="68" font-size="12.5" font-weight="700" fill="var(--color-accent-700)">Producto(String nombre, double precio)</text>
-<text x="494" y="92" font-size="11" fill="var(--color-neutral-800)">CONSTRUCTOR CANÓNICO</text>
-<text x="494" y="118" font-size="11" fill="var(--color-text)">· valida que nombre no sea nulo ni vacío</text>
-<text x="494" y="138" font-size="11" fill="var(--color-text)">· valida que precio no sea negativo</text>
-<text x="494" y="158" font-size="11" fill="var(--color-text)">· asigna los atributos</text>
-<text x="494" y="178" font-size="11" fill="var(--color-accent-700)">Es el único lugar donde vive la regla.</text>
-
-<path d="M338 59 C 400 59, 410 95, 466 105" fill="none" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-this)"/>
-<path d="M338 149 C 400 149, 410 125, 466 118" fill="none" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-this)"/>
-<text x="352" y="102" font-size="11" font-weight="700" fill="var(--color-accent-700)">this(...)</text>
-
-<text x="4" y="228" font-size="11" fill="var(--color-neutral-700)">Una regla nueva se agrega en un solo lugar y los tres constructores la heredan automáticamente.</text>
+<svg viewBox="0 0 720 250" role="img" aria-labelledby="d-this-t">
+<title id="d-this-t">Constructores sobrecargados delegando en un único constructor canónico</title>
+<defs><marker id="ar-this" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent)"/></marker></defs>
+<rect x="0" y="30" width="250" height="64" rx="16" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<text x="20" y="56" font-size="13.5" font-weight="700" fill="var(--color-text)">Producto()</text>
+<text x="20" y="78" font-size="12.5" fill="var(--color-neutral-700)">this("Sin nombre", 0);</text>
+<rect x="0" y="124" width="250" height="64" rx="16" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<text x="20" y="150" font-size="13.5" font-weight="700" fill="var(--color-text)">Producto(String nombre)</text>
+<text x="20" y="172" font-size="12.5" fill="var(--color-neutral-700)">this(nombre, 0);</text>
+<path d="M252 60 C 296 60, 300 100, 334 106" fill="none" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-this)"/>
+<path d="M252 154 C 296 154, 300 124, 334 118" fill="none" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-this)"/>
+<text x="262" y="97" font-size="12.5" font-weight="700" fill="var(--color-accent-700)">this(...)</text>
+<rect x="340" y="42" width="380" height="150" rx="20" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
+<text x="362" y="70" font-size="13" font-weight="700" fill="var(--color-accent-700)">Producto(String nombre, double precio)</text>
+<text x="362" y="92" font-size="11.5" fill="var(--color-neutral-800)">CONSTRUCTOR CANÓNICO</text>
+<text x="362" y="118" font-size="12.5" fill="var(--color-text)">· valida que nombre no sea nulo ni vacío</text>
+<text x="362" y="139" font-size="12.5" fill="var(--color-text)">· valida que precio no sea negativo</text>
+<text x="362" y="160" font-size="12.5" fill="var(--color-text)">· asigna los atributos</text>
+<text x="362" y="182" font-size="12" font-weight="700" fill="var(--color-accent-700)">El único lugar donde vive la regla.</text>
+<text x="2" y="228" font-size="12" fill="var(--color-neutral-700)">Una regla nueva se agrega en un solo lugar y los tres constructores la heredan automáticamente.</text>
 </svg>
 <figcaption>Delegación con <code>this(...)</code>: los constructores de conveniencia no repiten lógica, solo completan valores por defecto y llaman al canónico.</figcaption>
 </figure>
@@ -259,64 +224,43 @@ Encapsular **no es** "poné todo `private` y generá getters y setters con el ID
 Mientras un atributo sea `public`, cualquier línea de cualquier archivo del proyecto puede dejarlo en un estado imposible, y no hay forma de impedirlo ni de saber quién lo hizo.
 
 <figure class="diagram">
-<svg viewBox="0 0 900 320" role="img" aria-labelledby="d-encap-title">
-<title id="d-encap-title">Comparación entre una clase con campos públicos y una clase encapsulada</title>
-<defs>
-<marker id="ar-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-<path d="M0,0 L10,5 L0,10 z" fill="var(--color-neutral-600)"/>
-</marker>
-<marker id="ar-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-<path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent-2-700)"/>
-</marker>
-</defs>
-
-<rect x="3" y="6" width="430" height="308" rx="24" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
-<text x="27" y="38" font-size="13.5" font-weight="700" fill="var(--color-neutral-800)">Sin encapsular — campos public</text>
-
-<rect x="27" y="60" width="150" height="52" rx="14" fill="var(--color-neutral-100)" stroke="var(--color-divider)"/>
-<text x="102" y="82" font-size="11" text-anchor="middle" fill="var(--color-text)">Código externo</text>
-<text x="102" y="99" font-size="10.5" text-anchor="middle" fill="var(--color-neutral-700)">p.precio = -500;</text>
-
-<line x1="177" y1="86" x2="270" y2="86" stroke="var(--color-neutral-600)" stroke-width="2" marker-end="url(#ar-bad)"/>
-<text x="223" y="76" font-size="10.5" text-anchor="middle" fill="var(--color-neutral-700)">acceso directo</text>
-
-<rect x="278" y="52" width="132" height="68" rx="14" fill="var(--color-neutral-100)" stroke="var(--color-neutral-500)"/>
-<text x="344" y="76" font-size="11" text-anchor="middle" fill="var(--color-text)">public double</text>
-<text x="344" y="93" font-size="11" text-anchor="middle" fill="var(--color-text)">precio;</text>
-<text x="344" y="111" font-size="10.5" text-anchor="middle" fill="var(--color-neutral-600)">sin defensa</text>
-
-<rect x="27" y="150" width="383" height="76" rx="16" fill="var(--color-neutral-300)" stroke="var(--color-neutral-500)"/>
-<text x="47" y="176" font-size="12" font-weight="700" fill="var(--color-neutral-900)">Estado resultante: precio = -500</text>
-<text x="47" y="198" font-size="11" fill="var(--color-neutral-800)">El objeto quedó en un estado imposible y nadie</text>
-<text x="47" y="214" font-size="11" fill="var(--color-neutral-800)">pudo impedirlo.</text>
-
-<text x="27" y="256" font-size="11" fill="var(--color-neutral-700)">El error aparece al facturar, tres capas más arriba,</text>
-<text x="27" y="272" font-size="11" fill="var(--color-neutral-700)">donde ya no hay ninguna pista de quién lo causó.</text>
-<text x="27" y="298" font-size="11" font-weight="700" fill="var(--color-neutral-800)">Culpables posibles: todo el proyecto.</text>
-
-<rect x="467" y="6" width="430" height="308" rx="24" fill="var(--color-accent-2-100)" stroke="var(--color-accent-2-400)"/>
-<text x="491" y="38" font-size="13.5" font-weight="700" fill="var(--color-accent-2-700)">Encapsulado — campos private</text>
-
-<rect x="491" y="60" width="150" height="52" rx="14" fill="var(--color-neutral-100)" stroke="var(--color-divider)"/>
-<text x="566" y="82" font-size="11" text-anchor="middle" fill="var(--color-text)">Código externo</text>
-<text x="566" y="99" font-size="10.5" text-anchor="middle" fill="var(--color-neutral-700)">p.setPrecio(-500);</text>
-
-<line x1="641" y1="86" x2="712" y2="86" stroke="var(--color-accent-2-700)" stroke-width="2" marker-end="url(#ar-good)"/>
-
-<rect x="720" y="46" width="154" height="80" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
-<text x="797" y="70" font-size="11" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">setPrecio()</text>
-<text x="797" y="90" font-size="10.5" text-anchor="middle" fill="var(--color-text)">if (precio &lt; 0)</text>
-<text x="797" y="107" font-size="10.5" text-anchor="middle" fill="var(--color-text)">throw ...</text>
-<text x="797" y="122" font-size="10" text-anchor="middle" fill="var(--color-accent-700)">la única puerta</text>
-
-<rect x="491" y="150" width="383" height="76" rx="16" fill="var(--color-neutral-100)" stroke="var(--color-accent-2-400)"/>
-<text x="511" y="176" font-size="12" font-weight="700" fill="var(--color-accent-2-700)">private double precio;  →  intacto</text>
-<text x="511" y="198" font-size="11" fill="var(--color-text)">La asignación inválida se rechaza antes de tocar</text>
-<text x="511" y="214" font-size="11" fill="var(--color-text)">el atributo.</text>
-
-<text x="491" y="256" font-size="11" fill="var(--color-neutral-700)">El error aparece exactamente en la línea que lo</text>
-<text x="491" y="272" font-size="11" fill="var(--color-neutral-700)">provocó, con el stack trace apuntando al culpable.</text>
-<text x="491" y="298" font-size="11" font-weight="700" fill="var(--color-accent-2-700)">Culpables posibles: uno.</text>
+<svg viewBox="0 0 720 480" role="img" aria-labelledby="d-encap-t">
+<title id="d-encap-t">Comparación entre una clase con campos públicos y una clase encapsulada</title>
+<defs><marker id="ar-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--color-neutral-600)"/></marker><marker id="ar-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent-2-700)"/></marker></defs>
+<rect x="0" y="0" width="720" height="230" rx="22" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<text x="24" y="32" font-size="15" font-weight="700" fill="var(--color-neutral-800)">Sin encapsular — campos public</text>
+<rect x="24" y="52" width="190" height="60" rx="14" fill="var(--color-neutral-100)" stroke="var(--color-divider)"/>
+<text x="119" y="76" font-size="12.5" text-anchor="middle" fill="var(--color-text)">Código externo</text>
+<text x="119" y="96" font-size="12" text-anchor="middle" fill="var(--color-neutral-700)">p.precio = -500;</text>
+<text x="253" y="74" font-size="11.5" text-anchor="middle" fill="var(--color-neutral-700)">acceso directo</text>
+<line x1="216" y1="84" x2="288" y2="84" stroke="var(--color-neutral-600)" stroke-width="2" marker-end="url(#ar-bad)"/>
+<rect x="296" y="52" width="176" height="60" rx="14" fill="var(--color-neutral-100)" stroke="var(--color-neutral-500)"/>
+<text x="384" y="78" font-size="12.5" text-anchor="middle" fill="var(--color-text)">public double precio;</text>
+<text x="384" y="97" font-size="11.5" text-anchor="middle" fill="var(--color-neutral-600)">sin ninguna defensa</text>
+<line x1="474" y1="84" x2="546" y2="84" stroke="var(--color-neutral-600)" stroke-width="2" marker-end="url(#ar-bad)"/>
+<rect x="554" y="52" width="142" height="60" rx="14" fill="var(--color-neutral-300)" stroke="var(--color-neutral-500)"/>
+<text x="625" y="78" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-neutral-900)">precio = -500</text>
+<text x="625" y="97" font-size="11.5" text-anchor="middle" fill="var(--color-neutral-700)">estado imposible</text>
+<text x="24" y="148" font-size="12.5" fill="var(--color-neutral-800)">El objeto quedó inconsistente y nadie pudo impedirlo. El error va a aparecer al facturar, tres</text>
+<text x="24" y="170" font-size="12.5" fill="var(--color-neutral-800)">capas más arriba, donde ya no queda ninguna pista de quién lo causó.</text>
+<text x="24" y="202" font-size="13" font-weight="700" fill="var(--color-neutral-900)">Culpables posibles: todo el proyecto.</text>
+<rect x="0" y="248" width="720" height="230" rx="22" fill="var(--color-accent-2-100)" stroke="var(--color-accent-2-400)"/>
+<text x="24" y="280" font-size="15" font-weight="700" fill="var(--color-accent-2-700)">Encapsulado — campos private</text>
+<rect x="24" y="300" width="190" height="60" rx="14" fill="var(--color-neutral-100)" stroke="var(--color-divider)"/>
+<text x="119" y="324" font-size="12.5" text-anchor="middle" fill="var(--color-text)">Código externo</text>
+<text x="119" y="344" font-size="12" text-anchor="middle" fill="var(--color-neutral-700)">p.setPrecio(-500);</text>
+<text x="253" y="322" font-size="11.5" text-anchor="middle" fill="var(--color-accent-2-700)">única puerta</text>
+<line x1="216" y1="332" x2="288" y2="332" stroke="var(--color-accent-2-700)" stroke-width="2" marker-end="url(#ar-good)"/>
+<rect x="296" y="298" width="176" height="64" rx="14" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
+<text x="384" y="322" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">setPrecio()</text>
+<text x="384" y="343" font-size="11.5" text-anchor="middle" fill="var(--color-text)">if (precio &lt; 0) throw ...</text>
+<line x1="474" y1="332" x2="546" y2="332" stroke="var(--color-accent-2-700)" stroke-width="2" marker-end="url(#ar-good)"/>
+<rect x="554" y="300" width="142" height="60" rx="14" fill="var(--color-neutral-100)" stroke="var(--color-accent-2-400)"/>
+<text x="625" y="326" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-700)">precio intacto</text>
+<text x="625" y="345" font-size="11.5" text-anchor="middle" fill="var(--color-neutral-700)">se rechaza antes</text>
+<text x="24" y="396" font-size="12.5" fill="var(--color-text)">La asignación inválida se rechaza antes de tocar el atributo. El error aparece exactamente en la</text>
+<text x="24" y="418" font-size="12.5" fill="var(--color-text)">línea que lo provocó, con el stack trace apuntando al culpable.</text>
+<text x="24" y="450" font-size="13" font-weight="700" fill="var(--color-accent-2-700)">Culpables posibles: uno.</text>
 </svg>
 <figcaption>La diferencia real no es estilística: es <em>dónde se detecta el error</em>. Encapsular convierte un bug difuso en una excepción con dirección exacta.</figcaption>
 </figure>
@@ -330,27 +274,24 @@ Prestá atención a la última línea de cada panel, porque ahí está todo. Con
 Java define cuatro niveles de visibilidad, del más abierto al más cerrado. Pensalos como círculos concéntricos de confianza:
 
 <figure class="diagram">
-<svg viewBox="0 0 900 340" role="img" aria-labelledby="d-mod-title">
-<title id="d-mod-title">Los cuatro niveles de visibilidad de Java como círculos concéntricos</title>
-
-<rect x="4" y="8" width="892" height="324" rx="28" fill="var(--color-neutral-100)" stroke="var(--color-neutral-400)"/>
-<text x="30" y="38" font-size="13.5" font-weight="700" fill="var(--color-neutral-800)">public</text>
-<text x="98" y="38" font-size="11.5" fill="var(--color-neutral-700)">— cualquier clase de cualquier paquete, incluso de otro proyecto que use tu librería</text>
-
-<rect x="44" y="58" width="812" height="254" rx="26" fill="var(--color-accent-2-100)" stroke="var(--color-accent-2-400)"/>
-<text x="70" y="88" font-size="13.5" font-weight="700" fill="var(--color-accent-2-700)">protected</text>
-<text x="158" y="88" font-size="11.5" fill="var(--color-neutral-800)">— mismo paquete, más las subclases aunque vivan en otro paquete</text>
-
-<rect x="84" y="108" width="732" height="184" rx="24" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-600)"/>
-<text x="110" y="138" font-size="13.5" font-weight="700" fill="var(--color-accent-2-800)">sin modificador</text>
-<text x="238" y="138" font-size="11.5" fill="var(--color-neutral-800)">(package-private) — solo clases del mismo paquete</text>
-
-<rect x="124" y="158" width="652" height="114" rx="22" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
-<text x="150" y="188" font-size="13.5" font-weight="700" fill="var(--color-accent-700)">private</text>
-<text x="218" y="188" font-size="11.5" fill="var(--color-neutral-900)">— solo dentro de la propia clase. Ni las subclases lo ven.</text>
-<text x="150" y="216" font-size="11.5" fill="var(--color-text)">Este es tu valor por defecto para atributos. Siempre.</text>
-<text x="150" y="240" font-size="11.5" fill="var(--color-text)">Empezá cerrado y abrí solo lo que otro código realmente necesita usar.</text>
-<text x="150" y="260" font-size="11" fill="var(--color-accent-700)">Cerrar después lo que ya publicaste rompe a todos tus usuarios.</text>
+<svg viewBox="0 0 720 330" role="img" aria-labelledby="d-mod-t">
+<title id="d-mod-t">Los cuatro niveles de visibilidad de Java como círculos concéntricos</title>
+<rect x="2" y="6" width="716" height="318" rx="26" fill="var(--color-neutral-100)" stroke="var(--color-neutral-400)"/>
+<text x="24" y="36" font-size="15" font-weight="700" fill="var(--color-neutral-800)">public</text>
+<text x="88" y="36" font-size="12" fill="var(--color-neutral-700)">— cualquier clase de cualquier paquete, incluso de otro proyecto</text>
+<rect x="34" y="54" width="652" height="258" rx="24" fill="var(--color-accent-2-100)" stroke="var(--color-accent-2-400)"/>
+<text x="56" y="84" font-size="15" font-weight="700" fill="var(--color-accent-2-700)">protected</text>
+<text x="140" y="84" font-size="12" fill="var(--color-neutral-800)">— mismo paquete, más las subclases aunque vivan en otro paquete</text>
+<rect x="66" y="102" width="588" height="198" rx="22" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-600)"/>
+<text x="88" y="132" font-size="15" font-weight="700" fill="var(--color-accent-2-800)">sin modificador</text>
+<text x="224" y="132" font-size="12" fill="var(--color-neutral-800)">(package-private) — solo clases del mismo paquete</text>
+<rect x="98" y="150" width="524" height="138" rx="20" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
+<text x="120" y="180" font-size="15" font-weight="700" fill="var(--color-accent-700)">private</text>
+<text x="186" y="180" font-size="12" fill="var(--color-neutral-900)">— solo dentro de la propia clase</text>
+<text x="120" y="208" font-size="12.5" fill="var(--color-text)">Ni siquiera las subclases pueden verlo.</text>
+<text x="120" y="232" font-size="12.5" font-weight="700" fill="var(--color-accent-700)">Este es tu valor por defecto para todo atributo. Siempre.</text>
+<text x="120" y="256" font-size="12.5" fill="var(--color-text)">Empezá cerrado y abrí solo lo que otro código necesite de verdad:</text>
+<text x="120" y="276" font-size="12.5" fill="var(--color-text)">cerrar después lo que ya publicaste rompe a todos tus usuarios.</text>
 </svg>
 <figcaption>Cuanto más adentro, menos código puede tocarlo y menos superficie tenés que auditar cuando algo falla.</figcaption>
 </figure>

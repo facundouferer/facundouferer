@@ -172,6 +172,12 @@ table { width: 100%; border-collapse: collapse; margin-block: 1.5rem; }
 	margin-bottom: var(--space-1);
 }
 .card-icon.accent-2 { background: var(--color-accent-2-100); color: var(--color-accent-2-700); }
+/* Lucide at the system's heavier stroke weight. */
+.card-icon svg {
+	width: 20px; height: 20px;
+	fill: none; stroke: currentColor; stroke-width: 2.75;
+	stroke-linecap: round; stroke-linejoin: round;
+}
 .elev-sm { box-shadow: var(--shadow-sm); }
 .elev-md { box-shadow: var(--shadow-md); }
 .elev-lg { box-shadow: var(--shadow-lg); }

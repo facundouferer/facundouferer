@@ -22,6 +22,12 @@ const content = {
 
 <section class="section" id="about">
 	<div class="container about-shell">
+		<div class="about-content">
+			<p class="kicker">{content.tag}</p>
+			<h2 class="section-title">{content.title}</h2>
+			<p class="about-text">{content.p1}</p>
+			<p class="about-text">{content.p2}</p>
+		</div>
 		<figure class="about-photo washed">
 			<img
 				src={withBase('/foto_facundo_01.png')}
@@ -29,19 +35,15 @@ const content = {
 				loading="lazy"
 			/>
 		</figure>
-		<div class="about-content">
-			<p class="kicker">{content.tag}</p>
-			<h2 class="section-title">{content.title}</h2>
-			<p class="about-text">{content.p1}</p>
-			<p class="about-text">{content.p2}</p>
-		</div>
 	</div>
 </section>
 
 <style>
+	/* Copy hugs the left edge on the page's text axis; the portrait takes the
+	   right — left-aligned and asymmetric, per the system. */
 	.about-shell {
 		display: grid;
-		grid-template-columns: auto 1fr;
+		grid-template-columns: 1fr auto;
 		gap: var(--space-8);
 		align-items: center;
 	}
@@ -67,7 +69,7 @@ const content = {
 	}
 
 	.about-text {
-		color: color-mix(in srgb, var(--color-text) 78%, transparent);
+		color: var(--color-neutral-800);
 		margin: 0;
 		font-size: 1rem;
 		line-height: 1.7;
@@ -76,8 +78,7 @@ const content = {
 	@media (width < 760px) {
 		.about-shell {
 			grid-template-columns: 1fr;
-			justify-items: center;
-			text-align: center;
+			justify-items: start;
 			gap: var(--space-4);
 		}
 

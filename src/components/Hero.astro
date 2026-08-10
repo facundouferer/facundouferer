@@ -64,17 +64,30 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 		z-index: -1;
 	}
 
-	@media (max-width: 720px) {
+	/* The side bleed only exists where the page can hold the whole circle.
+	   Narrower than that, the clip boundary would cut it into a flat chord,
+	   so it sits flush instead — whole, with the top bleed still rising past
+	   the page. */
+	@media (width < 1460px) {
+		.hero-decoration {
+			right: 0;
+		}
+	}
+
+	@media (width < 720px) {
 		.hero-decoration {
 			width: 240px;
 			height: 240px;
 			top: -120px;
-			right: -100px;
 		}
 	}
 
 	.hero-shell {
 		position: relative;
+		/* As a flex item, .container's auto inline margins suppress the
+		   cross-axis stretch and shrink it to its content width, pulling the
+		   hero off the text axis every other section sits on. */
+		width: 100%;
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
@@ -86,16 +99,19 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 		font-family: var(--font-heading);
 		font-weight: var(--font-heading-weight);
 		font-size: clamp(2.2rem, 5.5vw, 4.4rem);
-		line-height: 1.1;
-		letter-spacing: -0.01em;
+		line-height: 1.08;
+		letter-spacing: 0;
 		max-width: 18ch;
 		margin: 0;
+		/* Optical left alignment — Caprasimo's round caps read as indented
+		   against a flush-left column. The measured display value. */
+		margin-left: -0.028em;
 	}
 
 	.hero-subtitle {
 		font-size: clamp(1rem, 1.6vw, 1.15rem);
 		max-width: 52ch;
-		color: color-mix(in srgb, var(--color-text) 78%, transparent);
+		color: var(--color-neutral-800);
 		margin: 0;
 		line-height: 1.6;
 	}
@@ -105,10 +121,5 @@ const contactHref = locale === 'es' ? '/#contact' : '/en/#contact';
 		gap: var(--space-3);
 		flex-wrap: wrap;
 		margin-top: var(--space-2);
-	}
-
-	.hero-actions .btn {
-		font-size: 14px;
-		padding: 12px 28px;
 	}
 </style>
