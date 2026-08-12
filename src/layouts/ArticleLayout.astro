@@ -168,12 +168,11 @@ const schema = buildArticleSchemas({
 
 	.article-body :global(img) {
 		display: block;
-		float: right;
-		width: min(48%, 320px);
+		width: 100%;
+		max-width: 100%;
 		height: auto;
-		margin: 0 0 1rem 1.5rem;
+		margin: 1.5rem 0;
 		border-radius: var(--radius-lg);
-		shape-margin: 1rem;
 	}
 
 	.article-body :global(p:has(> img)) {
@@ -255,17 +254,5 @@ const schema = buildArticleSchemas({
 		justify-content: space-between;
 		gap: var(--space-2);
 		flex-wrap: wrap;
-	}
-
-	@media (width < 760px) {
-		.article-body :global(img) {
-			float: none;
-			width: 100%;
-			margin: 0 0 1.25rem;
-		}
-
-		.article-body :global(p:has(> img)) {
-			margin: 0 0 1rem;
-		}
 	}
 </style>

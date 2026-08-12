@@ -25,12 +25,10 @@ test('article routes render markdown content through content render helper', asy
 	assert.match(en, /resolveArticleEntry\(/);
 });
 
-test('article layout floats article images beside text on larger screens', async () => {
+test('article layout renders article images at full width', async () => {
 	const layout = await readFile('src/layouts/ArticleLayout.astro', 'utf8');
-	assert.match(layout, /float: right/);
-	assert.match(layout, /width: min\(48%, 320px\)/);
-	assert.match(layout, /clear: both/);
-	assert.match(layout, /@media \(width < 760px\)/);
+	assert.match(layout, /width:\s*100%/);
+	assert.doesNotMatch(layout, /float:\s*right/);
 });
 
 test('article layout restores list markers for markdown lists', async () => {
