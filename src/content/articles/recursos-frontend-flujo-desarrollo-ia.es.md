@@ -23,6 +23,8 @@ Cuando programás con ayuda de IA —ya sea pidiéndole a un asistente que te ar
 Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por importancia, con qué resuelve cada una y cómo se integra en un flujo de trabajo asistido por IA.
 
 ## 1. shadcn/ui
+![Sitio web de shadcn/ui](/img/articles/frontend-resources/shadcn.png)
+
 **Qué es:** no es una librería tradicional, es un generador de componentes. En vez de instalar un paquete, copiás el código fuente del componente a tu proyecto (botón, modal, dropdown, etc.), construido sobre Radix UI y Tailwind CSS.
 
 **Para qué sirve:** te da componentes accesibles y con buen diseño base, pero el código queda 100% en tu repo, así que podés modificarlo sin pelear contra una API cerrada.
@@ -32,6 +34,8 @@ Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por
 - [shadcn/ui](https://ui.shadcn.com)
 
 ## 2. Radix UI
+![Sitio web de Radix UI](/img/articles/frontend-resources/radix.png)
+
 **Qué es:** la capa de primitivos accesibles sobre la que está construido shadcn/ui. Sin estilos propios: maneja el foco, el teclado, los roles ARIA y el comportamiento de cada componente.
 
 **Para qué sirve:** resuelve la parte más tediosa y propensa a errores de la accesibilidad —que un modal atrape el foco, que un combobox funcione con teclado— sin que tengas que programarlo vos.
@@ -41,6 +45,8 @@ Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por
 - [Radix UI](https://www.radix-ui.com)
 
 ## 3. Base UI
+![Sitio web de Base UI](/img/articles/frontend-resources/base-ui.png)
+
 **Qué es:** la nueva capa de primitivos headless del equipo de MUI, pensada como alternativa activamente mantenida a Radix.
 
 **Para qué sirve:** mismo problema que Radix —accesibilidad y comportamiento sin imponer estilos— pero con desarrollo más activo hoy en día.
@@ -50,6 +56,8 @@ Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por
 - [Base UI](https://base-ui.com)
 
 ## 4. MUI (Material UI) Core
+![Sitio web de MUI](/img/articles/frontend-resources/mui.png)
+
 **Qué es:** una librería de componentes completa, instalable como dependencia npm, que implementa Material Design con un sistema de theming propio.
 
 **Para qué sirve:** te ahorra semanas de trabajo cuando necesitás componentes complejos ya resueltos —tablas de datos, date pickers, autocomplete— sin armarlos pieza por pieza.
@@ -59,6 +67,8 @@ Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por
 - [MUI](https://mui.com)
 
 ## 5. Mantine
+![Sitio web de Mantine](/img/articles/frontend-resources/mantine.png)
+
 **Qué es:** librería "todo incluido" con más de 100 componentes y 50 hooks, open source bajo licencia MIT.
 
 **Para qué sirve:** cubre tanto componentes visuales como lógica común (manejo de formularios, notificaciones, fechas) en un solo paquete coherente.
@@ -68,6 +78,8 @@ Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por
 - [Mantine](https://mantine.dev)
 
 ## 6. Ant Design
+![Sitio web de Ant Design](/img/articles/frontend-resources/ant-design.png)
+
 **Qué es:** librería de componentes orientada a aplicaciones data-heavy, muy usada en dashboards internos y herramientas de gestión.
 
 **Para qué sirve:** trae resueltos los componentes más pesados de construir a mano: tablas con filtros y paginación, formularios complejos, layouts de administración.
@@ -77,6 +89,8 @@ Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por
 - [Ant Design](https://ant.design)
 
 ## 7. Chakra UI
+![Sitio web de Chakra UI](/img/articles/frontend-resources/chakra-ui.png)
+
 **Qué es:** librería de componentes con foco fuerte en accesibilidad y una API de estilos simple basada en props.
 
 **Para qué sirve:** te da un set de componentes con buenos defaults visuales sin necesidad de mucho ajuste extra.
@@ -86,6 +100,8 @@ Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por
 - [Chakra UI](https://chakra-ui.com)
 
 ## 8. React Aria Components
+![Sitio web de React Aria](/img/articles/frontend-resources/react-aria.png)
+
 **Qué es:** librería headless de Adobe, considerada una referencia en accesibilidad.
 
 **Para qué sirve:** igual que Radix o Base UI, resuelve comportamiento y accesibilidad sin estilos propios, pero con un enfoque todavía más exhaustivo en casos límite (lectores de pantalla, internacionalización).
@@ -95,6 +111,8 @@ Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por
 - [React Aria](https://react-spectrum.adobe.com/react-aria)
 
 ## 9. Magic UI
+![Sitio web de Magic UI](/img/articles/frontend-resources/magic-ui.png)
+
 **Qué es:** más de 150 componentes animados que se instalan con el mismo CLI que usa shadcn/ui.
 
 **Para qué sirve:** agrega la capa de animación y microinteracciones que shadcn no cubre por defecto —textos animados, fondos con efectos, transiciones.
@@ -104,6 +122,8 @@ Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por
 - [Magic UI](https://magicui.design)
 
 ## 10. Aceternity UI
+![Sitio web de Aceternity UI](/img/articles/frontend-resources/aceternity.png)
+
 **Qué es:** librería enfocada en efectos visuales y microinteracciones para landing pages y sitios de producto.
 
 **Para qué sirve:** resuelve ese tipo de detalle visual de alto impacto —efectos de spotlight, scroll parallax, tarjetas 3D— manteniendo consistencia visual entre componentes.
@@ -113,6 +133,8 @@ Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por
 - [Aceternity UI](https://ui.aceternity.com)
 
 ## 11. Kibo UI
+![Sitio web de Kibo UI](/img/articles/frontend-resources/kibo-ui.png)
+
 **Qué es:** registro open source de componentes de aplicación más avanzados, pensado para integrarse directo con shadcn/ui.
 
 **Para qué sirve:** cubre componentes que ni shadcn ni sus extensiones de animación resuelven: Gantt charts, tableros Kanban, selector de color, generador de QR, bloques de código con syntax highlighting.

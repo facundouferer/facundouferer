@@ -23,6 +23,8 @@ When coding with AI assistance — whether asking an assistant to generate a scr
 Here is a curated selection of 11 free, open-source tools ordered by practical importance, covering what each resolves and how it fits into an AI-assisted workflow.
 
 ## 1. shadcn/ui
+![shadcn/ui website](/img/articles/frontend-resources/shadcn.png)
+
 **What it is:** Not a traditional component library, but a code component generator. Instead of installing a heavy npm package, you copy component source code (buttons, modals, dropdowns) directly into your codebase, built on top of Radix UI and Tailwind CSS.
 
 **What it solves:** Gives you accessible, beautiful defaults with 100% code ownership in your repository so you can customize everything without fighting closed APIs.
@@ -32,6 +34,8 @@ Here is a curated selection of 11 free, open-source tools ordered by practical i
 - [shadcn/ui](https://ui.shadcn.com)
 
 ## 2. Radix UI
+![Radix UI website](/img/articles/frontend-resources/radix.png)
+
 **What it is:** The headless accessible primitives layer underlying shadcn/ui. Unstyled by default: it handles keyboard navigation, focus management, ARIA roles, and accessibility behavior.
 
 **What it solves:** Handles the trickiest accessibility requirements — trapping focus in modals, combobox keyboard interaction — without custom boilerplate.
@@ -41,6 +45,8 @@ Here is a curated selection of 11 free, open-source tools ordered by practical i
 - [Radix UI](https://www.radix-ui.com)
 
 ## 3. Base UI
+![Base UI website](/img/articles/frontend-resources/base-ui.png)
+
 **What it is:** The new headless primitives library from the MUI team, designed as an actively maintained alternative to Radix UI.
 
 **What it solves:** Solves the same core problem as Radix — accessibility and behavior without imposing visual styling — backed by active ongoing development.
@@ -50,6 +56,8 @@ Here is a curated selection of 11 free, open-source tools ordered by practical i
 - [Base UI](https://base-ui.com)
 
 ## 4. MUI (Material UI) Core
+![MUI website](/img/articles/frontend-resources/mui.png)
+
 **What it is:** A comprehensive component library installed via npm that implements Material Design with its own theming engine.
 
 **What it solves:** Saves weeks of work when complex components like data grids, date pickers, or autocompletes are needed out of the box.
@@ -59,6 +67,8 @@ Here is a curated selection of 11 free, open-source tools ordered by practical i
 - [MUI](https://mui.com)
 
 ## 5. Mantine
+![Mantine website](/img/articles/frontend-resources/mantine.png)
+
 **What it is:** An all-in-one feature-rich library featuring over 100 components and 50 hooks under the MIT license.
 
 **What it solves:** Combines visual components with essential state management and utility hooks (form handling, notifications, dates) in a single coherent ecosystem.
@@ -68,6 +78,8 @@ Here is a curated selection of 11 free, open-source tools ordered by practical i
 - [Mantine](https://mantine.dev)
 
 ## 6. Ant Design
+![Ant Design website](/img/articles/frontend-resources/ant-design.png)
+
 **What it is:** An enterprise-focused component library optimized for data-dense applications, internal tools, and administrative dashboards.
 
 **What it solves:** Solves complex UI patterns out of the box: data tables with filtering and pagination, intricate form layouts, and administrative structures.
@@ -77,6 +89,8 @@ Here is a curated selection of 11 free, open-source tools ordered by practical i
 - [Ant Design](https://ant.design)
 
 ## 7. Chakra UI
+![Chakra UI website](/img/articles/frontend-resources/chakra-ui.png)
+
 **What it is:** A component library prioritizing accessibility and developer ergonomics through a prop-based styling API.
 
 **What it solves:** Delivers clean visual defaults without heavy custom CSS configuration.
@@ -86,6 +100,8 @@ Here is a curated selection of 11 free, open-source tools ordered by practical i
 - [Chakra UI](https://chakra-ui.com)
 
 ## 8. React Aria Components
+![React Aria website](/img/articles/frontend-resources/react-aria.png)
+
 **What it is:** Adobe's unstyled headless library, considered an industry benchmark for web accessibility.
 
 **What it solves:** Manages component behavior and deep accessibility edge cases (screen readers, internationalization) without opinionated visual styles.
@@ -95,6 +111,8 @@ Here is a curated selection of 11 free, open-source tools ordered by practical i
 - [React Aria](https://react-spectrum.adobe.com/react-aria)
 
 ## 9. Magic UI
+![Magic UI website](/img/articles/frontend-resources/magic-ui.png)
+
 **What it is:** Over 150 animated components installable via the same CLI workflow as shadcn/ui.
 
 **What it solves:** Adds motion design and micro-interactions that base shadcn doesn't cover — animated typography, visual background effects, and fluid transitions.
@@ -104,6 +122,8 @@ Here is a curated selection of 11 free, open-source tools ordered by practical i
 - [Magic UI](https://magicui.design)
 
 ## 10. Aceternity UI
+![Aceternity UI website](/img/articles/frontend-resources/aceternity.png)
+
 **What it is:** A UI library focused on high-impact visual effects for landing pages and product showcases.
 
 **What it solves:** Provides complex visual effects — spotlight backgrounds, 3D card tilts, parallax scrolling — while maintaining aesthetic coherence.
@@ -113,6 +133,8 @@ Here is a curated selection of 11 free, open-source tools ordered by practical i
 - [Aceternity UI](https://ui.aceternity.com)
 
 ## 11. Kibo UI
+![Kibo UI website](/img/articles/frontend-resources/kibo-ui.png)
+
 **What it is:** An open-source registry of advanced application components designed to integrate seamlessly with shadcn/ui.
 
 **What it solves:** Offers specialized product components beyond standard libraries: Gantt charts, Kanban boards, color pickers, QR code generators, and syntax-highlighted code blocks.
