@@ -1,5 +1,5 @@
 ---
-title: 'Frontend Resources for AI Workflows: 11 Free Libraries You Should Keep Handy'
+title: 'Frontend Resources for AI Workflows: 10 Free Libraries You Should Keep Handy'
 slug: 'recursos-frontend-flujo-desarrollo-ia'
 date: 2026-08-12
 author: 'Facundo Uferer'
@@ -9,7 +9,7 @@ tags:
   - UI
   - AI
   - Tailwind
-excerpt: 'A curated selection of 11 free open-source frontend libraries to streamline and supercharge your AI-assisted development workflow.'
+excerpt: 'A curated selection of 10 free open-source frontend libraries to streamline and supercharge your AI-assisted development workflow.'
 readingTime: 6
 lang: 'en'
 published: true
@@ -20,7 +20,7 @@ featured: false
 
 When coding with AI assistance — whether asking an assistant to generate a screen, a form, or a dashboard — the bottleneck is rarely backend logic; it is almost always frontend execution. You need components that look refined, maintain accessibility, and don't cost an afternoon of tedious CSS tweaking. That is where UI component libraries come in: they provide both you and the AI with battle-tested building blocks — buttons, modals, data tables, and accessible primitives — so you can build quickly instead of reinventing every single interface element.
 
-Here is a curated selection of 11 free, open-source tools ordered by practical importance, covering what each resolves and how it fits into an AI-assisted workflow.
+Here is a curated selection of 10 free, open-source tools ordered by practical importance, covering what each resolves and how it fits into an AI-assisted workflow.
 
 ## 1. shadcn/ui
 ![shadcn/ui website](/img/articles/frontend-resources/shadcn.png)
@@ -99,18 +99,7 @@ Here is a curated selection of 11 free, open-source tools ordered by practical i
 
 - [Chakra UI](https://chakra-ui.com)
 
-## 8. React Aria Components
-![React Aria website](/img/articles/frontend-resources/react-aria.png)
-
-**What it is:** Adobe's unstyled headless library, considered an industry benchmark for web accessibility.
-
-**What it solves:** Manages component behavior and deep accessibility edge cases (screen readers, internationalization) without opinionated visual styles.
-
-**Why it matters in an AI workflow:** When strict accessibility compliance is mandatory (such as public sector software), instructing AI to build on React Aria ensures high accessibility standards.
-
-- [React Aria](https://react-spectrum.adobe.com/react-aria)
-
-## 9. Magic UI
+## 8. Magic UI
 ![Magic UI website](/img/articles/frontend-resources/magic-ui.png)
 
 **What it is:** Over 150 animated components installable via the same CLI workflow as shadcn/ui.
@@ -121,7 +110,7 @@ Here is a curated selection of 11 free, open-source tools ordered by practical i
 
 - [Magic UI](https://magicui.design)
 
-## 10. Aceternity UI
+## 9. Aceternity UI
 ![Aceternity UI website](/img/articles/frontend-resources/aceternity.png)
 
 **What it is:** A UI library focused on high-impact visual effects for landing pages and product showcases.
@@ -132,7 +121,7 @@ Here is a curated selection of 11 free, open-source tools ordered by practical i
 
 - [Aceternity UI](https://ui.aceternity.com)
 
-## 11. Kibo UI
+## 10. Kibo UI
 ![Kibo UI website](/img/articles/frontend-resources/kibo-ui.png)
 
 **What it is:** An open-source registry of advanced application components designed to integrate seamlessly with shadcn/ui.

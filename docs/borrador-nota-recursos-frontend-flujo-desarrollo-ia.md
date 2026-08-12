@@ -1,8 +1,8 @@
-# Recursos de frontend para el flujo de desarrollo con IA: 11 librerías gratuitas que conviene tener a mano
+# Recursos de frontend para el flujo de desarrollo con IA: 10 librerías gratuitas que conviene tener a mano
 
 Cuando programás con ayuda de IA —ya sea pidiéndole a un asistente que te arme una pantalla, un formulario o un dashboard— el cuello de botella casi nunca es la lógica: es el frontend. Necesitás que algo se vea bien, sea accesible y no te haga perder una tarde ajustando CSS. Ahí es donde entran las librerías de componentes: le dan a la IA (y a vos) piezas ya resueltas —botones, modales, tablas, primitivos accesibles— sobre las que construir rápido en lugar de reinventar cada elemento desde cero.
 
-Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por importancia, con qué resuelve cada una y cómo se integra en un flujo de trabajo asistido por IA.
+Esta es una selección de 10 herramientas gratuitas y open source, ordenadas por importancia, con qué resuelve cada una y cómo se integra en un flujo de trabajo asistido por IA.
 
 ## 1. shadcn/ui
 **Qué es:** no es una librería tradicional, es un generador de componentes. En vez de instalar un paquete, copiás el código fuente del componente a tu proyecto (botón, modal, dropdown, etc.), construido sobre Radix UI y Tailwind CSS.
@@ -67,16 +67,7 @@ Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por
 
 🔗 https://chakra-ui.com
 
-## 8. React Aria Components
-**Qué es:** librería headless de Adobe, considerada una referencia en accesibilidad.
-
-**Para qué sirve:** igual que Radix o Base UI, resuelve comportamiento y accesibilidad sin estilos propios, pero con un enfoque todavía más exhaustivo en casos límite (lectores de pantalla, internacionalización).
-
-**Por qué importa en un flujo con IA:** cuando la accesibilidad es un requisito no negociable (sector público, por ejemplo), pedirle a la IA que construya sobre React Aria da más garantías que dejarla resolver el comportamiento por su cuenta.
-
-🔗 https://react-spectrum.adobe.com/react-aria
-
-## 9. Magic UI
+## 8. Magic UI
 **Qué es:** más de 150 componentes animados que se instalan con el mismo CLI que usa shadcn/ui.
 
 **Para qué sirve:** agrega la capa de animación y microinteracciones que shadcn no cubre por defecto —textos animados, fondos con efectos, transiciones.
@@ -85,7 +76,7 @@ Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por
 
 🔗 https://magicui.design
 
-## 10. Aceternity UI
+## 9. Aceternity UI
 **Qué es:** librería enfocada en efectos visuales y microinteracciones para landing pages y sitios de producto.
 
 **Para qué sirve:** resuelve ese tipo de detalle visual de alto impacto —efectos de spotlight, scroll parallax, tarjetas 3D— manteniendo consistencia visual entre componentes.
@@ -94,7 +85,7 @@ Esta es una selección de 11 herramientas gratuitas y open source, ordenadas por
 
 🔗 https://ui.aceternity.com
 
-## 11. Kibo UI
+## 10. Kibo UI
 **Qué es:** registro open source de componentes de aplicación más avanzados, pensado para integrarse directo con shadcn/ui.
 
 **Para qué sirve:** cubre componentes que ni shadcn ni sus extensiones de animación resuelven: Gantt charts, tableros Kanban, selector de color, generador de QR, bloques de código con syntax highlighting.
