@@ -256,6 +256,8 @@ System.out.println(original[0] == copia[0]);   // true
 
 Con `String` este problema no aparece nunca, y la razón es la sección 8: los `String` son inmutables, así que compartir la referencia no puede hacer daño.
 
+> Los arrays de objetos tienen bastante más tela que cortar —casillas en `null`, ordenamiento con `Comparator`, capacidad contra cantidad—, pero necesitan clases y constructores. Por eso tienen lección propia: **Arrays de Objetos**, la número 9, justo después de encapsulamiento.
+
 ---
 
 ## 6. Matrices y arrays irregulares

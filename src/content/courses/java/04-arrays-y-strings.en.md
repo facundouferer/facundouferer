@@ -256,6 +256,8 @@ System.out.println(original[0] == copy[0]);    // true
 
 With `String` this problem never shows up, and the reason is section 8: `String`s are immutable, so sharing a reference cannot do any harm.
 
+> Object arrays have a good deal more to them —`null` slots, sorting with a `Comparator`, capacity versus count— but they need classes and constructors first. That is why they get their own lesson: **Arrays of Objects**, number 9, right after encapsulation.
+
 ---
 
 ## 6. Matrices and jagged arrays
