@@ -3,7 +3,7 @@ course: 'java'
 slug: '15-tad-arboles-binarios-y-busqueda'
 title: 'The Tree ADT: Traversals and Binary Search Trees'
 description: 'Move from linear to hierarchical structures: tree vocabulary, the three depth-first traversals, level-order traversal with a queue, the BST, and why it degenerates.'
-order: 16
+order: 17
 lang: 'en'
 published: true
 ---

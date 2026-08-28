@@ -3,7 +3,7 @@ course: 'java'
 slug: '13-java-collections-framework-y-genericos'
 title: 'Colecciones en Java y Genéricos (JCF)'
 description: 'Recorré el Java Collections Framework completo, entendé por qué existen los genéricos, aprendé cómo funciona un HashMap por dentro y adquirí el criterio para elegir la colección correcta.'
-order: 14
+order: 15
 lang: 'es'
 published: true
 ---

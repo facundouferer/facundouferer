@@ -3,14 +3,14 @@ course: 'java'
 slug: '11-tad-listas-estaticas-y-dinamicas'
 title: 'The List ADT: Static, Dynamic, and Linked'
 description: 'Understand what an Abstract Data Type is, why an array and a linked list solve the same problem with opposite costs, and build singly linked, doubly linked, and circular lists from scratch.'
-order: 12
+order: 13
 lang: 'en'
 published: true
 ---
 
 # The List ADT: Static, Dynamic, and Linked
 
-From here on the course changes subject. You already know how to model objects; now you will learn to **organize many objects** and — this is the important part — to pick the right organization for what you plan to do with them.
+From here on the course changes subject. You already know how to model objects and, in lesson 9, you already stored many of them in an array with its own count. Now you will formalize that idea and — this is the important part — pick the right organization for what you plan to do with the data.
 
 Let us start with a question that sounds silly: if `ArrayList` already exists, why implement a list by hand?
 

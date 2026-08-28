@@ -3,14 +3,14 @@ course: 'java'
 slug: '11-tad-listas-estaticas-y-dinamicas'
 title: 'TAD Lista: Estáticas, Dinámicas y Enlazadas'
 description: 'Comprendé qué es un Tipo Abstracto de Dato, por qué un arreglo y una lista enlazada resuelven lo mismo con costos opuestos, e implementá listas simples, dobles y circulares desde cero.'
-order: 12
+order: 13
 lang: 'es'
 published: true
 ---
 
 # TAD Lista: Estáticas, Dinámicas y Enlazadas
 
-Desde acá el curso cambia de tema. Ya sabés modelar objetos; ahora vas a aprender a **organizar muchos objetos** y —esto es lo importante— a elegir la organización correcta según lo que vayas a hacer con ellos.
+Desde acá el curso cambia de tema. Ya sabés modelar objetos y, en la lección 9, ya guardaste muchos en un array con su contador de cantidad. Ahora vas a formalizar esa idea y —esto es lo importante— a elegir la organización correcta según lo que vayas a hacer con los datos.
 
 Empecemos con una pregunta que parece tonta: si ya existe `ArrayList`, ¿para qué implementar una lista a mano?
 

@@ -3,7 +3,7 @@ course: 'java'
 slug: '20-testing-junit-y-spring-boot'
 title: 'Testing with JUnit and Your First Spring Boot App'
 description: 'Write unit tests with JUnit 5, understand the test pyramid and the AAA pattern, use mocks to isolate dependencies, and build a three-layer CRUD REST service with Spring Boot.'
-order: 21
+order: 22
 lang: 'en'
 published: true
 ---

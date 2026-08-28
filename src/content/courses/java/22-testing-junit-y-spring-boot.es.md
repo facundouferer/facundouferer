@@ -3,7 +3,7 @@ course: 'java'
 slug: '20-testing-junit-y-spring-boot'
 title: 'Testing con JUnit y Tu Primera App en Spring Boot'
 description: 'Escribí pruebas unitarias con JUnit 5, entendé la pirámide de tests y el patrón AAA, usá mocks para aislar dependencias, y construí un servicio REST CRUD en tres capas con Spring Boot.'
-order: 21
+order: 22
 lang: 'es'
 published: true
 ---

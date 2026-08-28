@@ -3,7 +3,7 @@ course: 'java'
 slug: '15-tad-arboles-binarios-y-busqueda'
 title: 'TAD Árbol: Recorridos y Árbol Binario de Búsqueda'
 description: 'Pasá de las estructuras lineales a las jerárquicas: vocabulario de árboles, los tres recorridos en profundidad, el recorrido por niveles con una cola, el ABB y por qué se degenera.'
-order: 16
+order: 17
 lang: 'es'
 published: true
 ---

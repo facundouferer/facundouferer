@@ -3,7 +3,7 @@ course: 'java'
 slug: '17-archivos-persistencia-y-empaquetado-jar'
 title: 'Files, Serialization, and JAR Packaging'
 description: 'Learn to persist data with the modern Files and Path API, understand the decorator pattern behind streams, serialize objects and their pitfalls, and package your app into an executable JAR.'
-order: 18
+order: 19
 lang: 'en'
 published: true
 ---

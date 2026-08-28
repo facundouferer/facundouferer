@@ -3,7 +3,7 @@ course: 'java'
 slug: '08-herencia-polimorfismo-y-sobrecarga'
 title: 'Herencia, Polimorfismo y Sobrecarga de Métodos'
 description: 'Dominá la herencia con extends y super, la sobrescritura con @Override, la diferencia entre sobrecarga y sobrescritura, el despacho dinámico y cuándo conviene componer en lugar de heredar.'
-order: 9
+order: 10
 lang: 'es'
 published: true
 ---

@@ -3,7 +3,7 @@ course: 'java'
 slug: '13-java-collections-framework-y-genericos'
 title: 'Java Collections and Generics (JCF)'
 description: 'Walk through the whole Java Collections Framework, understand why generics exist, learn how a HashMap works internally, and build the judgment to pick the right collection.'
-order: 14
+order: 15
 lang: 'en'
 published: true
 ---

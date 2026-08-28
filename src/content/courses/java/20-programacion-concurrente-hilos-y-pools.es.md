@@ -3,7 +3,7 @@ course: 'java'
 slug: '19-programacion-concurrente-hilos-y-pools'
 title: 'Programación Concurrente: Hilos, Sincronización y Pools'
 description: 'Dominá la concurrencia en Java: ciclo de vida de hilos, sincronización de memoria compartida, condiciones de carrera, ExecutorService y Virtual Threads.'
-order: 19
+order: 20
 lang: 'es'
 published: true
 ---

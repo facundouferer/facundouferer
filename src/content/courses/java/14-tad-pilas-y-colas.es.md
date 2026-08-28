@@ -3,7 +3,7 @@ course: 'java'
 slug: '12-tad-pilas-y-colas'
 title: 'TAD Pila y TAD Cola: Estructuras Lineales'
 description: 'Dominá las estructuras LIFO y FIFO, implementalas desde cero sobre nodos y sobre arreglos, entendé la cola circular y resolvé el clásico problema del balanceo de paréntesis.'
-order: 13
+order: 14
 lang: 'es'
 published: true
 ---

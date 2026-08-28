@@ -3,7 +3,7 @@ course: 'java'
 slug: '10-excepciones-y-manejo-de-errores'
 title: 'Manejo de Excepciones y Robustez'
 description: 'Entendé la jerarquía Throwable, la diferencia entre checked y unchecked, cómo se propaga una excepción por la pila, try-with-resources, excepciones personalizadas y los antipatrones que hay que evitar.'
-order: 11
+order: 12
 lang: 'es'
 published: true
 ---

@@ -3,7 +3,7 @@ course: 'java'
 slug: '16-grafos-representacion-y-algoritmos'
 title: 'Grafos: Matriz, Lista de Adyacencia, BFS, DFS y Dijkstra'
 description: 'Modelá redes con grafos, elegí entre matriz y lista de adyacencia, implementá BFS y DFS con la estructura correcta, y entendé cómo Dijkstra encuentra el camino más barato.'
-order: 17
+order: 18
 lang: 'es'
 published: true
 ---

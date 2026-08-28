@@ -3,7 +3,7 @@ course: 'java'
 slug: '16-grafos-representacion-y-algoritmos'
 title: 'Graphs: Matrix, Adjacency List, BFS, DFS, and Dijkstra'
 description: 'Model networks with graphs, choose between an adjacency matrix and an adjacency list, implement BFS and DFS with the right structure, and understand how Dijkstra finds the cheapest path.'
-order: 17
+order: 18
 lang: 'en'
 published: true
 ---

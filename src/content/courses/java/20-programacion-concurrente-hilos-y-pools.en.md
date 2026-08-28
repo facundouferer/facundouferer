@@ -3,7 +3,7 @@ course: 'java'
 slug: '19-programacion-concurrente-hilos-y-pools'
 title: 'Concurrent Programming: Threads, Synchronization, and Pools'
 description: 'Master Java concurrency: thread lifecycle, shared memory synchronization, race conditions, ExecutorService, and Virtual Threads.'
-order: 19
+order: 20
 lang: 'en'
 published: true
 ---

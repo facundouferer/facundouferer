@@ -3,7 +3,7 @@ course: 'java'
 slug: '19-acceso-a-bases-de-datos-jdbc'
 title: 'Database Access with JDBC and Safe SQL'
 description: 'Connect your application to a relational database with JDBC, understand why PreparedStatement eliminates SQL injection, handle transactions with commit and rollback, and organize data access with the DAO pattern.'
-order: 20
+order: 21
 lang: 'en'
 published: true
 ---

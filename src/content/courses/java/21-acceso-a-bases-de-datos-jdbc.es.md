@@ -3,7 +3,7 @@ course: 'java'
 slug: '19-acceso-a-bases-de-datos-jdbc'
 title: 'Acceso a Bases de Datos con JDBC y SQL Seguro'
 description: 'Conectá tu aplicación a una base relacional con JDBC, entendé por qué PreparedStatement elimina la inyección SQL, manejá transacciones con commit y rollback, y organizá el acceso a datos con el patrón DAO.'
-order: 20
+order: 21
 lang: 'es'
 published: true
 ---

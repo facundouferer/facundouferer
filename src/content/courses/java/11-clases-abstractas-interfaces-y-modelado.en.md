@@ -3,7 +3,7 @@ course: 'java'
 slug: '09-clases-abstractas-interfaces-y-modelado'
 title: 'Abstract Classes, Interfaces, and Code Organization'
 description: 'Learn when to reach for an abstract class and when for an interface, implement several contracts at once, organize your code into packages, and model association, aggregation, and composition.'
-order: 10
+order: 11
 lang: 'en'
 published: true
 ---
