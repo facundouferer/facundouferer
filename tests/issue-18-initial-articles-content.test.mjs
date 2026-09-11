@@ -198,6 +198,14 @@ test('all localized article files include an article image reference', async () 
 		'src/content/articles/un-grafo-de-conocimiento-para-la-ia.en.md',
 		'src/content/articles/codegraph.es.md',
 		'src/content/articles/codegraph.en.md',
+		'src/content/articles/archify.es.md',
+		'src/content/articles/archify.en.md',
+		'src/content/articles/omniroute.es.md',
+		'src/content/articles/omniroute.en.md',
+		'src/content/articles/alan-buscaglia.es.md',
+		'src/content/articles/alan-buscaglia.en.md',
+		'src/content/articles/orca.es.md',
+		'src/content/articles/orca.en.md',
 	];
 
 	for (const filePath of files) {
