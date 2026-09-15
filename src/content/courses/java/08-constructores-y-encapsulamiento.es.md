@@ -305,6 +305,8 @@ Java define cuatro niveles de visibilidad, del más abierto al más cerrado. Pen
 
 **La regla operativa**: atributos siempre `private`; métodos `public` solo si forman parte del contrato que la clase le ofrece al mundo. Todo lo demás, lo más cerrado posible. Abrir visibilidad después es trivial; cerrarla rompe todo el código que ya dependía de ella.
 
+> *(Nota conceptual: en Java, los paquetes funcionan como **namespaces** (espacios de nombres) y a la vez como fronteras de encapsulamiento. Exploraremos en profundidad la teoría de namespaces, la resolución de colisiones y la arquitectura de paquetes en la lección 11).*
+
 ---
 
 ## 6. Getters y setters bien hechos

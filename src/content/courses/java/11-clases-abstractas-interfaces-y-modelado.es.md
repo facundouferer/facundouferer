@@ -2,7 +2,7 @@
 course: 'java'
 slug: '09-clases-abstractas-interfaces-y-modelado'
 title: 'Clases Abstractas, Interfaces y Organización del Código'
-description: 'Entendé cuándo usar una clase abstracta y cuándo una interfaz, implementá varios contratos a la vez, organizá tu código en paquetes y modelá asociación, agregación y composición.'
+description: 'Entendé cuándo usar una clase abstracta y cuándo una interfaz, implementá varios contratos a la vez, dominá el concepto de namespaces y paquetes en Java, y modelá asociación, agregación y composición.'
 order: 11
 lang: 'es'
 published: true
@@ -297,9 +297,23 @@ public abstract class RepositorioEnMemoria<T> implements Repositorio<T> {
 
 ---
 
-## 5. Organización: paquetes
+## 5. Organización del código: paquetes y el concepto de namespace en Java
 
-Un **paquete** es una carpeta con un nombre calificado. Sirve para agrupar clases relacionadas, evitar choques de nombres y controlar la visibilidad (acordate del `package-private` de la lección 8).
+### ¿Qué es un namespace (espacio de nombres)?
+
+En ingeniería de software y ciencias de la computación, un **namespace** (espacio de nombres) es un contenedor lógico que agrupa un conjunto de identificadores (clases, interfaces, tipos) para proporcionarles un contexto único y **evitar colisiones de nombres** (*name collisions*).
+
+A medida que un proyecto crece e integra librerías de terceros (por ejemplo utilidades de base de datos, clientes HTTP o modelos de dominio), es inevitable que distintas partes del sistema definan tipos con el mismo nombre simple: dos personas pueden crear una clase `Usuario`, o tu código puede definir `Date` mientras el driver SQL también incluye su propio `Date`. Sin un sistema de namespaces, todos los nombres compartirían un único espacio global plano y el compilador sería incapaz de distinguir cuál usar.
+
+### Java no tiene la palabra clave `namespace`: utiliza `package`
+
+A diferencia de lenguajes como C++, C# o PHP, Java **no tiene una palabra reservada `namespace`**. En su lugar, el lenguaje implementa el concepto de namespace de forma nativa a través de tres componentes complementarios:
+
+1. **La declaración `package`**: define el namespace al que pertenece cada archivo fuente.
+2. **El Fully Qualified Class Name (FQCN)**: la identidad canónica y universal de la clase para la JVM.
+3. **La sentencia `import`**: un alias léxico para usar nombres simples en el código sin tipear el FQCN cada vez.
+
+A diferencia de otros lenguajes donde los namespaces son construcciones puramente lógicas desconectadas del almacenamiento físico, Java impone una correspondencia estricta: **el namespace declarado en `package` debe coincidir exactamente con la ruta de carpetas en el classpath**.
 
 <figure class="diagram">
 <svg viewBox="0 0 720 290" role="img" aria-labelledby="d-pkg-t">
@@ -336,12 +350,67 @@ package com.facundouferer.tienda.dominio;   // primera línea, obligatoria
 public class Producto { ... }
 ```
 
-Reglas que conviene fijar desde el primer día:
+### Fully Qualified Class Name (FQCN) e identidad de tipo
 
-- Todo en **minúsculas**, sin guiones ni tildes.
-- El nombre arranca con **tu dominio al revés** (`com.facundouferer`), para que nunca choque con una librería de terceros.
-- **Un archivo `.java` por clase pública**, y el archivo se llama igual que la clase.
-- Agrupá por **responsabilidad**, no por tipo de artefacto. `tienda.dominio` y `tienda.servicio` es mucho mejor que `tienda.interfaces` y `tienda.clases`.
+Para la JVM, el nombre simple `Producto` es solo una etiqueta local. La identidad formal y única de la clase ante el cargador de clases (*ClassLoader*) es su **Fully Qualified Class Name (FQCN)**:
+
+```
+com.facundouferer.tienda.dominio.Producto
+```
+
+Gracias a este esquema jerárquico de namespaces, dos clases homónimas pueden coexistir sin ningún conflicto dentro del mismo sistema:
+
+- `com.facundouferer.tienda.dominio.Producto` (entidad del modelo de dominio local)
+- `com.proveedor.catalogo.Producto` (DTO importado de un catálogo externo)
+
+### Resolución de colisiones de nombres con `import`
+
+La sentencia `import` no carga código en memoria; simplemente registra un alias para que no tengas que escribir el FQCN cada vez que usás una clase en ese archivo.
+
+¿Qué ocurre si necesitás utilizar dos clases con el mismo nombre simple que pertenecen a distintos namespaces/paquetes en un mismo archivo?
+
+```java
+// ERROR: no podés importar dos clases con el mismo nombre simple en el mismo archivo
+import java.util.Date;
+import java.sql.Date; // Error de compilación: 'Date is already defined in a single-type import'
+```
+
+Java prohíbe esta ambigüedad. Para resolver la colisión de namespaces:
+1. Importás con `import` la clase que uses con mayor frecuencia (usará su nombre simple).
+2. Desambiguás la segunda clase escribiendo su **FQCN completo** directamente en el código donde la necesites:
+
+```java
+package com.facundouferer.tienda.servicio;
+
+import java.util.Date; // Date sin calificar se refiere a java.util.Date
+
+public class AuditoriaServicio {
+    // Usa el nombre simple del namespace importado:
+    private Date fechaOperacion = new Date();
+
+    // Desambiguación explícita mediante el FQCN completo para evitar la colisión de namespace:
+    private java.sql.Date fechaPersistenciaBD = new java.sql.Date(System.currentTimeMillis());
+
+    public void registrar() {
+        System.out.println("Fecha en memoria (java.util): " + fechaOperacion);
+        System.out.println("Fecha para base de datos (java.sql): " + fechaPersistenciaBD);
+    }
+}
+```
+
+### Encapsulamiento a nivel de Namespace: `package-private`
+
+Los namespaces en Java no son simples carpetas cosméticas; también establecen **límites de visibilidad y confianza arquitectónica**.
+
+Como vimos en la lección 8, el modificador por defecto de Java (*sin palabra clave*, conocido como `package-private`) restringe el acceso exclusivamente a las clases dentro del **mismo paquete/namespace**. Esto permite crear subsistemas modulares con una interfaz pública (`public`) y un conjunto de clases colaboradoras internas protegidas del exterior.
+
+### Reglas para diseñar paquetes y namespaces
+
+- **Convención de dominio inverso**: El nombre comienza con tu dominio al revés (`com.facundouferer`), garantizando que tus namespaces sean únicos en el mundo entero y no colisionen en repositorios como Maven Central.
+- **Todo en minúsculas**: Sin mayúsculas, tildes ni guiones (`tienda.dominio`, no `tienda_dominio`).
+- **Un archivo `.java` por clase pública**, y el archivo se llama exactamente igual que la clase.
+- **Agrupá por responsabilidad, no por tipo de artefacto**: `tienda.dominio` y `tienda.servicio` expresan arquitectura limpia; `tienda.interfaces` y `tienda.clases` solo duplican la jerarquía sin aportar semántica.
+- **Imports estáticos con moderación**: `import static java.lang.Math.PI;` permite importar miembros estáticos al namespace léxico local, pero debe usarse con criterio para no oscurecer el origen de los métodos.
 
 ---
 
@@ -424,6 +493,7 @@ Fijate el patrón en el código: en la **composición**, el contenedor crea las 
 | Interfaz con un `default` para cada método | Deja de ser un contrato y pasa a ser una clase abstracta sin constructor ni estado. | Los `default` son para evolucionar la interfaz sin romper implementaciones, no para escribir lógica. |
 | Declarar campos mutables en una interfaz | Todo campo en una interfaz es `public static final`: es una constante global compartida, no estado del objeto. | Si necesitás estado, necesitás una clase (abstracta o no). |
 | Paquete que no coincide con la carpeta | Error de compilación confuso sobre clases que "no existen". | La declaración `package` tiene que reflejar la ruta exacta. |
+| Colisión de namespaces al importar clases homónimas (ej. dos `Date` o dos `Order`) | Error de compilación: `is already defined in a single-type import`. | Desambiguar el namespace importando una sola y utilizando el Fully Qualified Class Name (FQCN) para la otra. |
 | Modelar como agregación algo que es composición | La parte queda expuesta y alguien de afuera la modifica o la comparte entre dos contenedores. | Si la parte no vive sin el todo: crearla adentro y no exponerla. |
 | Un solo paquete gigante con todas las clases | El `package-private` deja de proteger nada y no se entiende la arquitectura. | Separar por responsabilidad desde el primer día. |
 
@@ -562,6 +632,6 @@ La segunda: `MercadoPago.estaDisponible()` llama a `super.estaDisponible()` y le
 - Regla práctica: **empezá por la interfaz**; agregá una clase abstracta solo cuando haya estado o lógica realmente compartida.
 - Los métodos `default` existen para hacer evolucionar una interfaz sin romper a quienes ya la implementaban.
 - Una clase extiende una sola clase, pero implementa todas las interfaces que necesite. Esa es la salida de Java a la herencia múltiple.
-- El `package` tiene que coincidir con la carpeta, y conviene agrupar por **responsabilidad**, no por tipo de artefacto.
+- El `package` es la implementación del concepto de **namespace** en Java: previene colisiones mediante el FQCN, debe coincidir con la jerarquía de carpetas y conviene organizarlo por **responsabilidad**, no por tipo de artefacto.
 - Asociación, agregación y composición se distinguen con una sola pregunta: si destruyo el todo, ¿la parte sigue existiendo?
 </content>

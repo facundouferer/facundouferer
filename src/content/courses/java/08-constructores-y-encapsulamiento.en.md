@@ -305,6 +305,8 @@ Java defines four visibility levels, from most open to most closed. Think of the
 
 **The working rule**: fields are always `private`; methods are `public` only if they are part of the contract the class offers the world. Everything else stays as closed as possible. Widening visibility later is trivial; narrowing it breaks all the code that already depended on it.
 
+> *(Conceptual note: in Java, packages function as **namespaces** as well as encapsulation boundaries. We explore formal namespace theory, collision resolution, and package architecture in depth in lesson 11).*
+
 ---
 
 ## 6. Getters and setters done right

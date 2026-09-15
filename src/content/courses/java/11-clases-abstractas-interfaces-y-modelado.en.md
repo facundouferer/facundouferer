@@ -2,7 +2,7 @@
 course: 'java'
 slug: '09-clases-abstractas-interfaces-y-modelado'
 title: 'Abstract Classes, Interfaces, and Code Organization'
-description: 'Learn when to reach for an abstract class and when for an interface, implement several contracts at once, organize your code into packages, and model association, aggregation, and composition.'
+description: 'Learn when to reach for an abstract class and when for an interface, implement several contracts at once, master namespaces and package organization in Java, and model association, aggregation, and composition.'
 order: 11
 lang: 'en'
 published: true
@@ -297,9 +297,23 @@ public abstract class InMemoryRepository<T> implements Repository<T> {
 
 ---
 
-## 5. Organization: packages
+## 5. Code Organization: Packages and the Namespace Concept in Java
 
-A **package** is a folder with a qualified name. It groups related classes, prevents name clashes, and controls visibility (remember `package-private` from lesson 8).
+### What is a namespace?
+
+In computer science and software engineering, a **namespace** is an abstract container designed to group identifiers (classes, interfaces, types) and provide them with a unique context to **prevent name collisions**.
+
+As a project grows and pulls in third-party libraries (for instance database drivers, HTTP clients, or domain models), name overlap becomes inevitable: two developers might declare an `Order` class, or your internal domain might define `Date` while your SQL driver also supplies its own `Date`. Without namespaces, all types would compete in a single flat global scope, leaving the compiler unable to determine which one you meant.
+
+### Java has no `namespace` keyword: it uses `package`
+
+Unlike languages like C++, C#, or PHP, Java **does not have a dedicated `namespace` keyword**. Instead, the language natively implements the namespace concept through three complementary pillars:
+
+1. **The `package` declaration**: establishes the namespace for every type declared in the source file.
+2. **The Fully Qualified Class Name (FQCN)**: the canonical, unambiguous identity of a class to the JVM.
+3. **The `import` statement**: a lexical shortcut so you do not have to type the full FQCN on every single reference.
+
+Furthermore, while namespaces in C# or C++ are purely logical constructs decoupled from physical storage, Java enforces a strict physical rule: **the namespace declared in `package` must match the directory hierarchy on the classpath exactly**.
 
 <figure class="diagram">
 <svg viewBox="0 0 720 290" role="img" aria-labelledby="d-pkg-t">
@@ -336,12 +350,67 @@ package com.facundouferer.shop.domain;   // first line, mandatory
 public class Product { ... }
 ```
 
-Rules worth settling on from day one:
+### Fully Qualified Class Name (FQCN) and type identity
 
-- All **lowercase**, no hyphens, no accents.
-- The name starts with **your domain reversed** (`com.facundouferer`), so it never clashes with a third-party library.
-- **One `.java` file per public class**, and the file is named after the class.
-- Group by **responsibility**, not by artifact type. `shop.domain` and `shop.service` beat `shop.interfaces` and `shop.classes` every time.
+To the JVM, a class's true identity is never just its short name (`Product`). Its absolute identity to the ClassLoader is its **Fully Qualified Class Name (FQCN)**:
+
+```
+com.facundouferer.shop.domain.Product
+```
+
+Thanks to this hierarchical namespace system, two homonymous classes can coexist without any ambiguity within the same application:
+
+- `com.facundouferer.shop.domain.Product` (internal core domain entity)
+- `com.supplier.catalog.Product` (DTO imported from an external supplier API)
+
+### Resolving name collisions with `import`
+
+The `import` statement does not load bytecode into memory; it merely registers an alias so you do not have to write out the full FQCN every time you reference a class.
+
+What happens if you need to use two classes with the same short name from different namespaces/packages within the same source file?
+
+```java
+// ERROR: Java does not allow importing two classes with the same short name in the same compilation unit
+import java.util.Date;
+import java.sql.Date; // Compile error: 'Date is already defined in a single-type import'
+```
+
+Java rejects this ambiguity. To resolve the namespace collision:
+1. Import the class you use most frequently (it will use its short name).
+2. Disambiguate the second class by writing its **full FQCN** directly in your declarations or instantiations:
+
+```java
+package com.facundouferer.shop.service;
+
+import java.util.Date; // Unqualified Date resolves to java.util.Date
+
+public class AuditService {
+    // Uses the short name from the imported namespace:
+    private Date operationDate = new Date();
+
+    // Explicit disambiguation using the full FQCN to prevent namespace collision:
+    private java.sql.Date databaseDate = new java.sql.Date(System.currentTimeMillis());
+
+    public void record() {
+        System.out.println("In-memory date (java.util): " + operationDate);
+        System.out.println("Database date (java.sql): " + databaseDate);
+    }
+}
+```
+
+### Namespace-level encapsulation: `package-private`
+
+Namespaces in Java are more than organizational folders; they are **architectural trust boundaries**.
+
+As introduced in lesson 8, Java's default access level (*no modifier*, or `package-private`) restricts visibility strictly to types living in the **exact same package/namespace**. This allows you to expose a clean public API (`public`) while keeping implementation helpers and internal domain mechanics completely shielded from external code.
+
+### Core rules for package and namespace design
+
+- **Reverse domain convention**: Always begin package names with your inverted internet domain (`com.facundouferer`), guaranteeing that your namespaces remain globally unique across public repositories like Maven Central.
+- **All lowercase**: No uppercase letters, underscores, or hyphens (`shop.domain`, not `shop_domain`).
+- **One `.java` file per public class**: And the filename must match the class name exactly.
+- **Group by responsibility, not artifact type**: `shop.domain` and `shop.service` express clean architecture; `shop.interfaces` and `shop.classes` merely duplicate technical mechanics without architectural meaning.
+- **Judicious static imports**: `import static java.lang.Math.PI;` pulls static members directly into the file's lexical namespace, but use it sparingly to avoid obscuring where methods come from.
 
 ---
 
@@ -424,6 +493,7 @@ Notice the pattern in the code: in **composition**, the container creates the pa
 | An interface with a `default` for every method | It stops being a contract and becomes an abstract class with no constructor and no state. | `default` is for evolving an interface without breaking implementations, not for writing logic. |
 | Declaring mutable fields in an interface | Every field in an interface is `public static final`: a shared global constant, not object state. | If you need state, you need a class (abstract or otherwise). |
 | Package that does not match the folder | Confusing compile errors about classes that "do not exist". | The `package` declaration must mirror the exact path. |
+| Namespace collision when importing homonymous classes (e.g. two `Date` or `Order` classes) | Compile error: `is already defined in a single-type import`. | Disambiguate the namespace by importing one and using the Fully Qualified Class Name (FQCN) for the other. |
 | Modeling as aggregation something that is composition | The part gets exposed and someone outside mutates it, or shares it between two containers. | If the part cannot live without the whole: create it inside and do not expose it. |
 | One giant package holding every class | `package-private` protects nothing and the architecture is unreadable. | Split by responsibility from day one. |
 
@@ -562,6 +632,6 @@ Second: `DigitalWallet.isAvailable()` calls `super.isAvailable()` and adds its o
 - Practical rule: **start with the interface**; add an abstract class only when there is genuinely shared state or logic.
 - `default` methods exist so an interface can evolve without breaking the classes already implementing it.
 - A class extends one class but implements every interface it needs. That is Java's answer to multiple inheritance.
-- The `package` must match the folder, and grouping should follow **responsibility**, not artifact type.
+- The `package` is Java's native implementation of the **namespace** concept: it prevents collisions via FQCNs, must strictly match the folder hierarchy, and should be grouped by **responsibility**, not by artifact type.
 - Association, aggregation, and composition are told apart by one question: if I destroy the whole, does the part still exist?
 </content>
