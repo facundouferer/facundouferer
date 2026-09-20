@@ -113,7 +113,7 @@ and state the relevant tradeoffs and failure modes.
   - Acceptance: prerequisites, platform-specific builds, output verification,
     and packaging tradeoffs are explicit.
 
-- [ ] **JAVA-COVERAGE-10 — Thread coordination and deadlocks**
+- [x] **JAVA-COVERAGE-10 — Thread coordination and deadlocks**
   - Route: delegated; writer trigger (bilingual expansion plus tests).
   - Expand `20-programacion-concurrente-hilos-y-pools.{es,en}.md` with
     `wait()`, `notify()`, `notifyAll()`, deadlock causes, prevention, and
@@ -166,8 +166,9 @@ npm run build
 | JAVA-COVERAGE-07 | `9ca37fcc11813563b1a668eac49b41bff6c665a8` | `node --test tests/courses-java-program-coverage.test.mjs` — 14 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
 | JAVA-COVERAGE-08 | `39fb83bc0e971065b4bd0d4c00e91cc16865d45c` | `node --test tests/courses-java-program-coverage.test.mjs` — 15 passed | disabled/unmanaged; assessment medium (`under_budget`) |
 | JAVA-COVERAGE-09 | `21eb238` | `node --test tests/courses-java-program-coverage.test.mjs` — 16 passed | disabled/unmanaged |
+| JAVA-COVERAGE-10 | `de22085` | `node --test tests/courses-java-program-coverage.test.mjs` — 17 passed | disabled/unmanaged |
 
 ## Next step
 
-Implement `JAVA-COVERAGE-10` with a delegated writer using strict RED → GREEN
+Implement `JAVA-COVERAGE-11` with a delegated writer using strict RED → GREEN
 → REFACTOR.
