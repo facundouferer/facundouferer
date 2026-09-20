@@ -168,7 +168,79 @@ Para escribir código Java profesional y legible, seguí siempre estas convencio
 
 ---
 
-## 7. Errores Comunes de Principiantes
+## 7. Elegir un entorno de desarrollo
+
+Podés escribir Java en un editor simple, pero un **IDE** (entorno de desarrollo integrado) reúne edición, compilación, ejecución, navegación y depuración. La elección depende de la tarea, no de cuál herramienta tenga más funciones.
+
+| Entorno | Ventajas | Límites y riesgos | Cuándo elegirlo |
+| :--- | :--- | :--- | :--- |
+| **IntelliJ IDEA**, Eclipse o VS Code con extensiones | Trabajan sin conexión, integran el JDK local, permiten proyectos grandes, depuración y control de versiones. | Requieren instalación, memoria, configuración y mantener alineadas las versiones del IDE y del JDK. | Curso completo, proyectos reales y trabajo prolongado. |
+| **IDE online** en el navegador | Empieza rápido, no necesita instalación y facilita compartir un ejemplo pequeño. | Puede exigir conexión, limitar CPU, memoria, archivos o versión de Java; el código puede quedar almacenado por un tercero. | Pruebas breves en un equipo temporal, nunca como única copia del proyecto. |
+| Terminal con `javac` y `java` | Hace visible el flujo real y reduce automatismos ocultos. | No ofrece autocompletado ni navegación avanzada. | Aprender fundamentos y diagnosticar problemas del IDE. |
+
+### Lista de comprobación antes de empezar
+
+1. Ejecutá `java --version` y `javac --version`. Ambas herramientas deben existir y apuntar a una versión compatible.
+2. Configurá el proyecto para usar esa versión del JDK, no solamente la que el IDE seleccionó por defecto.
+3. Compilá y ejecutá una vez desde la terminal. Así distinguís un error del código de un error de configuración del IDE.
+4. Guardá el proyecto localmente y bajo control de versiones. Un enlace de un IDE online no reemplaza una copia propia.
+5. No pegues contraseñas, tokens ni datos personales en servicios online.
+
+Para este curso, la opción segura predeterminada es un **JDK LTS local** compatible con el proyecto y la terminal como referencia. Si el IDE online ofrece otra versión o aparece `UnsupportedClassVersionError`, no cambies código al azar: verificá la versión requerida, seleccioná un entorno compatible o recompilá explícitamente para la versión destino.
+
+---
+
+## 8. Leer la API de Java y su Javadoc
+
+La **API de Java** es el contrato de las clases disponibles. **Javadoc** es el formato de documentación navegable que presenta ese contrato. Aprender a leerlo evita adivinar nombres, parámetros o errores.
+
+### Flujo práctico de lectura
+
+1. **Confirmá la versión:** abrí la documentación de la misma versión del JDK que usa el proyecto. Una API de una versión posterior puede mostrar métodos que tu compilador no conoce.
+2. **Localizá la clase:** buscá por el nombre completamente calificado. Para `String`, la página indica el módulo `java.base`, el paquete `java.lang` y la clase `String`.
+3. **Leé el resumen de la clase:** comprobá su propósito, herencia, interfaces y notas generales antes de elegir un método.
+4. **Buscá la firma exacta:** las sobrecargas comparten nombre. La firma `substring(int beginIndex, int endIndex)` requiere dos índices enteros.
+5. **Revisá cada parámetro:** `beginIndex` es inclusivo y `endIndex` es exclusivo. No supongas el significado por el nombre.
+6. **Revisá el valor que devuelve:** el método devuelve un nuevo `String`; no modifica el original.
+7. **Leé `Throws`:** la documentación declara `IndexOutOfBoundsException` cuando los índices quedan fuera del rango permitido o están invertidos.
+8. **Comprobá deprecación y disponibilidad:** una marca `Deprecated` explica qué alternativa usar; `Since` indica desde qué versión existe.
+9. **Seguí cada tipo enlazado:** si el parámetro o retorno es un tipo desconocido, abrí su enlace y repetí el proceso. Los tipos enlazados son parte del contrato.
+
+### Ejemplo: aplicar el contrato de `String.substring`
+
+Queremos mostrar como máximo los primeros diez caracteres de un argumento. El límite debe respetar la longitud real para no violar la precondición documentada:
+
+```java
+public class VistaPrevia {
+    public static void main(String[] args) {
+        if (args.length == 0 || args[0].isBlank()) {
+            System.err.println("Uso: java VistaPrevia <texto-no-vacio>");
+            return;
+        }
+
+        String texto = args[0];
+        int finExclusivo = Math.min(10, texto.length());
+        String resumen = texto.substring(0, finExclusivo);
+        System.out.println(resumen);
+    }
+}
+```
+
+La llamada concreta es `String.substring(0, finExclusivo)`. `Math.min` proporciona un límite seguro para textos cortos, mientras que la entrada ausente o vacía produce un mensaje explícito y termina sin una excepción accidental. No conviene capturar `IndexOutOfBoundsException` y continuar con datos incorrectos: primero validá las condiciones que controlás.
+
+### Cuando la documentación y el compilador no coinciden
+
+- Confirmá `java --version`, `javac --version` y la versión seleccionada por el proyecto.
+- Verificá el encabezado de versión de la página Javadoc y la sección `Since`.
+- Consultá la firma completa: quizás elegiste otra sobrecarga o importaste una clase con el mismo nombre.
+- Tratá `Deprecated` como una señal de migración, no como un error que debas ocultar.
+- Si el método pertenece a una versión más nueva, usá la alternativa documentada para tu versión o actualizá el JDK de forma deliberada. **No copies una implementación insegura para simular una API ausente.**
+
+La documentación es la fuente del contrato; el autocompletado del IDE es solo una ayuda para navegarlo.
+
+---
+
+## 9. Errores Comunes de Principiantes
 
 1. **`error: class HolaMundo is public, should be declared in a file named HolaMundo.java`**:
    - **Causa**: El nombre del archivo no coincide exactamente con el nombre de la clase `public` (atención a las mayúsculas).
@@ -179,7 +251,7 @@ Para escribir código Java profesional y legible, seguí siempre estas convencio
 
 ---
 
-## 8. Ejercicio Práctico
+## 10. Ejercicio Práctico
 
 ### Desafío:
 Escribí un programa en Java llamado `PerfilDesarrollador.java` que:

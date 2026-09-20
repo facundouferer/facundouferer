@@ -5,6 +5,7 @@ import path from 'node:path';
 
 const JAVA_COURSE_DIR = 'src/content/courses/java';
 const ALGORITHM_LESSON = '23-algoritmia-verificacion-y-complejidad';
+const BASIC_CONCEPTS_LESSON = '01-conceptos-basicos';
 
 async function readLesson(slug, lang) {
 	return readFile(path.join(JAVA_COURSE_DIR, `${slug}.${lang}.md`), 'utf8');
@@ -52,6 +53,45 @@ test('algorithm foundations lesson teaches specification, verification, and anal
 		assert.match(content, /O\(n log n\)/, `${locale}: linearithmic complexity`);
 		assert.match(content, /O\(n²\)/, `${locale}: quadratic complexity`);
 		assert.match(content, /IllegalArgumentException/, `${locale}: invalid-input handling`);
+	}
+});
+
+test('basic concepts lesson compares local and online Java development environments', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(BASIC_CONCEPTS_LESSON, 'es'),
+		readLesson(BASIC_CONCEPTS_LESSON, 'en'),
+	]);
+
+	for (const [locale, content] of [
+		['Spanish', spanish],
+		['English', english],
+	]) {
+		assert.match(content, /IntelliJ IDEA/, `${locale}: local IDE example`);
+		assert.match(content, /online IDE|IDE online|browser|navegador/i, `${locale}: online IDE`);
+		assert.match(content, /offline|sin conexi[oó]n/i, `${locale}: offline tradeoff`);
+		assert.match(content, /version|versi[oó]n/i, `${locale}: JDK version compatibility`);
+	}
+});
+
+test('basic concepts lesson teaches a practical API and Javadoc reading workflow', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(BASIC_CONCEPTS_LESSON, 'es'),
+		readLesson(BASIC_CONCEPTS_LESSON, 'en'),
+	]);
+
+	for (const [locale, content] of [
+		['Spanish', spanish],
+		['English', english],
+	]) {
+		assert.match(content, /java\.base/, `${locale}: module`);
+		assert.match(content, /java\.lang/, `${locale}: package`);
+		assert.match(content, /String\.substring/, `${locale}: standard-library worked example`);
+		assert.match(content, /substring\(int beginIndex, int endIndex\)/, `${locale}: method signature`);
+		assert.match(content, /parameter|par[aá]metro/i, `${locale}: parameters`);
+		assert.match(content, /return|devuelve/i, `${locale}: return value`);
+		assert.match(content, /IndexOutOfBoundsException/, `${locale}: thrown exception`);
+		assert.match(content, /deprecat|obsolet/i, `${locale}: deprecation`);
+		assert.match(content, /linked type|tipo enlazado|tipos enlazados/i, `${locale}: linked types`);
 	}
 });
 
