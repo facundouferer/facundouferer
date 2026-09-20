@@ -1,0 +1,300 @@
+---
+import type { Presentation } from '../data/presentations';
+import { useTranslations } from '../i18n/utils';
+import { withBase } from '../utils/withBase';
+
+type Props = {
+	presentations: Presentation[];
+	locale: 'es' | 'en';
+};
+
+const { presentations, locale } = Astro.props;
+
+if (!presentations || presentations.length === 0) {
+	return null;
+}
+
+const t = useTranslations(locale);
+const count = presentations.length;
+const countLabel =
+	count === 1
+		? t('courses.lessonPresentations.badge.one')
+		: t('courses.lessonPresentations.badge.other').replace('{count}', String(count));
+
+const triggerLabel = `${t('courses.lessonPresentations.menuButtonLabel')} (${countLabel})`;
+---
+
+<div class="lesson-presentations-menu-wrapper">
+	<button
+		type="button"
+		class="btn btn-secondary lesson-presentations-trigger"
+		aria-haspopup="dialog"
+		aria-expanded="false"
+		aria-controls="lesson-presentations-panel"
+		aria-label={triggerLabel}
+		title={triggerLabel}
+		data-lesson-presentations-trigger
+	>
+		<svg
+			aria-hidden="true"
+			xmlns="http://www.w3.org/2000/svg"
+			width="18"
+			height="18"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2.75"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+		>
+			<path d="M2 3h20" />
+			<path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3" />
+			<path d="m7 21 5-5 5 5" />
+		</svg>
+		<span class="trigger-count-badge" aria-hidden="true">{count}</span>
+	</button>
+
+	<div
+		id="lesson-presentations-panel"
+		class="lesson-presentations-panel card elev-md"
+		role="dialog"
+		aria-label={t('courses.lessonPresentations.menuHeading')}
+		data-lesson-presentations-panel
+		hidden
+	>
+		<div class="panel-header">
+			<span class="panel-title">{t('courses.lessonPresentations.menuHeading')}</span>
+			<span class="tag tag-accent">{count}</span>
+		</div>
+		<ul class="presentations-list" role="list">
+			{
+				presentations.map((presentation) => {
+					const href =
+						locale === 'es'
+							? `/presentaciones/${presentation.slug}`
+							: `/en/presentaciones/${presentation.slug}`;
+					const title = locale === 'es' ? presentation.title.es : presentation.title.en;
+					const tag = locale === 'es' ? presentation.tag.es : presentation.tag.en;
+
+					return (
+						<li class="presentation-item">
+							<a href={withBase(href)} class="presentation-link">
+								<span class="tag tag-neutral presentation-tag">{tag}</span>
+								<span class="presentation-title">{title}</span>
+								<span class="presentation-arrow" aria-hidden="true">→</span>
+							</a>
+						</li>
+					);
+				})
+			}
+		</ul>
+	</div>
+</div>
+
+<script>
+	function setupLessonPresentationsMenu() {
+		const wrappers = document.querySelectorAll('.lesson-presentations-menu-wrapper');
+
+		wrappers.forEach((wrapper) => {
+			const trigger = wrapper.querySelector<HTMLButtonElement>('[data-lesson-presentations-trigger]');
+			const panel = wrapper.querySelector<HTMLElement>('[data-lesson-presentations-panel]');
+
+			if (!trigger || !panel || trigger.dataset.bound === 'true') return;
+			trigger.dataset.bound = 'true';
+
+			const openMenu = () => {
+				panel.removeAttribute('hidden');
+				trigger.setAttribute('aria-expanded', 'true');
+			};
+
+			const closeMenu = () => {
+				panel.setAttribute('hidden', '');
+				trigger.setAttribute('aria-expanded', 'false');
+			};
+
+			const toggleMenu = () => {
+				const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+				if (isExpanded) {
+					closeMenu();
+				} else {
+					openMenu();
+				}
+			};
+
+			trigger.addEventListener('click', (e) => {
+				e.stopPropagation();
+				toggleMenu();
+			});
+
+			// Close on Escape
+			wrapper.addEventListener('keydown', (e) => {
+				const event = e as KeyboardEvent;
+				if (event.key === 'Escape') {
+					closeMenu();
+					trigger.focus();
+				}
+			});
+
+			// Close on link click
+			const links = panel.querySelectorAll('a');
+			links.forEach((link) => {
+				link.addEventListener('click', () => {
+					closeMenu();
+				});
+			});
+
+			// Close on click outside
+			document.addEventListener('click', (event) => {
+				if (!wrapper.contains(event.target as Node)) {
+					closeMenu();
+				}
+			});
+		});
+	}
+
+	setupLessonPresentationsMenu();
+	document.addEventListener('astro:page-load', setupLessonPresentationsMenu);
+</script>
+
+<style>
+	.lesson-presentations-menu-wrapper {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		vertical-align: middle;
+	}
+
+	.lesson-presentations-trigger {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: calc(var(--space-1) * 1.2) var(--space-3);
+		border-radius: 999px;
+		color: var(--color-accent-700);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		cursor: pointer;
+		font-family: var(--font-body);
+		font-size: 13px;
+		line-height: 1;
+		transition: background-color 0.15s ease, border-color 0.15s ease;
+	}
+
+	.lesson-presentations-trigger:hover {
+		background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+		border-color: var(--color-accent);
+	}
+
+	.lesson-presentations-trigger[aria-expanded='true'] {
+		background: color-mix(in srgb, var(--color-accent) 15%, var(--color-surface));
+		border-color: var(--color-accent);
+	}
+
+	.trigger-count-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 11px;
+		font-weight: 700;
+		line-height: 1;
+		padding: 2px 6px;
+		border-radius: 999px;
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	/* Crucial fix: .card defines display: flex in global.css, which overrides native [hidden].
+	   We must enforce display: none !important when hidden so the panel starts and stays closed. */
+	.lesson-presentations-panel[hidden] {
+		display: none !important;
+	}
+
+	.lesson-presentations-panel {
+		position: absolute;
+		top: calc(100% + var(--space-2));
+		right: 0;
+		min-width: 280px;
+		max-width: 360px;
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		z-index: 50;
+	}
+
+	.panel-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+		padding-bottom: var(--space-2);
+		border-bottom: 1px solid var(--color-divider);
+	}
+
+	.panel-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 0.95rem;
+		color: var(--color-text);
+	}
+
+	.presentations-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.presentation-item {
+		margin: 0;
+	}
+
+	.presentation-link {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2);
+		border-radius: var(--radius-sm);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: background-color 0.15s ease;
+	}
+
+	.presentation-link:hover {
+		background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+	}
+
+	.presentation-tag {
+		font-size: 11px;
+		padding: 2px 6px;
+		flex-shrink: 0;
+	}
+
+	.presentation-title {
+		flex: 1;
+		font-size: 13px;
+		font-weight: 600;
+		line-height: 1.3;
+	}
+
+	.presentation-arrow {
+		color: var(--color-accent-700);
+		font-weight: 700;
+		transition: transform 0.15s ease;
+	}
+
+	.presentation-link:hover .presentation-arrow {
+		transform: translateX(2px);
+	}
+
+	@media (width <= 480px) {
+		.lesson-presentations-panel {
+			right: auto;
+			left: 0;
+			max-width: calc(100vw - 48px);
+		}
+	}
+</style>

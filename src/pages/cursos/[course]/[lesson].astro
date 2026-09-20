@@ -5,6 +5,7 @@ import { buildCourseBreadcrumbSchema } from '../../../seo/schema';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import LessonsList from '../../../components/LessonsList.astro';
 import LessonPresentations from '../../../components/LessonPresentations.astro';
+import LessonPresentationsMenu from '../../../components/LessonPresentationsMenu.astro';
 import { getPresentationCountsForCourse, getPresentationsForLesson } from '../../../data/presentations';
 
 const lang = getLangFromUrl(Astro.url);
@@ -108,7 +109,12 @@ const schema = buildCourseBreadcrumbSchema({
 				<article class="article-shell">
 					<header>
 						<p class="tag tag-accent">{course.data.technology}</p>
-						<h1 class="section-title">{entry.data.title}</h1>
+						<div class="lesson-title-row">
+							<h1 class="section-title">{entry.data.title}</h1>
+							{lessonPresentations.length > 0 && (
+								<LessonPresentationsMenu presentations={lessonPresentations} locale="es" />
+							)}
+						</div>
 						<p class="meta">
 							{`${t('courses.lesson')} ${entry.data.order}${entry.data.description ? ` · ${entry.data.description}` : ''}`}
 						</p>
@@ -195,6 +201,15 @@ const schema = buildCourseBreadcrumbSchema({
 	/* Main content */
 	.lesson-main {
 		min-width: 0;
+	}
+
+	.lesson-title-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		flex-wrap: wrap;
+		margin-bottom: var(--space-2);
 	}
 
 	.meta {
