@@ -1,4 +1,5 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getLangFromUrl, useTranslations } from '../../i18n/utils';
 import { categories, presentations } from '../../data/presentations';
@@ -6,6 +7,14 @@ import { withBase } from '../../utils/withBase';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+
+const lessons = await getCollection('lessons');
+const lessonTitles = new Map<string, string>();
+for (const lesson of lessons) {
+	if (lesson.data.lang === lang && lesson.data.published) {
+		lessonTitles.set(`${lesson.data.course}/${lesson.data.slug}`, lesson.data.title);
+	}
+}
 ---
 
 <BaseLayout
@@ -72,6 +81,11 @@ const t = useTranslations(lang);
 							<h3 class="card-title">
 								{lang === 'en' ? pres.title.en : pres.title.es}
 							</h3>
+							{lessonTitles.get(`${pres.lesson.course}/${pres.lesson.slug}`) && (
+								<p class="card-meta">
+									{t('presentations.lesson')}: {lessonTitles.get(`${pres.lesson.course}/${pres.lesson.slug}`)}
+								</p>
+							)}
 							<p class="card-body">
 								{lang === 'en' ? pres.description.en : pres.description.es}
 							</p>

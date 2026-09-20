@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getLangFromUrl } from '../../i18n/utils';
 import { presentations } from '../../data/presentations';
+import PresentationLessonLink from '../../components/PresentationLessonLink.astro';
 
 import ArbolesBinarios from '../../components/presentaciones/arboles-binarios.astro';
 import ArreglosEnC from '../../components/presentaciones/arreglos-en-c.astro';
@@ -76,5 +77,14 @@ const PresentationComponent = componentMap[slug];
 	enPath={`/en/presentaciones/${slug}`}
 	canonicalPath={`/presentaciones/${slug}`}
 >
+	<div class="container presentation-lesson-link-wrap">
+		<PresentationLessonLink presentationSlug={pres.slug} locale={lang} />
+	</div>
 	<PresentationComponent lang={lang} />
 </BaseLayout>
+
+<style>
+	.presentation-lesson-link-wrap {
+		padding-top: var(--space-4);
+	}
+</style>

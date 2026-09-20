@@ -376,6 +376,41 @@ Useful courses/lessons verification commands:
 - `npm test -- tests/site-nav-courses.test.mjs`
 - `npm run astro -- check`
 
+#### Presentations (`src/data/presentations.ts`)
+
+Interactive presentations are a flat catalog in `src/data/presentations.ts`, not a
+content collection. Each `Presentation` record carries a `lesson: { course, slug }`
+reference to the course/lesson it illustrates (`course` and `slug` match a lesson's
+frontmatter, not a filename). A lesson may own zero, one, or several presentations
+(e.g. `c/cadenas-de-caracteres-y-operaciones` owns four); every presentation belongs
+to exactly one lesson.
+
+Helpers exported from `src/data/presentations.ts`:
+
+- `getPresentationsForLesson(course, slug)` — presentations for one lesson, in
+  catalog order. Returns `[]` when the lesson has none.
+- `getPresentationCountsForCourse(course)` — a `Record<lessonSlug, count>` map for
+  one course. Lessons without presentations are absent from the map.
+- `getLessonForPresentation(slug)` — the `{ course, slug }` lesson reference for a
+  presentation slug, or `undefined` for an unknown slug.
+
+Where this renders:
+
+- `LessonsList.astro` shows a presentation-count badge per lesson (course detail
+  sidebar/grid and the lesson-page sidebar), fed by `getPresentationCountsForCourse`.
+- `LessonPresentations.astro` renders a "Presentations of this lesson" section on
+  each lesson detail page (`src/pages/cursos/[course]/[lesson].astro` and its
+  English counterpart), fed by `getPresentationsForLesson`.
+- `PresentationLessonLink.astro` renders the reverse "Part of: Course › Lesson"
+  link on each presentation detail page (`src/pages/presentaciones/[slug].astro`
+  and `src/pages/[lang]/presentaciones/[slug].astro`), resolved from
+  `getLessonForPresentation` plus the `courses`/`lessons` collections. The
+  presentation catalog cards (`src/pages/presentaciones/index.astro` and
+  `src/pages/[lang]/presentaciones/index.astro`) show the owning lesson title as a
+  secondary line under the card title.
+
+Verification: `node --test tests/presentations-lessons.test.mjs`.
+
 ### 6.10 i18n Runtime (`src/i18n/`)
 
 UI strings are centralized in `src/i18n/es.json` + `src/i18n/en.json` (Astro 6 native i18n config — `defaultLocale: 'es'`, `prefixDefaultLocale: false`). The deprecated `src/i18n/translations.ts`, `src/i18n/paths.ts`, and `src/seo/meta.ts` modules have been removed; do not reintroduce them.

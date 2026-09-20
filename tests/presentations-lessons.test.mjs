@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 
 const DATA_MODULE_PATH = '../src/data/presentations.ts';
 
@@ -142,4 +143,58 @@ test('getLessonForPresentation resolves the lesson reference for a known present
 test('getLessonForPresentation returns undefined for an unknown presentation slug', () => {
 	const lesson = dataModule.getLessonForPresentation('this-presentation-does-not-exist');
 	assert.equal(lesson, undefined);
+});
+
+// --- LP-03: presentation back-links and documentation -----------------------
+
+test('PresentationLessonLink component exists', () => {
+	assert.ok(existsSync('src/components/PresentationLessonLink.astro'));
+});
+
+test('PresentationLessonLink resolves course and lesson titles from astro:content', async () => {
+	const content = await readFile('src/components/PresentationLessonLink.astro', 'utf8');
+	assert.match(content, /getCollection/);
+	assert.match(content, /getLessonForPresentation/);
+	assert.match(content, /presentationSlug/);
+	assert.match(content, /locale/);
+});
+
+test('PresentationLessonLink links to both the localized course and lesson routes', async () => {
+	const content = await readFile('src/components/PresentationLessonLink.astro', 'utf8');
+	assert.match(content, /\/cursos\/\$\{/, 'expected an es course/lesson href');
+	assert.match(content, /\/en\/courses\/\$\{/, 'expected an en course/lesson href');
+});
+
+test('presentation detail pages import and render PresentationLessonLink', async () => {
+	for (const file of ['src/pages/presentaciones/[slug].astro', 'src/pages/[lang]/presentaciones/[slug].astro']) {
+		const content = await readFile(file, 'utf8');
+		assert.match(content, /import PresentationLessonLink from/, `${file} should import PresentationLessonLink`);
+		assert.match(content, /<PresentationLessonLink/, `${file} should render <PresentationLessonLink>`);
+	}
+});
+
+test('presentation catalog pages render the owning lesson title on each card', async () => {
+	for (const file of ['src/pages/presentaciones/index.astro', 'src/pages/[lang]/presentaciones/index.astro']) {
+		const content = await readFile(file, 'utf8');
+		assert.match(content, /getCollection\('lessons'\)/, `${file} should read the lessons collection`);
+		assert.match(content, /presentations\.lesson/, `${file} should use the presentations.lesson i18n key`);
+		assert.match(content, /pres\.lesson\.course/, `${file} should look up the lesson title by pres.lesson`);
+	}
+});
+
+test('i18n dictionaries expose presentations.partOf and presentations.lesson', async () => {
+	const es = JSON.parse(await readFile('src/i18n/es.json', 'utf8'));
+	const en = JSON.parse(await readFile('src/i18n/en.json', 'utf8'));
+	for (const dict of [es, en]) {
+		assert.equal(typeof dict.presentations.partOf, 'string');
+		assert.ok(dict.presentations.partOf.length > 0);
+		assert.equal(typeof dict.presentations.lesson, 'string');
+		assert.ok(dict.presentations.lesson.length > 0);
+	}
+});
+
+test('AGENTS.md documents the presentations-to-lessons model', async () => {
+	const content = await readFile('AGENTS.md', 'utf8');
+	assert.match(content, /Presentations/);
+	assert.match(content, /getPresentationsForLesson/);
 });

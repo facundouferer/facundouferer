@@ -1,0 +1,56 @@
+---
+import { getCollection } from 'astro:content';
+import { getLessonForPresentation } from '../data/presentations';
+import { useTranslations, type Locale } from '../i18n/utils';
+import { withBase } from '../utils/withBase';
+
+type Props = {
+	presentationSlug: string;
+	locale: Locale;
+};
+
+const { presentationSlug, locale } = Astro.props;
+const t = useTranslations(locale);
+
+const lessonRef = getLessonForPresentation(presentationSlug);
+
+const course = lessonRef
+	? (await getCollection('courses')).find(
+			(entry) => entry.data.slug === lessonRef.course && entry.data.published,
+		)
+	: undefined;
+
+const lesson = lessonRef
+	? (await getCollection('lessons')).find(
+			(entry) =>
+				entry.data.course === lessonRef.course &&
+				entry.data.slug === lessonRef.slug &&
+				entry.data.lang === locale &&
+				entry.data.published,
+		)
+	: undefined;
+
+const courseTitle = course ? (locale === 'en' ? course.data.title_en : course.data.title) : undefined;
+const lessonTitle = lesson?.data.title;
+
+const courseHref = lessonRef
+	? locale === 'en'
+		? `/en/courses/${lessonRef.course}`
+		: `/cursos/${lessonRef.course}`
+	: undefined;
+
+const lessonHref = lessonRef
+	? locale === 'en'
+		? `/en/courses/${lessonRef.course}/${lessonRef.slug}`
+		: `/cursos/${lessonRef.course}/${lessonRef.slug}`
+	: undefined;
+---
+
+{
+	courseTitle && lessonTitle && courseHref && lessonHref && (
+		<p class="kicker">
+			{t('presentations.partOf')}: <a href={withBase(courseHref)}>{courseTitle}</a> ›{' '}
+			<a href={withBase(lessonHref)}>{lessonTitle}</a>
+		</p>
+	)
+}
