@@ -111,6 +111,12 @@ npm run build
 | LP-02 | `4829a18` | `node --test tests/courses-detail-routing.test.mjs tests/courses-catalog.test.mjs tests/presentations-lessons.test.mjs` — 40 passed, 2 pre-existing CourseBreadcrumb failures; build 275 pages | disabled/unmanaged |
 | LP-03 | `b59273a` | `node --test tests/presentations-lessons.test.mjs` — 19 passed; build 275 pages | disabled/unmanaged |
 
+- [x] **LP-04 — Fullscreen presentations without slide headers** (added 2026-09-20 on user request)
+  - Route: delegated; writer trigger (22 components + 2 pages + global token).
+  - Remove per-presentation header; shell full width; screen min-height
+    `100dvh - --site-header-height`; simulator caps lifted.
+  - Evidence: `42d0804`; `node --test tests/presentations-layout.test.mjs` — 7 passed; build 275 pages.
+
 ## Feature completion evidence (2026-09-20)
 
 - `node --test tests/presentations-lessons.test.mjs` — 19 passed.
