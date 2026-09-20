@@ -1,0 +1,1125 @@
+---
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="po-screen" data-lang={lang}>
+	<div class="po-shell">
+		<div class="po-deck-card">
+			<div class="po-nav-bar">
+				<div class="po-slide-indicator">
+					<span class="po-step-dot"></span>
+					<span id="po-slide-label">SLIDE 1 / 8</span>
+				</div>
+				<div class="po-pills">
+					<button class="po-pill-btn active" data-target-slide="1">1. {isEs ? 'Del procedimiento al objeto' : 'From procedure to object'}</button>
+					<button class="po-pill-btn" data-target-slide="2">2. {isEs ? 'Los 4 pilares' : 'The 4 pillars'}</button>
+					<button class="po-pill-btn" data-target-slide="3">3. {isEs ? 'Abstracción' : 'Abstraction'}</button>
+					<button class="po-pill-btn" data-target-slide="4">4. {isEs ? 'Encapsulamiento' : 'Encapsulation'}</button>
+					<button class="po-pill-btn" data-target-slide="5">5. {isEs ? 'Herencia' : 'Inheritance'}</button>
+					<button class="po-pill-btn" data-target-slide="6">6. {isEs ? 'Polimorfismo' : 'Polymorphism'}</button>
+					<button class="po-pill-btn" data-target-slide="7">7. {isEs ? 'Ejercicio' : 'Exercise'}</button>
+					<button class="po-pill-btn" data-target-slide="8">8. {isEs ? 'Para llevarte' : 'Takeaways'}</button>
+				</div>
+			</div>
+
+			<div class="po-viewport">
+				<!-- SLIDE 1: FROM PROCEDURE TO OBJECT -->
+				<div class="po-slide active" data-slide="1">
+					<div class="po-slide-grid">
+						<div class="po-col">
+							<h2 class="po-slide-title">1. {isEs ? 'Del procedimiento al objeto' : 'From procedure to object'}</h2>
+							<p class="po-text">
+								{isEs
+									? 'En la programación estructurada los datos y las funciones viven separados: cualquier función toca cualquier dato. En POO el programa es una red de objetos que protegen su propio estado y se comunican enviándose mensajes.'
+									: 'In procedural programming, data and functions live apart: any function may touch any piece of data. In OOP the program is a network of objects that shield their own state and communicate by passing messages.'}
+							</p>
+							<div class="po-figure">
+								<svg viewBox="0 0 560 250" width="100%" role="img" aria-label={isEs ? 'Comparación entre programación estructurada y programación orientada a objetos' : 'Comparison between procedural programming and object-oriented programming'}>
+									<rect x="6" y="34" width="224" height="204" rx="24" class="po-panel-weak" />
+									<text x="18" y="24" class="po-svg-kicker">{isEs ? 'ESTRUCTURADA' : 'PROCEDURAL'}</text>
+
+									<g class="po-svg-wire">
+										<path d="M62 92 L52 186" />
+										<path d="M62 92 L118 186" />
+										<path d="M62 92 L182 186" />
+										<path d="M118 92 L52 186" />
+										<path d="M118 92 L182 186" />
+										<path d="M174 92 L52 186" />
+										<path d="M174 92 L118 186" />
+									</g>
+
+									<g class="po-svg-fn">
+										<rect x="30" y="64" width="64" height="28" rx="14" />
+										<rect x="88" y="64" width="62" height="28" rx="14" />
+										<rect x="146" y="64" width="64" height="28" rx="14" />
+									</g>
+									<text x="62" y="83" class="po-svg-chip">calcular()</text>
+									<text x="119" y="83" class="po-svg-chip">imprimir()</text>
+									<text x="178" y="83" class="po-svg-chip">guardar()</text>
+
+									<g class="po-svg-data">
+										<circle cx="52" cy="200" r="20" />
+										<circle cx="118" cy="200" r="20" />
+										<circle cx="182" cy="200" r="20" />
+									</g>
+									<text x="52" y="204" class="po-svg-chip-dark">saldo</text>
+									<text x="118" y="204" class="po-svg-chip-dark">nombre</text>
+									<text x="182" y="204" class="po-svg-chip-dark">edad</text>
+									<text x="118" y="236" class="po-svg-note">{isEs ? 'datos globales · alto acoplamiento' : 'global data · high coupling'}</text>
+
+									<g class="po-svg-arrow">
+										<path d="M244 136 H302" />
+										<path d="M292 126 L304 136 L292 146 Z" />
+									</g>
+
+									<rect x="318" y="34" width="236" height="204" rx="24" class="po-panel-strong" />
+									<text x="330" y="24" class="po-svg-kicker-2">{isEs ? 'ORIENTADA A OBJETOS' : 'OBJECT-ORIENTED'}</text>
+
+									<g class="po-svg-obj">
+										<rect x="336" y="56" width="96" height="70" rx="18" />
+										<rect x="446" y="56" width="96" height="70" rx="18" />
+										<rect x="392" y="152" width="96" height="70" rx="18" />
+									</g>
+									<g class="po-svg-msg">
+										<path d="M432 84 H446" />
+										<path d="M440 126 L428 152" />
+										<path d="M494 126 L470 152" />
+									</g>
+
+									<text x="384" y="78" class="po-svg-chip-dark">Cuenta</text>
+									<text x="384" y="98" class="po-svg-state">- saldo</text>
+									<text x="384" y="116" class="po-svg-method">+ depositar()</text>
+
+									<text x="494" y="78" class="po-svg-chip-dark">Cliente</text>
+									<text x="494" y="98" class="po-svg-state">- nombre</text>
+									<text x="494" y="116" class="po-svg-method">+ getNombre()</text>
+
+									<text x="440" y="174" class="po-svg-chip-dark">Banco</text>
+									<text x="440" y="194" class="po-svg-state">- cuentas</text>
+									<text x="440" y="212" class="po-svg-method">+ transferir()</text>
+
+									<text x="436" y="236" class="po-svg-note">{isEs ? 'estado encapsulado · bajo acoplamiento' : 'encapsulated state · low coupling'}</text>
+								</svg>
+							</div>
+						</div>
+						<div class="po-col">
+							<div class="po-card-box">
+								<div class="po-card-head">{isEs ? 'DIFERENCIAS CLAVE' : 'KEY DIFFERENCES'}</div>
+								<table class="po-table">
+									<thead>
+										<tr>
+											<th>{isEs ? 'Criterio' : 'Criterion'}</th>
+											<th>{isEs ? 'Estructurada' : 'Procedural'}</th>
+											<th>POO / OOP</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>{isEs ? 'Enfoque' : 'Focus'}</td>
+											<td>{isEs ? 'Funciones secuenciales' : 'Sequential functions'}</td>
+											<td>{isEs ? 'Objetos con responsabilidades' : 'Objects with responsibilities'}</td>
+										</tr>
+										<tr>
+											<td>{isEs ? 'Datos' : 'Data'}</td>
+											<td>{isEs ? 'Compartidos globalmente' : 'Globally shared'}</td>
+											<td>{isEs ? 'Encapsulados en el objeto' : 'Encapsulated in the object'}</td>
+										</tr>
+										<tr>
+											<td>{isEs ? 'Acoplamiento' : 'Coupling'}</td>
+											<td>{isEs ? 'Alto, con efectos colaterales' : 'High, with side effects'}</td>
+											<td>{isEs ? 'Bajo, con alta cohesión' : 'Low, with high cohesion'}</td>
+										</tr>
+										<tr>
+											<td>{isEs ? 'Mantenibilidad' : 'Maintainability'}</td>
+											<td>{isEs ? 'Compleja al crecer' : 'Complex as it grows'}</td>
+											<td>{isEs ? 'Escalable y reusable' : 'Scalable and reusable'}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="po-concept-box">
+								<div class="po-concept-item">
+									<strong class="po-accent-text">{isEs ? 'Objeto =' : 'Object ='}</strong>
+									<span>{isEs ? 'estado (atributos) + comportamiento (métodos), en una sola unidad responsable de sí misma.' : 'state (fields) + behaviour (methods) in a single unit responsible for itself.'}</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 2: THE FOUR PILLARS -->
+				<div class="po-slide" data-slide="2">
+					<div class="po-sim-container">
+						<h2 class="po-slide-title center">2. {isEs ? 'Los 4 pilares de la POO' : 'The 4 pillars of OOP'}</h2>
+						<p class="po-sub center">{isEs ? 'Tocá un pilar para ir directo a su diapositiva.' : 'Tap a pillar to jump straight to its slide.'}</p>
+
+						<div class="po-pillar-grid">
+							<button class="po-pillar-btn" data-goto="3">
+								<span class="po-pillar-icon">
+									<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+										<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+										<path d="m3.3 7 8.7 5 8.7-5" />
+										<path d="M12 22V12" />
+									</svg>
+								</span>
+								<span class="po-pillar-name">{isEs ? 'Abstracción' : 'Abstraction'}</span>
+								<span class="po-pillar-def">{isEs ? 'Quedarse solo con lo esencial del dominio.' : 'Keep only what matters to the domain.'}</span>
+								<span class="po-pillar-index">01</span>
+							</button>
+
+							<button class="po-pillar-btn" data-goto="4">
+								<span class="po-pillar-icon">
+									<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+										<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+										<path d="M7 11V7a5 5 0 0 1 10 0v4" />
+									</svg>
+								</span>
+								<span class="po-pillar-name">{isEs ? 'Encapsulamiento' : 'Encapsulation'}</span>
+								<span class="po-pillar-def">{isEs ? 'Proteger el estado tras una interfaz pública.' : 'Shield state behind a public interface.'}</span>
+								<span class="po-pillar-index">02</span>
+							</button>
+
+							<button class="po-pillar-btn" data-goto="5">
+								<span class="po-pillar-icon">
+									<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+										<line x1="6" x2="6" y1="3" y2="15" />
+										<circle cx="18" cy="6" r="3" />
+										<circle cx="6" cy="18" r="3" />
+										<path d="M18 9a9 9 0 0 1-9 9" />
+									</svg>
+								</span>
+								<span class="po-pillar-name">{isEs ? 'Herencia' : 'Inheritance'}</span>
+								<span class="po-pillar-def">{isEs ? 'Reutilizar una base con la relación “es un”.' : 'Reuse a base through the “is-a” relation.'}</span>
+								<span class="po-pillar-index">03</span>
+							</button>
+
+							<button class="po-pillar-btn" data-goto="6">
+								<span class="po-pillar-icon">
+									<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+										<path d="M2 18h2a4 4 0 0 0 3.3-1.7l5.4-8.6A4 4 0 0 1 16 6h6" />
+										<path d="m18 2 4 4-4 4" />
+										<path d="M2 6h2a4 4 0 0 1 3.3 1.8" />
+										<path d="M22 18h-6a4 4 0 0 1-3.3-1.8" />
+										<path d="m18 14 4 4-4 4" />
+									</svg>
+								</span>
+								<span class="po-pillar-name">{isEs ? 'Polimorfismo' : 'Polymorphism'}</span>
+								<span class="po-pillar-def">{isEs ? 'Una misma llamada, muchas implementaciones.' : 'One call, many implementations.'}</span>
+								<span class="po-pillar-index">04</span>
+							</button>
+						</div>
+
+						<div class="po-concept-box">
+							<div class="po-concept-item">
+								<strong class="po-accent-text">{isEs ? 'Cómo encajan:' : 'How they fit:'}</strong>
+								<span>{isEs ? 'la abstracción decide qué modelar, el encapsulamiento protege ese modelo, la herencia lo extiende y el polimorfismo lo hace intercambiable.' : 'abstraction decides what to model, encapsulation protects that model, inheritance extends it and polymorphism makes it interchangeable.'}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 3: ABSTRACTION -->
+				<div class="po-slide" data-slide="3">
+					<div class="po-slide-grid">
+						<div class="po-col">
+							<h2 class="po-slide-title">3. {isEs ? 'Abstracción' : 'Abstraction'}</h2>
+							<p class="po-text">
+								{isEs
+									? 'Un auto real tiene miles de detalles. Para una gestión de flota solo importan unos pocos: la abstracción elige qué atributos y acciones entran en la clase y descarta el resto.'
+									: 'A real car has thousands of details. A fleet-management system only cares about a few: abstraction picks which fields and actions enter the class and drops the rest.'}
+							</p>
+							<div class="po-figure">
+								<svg viewBox="0 0 560 230" width="100%" role="img" aria-label={isEs ? 'De un auto real con muchos detalles a la clase Vehiculo' : 'From a real car with many details to the Vehiculo class'}>
+									<circle cx="118" cy="112" r="92" class="po-panel-weak" />
+									<text x="118" y="20" class="po-svg-kicker">{isEs ? 'AUTO REAL' : 'REAL CAR'}</text>
+
+									<g class="po-svg-detail">
+										<rect x="34" y="42" width="98" height="24" rx="12" />
+										<rect x="142" y="60" width="86" height="24" rx="12" />
+										<rect x="16" y="96" width="92" height="24" rx="12" />
+										<rect x="120" y="104" width="104" height="24" rx="12" />
+										<rect x="36" y="146" width="96" height="24" rx="12" />
+										<rect x="140" y="156" width="88" height="24" rx="12" />
+									</g>
+									<text x="83" y="58" class="po-svg-chip-dark">{isEs ? 'color' : 'colour'}</text>
+									<text x="185" y="76" class="po-svg-chip-dark">{isEs ? 'tapizado' : 'upholstery'}</text>
+									<text x="62" y="112" class="po-svg-chip-dark">patente</text>
+									<text x="172" y="120" class="po-svg-chip-dark">{isEs ? 'n.º tornillos' : 'bolt count'}</text>
+									<text x="84" y="162" class="po-svg-chip-dark">marca</text>
+									<text x="184" y="172" class="po-svg-chip-dark">{isEs ? 'olor' : 'scent'}</text>
+
+									<g class="po-svg-arrow">
+										<path d="M244 112 H302" />
+										<path d="M292 102 L304 112 L292 122 Z" />
+									</g>
+									<text x="272" y="94" class="po-svg-note">{isEs ? 'abstraer' : 'abstract'}</text>
+
+									<rect x="322" y="26" width="228" height="178" rx="22" class="po-panel-strong" />
+									<path d="M322 62 H550" class="po-svg-rule" />
+									<path d="M322 138 H550" class="po-svg-rule" />
+									<text x="436" y="51" class="po-svg-uml-title">Vehiculo</text>
+									<text x="340" y="84" class="po-svg-uml">- patente : String</text>
+									<text x="340" y="106" class="po-svg-uml">- marca : String</text>
+									<text x="340" y="128" class="po-svg-uml">- velocidadActual : double</text>
+									<text x="340" y="162" class="po-svg-uml-m">+ acelerar(double) : void</text>
+									<text x="340" y="186" class="po-svg-uml-m">+ getVelocidad() : double</text>
+								</svg>
+							</div>
+						</div>
+						<div class="po-col">
+							<div class="po-code-card">
+								<div class="po-code-title">Vehiculo.java</div>
+								<pre class="po-code-block"><code><span class="po-c">// Only the fields fleet management needs</span>
+<span class="po-k">public class</span> <span class="po-t">Vehiculo</span> &#x7b;
+    <span class="po-k">private</span> <span class="po-t">String</span> patente;
+    <span class="po-k">private</span> <span class="po-t">String</span> marca;
+    <span class="po-k">private</span> <span class="po-t">double</span> velocidadActual;
+
+    <span class="po-k">public void</span> acelerar(<span class="po-t">double</span> incremento) &#x7b;
+        <span class="po-k">this</span>.velocidadActual += incremento;
+    &#x7d;
+&#x7d;</code></pre>
+							</div>
+							<div class="po-concept-box">
+								<div class="po-concept-item">
+									<strong class="po-accent-text">{isEs ? 'Regla práctica:' : 'Rule of thumb:'}</strong>
+									<span>{isEs ? 'si un dato no se usa en ninguna decisión del sistema, no pertenece a la clase.' : 'if a piece of data drives no decision in the system, it does not belong in the class.'}</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 4: ENCAPSULATION -->
+				<div class="po-slide" data-slide="4">
+					<div class="po-slide-grid">
+						<div class="po-col">
+							<h2 class="po-slide-title">4. {isEs ? 'Encapsulamiento' : 'Encapsulation'}</h2>
+							<p class="po-text">
+								{isEs
+									? 'El estado vive dentro de la cápsula y es privado. Las únicas puertas son los métodos públicos, que validan cada cambio antes de aplicarlo.'
+									: 'State lives inside the capsule and is private. The only gates are the public methods, which validate every change before applying it.'}
+							</p>
+							<div class="po-figure">
+								<svg viewBox="0 0 560 190" width="100%" role="img" aria-label={isEs ? 'Cápsula con estado privado y métodos públicos como puertas' : 'Capsule with private state and public methods as gates'}>
+									<rect x="130" y="24" width="300" height="142" rx="70" class="po-panel-strong" />
+									<rect x="164" y="56" width="232" height="78" rx="34" class="po-panel-core" />
+									<text x="280" y="86" class="po-svg-chip-dark">private double saldo</text>
+									<text x="280" y="112" class="po-svg-note">{isEs ? 'nadie lo toca desde afuera' : 'untouchable from outside'}</text>
+
+									<g class="po-svg-gate">
+										<rect x="10" y="44" width="108" height="30" rx="15" />
+										<rect x="10" y="112" width="108" height="30" rx="15" />
+										<rect x="442" y="78" width="108" height="30" rx="15" />
+									</g>
+									<text x="64" y="64" class="po-svg-chip">depositar()</text>
+									<text x="64" y="132" class="po-svg-chip">retirar()</text>
+									<text x="496" y="98" class="po-svg-chip">getSaldo()</text>
+
+									<g class="po-svg-arrow">
+										<path d="M118 59 H158" />
+										<path d="M150 51 L160 59 L150 67 Z" />
+										<path d="M118 127 H158" />
+										<path d="M150 119 L160 127 L150 135 Z" />
+										<path d="M402 93 H440" />
+										<path d="M432 85 L442 93 L432 101 Z" />
+									</g>
+								</svg>
+							</div>
+						</div>
+						<div class="po-col">
+							<div class="po-demo">
+								<div class="po-card-head">CuentaBancaria — {isEs ? 'DEMO INTERACTIVA' : 'INTERACTIVE DEMO'}</div>
+								<div class="po-readout">
+									<span class="po-readout-label">getSaldo()</span>
+									<span class="po-readout-value" id="po-bank-balance">300</span>
+								</div>
+								<div class="po-bar"><span class="po-bar-fill" id="po-bank-bar"></span></div>
+								<div class="po-demo-btns">
+									<button class="po-btn-demo" id="po-bank-deposit">depositar(100)</button>
+									<button class="po-btn-demo" id="po-bank-withdraw">retirar(500)</button>
+									<button class="po-btn-demo po-btn-quiet" id="po-bank-reset">{isEs ? 'reiniciar' : 'reset'}</button>
+								</div>
+								<p class="po-log" id="po-bank-log">{isEs ? 'Probá los métodos públicos: el saldo solo cambia si la validación pasa.' : 'Try the public methods: the balance only changes when validation passes.'}</p>
+							</div>
+							<div class="po-code-card">
+								<div class="po-code-title">CuentaBancaria.java</div>
+								<pre class="po-code-block"><code><span class="po-k">private</span> <span class="po-t">double</span> saldo;
+
+<span class="po-k">public void</span> retirar(<span class="po-t">double</span> monto) &#x7b;
+    <span class="po-k">if</span> (monto &gt; <span class="po-n">0</span> &amp;&amp; monto &lt;= <span class="po-k">this</span>.saldo) &#x7b;
+        <span class="po-k">this</span>.saldo -= monto;
+    &#x7d; <span class="po-k">else</span> &#x7b;
+        <span class="po-c">// invalid request: state stays untouched</span>
+    &#x7d;
+&#x7d;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 5: INHERITANCE -->
+				<div class="po-slide" data-slide="5">
+					<div class="po-slide-grid">
+						<div class="po-col po-col-wide">
+							<h2 class="po-slide-title">5. {isEs ? 'Herencia' : 'Inheritance'}</h2>
+							<p class="po-text">
+								{isEs
+									? 'Una subclase obtiene con extends el estado y el comportamiento de su superclase, y llama a super(...) para inicializar la parte heredada. Avanzá paso a paso para ver qué recibe cada hija.'
+									: 'A subclass gains its superclass state and behaviour through extends, and calls super(...) to initialise the inherited part. Step through to see what each child receives.'}
+							</p>
+							<div class="po-demo-btns">
+								<button class="po-btn-demo" id="po-inherit-btn">{isEs ? 'Revelar lo heredado →' : 'Reveal what is inherited →'}</button>
+								<span class="po-step-chip" id="po-inherit-step">{isEs ? 'Paso 0 / 3 — solo miembros propios' : 'Step 0 / 3 — own members only'}</span>
+							</div>
+							<div class="po-figure" id="po-inherit-figure" data-step="0">
+								<svg viewBox="0 0 560 300" width="100%" role="img" aria-label={isEs ? 'Jerarquía Dispositivo, Telefono y Laptop' : 'Dispositivo, Telefono and Laptop hierarchy'}>
+									<rect x="168" y="12" width="224" height="104" rx="22" class="po-panel-strong" />
+									<path d="M168 44 H392" class="po-svg-rule" />
+									<path d="M168 74 H392" class="po-svg-rule" />
+									<text x="280" y="34" class="po-svg-uml-title">Dispositivo</text>
+									<text x="184" y="64" class="po-svg-uml">- marca : String  |  - encendido : boolean</text>
+									<text x="184" y="96" class="po-svg-uml-m">+ encender() : void  |  + apagar() : void</text>
+
+									<g class="po-svg-extends">
+										<path d="M280 116 V142" />
+										<path d="M140 142 H420" />
+										<path d="M140 142 V168" />
+										<path d="M420 142 V168" />
+										<path d="M132 160 L140 170 L148 160 Z" />
+										<path d="M412 160 L420 170 L428 160 Z" />
+									</g>
+									<text x="190" y="136" class="po-svg-note">extends</text>
+									<text x="372" y="136" class="po-svg-note">extends</text>
+
+									<rect x="20" y="170" width="240" height="118" rx="22" class="po-panel-weak" />
+									<path d="M20 202 H260" class="po-svg-rule" />
+									<text x="140" y="192" class="po-svg-uml-title-2">Telefono</text>
+									<text x="34" y="222" class="po-svg-uml">- numero : String</text>
+									<text x="34" y="244" class="po-svg-uml-m po-reveal" data-step="1">+ marca, encendido {isEs ? '(heredados)' : '(inherited)'}</text>
+									<text x="34" y="264" class="po-svg-uml-m po-reveal" data-step="2">+ encender(), apagar()</text>
+									<text x="34" y="282" class="po-svg-uml-s po-reveal" data-step="3">super(marca);</text>
+
+									<rect x="300" y="170" width="240" height="118" rx="22" class="po-panel-weak" />
+									<path d="M300 202 H540" class="po-svg-rule" />
+									<text x="420" y="192" class="po-svg-uml-title-2">Laptop</text>
+									<text x="314" y="222" class="po-svg-uml">- pulgadas : int</text>
+									<text x="314" y="244" class="po-svg-uml-m po-reveal" data-step="1">+ marca, encendido {isEs ? '(heredados)' : '(inherited)'}</text>
+									<text x="314" y="264" class="po-svg-uml-m po-reveal" data-step="2">+ encender(), apagar()</text>
+									<text x="314" y="282" class="po-svg-uml-s po-reveal" data-step="3">super(marca);</text>
+								</svg>
+							</div>
+						</div>
+						<div class="po-col">
+							<div class="po-code-card">
+								<div class="po-code-title">Telefono.java</div>
+								<pre class="po-code-block"><code><span class="po-k">public class</span> <span class="po-t">Telefono</span> <span class="po-k">extends</span> <span class="po-t">Dispositivo</span> &#x7b;
+    <span class="po-k">private</span> <span class="po-t">String</span> numero;
+
+    <span class="po-k">public</span> <span class="po-t">Telefono</span>(<span class="po-t">String</span> marca, <span class="po-t">String</span> numero) &#x7b;
+        <span class="po-k">super</span>(marca); <span class="po-c">// inherited part first</span>
+        <span class="po-k">this</span>.numero = numero;
+    &#x7d;
+
+    <span class="po-a">@Override</span>
+    <span class="po-k">public void</span> encender() &#x7b;
+        System.out.println(<span class="po-s">"Telefono listo"</span>);
+    &#x7d;
+&#x7d;</code></pre>
+							</div>
+							<div class="po-concept-box">
+								<div class="po-concept-item">
+									<strong class="po-accent-text">{isEs ? 'Cuidado:' : 'Careful:'}</strong>
+									<span>{isEs ? 'heredá solo cuando la relación “es un” sea verdadera. Si es “tiene un”, usá composición.' : 'inherit only when the “is-a” relation truly holds. If it is “has-a”, use composition.'}</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 6: POLYMORPHISM -->
+				<div class="po-slide" data-slide="6">
+					<div class="po-slide-grid">
+						<div class="po-col po-col-wide">
+							<h2 class="po-slide-title">6. {isEs ? 'Polimorfismo' : 'Polymorphism'}</h2>
+							<p class="po-text">
+								{isEs
+									? 'El arreglo declara Dispositivo, pero en memoria cada posición guarda un objeto concreto. La JVM decide en tiempo de ejecución qué implementación de encender() ejecutar: despacho dinámico.'
+									: 'The array is declared as Dispositivo, yet each slot holds a concrete object in memory. The JVM decides at runtime which encender() implementation runs: dynamic dispatch.'}
+							</p>
+
+							<div class="po-dispatch">
+								<div class="po-dispatch-head">
+									<code class="po-inline-code">Dispositivo[] flota = &#x7b; new Telefono(), new Laptop(), new Tablet() &#x7d;;</code>
+								</div>
+								<div class="po-poly-list">
+									<div class="po-poly-item" data-index="0">
+										<span class="po-poly-slot">flota[0]</span>
+										<span class="po-poly-type">Telefono</span>
+									</div>
+									<div class="po-poly-item" data-index="1">
+										<span class="po-poly-slot">flota[1]</span>
+										<span class="po-poly-type">Laptop</span>
+									</div>
+									<div class="po-poly-item" data-index="2">
+										<span class="po-poly-slot">flota[2]</span>
+										<span class="po-poly-type">Tablet</span>
+									</div>
+								</div>
+								<div class="po-demo-btns">
+									<button class="po-btn-demo" id="po-poly-run">{isEs ? 'Ejecutar dispositivo.encender()' : 'Run dispositivo.encender()'}</button>
+									<button class="po-btn-demo po-btn-quiet" id="po-poly-reset">{isEs ? 'reiniciar' : 'reset'}</button>
+								</div>
+								<div class="po-output" id="po-poly-output">
+									<p class="po-out-line" data-index="0">Telefono → {isEs ? '"Pantalla encendida, buscando señal"' : '"Screen on, searching for signal"'}</p>
+									<p class="po-out-line" data-index="1">Laptop → {isEs ? '"Arrancando el sistema operativo"' : '"Booting the operating system"'}</p>
+									<p class="po-out-line" data-index="2">Tablet → {isEs ? '"Modo lectura activado"' : '"Reading mode enabled"'}</p>
+									<p class="po-out-hint">{isEs ? 'Una sola llamada, tres respuestas distintas.' : 'One single call, three different answers.'}</p>
+								</div>
+							</div>
+						</div>
+						<div class="po-col">
+							<div class="po-card-box">
+								<div class="po-card-head">{isEs ? 'SOBRESCRITURA VS SOBRECARGA' : 'OVERRIDING VS OVERLOADING'}</div>
+								<table class="po-table">
+									<thead>
+										<tr>
+											<th></th>
+											<th>{isEs ? 'Sobrescritura' : 'Overriding'}</th>
+											<th>{isEs ? 'Sobrecarga' : 'Overloading'}</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>{isEs ? 'Dónde' : 'Where'}</td>
+											<td>{isEs ? 'Entre superclase y subclase' : 'Between superclass and subclass'}</td>
+											<td>{isEs ? 'Dentro de la misma clase' : 'Within the same class'}</td>
+										</tr>
+										<tr>
+											<td>{isEs ? 'Firma' : 'Signature'}</td>
+											<td>{isEs ? 'Idéntica' : 'Identical'}</td>
+											<td>{isEs ? 'Distintos parámetros' : 'Different parameters'}</td>
+										</tr>
+										<tr>
+											<td>{isEs ? 'Se resuelve' : 'Resolved'}</td>
+											<td>{isEs ? 'En ejecución (dinámico)' : 'At runtime (dynamic)'}</td>
+											<td>{isEs ? 'En compilación (estático)' : 'At compile time (static)'}</td>
+										</tr>
+										<tr>
+											<td>{isEs ? 'Marca' : 'Marker'}</td>
+											<td><code class="po-inline-code">@Override</code></td>
+											<td>—</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 7: GUIDED EXERCISE -->
+				<div class="po-slide" data-slide="7">
+					<div class="po-slide-grid">
+						<div class="po-col">
+							<h2 class="po-slide-title">7. {isEs ? 'Ejercicio guiado: dispositivos electrónicos' : 'Guided exercise: electronic devices'}</h2>
+							<ul class="po-checklist">
+								<li class="po-check-item">
+									<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+									<span>{isEs ? 'Atributos privados: marca, modelo y porcentajeBateria (0 a 100).' : 'Private fields: marca, modelo and porcentajeBateria (0 to 100).'}</span>
+								</li>
+								<li class="po-check-item">
+									<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+									<span>{isEs ? 'usarApp(int minutos) consume 1 % de batería cada 5 minutos.' : 'usarApp(int minutos) drains 1% of battery every 5 minutes.'}</span>
+								</li>
+								<li class="po-check-item">
+									<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+									<span>{isEs ? 'cargarBateria(int cantidad) sube el porcentaje sin pasar de 100.' : 'cargarBateria(int cantidad) raises the percentage without exceeding 100.'}</span>
+								</li>
+								<li class="po-check-item">
+									<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+									<span>{isEs ? 'Extra: subí los miembros comunes a Dispositivo y sobrescribí encender().' : 'Extra: lift the shared members into Dispositivo and override encender().'}</span>
+								</li>
+							</ul>
+							<div class="po-figure">
+								<svg viewBox="0 0 560 240" width="100%" role="img" aria-label={isEs ? 'Diagrama de clases del ejercicio' : 'Class diagram for the exercise'}>
+									<rect x="160" y="8" width="240" height="98" rx="22" class="po-panel-strong" />
+									<path d="M160 40 H400" class="po-svg-rule" />
+									<path d="M160 70 H400" class="po-svg-rule" />
+									<text x="280" y="30" class="po-svg-uml-title">Dispositivo</text>
+									<text x="174" y="60" class="po-svg-uml">- marca, modelo : String</text>
+									<text x="174" y="92" class="po-svg-uml-m">+ encender() : void</text>
+
+									<g class="po-svg-extends">
+										<path d="M280 106 V132" />
+										<path d="M120 132 H440" />
+										<path d="M120 132 V156" />
+										<path d="M280 132 V156" />
+										<path d="M440 132 V156" />
+										<path d="M112 148 L120 158 L128 148 Z" />
+										<path d="M272 148 L280 158 L288 148 Z" />
+										<path d="M432 148 L440 158 L448 148 Z" />
+									</g>
+
+									<rect x="16" y="158" width="208" height="74" rx="20" class="po-panel-weak" />
+									<path d="M16 186 H224" class="po-svg-rule" />
+									<text x="120" y="178" class="po-svg-uml-title-2">Celular</text>
+									<text x="30" y="206" class="po-svg-uml">- porcentajeBateria : int</text>
+									<text x="30" y="224" class="po-svg-uml-m">+ usarApp(int) : void</text>
+
+									<rect x="236" y="158" width="88" height="74" rx="20" class="po-panel-weak" />
+									<text x="280" y="186" class="po-svg-uml-title-2">Laptop</text>
+									<text x="280" y="212" class="po-svg-uml-c">- pulgadas</text>
+
+									<rect x="336" y="158" width="208" height="74" rx="20" class="po-panel-weak" />
+									<path d="M336 186 H544" class="po-svg-rule" />
+									<text x="440" y="178" class="po-svg-uml-title-2">Tablet</text>
+									<text x="350" y="206" class="po-svg-uml">- lapizIncluido : boolean</text>
+									<text x="350" y="224" class="po-svg-uml-m">+ encender() : void</text>
+								</svg>
+							</div>
+						</div>
+						<div class="po-col">
+							<div class="po-code-card">
+								<div class="po-code-title">Dispositivos.java</div>
+								<pre class="po-code-block"><code><span class="po-k">public class</span> <span class="po-t">Celular</span> <span class="po-k">extends</span> <span class="po-t">Dispositivo</span> &#x7b;
+    <span class="po-k">private</span> <span class="po-t">int</span> porcentajeBateria;
+
+    <span class="po-k">public</span> <span class="po-t">Celular</span>(<span class="po-t">String</span> marca, <span class="po-t">int</span> bateria) &#x7b;
+        <span class="po-k">super</span>(marca);
+        <span class="po-k">this</span>.porcentajeBateria =
+            Math.min(<span class="po-n">100</span>, Math.max(<span class="po-n">0</span>, bateria));
+    &#x7d;
+
+    <span class="po-k">public void</span> usarApp(<span class="po-t">int</span> minutos) &#x7b;
+        <span class="po-t">int</span> consumo = minutos / <span class="po-n">5</span>;
+        <span class="po-k">this</span>.porcentajeBateria =
+            Math.max(<span class="po-n">0</span>, porcentajeBateria - consumo);
+    &#x7d;
+
+    <span class="po-a">@Override</span>
+    <span class="po-k">public void</span> encender() &#x7b;
+        System.out.println(<span class="po-s">"Celular encendido"</span>);
+    &#x7d;
+&#x7d;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 8: TAKEAWAYS -->
+				<div class="po-slide" data-slide="8">
+					<div class="po-sim-container">
+						<h2 class="po-slide-title center">8. {isEs ? 'Para llevarte' : 'Takeaways'}</h2>
+						<p class="po-sub center">{isEs ? 'Cada pilar responde una pregunta distinta del diseño.' : 'Each pillar answers a different design question.'}</p>
+
+						<div class="po-recap-grid">
+							<div class="po-recap-card">
+								<span class="po-recap-index">01</span>
+								<h3 class="po-recap-title">{isEs ? 'Abstracción' : 'Abstraction'}</h3>
+								<p class="po-recap-q">{isEs ? '¿Qué modelo?' : 'What do I model?'}</p>
+								<p class="po-recap-a">{isEs ? 'Solo los atributos y acciones que el dominio necesita.' : 'Only the fields and actions the domain needs.'}</p>
+							</div>
+							<div class="po-recap-card">
+								<span class="po-recap-index">02</span>
+								<h3 class="po-recap-title">{isEs ? 'Encapsulamiento' : 'Encapsulation'}</h3>
+								<p class="po-recap-q">{isEs ? '¿Quién puede cambiarlo?' : 'Who may change it?'}</p>
+								<p class="po-recap-a">{isEs ? 'Solo el propio objeto, validando en sus métodos públicos.' : 'Only the object itself, validating inside its public methods.'}</p>
+							</div>
+							<div class="po-recap-card">
+								<span class="po-recap-index">03</span>
+								<h3 class="po-recap-title">{isEs ? 'Herencia' : 'Inheritance'}</h3>
+								<p class="po-recap-q">{isEs ? '¿Qué reutilizo?' : 'What do I reuse?'}</p>
+								<p class="po-recap-a">{isEs ? 'La base común, cuando la relación “es un” es verdadera.' : 'The shared base, when the “is-a” relation holds.'}</p>
+							</div>
+							<div class="po-recap-card">
+								<span class="po-recap-index">04</span>
+								<h3 class="po-recap-title">{isEs ? 'Polimorfismo' : 'Polymorphism'}</h3>
+								<p class="po-recap-q">{isEs ? '¿Quién responde?' : 'Who answers?'}</p>
+								<p class="po-recap-a">{isEs ? 'El objeto concreto en memoria, elegido en ejecución.' : 'The concrete object in memory, chosen at runtime.'}</p>
+							</div>
+						</div>
+
+						<div class="po-errors">
+							<div class="po-error-item">
+								<span class="po-error-tag">{isEs ? 'Error 1' : 'Mistake 1'}</span>
+								<span>{isEs ? 'Declarar todo public: sin estado privado no hay encapsulamiento, solo una struct con métodos.' : 'Declaring everything public: with no private state there is no encapsulation, just a struct with methods.'}</span>
+							</div>
+							<div class="po-error-item">
+								<span class="po-error-tag">{isEs ? 'Error 2' : 'Mistake 2'}</span>
+								<span>{isEs ? 'Heredar para reutilizar código cuando la relación real es “tiene un”: eso pide composición.' : 'Inheriting to reuse code when the real relation is “has-a”: that calls for composition.'}</span>
+							</div>
+							<div class="po-error-item">
+								<span class="po-error-tag">{isEs ? 'Error 3' : 'Mistake 3'}</span>
+								<span>{isEs ? 'Cambiar la firma al “sobrescribir”: sin @Override la JVM la trata como un método nuevo.' : 'Changing the signature while “overriding”: without @Override the JVM treats it as a brand-new method.'}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="po-footer">
+				<button class="btn btn-secondary" id="btn-prev-po" disabled>
+					← {isEs ? 'Anterior' : 'Previous'}
+				</button>
+				<div class="po-footer-meta">
+					<span>{isEs ? 'Navegación: Flechas Izq / Der' : 'Navigation: Left / Right Arrows'}</span>
+				</div>
+				<button class="btn btn-primary" id="btn-next-po">
+					{isEs ? 'Siguiente' : 'Next'} →
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+
+	.po-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		font-family: var(--font-body);
+		color: var(--color-text);
+		padding: var(--space-4) var(--space-3) calc(var(--space-8) * 2);
+	}
+
+	.po-shell { width: 100%; max-width: none; margin: 0; flex: 1; display: flex; flex-direction: column; }
+
+	.po-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0 0 var(--space-4); }
+	.po-sub.center { text-align: center; }
+
+	.po-deck-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.po-nav-bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		border-bottom: 1px solid var(--color-divider);
+		background: color-mix(in srgb, var(--color-bg) 60%, transparent);
+	}
+
+	.po-slide-indicator {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-family: 'Fira Code', monospace;
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	.po-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
+	.po-pills { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+
+	.po-pill-btn {
+		border: 1px solid var(--color-divider);
+		background: var(--color-bg);
+		color: var(--color-text);
+		border-radius: 999px;
+		padding: var(--space-1) var(--space-3);
+		font-size: 0.76rem;
+		font-family: var(--font-body);
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.po-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
+	.po-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-neutral-100); }
+
+	.po-viewport { padding: var(--space-6) var(--space-4); min-height: 420px; flex: 1; }
+	.po-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
+	.po-slide.active { display: block; opacity: 1; transform: translateY(0); }
+
+	.po-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--space-6); align-items: start; }
+	.po-col { grid-column: span 12; display: flex; flex-direction: column; gap: var(--space-4); }
+	@media (min-width: 900px) {
+		.po-col { grid-column: span 6; }
+		.po-col-wide { grid-column: span 7; }
+		.po-col-wide + .po-col { grid-column: span 5; }
+	}
+
+	.po-slide-title { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 1.4rem; color: var(--color-text); margin: 0; }
+	.po-slide-title.center { text-align: center; }
+
+	.po-text { font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--color-text) 85%, transparent); margin: 0; }
+	.po-concept-box { display: flex; flex-direction: column; gap: var(--space-2); }
+	.po-concept-item { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); font-size: 0.88rem; line-height: 1.5; }
+	.po-accent-text { color: var(--color-accent-700); }
+
+	/* Figures */
+	.po-figure { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); padding: var(--space-3); }
+	.po-figure svg { display: block; width: 100%; height: auto; }
+
+	.po-panel-weak { fill: color-mix(in srgb, var(--color-accent-2-100) 70%, var(--color-surface)); stroke: var(--color-divider); stroke-width: 2; }
+	.po-panel-strong { fill: color-mix(in srgb, var(--color-accent-100) 75%, var(--color-surface)); stroke: var(--color-accent); stroke-width: 2.75; }
+	.po-panel-core { fill: var(--color-surface); stroke: var(--color-accent-2); stroke-width: 2.75; stroke-dasharray: 7 6; }
+
+	.po-svg-kicker { fill: var(--color-accent-2-700); font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; }
+	.po-svg-kicker-2 { fill: var(--color-accent-700); font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; }
+
+	.po-svg-wire path { stroke: color-mix(in srgb, var(--color-text) 34%, transparent); stroke-width: 2; fill: none; stroke-linecap: round; }
+	.po-svg-fn rect { fill: var(--color-accent-600); stroke: none; }
+	.po-svg-data circle { fill: var(--color-neutral-200); stroke: var(--color-neutral-400); stroke-width: 2.75; }
+	.po-svg-detail rect { fill: var(--color-surface); stroke: var(--color-neutral-400); stroke-width: 2; }
+	.po-svg-obj rect { fill: var(--color-surface); stroke: var(--color-accent); stroke-width: 2.75; }
+	.po-svg-gate rect { fill: var(--color-accent-600); stroke: none; }
+	.po-svg-msg path { stroke: var(--color-accent-2-600); stroke-width: 2.75; fill: none; stroke-linecap: round; }
+	.po-svg-arrow path { stroke: var(--color-accent); fill: var(--color-accent); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+	.po-svg-extends path { stroke: var(--color-accent-2-600); fill: var(--color-accent-2-600); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+	.po-svg-rule { stroke: var(--color-divider); stroke-width: 2; fill: none; }
+
+	.po-svg-chip { fill: var(--color-neutral-100); font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; text-anchor: middle; }
+	.po-svg-chip-dark { fill: var(--color-text); font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; text-anchor: middle; }
+	.po-svg-state { fill: var(--color-accent-700); font-family: 'Fira Code', monospace; font-size: 11px; text-anchor: middle; }
+	.po-svg-method { fill: var(--color-accent-2-700); font-family: 'Fira Code', monospace; font-size: 11px; text-anchor: middle; }
+	.po-svg-note { fill: color-mix(in srgb, var(--color-text) 62%, transparent); font-family: var(--font-body); font-size: 11px; font-style: italic; text-anchor: middle; }
+	.po-svg-uml-title { fill: var(--color-text); font-family: var(--font-heading); font-size: 17px; text-anchor: middle; }
+	.po-svg-uml-title-2 { fill: var(--color-text); font-family: var(--font-heading); font-size: 15px; text-anchor: middle; }
+	.po-svg-uml { fill: var(--color-accent-700); font-family: 'Fira Code', monospace; font-size: 12px; }
+	.po-svg-uml-c { fill: var(--color-accent-700); font-family: 'Fira Code', monospace; font-size: 12px; text-anchor: middle; }
+	.po-svg-uml-m { fill: var(--color-accent-2-700); font-family: 'Fira Code', monospace; font-size: 12px; }
+	.po-svg-uml-s { fill: var(--color-neutral-600); font-family: 'Fira Code', monospace; font-size: 12px; }
+
+	.po-reveal { opacity: 0; transition: opacity 0.35s ease; }
+	.po-reveal.is-visible { opacity: 1; }
+
+	/* Tables and cards */
+	.po-card-box { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: var(--space-4); }
+	.po-card-head { font-family: 'Fira Code', monospace; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; color: var(--color-accent-2-700); margin-bottom: var(--space-3); }
+
+	.po-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+	.po-table th { text-align: left; font-weight: 700; color: var(--color-accent-700); padding: var(--space-1) var(--space-2); font-size: 0.78rem; }
+	.po-table td { padding: var(--space-2); background: var(--color-surface); color: color-mix(in srgb, var(--color-text) 88%, transparent); border-top: 1px solid var(--color-divider); }
+	.po-table tbody tr td:first-child { font-weight: 700; color: var(--color-text); border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
+	.po-table tbody tr td:last-child { border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); }
+
+	/* Pillar overview */
+	.po-pillar-grid { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: var(--space-4); }
+	@media (min-width: 640px) { .po-pillar-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+	@media (min-width: 1100px) { .po-pillar-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+	.po-pillar-btn {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-2);
+		text-align: left;
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-bottom: 5px solid var(--color-accent-300);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+		font-family: var(--font-body);
+		color: var(--color-text);
+		cursor: pointer;
+		transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+	}
+	.po-pillar-btn:hover { transform: translateY(-3px); background: var(--color-accent-100); border-bottom-color: var(--color-accent); }
+	.po-pillar-icon { display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 50%; background: var(--color-accent-200); color: var(--color-accent-700); }
+	.po-pillar-name { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 1.05rem; }
+	.po-pillar-def { font-size: 0.85rem; line-height: 1.5; color: color-mix(in srgb, var(--color-text) 78%, transparent); }
+	.po-pillar-index { position: absolute; top: var(--space-3); right: var(--space-4); font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: color-mix(in srgb, var(--color-accent) 45%, transparent); }
+
+	/* Interactive demos */
+	.po-demo { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); padding: var(--space-4); }
+	.po-readout { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+	.po-readout-label { font-family: 'Fira Code', monospace; font-size: 0.8rem; color: var(--color-accent-2-700); }
+	.po-readout-value { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 2rem; color: var(--color-accent-700); }
+	.po-bar { height: 10px; border-radius: 999px; background: var(--color-neutral-300); overflow: hidden; margin: var(--space-2) 0 var(--space-3); }
+	.po-bar-fill { display: block; height: 100%; width: 30%; border-radius: 999px; background: var(--color-accent); transition: width 0.35s ease; }
+
+	.po-demo-btns { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+	.po-btn-demo {
+		border: 1px solid var(--color-accent);
+		background: var(--color-accent);
+		color: var(--color-neutral-100);
+		border-radius: 999px;
+		padding: var(--space-1) var(--space-4);
+		font-family: 'Fira Code', monospace;
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.2s ease, border-color 0.2s ease;
+	}
+	.po-btn-demo:hover { background: var(--color-accent-600); border-color: var(--color-accent-600); }
+	.po-btn-demo:active { background: var(--color-accent-700); border-color: var(--color-accent-700); }
+	.po-btn-demo:disabled { opacity: 0.45; cursor: not-allowed; }
+	.po-btn-quiet { background: transparent; color: var(--color-accent-700); border-color: var(--color-divider); }
+	.po-btn-quiet:hover { background: var(--color-accent-100); border-color: var(--color-accent); }
+
+	.po-step-chip { font-family: 'Fira Code', monospace; font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 68%, transparent); }
+
+	.po-log { margin: var(--space-3) 0 0; font-size: 0.85rem; line-height: 1.5; border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); background: var(--color-surface); border: 1px solid var(--color-divider); color: color-mix(in srgb, var(--color-text) 80%, transparent); }
+	.po-log.is-ok { background: var(--color-accent-2-100); border-color: var(--color-accent-2); color: var(--color-accent-2-800); }
+	.po-log.is-err { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-800); }
+
+	.po-dispatch { background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+	.po-dispatch-head { overflow-x: auto; }
+	.po-inline-code { font-family: 'Fira Code', monospace; font-size: 0.8rem; color: var(--color-accent-700); background: var(--color-accent-100); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-2); white-space: nowrap; }
+
+	.po-poly-list { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: var(--space-2); }
+	@media (min-width: 640px) { .po-poly-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+	.po-poly-item { display: flex; flex-direction: column; gap: var(--space-1); background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease; }
+	.po-poly-item.is-active { border-color: var(--color-accent); background: var(--color-accent-100); transform: translateY(-2px); }
+	.po-poly-slot { font-family: 'Fira Code', monospace; font-size: 0.74rem; color: color-mix(in srgb, var(--color-text) 62%, transparent); }
+	.po-poly-type { font-family: 'Fira Code', monospace; font-size: 0.9rem; font-weight: 700; color: var(--color-accent-700); }
+
+	.po-output { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: var(--space-3); min-height: 116px; }
+	.po-out-line { margin: 0 0 var(--space-2); font-family: 'Fira Code', monospace; font-size: 0.82rem; color: var(--color-accent-2-800); opacity: 0; transform: translateX(-6px); transition: opacity 0.3s ease, transform 0.3s ease; }
+	.po-out-line.is-visible { opacity: 1; transform: translateX(0); }
+	.po-out-hint { margin: 0; font-size: 0.8rem; font-style: italic; color: color-mix(in srgb, var(--color-text) 58%, transparent); opacity: 0; transition: opacity 0.3s ease; }
+	.po-out-hint.is-visible { opacity: 1; }
+
+	/* Checklist, recap and mistakes */
+	.po-checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+	.po-check-item { display: flex; align-items: flex-start; gap: var(--space-2); background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); font-size: 0.88rem; line-height: 1.5; }
+	.po-check-item svg { flex: none; margin-top: 3px; color: var(--color-accent-2-700); }
+
+	.po-recap-grid { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: var(--space-4); }
+	@media (min-width: 640px) { .po-recap-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+	@media (min-width: 1100px) { .po-recap-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+	.po-recap-card { position: relative; background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); padding: var(--space-4); }
+	.po-recap-index { font-family: 'Fira Code', monospace; font-size: 0.76rem; font-weight: 700; color: color-mix(in srgb, var(--color-accent) 50%, transparent); }
+	.po-recap-title { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 1.05rem; margin: var(--space-1) 0 var(--space-2); }
+	.po-recap-q { margin: 0 0 var(--space-1); font-size: 0.86rem; font-weight: 700; color: var(--color-accent-700); }
+	.po-recap-a { margin: 0; font-size: 0.85rem; line-height: 1.5; color: color-mix(in srgb, var(--color-text) 78%, transparent); }
+
+	.po-errors { display: flex; flex-direction: column; gap: var(--space-2); }
+	.po-error-item { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); background: var(--color-accent-100); border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); font-size: 0.86rem; line-height: 1.5; }
+	.po-error-tag { font-family: 'Fira Code', monospace; font-size: 0.74rem; font-weight: 700; color: var(--color-accent-800); text-transform: uppercase; letter-spacing: 0.06em; }
+
+	/* Code cards */
+	.po-code-card { background: color-mix(in srgb, var(--color-neutral-900) 88%, var(--color-text)); border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+	.po-code-title { background: color-mix(in srgb, var(--color-neutral-900) 72%, var(--color-text)); color: var(--color-neutral-400); padding: var(--space-1) var(--space-3); font-family: 'Fira Code', monospace; font-size: 0.75rem; border-bottom: 1px solid color-mix(in srgb, var(--color-neutral-100) 14%, transparent); }
+	.po-code-block { margin: 0; padding: var(--space-3); font-family: 'Fira Code', monospace; font-size: 0.8rem; line-height: 1.6; color: var(--color-neutral-100); overflow-x: auto; }
+
+	.po-k { color: var(--color-accent-400); font-weight: 600; }
+	.po-t { color: var(--color-neutral-300); }
+	.po-n { color: var(--color-accent-300); }
+	.po-s { color: var(--color-accent-2-300); }
+	.po-a { color: var(--color-accent-2-400); font-weight: 600; }
+	.po-c { color: var(--color-neutral-500); font-style: italic; }
+
+	/* Footer */
+	.po-sim-container { max-width: none; width: 100%; }
+	.po-footer { display: flex; align-items: center; justify-content: space-between; padding: var(--space-2) var(--space-4); border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
+	.po-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+	/* Fill the viewport: center the active slide and scale it up on wide screens. */
+	.po-viewport { display: flex; flex-direction: column; justify-content: center; }
+	.po-slide.active { width: 100%; }
+	@media (min-width: 1440px) { .po-viewport { zoom: 1.15; } }
+	@media (min-width: 1800px) { .po-viewport { zoom: 1.35; } }
+	@media (min-width: 2300px) { .po-viewport { zoom: 1.6; } }
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 8;
+
+	const deckRoot = document.querySelector('.po-screen') as HTMLElement | null;
+	const isEsDeck = deckRoot?.dataset.lang !== 'en';
+
+	const goToSlide = (slideNum: number) => {
+		if (slideNum < 1 || slideNum > totalSlides) return;
+		currentSlide = slideNum;
+
+		document.querySelectorAll('.po-slide').forEach(s => {
+			const el = s as HTMLElement;
+			el.classList.remove('active');
+			if (parseInt(el.dataset.slide || '0') === currentSlide) el.classList.add('active');
+		});
+
+		document.querySelectorAll('.po-pill-btn').forEach(b => {
+			const btn = b as HTMLElement;
+			btn.classList.remove('active');
+			if (parseInt(btn.dataset.targetSlide || '0') === currentSlide) btn.classList.add('active');
+		});
+
+		const labelEl = document.getElementById('po-slide-label');
+		if (labelEl) labelEl.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+
+		const prevBtn = document.getElementById('btn-prev-po') as HTMLButtonElement | null;
+		const nextBtn = document.getElementById('btn-next-po') as HTMLButtonElement | null;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	};
+
+	document.querySelectorAll('.po-pill-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.targetSlide;
+			if (target) goToSlide(parseInt(target));
+		});
+	});
+
+	document.querySelectorAll('.po-pillar-btn').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			const target = (e.currentTarget as HTMLElement).dataset.goto;
+			if (target) goToSlide(parseInt(target));
+		});
+	});
+
+	document.getElementById('btn-prev-po')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	document.getElementById('btn-next-po')?.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
+
+	/* --- Slide 4: encapsulated CuentaBancaria ------------------------------ */
+	const INITIAL_BALANCE = 300;
+	const MAX_BALANCE = 1000;
+	let saldo = INITIAL_BALANCE;
+
+	const balanceEl = document.getElementById('po-bank-balance');
+	const barEl = document.getElementById('po-bank-bar');
+	const logEl = document.getElementById('po-bank-log');
+
+	const renderBank = (message: string, state: 'ok' | 'err' | 'idle') => {
+		if (balanceEl) balanceEl.textContent = String(saldo);
+		if (barEl) barEl.style.width = `${Math.min(100, (saldo / MAX_BALANCE) * 100)}%`;
+		if (logEl) {
+			logEl.textContent = message;
+			logEl.classList.remove('is-ok', 'is-err');
+			if (state === 'ok') logEl.classList.add('is-ok');
+			if (state === 'err') logEl.classList.add('is-err');
+		}
+	};
+
+	document.getElementById('po-bank-deposit')?.addEventListener('click', () => {
+		const monto = 100;
+		if (monto > 0) {
+			saldo += monto;
+			renderBank(
+				isEsDeck
+					? `depositar(${monto}) → validación superada. El método actualiza saldo a ${saldo}.`
+					: `depositar(${monto}) → validation passed. The method updates saldo to ${saldo}.`,
+				'ok',
+			);
+		}
+	});
+
+	document.getElementById('po-bank-withdraw')?.addEventListener('click', () => {
+		const monto = 500;
+		if (monto > 0 && monto <= saldo) {
+			saldo -= monto;
+			renderBank(
+				isEsDeck
+					? `retirar(${monto}) → validación superada. Saldo restante: ${saldo}.`
+					: `retirar(${monto}) → validation passed. Remaining saldo: ${saldo}.`,
+				'ok',
+			);
+		} else {
+			renderBank(
+				isEsDeck
+					? `retirar(${monto}) → rechazado: el monto supera el saldo (${saldo}). El estado privado no cambia.`
+					: `retirar(${monto}) → rejected: the amount exceeds saldo (${saldo}). Private state is untouched.`,
+				'err',
+			);
+		}
+	});
+
+	document.getElementById('po-bank-reset')?.addEventListener('click', () => {
+		saldo = INITIAL_BALANCE;
+		renderBank(
+			isEsDeck
+				? 'Cuenta reiniciada con saldo 300. Probá de nuevo los métodos públicos.'
+				: 'Account reset with saldo 300. Try the public methods again.',
+			'idle',
+		);
+	});
+
+	/* --- Slide 5: inheritance step-through --------------------------------- */
+	let inheritStep = 0;
+	const inheritFigure = document.getElementById('po-inherit-figure');
+	const inheritStepEl = document.getElementById('po-inherit-step');
+	const inheritBtn = document.getElementById('po-inherit-btn');
+
+	const inheritLabels = [
+		isEsDeck ? 'Paso 0 / 3 — solo miembros propios' : 'Step 0 / 3 — own members only',
+		isEsDeck ? 'Paso 1 / 3 — atributos heredados' : 'Step 1 / 3 — inherited fields',
+		isEsDeck ? 'Paso 2 / 3 — métodos heredados' : 'Step 2 / 3 — inherited methods',
+		isEsDeck ? 'Paso 3 / 3 — super(...) inicializa la base' : 'Step 3 / 3 — super(...) initialises the base',
+	];
+
+	const renderInherit = () => {
+		if (inheritFigure) inheritFigure.setAttribute('data-step', String(inheritStep));
+		document.querySelectorAll('.po-reveal').forEach(node => {
+			const el = node as SVGElement;
+			const step = parseInt(el.getAttribute('data-step') || '0');
+			el.classList.toggle('is-visible', step <= inheritStep);
+		});
+		if (inheritStepEl) inheritStepEl.textContent = inheritLabels[inheritStep];
+		if (inheritBtn) {
+			inheritBtn.textContent = inheritStep === 3
+				? (isEsDeck ? '↺ Reiniciar' : '↺ Reset')
+				: (isEsDeck ? 'Revelar lo heredado →' : 'Reveal what is inherited →');
+		}
+	};
+
+	inheritBtn?.addEventListener('click', () => {
+		inheritStep = inheritStep >= 3 ? 0 : inheritStep + 1;
+		renderInherit();
+	});
+
+	/* --- Slide 6: polymorphic dispatch ------------------------------------- */
+	const polyRunBtn = document.getElementById('po-poly-run') as HTMLButtonElement | null;
+	const polyOutput = document.getElementById('po-poly-output');
+	const polyTimers: ReturnType<typeof setTimeout>[] = [];
+
+	const clearPoly = () => {
+		polyTimers.splice(0).forEach(clearTimeout);
+		document.querySelectorAll('.po-out-line').forEach(line => line.classList.remove('is-visible'));
+		document.querySelectorAll('.po-poly-item').forEach(item => item.classList.remove('is-active'));
+		polyOutput?.querySelector('.po-out-hint')?.classList.remove('is-visible');
+		if (polyRunBtn) polyRunBtn.disabled = false;
+	};
+
+	polyRunBtn?.addEventListener('click', () => {
+		clearPoly();
+		if (polyRunBtn) polyRunBtn.disabled = true;
+		for (let i = 0; i < 3; i++) {
+			polyTimers.push(setTimeout(() => {
+				document.querySelector(`.po-out-line[data-index="${i}"]`)?.classList.add('is-visible');
+				document.querySelector(`.po-poly-item[data-index="${i}"]`)?.classList.add('is-active');
+				if (i === 2) {
+					polyOutput?.querySelector('.po-out-hint')?.classList.add('is-visible');
+					if (polyRunBtn) polyRunBtn.disabled = false;
+				}
+			}, 420 * (i + 1)));
+		}
+	});
+
+	document.getElementById('po-poly-reset')?.addEventListener('click', clearPoly);
+
+	goToSlide(1);
+	renderBank(
+		isEsDeck
+			? 'Probá los métodos públicos: el saldo solo cambia si la validación pasa.'
+			: 'Try the public methods: the balance only changes when validation passes.',
+		'idle',
+	);
+	renderInherit();
+</script>

@@ -322,6 +322,19 @@ export const presentations: Presentation[] = [
 		slug: 'arboles-binarios',
 		lesson: { course: 'c', slug: 'arboles-binarios' },
 	},
+	{
+		file: 'Dispositivos.java',
+		image: '/img/presentations/pilares-poo-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		tagClass: 'text-orange-500 bg-orange-500/10 border-orange-500/20',
+		title: { es: 'Los 4 pilares de la POO en Java', en: 'The 4 Pillars of OOP in Java' },
+		description: {
+			es: 'Abstracción, encapsulamiento, herencia y polimorfismo con diagramas y demos interactivas.',
+			en: 'Abstraction, encapsulation, inheritance and polymorphism with diagrams and interactive demos.',
+		},
+		slug: 'pilares-poo-java',
+		lesson: { course: 'java', slug: '06-introduccion-y-pilares-poo' },
+	},
 ];
 
 /**
