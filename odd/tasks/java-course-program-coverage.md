@@ -84,7 +84,7 @@ and state the relevant tradeoffs and failure modes.
     collaboration, merge, conflict resolution, and safe rebase guidance.
   - Acceptance: history-rewriting risks and recovery steps are explicit.
 
-- [ ] **JAVA-COVERAGE-06 — Queue-based event simulation**
+- [x] **JAVA-COVERAGE-06 — Queue-based event simulation**
   - Route: delegated; writer trigger (bilingual expansion plus tests).
   - Expand `14-tad-pilas-y-colas.{es,en}.md` with a discrete-event simulation
     implemented using a priority queue.
@@ -162,8 +162,9 @@ npm run build
 | JAVA-COVERAGE-03 | `df76145afbbc852181afa785676257fd0a3a4c07` | `node --test tests/courses-java-program-coverage.test.mjs` — 7 passed | disabled/unmanaged; assessment medium (`under_budget`) |
 | JAVA-COVERAGE-04 | `9e58afc698bdba79ac72d9af3ac42472bede0932` | `node --test tests/courses-java-program-coverage.test.mjs` — 9 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
 | JAVA-COVERAGE-05 | `40fc8059869ceb7162181a38985a820c957e17cb` | `node --test tests/courses-java-program-coverage.test.mjs` — 11 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
+| JAVA-COVERAGE-06 | `019f75859df65b8963b39576a8aadc16f14482a1` | `node --test tests/courses-java-program-coverage.test.mjs` — 12 passed | disabled/unmanaged; assessment medium (`under_budget`) |
 
 ## Next step
 
-Implement `JAVA-COVERAGE-06` with a delegated writer using strict RED → GREEN
+Implement `JAVA-COVERAGE-07` with a delegated writer using strict RED → GREEN
 → REFACTOR.
