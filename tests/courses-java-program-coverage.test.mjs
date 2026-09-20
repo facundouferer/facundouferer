@@ -12,6 +12,7 @@ const GIT_FOUNDATIONS_LESSON = '24-git-github-fundamentos-y-remotos';
 const GIT_BRANCHING_LESSON = '25-git-ramas-merge-conflictos-y-rebase';
 const STACKS_QUEUES_LESSON = '14-tad-pilas-y-colas';
 const NARY_TREES_LESSON = '26-arboles-n-arios-y-representacion-con-vectores';
+const GRAPHS_LESSON = '18-grafos-representacion-y-algoritmos';
 
 async function readLesson(slug, lang) {
 	return readFile(path.join(JAVA_COURSE_DIR, `${slug}.${lang}.md`), 'utf8');
@@ -297,6 +298,34 @@ test('N-ary trees lesson teaches transformations and validated indexed storage',
 		assert.match(content, /O\(n\)/, `${locale}: traversal complexity`);
 		assert.match(content, /locality|localidad/i, `${locale}: memory-locality tradeoff`);
 		assert.match(content, /reference|referencia/i, `${locale}: reference-based comparison`);
+	}
+});
+
+test('graphs lesson teaches safe Floyd-Warshall all-pairs shortest paths', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(GRAPHS_LESSON, 'es'),
+		readLesson(GRAPHS_LESSON, 'en'),
+	]);
+
+	for (const [locale, content] of [
+		['Spanish', spanish],
+		['English', english],
+	]) {
+		assert.match(content, /Floyd[–-]Warshall/i, `${locale}: algorithm name`);
+		assert.match(content, /all-pairs shortest paths|caminos m[aá]s cortos entre todos los pares/i, `${locale}: all-pairs purpose`);
+		assert.match(content, /long\[\]\[\]/, `${locale}: distance matrix`);
+		assert.match(content, /INF\s*=\s*Long\.MAX_VALUE\s*\/\s*4/, `${locale}: safe infinity sentinel`);
+		assert.match(content, /for \(int k = 0;/, `${locale}: intermediate-vertex loop`);
+		assert.match(content, /dist\[i\]\[k\]\s*==\s*INF/, `${locale}: unreachable guard`);
+		assert.match(content, /negative cycle|ciclo negativo/i, `${locale}: negative-cycle detection`);
+		assert.match(content, /dist\[v\]\[v\]\s*<\s*0/, `${locale}: diagonal check`);
+		assert.match(content, /O\(V³\)|O\(V\^3\)/, `${locale}: cubic time`);
+		assert.match(content, /O\(V²\)|O\(V\^2\)/, `${locale}: quadratic space`);
+		assert.match(content, /square matrix|matriz cuadrada/i, `${locale}: square-matrix validation`);
+		assert.match(content, /IllegalArgumentException/, `${locale}: invalid input handling`);
+		assert.match(content, /Dijkstra/i, `${locale}: Dijkstra comparison`);
+		assert.match(content, /negative edges|aristas negativas/i, `${locale}: negative-edge behavior`);
+		assert.match(content, /unreachable|inalcanzable/i, `${locale}: unreachable pairs`);
 	}
 });
 
