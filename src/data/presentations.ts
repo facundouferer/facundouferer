@@ -17,6 +17,7 @@ export interface Presentation {
 		es: string;
 		en: string;
 	};
+	lesson: { course: string; slug: string };
 }
 
 export interface CategoryFilter {
@@ -46,6 +47,7 @@ export const presentations: Presentation[] = [
 			en: 'Constant: fixed value. Variable: value that changes during execution.',
 		},
 		slug: 'variables_y_constantes',
+		lesson: { course: 'c', slug: 'variables-y-constantes' },
 	},
 	{
 		file: 'paso_por_valor_y_referencia.c',
@@ -58,6 +60,7 @@ export const presentations: Presentation[] = [
 			en: 'Discover how C handles memory and pointers.',
 		},
 		slug: 'paso_por_valor_y_referencia',
+		lesson: { course: 'c', slug: 'variables-parametros-y-pasaje' },
 	},
 	{
 		file: 'tipos_de_datos.c',
@@ -70,6 +73,7 @@ export const presentations: Presentation[] = [
 			en: 'The fundamental types of C: integers, floats, chars, pointers and structs.',
 		},
 		slug: 'tipos_de_datos_en_javascript',
+		lesson: { course: 'c', slug: 'tipos-de-datos' },
 	},
 	{
 		file: 'modularidad.c',
@@ -82,6 +86,7 @@ export const presentations: Presentation[] = [
 			en: 'Subprograms, Functions and Procedures',
 		},
 		slug: 'modularidad_en_c',
+		lesson: { course: 'c', slug: 'modularizacion-subprogramas-y-funciones' },
 	},
 	{
 		file: 'funciones.java',
@@ -94,6 +99,7 @@ export const presentations: Presentation[] = [
 			en: 'How Java defines and uses functions and procedures.',
 		},
 		slug: 'funciones_y_procedimientos_java',
+		lesson: { course: 'java', slug: '05-metodos-y-funciones' },
 	},
 	{
 		file: 'arreglos.c',
@@ -106,6 +112,7 @@ export const presentations: Presentation[] = [
 			en: 'One-dimensional arrays and matrices with visualizations and step-by-step.',
 		},
 		slug: 'arreglos-en-c',
+		lesson: { course: 'c', slug: 'arreglos-unidimensionales-y-multidimensionales' },
 	},
 	{
 		file: 'operaciones_arreglos.c',
@@ -118,6 +125,7 @@ export const presentations: Presentation[] = [
 			en: 'Traversal, search and insertion in arrays with step-by-step simulations.',
 		},
 		slug: 'operaciones-con-arreglos',
+		lesson: { course: 'c', slug: 'operaciones-con-arreglos' },
 	},
 	{
 		file: 'while_loop.c',
@@ -130,6 +138,7 @@ export const presentations: Presentation[] = [
 			en: 'Simulate a while loop iteration by iteration.',
 		},
 		slug: 'while-paso-a-paso',
+		lesson: { course: 'c', slug: 'sentencia-while' },
 	},
 	{
 		file: 'do_while_loop.c',
@@ -142,6 +151,7 @@ export const presentations: Presentation[] = [
 			en: 'Visualize the do-while logic step by step.',
 		},
 		slug: 'do-while-paso-a-paso',
+		lesson: { course: 'c', slug: 'sentencia-do-while' },
 	},
 	{
 		file: 'for_loop.c',
@@ -154,6 +164,7 @@ export const presentations: Presentation[] = [
 			en: 'Initialization, condition, block and increment of a for loop.',
 		},
 		slug: 'for-paso-a-paso',
+		lesson: { course: 'c', slug: 'sentencia-for' },
 	},
 	{
 		file: 'nested_for_table.c',
@@ -166,6 +177,7 @@ export const presentations: Presentation[] = [
 			en: 'Two nested for loops that complete a multiplication table.',
 		},
 		slug: 'for-anidado-tabla-multiplicar',
+		lesson: { course: 'c', slug: 'programacion-esquematica-y-sentencias-anidadas' },
 	},
 	{
 		file: 'if_condition.c',
@@ -178,6 +190,7 @@ export const presentations: Presentation[] = [
 			en: 'Flow of an if line by line.',
 		},
 		slug: 'if-paso-a-paso',
+		lesson: { course: 'c', slug: 'sentencia-if-else' },
 	},
 	{
 		file: 'if_else_condition.c',
@@ -190,6 +203,7 @@ export const presentations: Presentation[] = [
 			en: 'How the program chooses between if and else.',
 		},
 		slug: 'if-else-paso-a-paso',
+		lesson: { course: 'c', slug: 'sentencia-if-else' },
 	},
 	{
 		file: 'switch_case.c',
@@ -202,6 +216,7 @@ export const presentations: Presentation[] = [
 			en: 'Comparison of cases, match and break.',
 		},
 		slug: 'switch-paso-a-paso',
+		lesson: { course: 'c', slug: 'sentencia-switch-y-bloques-de-codigo' },
 	},
 	{
 		file: 'string_methods.c',
@@ -214,6 +229,7 @@ export const presentations: Presentation[] = [
 			en: 'Changes when using strlen, buffers and manual cuts in C.',
 		},
 		slug: 'string-paso-a-paso',
+		lesson: { course: 'c', slug: 'cadenas-de-caracteres-y-operaciones' },
 	},
 	{
 		file: 'string_numbers.c',
@@ -226,6 +242,7 @@ export const presentations: Presentation[] = [
 			en: 'Text concatenation vs real sum with sprintf and atoi.',
 		},
 		slug: 'string-numeros-paso-a-paso',
+		lesson: { course: 'c', slug: 'cadenas-de-caracteres-y-operaciones' },
 	},
 	{
 		file: 'strchr_demo.c',
@@ -238,6 +255,7 @@ export const presentations: Presentation[] = [
 			en: 'How strchr traverses a string and returns a pointer.',
 		},
 		slug: 'strchr-paso-a-paso',
+		lesson: { course: 'c', slug: 'cadenas-de-caracteres-y-operaciones' },
 	},
 	{
 		file: 'contar_palabras.c',
@@ -250,6 +268,7 @@ export const presentations: Presentation[] = [
 			en: 'Traverses a string char by char and counts words when entering text.',
 		},
 		slug: 'contar-palabras-cadenas-c',
+		lesson: { course: 'c', slug: 'cadenas-de-caracteres-y-operaciones' },
 	},
 	{
 		file: 'bubble_sort.c',
@@ -262,6 +281,7 @@ export const presentations: Presentation[] = [
 			en: 'Visualize how elements bubble up to their correct positions.',
 		},
 		slug: 'bubble-sort',
+		lesson: { course: 'c', slug: 'ordenacion-de-arreglos' },
 	},
 	{
 		file: 'selection_sort.c',
@@ -274,6 +294,7 @@ export const presentations: Presentation[] = [
 			en: 'Find the minimum and place it in its spot.',
 		},
 		slug: 'selection-sort',
+		lesson: { course: 'c', slug: 'ordenacion-de-arreglos' },
 	},
 	{
 		file: 'insertion_sort.c',
@@ -286,6 +307,7 @@ export const presentations: Presentation[] = [
 			en: 'Insert each element into its correct position within the sorted part.',
 		},
 		slug: 'insertion-sort',
+		lesson: { course: 'c', slug: 'ordenacion-de-arreglos' },
 	},
 	{
 		file: 'arboles_binarios.c',
@@ -298,5 +320,39 @@ export const presentations: Presentation[] = [
 			en: 'Visualize recursive insertion and in-order traversal in a BST.',
 		},
 		slug: 'arboles-binarios',
+		lesson: { course: 'c', slug: 'arboles-binarios' },
 	},
 ];
+
+/**
+ * Returns the presentations that belong to a given course lesson, in catalog order.
+ * Returns [] when no presentation is mapped to that lesson.
+ */
+export function getPresentationsForLesson(course: string, lessonSlug: string): Presentation[] {
+	return presentations.filter(
+		(presentation) => presentation.lesson.course === course && presentation.lesson.slug === lessonSlug,
+	);
+}
+
+/**
+ * Returns a lesson slug -> presentation count map for a given course.
+ * Lessons without presentations are absent from the returned record.
+ */
+export function getPresentationCountsForCourse(course: string): Record<string, number> {
+	const counts: Record<string, number> = {};
+
+	for (const presentation of presentations) {
+		if (presentation.lesson.course !== course) continue;
+		counts[presentation.lesson.slug] = (counts[presentation.lesson.slug] ?? 0) + 1;
+	}
+
+	return counts;
+}
+
+/**
+ * Returns the lesson reference for a given presentation slug.
+ * Returns undefined when the slug does not match any presentation.
+ */
+export function getLessonForPresentation(slug: string): { course: string; slug: string } | undefined {
+	return presentations.find((presentation) => presentation.slug === slug)?.lesson;
+}
