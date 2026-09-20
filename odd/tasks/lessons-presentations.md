@@ -87,7 +87,7 @@ sorting: 3) and 51 lessons have none.
   - Acceptance: es/en course detail and lesson pages compile; tests assert
     badge and section markup; Organic tokens only.
 
-- [ ] **LP-03 — Presentation back-links and documentation**
+- [x] **LP-03 — Presentation back-links and documentation**
   - Route: delegated; writer trigger (4 presentation pages, catalog card, docs).
   - Presentation cards and detail pages show "Part of: Course › Lesson" linking
     to the localized lesson; `AGENTS.md` documents the model.
@@ -109,7 +109,15 @@ npm run build
 |---|---|---|---|
 | LP-01 | `e7da256` | `node --test tests/presentations-lessons.test.mjs` — 12 passed | disabled/unmanaged |
 | LP-02 | `4829a18` | `node --test tests/courses-detail-routing.test.mjs tests/courses-catalog.test.mjs tests/presentations-lessons.test.mjs` — 40 passed, 2 pre-existing CourseBreadcrumb failures; build 275 pages | disabled/unmanaged |
+| LP-03 | `b59273a` | `node --test tests/presentations-lessons.test.mjs` — 19 passed; build 275 pages | disabled/unmanaged |
+
+## Feature completion evidence (2026-09-20)
+
+- `node --test tests/presentations-lessons.test.mjs` — 19 passed.
+- `npm test` — 168 tests, 163 passed, 5 failed; the 5 failures (CourseBreadcrumb x2, article language strategy, testimonials x2) pre-exist on `main` and are unrelated.
+- `npm run astro -- check` — 0 errors.
+- `npm run build` — 275 pages; the C strings lesson renders its presentations section and lesson badges.
 
 ## Next step
 
-Implement `LP-03`.
+All 3 tasks are complete. Open the pull request from `feat/lessons-presentations` to `main` (user decision).
