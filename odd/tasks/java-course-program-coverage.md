@@ -91,7 +91,7 @@ and state the relevant tradeoffs and failure modes.
   - Acceptance: event ordering, simulated clock, and deterministic tie-breaking
     are explained and tested by textual coverage assertions.
 
-- [ ] **JAVA-COVERAGE-07 — N-ary trees and indexed representations**
+- [x] **JAVA-COVERAGE-07 — N-ary trees and indexed representations**
   - Route: delegated; writer trigger (new bilingual lesson pair plus tests).
   - Add `26-arboles-n-arios-y-representacion-con-vectores.{es,en}.md` covering
     N-ary trees, binary↔N-ary transformations, and vector/index storage.
@@ -163,8 +163,9 @@ npm run build
 | JAVA-COVERAGE-04 | `9e58afc698bdba79ac72d9af3ac42472bede0932` | `node --test tests/courses-java-program-coverage.test.mjs` — 9 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
 | JAVA-COVERAGE-05 | `40fc8059869ceb7162181a38985a820c957e17cb` | `node --test tests/courses-java-program-coverage.test.mjs` — 11 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
 | JAVA-COVERAGE-06 | `019f75859df65b8963b39576a8aadc16f14482a1` | `node --test tests/courses-java-program-coverage.test.mjs` — 12 passed | disabled/unmanaged; assessment medium (`under_budget`) |
+| JAVA-COVERAGE-07 | `9ca37fcc11813563b1a668eac49b41bff6c665a8` | `node --test tests/courses-java-program-coverage.test.mjs` — 14 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
 
 ## Next step
 
-Implement `JAVA-COVERAGE-07` with a delegated writer using strict RED → GREEN
+Implement `JAVA-COVERAGE-08` with a delegated writer using strict RED → GREEN
 → REFACTOR.
