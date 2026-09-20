@@ -3,7 +3,7 @@ course: 'java'
 slug: '05-metodos-y-funciones'
 title: 'Métodos y Funciones en Java'
 description: 'Comprendé la modularización de código, firmas de métodos, retorno de valores, pasaje por valor vs referencia, sobrecarga y la pila de llamadas (Call Stack).'
-order: 5
+order: 6
 lang: 'es'
 published: true
 ---

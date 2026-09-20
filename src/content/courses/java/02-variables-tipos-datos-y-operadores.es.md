@@ -3,7 +3,7 @@ course: 'java'
 slug: '02-variables-tipos-datos-y-operadores'
 title: 'Variables, Tipos de Datos y Operadores'
 description: 'Dominá los tipos primitivos, tipos por referencia, conversión de tipos (casting) y operadores en Java.'
-order: 2
+order: 3
 lang: 'es'
 published: true
 ---

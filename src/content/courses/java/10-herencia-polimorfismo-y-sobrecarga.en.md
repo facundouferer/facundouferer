@@ -3,7 +3,7 @@ course: 'java'
 slug: '08-herencia-polimorfismo-y-sobrecarga'
 title: 'Inheritance, Polymorphism, and Method Overloading'
 description: 'Master inheritance with extends and super, overriding with @Override, the real difference between overloading and overriding, dynamic dispatch, and when composition beats inheritance.'
-order: 10
+order: 11
 lang: 'en'
 published: true
 ---

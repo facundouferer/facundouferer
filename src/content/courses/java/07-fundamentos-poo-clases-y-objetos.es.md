@@ -3,7 +3,7 @@ course: 'java'
 slug: '07-fundamentos-poo-clases-y-objetos'
 title: 'Fundamentos de POO: Clases, Objetos y Atributos'
 description: 'Dominá los pilares prácticos de la POO en Java: el concepto de clase como molde, instanciación con el operador new, estado, comportamiento y la referencia memoria this.'
-order: 7
+order: 8
 lang: 'es'
 published: true
 ---

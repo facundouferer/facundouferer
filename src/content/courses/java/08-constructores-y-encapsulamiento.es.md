@@ -3,7 +3,7 @@ course: 'java'
 slug: '07-constructores-y-encapsulamiento'
 title: 'Constructores, Modificadores de Acceso y Getters/Setters'
 description: 'Aprendé a garantizar que todo objeto nazca válido usando constructores, sobrecarga y this(), y a blindar su estado interno con encapsulamiento, modificadores de acceso y copias defensivas.'
-order: 8
+order: 9
 lang: 'es'
 published: true
 ---

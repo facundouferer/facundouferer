@@ -3,7 +3,7 @@ course: 'java'
 slug: '04-arrays-y-strings'
 title: 'Arrays and String Handling in Java'
 description: 'Master single-dimensional arrays, matrices and jagged arrays, the java.util.Arrays utility class, the String memory model, the String Constant Pool, and StringBuilder.'
-order: 4
+order: 5
 lang: 'en'
 published: true
 ---

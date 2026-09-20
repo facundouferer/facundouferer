@@ -3,7 +3,7 @@ course: 'java'
 slug: '14-iteradores-ordenamiento-equals-hashcode'
 title: 'Iterators, Ordering, and the equals/hashCode Contract'
 description: 'Understand what sits behind a for-each, why ConcurrentModificationException fires, how to sort with Comparable and Comparator, and why breaking the equals/hashCode contract makes your objects vanish.'
-order: 16
+order: 17
 lang: 'en'
 published: true
 ---

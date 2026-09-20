@@ -3,7 +3,7 @@ course: 'java'
 slug: '05-metodos-y-funciones'
 title: 'Methods and Functions in Java'
 description: 'Understand code modularization, method signatures, return values, pass-by-value vs pass-by-reference, method overloading, and the Call Stack.'
-order: 5
+order: 6
 lang: 'en'
 published: true
 ---
