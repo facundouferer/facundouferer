@@ -57,7 +57,7 @@ and state the relevant tradeoffs and failure modes.
   - Acceptance: localized pair exists; examples distinguish correctness from
     efficiency; focused coverage tests pass.
 
-- [ ] **JAVA-COVERAGE-02 — IDEs, Java API, and Javadoc**
+- [x] **JAVA-COVERAGE-02 — IDEs, Java API, and Javadoc**
   - Route: delegated; writer trigger (bilingual expansion plus tests).
   - Expand `01-conceptos-basicos.{es,en}.md` with local/online IDE tradeoffs and
     a practical workflow for reading Java API/Javadoc documentation.
@@ -158,8 +158,9 @@ npm run build
 | Task | Commit | Focused check | RDD outcome |
 |---|---|---|---|
 | JAVA-COVERAGE-01 | `5926e19040d5b3c584fd641644ca583a2f1abd51` | `node --test tests/courses-java-program-coverage.test.mjs` — 3 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
+| JAVA-COVERAGE-02 | `36c37c842190599710d344c3134aafbc5c94d64f` | `node --test tests/courses-java-program-coverage.test.mjs` — 5 passed | disabled/unmanaged; assessment medium (`under_budget`) |
 
 ## Next step
 
-Implement `JAVA-COVERAGE-02` with a delegated writer using strict RED → GREEN
+Implement `JAVA-COVERAGE-03` with a delegated writer using strict RED → GREEN
 → REFACTOR.
