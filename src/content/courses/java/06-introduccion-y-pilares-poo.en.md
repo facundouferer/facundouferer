@@ -3,7 +3,7 @@ course: 'java'
 slug: '06-introduccion-y-pilares-poo'
 title: 'Object-Oriented Programming and its Four Pillars'
 description: 'Understand OOP paradigm, its advantages over procedural programming, and its 4 core pillars explained in Java with clear diagrams.'
-order: 9
+order: 7
 lang: 'en'
 published: true
 ---

@@ -3,7 +3,7 @@ course: 'java'
 slug: '07-fundamentos-poo-clases-y-objetos'
 title: 'OOP Fundamentals: Classes, Objects, and Attributes'
 description: 'Master core practical OOP pillars in Java: class blueprints, instantiating objects with new, state, behavior, and the this reference.'
-order: 10
+order: 8
 lang: 'en'
 published: true
 ---

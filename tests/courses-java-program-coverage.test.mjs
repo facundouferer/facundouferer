@@ -8,8 +8,6 @@ const ALGORITHM_LESSON = '23-algoritmia-verificacion-y-complejidad';
 const BASIC_CONCEPTS_LESSON = '01-conceptos-basicos';
 const VARIABLES_LESSON = '02-variables-tipos-datos-y-operadores';
 const METHODS_LESSON = '05-metodos-y-funciones';
-const GIT_FOUNDATIONS_LESSON = '24-git-github-fundamentos-y-remotos';
-const GIT_BRANCHING_LESSON = '25-git-ramas-merge-conflictos-y-rebase';
 const STACKS_QUEUES_LESSON = '14-tad-pilas-y-colas';
 const NARY_TREES_LESSON = '26-arboles-n-arios-y-representacion-con-vectores';
 const GRAPHS_LESSON = '18-grafos-representacion-y-algoritmos';
@@ -151,94 +149,6 @@ test('methods lesson teaches recursion forms, stack costs, and bounded use', asy
 	}
 });
 
-test('Git foundations lesson is bilingual and ordered before object-oriented programming', async () => {
-	const [spanish, english] = await Promise.all([
-		readLesson(GIT_FOUNDATIONS_LESSON, 'es'),
-		readLesson(GIT_FOUNDATIONS_LESSON, 'en'),
-	]);
-
-	assert.equal(frontmatterValue(spanish, 'slug'), GIT_FOUNDATIONS_LESSON);
-	assert.equal(frontmatterValue(english, 'slug'), GIT_FOUNDATIONS_LESSON);
-	assert.equal(frontmatterValue(spanish, 'lang'), 'es');
-	assert.equal(frontmatterValue(english, 'lang'), 'en');
-	assert.equal(Number(frontmatterValue(spanish, 'order')), 7);
-	assert.equal(Number(frontmatterValue(english, 'order')), 7);
-});
-
-test('Git foundations lesson teaches a safe local and remote workflow in both locales', async () => {
-	const [spanish, english] = await Promise.all([
-		readLesson(GIT_FOUNDATIONS_LESSON, 'es'),
-		readLesson(GIT_FOUNDATIONS_LESSON, 'en'),
-	]);
-
-	for (const [locale, content] of [
-		['Spanish', spanish],
-		['English', english],
-	]) {
-		assert.match(content, /GitHub.*(?:hosting|alojamiento)|(?:hosting|alojamiento).*GitHub/is, `${locale}: Git versus GitHub`);
-		assert.match(content, /git --version/, `${locale}: installation verification`);
-		assert.match(content, /git config --global user\.name/, `${locale}: global identity`);
-		assert.match(content, /git config --local user\.email/, `${locale}: repository-local identity`);
-		assert.match(content, /git init/, `${locale}: init`);
-		assert.match(content, /git status/, `${locale}: status`);
-		assert.match(content, /git add/, `${locale}: staging`);
-		assert.match(content, /git commit/, `${locale}: commit`);
-		assert.match(content, /\.gitignore/, `${locale}: ignore rules`);
-		assert.match(content, /git remote add origin/, `${locale}: remote`);
-		assert.match(content, /git remote get-url origin/, `${locale}: remote URL validation`);
-		assert.match(content, /git branch --show-current/, `${locale}: current branch validation`);
-		assert.match(content, /git clone/, `${locale}: clone`);
-		assert.match(content, /git fetch/, `${locale}: fetch`);
-		assert.match(content, /git pull/, `${locale}: pull`);
-		assert.match(content, /git push -u origin/, `${locale}: push and upstream tracking`);
-		assert.match(content, /HTTPS/, `${locale}: HTTPS tradeoff`);
-		assert.match(content, /SSH/, `${locale}: SSH tradeoff`);
-		assert.match(content, /secret|secreto/i, `${locale}: secret warning`);
-		assert.match(content, /force[- ]push|push.*--force|--force.*push/i, `${locale}: force-push warning`);
-	}
-});
-
-test('Git branching lesson is bilingual and follows the Git foundations lesson', async () => {
-	const [spanish, english] = await Promise.all([
-		readLesson(GIT_BRANCHING_LESSON, 'es'),
-		readLesson(GIT_BRANCHING_LESSON, 'en'),
-	]);
-
-	assert.equal(frontmatterValue(spanish, 'slug'), GIT_BRANCHING_LESSON);
-	assert.equal(frontmatterValue(english, 'slug'), GIT_BRANCHING_LESSON);
-	assert.equal(frontmatterValue(spanish, 'lang'), 'es');
-	assert.equal(frontmatterValue(english, 'lang'), 'en');
-	assert.equal(Number(frontmatterValue(spanish, 'order')), 8);
-	assert.equal(Number(frontmatterValue(english, 'order')), 8);
-});
-
-test('Git branching lesson teaches safe merge, conflict, rebase, and recovery workflows', async () => {
-	const [spanish, english] = await Promise.all([
-		readLesson(GIT_BRANCHING_LESSON, 'es'),
-		readLesson(GIT_BRANCHING_LESSON, 'en'),
-	]);
-
-	for (const [locale, content] of [
-		['Spanish', spanish],
-		['English', english],
-	]) {
-		assert.match(content, /git switch -c/, `${locale}: branch creation`);
-		assert.match(content, /git fetch origin/, `${locale}: upstream fetch`);
-		assert.match(content, /fast-forward/i, `${locale}: fast-forward merge`);
-		assert.match(content, /git merge --no-ff/, `${locale}: merge commit`);
-		assert.match(content, /<<<<<<<.*=======.*>>>>>>>/s, `${locale}: conflict markers`);
-		assert.match(content, /git merge --abort/, `${locale}: merge abort`);
-		assert.match(content, /git rebase origin\/main/, `${locale}: rebase`);
-		assert.match(content, /git rebase --continue/, `${locale}: rebase continuation`);
-		assert.match(content, /git rebase --abort/, `${locale}: rebase abort`);
-		assert.match(content, /shared history|historial compartido/i, `${locale}: no rebase of shared history`);
-		assert.match(content, /--force-with-lease/, `${locale}: guarded force update`);
-		assert.match(content, /git push --force(?!-with-lease)/, `${locale}: unsafe force-push comparison`);
-		assert.match(content, /git reflog/, `${locale}: reflog recovery`);
-		assert.match(content, /git status/, `${locale}: precondition and conflict status checks`);
-	}
-});
-
 test('queues lesson teaches deterministic discrete-event simulation in both locales', async () => {
 	const [spanish, english] = await Promise.all([
 		readLesson(STACKS_QUEUES_LESSON, 'es'),
@@ -275,8 +185,8 @@ test('N-ary trees lesson is bilingual and follows the binary trees lesson', asyn
 	assert.equal(frontmatterValue(english, 'slug'), NARY_TREES_LESSON);
 	assert.equal(frontmatterValue(spanish, 'lang'), 'es');
 	assert.equal(frontmatterValue(english, 'lang'), 'en');
-	assert.equal(Number(frontmatterValue(spanish, 'order')), 21);
-	assert.equal(Number(frontmatterValue(english, 'order')), 21);
+	assert.equal(Number(frontmatterValue(spanish, 'order')), 19);
+	assert.equal(Number(frontmatterValue(english, 'order')), 19);
 });
 
 test('N-ary trees lesson teaches transformations and validated indexed storage', async () => {
@@ -412,8 +322,8 @@ test('Debugging and refactoring lesson is bilingual and follows the testing/Spri
 	assert.equal(frontmatterValue(english, 'slug'), DEBUGGING_LESSON);
 	assert.equal(frontmatterValue(spanish, 'lang'), 'es');
 	assert.equal(frontmatterValue(english, 'lang'), 'en');
-	assert.equal(Number(frontmatterValue(spanish, 'order')), 27);
-	assert.equal(Number(frontmatterValue(english, 'order')), 27);
+	assert.equal(Number(frontmatterValue(spanish, 'order')), 25);
+	assert.equal(Number(frontmatterValue(english, 'order')), 25);
 });
 
 test('Debugging and refactoring lesson teaches feedback loops, code smells, and behaviour-preserving refactors', async () => {

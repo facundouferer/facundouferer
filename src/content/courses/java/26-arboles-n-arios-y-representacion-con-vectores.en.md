@@ -3,7 +3,7 @@ course: 'java'
 slug: '26-arboles-n-arios-y-representacion-con-vectores'
 title: 'N-ary trees and vector-based representation'
 description: 'Model hierarchies with a variable number of children, transform them through first-child/next-sibling links, and store them with validated indices.'
-order: 21
+order: 19
 lang: 'en'
 published: true
 ---

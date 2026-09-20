@@ -3,7 +3,7 @@ course: 'java'
 slug: '10-excepciones-y-manejo-de-errores'
 title: 'Exception Handling and Robustness'
 description: 'Understand the Throwable hierarchy, the difference between checked and unchecked, how an exception propagates up the stack, try-with-resources, custom exceptions, and the antipatterns to avoid.'
-order: 15
+order: 13
 lang: 'en'
 published: true
 ---

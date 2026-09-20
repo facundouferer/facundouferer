@@ -3,7 +3,7 @@ course: 'java'
 slug: '27-depuracion-codigo-limpio-y-refactorizacion'
 title: 'Debugging, clean code, and refactoring'
 description: 'Learn to debug with breakpoints and watches, spot code smells in your Java code, and refactor it safely backed by JUnit tests.'
-order: 27
+order: 25
 lang: 'en'
 published: true
 ---

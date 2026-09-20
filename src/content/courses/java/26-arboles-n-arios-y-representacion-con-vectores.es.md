@@ -3,7 +3,7 @@ course: 'java'
 slug: '26-arboles-n-arios-y-representacion-con-vectores'
 title: 'Árboles N-arios y representación con vectores'
 description: 'Modelá jerarquías con cantidad variable de hijos, transformalas mediante primer hijo y siguiente hermano, y almacenalas con índices validados.'
-order: 21
+order: 19
 lang: 'es'
 published: true
 ---

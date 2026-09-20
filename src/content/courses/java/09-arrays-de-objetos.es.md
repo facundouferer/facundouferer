@@ -3,7 +3,7 @@ course: 'java'
 slug: '09-arrays-de-objetos'
 title: 'Arrays de Objetos: Guardar y Recorrer Muchas Instancias'
 description: 'Combiná arrays con clases: creá arrays de objetos, evitá el NullPointerException de las casillas vacías, recorrelos, buscá, ordená con Comparable y Comparator, y manejá capacidad contra cantidad real.'
-order: 12
+order: 10
 lang: 'es'
 published: true
 ---

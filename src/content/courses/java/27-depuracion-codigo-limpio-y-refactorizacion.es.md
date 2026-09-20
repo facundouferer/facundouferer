@@ -3,7 +3,7 @@ course: 'java'
 slug: '27-depuracion-codigo-limpio-y-refactorizacion'
 title: 'Depuración, código limpio y refactorización'
 description: 'Aprendé a depurar con breakpoints y watches, reconocer code smells en tu código Java y refactorizarlo de forma segura respaldado por tests JUnit.'
-order: 27
+order: 25
 lang: 'es'
 published: true
 ---
