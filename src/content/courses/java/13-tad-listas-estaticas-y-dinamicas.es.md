@@ -3,7 +3,7 @@ course: 'java'
 slug: '11-tad-listas-estaticas-y-dinamicas'
 title: 'TAD Lista: Estáticas, Dinámicas y Enlazadas'
 description: 'Comprendé qué es un Tipo Abstracto de Dato, por qué un arreglo y una lista enlazada resuelven lo mismo con costos opuestos, e implementá listas simples, dobles y circulares desde cero.'
-order: 15
+order: 16
 lang: 'es'
 published: true
 ---

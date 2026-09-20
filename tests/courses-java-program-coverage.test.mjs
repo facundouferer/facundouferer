@@ -9,6 +9,7 @@ const BASIC_CONCEPTS_LESSON = '01-conceptos-basicos';
 const VARIABLES_LESSON = '02-variables-tipos-datos-y-operadores';
 const METHODS_LESSON = '05-metodos-y-funciones';
 const GIT_FOUNDATIONS_LESSON = '24-git-github-fundamentos-y-remotos';
+const GIT_BRANCHING_LESSON = '25-git-ramas-merge-conflictos-y-rebase';
 
 async function readLesson(slug, lang) {
 	return readFile(path.join(JAVA_COURSE_DIR, `${slug}.${lang}.md`), 'utf8');
@@ -187,6 +188,47 @@ test('Git foundations lesson teaches a safe local and remote workflow in both lo
 		assert.match(content, /SSH/, `${locale}: SSH tradeoff`);
 		assert.match(content, /secret|secreto/i, `${locale}: secret warning`);
 		assert.match(content, /force[- ]push|push.*--force|--force.*push/i, `${locale}: force-push warning`);
+	}
+});
+
+test('Git branching lesson is bilingual and follows the Git foundations lesson', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(GIT_BRANCHING_LESSON, 'es'),
+		readLesson(GIT_BRANCHING_LESSON, 'en'),
+	]);
+
+	assert.equal(frontmatterValue(spanish, 'slug'), GIT_BRANCHING_LESSON);
+	assert.equal(frontmatterValue(english, 'slug'), GIT_BRANCHING_LESSON);
+	assert.equal(frontmatterValue(spanish, 'lang'), 'es');
+	assert.equal(frontmatterValue(english, 'lang'), 'en');
+	assert.equal(Number(frontmatterValue(spanish, 'order')), 8);
+	assert.equal(Number(frontmatterValue(english, 'order')), 8);
+});
+
+test('Git branching lesson teaches safe merge, conflict, rebase, and recovery workflows', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(GIT_BRANCHING_LESSON, 'es'),
+		readLesson(GIT_BRANCHING_LESSON, 'en'),
+	]);
+
+	for (const [locale, content] of [
+		['Spanish', spanish],
+		['English', english],
+	]) {
+		assert.match(content, /git switch -c/, `${locale}: branch creation`);
+		assert.match(content, /git fetch origin/, `${locale}: upstream fetch`);
+		assert.match(content, /fast-forward/i, `${locale}: fast-forward merge`);
+		assert.match(content, /git merge --no-ff/, `${locale}: merge commit`);
+		assert.match(content, /<<<<<<<.*=======.*>>>>>>>/s, `${locale}: conflict markers`);
+		assert.match(content, /git merge --abort/, `${locale}: merge abort`);
+		assert.match(content, /git rebase origin\/main/, `${locale}: rebase`);
+		assert.match(content, /git rebase --continue/, `${locale}: rebase continuation`);
+		assert.match(content, /git rebase --abort/, `${locale}: rebase abort`);
+		assert.match(content, /shared history|historial compartido/i, `${locale}: no rebase of shared history`);
+		assert.match(content, /--force-with-lease/, `${locale}: guarded force update`);
+		assert.match(content, /git push --force(?!-with-lease)/, `${locale}: unsafe force-push comparison`);
+		assert.match(content, /git reflog/, `${locale}: reflog recovery`);
+		assert.match(content, /git status/, `${locale}: precondition and conflict status checks`);
 	}
 });
 

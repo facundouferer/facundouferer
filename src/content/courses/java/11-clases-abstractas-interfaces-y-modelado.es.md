@@ -3,7 +3,7 @@ course: 'java'
 slug: '09-clases-abstractas-interfaces-y-modelado'
 title: 'Clases Abstractas, Interfaces y Organización del Código'
 description: 'Entendé cuándo usar una clase abstracta y cuándo una interfaz, implementá varios contratos a la vez, dominá el concepto de namespaces y paquetes en Java, y modelá asociación, agregación y composición.'
-order: 13
+order: 14
 lang: 'es'
 published: true
 ---

@@ -3,7 +3,7 @@ course: 'java'
 slug: '11-tad-listas-estaticas-y-dinamicas'
 title: 'The List ADT: Static, Dynamic, and Linked'
 description: 'Understand what an Abstract Data Type is, why an array and a linked list solve the same problem with opposite costs, and build singly linked, doubly linked, and circular lists from scratch.'
-order: 15
+order: 16
 lang: 'en'
 published: true
 ---
