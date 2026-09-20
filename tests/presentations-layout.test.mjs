@@ -5,11 +5,12 @@ import { readFile, readdir } from 'node:fs/promises';
 const PRESENTATIONS_DIR = 'src/components/presentaciones';
 
 // Baseline raw-hex-literal count in src/components/presentaciones, measured with
-// `rg -o "#[0-9a-fA-F]{3,8}\b" src/components/presentaciones -g '!*.svg' | wc -l`
+// `rg -oP "(?<!&)#[0-9a-fA-F]{3,8}\b" src/components/presentaciones -g '!*.svg' | wc -l`
+// (the lookbehind excludes HTML numeric entities such as `&#123;`, which are not colors)
 // before this layout change. These components predate the Organic design system
 // and carry their own literal palettes (see DESIGN.md §9); this change only
 // touches layout (width/height/flex), never color, so the count must not grow.
-const BASELINE_HEX_COUNT = 607;
+const BASELINE_HEX_COUNT = 389;
 
 function extractRule(content, selector) {
 	const re = new RegExp(`\\.${selector}\\s*\\{[\\s\\S]*?\\}`);
@@ -78,7 +79,7 @@ test('no presentation simulator container keeps a fixed pixel max-width cap', as
 test('raw hex literal count in src/components/presentaciones does not increase', async () => {
 	const files = await getPresentationFiles();
 	let total = 0;
-	const hexPattern = /#[0-9a-fA-F]{3,8}\b/g;
+	const hexPattern = /(?<!&)#[0-9a-fA-F]{3,8}\b/g;
 	for (const file of files) {
 		const content = await readFile(`${PRESENTATIONS_DIR}/${file}`, 'utf8');
 		total += (content.match(hexPattern) || []).length;

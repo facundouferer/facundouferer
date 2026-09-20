@@ -125,7 +125,7 @@ test('the component exposes the encapsulation and polymorphism demo hooks', asyn
 
 test('the component uses design tokens only — no raw hex literals', async () => {
 	component ??= await readFile(COMPONENT_PATH, 'utf8');
-	const hex = component.match(/#[0-9a-fA-F]{3,8}\b/g) ?? [];
+	const hex = component.match(/(?<!&)#[0-9a-fA-F]{3,8}\b/g) ?? [];
 	assert.deepEqual(hex, [], `expected no raw hex literals, found: ${hex.join(', ')}`);
 });
 

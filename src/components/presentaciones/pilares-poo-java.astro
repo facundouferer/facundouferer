@@ -275,15 +275,15 @@ const isEs = lang === 'es';
 							<div class="po-code-card">
 								<div class="po-code-title">Vehiculo.java</div>
 								<pre class="po-code-block"><code><span class="po-c">// Only the fields fleet management needs</span>
-<span class="po-k">public class</span> <span class="po-t">Vehiculo</span> &#x7b;
+<span class="po-k">public class</span> <span class="po-t">Vehiculo</span> &#123;
     <span class="po-k">private</span> <span class="po-t">String</span> patente;
     <span class="po-k">private</span> <span class="po-t">String</span> marca;
     <span class="po-k">private</span> <span class="po-t">double</span> velocidadActual;
 
-    <span class="po-k">public void</span> acelerar(<span class="po-t">double</span> incremento) &#x7b;
+    <span class="po-k">public void</span> acelerar(<span class="po-t">double</span> incremento) &#123;
         <span class="po-k">this</span>.velocidadActual += incremento;
-    &#x7d;
-&#x7d;</code></pre>
+    &#125;
+&#125;</code></pre>
 							</div>
 							<div class="po-concept-box">
 								<div class="po-concept-item">
@@ -351,13 +351,13 @@ const isEs = lang === 'es';
 								<div class="po-code-title">CuentaBancaria.java</div>
 								<pre class="po-code-block"><code><span class="po-k">private</span> <span class="po-t">double</span> saldo;
 
-<span class="po-k">public void</span> retirar(<span class="po-t">double</span> monto) &#x7b;
-    <span class="po-k">if</span> (monto &gt; <span class="po-n">0</span> &amp;&amp; monto &lt;= <span class="po-k">this</span>.saldo) &#x7b;
+<span class="po-k">public void</span> retirar(<span class="po-t">double</span> monto) &#123;
+    <span class="po-k">if</span> (monto &gt; <span class="po-n">0</span> &amp;&amp; monto &lt;= <span class="po-k">this</span>.saldo) &#123;
         <span class="po-k">this</span>.saldo -= monto;
-    &#x7d; <span class="po-k">else</span> &#x7b;
+    &#125; <span class="po-k">else</span> &#123;
         <span class="po-c">// invalid request: state stays untouched</span>
-    &#x7d;
-&#x7d;</code></pre>
+    &#125;
+&#125;</code></pre>
 							</div>
 						</div>
 					</div>
@@ -418,19 +418,19 @@ const isEs = lang === 'es';
 						<div class="po-col">
 							<div class="po-code-card">
 								<div class="po-code-title">Telefono.java</div>
-								<pre class="po-code-block"><code><span class="po-k">public class</span> <span class="po-t">Telefono</span> <span class="po-k">extends</span> <span class="po-t">Dispositivo</span> &#x7b;
+								<pre class="po-code-block"><code><span class="po-k">public class</span> <span class="po-t">Telefono</span> <span class="po-k">extends</span> <span class="po-t">Dispositivo</span> &#123;
     <span class="po-k">private</span> <span class="po-t">String</span> numero;
 
-    <span class="po-k">public</span> <span class="po-t">Telefono</span>(<span class="po-t">String</span> marca, <span class="po-t">String</span> numero) &#x7b;
+    <span class="po-k">public</span> <span class="po-t">Telefono</span>(<span class="po-t">String</span> marca, <span class="po-t">String</span> numero) &#123;
         <span class="po-k">super</span>(marca); <span class="po-c">// inherited part first</span>
         <span class="po-k">this</span>.numero = numero;
-    &#x7d;
+    &#125;
 
     <span class="po-a">@Override</span>
-    <span class="po-k">public void</span> encender() &#x7b;
+    <span class="po-k">public void</span> encender() &#123;
         System.out.println(<span class="po-s">"Telefono listo"</span>);
-    &#x7d;
-&#x7d;</code></pre>
+    &#125;
+&#125;</code></pre>
 							</div>
 							<div class="po-concept-box">
 								<div class="po-concept-item">
@@ -455,7 +455,7 @@ const isEs = lang === 'es';
 
 							<div class="po-dispatch">
 								<div class="po-dispatch-head">
-									<code class="po-inline-code">Dispositivo[] flota = &#x7b; new Telefono(), new Laptop(), new Tablet() &#x7d;;</code>
+									<code class="po-inline-code">Dispositivo[] flota = &#123; new Telefono(), new Laptop(), new Tablet() &#125;;</code>
 								</div>
 								<div class="po-poly-list">
 									<div class="po-poly-item" data-index="0">
@@ -586,26 +586,26 @@ const isEs = lang === 'es';
 						<div class="po-col">
 							<div class="po-code-card">
 								<div class="po-code-title">Dispositivos.java</div>
-								<pre class="po-code-block"><code><span class="po-k">public class</span> <span class="po-t">Celular</span> <span class="po-k">extends</span> <span class="po-t">Dispositivo</span> &#x7b;
+								<pre class="po-code-block"><code><span class="po-k">public class</span> <span class="po-t">Celular</span> <span class="po-k">extends</span> <span class="po-t">Dispositivo</span> &#123;
     <span class="po-k">private</span> <span class="po-t">int</span> porcentajeBateria;
 
-    <span class="po-k">public</span> <span class="po-t">Celular</span>(<span class="po-t">String</span> marca, <span class="po-t">int</span> bateria) &#x7b;
+    <span class="po-k">public</span> <span class="po-t">Celular</span>(<span class="po-t">String</span> marca, <span class="po-t">int</span> bateria) &#123;
         <span class="po-k">super</span>(marca);
         <span class="po-k">this</span>.porcentajeBateria =
             Math.min(<span class="po-n">100</span>, Math.max(<span class="po-n">0</span>, bateria));
-    &#x7d;
+    &#125;
 
-    <span class="po-k">public void</span> usarApp(<span class="po-t">int</span> minutos) &#x7b;
+    <span class="po-k">public void</span> usarApp(<span class="po-t">int</span> minutos) &#123;
         <span class="po-t">int</span> consumo = minutos / <span class="po-n">5</span>;
         <span class="po-k">this</span>.porcentajeBateria =
             Math.max(<span class="po-n">0</span>, porcentajeBateria - consumo);
-    &#x7d;
+    &#125;
 
     <span class="po-a">@Override</span>
-    <span class="po-k">public void</span> encender() &#x7b;
+    <span class="po-k">public void</span> encender() &#123;
         System.out.println(<span class="po-s">"Celular encendido"</span>);
-    &#x7d;
-&#x7d;</code></pre>
+    &#125;
+&#125;</code></pre>
 							</div>
 						</div>
 					</div>
