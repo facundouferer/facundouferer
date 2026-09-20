@@ -106,7 +106,7 @@ and state the relevant tradeoffs and failure modes.
   - Acceptance: example handles unreachable vertices and explains negative
     edges and negative-cycle detection.
 
-- [ ] **JAVA-COVERAGE-09 — Native distribution**
+- [x] **JAVA-COVERAGE-09 — Native distribution**
   - Route: delegated; writer trigger (bilingual expansion plus tests).
   - Expand `19-archivos-persistencia-y-empaquetado-jar.{es,en}.md` with
     `jpackage` and a bounded Launch4j comparison for Windows.
@@ -165,8 +165,9 @@ npm run build
 | JAVA-COVERAGE-06 | `019f75859df65b8963b39576a8aadc16f14482a1` | `node --test tests/courses-java-program-coverage.test.mjs` — 12 passed | disabled/unmanaged; assessment medium (`under_budget`) |
 | JAVA-COVERAGE-07 | `9ca37fcc11813563b1a668eac49b41bff6c665a8` | `node --test tests/courses-java-program-coverage.test.mjs` — 14 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
 | JAVA-COVERAGE-08 | `39fb83bc0e971065b4bd0d4c00e91cc16865d45c` | `node --test tests/courses-java-program-coverage.test.mjs` — 15 passed | disabled/unmanaged; assessment medium (`under_budget`) |
+| JAVA-COVERAGE-09 | `21eb238` | `node --test tests/courses-java-program-coverage.test.mjs` — 16 passed | disabled/unmanaged |
 
 ## Next step
 
-Implement `JAVA-COVERAGE-09` with a delegated writer using strict RED → GREEN
+Implement `JAVA-COVERAGE-10` with a delegated writer using strict RED → GREEN
 → REFACTOR.
