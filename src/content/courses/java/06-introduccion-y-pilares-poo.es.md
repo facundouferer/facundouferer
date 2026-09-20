@@ -3,7 +3,7 @@ course: 'java'
 slug: '06-introduccion-y-pilares-poo'
 title: 'Programación Orientada a Objetos y sus Pilares'
 description: 'Comprendé qué es el paradigma de POO, sus ventajas frente a la programación estructurada y sus 4 pilares fundamentales explicados en Java.'
-order: 6
+order: 9
 lang: 'es'
 published: true
 ---

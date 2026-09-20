@@ -3,7 +3,7 @@ course: 'java'
 slug: '20-testing-junit-y-spring-boot'
 title: 'Testing con JUnit y Tu Primera App en Spring Boot'
 description: 'Escribí pruebas unitarias con JUnit 5, entendé la pirámide de tests y el patrón AAA, usá mocks para aislar dependencias, y construí un servicio REST CRUD en tres capas con Spring Boot.'
-order: 22
+order: 26
 lang: 'es'
 published: true
 ---
@@ -240,6 +240,13 @@ public class ProductoController {
                    .body(creado);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Producto> actualizar(@PathVariable long id, @Valid @RequestBody NuevoProducto datos) {
+        return servicio.actualizar(id, datos)
+                       .map(ResponseEntity::ok)                    // 200 con el producto reemplazado
+                       .orElse(ResponseEntity.notFound().build()); // 404 si no existe
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable long id) {
         return servicio.eliminar(id) ? ResponseEntity.noContent().build()   // 204
@@ -264,10 +271,42 @@ public class ProductoServicio {
             .orElseThrow(() -> new ProductoNoEncontradoException(id));
         return p.precio() * (1 - porcentaje / 100.0);
     }
+
+    public Optional<Producto> actualizar(long id, NuevoProducto datos) {
+        // @Valid ya garantizó en el controlador que "datos" es válido.
+        return repositorio.buscarPorId(id)
+            .map(actual -> repositorio.guardar(
+                new Producto(actual.id(), datos.nombre(), datos.precio(), datos.stock())));
+    }
 }
 ```
 
-Ese `Optional` que se transforma en 200 o en 404 conecta directamente con la lección 11: **"no existe" no es una excepción, es un resultado posible**, y acá se traduce a un código HTTP.
+Ese `Optional` que se transforma en 200 o en 404 conecta directamente con la lección 11: **"no existe" no es una excepción, es un resultado posible**, y acá se traduce a un código HTTP. `obtener` y `actualizar` comparten el mismo patrón porque comparten el mismo caso: el id podría no estar.
+
+### PUT: reemplazo idempotente, no un parche
+
+`actualizar` recibe el `NuevoProducto` completo y le pide al repositorio un reemplazo total: los valores viejos se descartan, no se combinan con los nuevos. Por eso mandar el mismo `PUT` una, dos o diez veces deja el recurso exactamente en el mismo estado final: **`PUT` es idempotente**.
+
+`PATCH` es la otra cara de la moneda: modifica una parte del recurso (por ejemplo, "sumale 5 unidades al stock"), y repetir esa misma petición dos veces normalmente **no** da el mismo resultado — cada repetición suma 5 de nuevo. Si el cliente siempre manda el recurso completo, `PUT` alcanza; si necesita cambios parciales, el verbo correcto es `PATCH`.
+
+La capa de datos no cambia de rol: el repositorio sigue siendo el único que sabe hablar con la base. `actualizar` lo usa dos veces — `buscarPorId` para encontrar el producto actual y `guardar` para persistir el reemplazo — y el controlador nunca lo toca directamente.
+
+Las respuestas del `PUT` siguen la misma lógica que ya usás en `obtener` y `eliminar`, más una nueva:
+
+- **`200 OK`** con el producto actualizado, si el id existe.
+- **`404 Not Found`**, si el id no existe. Mismo patrón `Optional` + `orElse` que en el `GET`.
+- **`400 Bad Request`**, si `@Valid` rechaza el cuerpo — la misma validación que ya protege a `crear`. Spring corta la petición antes de que el controlador se ejecute, así que el servicio nunca llega a correr.
+
+Con `actualizar` el CRUD queda completo:
+
+| Operación | Verbo HTTP | Método del servicio | Respuestas |
+| --- | --- | --- | --- |
+| CREATE | `POST` | `crear` | `201 Created` |
+| READ | `GET` | `obtener` | `200 OK` / `404 Not Found` |
+| UPDATE | `PUT` | `actualizar` | `200 OK` / `404 Not Found` / `400 Bad Request` |
+| DELETE | `DELETE` | `eliminar` | `204 No Content` / `404 Not Found` |
+
+Cuatro verbos, tres capas, y ningún código de estado inventado.
 
 ### Los códigos de estado que sí importan
 
@@ -310,6 +349,45 @@ class ProductoControllerTest {
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.nombre").value("Yerba"))
                .andExpect(jsonPath("$.precio").value(3200.0));
+    }
+
+    @Test
+    void actualizaElProductoYDevuelve200() throws Exception {
+        when(servicio.actualizar(eq(1L), any(NuevoProducto.class)))
+            .thenReturn(Optional.of(new Producto(1L, "Yerba Premium", 3400.0, 40)));
+
+        mockMvc.perform(put("/api/productos/1")
+                   .contentType(MediaType.APPLICATION_JSON)
+                   .content("""
+                       {"nombre":"Yerba Premium","precio":3400.0,"stock":40}
+                       """))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.nombre").value("Yerba Premium"));
+    }
+
+    @Test
+    void devuelve404AlActualizarUnProductoInexistente() throws Exception {
+        when(servicio.actualizar(eq(99L), any(NuevoProducto.class)))
+            .thenReturn(Optional.empty());
+
+        mockMvc.perform(put("/api/productos/99")
+                   .contentType(MediaType.APPLICATION_JSON)
+                   .content("""
+                       {"nombre":"Yerba Premium","precio":3400.0,"stock":40}
+                       """))
+               .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void devuelve400ConUnCuerpoInvalido() throws Exception {
+        mockMvc.perform(put("/api/productos/1")
+                   .contentType(MediaType.APPLICATION_JSON)
+                   .content("""
+                       {"nombre":"","precio":-100.0,"stock":40}
+                       """))
+               .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(servicio);   // @Valid corta antes de llegar al servicio
     }
 }
 
@@ -364,6 +442,7 @@ Testeá `ProductoServicio` **sin base de datos**, con un mock del repositorio:
 3. Lanza `ProductoNoEncontradoException` cuando el id no existe.
 4. `crear` rechaza precios negativos y **no llega a guardar nada**.
 5. Un test parametrizado que cubra varios descuentos de una vez.
+6. `actualizar` reemplaza nombre, precio y stock a partir del `NuevoProducto` recibido sin tocar el id, y devuelve `Optional.empty()` si el id no existe.
 
 <details>
 <summary>Ver solución sugerida</summary>
@@ -472,6 +551,39 @@ class ProductoServicioTest {
             verify(repositorio).guardar(argThat(p -> p.nombre().equals("Café")));
         }
     }
+
+    @Nested
+    @DisplayName("actualizar")
+    class Actualizar {
+
+        @Test
+        @DisplayName("reemplaza el producto conservando el id")
+        void reemplazaElProducto() {
+            NuevoProducto datos = new NuevoProducto("Yerba Premium", 3400.0, 40);
+            when(repositorio.buscarPorId(1L))
+                .thenReturn(Optional.of(new Producto(1L, "Yerba", 3200.0, 45)));
+            when(repositorio.guardar(any()))
+                .thenReturn(new Producto(1L, "Yerba Premium", 3400.0, 40));
+
+            Optional<Producto> resultado = servicio.actualizar(1L, datos);
+
+            assertTrue(resultado.isPresent());
+            assertEquals("Yerba Premium", resultado.get().nombre());
+            verify(repositorio).guardar(argThat(p -> p.id() == 1L && p.nombre().equals("Yerba Premium")));
+        }
+
+        @Test
+        @DisplayName("devuelve vacío y no guarda nada si el id no existe")
+        void noActualizaUnProductoInexistente() {
+            when(repositorio.buscarPorId(99L)).thenReturn(Optional.empty());
+
+            Optional<Producto> resultado =
+                servicio.actualizar(99L, new NuevoProducto("Yerba", 3200.0, 45));
+
+            assertTrue(resultado.isEmpty());
+            verify(repositorio, never()).guardar(any());
+        }
+    }
 }
 ```
 
@@ -496,6 +608,7 @@ Y fijate que todo esto corre en **milisegundos**, sin base de datos, sin servido
 - Spring Boot separa en **tres capas**: web (`@RestController`), negocio (`@Service`) y datos (`@Repository`).
 - Cada capa se prueba distinto: `@WebMvcTest`, JUnit puro con mocks, `@DataJpaTest`. `@SpringBootTest`, lo mínimo posible.
 - Un `Optional` vacío en el servicio se traduce en un `404` en el controlador. La misma idea, en dos lenguajes distintos.
+- El CRUD completo son cuatro verbos: `POST` (201), `GET` (200/404), `PUT` (200/404/400) y `DELETE` (204/404). `PUT` reemplaza el recurso entero y es idempotente; `PATCH` cambia una parte y no lo es necesariamente.
 - `verify` prueba **cómo** se hizo algo, no solo el resultado. Es lo que convierte una decisión de diseño en una garantía.
 
 ---

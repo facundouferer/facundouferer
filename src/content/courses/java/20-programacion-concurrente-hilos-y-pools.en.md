@@ -3,7 +3,7 @@ course: 'java'
 slug: '19-programacion-concurrente-hilos-y-pools'
 title: 'Concurrent Programming: Threads, Synchronization, and Pools'
 description: 'Master Java concurrency: thread lifecycle, shared memory synchronization, race conditions, ExecutorService, and Virtual Threads.'
-order: 20
+order: 24
 lang: 'en'
 published: true
 ---
@@ -245,3 +245,239 @@ public class ConcurrentDownloader {
 }
 ```
 </details>
+
+---
+
+## 7. Thread Coordination: `wait()`, `notify()`, and Deadlocks
+
+`synchronized`, atomic variables, and `volatile` solve exclusive access to shared data, but they fall short when a thread needs to **wait** for another thread to bring a condition to a particular state (for example, "an item is available" or "there is free space"). For that, Java exposes `wait()`, `notify()`, and `notifyAll()`, inherited from `Object`. With them comes the opposite risk of a race condition: the **deadlock**, a dead end where the program stops making progress forever.
+
+### The monitor: why `wait()` and `notify()` require the lock
+
+Every Java object has an implicit **monitor** associated with it. `wait()`, `notify()`, and `notifyAll()` only make sense inside a `synchronized` block or method on that same object, because they require the calling thread to **own** the monitor:
+
+- `wait()` releases the monitor's lock and suspends the thread until another thread calls `notify()`/`notifyAll()` on the same object (or a timeout expires, if the timed variant was used). Before returning control, the thread **reacquires** the lock.
+- `notify()` wakes up **one** thread waiting on that monitor, chosen non-deterministically.
+- `notifyAll()` wakes up **every** thread waiting on that monitor; each one competes again for the lock.
+
+If any of these methods is called outside a `synchronized` block on the corresponding object, the JVM throws `IllegalMonitorStateException` at runtime: there is no way to "wait" or "signal" on a lock the thread does not own.
+
+```java
+public class SharedResource {
+    private final Object lock = new Object();
+    private boolean dataReady = false;
+
+    public void produce() {
+        synchronized (lock) {
+            dataReady = true;
+            lock.notifyAll(); // wake every thread waiting on "lock"
+        }
+    }
+
+    public void consume() throws InterruptedException {
+        synchronized (lock) {
+            while (!dataReady) {
+                lock.wait(); // release "lock" and wait for produce() to signal
+            }
+            System.out.println("Data ready to consume");
+        }
+    }
+}
+
+// lock.wait();          // outside synchronized (lock): IllegalMonitorStateException
+```
+
+### The condition loop: `while`, never `if`
+
+`wait()` can return without the expected condition actually being true. This happens for two reasons:
+
+1. **Spurious wakeup**: the Java specification allows a thread to return from `wait()` without anyone having called `notify()`/`notifyAll()`, for internal JVM or operating-system reasons.
+2. **Condition already consumed**: with `notifyAll()`, several threads compete for the lock; the first one to reacquire it may leave the condition in a state that no longer applies to the rest.
+
+That is why the condition is checked inside a `while`, never an `if`:
+
+```java
+synchronized (lock) {
+    while (!conditionMet()) { // re-check every time the thread wakes up
+        lock.wait();
+    }
+    // it is now guaranteed that conditionMet() is true
+}
+```
+
+An `if` checks the condition only once, before sleeping; if the thread wakes up spuriously (or the condition changes again), it proceeds with invalid data without the compiler or runtime ever warning about it.
+
+### Prefer notifyAll() instead of notify()
+
+`notify()` wakes up a single, arbitrarily chosen thread. If the monitor has threads waiting for **different conditions** (for example, some waiting for "there is space" and others for "there is an item"), `notify()` can wake the wrong thread, which re-checks its condition, finds it false, and goes back to sleep: the thread that could actually proceed is never signaled. This is known as a **lost wakeup**.
+
+`notifyAll()` wakes everyone; each thread checks its own `while` and only the right one proceeds. It costs more CPU because everyone competes for the lock, but it is the safe default. Use `notify()` only when you can prove every waiting thread shares exactly the same condition.
+
+### Example: producer-consumer bounded buffer
+
+A classic coordination case is a **bounded buffer**: producers wait when it is full, consumers wait when it is empty.
+
+```java
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+public class BoundedBuffer<T> {
+    private final Object lock = new Object();
+    private final Deque<T> items = new ArrayDeque<>();
+    private final int capacity;
+
+    public BoundedBuffer(int capacity) {
+        if (capacity <= 0) {
+            throw new IllegalArgumentException("capacity must be positive");
+        }
+        this.capacity = capacity;
+    }
+
+    public void put(T item) throws InterruptedException {
+        synchronized (lock) {
+            while (items.size() == capacity) {
+                lock.wait(); // no room: wait for a consumer to free one slot
+            }
+            items.addLast(item);
+            lock.notifyAll(); // may wake a consumer waiting for an item
+        }
+    }
+
+    public T take() throws InterruptedException {
+        synchronized (lock) {
+            while (items.isEmpty()) {
+                lock.wait(); // no items: wait for a producer to add one
+            }
+            T item = items.removeFirst();
+            lock.notifyAll(); // may wake a producer waiting for space
+            return item;
+        }
+    }
+}
+```
+
+`put()` and `take()` share the same lock (the `lock` object itself), so they never run at the same time. `notifyAll()` is mandatory here because two different conditions coexist on the same monitor ("there is space" and "there is an item"); `notify()` could wake the wrong thread and leave the program stuck.
+
+### Deadlocks: the four Coffman conditions
+
+A **deadlock** happens when two or more threads are blocked forever, each one waiting for a resource that another one holds. Coffman described four conditions that, **all together**, make a deadlock possible:
+
+1. **Mutual exclusion**: at least one resource (a lock) can only be used by one thread at a time.
+2. **Hold-and-wait**: a thread holds a resource while waiting to acquire another.
+3. **No preemption**: a resource cannot be forcibly taken from a thread; it is only released voluntarily.
+4. **Circular wait**: there is a cycle of threads where each one waits for a resource held by the next.
+
+Breaking **any one** of the four conditions prevents deadlock. In practice, the easiest one to attack in Java code is circular wait, through a consistent acquisition order.
+
+### A minimal deadlock with two locks
+
+```java
+public class DeadlockDemo {
+    private static final Object LOCK_A = new Object();
+    private static final Object LOCK_B = new Object();
+
+    static void transferAtoB() {
+        synchronized (LOCK_A) {
+            sleepBriefly();
+            synchronized (LOCK_B) {
+                System.out.println("Transfer A -> B complete");
+            }
+        }
+    }
+
+    static void transferBtoA() {
+        synchronized (LOCK_B) {
+            sleepBriefly();
+            synchronized (LOCK_A) {
+                System.out.println("Transfer B -> A complete");
+            }
+        }
+    }
+
+    private static void sleepBriefly() {
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public static void main(String[] args) {
+        new Thread(DeadlockDemo::transferAtoB).start();
+        new Thread(DeadlockDemo::transferBtoA).start();
+        // with unlucky interleaving, both threads block forever: one holds
+        // LOCK_A and waits for LOCK_B, the other holds LOCK_B and waits for
+        // LOCK_A
+    }
+}
+```
+
+If the first thread enters `transferAtoB()` and acquires `LOCK_A`, and almost simultaneously the second thread enters `transferBtoA()` and acquires `LOCK_B`, both end up waiting for a lock the other already holds and will never release. The program throws no exception: it simply stops making progress.
+
+### Prevention: lock ordering, `tryLock` with a timeout, and bounded critical sections
+
+- **Consistent lock ordering.** If every thread acquires `LOCK_A` before `LOCK_B` (never the other way around), circular wait becomes impossible. When the locks are dynamic, a stable order such as `System.identityHashCode()` works as a criterion:
+
+```java
+static void transferOrdered(Object first, Object second, Runnable action) {
+    Object low = System.identityHashCode(first) <= System.identityHashCode(second) ? first : second;
+    Object high = low == first ? second : first;
+    synchronized (low) {
+        synchronized (high) {
+            action.run();
+        }
+    }
+}
+```
+
+- **`tryLock` with a timeout.** `ReentrantLock` allows attempting to acquire a lock with a timeout instead of blocking indefinitely. If the second lock cannot be obtained, the thread releases the first one and can retry later:
+
+```java
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+
+ReentrantLock lockA = new ReentrantLock();
+ReentrantLock lockB = new ReentrantLock();
+
+boolean transfer() throws InterruptedException {
+    if (lockA.tryLock(500, TimeUnit.MILLISECONDS)) {
+        try {
+            if (lockB.tryLock(500, TimeUnit.MILLISECONDS)) {
+                try {
+                    return true; // critical section holding both locks
+                } finally {
+                    lockB.unlock();
+                }
+            }
+        } finally {
+            lockA.unlock();
+        }
+    }
+    return false; // could not acquire both locks: retry later
+}
+```
+
+- **Bounded critical sections.** The shorter the `synchronized` block (or the span between `lock()` and `unlock()`), the less time a thread holds a resource and the smaller the window for a deadlock. Avoid calling unknown code (I/O, callbacks, another lock) while holding a lock.
+
+### Diagnosis: `jstack`, thread dumps, and JConsole/VisualVM
+
+When a program stops responding, the first question is whether it is deadlocked or just slow. `jstack`, bundled with the JDK, produces a **thread dump** with the state and stack trace of every JVM thread:
+
+```sh
+jps                        # list running Java processes and their PID
+jstack <pid> > thread-dump.txt
+grep -A 20 "Found one Java-level deadlock" thread-dump.txt
+```
+
+If there is a deadlock, `jstack` detects it automatically and prints a section with the literal text `Found one Java-level deadlock`, followed by the involved threads, which lock each one holds, and which one it is waiting for.
+
+**JConsole** and **VisualVM**, both bundled with or downloadable alongside the JDK, surface the same information graphically: the Threads tab has a "Detect Deadlock" button that highlights threads blocking each other and their wait chain, without having to read a text dump by hand.
+
+### Safer high-level alternatives
+
+`wait()`/`notify()`/`synchronized` are the lowest-level tools; using them by hand is error-prone. `java.util.concurrent` offers higher-level utilities that already solve these problems internally:
+
+- **`BlockingQueue`** (`ArrayBlockingQueue`, `LinkedBlockingQueue`): directly replaces a hand-rolled bounded buffer. `put()` and `take()` already handle waiting and signaling correctly.
+- **`ReentrantLock` + `Condition`**: instead of a single monitor with `wait()`/`notifyAll()`, `newCondition()` allows **multiple independent wait sets** (for example, one for "not full" and another for "not empty"), avoiding waking up threads that do not apply.
+- **`CountDownLatch`**: coordinates a "wait until N tasks finish" event, such as waiting for several startup threads to complete before accepting traffic.
+- The rest of `java.util.concurrent` (`Semaphore`, `CyclicBarrier`, `ExecutorService`, `CompletableFuture`) covers the vast majority of coordination scenarios without touching `wait()`/`notify()` directly. Reserve the manual monitor for understanding these tools or maintaining legacy code.

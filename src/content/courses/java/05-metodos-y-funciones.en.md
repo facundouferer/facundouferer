@@ -3,7 +3,7 @@ course: 'java'
 slug: '05-metodos-y-funciones'
 title: 'Methods and Functions in Java'
 description: 'Understand code modularization, method signatures, return values, pass-by-value vs pass-by-reference, method overloading, and the Call Stack.'
-order: 5
+order: 6
 lang: 'en'
 published: true
 ---
@@ -166,6 +166,73 @@ public class RecursionDemo {
     }
 }
 ```
+
+This introductory `factorial` version illustrates the structure, but it treats negative values as a base case and can overflow `long`. It should not be exposed as an API without validating and bounding the input, as the next example does.
+
+### Forms of recursion
+
+- **Direct recursion:** a method calls itself, as `factorial` does.
+- **Indirect recursion or mutual recursion:** one method calls another that eventually calls the first one again. They must share a coherent termination condition.
+- **Tail recursion:** the recursive call is the method's final operation; no calculation remains after it returns.
+
+```java
+static boolean isEven(int n) {
+    if (n < 0) throw new IllegalArgumentException("n cannot be negative");
+    if (n == 0) return true;
+    return isOdd(n - 1); // Indirect recursion
+}
+
+static boolean isOdd(int n) {
+    if (n < 0) throw new IllegalArgumentException("n cannot be negative");
+    if (n == 0) return false;
+    return isEven(n - 1); // Mutual recursion
+}
+
+static long tailSum(int n, long accumulator) {
+    if (n == 0) return accumulator;
+    return tailSum(n - 1, accumulator + n); // Tail recursion
+}
+```
+
+Even though `tailSum` has tail form, **Java does not guarantee tail-call optimization**. Every call may retain its frame. A depth of `n` consumes `O(n)` stack space and can cause `StackOverflowError`; placing the call last does not make it safe.
+
+### Validated and bounded recursive example
+
+The following method accepts only a known depth. The limit is part of the contract, not a promise that every JVM supports exactly that many frames:
+
+```java
+public final class RecursiveSum {
+    private static final int MAX_RECURSIVE_DEPTH = 1_000;
+
+    public static long sumTo(int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("n cannot be negative");
+        }
+        if (n > MAX_RECURSIVE_DEPTH) {
+            throw new IllegalArgumentException(
+                "n exceeds recursive limit: " + MAX_RECURSIVE_DEPTH
+            );
+        }
+        if (n == 0) {
+            return 0; // Base case
+        }
+        return n + sumTo(n - 1); // Direct recursion
+    }
+}
+```
+
+The base case covers `0`, every call reduces `n`, and validation rejects values outside the domain or above the bound. Time is `O(n)` and additional stack space is also `O(n)`.
+
+### When iteration is safer
+
+Use recursion when the problem is naturally recursive—such as trees, divide and conquer, or backtracking—and depth is bounded or controlled. Prefer a loop or an explicit stack when:
+
+- input may be very large or comes from an untrusted source;
+- the problem is a linear sequence such as counting, summing, or scanning an array;
+- you need predictable memory consumption;
+- you cannot prove that each call advances toward a base case.
+
+An iterative sum uses `O(1)` additional memory and avoids depending on stack size. Recursion is not “more advanced” than a loop: it is a tool with a concrete cost.
 
 ---
 

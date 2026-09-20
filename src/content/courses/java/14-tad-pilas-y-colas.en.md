@@ -3,7 +3,7 @@ course: 'java'
 slug: '12-tad-pilas-y-colas'
 title: 'The Stack and Queue ADTs: Linear Structures'
 description: 'Master LIFO and FIFO structures, implement them from scratch over nodes and arrays, understand the circular queue, and solve the classic balanced-brackets problem.'
-order: 14
+order: 17
 lang: 'en'
 published: true
 ---
@@ -469,6 +469,178 @@ If your solution only covers the third, the `) a (` case will return `true` and 
 Notice too that the stack **never holds more than it needs**: every resolved opener is popped immediately. In a well-balanced thousand-character expression, the stack never exceeds the real nesting depth.
 
 </details>
+
+---
+
+## 9. Discrete-event simulation with two queues
+
+A **discrete-event simulation** does not wait for real time to pass. It maintains a **simulated clock** and jumps directly to the next event's timestamp. It therefore does not use `Thread.sleep`: sleeping would make tests slow and dependent on the machine's wall clock without improving the model.
+
+This problem needs two queues with different responsibilities:
+
+| Structure | Order | Responsibility |
+| :--- | :--- | :--- |
+| `PriorityQueue<Event>` | Earliest timestamp, then lowest sequence | Future-event calendar: decides what happens next. |
+| `ArrayDeque<Customer>` | FIFO | Service queue: decides which customer waits and who receives service next. |
+
+A timestamp alone is not enough for ordering: an arrival and a completion may coincide. An increasing `sequence` is a deterministic tie-breaker. The same inputs always produce exactly the same processing order.
+
+### Bounded runnable example
+
+The following model represents one server, known arrivals, and a constant service duration. Every `Event` and `Customer` is an immutable `record`.
+
+```java
+import java.util.ArrayDeque;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.PriorityQueue;
+
+public final class QueueSimulator {
+    private static final int MAX_EVENTS = 20_000;
+
+    private enum Type { ARRIVAL, COMPLETION }
+
+    private record Event(long time, long sequence, Type type, int customerId) {
+        Event {
+            if (time < 0 || sequence < 0) {
+                throw new IllegalArgumentException("time and sequence must be nonnegative");
+            }
+            Objects.requireNonNull(type, "type is required");
+        }
+    }
+
+    private record Customer(int id, long arrivalTime) {}
+
+    public record Metrics(int served, double averageWait, int maximumQueueLength) {}
+
+    private final PriorityQueue<Event> futureEvents = new PriorityQueue<>(
+        Comparator.comparingLong(Event::time)
+            .thenComparingLong(Event::sequence)
+    );
+    private final ArrayDeque<Customer> serviceQueue = new ArrayDeque<>();
+    private final long serviceDuration;
+    private long clock = 0;
+    private long nextSequence = 0;
+    private long totalWaitingTime = 0;
+    private int served = 0;
+    private int maximumQueueLength = 0;
+    private boolean serverBusy = false;
+
+    private QueueSimulator(long serviceDuration) {
+        if (serviceDuration <= 0) {
+            throw new IllegalArgumentException("serviceDuration must be positive");
+        }
+        this.serviceDuration = serviceDuration;
+    }
+
+    public static Metrics simulate(long[] arrivalTimes, long serviceDuration) {
+        if (arrivalTimes == null || arrivalTimes.length == 0) {
+            throw new IllegalArgumentException("arrivalTimes must contain at least one timestamp");
+        }
+        if (arrivalTimes.length * 2L > MAX_EVENTS) {
+            throw new IllegalArgumentException("simulation exceeds MAX_EVENTS");
+        }
+
+        QueueSimulator simulator = new QueueSimulator(serviceDuration);
+        long previous = -1;
+        for (int id = 0; id < arrivalTimes.length; id++) {
+            long arrival = arrivalTimes[id];
+            if (arrival < 0 || arrival < previous) {
+                throw new IllegalArgumentException(
+                    "arrival times must be nonnegative and monotonic"
+                );
+            }
+            simulator.schedule(arrival, Type.ARRIVAL, id);
+            previous = arrival;
+        }
+        return simulator.run();
+    }
+
+    private void schedule(long time, Type type, int customerId) {
+        if (time < clock) {
+            throw new IllegalArgumentException("cannot schedule an event in the past");
+        }
+        futureEvents.add(new Event(time, nextSequence++, type, customerId));
+    }
+
+    private Metrics run() {
+        int processed = 0;
+        while (!futureEvents.isEmpty()) {
+            if (++processed > MAX_EVENTS) {
+                throw new IllegalStateException("simulation did not converge within the limit");
+            }
+
+            Event event = futureEvents.remove();
+            if (event.time() < clock) {
+                throw new IllegalStateException("simulated clock cannot move backward");
+            }
+            clock = event.time();
+
+            if (event.type() == Type.ARRIVAL) {
+                serviceQueue.addLast(new Customer(event.customerId(), clock));
+                if (!serverBusy) {
+                    startNext();
+                }
+                maximumQueueLength = Math.max(maximumQueueLength, serviceQueue.size());
+            } else {
+                served++;
+                serverBusy = false;
+                startNext();
+            }
+        }
+
+        if (serverBusy || !serviceQueue.isEmpty()) {
+            throw new IllegalStateException("calendar ended with pending work");
+        }
+        return new Metrics(served, (double) totalWaitingTime / served, maximumQueueLength);
+    }
+
+    private void startNext() {
+        Customer customer = serviceQueue.pollFirst();
+        if (customer == null) {
+            return;
+        }
+        totalWaitingTime += clock - customer.arrivalTime();
+        serverBusy = true;
+        long completion = Math.addExact(clock, serviceDuration);
+        schedule(completion, Type.COMPLETION, customer.id());
+    }
+
+    public static void main(String[] args) {
+        Metrics metrics = simulate(new long[] {0, 1, 1, 5}, 3);
+        System.out.println(metrics);
+    }
+}
+```
+
+### How the model advances
+
+1. Every valid `ARRIVAL` is scheduled in the future-event priority queue.
+2. The loop removes the minimum event and moves `clock` to its timestamp; it does not increment time step by step.
+3. An arrival enters the FIFO service queue. If the server is idle, service starts and a `COMPLETION` is scheduled.
+4. A completion releases the server and starts the next pending service.
+5. Simulation terminates when the calendar is empty and no work remains.
+
+Each arrival creates at most one completion. Together with `MAX_EVENTS`, this property gives a bounded termination rule. `Math.addExact` makes clock overflow explicit.
+
+### Metrics and meaning
+
+- **Waiting time:** `clock - arrivalTime` when service begins. The average uses served customers only.
+- **Queue length:** number of customers waiting, excluding the one in service. Maximum queue length helps estimate capacity.
+- **Final clock:** can be exposed to calculate throughput per time unit, but it is not wall-clock time.
+
+### Common failure modes
+
+- Comparing only `time`: ties have no reproducible policy.
+- Using a FIFO queue for future events: it processes insertion order rather than timestamp order.
+- Using a `PriorityQueue` for customers who require arrival order: it changes the service discipline.
+- Calling `Thread.sleep`: it mixes simulation with wall-clock time and slows tests.
+- Scheduling an event before the current clock or accepting negative timestamps.
+- Generating events without a bound or termination condition.
+- Calculating waiting time at arrival rather than when service starts.
+- Skipping validation and ending with customers outside the event calendar.
+
+The FIFO queue models **who is next**; the priority queue models **what happens next**. Confusing those questions creates code that is syntactically valid but behaviorally incorrect.
 
 ---
 

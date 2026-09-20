@@ -3,7 +3,7 @@ course: 'java'
 slug: '05-metodos-y-funciones'
 title: 'Métodos y Funciones en Java'
 description: 'Comprendé la modularización de código, firmas de métodos, retorno de valores, pasaje por valor vs referencia, sobrecarga y la pila de llamadas (Call Stack).'
-order: 5
+order: 6
 lang: 'es'
 published: true
 ---
@@ -166,6 +166,73 @@ public class RecursividadDemo {
     }
 }
 ```
+
+Esta versión introductoria de `factorial` ilustra la estructura, pero acepta negativos como si fueran un caso base y puede desbordar `long`. No debería exponerse como API sin validar y acotar la entrada, como haremos a continuación.
+
+### Formas de recursión
+
+- **Recursión directa:** un método se llama a sí mismo, como `factorial`.
+- **Recursión indirecta o recursión mutua:** un método llama a otro que finalmente vuelve a llamar al primero. Deben compartir una condición de terminación coherente.
+- **Recursión de cola:** la llamada recursiva es la última operación del método; no queda un cálculo pendiente al regresar.
+
+```java
+static boolean esPar(int n) {
+    if (n < 0) throw new IllegalArgumentException("n no puede ser negativo");
+    if (n == 0) return true;
+    return esImpar(n - 1); // Recursión indirecta
+}
+
+static boolean esImpar(int n) {
+    if (n < 0) throw new IllegalArgumentException("n no puede ser negativo");
+    if (n == 0) return false;
+    return esPar(n - 1);   // Recursión mutua
+}
+
+static long sumarCola(int n, long acumulado) {
+    if (n == 0) return acumulado;
+    return sumarCola(n - 1, acumulado + n); // Recursión de cola
+}
+```
+
+Aunque `sumarCola` tiene forma de cola, **Java no garantiza la optimización de llamadas de cola**. Cada llamada puede conservar su marco. Una profundidad `n` consume `O(n)` de pila y puede producir `StackOverflowError`; escribir la llamada al final no la vuelve segura.
+
+### Ejemplo recursivo validado y acotado
+
+El siguiente método acepta solo una profundidad conocida. El límite es parte del contrato, no una promesa de que todas las JVM soporten exactamente esa cantidad de marcos:
+
+```java
+public final class SumaRecursiva {
+    private static final int MAX_RECURSIVE_DEPTH = 1_000;
+
+    public static long sumarHasta(int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("n no puede ser negativo");
+        }
+        if (n > MAX_RECURSIVE_DEPTH) {
+            throw new IllegalArgumentException(
+                "n supera el límite recursivo: " + MAX_RECURSIVE_DEPTH
+            );
+        }
+        if (n == 0) {
+            return 0; // Caso base
+        }
+        return n + sumarHasta(n - 1); // Recursión directa
+    }
+}
+```
+
+El caso base cubre `0`, cada llamada reduce `n` y la validación rechaza entradas que se alejan del dominio o exceden el límite. El tiempo es `O(n)` y la pila adicional también es `O(n)`.
+
+### Cuándo preferir iteración
+
+Usá recursión cuando la estructura del problema sea naturalmente recursiva —por ejemplo, árboles, divide-and-conquer o backtracking— y la profundidad esté acotada o controlada. Preferí un bucle o una pila explícita cuando:
+
+- la entrada puede ser muy grande o proviene de una fuente no confiable;
+- el problema es una secuencia lineal como contar, sumar o recorrer un array;
+- necesitás consumo de memoria predecible;
+- no podés demostrar que cada llamada avanza hacia un caso base.
+
+Una versión iterativa de la suma usa `O(1)` de memoria adicional y evita depender del tamaño de la pila. La recursión no es “más avanzada” que un bucle: es una herramienta con un costo concreto.
 
 ---
 

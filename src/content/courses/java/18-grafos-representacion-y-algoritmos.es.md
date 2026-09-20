@@ -3,7 +3,7 @@ course: 'java'
 slug: '16-grafos-representacion-y-algoritmos'
 title: 'Grafos: Matriz, Lista de Adyacencia, BFS, DFS y Dijkstra'
 description: 'Modelá redes con grafos, elegí entre matriz y lista de adyacencia, implementá BFS y DFS con la estructura correcta, y entendé cómo Dijkstra encuentra el camino más barato.'
-order: 18
+order: 22
 lang: 'es'
 published: true
 ---
@@ -557,6 +557,129 @@ BFS explora por capas: **agota todo lo que está a 1 salto antes de mirar nada a
 **Y el mapa `vinoDe`.** BFS te dice que llegaste, pero no por dónde. Anotando el padre de cada persona al descubrirla, después reconstruís el camino caminando hacia atrás desde el destino. Es el mismo truco que usa un GPS para dibujarte la ruta.
 
 </details>
+
+---
+
+
+## 8. Floyd–Warshall: caminos mínimos entre todos los pares
+
+Dijkstra responde desde **un origen** y exige pesos no negativos. **Floyd–Warshall** calcula los **caminos más cortos entre todos los pares** de vértices y admite aristas negativas, siempre que el resultado no esté afectado por un ciclo negativo.
+
+### Inicializar la matriz de distancias
+
+Para `V` vértices se construye `dist[V][V]`:
+
+- `dist[i][i] = 0`;
+- `dist[i][j] = peso(i, j)` si existe una arista;
+- `dist[i][j] = INF` si `j` es inalcanzable directamente desde `i`.
+
+`INF` no debe ser `Long.MAX_VALUE`: sumarle un peso desbordaría y podría convertirse en un número negativo. Se usa un centinela seguro, `Long.MAX_VALUE / 4`, y nunca se suman distancias inalcanzables.
+
+### Invariante y evolución
+
+Antes de procesar `k`, `dist[i][j]` es el mejor costo conocido cuyos vértices intermedios pertenecen a `0..k-1`. Para cada par se decide si conviene conservarlo o pasar por `k`:
+
+```text
+dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])
+```
+
+Ejemplo (`∞` significa inalcanzable), con aristas `A→B=4`, `B→C=-2` y `A→C=5`:
+
+```text
+Inicial             Después de permitir B
+    A   B   C           A   B   C
+A   0   4   5       A   0   4   2
+B   ∞   0  -2       B   ∞   0  -2
+C   ∞   ∞   0       C   ∞   ∞   0
+```
+
+El valor `A→C` baja de 5 a 2 porque aparece el camino `A→B→C`. La matriz completa evoluciona una vez por cada posible intermediario.
+
+### Implementación segura en Java
+
+El método valida que la entrada sea una **matriz cuadrada**, rechaza filas nulas, valores fuera del rango seguro y matrices vacías. La entrada utiliza el mismo `INF` para indicar ausencia de arista.
+
+```java
+public final class FloydWarshall {
+    public static final long INF = Long.MAX_VALUE / 4;
+
+    public record Resultado(long[][] distancias, boolean tieneCicloNegativo) {}
+
+    public static Resultado calcular(long[][] pesos) {
+        validarMatriz(pesos);
+        int vertices = pesos.length;
+        long[][] dist = new long[vertices][vertices];
+
+        for (int i = 0; i < vertices; i++) {
+            for (int j = 0; j < vertices; j++) {
+                long peso = pesos[i][j];
+                dist[i][j] = i == j ? Math.min(0, peso) : peso;
+            }
+        }
+
+        for (int k = 0; k < vertices; k++) {
+            for (int i = 0; i < vertices; i++) {
+                if (dist[i][k] == INF) continue;
+                for (int j = 0; j < vertices; j++) {
+                    if (dist[k][j] == INF) continue;
+                    long pasandoPorK = dist[i][k] + dist[k][j];
+                    if (pasandoPorK < dist[i][j]) {
+                        dist[i][j] = pasandoPorK;
+                    }
+                }
+            }
+        }
+
+        boolean cicloNegativo = false;
+        for (int v = 0; v < vertices; v++) {
+            if (dist[v][v] < 0) {
+                cicloNegativo = true;
+                break;
+            }
+        }
+        return new Resultado(copiar(dist), cicloNegativo);
+    }
+
+    private static void validarMatriz(long[][] pesos) {
+        if (pesos == null || pesos.length == 0) {
+            throw new IllegalArgumentException("la matriz es obligatoria y no puede estar vacía");
+        }
+        int vertices = pesos.length;
+        for (int i = 0; i < vertices; i++) {
+            if (pesos[i] == null || pesos[i].length != vertices) {
+                throw new IllegalArgumentException("se requiere una matriz cuadrada");
+            }
+            for (long peso : pesos[i]) {
+                if (peso < -INF || peso > INF) {
+                    throw new IllegalArgumentException("peso fuera del rango seguro");
+                }
+            }
+        }
+    }
+
+    private static long[][] copiar(long[][] matriz) {
+        long[][] copia = new long[matriz.length][];
+        for (int i = 0; i < matriz.length; i++) {
+            copia[i] = matriz[i].clone();
+        }
+        return copia;
+    }
+}
+```
+
+La suma es segura porque dos valores finitos, cada uno entre `-INF` e `INF`, no alcanzan los límites de `long`. Un par permanece **inalcanzable** si su celda termina en `INF`; no debe imprimirse como una distancia real.
+
+### Aristas y ciclos negativos
+
+Una arista negativa es válida: puede representar crédito, ganancia o una corrección de costo. Dijkstra falla con aristas negativas porque da por definitiva una distancia que luego podría reducirse. Floyd–Warshall sí las incorpora.
+
+Un **ciclo negativo** permite reducir el costo indefinidamente. Después de las tres vueltas, `dist[v][v] < 0` detecta que `v` participa en uno de esos ciclos. En ese caso, las “distancias mínimas” afectadas no están definidas; el llamador debe tratar `tieneCicloNegativo` como un fallo explícito, no consumir la matriz como si fuera válida.
+
+### Complejidad y elección
+
+Floyd–Warshall usa **O(V³)** tiempo por sus tres bucles y **O(V²)** espacio por la matriz. Es directo para todos los pares y adecuado para grafos densos o de tamaño moderado.
+
+Repetir Dijkstra desde cada vértice suele costar `O(V · (E log V))` con lista de adyacencia y puede ser mejor en grafos dispersos, pero solo cuando todas las aristas son no negativas. La representación, los pesos permitidos y la consulta requerida deciden el algoritmo; no existe un ganador universal.
 
 ---
 

@@ -3,7 +3,7 @@ course: 'java'
 slug: '16-grafos-representacion-y-algoritmos'
 title: 'Graphs: Matrix, Adjacency List, BFS, DFS, and Dijkstra'
 description: 'Model networks with graphs, choose between an adjacency matrix and an adjacency list, implement BFS and DFS with the right structure, and understand how Dijkstra finds the cheapest path.'
-order: 18
+order: 22
 lang: 'en'
 published: true
 ---
@@ -557,6 +557,129 @@ BFS explores in layers: **it exhausts everything one hop away before looking at 
 **And the `cameFrom` map.** BFS tells you that you arrived, but not by which route. By recording each person's parent as you discover them, you reconstruct the path afterwards by walking backwards from the destination. It is the same trick a GPS uses to draw your route.
 
 </details>
+
+---
+
+
+## 8. Floyd–Warshall: all-pairs shortest paths
+
+Dijkstra answers queries from **one source** and requires nonnegative weights. **Floyd–Warshall** computes **all-pairs shortest paths** and supports negative edges, provided the result is not affected by a negative cycle.
+
+### Initializing the distance matrix
+
+For `V` vertices, build `dist[V][V]`:
+
+- `dist[i][i] = 0`;
+- `dist[i][j] = weight(i, j)` when an edge exists;
+- `dist[i][j] = INF` when `j` is directly unreachable from `i`.
+
+`INF` must not be `Long.MAX_VALUE`: adding a weight could overflow and become negative. Use the safe sentinel `Long.MAX_VALUE / 4`, and never add unreachable distances.
+
+### Invariant and matrix evolution
+
+Before processing `k`, `dist[i][j]` is the best known cost whose intermediate vertices belong to `0..k-1`. Each pair either keeps that cost or takes a route through `k`:
+
+```text
+dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])
+```
+
+Example (`∞` means unreachable), with edges `A→B=4`, `B→C=-2`, and `A→C=5`:
+
+```text
+Initial             After allowing B
+    A   B   C           A   B   C
+A   0   4   5       A   0   4   2
+B   ∞   0  -2       B   ∞   0  -2
+C   ∞   ∞   0       C   ∞   ∞   0
+```
+
+The `A→C` value decreases from 5 to 2 because the `A→B→C` path becomes available. The entire matrix evolves once for each possible intermediate vertex.
+
+### Safe Java implementation
+
+The method validates that its input is a **square matrix**, rejects null rows, out-of-range values, and empty matrices. The input uses the same `INF` sentinel to represent a missing edge.
+
+```java
+public final class FloydWarshall {
+    public static final long INF = Long.MAX_VALUE / 4;
+
+    public record Result(long[][] distances, boolean hasNegativeCycle) {}
+
+    public static Result compute(long[][] weights) {
+        validateMatrix(weights);
+        int vertices = weights.length;
+        long[][] dist = new long[vertices][vertices];
+
+        for (int i = 0; i < vertices; i++) {
+            for (int j = 0; j < vertices; j++) {
+                long weight = weights[i][j];
+                dist[i][j] = i == j ? Math.min(0, weight) : weight;
+            }
+        }
+
+        for (int k = 0; k < vertices; k++) {
+            for (int i = 0; i < vertices; i++) {
+                if (dist[i][k] == INF) continue;
+                for (int j = 0; j < vertices; j++) {
+                    if (dist[k][j] == INF) continue;
+                    long throughK = dist[i][k] + dist[k][j];
+                    if (throughK < dist[i][j]) {
+                        dist[i][j] = throughK;
+                    }
+                }
+            }
+        }
+
+        boolean negativeCycle = false;
+        for (int v = 0; v < vertices; v++) {
+            if (dist[v][v] < 0) {
+                negativeCycle = true;
+                break;
+            }
+        }
+        return new Result(copy(dist), negativeCycle);
+    }
+
+    private static void validateMatrix(long[][] weights) {
+        if (weights == null || weights.length == 0) {
+            throw new IllegalArgumentException("matrix is required and cannot be empty");
+        }
+        int vertices = weights.length;
+        for (int i = 0; i < vertices; i++) {
+            if (weights[i] == null || weights[i].length != vertices) {
+                throw new IllegalArgumentException("a square matrix is required");
+            }
+            for (long weight : weights[i]) {
+                if (weight < -INF || weight > INF) {
+                    throw new IllegalArgumentException("weight is outside the safe range");
+                }
+            }
+        }
+    }
+
+    private static long[][] copy(long[][] matrix) {
+        long[][] result = new long[matrix.length][];
+        for (int i = 0; i < matrix.length; i++) {
+            result[i] = matrix[i].clone();
+        }
+        return result;
+    }
+}
+```
+
+Addition is safe because two finite values, each between `-INF` and `INF`, cannot reach the limits of `long`. A pair remains **unreachable** when its cell ends at `INF`; it must not be printed as a real distance.
+
+### Negative edges and cycles
+
+A negative edge is valid: it can represent credit, profit, or a cost correction. Dijkstra fails with negative edges because it finalizes a distance that a later edge could reduce. Floyd–Warshall incorporates them correctly.
+
+A **negative cycle** makes it possible to reduce a cost indefinitely. After the three loops, `dist[v][v] < 0` detects that `v` participates in such a cycle. The affected “shortest distances” are then undefined; the caller must treat `hasNegativeCycle` as an explicit failure rather than consuming the matrix as valid output.
+
+### Complexity and selection
+
+Floyd–Warshall takes **O(V³)** time because of its three loops and **O(V²)** space for the matrix. It is straightforward for all pairs and works well for dense or moderately sized graphs.
+
+Running Dijkstra from every vertex usually costs `O(V · (E log V))` with adjacency lists and can be better for sparse graphs, but only when every edge is nonnegative. Representation, permitted weights, and query shape determine the algorithm; there is no universal winner.
 
 ---
 

@@ -3,7 +3,7 @@ course: 'java'
 slug: '20-testing-junit-y-spring-boot'
 title: 'Testing with JUnit and Your First Spring Boot App'
 description: 'Write unit tests with JUnit 5, understand the test pyramid and the AAA pattern, use mocks to isolate dependencies, and build a three-layer CRUD REST service with Spring Boot.'
-order: 22
+order: 26
 lang: 'en'
 published: true
 ---
@@ -240,6 +240,13 @@ public class ProductController {
                    .body(created);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Product> update(@PathVariable long id, @Valid @RequestBody NewProduct data) {
+        return service.update(id, data)
+                      .map(ResponseEntity::ok)                    // 200 with the replaced product
+                      .orElse(ResponseEntity.notFound().build()); // 404 when absent
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable long id) {
         return service.delete(id) ? ResponseEntity.noContent().build()   // 204
@@ -264,10 +271,42 @@ public class ProductService {
             .orElseThrow(() -> new ProductNotFoundException(id));
         return p.price() * (1 - percentage / 100.0);
     }
+
+    public Optional<Product> update(long id, NewProduct data) {
+        // @Valid already guaranteed in the controller that "data" is valid.
+        return repository.findById(id)
+            .map(current -> repository.save(
+                new Product(current.id(), data.name(), data.price(), data.stock())));
+    }
 }
 ```
 
-That `Optional` turning into a 200 or a 404 connects straight back to lesson 11: **"not found" is not an exception, it is a possible result**, and here it maps onto an HTTP status code.
+That `Optional` turning into a 200 or a 404 connects straight back to lesson 11: **"not found" is not an exception, it is a possible result**, and here it maps onto an HTTP status code. `get` and `update` share the exact same pattern because they share the exact same case: the id might not be there.
+
+### PUT: an idempotent replacement, not a patch
+
+`update` takes the full `NewProduct` and asks the repository for a total replacement: the old values are discarded, not merged with the new ones. That is why sending the same `PUT` once, twice, or ten times leaves the resource in exactly the same final state: **`PUT` is idempotent**.
+
+`PATCH` is the other side of the coin: it changes part of the resource (for example, "add 5 units to stock"), and repeating that same request twice normally does **not** give the same result — each repetition adds 5 again. If the client always sends the full resource, `PUT` is enough; if it needs partial changes, the right verb is `PATCH`.
+
+The data layer keeps the same role: the repository is still the only thing that talks to the database. `update` uses it twice — `findById` to find the current product and `save` to persist the replacement — and the controller never touches it directly.
+
+`PUT`'s responses follow the same logic you already use in `get` and `delete`, plus one new case:
+
+- **`200 OK`** with the updated product, when the id exists.
+- **`404 Not Found`**, when the id does not exist. Same `Optional` + `orElse` pattern as `GET`.
+- **`400 Bad Request`**, when `@Valid` rejects the body — the same validation that already protects `create`. Spring stops the request before the controller runs, so the service never gets called.
+
+With `update` the CRUD is complete:
+
+| Operation | HTTP verb | Service method | Responses |
+| --- | --- | --- | --- |
+| CREATE | `POST` | `create` | `201 Created` |
+| READ | `GET` | `get` | `200 OK` / `404 Not Found` |
+| UPDATE | `PUT` | `update` | `200 OK` / `404 Not Found` / `400 Bad Request` |
+| DELETE | `DELETE` | `delete` | `204 No Content` / `404 Not Found` |
+
+Four verbs, three layers, and no invented status code.
 
 ### The status codes that actually matter
 
@@ -310,6 +349,45 @@ class ProductControllerTest {
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.name").value("Tea"))
                .andExpect(jsonPath("$.price").value(3200.0));
+    }
+
+    @Test
+    void updatesTheProductAndReturns200() throws Exception {
+        when(service.update(eq(1L), any(NewProduct.class)))
+            .thenReturn(Optional.of(new Product(1L, "Premium Tea", 3400.0, 40)));
+
+        mockMvc.perform(put("/api/products/1")
+                   .contentType(MediaType.APPLICATION_JSON)
+                   .content("""
+                       {"name":"Premium Tea","price":3400.0,"stock":40}
+                       """))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.name").value("Premium Tea"));
+    }
+
+    @Test
+    void returns404WhenUpdatingAMissingProduct() throws Exception {
+        when(service.update(eq(99L), any(NewProduct.class)))
+            .thenReturn(Optional.empty());
+
+        mockMvc.perform(put("/api/products/99")
+                   .contentType(MediaType.APPLICATION_JSON)
+                   .content("""
+                       {"name":"Premium Tea","price":3400.0,"stock":40}
+                       """))
+               .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void returns400WithAnInvalidBody() throws Exception {
+        mockMvc.perform(put("/api/products/1")
+                   .contentType(MediaType.APPLICATION_JSON)
+                   .content("""
+                       {"name":"","price":-100.0,"stock":40}
+                       """))
+               .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(service);   // @Valid cuts in before the service is called
     }
 }
 
@@ -364,6 +442,7 @@ Test `ProductService` **without a database**, using a mocked repository:
 3. It throws `ProductNotFoundException` when the id does not exist.
 4. `create` rejects negative prices and **never saves anything**.
 5. A parameterized test covering several discounts at once.
+6. `update` replaces name, price, and stock from the received `NewProduct` without touching the id, and returns `Optional.empty()` when the id does not exist.
 
 <details>
 <summary>See suggested solution</summary>
@@ -472,6 +551,39 @@ class ProductServiceTest {
             verify(repository).save(argThat(p -> p.name().equals("Coffee")));
         }
     }
+
+    @Nested
+    @DisplayName("update")
+    class Update {
+
+        @Test
+        @DisplayName("replaces the product while keeping the id")
+        void replacesTheProduct() {
+            NewProduct data = new NewProduct("Premium Tea", 3400.0, 40);
+            when(repository.findById(1L))
+                .thenReturn(Optional.of(new Product(1L, "Tea", 3200.0, 45)));
+            when(repository.save(any()))
+                .thenReturn(new Product(1L, "Premium Tea", 3400.0, 40));
+
+            Optional<Product> result = service.update(1L, data);
+
+            assertTrue(result.isPresent());
+            assertEquals("Premium Tea", result.get().name());
+            verify(repository).save(argThat(p -> p.id() == 1L && p.name().equals("Premium Tea")));
+        }
+
+        @Test
+        @DisplayName("returns empty and saves nothing when the id does not exist")
+        void doesNotUpdateAMissingProduct() {
+            when(repository.findById(99L)).thenReturn(Optional.empty());
+
+            Optional<Product> result =
+                service.update(99L, new NewProduct("Tea", 3200.0, 45));
+
+            assertTrue(result.isEmpty());
+            verify(repository, never()).save(any());
+        }
+    }
 }
 ```
 
@@ -496,6 +608,7 @@ And notice all of this runs in **milliseconds**, with no database, no server, an
 - Spring Boot splits into **three layers**: web (`@RestController`), business (`@Service`), and data (`@Repository`).
 - Each layer is tested differently: `@WebMvcTest`, plain JUnit with mocks, `@DataJpaTest`. Use `@SpringBootTest` as little as possible.
 - An empty `Optional` in the service becomes a `404` in the controller. The same idea, in two different languages.
+- The full CRUD is four verbs: `POST` (201), `GET` (200/404), `PUT` (200/404/400), and `DELETE` (204/404). `PUT` replaces the whole resource and is idempotent; `PATCH` changes part of it and is not necessarily idempotent.
 - `verify` proves **how** something was done, not just the result. That is what turns a design decision into a guarantee.
 
 ---
