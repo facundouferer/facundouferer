@@ -9,18 +9,6 @@ const isEs = lang === 'es';
 
 <div class="oa-screen">
 	<div class="oa-shell">
-		<header class="oa-header">
-			<span class="oa-badge">{isEs ? 'Operaciones Algorítmicas' : 'Algorithmic Operations'}</span>
-			<h1 class="oa-title">
-				{isEs ? 'Operaciones con Arreglos Paso a Paso' : 'Array Operations Step by Step'}
-			</h1>
-			<p class="oa-sub">
-				{isEs 
-					? 'Recorrido, búsqueda lineal, inserción y borrado en C, Java, JavaScript y Python.' 
-					: 'Traversal, linear search, insertion, and deletion in C, Java, JS, and Python.'}
-			</p>
-		</header>
-
 		<div class="oa-deck-card">
 			<div class="oa-nav-bar">
 				<div class="oa-slide-indicator">
@@ -160,14 +148,11 @@ idx = data.index(<span class="token-number">20</span>) <span class="token-commen
 
 <style>
 	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
-	.oa-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
-	.oa-shell { max-width: var(--container-max); margin: 0 auto; }
-	.oa-header { margin-bottom: 1.5rem; }
-	.oa-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
-	.oa-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.oa-screen { min-height: calc(100dvh - var(--site-header-height, 0px)); display: flex; flex-direction: column; font-family: var(--font-body); color: var(--color-text); padding: var(--space-4) var(--space-3) var(--space-6); }
+	.oa-shell { width: 100%; max-width: none; margin: 0; flex: 1; display: flex; flex-direction: column; }
 	.oa-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
 	.oa-sub.center { text-align: center; }
-	.oa-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.oa-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; flex: 1; display: flex; flex-direction: column; }
 	.oa-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
 	.oa-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
 	.oa-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
@@ -175,7 +160,7 @@ idx = data.index(<span class="token-number">20</span>) <span class="token-commen
 	.oa-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
 	.oa-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
 	.oa-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
-	.oa-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.oa-viewport { padding: 1.5rem 1.25rem; min-height: 420px; flex: 1; }
 	.oa-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
 	.oa-slide.active { display: block; opacity: 1; transform: translateY(0); }
 	.oa-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
@@ -196,7 +181,7 @@ idx = data.index(<span class="token-number">20</span>) <span class="token-commen
 	.token-number { color: #f8c471; }
 	.token-string { color: #abebc6; }
 	.token-comment { color: #85929e; font-style: italic; }
-	.oa-sim-container { max-width: 800px; margin: 0 auto; }
+	.oa-sim-container { max-width: none; width: 100%; }
 	.oa-sim-console { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-md); }
 	.oa-sim-head { background: #2b2722; padding: 0.5rem 0.8rem; }
 	.oa-console-label { color: #c0b6a5; font-family: 'Fira Code', monospace; font-size: 0.75rem; }

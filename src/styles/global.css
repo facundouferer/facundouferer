@@ -65,6 +65,11 @@
 	--shadow-lg: 0 12px 32px color-mix(in srgb, #2e2b25 22%, transparent);
 
 	--container-max: 1180px;
+
+	/* Matches the sticky SiteHeader's rendered height (`.nav { min-height: 4.2rem }`
+	   in src/components/SiteHeader.astro), so full-height layouts (presentation
+	   decks) can subtract it via `calc(100dvh - var(--site-header-height))`. */
+	--site-header-height: 4.2rem;
 }
 
 * {

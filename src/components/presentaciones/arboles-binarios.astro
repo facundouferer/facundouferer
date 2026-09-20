@@ -9,18 +9,6 @@ const isEs = lang === 'es';
 
 <div class="bt-screen">
 	<div class="bt-shell">
-		<header class="bt-header">
-			<span class="bt-badge">{isEs ? 'Estructuras No Lineales' : 'Non-Linear Structures'}</span>
-			<h1 class="bt-title">
-				{isEs ? 'Árboles Binarios de Búsqueda (BST)' : 'Binary Search Trees (BST)'}
-			</h1>
-			<p class="bt-sub">
-				{isEs 
-					? 'Nodos, punteros, referencias e in-order traversal en C, Java, JavaScript y Python.' 
-					: 'Nodes, pointers, references, and in-order traversal in C, Java, JS, and Python.'}
-			</p>
-		</header>
-
 		<div class="bt-deck-card">
 			<div class="bt-nav-bar">
 				<div class="bt-slide-indicator">
@@ -170,14 +158,10 @@ Node* createNode(<span class="token-type">int</span> val) &#123;
 
 <style>
 	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
-	.bt-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
-	.bt-shell { max-width: var(--container-max); margin: 0 auto; }
-	.bt-header { margin-bottom: 1.5rem; }
-	.bt-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
-	.bt-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
-	.bt-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
+	.bt-screen { min-height: calc(100dvh - var(--site-header-height, 0px)); display: flex; flex-direction: column; font-family: var(--font-body); color: var(--color-text); padding: var(--space-4) var(--space-3) var(--space-6); }
+	.bt-shell { width: 100%; max-width: none; margin: 0; flex: 1; display: flex; flex-direction: column; }
 	.bt-sub.center { text-align: center; }
-	.bt-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.bt-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; flex: 1; display: flex; flex-direction: column; }
 	.bt-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
 	.bt-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
 	.bt-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
@@ -185,7 +169,7 @@ Node* createNode(<span class="token-type">int</span> val) &#123;
 	.bt-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
 	.bt-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
 	.bt-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
-	.bt-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.bt-viewport { padding: 1.5rem 1.25rem; min-height: 420px; flex: 1; }
 	.bt-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
 	.bt-slide.active { display: block; opacity: 1; transform: translateY(0); }
 	.bt-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
@@ -206,7 +190,7 @@ Node* createNode(<span class="token-type">int</span> val) &#123;
 	.token-number { color: #f8c471; }
 	.token-string { color: #abebc6; }
 	.token-comment { color: #85929e; font-style: italic; }
-	.bt-sim-container { max-width: 800px; margin: 0 auto; }
+	.bt-sim-container { max-width: none; width: 100%; }
 	.bt-inspector-grid { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 0.8rem; }
 	.bt-lang-box { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 0.8rem; }
 	.bt-lang-name { font-family: 'Fira Code', monospace; font-size: 0.75rem; font-weight: 700; color: #e59866; display: block; margin-bottom: 0.4rem; }

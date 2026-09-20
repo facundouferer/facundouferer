@@ -9,18 +9,6 @@ const isEs = lang === 'es';
 
 <div class="ac-screen">
 	<div class="ac-shell">
-		<header class="ac-header">
-			<span class="ac-badge">{isEs ? 'Estructuras de Datos' : 'Data Structures'}</span>
-			<h1 class="ac-title">
-				{isEs ? 'Arreglos y Vectores Paso a Paso' : 'Arrays & Vectors Step by Step'}
-			</h1>
-			<p class="ac-sub">
-				{isEs 
-					? 'Contigüidad en memoria, indexación cero y tipos de arrays en C, Java, JavaScript y Python.' 
-					: 'Memory contiguity, zero-indexing, and array models in C, Java, JS, and Python.'}
-			</p>
-		</header>
-
 		<div class="ac-deck-card">
 			<div class="ac-nav-bar">
 				<div class="ac-slide-indicator">
@@ -147,14 +135,11 @@ sub = nums[<span class="token-number">1</span>:<span class="token-number">4</spa
 
 <style>
 	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
-	.ac-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
-	.ac-shell { max-width: var(--container-max); margin: 0 auto; }
-	.ac-header { margin-bottom: 1.5rem; }
-	.ac-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
-	.ac-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.ac-screen { min-height: calc(100dvh - var(--site-header-height, 0px)); display: flex; flex-direction: column; font-family: var(--font-body); color: var(--color-text); padding: var(--space-4) var(--space-3) var(--space-6); }
+	.ac-shell { width: 100%; max-width: none; margin: 0; flex: 1; display: flex; flex-direction: column; }
 	.ac-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
 	.ac-sub.center { text-align: center; }
-	.ac-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.ac-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; flex: 1; display: flex; flex-direction: column; }
 	.ac-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
 	.ac-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
 	.ac-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
@@ -162,7 +147,7 @@ sub = nums[<span class="token-number">1</span>:<span class="token-number">4</spa
 	.ac-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
 	.ac-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
 	.ac-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
-	.ac-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.ac-viewport { padding: 1.5rem 1.25rem; min-height: 420px; flex: 1; }
 	.ac-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
 	.ac-slide.active { display: block; opacity: 1; transform: translateY(0); }
 	.ac-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
@@ -183,7 +168,7 @@ sub = nums[<span class="token-number">1</span>:<span class="token-number">4</spa
 	.token-number { color: #f8c471; }
 	.token-string { color: #abebc6; }
 	.token-comment { color: #85929e; font-style: italic; }
-	.ac-sim-container { max-width: 800px; margin: 0 auto; }
+	.ac-sim-container { max-width: none; width: 100%; }
 	.ac-inspector-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
 	@media (max-width: 600px) { .ac-inspector-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); } }
 	.ac-lang-box { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 0.8rem; }

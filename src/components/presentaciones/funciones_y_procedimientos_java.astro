@@ -9,18 +9,6 @@ const isEs = lang === 'es';
 
 <div class="fj-screen">
 	<div class="fj-shell">
-		<header class="fj-header">
-			<span class="fj-badge">{isEs ? 'Programación Estructurada & POO' : 'Structured & OOP'}</span>
-			<h1 class="fj-title">
-				{isEs ? 'Funciones, Procedimientos y Métodos' : 'Functions, Procedures & Methods'}
-			</h1>
-			<p class="fj-sub">
-				{isEs 
-					? 'Análisis comparativo de subprogramas en Java, C, JavaScript y Python.' 
-					: 'Comparative analysis of subprograms in Java, C, JavaScript, and Python.'}
-			</p>
-		</header>
-
 		<div class="fj-deck-card">
 			<div class="fj-nav-bar">
 				<div class="fj-slide-indicator">
@@ -229,36 +217,15 @@ print(saludar(<span class="token-string">"Ana"</span>, <span class="token-string
 	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
 
 	.fj-screen {
-		min-height: 80vh;
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
 		font-family: var(--font-body);
 		color: var(--color-text);
-		padding: 1.5rem 1rem 4rem;
+		padding: var(--space-4) var(--space-3) var(--space-6);
 	}
 
-	.fj-shell { max-width: var(--container-max); margin: 0 auto; }
-	.fj-header { margin-bottom: 1.5rem; }
-
-	.fj-badge {
-		display: inline-flex;
-		align-items: center;
-		border: 1px solid var(--color-accent-2-300);
-		background: var(--color-accent-2-100);
-		color: var(--color-accent-2-700);
-		border-radius: 999px;
-		padding: 0.25rem 0.8rem;
-		font-size: 0.75rem;
-		font-family: 'Fira Code', monospace;
-		font-weight: 600;
-	}
-
-	.fj-title {
-		font-family: var(--font-heading);
-		font-size: clamp(1.8rem, 3.5vw, 2.5rem);
-		font-weight: 400;
-		line-height: 1.15;
-		color: var(--color-text);
-		margin: 0.5rem 0 0.25rem;
-	}
+	.fj-shell { width: 100%; max-width: none; margin: 0; flex: 1; display: flex; flex-direction: column; }
 
 	.fj-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
 	.fj-sub.center { text-align: center; }
@@ -269,6 +236,9 @@ print(saludar(<span class="token-string">"Ana"</span>, <span class="token-string
 		border-radius: var(--radius-lg);
 		box-shadow: var(--shadow-md);
 		overflow: hidden;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.fj-nav-bar {
@@ -311,7 +281,7 @@ print(saludar(<span class="token-string">"Ana"</span>, <span class="token-string
 	.fj-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
 	.fj-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
 
-	.fj-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.fj-viewport { padding: 1.5rem 1.25rem; min-height: 420px; flex: 1; }
 	.fj-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
 	.fj-slide.active { display: block; opacity: 1; transform: translateY(0); }
 
@@ -345,7 +315,7 @@ print(saludar(<span class="token-string">"Ana"</span>, <span class="token-string
 	.token-comment { color: #85929e; font-style: italic; }
 
 	/* Simulator */
-	.fj-sim-container { max-width: 800px; margin: 0 auto; }
+	.fj-sim-container { max-width: none; width: 100%; }
 	.fj-sim-selector { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
 	.fj-pat-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.35rem 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
 	.fj-pat-btn:hover { background: var(--color-accent-100); color: var(--color-accent-700); }

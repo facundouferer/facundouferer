@@ -81,7 +81,7 @@ const PresentationComponent = componentMap[slug];
 	enPath={`/en/presentaciones/${slug}`}
 	canonicalPath={lang === 'en' ? `/en/presentaciones/${slug}` : `/presentaciones/${slug}`}
 >
-	<div class="container presentation-lesson-link-wrap">
+	<div class="presentation-lesson-link-wrap">
 		<PresentationLessonLink presentationSlug={pres.slug} locale={lang} />
 	</div>
 	<PresentationComponent lang={lang} />
@@ -89,6 +89,6 @@ const PresentationComponent = componentMap[slug];
 
 <style>
 	.presentation-lesson-link-wrap {
-		padding-top: var(--space-4);
+		padding: var(--space-3) var(--space-4);
 	}
 </style>

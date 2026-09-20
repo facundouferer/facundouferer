@@ -9,18 +9,6 @@ const isEs = lang === 'es';
 
 <div class="bs-screen">
 	<div class="bs-shell">
-		<header class="bs-header">
-			<span class="bs-badge">{isEs ? 'Algoritmos de Ordenamiento' : 'Sorting Algorithms'}</span>
-			<h1 class="bs-title">
-				{isEs ? 'Bubble Sort (Burbuja) Paso a Paso' : 'Bubble Sort Step by Step'}
-			</h1>
-			<p class="bs-sub">
-				{isEs 
-					? 'Comparación de adyacentes, burbujeo y complejidad O(N²) en C, Java, JavaScript y Python.' 
-					: 'Adjacent comparison, bubbling, and O(N²) complexity in C, Java, JS, and Python.'}
-			</p>
-		</header>
-
 		<div class="bs-deck-card">
 			<div class="bs-nav-bar">
 				<div class="bs-slide-indicator">
@@ -195,14 +183,11 @@ const isEs = lang === 'es';
 
 <style>
 	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
-	.bs-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
-	.bs-shell { max-width: var(--container-max); margin: 0 auto; }
-	.bs-header { margin-bottom: 1.5rem; }
-	.bs-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
-	.bs-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.bs-screen { min-height: calc(100dvh - var(--site-header-height, 0px)); display: flex; flex-direction: column; font-family: var(--font-body); color: var(--color-text); padding: var(--space-4) var(--space-3) var(--space-6); }
+	.bs-shell { width: 100%; max-width: none; margin: 0; flex: 1; display: flex; flex-direction: column; }
 	.bs-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
 	.bs-sub.center { text-align: center; }
-	.bs-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.bs-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; flex: 1; display: flex; flex-direction: column; }
 	.bs-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
 	.bs-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
 	.bs-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
@@ -210,7 +195,7 @@ const isEs = lang === 'es';
 	.bs-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
 	.bs-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
 	.bs-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
-	.bs-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.bs-viewport { padding: 1.5rem 1.25rem; min-height: 420px; flex: 1; }
 	.bs-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
 	.bs-slide.active { display: block; opacity: 1; transform: translateY(0); }
 	.bs-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
@@ -231,7 +216,7 @@ const isEs = lang === 'es';
 	.token-number { color: #f8c471; }
 	.token-string { color: #abebc6; }
 	.token-comment { color: #85929e; font-style: italic; }
-	.bs-sim-container { max-width: 840px; margin: 0 auto; }
+	.bs-sim-container { max-width: none; width: 100%; }
 	.bs-3d-wrapper { display: flex; flex-direction: column; gap: 1rem; }
 	.bs-three-canvas-container { width: 100%; height: 280px; background: #181512; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-md); position: relative; }
 	.bs-sim-console { background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-md); }

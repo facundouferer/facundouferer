@@ -9,18 +9,6 @@ const isEs = lang === 'es';
 
 <div class="mc-screen">
 	<div class="mc-shell">
-		<header class="mc-header">
-			<span class="mc-badge">{isEs ? 'Arquitectura de Software' : 'Software Architecture'}</span>
-			<h1 class="mc-title">
-				{isEs ? 'Modularidad, Funciones y Alcance' : 'Modularity, Functions & Scope'}
-			</h1>
-			<p class="mc-sub">
-				{isEs 
-					? 'Diseño modular y gestión del Call Stack en C, JavaScript, Python y Java.' 
-					: 'Modular design and Call Stack management in C, JavaScript, Python, and Java.'}
-			</p>
-		</header>
-
 		<div class="mc-deck-card">
 			<div class="mc-nav-bar">
 				<div class="mc-slide-indicator">
@@ -238,36 +226,15 @@ print(factorial(<span class="token-number">3</span>)) <span class="token-comment
 	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
 
 	.mc-screen {
-		min-height: 80vh;
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
 		font-family: var(--font-body);
 		color: var(--color-text);
-		padding: 1.5rem 1rem 4rem;
+		padding: var(--space-4) var(--space-3) var(--space-6);
 	}
 
-	.mc-shell { max-width: var(--container-max); margin: 0 auto; }
-	.mc-header { margin-bottom: 1.5rem; }
-
-	.mc-badge {
-		display: inline-flex;
-		align-items: center;
-		border: 1px solid var(--color-accent-2-300);
-		background: var(--color-accent-2-100);
-		color: var(--color-accent-2-700);
-		border-radius: 999px;
-		padding: 0.25rem 0.8rem;
-		font-size: 0.75rem;
-		font-family: 'Fira Code', monospace;
-		font-weight: 600;
-	}
-
-	.mc-title {
-		font-family: var(--font-heading);
-		font-size: clamp(1.8rem, 3.5vw, 2.5rem);
-		font-weight: 400;
-		line-height: 1.15;
-		color: var(--color-text);
-		margin: 0.5rem 0 0.25rem;
-	}
+	.mc-shell { width: 100%; max-width: none; margin: 0; flex: 1; display: flex; flex-direction: column; }
 
 	.mc-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
 	.mc-sub.center { text-align: center; }
@@ -278,6 +245,9 @@ print(factorial(<span class="token-number">3</span>)) <span class="token-comment
 		border-radius: var(--radius-lg);
 		box-shadow: var(--shadow-md);
 		overflow: hidden;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.mc-nav-bar {
@@ -320,7 +290,7 @@ print(factorial(<span class="token-number">3</span>)) <span class="token-comment
 	.mc-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
 	.mc-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
 
-	.mc-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.mc-viewport { padding: 1.5rem 1.25rem; min-height: 420px; flex: 1; }
 	.mc-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
 	.mc-slide.active { display: block; opacity: 1; transform: translateY(0); }
 
@@ -354,7 +324,7 @@ print(factorial(<span class="token-number">3</span>)) <span class="token-comment
 	.token-comment { color: #85929e; font-style: italic; }
 
 	/* Simulator */
-	.mc-sim-container { max-width: 800px; margin: 0 auto; }
+	.mc-sim-container { max-width: none; width: 100%; }
 	.mc-sim-selector { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
 	.mc-lang-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.35rem 0.9rem; font-family: 'Fira Code', monospace; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
 	.mc-lang-btn:hover { background: var(--color-accent-100); color: var(--color-accent-700); }

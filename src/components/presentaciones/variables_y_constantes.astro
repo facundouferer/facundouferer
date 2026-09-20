@@ -11,19 +11,6 @@ const isEs = lang === 'es';
 
 <div class="vc-screen">
 	<div class="vc-shell">
-		<!-- Header / Title -->
-		<header class="vc-header">
-			<span class="vc-badge">{isEs ? 'Conceptos Fundamentales' : 'Core Concepts'}</span>
-			<h1 class="vc-title">
-				{isEs ? 'Variables, Constantes y Mutabilidad' : 'Variables, Constants & Mutability'}
-			</h1>
-			<p class="vc-sub">
-				{isEs 
-					? 'Comparativa interactiva multilenguaje: C, JavaScript, Python y Java.' 
-					: 'Interactive multi-language comparison: C, JavaScript, Python, and Java.'}
-			</p>
-		</header>
-
 		<!-- Main Interactive Deck Container -->
 		<div class="vc-deck-card">
 			<!-- Top Slide Controls & Navigation Bar -->
@@ -292,41 +279,21 @@ PI = 3.0f; // Intentando reasignar...</div>
 	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
 
 	.vc-screen {
-		min-height: 80vh;
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
 		font-family: var(--font-body);
 		color: var(--color-text);
-		padding: 1.5rem 1rem 4rem;
+		padding: var(--space-4) var(--space-3) var(--space-6);
 	}
 
 	.vc-shell {
-		max-width: var(--container-max);
-		margin: 0 auto;
-	}
-
-	.vc-header {
-		margin-bottom: 1.5rem;
-	}
-
-	.vc-badge {
-		display: inline-flex;
-		align-items: center;
-		border: 1px solid var(--color-accent-2-300);
-		background: var(--color-accent-2-100);
-		color: var(--color-accent-2-700);
-		border-radius: 999px;
-		padding: 0.25rem 0.8rem;
-		font-size: 0.75rem;
-		font-family: 'Fira Code', monospace;
-		font-weight: 600;
-	}
-
-	.vc-title {
-		font-family: var(--font-heading);
-		font-size: clamp(1.8rem, 3.5vw, 2.5rem);
-		font-weight: 400;
-		line-height: 1.15;
-		color: var(--color-text);
-		margin: 0.5rem 0 0.25rem;
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.vc-sub {
@@ -343,6 +310,9 @@ PI = 3.0f; // Intentando reasignar...</div>
 		border-radius: var(--radius-lg);
 		box-shadow: var(--shadow-md);
 		overflow: hidden;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.vc-nav-bar {
@@ -407,6 +377,7 @@ PI = 3.0f; // Intentando reasignar...</div>
 	.vc-viewport {
 		padding: 1.5rem 1.25rem;
 		min-height: 420px;
+		flex: 1;
 	}
 
 	.vc-slide {
@@ -553,7 +524,7 @@ PI = 3.0f; // Intentando reasignar...</div>
 	.token-comment { color: #85929e; font-style: italic; }
 
 	/* Simulator styling */
-	.vc-sim-container { max-width: 800px; margin: 0 auto; }
+	.vc-sim-container { max-width: none; width: 100%; }
 
 	.vc-sim-selector {
 		display: flex;

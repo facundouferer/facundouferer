@@ -9,18 +9,6 @@ const isEs = lang === 'es';
 
 <div class="fn-screen">
 	<div class="fn-shell">
-		<header class="fn-header">
-			<span class="fn-badge">{isEs ? 'Iteración Multidimensional' : 'Multidimensional Iteration'}</span>
-			<h1 class="fn-title">
-				{isEs ? 'For Anidado y Tabla de Multiplicar' : 'Nested For & Multiplication Table'}
-			</h1>
-			<p class="fn-sub">
-				{isEs 
-					? 'Bucles anidados, complejidad O(N²) y matrices en C, Java, JavaScript y Python.' 
-					: 'Nested loops, O(N²) complexity, and matrices in C, Java, JS, and Python.'}
-			</p>
-		</header>
-
 		<div class="fn-deck-card">
 			<div class="fn-nav-bar">
 				<div class="fn-slide-indicator">
@@ -165,14 +153,11 @@ const isEs = lang === 'es';
 
 <style>
 	@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
-	.fn-screen { min-height: 80vh; font-family: var(--font-body); color: var(--color-text); padding: 1.5rem 1rem 4rem; }
-	.fn-shell { max-width: var(--container-max); margin: 0 auto; }
-	.fn-header { margin-bottom: 1.5rem; }
-	.fn-badge { display: inline-flex; align-items: center; border: 1px solid var(--color-accent-2-300); background: var(--color-accent-2-100); color: var(--color-accent-2-700); border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-family: 'Fira Code', monospace; font-weight: 600; }
-	.fn-title { font-family: var(--font-heading); font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.15; color: var(--color-text); margin: 0.5rem 0 0.25rem; }
+	.fn-screen { min-height: calc(100dvh - var(--site-header-height, 0px)); display: flex; flex-direction: column; font-family: var(--font-body); color: var(--color-text); padding: var(--space-4) var(--space-3) var(--space-6); }
+	.fn-shell { width: 100%; max-width: none; margin: 0; flex: 1; display: flex; flex-direction: column; }
 	.fn-sub { color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: 0.95rem; margin: 0; }
 	.fn-sub.center { text-align: center; }
-	.fn-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+	.fn-deck-card { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; flex: 1; display: flex; flex-direction: column; }
 	.fn-nav-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
 	.fn-slide-indicator { display: flex; align-items: center; gap: 0.5rem; font-family: 'Fira Code', monospace; font-size: 0.78rem; font-weight: 700; color: var(--color-accent-700); }
 	.fn-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
@@ -180,7 +165,7 @@ const isEs = lang === 'es';
 	.fn-pill-btn { border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 0.78rem; font-family: var(--font-body); font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
 	.fn-pill-btn:hover { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-700); }
 	.fn-pill-btn.active { background: var(--color-accent); border-color: var(--color-accent); color: #ffffff; }
-	.fn-viewport { padding: 1.5rem 1.25rem; min-height: 420px; }
+	.fn-viewport { padding: 1.5rem 1.25rem; min-height: 420px; flex: 1; }
 	.fn-slide { display: none; opacity: 0; transform: translateY(8px); transition: opacity 0.35s ease, transform 0.35s ease; }
 	.fn-slide.active { display: block; opacity: 1; transform: translateY(0); }
 	.fn-slide-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
@@ -201,7 +186,7 @@ const isEs = lang === 'es';
 	.token-number { color: #f8c471; }
 	.token-string { color: #abebc6; }
 	.token-comment { color: #85929e; font-style: italic; }
-	.fn-sim-container { max-width: 500px; margin: 0 auto; }
+	.fn-sim-container { max-width: none; width: 100%; }
 	.fn-grid-display { display: flex; flex-direction: column; gap: 0.5rem; background: #1e1b18; border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 1rem; }
 	.fn-row-grid { display: flex; justify-content: space-around; }
 	.fn-cell-val { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: #76d7c4; background: #141210; padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); border: 1px solid #2b2722; }
