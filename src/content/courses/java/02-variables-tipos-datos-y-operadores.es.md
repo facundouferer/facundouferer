@@ -27,7 +27,79 @@ char inicial = 'F';
 final double PI = 3.14159;
 ```
 
-## 2. Tipos Primitivos vs. Tipos por Referencia
+## 2. Ámbito, visibilidad y tiempo de vida
+
+El **ámbito** (*scope*) es la región del código donde un nombre puede utilizarse. La **visibilidad** responde desde qué líneas se puede acceder a ese nombre; el **tiempo de vida** indica durante cuánto tiempo existe su valor durante la ejecución. Son conceptos relacionados, pero no idénticos.
+
+Java usa ámbitos léxicos definidos por clases, métodos y bloques `{ }`. **No existen variables globales libres en Java**: todo dato declarado fuera de un método pertenece a una clase o a una instancia de esa clase.
+
+| Categoría | Declaración | Visibilidad | Tiempo de vida | Inicialización |
+| :--- | :--- | :--- | :--- | :--- |
+| **Variable local** | Dentro de un método | Desde su declaración hasta el final del bloque | Durante esa invocación y bloque | No recibe valor predeterminado; exige asignación definida. |
+| **Variable de ámbito de bloque** | Dentro de `if`, `for`, `while` o un bloque explícito | Solo dentro de ese bloque | Hasta que finaliza el bloque | Igual que cualquier variable local. |
+| **Parámetro** | En la firma de un método o constructor | En todo el cuerpo de ese método | Durante la invocación | Recibe el valor del argumento. |
+| **Campo de instancia** | En la clase, sin `static` | Según su modificador de acceso | Mientras el objeto sea alcanzable | Recibe un valor predeterminado si no se asigna. |
+| **Campo de clase** | En la clase, con `static` | Según su modificador de acceso | Desde que se carga la clase | Recibe un valor predeterminado si no se asigna. |
+
+Los campos numéricos reciben `0`, los booleanos `false` y las referencias `null`. Eso no significa que esos valores sean válidos para el dominio: un constructor debería establecer explícitamente el estado requerido.
+
+### Ejemplo completo y sombreado
+
+```java
+public final class Cuenta {
+    private static int totalCuentas = 0; // Campo de clase
+    private int saldo;                   // Campo de instancia
+
+    public Cuenta(int saldo) {           // Parámetro
+        if (saldo < 0) {
+            throw new IllegalArgumentException("saldo no puede ser negativo");
+        }
+        this.saldo = saldo;              // this.saldo distingue el campo
+        totalCuentas++;
+    }
+
+    public void acreditar(int monto) {
+        if (monto <= 0) {
+            throw new IllegalArgumentException("monto debe ser positivo");
+        }
+        int saldoAnterior = saldo;       // Variable local
+        saldo += monto;
+
+        if (saldo < saldoAnterior) {
+            throw new ArithmeticException("desbordamiento de saldo");
+        }
+    }
+}
+```
+
+El parámetro `saldo` **sombrea** (*shadowing*) al campo con el mismo nombre. `this.saldo` selecciona explícitamente el campo de instancia. El sombreado es legal, pero abusarlo dificulta saber qué valor se modifica.
+
+Un bloque también limita nombres:
+
+```java
+if (edad >= 18) {
+    String mensaje = "Acceso permitido";
+    System.out.println(mensaje);
+}
+// System.out.println(mensaje); // No compila: mensaje no es visible aquí.
+```
+
+### Reglas de inicialización y fallos claros
+
+Java aplica **asignación definida** (*definite assignment*) a locales: el compilador debe poder demostrar que recibieron un valor antes de leerse.
+
+```java
+int resultado;
+// System.out.println(resultado); // No compila: quizá no fue inicializada.
+
+int resultadoSeguro = 0; // Solo es correcto si 0 representa un valor válido.
+```
+
+No agregues un valor predeterminado arbitrario solo para silenciar el compilador. Si falta un dato obligatorio, validalo y lanzá una excepción con contexto, como en el constructor de `Cuenta`. Para un dato opcional, elegí y documentá un valor neutral real.
+
+---
+
+## 3. Tipos Primitivos vs. Tipos por Referencia
 
 Java clasifica los tipos de datos en dos grandes categorías:
 
@@ -50,7 +122,7 @@ Ejemplos: `String`, Arrays, y cualquier clase personalizada.
 String nombre = "Facundo"; // Referencia a un objeto String
 ```
 
-## 3. Conversión de Tipos (Casting)
+## 4. Conversión de Tipos (Casting)
 
 - **Casting Implícito (Widening)**: De un tipo menor a uno mayor (automático).
   ```java
@@ -63,7 +135,7 @@ String nombre = "Facundo"; // Referencia a un objeto String
   int precioAproximado = (int) precioExacto; // 45 (pierde los decimales)
   ```
 
-## 4. Operadores en Java
+## 5. Operadores en Java
 
 ### Operadores Aritméticos
 `+`, `-`, `*`, `/`, `%` (módulo o resto de división).
@@ -83,5 +155,5 @@ boolean tieneEdad = edad >= 18;
 boolean puedeIngresar = tieneEdad && esEstudiante;
 ```
 
-## 5. Ejercicio Práctico
+## 6. Ejercicio Práctico
 Escribí un programa que declare las notas de tres exámenes de un alumno, calcule su promedio usando valores decimales (`double`), e imprima si el alumno aprobó (promedio mayor o igual a 6.0) mediante un resultado booleano.

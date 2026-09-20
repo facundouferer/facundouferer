@@ -6,6 +6,8 @@ import path from 'node:path';
 const JAVA_COURSE_DIR = 'src/content/courses/java';
 const ALGORITHM_LESSON = '23-algoritmia-verificacion-y-complejidad';
 const BASIC_CONCEPTS_LESSON = '01-conceptos-basicos';
+const VARIABLES_LESSON = '02-variables-tipos-datos-y-operadores';
+const METHODS_LESSON = '05-metodos-y-funciones';
 
 async function readLesson(slug, lang) {
 	return readFile(path.join(JAVA_COURSE_DIR, `${slug}.${lang}.md`), 'utf8');
@@ -92,6 +94,51 @@ test('basic concepts lesson teaches a practical API and Javadoc reading workflow
 		assert.match(content, /IndexOutOfBoundsException/, `${locale}: thrown exception`);
 		assert.match(content, /deprecat|obsolet/i, `${locale}: deprecation`);
 		assert.match(content, /linked type|tipo enlazado|tipos enlazados/i, `${locale}: linked types`);
+	}
+});
+
+test('variables lesson distinguishes Java scope, lifetime, and initialization rules', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(VARIABLES_LESSON, 'es'),
+		readLesson(VARIABLES_LESSON, 'en'),
+	]);
+
+	for (const [locale, content] of [
+		['Spanish', spanish],
+		['English', english],
+	]) {
+		assert.match(content, /block[- ]scope|[aá]mbito de bloque/i, `${locale}: block scope`);
+		assert.match(content, /local variable|variable local/i, `${locale}: local variables`);
+		assert.match(content, /parameter|par[aá]metro/i, `${locale}: parameters`);
+		assert.match(content, /instance field|campo de instancia/i, `${locale}: instance fields`);
+		assert.match(content, /class field|campo de clase/i, `${locale}: class fields`);
+		assert.match(content, /shadowing|sombreado/i, `${locale}: shadowing`);
+		assert.match(content, /lifetime|tiempo de vida/i, `${locale}: lifetime`);
+		assert.match(content, /visibility|visibilidad/i, `${locale}: visibility`);
+		assert.match(content, /definite assignment|asignaci[oó]n definida/i, `${locale}: local initialization`);
+		assert.match(content, /no (?:free )?global variables|no (?:existen|hay) variables globales libres/i, `${locale}: no free globals`);
+	}
+});
+
+test('methods lesson teaches recursion forms, stack costs, and bounded use', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(METHODS_LESSON, 'es'),
+		readLesson(METHODS_LESSON, 'en'),
+	]);
+
+	for (const [locale, content] of [
+		['Spanish', spanish],
+		['English', english],
+	]) {
+		assert.match(content, /direct recursion|recursi[oó]n directa/i, `${locale}: direct recursion`);
+		assert.match(content, /indirect recursion|recursi[oó]n indirecta/i, `${locale}: indirect recursion`);
+		assert.match(content, /mutual recursion|recursi[oó]n mutua/i, `${locale}: mutual recursion`);
+		assert.match(content, /tail recursion|recursi[oó]n de cola/i, `${locale}: tail recursion`);
+		assert.match(content, /does not guarantee tail-call optimization|no garantiza (?:la )?optimizaci[oó]n de llamadas? de cola/i, `${locale}: Java TCO limitation`);
+		assert.match(content, /StackOverflowError/, `${locale}: stack overflow risk`);
+		assert.match(content, /O\(n\).*(?:stack|pila)|(?:stack|pila).*O\(n\)/is, `${locale}: linear stack cost`);
+		assert.match(content, /IllegalArgumentException/, `${locale}: input validation`);
+		assert.match(content, /MAX_RECURSIVE_DEPTH/, `${locale}: bounded recursive example`);
 	}
 });
 
