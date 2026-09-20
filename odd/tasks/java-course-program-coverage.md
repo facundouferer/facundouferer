@@ -121,7 +121,7 @@ and state the relevant tradeoffs and failure modes.
   - Acceptance: examples use monitor ownership and condition loops correctly;
     safer high-level alternatives are identified.
 
-- [ ] **JAVA-COVERAGE-11 — Debugging, clean code, and refactoring**
+- [x] **JAVA-COVERAGE-11 — Debugging, clean code, and refactoring**
   - Route: delegated; writer trigger (new bilingual lesson pair plus tests).
   - Add `27-depuracion-codigo-limpio-y-refactorizacion.{es,en}.md` covering
     breakpoints, watches, stepping, code smells, and test-supported refactoring.
@@ -167,8 +167,9 @@ npm run build
 | JAVA-COVERAGE-08 | `39fb83bc0e971065b4bd0d4c00e91cc16865d45c` | `node --test tests/courses-java-program-coverage.test.mjs` — 15 passed | disabled/unmanaged; assessment medium (`under_budget`) |
 | JAVA-COVERAGE-09 | `21eb238` | `node --test tests/courses-java-program-coverage.test.mjs` — 16 passed | disabled/unmanaged |
 | JAVA-COVERAGE-10 | `de22085` | `node --test tests/courses-java-program-coverage.test.mjs` — 17 passed | disabled/unmanaged |
+| JAVA-COVERAGE-11 | `82afc93` | `node --test tests/courses-java-program-coverage.test.mjs` — 19 passed | disabled/unmanaged |
 
 ## Next step
 
-Implement `JAVA-COVERAGE-11` with a delegated writer using strict RED → GREEN
+Implement `JAVA-COVERAGE-12` with a delegated writer using strict RED → GREEN
 → REFACTOR.
