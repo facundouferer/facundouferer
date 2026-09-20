@@ -105,8 +105,8 @@ test('presentation detail pages keep PresentationLessonLink in a full-width, com
 		);
 		assert.match(
 			content,
-			/\.presentation-lesson-link-wrap\s*\{[^}]*padding:\s*var\(--space-3\)\s*var\(--space-4\)/,
-			`${file} should give presentation-lesson-link-wrap compact var(--space-*) padding`,
+			/\.presentation-lesson-link-wrap\s*\{[^}]*padding:\s*var\(--space-3\)\s*var\(--space-6\)\s*0\s*var\(--space-8\)/,
+			`${file} should indent presentation-lesson-link-wrap with var(--space-*) padding`,
 		);
 	}
 });
