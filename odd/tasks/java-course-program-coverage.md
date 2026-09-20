@@ -49,7 +49,7 @@ and state the relevant tradeoffs and failure modes.
 
 ## Tasks
 
-- [ ] **JAVA-COVERAGE-01 — Algorithm development and complexity**
+- [x] **JAVA-COVERAGE-01 — Algorithm development and complexity**
   - Route: delegated; writer trigger (new bilingual lesson pair plus tests).
   - Add `23-algoritmia-verificacion-y-complejidad.{es,en}.md` covering algorithm
     phases, verification, time/space analysis, and asymptotic notation through
@@ -157,9 +157,9 @@ npm run build
 
 | Task | Commit | Focused check | RDD outcome |
 |---|---|---|---|
-| Pending | — | — | — |
+| JAVA-COVERAGE-01 | `5926e19040d5b3c584fd641644ca583a2f1abd51` | `node --test tests/courses-java-program-coverage.test.mjs` — 3 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
 
 ## Next step
 
-Implement `JAVA-COVERAGE-01` with a delegated writer using strict RED → GREEN
+Implement `JAVA-COVERAGE-02` with a delegated writer using strict RED → GREEN
 → REFACTOR.
