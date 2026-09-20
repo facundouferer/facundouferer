@@ -98,7 +98,7 @@ and state the relevant tradeoffs and failure modes.
   - Acceptance: representations are compared with explicit complexity and
     invalid-index handling.
 
-- [ ] **JAVA-COVERAGE-08 — Floyd–Warshall**
+- [x] **JAVA-COVERAGE-08 — Floyd–Warshall**
   - Route: delegated; writer trigger (bilingual expansion plus tests).
   - Expand `18-grafos-representacion-y-algoritmos.{es,en}.md` with the
     Floyd–Warshall algorithm, matrix evolution, complexity, and comparison with
@@ -164,8 +164,9 @@ npm run build
 | JAVA-COVERAGE-05 | `40fc8059869ceb7162181a38985a820c957e17cb` | `node --test tests/courses-java-program-coverage.test.mjs` — 11 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
 | JAVA-COVERAGE-06 | `019f75859df65b8963b39576a8aadc16f14482a1` | `node --test tests/courses-java-program-coverage.test.mjs` — 12 passed | disabled/unmanaged; assessment medium (`under_budget`) |
 | JAVA-COVERAGE-07 | `9ca37fcc11813563b1a668eac49b41bff6c665a8` | `node --test tests/courses-java-program-coverage.test.mjs` — 14 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
+| JAVA-COVERAGE-08 | `39fb83bc0e971065b4bd0d4c00e91cc16865d45c` | `node --test tests/courses-java-program-coverage.test.mjs` — 15 passed | disabled/unmanaged; assessment medium (`under_budget`) |
 
 ## Next step
 
-Implement `JAVA-COVERAGE-08` with a delegated writer using strict RED → GREEN
+Implement `JAVA-COVERAGE-09` with a delegated writer using strict RED → GREEN
 → REFACTOR.
