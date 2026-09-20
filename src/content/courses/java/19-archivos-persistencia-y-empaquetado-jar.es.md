@@ -461,6 +461,111 @@ Detalle a mirar: `importarCSV` usa `Files.lines()` con `try-with-resources` y un
 
 ---
 
+
+## 7. Distribución nativa con `jpackage`
+
+Un JAR ejecutable todavía supone que la persona instaló una JVM compatible y sabe ejecutar `java -jar`. `jpackage`, incluido en los JDK modernos completos, crea una aplicación con lanzador nativo y una **imagen de runtime** Java incluida. El usuario no necesita configurar Java por separado.
+
+### Prerrequisitos: comprobar, no asumir
+
+Usá un JDK completo y verificá las herramientas antes de empaquetar:
+
+```sh
+java -version
+javac -version
+jpackage --version
+
+test -f dist/tienda.jar || {
+  echo "Falta dist/tienda.jar; ejecutá primero el build" >&2
+  exit 1
+}
+```
+
+En PowerShell, sin asumir una ruta ni modificar el equipo:
+
+```powershell
+$tool = Get-Command jpackage -ErrorAction SilentlyContinue
+if (-not $tool) { throw "jpackage no está disponible: instalá un JDK completo" }
+if (-not (Test-Path -LiteralPath '.\dist\tienda.jar' -PathType Leaf)) {
+    throw 'Falta dist\tienda.jar; ejecutá primero el build'
+}
+jpackage --version
+```
+
+Si `jpackage` no existe, no continúes con un comando descargado al azar ni supongas credenciales administrativas. Corregí `JAVA_HOME`/`PATH` o instalá un JDK aprobado por el equipo.
+
+### Primero una imagen de aplicación
+
+Generá primero `--type app-image`: es más rápido de inspeccionar que un instalador y permite detectar una clase principal incorrecta, dependencias ausentes o recursos mal ubicados.
+
+```sh
+APP_VERSION='1.2.0'
+printf '%s' "$APP_VERSION" | grep -Eq '^[0-9]+([.][0-9]+){0,2}$' || {
+  echo 'Versión inválida: usá, por ejemplo, 1.2.0' >&2
+  exit 1
+}
+
+jpackage \
+  --type app-image \
+  --name Tienda \
+  --input dist \
+  --main-jar tienda.jar \
+  --main-class com.facundouferer.tienda.Main \
+  --app-version "$APP_VERSION" \
+  --dest packages
+```
+
+- `--input` es el directorio de entrada: debe contener el JAR principal y sus dependencias.
+- `--main-jar` nombra el JAR dentro de ese directorio; `--main-class` identifica la clase con `main`.
+- Una aplicación modular reemplaza esas dos entradas por `--module-path mods --module com.facundouferer.tienda/com.facundouferer.tienda.Main`.
+- `--dest` separa la salida de los artefactos de entrada. Comprobá que sea escribible y que no mezcle versiones anteriores.
+- `--app-version` tiene reglas adicionales según el formato nativo. Una versión numérica simple es un valor seguro, pero el pipeline debe validarla en cada plataforma.
+
+Por defecto, `jpackage` arma y **incluye un runtime** reducido para la aplicación. Para controlarlo explícitamente se puede crear con `jlink` y pasarlo mediante `--runtime-image`, pero esa imagen debe incluir todos los módulos requeridos: quitar uno produce un fallo en ejecución, no una aplicación más eficiente.
+
+`--icon` es opcional y el formato depende de la plataforma (`.ico` en Windows, `.icns` en macOS y normalmente `.png` en Linux). Omitirlo es un valor predeterminado seguro; no renombres un archivo para fingir otro formato.
+
+### Probar antes de crear el instalador
+
+Inspeccioná el directorio generado y ejecutá su lanzador con una operación inocua, como `--version` o `--help`:
+
+```sh
+test -d packages/Tienda || { echo 'No se generó packages/Tienda' >&2; exit 1; }
+packages/Tienda/bin/Tienda --version
+```
+
+```powershell
+if (-not (Test-Path -LiteralPath '.\packages\Tienda\Tienda.exe')) {
+    throw 'No se generó el lanzador esperado'
+}
+& '.\packages\Tienda\Tienda.exe' --version
+if ($LASTEXITCODE -ne 0) { throw 'El smoke test del lanzador falló' }
+```
+
+El programa debe ofrecer una opción de diagnóstico que no escriba datos ni requiera red. Además del arranque, probá recursos, archivos de configuración, rutas con espacios, instalación, actualización y desinstalación en una máquina limpia o VM.
+
+### El paquete es específico del sistema operativo
+
+`jpackage` usa herramientas nativas y **no es un compilador cruzado de instaladores**:
+
+| Sistema donde se construye y prueba | Tipos habituales |
+| :--- | :--- |
+| Windows | `exe`, `msi` |
+| macOS | `dmg`, `pkg` |
+| Linux | `deb`, `rpm` |
+
+Después de validar `app-image`, ejecutá `jpackage --type msi ...` o el tipo correspondiente dentro del job del **sistema operativo de destino**. Un `.exe` de Windows debe construirse y probarse en Windows; no prometas que un artefacto producido desde Linux o macOS es equivalente. Un pipeline multiplataforma usa un runner separado por sistema y conserva cada artefacto con su versión y checksum.
+
+La **firma de código** y la **notarización** son responsabilidades de publicación. Requieren certificados, secretos protegidos y, según la plataforma, servicios externos. No pongas credenciales en el comando, el repositorio ni los logs: inyectalas desde el almacén de secretos del CI y verificá la firma del artefacto final.
+
+### Comparación acotada con Launch4j
+
+Launch4j envuelve un JAR en un lanzador `.exe` para Windows. Puede buscar un runtime ya instalado o apuntar a un **runtime incluido** que se distribuye junto al ejecutable. Es útil para mantener una integración Windows existente, un formato de configuración heredado o requisitos de launcher muy específicos.
+
+Sin embargo, Launch4j no reemplaza por sí solo todo el instalador, el runtime ni la prueba en Windows. Para proyectos nuevos sobre un JDK moderno, preferí `jpackage`: es tooling estándar del JDK, genera una imagen autocontenida y conoce formatos nativos de varias plataformas. Elegir Launch4j no autoriza a construir o declarar probado un `.exe` fuera de Windows.
+
+---
+
 ## Para llevarte
 
 - **Bytes** (`InputStream`/`OutputStream`) para binario; **caracteres** (`Reader`/`Writer`) para texto con codificación.

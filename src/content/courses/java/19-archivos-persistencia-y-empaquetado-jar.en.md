@@ -461,6 +461,111 @@ One detail worth noticing: `importCSV` uses `Files.lines()` with `try-with-resou
 
 ---
 
+
+## 7. Native distribution with `jpackage`
+
+An executable JAR still assumes that users installed a compatible JVM and know how to run `java -jar`. `jpackage`, included with modern full JDKs, creates an application with a native launcher and a bundled Java **runtime image**. Users do not need to configure Java separately.
+
+### Prerequisites: verify, do not assume
+
+Use a full JDK and verify the tools before packaging:
+
+```sh
+java -version
+javac -version
+jpackage --version
+
+test -f dist/store.jar || {
+  echo "dist/store.jar is missing; run the build first" >&2
+  exit 1
+}
+```
+
+In PowerShell, without assuming a path or changing the machine:
+
+```powershell
+$tool = Get-Command jpackage -ErrorAction SilentlyContinue
+if (-not $tool) { throw 'jpackage is unavailable: install a full JDK' }
+if (-not (Test-Path -LiteralPath '.\dist\store.jar' -PathType Leaf)) {
+    throw 'dist\store.jar is missing; run the build first'
+}
+jpackage --version
+```
+
+If `jpackage` is missing, do not continue with a random downloaded command or assume administrator credentials. Correct `JAVA_HOME`/`PATH` or install a team-approved JDK.
+
+### Build an application image first
+
+Generate `--type app-image` first: it is faster to inspect than an installer and exposes a wrong main class, missing dependencies, or misplaced resources early.
+
+```sh
+APP_VERSION='1.2.0'
+printf '%s' "$APP_VERSION" | grep -Eq '^[0-9]+([.][0-9]+){0,2}$' || {
+  echo 'Invalid version: use a value such as 1.2.0' >&2
+  exit 1
+}
+
+jpackage \
+  --type app-image \
+  --name Store \
+  --input dist \
+  --main-jar store.jar \
+  --main-class com.facundouferer.store.Main \
+  --app-version "$APP_VERSION" \
+  --dest packages
+```
+
+- `--input` is the input directory: it must contain the main JAR and its dependencies.
+- `--main-jar` names the JAR inside that directory; `--main-class` identifies the class containing `main`.
+- A modular application replaces those two inputs with `--module-path mods --module com.facundouferer.store/com.facundouferer.store.Main`.
+- `--dest` keeps output separate from inputs. Verify that it is writable and does not mix older versions.
+- `--app-version` has additional rules for each native format. A simple numeric version is a safe default, but the pipeline must validate it on every platform.
+
+By default, `jpackage` builds and bundles a reduced runtime for the application. For explicit control, create one with `jlink` and pass it through `--runtime-image`, but that image must contain every required module: removing one creates a runtime failure, not a more efficient application.
+
+`--icon` is optional and its format is platform-specific (`.ico` on Windows, `.icns` on macOS, and commonly `.png` on Linux). Omitting it is a safe default; do not rename a file to pretend it has another format.
+
+### Test before creating an installer
+
+Inspect the generated directory and run its launcher with a harmless operation such as `--version` or `--help`:
+
+```sh
+test -d packages/Store || { echo 'packages/Store was not generated' >&2; exit 1; }
+packages/Store/bin/Store --version
+```
+
+```powershell
+if (-not (Test-Path -LiteralPath '.\packages\Store\Store.exe')) {
+    throw 'The expected launcher was not generated'
+}
+& '.\packages\Store\Store.exe' --version
+if ($LASTEXITCODE -ne 0) { throw 'Launcher smoke test failed' }
+```
+
+The program should provide a diagnostic option that writes no data and requires no network access. Beyond startup, test resources, configuration files, paths containing spaces, installation, upgrades, and removal on a clean machine or VM.
+
+### Packages are operating-system specific
+
+`jpackage` uses native tooling and **is not a cross-platform installer compiler**:
+
+| System used to build and test | Common types |
+| :--- | :--- |
+| Windows | `exe`, `msi` |
+| macOS | `dmg`, `pkg` |
+| Linux | `deb`, `rpm` |
+
+After validating the application image, run `jpackage --type msi ...` or the appropriate type inside the **target OS** job. A Windows `.exe` must be built and tested on Windows; never claim that an artifact produced on Linux or macOS is equivalent. A multi-platform pipeline uses a separate runner for each OS and retains every artifact with its version and checksum.
+
+**Code signing** and **notarization** are release responsibilities. They require certificates, protected secrets, and platform-dependent external services. Do not place credentials in commands, the repository, or logs: inject them from the CI secret store and verify the final artifact's signature.
+
+### Bounded Launch4j comparison
+
+Launch4j wraps a JAR in a Windows `.exe` launcher. It can search for an installed runtime or point to a **bundled runtime** shipped beside the executable. It can be useful for maintaining an existing Windows integration, a legacy configuration format, or highly specific launcher requirements.
+
+Launch4j alone does not replace an installer, runtime strategy, or Windows testing. For new projects on a modern JDK, prefer `jpackage`: it is standard JDK tooling, produces a self-contained application image, and understands native formats across platforms. Choosing Launch4j does not authorize building or claiming to test an `.exe` outside Windows.
+
+---
+
 ## Key takeaways
 
 - **Bytes** (`InputStream`/`OutputStream`) for binary; **characters** (`Reader`/`Writer`) for text with a charset.

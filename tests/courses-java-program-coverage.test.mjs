@@ -13,6 +13,7 @@ const GIT_BRANCHING_LESSON = '25-git-ramas-merge-conflictos-y-rebase';
 const STACKS_QUEUES_LESSON = '14-tad-pilas-y-colas';
 const NARY_TREES_LESSON = '26-arboles-n-arios-y-representacion-con-vectores';
 const GRAPHS_LESSON = '18-grafos-representacion-y-algoritmos';
+const PACKAGING_LESSON = '19-archivos-persistencia-y-empaquetado-jar';
 
 async function readLesson(slug, lang) {
 	return readFile(path.join(JAVA_COURSE_DIR, `${slug}.${lang}.md`), 'utf8');
@@ -326,6 +327,36 @@ test('graphs lesson teaches safe Floyd-Warshall all-pairs shortest paths', async
 		assert.match(content, /Dijkstra/i, `${locale}: Dijkstra comparison`);
 		assert.match(content, /negative edges|aristas negativas/i, `${locale}: negative-edge behavior`);
 		assert.match(content, /unreachable|inalcanzable/i, `${locale}: unreachable pairs`);
+	}
+});
+
+test('packaging lesson teaches validated platform-native distribution', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(PACKAGING_LESSON, 'es'),
+		readLesson(PACKAGING_LESSON, 'en'),
+	]);
+
+	for (const [locale, content] of [
+		['Spanish', spanish],
+		['English', english],
+	]) {
+		assert.match(content, /jpackage --version/, `${locale}: jpackage availability check`);
+		assert.match(content, /--type app-image/, `${locale}: application image first`);
+		assert.match(content, /--input/, `${locale}: input directory`);
+		assert.match(content, /--main-jar/, `${locale}: main JAR`);
+		assert.match(content, /--main-class|--module/, `${locale}: entry point`);
+		assert.match(content, /--dest/, `${locale}: output directory`);
+		assert.match(content, /--app-version/, `${locale}: validated version`);
+		assert.match(content, /runtime image|imagen de runtime/i, `${locale}: bundled runtime`);
+		assert.match(content, /msi|exe/, `${locale}: Windows package types`);
+		assert.match(content, /dmg|pkg/, `${locale}: macOS package types`);
+		assert.match(content, /deb|rpm/, `${locale}: Linux package types`);
+		assert.match(content, /target OS|sistema operativo de destino/i, `${locale}: build and test per target OS`);
+		assert.match(content, /signing|firma de c[oó]digo/i, `${locale}: code signing`);
+		assert.match(content, /notarization|notarizaci[oó]n/i, `${locale}: notarization`);
+		assert.match(content, /Launch4j/i, `${locale}: Launch4j comparison`);
+		assert.match(content, /bundled runtime|runtime incluido/i, `${locale}: runtime strategy`);
+		assert.match(content, /Get-Command jpackage/, `${locale}: safe PowerShell check`);
 	}
 });
 
