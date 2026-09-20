@@ -2,153 +2,368 @@
 title: 'Merging Branches and Conflicts'
 course: 'git'
 slug: 'conflictos'
+description: 'Master parallel branching workflows with branch and merge, and learn how to interpret and resolve integration conflicts step by step.'
 order: 3
 lang: 'en'
 published: true
 ---
 
-# 🌿 MERGING BRANCHES — EXPLAINED SLOWLY
+# 🔀 Branching, Merging, and Conflict Resolution in Git
 
-## What is a Merge?
+When multiple developers work simultaneously on the same codebase, lines of history inevitably diverge. Mastering how to branch, merge, and confidently resolve integration conflicts is an essential skill for any software engineer.
 
-**Merge** means combining two branches into one.
-
-Imagine you have:
-- The `main` branch (the stable version)
-- A `new-feature` branch (where you're experimenting)
-
-When you merge, Git takes the changes from `new-feature` and **adds them** to `main`.
+In this lesson, you will learn:
+1. How to create, switch, and isolate development lines with `git branch` and `git switch`.
+2. How to merge branches with `git merge` (fast-forward vs three-way merge commit).
+3. What causes an integration conflict and why Git halts the merge.
+4. How to dissect and understand conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`).
+5. The step-by-step method to resolve conflicts, verify fixes, and complete the merge cleanly.
 
 ---
 
-## How to Merge
+# 🌿 MERGING BRANCHES — EXPLAINED STEP BY STEP
 
+## 🧠 Core Idea (Concept First, Then Commands)
+
+Imagine this scenario:
+
+* `main` branch → stable, working version of your project
+* `login` branch → isolated line of work for a new user authentication feature
+
+👉 **Merging (`git merge`)** means:
+
+> Integrating the commits from one branch into another branch
+
+Typically, you develop and test in a secondary branch, then switch to `main` and merge your feature branch into it.
+
+---
+
+# 📊 Visual Diagram: Branching and Merging
+
+<figure class="diagram">
+<svg viewBox="0 0 720 280" role="img" aria-labelledby="d-git-merge-conflict-en-t">
+<title id="d-git-merge-conflict-en-t">Branch divergence, git merge integration, and conflict markers</title>
+<defs>
+  <marker id="ar-main-l3-en" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent)"/>
+  </marker>
+  <marker id="ar-branch-l3-en" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent-2-600)"/>
+  </marker>
+</defs>
+
+<!-- Branch main line -->
+<path d="M 60 70 L 620 70" fill="none" stroke="var(--color-accent)" stroke-width="3"/>
+<text x="45" y="75" font-size="13" font-weight="700" font-family="monospace" text-anchor="end" fill="var(--color-accent-700)">main</text>
+
+<!-- Branch feature/login curve -->
+<path d="M 180 70 C 220 70, 230 150, 270 150 L 450 150 C 490 150, 500 70, 540 70" fill="none" stroke="var(--color-accent-2-600)" stroke-width="2.5" stroke-dasharray="7 4"/>
+<text x="210" y="170" font-size="13" font-weight="700" font-family="monospace" fill="var(--color-accent-2-800)">login</text>
+
+<!-- Commits on main -->
+<circle cx="90" cy="70" r="16" fill="var(--color-bg)" stroke="var(--color-accent)" stroke-width="3"/>
+<text x="90" y="75" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">A</text>
+
+<circle cx="180" cy="70" r="16" fill="var(--color-bg)" stroke="var(--color-accent)" stroke-width="3"/>
+<text x="180" y="75" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">B</text>
+
+<circle cx="360" cy="70" r="16" fill="var(--color-bg)" stroke="var(--color-accent)" stroke-width="3"/>
+<text x="360" y="75" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">C</text>
+<text x="360" y="45" font-size="11" text-anchor="middle" fill="var(--color-neutral-700)">Edit on line 2</text>
+
+<!-- Commits on login -->
+<circle cx="300" cy="150" r="16" fill="var(--color-bg)" stroke="var(--color-accent-2-600)" stroke-width="3"/>
+<text x="300" y="155" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">D</text>
+
+<circle cx="420" cy="150" r="16" fill="var(--color-bg)" stroke="var(--color-accent-2-600)" stroke-width="3"/>
+<text x="420" y="155" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">E</text>
+<text x="420" y="185" font-size="11" text-anchor="middle" fill="var(--color-accent-2-800)">Different edit on line 2</text>
+
+<!-- Merge Commit F -->
+<circle cx="540" cy="70" r="20" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="3.5"/>
+<text x="540" y="76" font-size="13" font-weight="800" text-anchor="middle" fill="var(--color-accent-700)">F</text>
+<text x="540" y="40" font-size="11" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">Merge Commit</text>
+
+<!-- Conflict Marker Box (inset) -->
+<rect x="60" y="205" width="600" height="60" rx="12" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="1.5"/>
+<text x="80" y="228" font-size="11.5" font-family="monospace" fill="var(--color-accent-700)">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD (current version on main)</text>
+<text x="80" y="244" font-size="11.5" font-family="monospace" fill="var(--color-neutral-700)">======= (separator)</text>
+<text x="80" y="260" font-size="11.5" font-family="monospace" fill="var(--color-accent-2-800)">&gt;&gt;&gt;&gt;&gt;&gt;&gt; login (incoming version)</text>
+<text x="530" y="234" font-size="12" font-weight="700" fill="var(--color-accent-700)">Conflict!</text>
+<text x="530" y="252" font-size="11" fill="var(--color-neutral-700)">Same line modified</text>
+</svg>
+<figcaption>Evolution of a merge with divergent branches: the <code>login</code> branch forks from commit B and advances in parallel to <code>main</code>. If both branches touch the same lines, Git inserts conflict markers before sealing the merge commit F.</figcaption>
+</figure>
+
+---
+
+# 🧪 REAL STEP-BY-STEP EXAMPLE (Clean Merge)
+
+## Step 1️⃣ Create test project
+
+```bash
+# Initialize a new local Git repository
+git init
 ```
+
+Create file `message.txt`:
+
+```text
+Hello world
+```
+
+```bash
+# Stage and commit initial baseline on main
+git add .
+git commit -m "chore: initial commit"
+```
+
+---
+
+## Step 2️⃣ Create a new feature branch
+
+```bash
+# Create secondary branch and switch to it in one command
+git checkout -b login
+```
+
+📌 You are now working on the `login` branch.
+
+---
+
+## Step 3️⃣ Make changes in the new branch
+
+Edit `message.txt`:
+
+```text
+Hello world
+Adding login screen
+```
+
+Save:
+
+```bash
+# Commit the modification to the login branch
+git add .
+git commit -m "feat: add login screen"
+```
+
+---
+
+## Step 4️⃣ Switch back to `main`
+
+```bash
+# Return to the main branch (files revert to main state)
 git checkout main
-git merge new-feature
 ```
 
-1. First, switch to the branch you want to merge INTO (`main`)
-2. Then, merge the other branch (`new-feature`)
+📌 Notice that `message.txt` in your editor returns to its original single-line content.
 
 ---
 
-# 💥 CONFLICTS — WHAT ARE THEY?
+## Step 5️⃣ Merge the `login` branch
 
-A **conflict** happens when Git CAN'T automatically merge changes.
+```bash
+# Integrate login commits into the current branch (main)
+git merge login
+```
 
-## When does this happen?
-
-When two people modified the **same line** of the **same file** in different ways.
+🎉 **Successful merge without conflicts (Fast-Forward or clean merge).**
 
 ---
 
-## Example Conflict
+# ⚠️ NOW: MERGE CONFLICTS (The Critical Part)
 
-Imagine you and a teammate both edit `index.html`:
+## 🧠 When do conflicts happen?
 
-**You:**
-```html
-<h1>Hello World</h1>
-```
+A merge conflict occurs when:
 
-**Your teammate:**
-```html
-<h1>Hello GitHub</h1>
-```
+* Two branches
+* Modify the **exact same lines** of the same file
+* With different content
 
-Git doesn't know which one to keep. **Conflict!**
+Git cannot infer human intent automatically 🤯
 
 ---
 
-# 🚨 HOW TO RESOLVE A CONFLICT
+# 💥 REAL EXAMPLE OF A CONFLICT
 
-## Step 1: Identify the conflict
+## Step 1️⃣ Initial state
 
-When you try to merge:
+File `message.txt` on `main`:
+
+```text
+Hello world
 ```
-git merge new-feature
-```
-
-Git tells you:
-> CONFLICT in index.html
 
 ---
 
-## Step 2: Open the file
+## Step 2️⃣ Branch `login` changes the line
 
-You'll see something like this:
+```bash
+# Switch to the feature branch
+git checkout -b login
+```
 
-```html
+Edit `message.txt`:
+
+```text
+Hello world from login
+```
+
+```bash
+# Stage and commit on branch login
+git add .
+git commit -m "feat: update message in login"
+```
+
+---
+
+## Step 3️⃣ Return to `main` and change the same line
+
+```bash
+# Switch back to main
+git checkout main
+```
+
+Edit `message.txt` with a different line:
+
+```text
+Hello world from main
+```
+
+```bash
+# Stage and commit conflicting line on main
+git add .
+git commit -m "feat: update message in main"
+```
+
+---
+
+## Step 4️⃣ Attempt to merge (BOOM 💥)
+
+```bash
+# Attempt to merge login into main (Git detects the collision)
+git merge login
+```
+
+Git halts execution and reports:
+
+```text
+CONFLICT (content): Merge conflict in message.txt
+Automatic merge failed; fix conflicts and then commit the result.
+```
+
+---
+
+# 🔍 ANATOMY OF A CONFLICT (Inside the File)
+
+Open `message.txt` in your code editor:
+
+```text
 <<<<<<< HEAD
-<h1>Hello World</h1>
+Hello world from main
 =======
-<h1>Hello GitHub</h1>
->>>>>>> new-feature
+Hello world from login
+>>>>>>> login
 ```
 
-- `<<<<<<< HEAD` = your version (`main`)
-- `=======` = separator
-- `>>>>>>> new-feature` = the other version
+### What does this mean?
+
+* `<<<<<<< HEAD` → content present on your current branch (`main`)
+* `=======` → center division marker
+* `>>>>>>> login` → content coming from the incoming branch (`login`)
 
 ---
 
-## Step 3: Decide what to keep
+# 🛠️ HOW TO RESOLVE A CONFLICT (Step by Step)
 
-You have 3 options:
-1. Keep your version
-2. Keep their version
-3. Keep both (create a new version)
+## Step 1️⃣ Decide what remains
 
-For example, keep both:
+* **Option A**: Keep your version (`Hello world from main`)
+* **Option B**: Keep the incoming version (`Hello world from login`)
+* **Option C**: Combine both into a cohesive result:
 
-```html
-<h1>Hello World - Hello GitHub</h1>
+```text
+Hello world from main and login
 ```
 
-👉 **Remove** the `<<<<<<<`, `=======`, and `>>>>>>>` markers.
+👉 You make the engineering call.
 
 ---
 
-## Step 4: Mark as resolved
+## Step 2️⃣ Delete the conflict markers
 
-```
-git add index.html
-git commit -m "Resolve merge conflict"
+⚠️ **CRITICAL STEP**:
+You must delete all marker lines:
+
+```text
+<<<<<<<
+=======
+>>>>>>>
 ```
 
 ---
 
-# ✅ Tips to Avoid Conflicts
+## Step 3️⃣ Save the clean file
 
-1. ✅ **Pull before you start working**
+The file must contain only clean, valid code:
+
+```text
+Hello world from main and login
 ```
-git pull
-```
-
-2. ✅ **Communicate with your team**
-   - Who is working on what
-   - Avoid editing the same files
-
-3. ✅ **Make small, frequent commits**
-
-4. ✅ **Use branches for each feature**
 
 ---
 
-# 📌 Summary
+## Step 4️⃣ Mark the conflict as resolved
 
-- Merge = combine branches
-- Conflict = Git can't decide
-- Resolve = edit the file manually
-- Always `git pull` before starting
+```bash
+# Tell Git that the conflict in this file is resolved
+git add message.txt
+```
 
 ---
 
-# 🧪 Practice
+## Step 5️⃣ Create the resolution commit
 
-1. Create two branches from `main`
-2. Modify the same line in both
-3. Try to merge → conflict!
-4. Resolve it manually
-5. Commit the resolution
+```bash
+# Create the merge commit that finalizes conflict resolution
+git commit -m "merge: resolve conflict between main and login"
+```
+
+🎉 The merge conflict is now completely resolved.
+
+---
+
+# 🔄 COMPLETE MERGE CONFLICT WORKFLOW
+
+```bash
+# 1. Attempt the branch merge
+git merge login
+
+# 2. Git stops and reports CONFLICT (content)
+# 3. Open affected files in your editor and resolve markers
+
+# 4. Stage resolved files
+git add .
+
+# 5. Commit the merge result
+git commit -m "merge: resolve conflict"
+```
+
+---
+
+# 🧠 Professional Advice
+
+✔️ Always run `git pull` before branching or starting work  
+✔️ Keep commits small and focused  
+✔️ Use descriptive branch names (`feat/login`, `fix/nav`)  
+✔️ Inspect conflict markers calmly; Git never erases your code silently  
+
+---
+
+# ❌ Common Mistakes
+
+❌ Deleting entire files by mistake during conflict resolution  
+❌ Committing files without removing the `<<<<<<<` and `>>>>>>>` markers  
+❌ Panicking and closing your terminal without completing or aborting the merge (`git merge --abort`)
