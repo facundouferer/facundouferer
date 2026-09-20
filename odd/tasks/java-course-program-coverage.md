@@ -64,7 +64,7 @@ and state the relevant tradeoffs and failure modes.
   - Acceptance: learners can choose an IDE and navigate a class, method,
     parameters, return value, exceptions, and versioned API documentation.
 
-- [ ] **JAVA-COVERAGE-03 — Variable scope and recursion**
+- [x] **JAVA-COVERAGE-03 — Variable scope and recursion**
   - Route: delegated; writer trigger (two bilingual lesson pairs plus tests).
   - Expand lessons 02 and 05 with Java scope rules, direct/indirect/tail
     recursion, stack costs, and when iteration is safer.
@@ -159,8 +159,9 @@ npm run build
 |---|---|---|---|
 | JAVA-COVERAGE-01 | `5926e19040d5b3c584fd641644ca583a2f1abd51` | `node --test tests/courses-java-program-coverage.test.mjs` — 3 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
 | JAVA-COVERAGE-02 | `36c37c842190599710d344c3134aafbc5c94d64f` | `node --test tests/courses-java-program-coverage.test.mjs` — 5 passed | disabled/unmanaged; assessment medium (`under_budget`) |
+| JAVA-COVERAGE-03 | `df76145afbbc852181afa785676257fd0a3a4c07` | `node --test tests/courses-java-program-coverage.test.mjs` — 7 passed | disabled/unmanaged; assessment medium (`under_budget`) |
 
 ## Next step
 
-Implement `JAVA-COVERAGE-03` with a delegated writer using strict RED → GREEN
+Implement `JAVA-COVERAGE-04` with a delegated writer using strict RED → GREEN
 → REFACTOR.
