@@ -1,0 +1,1463 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="pn-screen" data-presentation="paquetes-namespaces-java" data-lang={lang}>
+	<div class="pn-shell">
+		<nav class="pn-nav" aria-label={isEs ? 'Controles de navegación' : 'Navigation controls'}>
+			<button class="pn-btn" id="pnPrevBtn" aria-label={isEs ? 'Diapositiva anterior' : 'Previous slide'} disabled>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{isEs ? 'Anterior' : 'Previous'}</span>
+			</button>
+			<span class="pn-counter" id="pnSlideCounter" aria-live="polite">1 / 6</span>
+			<button class="pn-btn" id="pnNextBtn" aria-label={isEs ? 'Siguiente diapositiva' : 'Next slide'}>
+				<span>{isEs ? 'Siguiente' : 'Next'}</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="pn-viewport">
+			<!-- Slide 1: El problema — colisiones de nombres -->
+			<section class="pn-slide is-active" data-slide="1">
+				<div class="pn-header">
+					<span class="pn-kicker">{isEs ? 'El problema' : 'The problem'}</span>
+					<h2 class="pn-title">{isEs ? 'Colisiones de nombres en un espacio global' : 'Name collisions in a flat global scope'}</h2>
+					<p class="pn-lead">
+						{isEs
+							? 'Un namespace es un contenedor lógico que agrupa clases e interfaces para darles un contexto único y evitar colisiones de nombres. Sin namespaces, dos clases Usuario o dos clases Date compiten por el mismo nombre simple en un único espacio global plano.'
+							: 'A namespace is a logical container that groups classes and interfaces to give them a unique context and prevent name collisions. Without namespaces, two Usuario classes or two Date classes compete for the same short name in a single flat global scope.'}
+					</p>
+				</div>
+
+				<div class="pn-card">
+					<div class="pn-collision-toolbar">
+						<button class="pn-action-btn" id="pnCollisionToggle">{isEs ? 'Activar namespaces' : 'Enable namespaces'}</button>
+						<span class="pn-hint">{isEs ? 'Mismo nombre, mismo espacio: el compilador no puede elegir.' : 'Same name, same scope: the compiler cannot choose.'}</span>
+					</div>
+
+					<div class="pn-collision-stage">
+						<div class="pn-flat-space" id="pnFlatSpace">
+							<span class="pn-space-label">{isEs ? 'Espacio global (sin namespaces)' : 'Global scope (no namespaces)'}</span>
+							<div class="pn-collide-row">
+								<div class="pn-collide-group">
+									<span class="pn-chip pn-chip-collide">Usuario</span>
+									<span class="pn-chip pn-chip-collide pn-chip-offset">Usuario</span>
+								</div>
+								<div class="pn-collide-group">
+									<span class="pn-chip pn-chip-collide">Date</span>
+									<span class="pn-chip pn-chip-collide pn-chip-offset">Date</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="pn-split-space" id="pnSplitSpace" hidden>
+							<div class="pn-namespace-box">
+								<span class="pn-namespace-label">com.tienda.dominio</span>
+								<span class="pn-chip pn-chip-ok">Usuario</span>
+							</div>
+							<div class="pn-namespace-box">
+								<span class="pn-namespace-label">com.crm.dominio</span>
+								<span class="pn-chip pn-chip-ok">Usuario</span>
+							</div>
+							<div class="pn-namespace-box">
+								<span class="pn-namespace-label">java.util</span>
+								<span class="pn-chip pn-chip-ok">Date</span>
+							</div>
+							<div class="pn-namespace-box">
+								<span class="pn-namespace-label">java.sql</span>
+								<span class="pn-chip pn-chip-ok">Date</span>
+							</div>
+						</div>
+					</div>
+
+					<p class="pn-collision-status" id="pnCollisionStatus">
+						<svg class="pn-status-icon" id="pnCollisionStatusIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+							<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+							<path d="M12 9v4" />
+							<path d="M12 17h.01" />
+						</svg>
+						<span id="pnCollisionStatusText">{isEs ? 'Colisión: el compilador no sabe qué clase Usuario (o Date) estás pidiendo.' : 'Collision: the compiler cannot tell which Usuario (or Date) class you mean.'}</span>
+					</p>
+				</div>
+			</section>
+
+			<!-- Slide 2: package <-> carpeta -->
+			<section class="pn-slide" data-slide="2">
+				<div class="pn-header">
+					<span class="pn-kicker">{isEs ? 'Namespace físico' : 'Physical namespace'}</span>
+					<h2 class="pn-title">{isEs ? 'La carpeta tiene que coincidir con el package' : 'The folder must match the package line'}</h2>
+					<p class="pn-lead">
+						{isEs
+							? 'A diferencia de otros lenguajes, Java impone una correspondencia estricta: el namespace declarado en package debe coincidir exactamente con la ruta de carpetas en el classpath. Elegí un archivo del árbol para ver su declaración obligatoria.'
+							: 'Unlike other languages, Java enforces a strict rule: the namespace declared in package must match the directory path on the classpath exactly. Pick a file from the tree to see its required declaration.'}
+					</p>
+				</div>
+
+				<div class="pn-card">
+					<div class="pn-tree-grid">
+						<div class="pn-tree-panel">
+							<span class="pn-panel-label">{isEs ? 'Árbol de carpetas' : 'Folder tree'}</span>
+							<ul class="pn-tree" role="tree">
+								<li class="pn-tree-node">
+									<span class="pn-tree-folder-row">
+										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></svg>
+										<span>com</span>
+									</span>
+									<ul class="pn-tree-nest">
+										<li class="pn-tree-node">
+											<span class="pn-tree-folder-row">
+												<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></svg>
+												<span>facundouferer</span>
+											</span>
+											<ul class="pn-tree-nest">
+												<li class="pn-tree-node">
+													<span class="pn-tree-folder-row">
+														<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></svg>
+														<span>tienda</span>
+													</span>
+													<ul class="pn-tree-nest">
+														<li>
+															<button class="pn-tree-file" data-package="com.facundouferer.tienda" data-class="Main" data-folder="tienda/">
+																<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /></svg>
+																<span>Main.java</span>
+															</button>
+														</li>
+														<li class="pn-tree-node">
+															<span class="pn-tree-folder-row">
+																<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></svg>
+																<span>dominio</span>
+															</span>
+															<ul class="pn-tree-nest">
+																<li>
+																	<button class="pn-tree-file is-active" data-package="com.facundouferer.tienda.dominio" data-class="Producto" data-folder="tienda/dominio/">
+																		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /></svg>
+																		<span>Producto.java</span>
+																	</button>
+																</li>
+																<li>
+																	<button class="pn-tree-file" data-package="com.facundouferer.tienda.dominio" data-class="Cliente" data-folder="tienda/dominio/">
+																		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /></svg>
+																		<span>Cliente.java</span>
+																	</button>
+																</li>
+															</ul>
+														</li>
+														<li class="pn-tree-node">
+															<span class="pn-tree-folder-row">
+																<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></svg>
+																<span>servicio</span>
+															</span>
+															<ul class="pn-tree-nest">
+																<li>
+																	<button class="pn-tree-file" data-package="com.facundouferer.tienda.servicio" data-class="CarritoServicio" data-folder="tienda/servicio/">
+																		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /></svg>
+																		<span>CarritoServicio.java</span>
+																	</button>
+																</li>
+															</ul>
+														</li>
+													</ul>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+							</ul>
+						</div>
+
+						<div class="pn-decl-panel">
+							<span class="pn-panel-label">{isEs ? 'Declaración requerida' : 'Required declaration'}</span>
+							<code class="pn-decl-line" id="pnDeclLine">package com.facundouferer.tienda.dominio;</code>
+							<span class="pn-decl-fqcn" id="pnDeclFqcn">FQCN: com.facundouferer.tienda.dominio.Producto</span>
+
+							<button class="pn-ghost-btn" id="pnMismatchBtn">{isEs ? 'Simular carpeta incorrecta' : 'Simulate wrong folder'}</button>
+
+							<div class="pn-compile-result is-ok" id="pnCompileResult">
+								<svg class="pn-status-icon" id="pnCompileIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+									<circle cx="12" cy="12" r="10" />
+									<path d="m9 12 2 2 4-4" />
+								</svg>
+								<span id="pnCompileText">{isEs ? 'Compila: el package coincide exactamente con la carpeta tienda/dominio/.' : 'Compiles: the package matches the folder tienda/dominio/ exactly.'}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 3: FQCN pieza por pieza -->
+			<section class="pn-slide" data-slide="3">
+				<div class="pn-header">
+					<span class="pn-kicker">{isEs ? 'Identidad de clase' : 'Class identity'}</span>
+					<h2 class="pn-title">{isEs ? 'El FQCN se arma pieza por pieza' : 'The FQCN is built piece by piece'}</h2>
+					<p class="pn-lead">
+						{isEs
+							? 'Para la JVM, Producto es solo una etiqueta local. Su identidad formal ante el ClassLoader es el Fully Qualified Class Name (FQCN): dominio invertido, proyecto, capa y clase, unidos por puntos.'
+							: 'To the JVM, Producto is only a local label. Its formal identity to the ClassLoader is the Fully Qualified Class Name (FQCN): reversed domain, project, layer and class, joined by dots.'}
+					</p>
+				</div>
+
+				<div class="pn-card">
+					<div class="pn-fqcn-track" id="pnFqcnTrack">
+						<span class="pn-fqcn-piece" data-piece="1">com.facundouferer</span>
+						<span class="pn-fqcn-piece" data-piece="2">.tienda</span>
+						<span class="pn-fqcn-piece" data-piece="3">.dominio</span>
+						<span class="pn-fqcn-piece pn-fqcn-piece-class" data-piece="4">.Producto</span>
+					</div>
+
+					<div class="pn-fqcn-controls">
+						<button class="pn-action-btn" id="pnFqcnNextBtn">{isEs ? 'Agregar siguiente pieza' : 'Add next piece'}</button>
+						<button class="pn-ghost-btn" id="pnFqcnResetBtn">{isEs ? 'Reiniciar' : 'Reset'}</button>
+					</div>
+
+					<p class="pn-fqcn-explain" id="pnFqcnExplain">
+						{isEs ? 'Tocá "Agregar siguiente pieza" para empezar a construir el FQCN.' : 'Tap "Add next piece" to start building the FQCN.'}
+					</p>
+
+					<div class="pn-fqcn-final" id="pnFqcnFinal" hidden>
+						<span class="pn-panel-label">{isEs ? 'Dos clases, mismo nombre simple, sin colisión' : 'Two classes, same short name, no collision'}</span>
+						<div class="pn-fqcn-coexist-row">
+							<code class="pn-decl-fqcn">com.facundouferer.tienda.dominio.Producto</code>
+							<span class="pn-hint">{isEs ? 'entidad de dominio propia' : 'your own domain entity'}</span>
+						</div>
+						<div class="pn-fqcn-coexist-row">
+							<code class="pn-decl-fqcn">com.proveedor.catalogo.Producto</code>
+							<span class="pn-hint">{isEs ? 'DTO importado de un catálogo externo' : 'DTO imported from an external catalog'}</span>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 4: import como alias -->
+			<section class="pn-slide" data-slide="4">
+				<div class="pn-header">
+					<span class="pn-kicker">{isEs ? 'Alias léxico' : 'Lexical alias'}</span>
+					<h2 class="pn-title">{isEs ? 'import no carga código: registra un alias' : 'import does not load code: it registers an alias'}</h2>
+					<p class="pn-lead">
+						{isEs
+							? 'La sentencia import es un atajo léxico para no escribir el FQCN cada vez. Java prohíbe importar dos clases con el mismo nombre simple en el mismo archivo: probá los tres escenarios.'
+							: 'The import statement is a lexical shortcut so you never have to type the FQCN each time. Java forbids importing two classes with the same short name in one file: try the three scenarios.'}
+					</p>
+				</div>
+
+				<div class="pn-card">
+					<div class="pn-import-tabs" role="tablist">
+						<button class="pn-tab is-active" id="pnImportTabOnly" role="tab" aria-selected="true">{isEs ? 'Solo java.util.Date' : 'Only java.util.Date'}</button>
+						<button class="pn-tab" id="pnImportTabBoth" role="tab" aria-selected="false">{isEs ? 'Importar ambos → error' : 'Import both → error'}</button>
+						<button class="pn-tab" id="pnImportTabResolved" role="tab" aria-selected="false">{isEs ? 'Resuelto con FQCN inline' : 'Resolved with inline FQCN'}</button>
+					</div>
+
+					<div class="pn-import-panel is-active" id="pnImportPanelOnly">
+						<pre class="pn-code-block"><code>package com.facundouferer.tienda.servicio;
+
+import java.util.Date;
+
+public class AuditoriaServicio &#123;
+    private Date fechaOperacion = new Date();
+&#125;</code></pre>
+						<div class="pn-resolve-list">
+							<div class="pn-resolve-row"><code>Date</code><span class="pn-resolve-arrow">→</span><code>java.util.Date</code></div>
+						</div>
+						<div class="pn-import-result is-ok">
+							<svg class="pn-status-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+							<span>{isEs ? 'Compila: Date se resuelve sin ambigüedad al único import presente.' : 'Compiles: Date resolves unambiguously to the only import present.'}</span>
+						</div>
+					</div>
+
+					<div class="pn-import-panel" id="pnImportPanelBoth" hidden>
+						<pre class="pn-code-block"><code>package com.facundouferer.tienda.servicio;
+
+import java.util.Date;
+<span class="pn-code-line-error">import java.sql.Date; // ← Date is already defined</span></code></pre>
+						<div class="pn-resolve-list">
+							<div class="pn-resolve-row is-error"><code>java.sql.Date</code><span class="pn-resolve-arrow">→</span><span>{isEs ? 'colisión con el import anterior' : 'collision with the previous import'}</span></div>
+						</div>
+						<div class="pn-import-result is-error">
+							<svg class="pn-status-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
+							<span>{isEs
+								? "No compila: 'Date is already defined in a single-type import'."
+								: "Does not compile: 'Date is already defined in a single-type import'."}</span>
+						</div>
+					</div>
+
+					<div class="pn-import-panel" id="pnImportPanelResolved" hidden>
+						<pre class="pn-code-block"><code>package com.facundouferer.tienda.servicio;
+
+import java.util.Date; // Date sin calificar = java.util.Date
+
+public class AuditoriaServicio &#123;
+    private Date fechaOperacion = new Date();
+    private java.sql.Date fechaPersistenciaBD = new java.sql.Date(System.currentTimeMillis());
+&#125;</code></pre>
+						<div class="pn-resolve-list">
+							<div class="pn-resolve-row"><code>Date</code><span class="pn-resolve-arrow">→</span><code>java.util.Date</code></div>
+							<div class="pn-resolve-row"><code>java.sql.Date</code><span class="pn-resolve-arrow">→</span><code>java.sql.Date</code> <span class="pn-hint">{isEs ? '(FQCN inline, sin import)' : '(inline FQCN, no import)'}</span></div>
+						</div>
+						<div class="pn-import-result is-ok">
+							<svg class="pn-status-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+							<span>{isEs ? 'Compila: las dos clases Date conviven porque una usa el nombre simple y la otra el FQCN explícito.' : 'Compiles: both Date classes coexist because one uses the short name and the other the explicit FQCN.'}</span>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 5: visibilidad public vs package-private -->
+			<section class="pn-slide" data-slide="5">
+				<div class="pn-header">
+					<span class="pn-kicker">{isEs ? 'Encapsulamiento de namespace' : 'Namespace encapsulation'}</span>
+					<h2 class="pn-title">{isEs ? 'public vs package-private: fronteras de confianza' : 'public vs package-private: trust boundaries'}</h2>
+					<p class="pn-lead">
+						{isEs
+							? 'Los namespaces no son solo carpetas cosméticas: también son límites de visibilidad. El modificador por defecto (package-private) restringe el acceso exclusivamente a clases del mismo paquete. Elegí una clase y un punto de acceso para probarlo.'
+							: 'Namespaces are not just cosmetic folders: they are also visibility boundaries. The default modifier (package-private) restricts access strictly to classes in the same package. Pick a class and an access point to test it.'}
+					</p>
+				</div>
+
+				<div class="pn-card">
+					<div class="pn-package-diagram">
+						<div class="pn-package-box">
+							<span class="pn-namespace-label">com.tienda.dominio</span>
+							<div class="pn-class-chip pn-class-chip-public" id="pnChipProducto">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
+								<span>public class Producto</span>
+							</div>
+							<div class="pn-class-chip pn-class-chip-private" id="pnChipValidator">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+								<span>class ProductoValidator</span>
+							</div>
+						</div>
+						<div class="pn-probe-arrow">
+							<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+						</div>
+						<div class="pn-package-box pn-package-box-outline" id="pnProbeOrigin">
+							<span class="pn-namespace-label" id="pnProbeOriginLabel">com.tienda.dominio</span>
+							<span class="pn-hint">{isEs ? 'punto de acceso' : 'access point'}</span>
+						</div>
+					</div>
+
+					<div class="pn-probe-controls">
+						<div class="pn-probe-group">
+							<span class="pn-probe-group-label">{isEs ? 'Clase objetivo' : 'Target class'}</span>
+							<div class="pn-probe-buttons">
+								<button class="pn-tab is-active" id="pnTargetProductoBtn">Producto <span class="pn-tag-mini">public</span></button>
+								<button class="pn-tab" id="pnTargetValidatorBtn">ProductoValidator <span class="pn-tag-mini">package-private</span></button>
+							</div>
+						</div>
+						<div class="pn-probe-group">
+							<span class="pn-probe-group-label">{isEs ? 'Origen del acceso' : 'Access origin'}</span>
+							<div class="pn-probe-buttons">
+								<button class="pn-tab is-active" id="pnOriginSameBtn">{isEs ? 'Desde el mismo paquete' : 'From the same package'}</button>
+								<button class="pn-tab" id="pnOriginOtherBtn">{isEs ? 'Desde otro paquete' : 'From another package'}</button>
+							</div>
+						</div>
+					</div>
+
+					<div class="pn-probe-result" id="pnProbeResult">
+						<svg class="pn-status-icon" id="pnProbeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
+						<span id="pnProbeText">{isEs ? 'Acceso permitido: Producto es public, visible desde cualquier paquete.' : 'Access allowed: Producto is public, visible from any package.'}</span>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 6: reglas de diseño de paquetes -->
+			<section class="pn-slide" data-slide="6">
+				<div class="pn-header">
+					<span class="pn-kicker">{isEs ? 'Buenas prácticas' : 'Best practices'}</span>
+					<h2 class="pn-title">{isEs ? 'Reglas para diseñar paquetes y namespaces' : 'Core rules for package and namespace design'}</h2>
+					<p class="pn-lead">
+						{isEs
+							? 'Cinco reglas prácticas para que tus namespaces sean únicos, legibles y fáciles de navegar. Tocá cada regla para ver un ejemplo bueno y uno malo.'
+							: 'Five practical rules to keep your namespaces unique, readable and easy to navigate. Tap each rule to see a good and a bad example.'}
+					</p>
+				</div>
+
+				<div class="pn-card">
+					<div class="pn-rules-list">
+						<div class="pn-rule">
+							<button class="pn-rule-toggle" data-rule="1" aria-expanded="false">
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+								<span class="pn-rule-title">{isEs ? 'Convención de dominio inverso' : 'Reverse domain convention'}</span>
+							</button>
+							<div class="pn-rule-example" hidden>
+								<div class="pn-example pn-example-bad">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
+									<code>tienda.dominio.Producto</code>
+								</div>
+								<div class="pn-example pn-example-good">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+									<code>com.facundouferer.tienda.dominio.Producto</code>
+								</div>
+							</div>
+						</div>
+
+						<div class="pn-rule">
+							<button class="pn-rule-toggle" data-rule="2" aria-expanded="false">
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+								<span class="pn-rule-title">{isEs ? 'Todo en minúsculas' : 'All lowercase'}</span>
+							</button>
+							<div class="pn-rule-example" hidden>
+								<div class="pn-example pn-example-bad">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
+									<code>Tienda.Dominio</code>
+								</div>
+								<div class="pn-example pn-example-good">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+									<code>tienda.dominio</code>
+								</div>
+							</div>
+						</div>
+
+						<div class="pn-rule">
+							<button class="pn-rule-toggle" data-rule="3" aria-expanded="false">
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+								<span class="pn-rule-title">{isEs ? 'Un archivo .java por clase pública' : 'One .java file per public class'}</span>
+							</button>
+							<div class="pn-rule-example" hidden>
+								<div class="pn-example pn-example-bad">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
+									<code>Utilidades.java {isEs ? 'contiene' : 'contains'} public class Producto</code>
+								</div>
+								<div class="pn-example pn-example-good">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+									<code>Producto.java {isEs ? 'contiene' : 'contains'} public class Producto</code>
+								</div>
+							</div>
+						</div>
+
+						<div class="pn-rule">
+							<button class="pn-rule-toggle" data-rule="4" aria-expanded="false">
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+								<span class="pn-rule-title">{isEs ? 'Agrupar por responsabilidad, no por tipo' : 'Group by responsibility, not artifact type'}</span>
+							</button>
+							<div class="pn-rule-example" hidden>
+								<div class="pn-example pn-example-bad">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
+									<code>tienda.interfaces / tienda.clases</code>
+								</div>
+								<div class="pn-example pn-example-good">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+									<code>tienda.dominio / tienda.servicio</code>
+								</div>
+							</div>
+						</div>
+
+						<div class="pn-rule">
+							<button class="pn-rule-toggle" data-rule="5" aria-expanded="false">
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+								<span class="pn-rule-title">{isEs ? 'Imports estáticos con moderación' : 'Judicious static imports'}</span>
+							</button>
+							<div class="pn-rule-example" hidden>
+								<div class="pn-example pn-example-bad">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
+									<code>import static java.lang.Math.*;</code>
+								</div>
+								<div class="pn-example pn-example-good">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+									<code>import static java.lang.Math.PI;</code>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</main>
+	</div>
+</div>
+
+<style>
+	.pn-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.pn-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.pn-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	.pn-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: var(--color-surface);
+	}
+
+	.pn-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.pn-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.pn-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.pn-counter {
+		font-size: 13px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	.pn-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 1100px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.pn-slide.is-active {
+		display: block;
+		animation: pnFade 0.25s ease-out;
+	}
+
+	@keyframes pnFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.pn-header { margin-bottom: var(--space-5); }
+
+	.pn-kicker {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.pn-title {
+		font-size: 26px;
+		color: var(--color-text);
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.pn-lead {
+		font-size: 15px;
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+		line-height: 1.5;
+		margin: 0;
+		max-width: 70ch;
+	}
+
+	.pn-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.pn-hint {
+		font-size: 12px;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	.pn-panel-label {
+		display: block;
+		font-size: 11px;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+		margin-bottom: var(--space-2);
+	}
+
+	.pn-status-icon { flex-shrink: 0; width: 18px; height: 18px; }
+
+	.pn-namespace-label {
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+		color: var(--color-accent-2-700);
+	}
+
+	/* Shared: action/ghost buttons + tabs */
+	.pn-action-btn {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		font-weight: 700;
+		font-size: 13px;
+		padding: var(--space-2) var(--space-4);
+		border: none;
+		border-radius: 999px;
+		cursor: pointer;
+		transition: background 0.2s;
+	}
+
+	.pn-action-btn:hover { background: var(--color-accent-600); }
+	.pn-action-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+	.pn-ghost-btn {
+		background: transparent;
+		color: var(--color-accent-700);
+		font-size: 13px;
+		font-weight: 600;
+		padding: var(--space-2) var(--space-3);
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+		cursor: pointer;
+	}
+
+	.pn-ghost-btn:hover { background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+
+	.pn-tab {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		background: transparent;
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-1) var(--space-3);
+		font-size: 12px;
+		font-weight: 600;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.pn-tab.is-active {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		border-color: var(--color-accent);
+	}
+
+	.pn-tag-mini {
+		font-size: 9px;
+		font-family: monospace;
+		padding: 1px 6px;
+		border-radius: 999px;
+		background: var(--color-neutral-200);
+		color: var(--color-neutral-700);
+	}
+
+	.pn-decl-fqcn {
+		font-family: monospace;
+		font-size: 11px;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	/* Slide 1: collision stage */
+	.pn-collision-toolbar {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		flex-wrap: wrap;
+		margin-bottom: var(--space-4);
+	}
+
+	.pn-collision-stage { position: relative; }
+
+	.pn-flat-space {
+		background: var(--color-bg);
+		border: 2px dashed var(--color-accent-800);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		align-items: flex-start;
+	}
+
+	.pn-space-label {
+		font-size: 11px;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	.pn-collide-row { display: flex; gap: var(--space-6); flex-wrap: wrap; }
+
+	.pn-collide-group { position: relative; display: flex; align-items: center; height: 40px; min-width: 100px; }
+
+	.pn-chip {
+		display: inline-flex;
+		align-items: center;
+		padding: 5px 14px;
+		border-radius: 999px;
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+	}
+
+	.pn-chip-collide {
+		background: color-mix(in srgb, var(--color-accent-800) 16%, transparent);
+		border: 2px solid var(--color-accent-800);
+		color: var(--color-accent-800);
+		position: absolute;
+		left: 0;
+	}
+
+	.pn-chip-offset { left: 30px; opacity: 0.8; }
+
+	.pn-split-space {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: var(--space-3);
+	}
+
+	@media (max-width: 640px) {
+		.pn-split-space { grid-template-columns: 1fr; }
+	}
+
+	.pn-namespace-box {
+		background: var(--color-bg);
+		border: 2px solid var(--color-accent-2-400);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-2);
+	}
+
+	.pn-chip-ok {
+		background: color-mix(in srgb, var(--color-accent-2) 18%, transparent);
+		border: 2px solid var(--color-accent-2);
+		color: var(--color-accent-2-700);
+	}
+
+	.pn-collision-status {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 13px;
+		color: var(--color-accent-800);
+		background: var(--color-bg);
+		border-left: 3px solid var(--color-accent-800);
+		border-radius: 0 var(--radius-md) var(--radius-md) 0;
+		padding: var(--space-3);
+		margin: var(--space-4) 0 0;
+	}
+
+	.pn-collision-status.is-ok {
+		color: var(--color-accent-2-700);
+		border-left-color: var(--color-accent-2);
+	}
+
+	.pn-collision-status .pn-status-icon { color: var(--color-accent-800); }
+	.pn-collision-status.is-ok .pn-status-icon { color: var(--color-accent-2); }
+
+	/* Slide 2: folder tree + declaration panel */
+	.pn-tree-grid {
+		display: grid;
+		grid-template-columns: minmax(220px, 1fr) minmax(260px, 1.2fr);
+		gap: var(--space-5);
+	}
+
+	@media (max-width: 760px) {
+		.pn-tree-grid { grid-template-columns: 1fr; }
+	}
+
+	.pn-tree, .pn-tree-nest { list-style: none; margin: 0; padding: 0; }
+
+	.pn-tree-nest {
+		padding-left: var(--space-4);
+		border-left: 1px dashed var(--color-divider);
+		margin-left: 6px;
+	}
+
+	.pn-tree-folder-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-1);
+		font-size: 12px;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+		padding: 3px 0;
+	}
+
+	.pn-tree-folder-row svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+	.pn-tree-file {
+		display: flex;
+		align-items: center;
+		gap: var(--space-1);
+		width: 100%;
+		text-align: left;
+		background: transparent;
+		border: 1px solid transparent;
+		border-radius: var(--radius-sm);
+		padding: 4px 8px;
+		font-family: monospace;
+		font-size: 12px;
+		color: var(--color-text);
+		cursor: pointer;
+		margin: 2px 0;
+	}
+
+	.pn-tree-file svg {
+		width: 14px;
+		height: 14px;
+		flex-shrink: 0;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	.pn-tree-file:hover { border-color: var(--color-divider); }
+
+	.pn-tree-file.is-active {
+		background: var(--color-accent-100);
+		border-color: var(--color-accent-400);
+		color: var(--color-accent-700);
+		font-weight: 700;
+	}
+
+	.pn-tree-file.is-active svg { color: var(--color-accent-700); }
+
+	.pn-decl-panel {
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		align-items: flex-start;
+		height: fit-content;
+	}
+
+	.pn-decl-line {
+		display: block;
+		font-family: monospace;
+		font-size: 13px;
+		background: var(--color-surface);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2) var(--space-3);
+		color: var(--color-accent-700);
+		font-weight: 700;
+		word-break: break-word;
+	}
+
+	.pn-compile-result {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 12px;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-md);
+		margin-top: var(--space-2);
+		width: 100%;
+	}
+
+	.pn-compile-result.is-ok {
+		background: color-mix(in srgb, var(--color-accent-2) 12%, transparent);
+		color: var(--color-accent-2-700);
+	}
+
+	.pn-compile-result.is-error {
+		background: color-mix(in srgb, var(--color-accent-800) 12%, transparent);
+		color: var(--color-accent-800);
+	}
+
+	/* Slide 3: FQCN assembly */
+	.pn-fqcn-track {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 2px;
+		font-family: monospace;
+		font-size: 20px;
+		font-weight: 700;
+		padding: var(--space-4);
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		margin-bottom: var(--space-4);
+		min-height: 48px;
+	}
+
+	.pn-fqcn-piece {
+		opacity: 0.2;
+		transform: translateY(4px);
+		transition: all 0.35s ease;
+		color: var(--color-neutral-600);
+	}
+
+	.pn-fqcn-piece.is-visible {
+		opacity: 1;
+		transform: none;
+		color: var(--color-accent-2-700);
+	}
+
+	.pn-fqcn-piece.is-current { color: var(--color-accent-700); }
+	.pn-fqcn-piece-class.is-visible { color: var(--color-accent-800); }
+
+	.pn-fqcn-controls { display: flex; gap: var(--space-2); margin-bottom: var(--space-3); flex-wrap: wrap; }
+
+	.pn-fqcn-explain {
+		font-size: 13px;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border-left: 3px solid var(--color-accent);
+		border-radius: 0 var(--radius-md) var(--radius-md) 0;
+		padding: var(--space-3);
+		margin: 0;
+		min-height: 20px;
+	}
+
+	.pn-fqcn-final {
+		margin-top: var(--space-4);
+		padding-top: var(--space-3);
+		border-top: 1px solid var(--color-divider);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.pn-fqcn-coexist-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	/* Slide 4: import simulator */
+	.pn-import-tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); flex-wrap: wrap; }
+
+	.pn-import-panel { display: none; }
+	.pn-import-panel.is-active { display: block; }
+
+	.pn-code-block {
+		font-family: monospace;
+		font-size: 12px;
+		line-height: 1.7;
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		overflow-x: auto;
+		margin: 0 0 var(--space-3);
+	}
+
+	.pn-code-block code { white-space: pre; }
+
+	.pn-code-line-error {
+		display: inline-block;
+		background: color-mix(in srgb, var(--color-accent-800) 16%, transparent);
+		color: var(--color-accent-800);
+		border-radius: var(--radius-sm);
+		padding: 0 4px;
+	}
+
+	.pn-resolve-list { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-3); }
+
+	.pn-resolve-row { display: flex; align-items: center; gap: var(--space-2); font-size: 12px; flex-wrap: wrap; }
+
+	.pn-resolve-row code {
+		font-family: monospace;
+		background: var(--color-surface);
+		border-radius: var(--radius-sm);
+		padding: 1px 6px;
+	}
+
+	.pn-resolve-arrow { color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+
+	.pn-resolve-row.is-error code:first-child { color: var(--color-accent-800); }
+
+	.pn-import-result {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 12px;
+		padding: var(--space-3);
+		border-radius: var(--radius-md);
+	}
+
+	.pn-import-result.is-ok {
+		background: color-mix(in srgb, var(--color-accent-2) 12%, transparent);
+		color: var(--color-accent-2-700);
+	}
+
+	.pn-import-result.is-error {
+		background: color-mix(in srgb, var(--color-accent-800) 12%, transparent);
+		color: var(--color-accent-800);
+	}
+
+	/* Slide 5: visibility probe */
+	.pn-package-diagram {
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+		flex-wrap: wrap;
+		margin-bottom: var(--space-2);
+	}
+
+	.pn-package-box {
+		flex: 1;
+		min-width: 220px;
+		background: var(--color-bg);
+		border: 2px solid var(--color-accent-2-400);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.pn-package-box-outline {
+		border-style: dashed;
+		border-color: var(--color-divider);
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+	}
+
+	.pn-probe-arrow { color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+
+	.pn-class-chip {
+		display: flex;
+		align-items: center;
+		gap: var(--space-1);
+		font-family: monospace;
+		font-size: 12px;
+		padding: var(--space-1) var(--space-2);
+		border-radius: var(--radius-sm);
+		transition: all 0.25s ease;
+	}
+
+	.pn-class-chip-public {
+		background: color-mix(in srgb, var(--color-accent-2) 14%, transparent);
+		color: var(--color-accent-2-700);
+	}
+
+	.pn-class-chip-private {
+		background: var(--color-neutral-200);
+		color: var(--color-neutral-700);
+	}
+
+	.pn-class-chip.is-probed {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 2px;
+	}
+
+	.pn-probe-controls {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-5);
+		margin: var(--space-4) 0;
+	}
+
+	.pn-probe-group-label {
+		display: block;
+		font-size: 11px;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+		margin-bottom: var(--space-1);
+	}
+
+	.pn-probe-buttons { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+
+	.pn-probe-result {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 13px;
+		padding: var(--space-3);
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+		border-left: 3px solid var(--color-accent-2);
+		color: var(--color-accent-2-700);
+	}
+
+	.pn-probe-result.is-denied {
+		border-left-color: var(--color-accent-800);
+		color: var(--color-accent-800);
+	}
+
+	.pn-probe-result .pn-status-icon { color: var(--color-accent-2); }
+	.pn-probe-result.is-denied .pn-status-icon { color: var(--color-accent-800); }
+
+	/* Slide 6: rules checklist */
+	.pn-rules-list { display: flex; flex-direction: column; gap: var(--space-3); }
+
+	.pn-rule {
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		overflow: hidden;
+		background: var(--color-bg);
+	}
+
+	.pn-rule-toggle {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		width: 100%;
+		text-align: left;
+		background: transparent;
+		border: none;
+		padding: var(--space-3);
+		cursor: pointer;
+		font-family: var(--font-body);
+		font-size: 14px;
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	.pn-rule-toggle svg {
+		transition: transform 0.2s ease;
+		color: var(--color-accent-700);
+		flex-shrink: 0;
+	}
+
+	.pn-rule-toggle.is-open svg { transform: rotate(90deg); }
+
+	.pn-rule-example {
+		padding: 0 var(--space-3) var(--space-3);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.pn-example {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 12px;
+		font-family: monospace;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+	}
+
+	.pn-example svg { flex-shrink: 0; width: 16px; height: 16px; }
+
+	.pn-example-bad {
+		background: color-mix(in srgb, var(--color-accent-800) 10%, transparent);
+		color: var(--color-accent-800);
+	}
+
+	.pn-example-good {
+		background: color-mix(in srgb, var(--color-accent-2) 12%, transparent);
+		color: var(--color-accent-2-700);
+	}
+
+	@media (min-width: 1440px) { .pn-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .pn-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .pn-viewport { zoom: 1.25; } }
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
+
+	const screenEl = document.querySelector('.pn-screen');
+	const pageLang = screenEl?.getAttribute('data-lang') === 'en' ? 'en' : 'es';
+
+	const prevBtn = document.getElementById('pnPrevBtn') as HTMLButtonElement;
+	const nextBtn = document.getElementById('pnNextBtn') as HTMLButtonElement;
+	const counter = document.getElementById('pnSlideCounter') as HTMLElement;
+	const slides = document.querySelectorAll<HTMLElement>('.pn-slide');
+
+	function updateSlide(target: number) {
+		if (target < 1 || target > totalSlides) return;
+		currentSlide = target;
+		slides.forEach((s) => s.classList.remove('is-active'));
+		document.querySelector(`.pn-slide[data-slide="${currentSlide}"]`)?.classList.add('is-active');
+
+		if (counter) counter.textContent = `${currentSlide} / ${totalSlides}`;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	}
+
+	prevBtn?.addEventListener('click', () => updateSlide(currentSlide - 1));
+	nextBtn?.addEventListener('click', () => updateSlide(currentSlide + 1));
+
+	window.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') updateSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') updateSlide(currentSlide - 1);
+	});
+
+	// Slide 1: collision toggle
+	const collisionToggle = document.getElementById('pnCollisionToggle');
+	const flatSpace = document.getElementById('pnFlatSpace');
+	const splitSpace = document.getElementById('pnSplitSpace');
+	const collisionStatus = document.getElementById('pnCollisionStatus');
+	const collisionStatusIcon = document.getElementById('pnCollisionStatusIcon');
+	const collisionStatusText = document.getElementById('pnCollisionStatusText');
+
+	const ICON_WARNING = '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><path d="M12 9v4" /><path d="M12 17h.01" />';
+	const ICON_CHECK = '<circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" />';
+	const ICON_X = '<circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" />';
+	const ICON_LOCK = '<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />';
+	const ICON_UNLOCK = '<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" />';
+
+	let namespacesEnabled = false;
+
+	function renderCollision() {
+		if (flatSpace) flatSpace.hidden = namespacesEnabled;
+		if (splitSpace) splitSpace.hidden = !namespacesEnabled;
+		collisionStatus?.classList.toggle('is-ok', namespacesEnabled);
+		if (collisionStatusIcon) collisionStatusIcon.innerHTML = namespacesEnabled ? ICON_CHECK : ICON_WARNING;
+		if (collisionStatusText) {
+			collisionStatusText.textContent = namespacesEnabled
+				? (pageLang === 'es'
+					? 'Sin colisiones: cada namespace es su propio contexto. Usuario y Date coexisten en paquetes distintos.'
+					: 'No collisions: each namespace is its own context. Usuario and Date coexist in separate packages.')
+				: (pageLang === 'es'
+					? 'Colisión: el compilador no sabe qué clase Usuario (o Date) estás pidiendo.'
+					: 'Collision: the compiler cannot tell which Usuario (or Date) class you mean.');
+		}
+		if (collisionToggle) {
+			collisionToggle.textContent = namespacesEnabled
+				? (pageLang === 'es' ? 'Desactivar namespaces' : 'Disable namespaces')
+				: (pageLang === 'es' ? 'Activar namespaces' : 'Enable namespaces');
+		}
+	}
+
+	collisionToggle?.addEventListener('click', () => {
+		namespacesEnabled = !namespacesEnabled;
+		renderCollision();
+	});
+
+	renderCollision();
+
+	// Slide 2: folder tree + declaration panel
+	const treeFiles = document.querySelectorAll<HTMLButtonElement>('.pn-tree-file');
+	const declLine = document.getElementById('pnDeclLine');
+	const declFqcn = document.getElementById('pnDeclFqcn');
+	const mismatchBtn = document.getElementById('pnMismatchBtn');
+	const compileResult = document.getElementById('pnCompileResult');
+	const compileIcon = document.getElementById('pnCompileIcon');
+	const compileText = document.getElementById('pnCompileText');
+
+	let currentTreeFile = {
+		packageName: 'com.facundouferer.tienda.dominio',
+		className: 'Producto',
+		folder: 'tienda/dominio/',
+	};
+	let mismatchActive = false;
+
+	function renderTree() {
+		const wrongPackage = 'com.facundouferer.tienda.reportes';
+
+		if (declLine) declLine.textContent = `package ${mismatchActive ? wrongPackage : currentTreeFile.packageName};`;
+		if (declFqcn) declFqcn.textContent = `FQCN: ${currentTreeFile.packageName}.${currentTreeFile.className}`;
+
+		if (mismatchBtn) {
+			mismatchBtn.textContent = mismatchActive
+				? (pageLang === 'es' ? 'Corregir declaración' : 'Fix declaration')
+				: (pageLang === 'es' ? 'Simular carpeta incorrecta' : 'Simulate wrong folder');
+		}
+
+		compileResult?.classList.toggle('is-ok', !mismatchActive);
+		compileResult?.classList.toggle('is-error', mismatchActive);
+		if (compileIcon) compileIcon.innerHTML = mismatchActive ? ICON_X : ICON_CHECK;
+		if (compileText) {
+			compileText.textContent = mismatchActive
+				? (pageLang === 'es'
+					? `No compila: la carpeta real es ${currentTreeFile.folder} pero declaraste ${wrongPackage}.`
+					: `Does not compile: the real folder is ${currentTreeFile.folder} but you declared ${wrongPackage}.`)
+				: (pageLang === 'es'
+					? `Compila: el package coincide exactamente con la carpeta ${currentTreeFile.folder}.`
+					: `Compiles: the package matches the folder ${currentTreeFile.folder} exactly.`);
+		}
+	}
+
+	treeFiles.forEach((file) => {
+		file.addEventListener('click', () => {
+			treeFiles.forEach((f) => f.classList.remove('is-active'));
+			file.classList.add('is-active');
+			currentTreeFile = {
+				packageName: file.dataset.package ?? '',
+				className: file.dataset.class ?? '',
+				folder: file.dataset.folder ?? '',
+			};
+			mismatchActive = false;
+			renderTree();
+		});
+	});
+
+	mismatchBtn?.addEventListener('click', () => {
+		mismatchActive = !mismatchActive;
+		renderTree();
+	});
+
+	renderTree();
+
+	// Slide 3: FQCN assembly stepper
+	const fqcnPieces = document.querySelectorAll<HTMLElement>('.pn-fqcn-piece');
+	const fqcnNextBtn = document.getElementById('pnFqcnNextBtn') as HTMLButtonElement;
+	const fqcnResetBtn = document.getElementById('pnFqcnResetBtn');
+	const fqcnExplain = document.getElementById('pnFqcnExplain');
+	const fqcnFinal = document.getElementById('pnFqcnFinal');
+
+	let fqcnStep = 0;
+	const totalFqcnPieces = fqcnPieces.length;
+
+	const fqcnExplanations = {
+		es: [
+			'Tocá "Agregar siguiente pieza" para empezar a construir el FQCN.',
+			'Paso 1 — Dominio invertido: facundouferer.ar se convierte en com.facundouferer. Ningún otro namespace del mundo empieza igual.',
+			'Paso 2 — Proyecto: tienda identifica la aplicación dentro de tu dominio.',
+			'Paso 3 — Capa: dominio agrupa por responsabilidad, no por tipo de artefacto.',
+			'✓ FQCN completo: com.facundouferer.tienda.dominio.Producto — la identidad única de la clase para la JVM.',
+		],
+		en: [
+			'Tap "Add next piece" to start building the FQCN.',
+			'Step 1 — Reversed domain: facundouferer.ar becomes com.facundouferer. No other namespace in the world starts the same way.',
+			'Step 2 — Project: tienda identifies the application inside your domain.',
+			'Step 3 — Layer: dominio groups by responsibility, not by artifact type.',
+			"Step 4 — Class: the complete FQCN com.facundouferer.tienda.dominio.Producto is the class's unique identity to the JVM.",
+		],
+	};
+
+	function renderFqcn() {
+		fqcnPieces.forEach((piece, idx) => {
+			piece.classList.toggle('is-visible', idx < fqcnStep);
+			piece.classList.toggle('is-current', idx === fqcnStep - 1);
+		});
+		if (fqcnExplain) {
+			const messages = pageLang === 'es' ? fqcnExplanations.es : fqcnExplanations.en;
+			fqcnExplain.textContent = messages[fqcnStep] ?? messages[messages.length - 1];
+		}
+		if (fqcnNextBtn) fqcnNextBtn.disabled = fqcnStep >= totalFqcnPieces;
+		if (fqcnFinal) fqcnFinal.hidden = fqcnStep < totalFqcnPieces;
+	}
+
+	fqcnNextBtn?.addEventListener('click', () => {
+		if (fqcnStep >= totalFqcnPieces) return;
+		fqcnStep++;
+		renderFqcn();
+	});
+
+	fqcnResetBtn?.addEventListener('click', () => {
+		fqcnStep = 0;
+		renderFqcn();
+	});
+
+	renderFqcn();
+
+	// Slide 4: import scenario tabs
+	const importTabs = {
+		only: document.getElementById('pnImportTabOnly'),
+		both: document.getElementById('pnImportTabBoth'),
+		resolved: document.getElementById('pnImportTabResolved'),
+	};
+	const importPanels = {
+		only: document.getElementById('pnImportPanelOnly'),
+		both: document.getElementById('pnImportPanelBoth'),
+		resolved: document.getElementById('pnImportPanelResolved'),
+	};
+
+	type ImportScenario = keyof typeof importTabs;
+
+	function renderImportScenario(scenario: ImportScenario) {
+		(Object.keys(importTabs) as ImportScenario[]).forEach((key) => {
+			importTabs[key]?.classList.toggle('is-active', key === scenario);
+			importTabs[key]?.setAttribute('aria-selected', key === scenario ? 'true' : 'false');
+			importPanels[key]?.classList.toggle('is-active', key === scenario);
+			if (importPanels[key]) (importPanels[key] as HTMLElement).hidden = key !== scenario;
+		});
+	}
+
+	importTabs.only?.addEventListener('click', () => renderImportScenario('only'));
+	importTabs.both?.addEventListener('click', () => renderImportScenario('both'));
+	importTabs.resolved?.addEventListener('click', () => renderImportScenario('resolved'));
+
+	renderImportScenario('only');
+
+	// Slide 5: visibility probe
+	const targetProductoBtn = document.getElementById('pnTargetProductoBtn');
+	const targetValidatorBtn = document.getElementById('pnTargetValidatorBtn');
+	const originSameBtn = document.getElementById('pnOriginSameBtn');
+	const originOtherBtn = document.getElementById('pnOriginOtherBtn');
+	const chipProducto = document.getElementById('pnChipProducto');
+	const chipValidator = document.getElementById('pnChipValidator');
+	const probeOriginLabel = document.getElementById('pnProbeOriginLabel');
+	const probeResult = document.getElementById('pnProbeResult');
+	const probeIcon = document.getElementById('pnProbeIcon');
+	const probeText = document.getElementById('pnProbeText');
+
+	type ProbeTarget = 'producto' | 'validator';
+	type ProbeOrigin = 'same' | 'other';
+
+	let probeTarget: ProbeTarget = 'producto';
+	let probeOrigin: ProbeOrigin = 'same';
+
+	function renderProbe() {
+		targetProductoBtn?.classList.toggle('is-active', probeTarget === 'producto');
+		targetValidatorBtn?.classList.toggle('is-active', probeTarget === 'validator');
+		originSameBtn?.classList.toggle('is-active', probeOrigin === 'same');
+		originOtherBtn?.classList.toggle('is-active', probeOrigin === 'other');
+
+		chipProducto?.classList.toggle('is-probed', probeTarget === 'producto');
+		chipValidator?.classList.toggle('is-probed', probeTarget === 'validator');
+
+		if (probeOriginLabel) {
+			probeOriginLabel.textContent = probeOrigin === 'same' ? 'com.tienda.dominio' : 'com.tienda.servicio';
+		}
+
+		const allowed = probeTarget === 'producto' || probeOrigin === 'same';
+		probeResult?.classList.toggle('is-denied', !allowed);
+		if (probeIcon) probeIcon.innerHTML = allowed ? ICON_UNLOCK : ICON_LOCK;
+
+		if (probeText) {
+			const className = probeTarget === 'producto' ? 'Producto' : 'ProductoValidator';
+			if (allowed) {
+				probeText.textContent = pageLang === 'es'
+					? (probeTarget === 'producto'
+						? `Acceso permitido: ${className} es public, visible desde cualquier paquete.`
+						: `Acceso permitido: ${className} es package-private, pero el acceso viene del mismo paquete.`)
+					: (probeTarget === 'producto'
+						? `Access allowed: ${className} is public, visible from any package.`
+						: `Access allowed: ${className} is package-private, but the access comes from the same package.`);
+			} else {
+				probeText.textContent = pageLang === 'es'
+					? `Acceso denegado: ${className} es package-private y no es visible fuera de com.tienda.dominio.`
+					: `Access denied: ${className} is package-private and is not visible outside com.tienda.dominio.`;
+			}
+		}
+	}
+
+	targetProductoBtn?.addEventListener('click', () => { probeTarget = 'producto'; renderProbe(); });
+	targetValidatorBtn?.addEventListener('click', () => { probeTarget = 'validator'; renderProbe(); });
+	originSameBtn?.addEventListener('click', () => { probeOrigin = 'same'; renderProbe(); });
+	originOtherBtn?.addEventListener('click', () => { probeOrigin = 'other'; renderProbe(); });
+
+	renderProbe();
+
+	// Slide 6: rules checklist toggles
+	const ruleToggles = document.querySelectorAll<HTMLButtonElement>('.pn-rule-toggle');
+	ruleToggles.forEach((toggle) => {
+		toggle.addEventListener('click', () => {
+			const example = toggle.nextElementSibling as HTMLElement | null;
+			const isOpen = toggle.classList.toggle('is-open');
+			toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+			if (example) example.hidden = !isOpen;
+		});
+	});
+</script>

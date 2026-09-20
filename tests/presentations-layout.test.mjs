@@ -24,7 +24,7 @@ async function getPresentationFiles() {
 
 test('every presentation component drops its <header class="XX-header"> block', async () => {
 	const files = await getPresentationFiles();
-	assert.equal(files.length, 46, 'expected 46 presentation components');
+	assert.equal(files.length, 47, 'expected 47 presentation components');
 
 	for (const file of files) {
 		const content = await readFile(`${PRESENTATIONS_DIR}/${file}`, 'utf8');

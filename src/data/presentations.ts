@@ -703,6 +703,22 @@ export const presentations: Presentation[] = [
 		slug: 'depuracion-codigo-limpio-java',
 		lesson: { course: 'java', slug: '27-depuracion-codigo-limpio-y-refactorizacion' },
 	},
+	{
+		file: 'PaquetesNamespaces.java',
+		image: '/img/presentations/paquetes-namespaces-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		tagClass: 'text-orange-500 bg-orange-500/10 border-orange-500/20',
+		title: {
+			es: 'Paquetes, Namespaces e Importación de Clases en Java',
+			en: 'Packages, Namespaces, and Class Imports in Java',
+		},
+		description: {
+			es: 'Colisiones de nombres, la declaración package y su carpeta, FQCN, import como alias, resolución de ambigüedades y visibilidad package-private.',
+			en: 'Name collisions, the package declaration and its folder, FQCN, import as an alias, ambiguity resolution, and package-private visibility.',
+		},
+		slug: 'paquetes-namespaces-java',
+		lesson: { course: 'java', slug: '09-clases-abstractas-interfaces-y-modelado' },
+	},
 ];
 
 /**

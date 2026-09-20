@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="20" y="175" width="360" height="8" rx="4" fill="#dcd3c4"/>
+
+	<!-- Title -->
+	<text x="200" y="24" font-family="'Caprasimo', serif" font-size="13" fill="#8c491a" text-anchor="middle">Paquetes, Namespaces e Imports</text>
+	<text x="200" y="38" font-family="'Figtree', sans-serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">package, FQCN &amp; import en Java</text>
+
+	<!-- Nested package boxes telescoping into a class -->
+	<g transform="translate(18, 48)">
+		<rect x="0" y="0" width="230" height="110" rx="16" fill="#fdfbf7" stroke="#f6a06b" stroke-width="2"/>
+		<text x="12" y="16" font-family="monospace" font-weight="700" font-size="8" fill="#c67139">com</text>
+
+		<rect x="10" y="22" width="210" height="80" rx="14" fill="#ffe1d0" stroke="#d67f48" stroke-width="2"/>
+		<text x="20" y="36" font-family="monospace" font-weight="700" font-size="7.5" fill="#8c491a">facundouferer</text>
+
+		<rect x="20" y="42" width="190" height="52" rx="12" fill="#ffc6a5" stroke="#b2622d" stroke-width="2"/>
+		<text x="30" y="55" font-family="monospace" font-weight="700" font-size="7" fill="#643312">tienda.dominio</text>
+
+		<rect x="30" y="60" width="80" height="26" rx="8" fill="#8c491a"/>
+		<text x="70" y="77" font-family="'Caprasimo', serif" font-size="8" fill="#fdfbf7" text-anchor="middle">Producto</text>
+	</g>
+
+	<!-- Arrow to FQCN -->
+	<path d="M 250,100 L 268,100" stroke="#8c491a" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1,4"/>
+
+	<!-- FQCN readout -->
+	<g transform="translate(272, 66)">
+		<rect x="0" y="0" width="108" height="66" rx="12" fill="#fdfbf7" stroke="#7a8a5e" stroke-width="2"/>
+		<text x="54" y="16" font-family="'Figtree', sans-serif" font-weight="700" font-size="7.5" fill="#56633f" text-anchor="middle">FQCN</text>
+		<text x="54" y="32" font-family="monospace" font-size="5.6" fill="#2c2a29" text-anchor="middle">com.facundouferer.</text>
+		<text x="54" y="43" font-family="monospace" font-size="5.6" fill="#2c2a29" text-anchor="middle">tienda.dominio.</text>
+		<text x="54" y="54" font-family="monospace" font-weight="700" font-size="6.5" fill="#8c491a" text-anchor="middle">Producto</text>
+	</g>
+
+	<!-- Collision-resolved motif: two Date classes, colliding then split by package -->
+	<g transform="translate(18, 168)">
+		<rect x="0" y="-8" width="46" height="16" rx="8" fill="none" stroke="#643312" stroke-width="1.6" stroke-dasharray="2,2"/>
+		<text x="23" y="3" font-family="monospace" font-weight="700" font-size="6.5" fill="#643312" text-anchor="middle">Date</text>
+		<rect x="10" y="-14" width="46" height="16" rx="8" fill="#fdfbf7" stroke="#643312" stroke-width="1.6"/>
+		<text x="33" y="-3" font-family="monospace" font-weight="700" font-size="6.5" fill="#643312" text-anchor="middle">Date</text>
+		<path d="M 12,-20 L 20,-12 M 20,-20 L 12,-12" stroke="#643312" stroke-width="1.6" stroke-linecap="round"/>
+	</g>
+	<path d="M 90,160 L 108,160" stroke="#7a8a5e" stroke-width="2" stroke-linecap="round"/>
+	<g transform="translate(112, 168)">
+		<rect x="0" y="-16" width="60" height="16" rx="8" fill="#f0fae1" stroke="#7a8a5e" stroke-width="1.6"/>
+		<text x="30" y="-5" font-family="monospace" font-weight="700" font-size="6" fill="#56633f" text-anchor="middle">java.util.Date</text>
+		<rect x="66" y="-16" width="58" height="16" rx="8" fill="#f0fae1" stroke="#7a8a5e" stroke-width="1.6"/>
+		<text x="95" y="-5" font-family="monospace" font-weight="700" font-size="6" fill="#56633f" text-anchor="middle">java.sql.Date</text>
+	</g>
+
+	<!-- Labels below -->
+	<text x="300" y="150" font-family="'Caprasimo', serif" font-size="8" fill="#7a8a5e" text-anchor="middle">Sin colisiones</text>
+	<text x="200" y="196" font-family="'Figtree', sans-serif" font-size="7" fill="#645c50" text-anchor="middle">Cada namespace es un contenedor propio para tus clases</text>
+</svg>

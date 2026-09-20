@@ -50,6 +50,7 @@ import TestingJunitSpringBootJava from '../../../components/presentaciones/testi
 import AlgoritmiaVerificacionComplejidadJava from '../../../components/presentaciones/algoritmia-verificacion-complejidad-java.astro';
 import ArbolesNAriosVectoresJava from '../../../components/presentaciones/arboles-n-arios-vectores-java.astro';
 import DepuracionCodigoLimpioJava from '../../../components/presentaciones/depuracion-codigo-limpio-java.astro';
+import PaquetesNamespacesJava from '../../../components/presentaciones/paquetes-namespaces-java.astro';
 
 export function getStaticPaths() {
 	const paths: Array<{ params: { lang: Locale; slug: string } }> = [];
@@ -116,6 +117,7 @@ const componentMap: Record<string, any> = {
 	'algoritmia-verificacion-complejidad-java': AlgoritmiaVerificacionComplejidadJava,
 	'arboles-n-arios-vectores-java': ArbolesNAriosVectoresJava,
 	'depuracion-codigo-limpio-java': DepuracionCodigoLimpioJava,
+	'paquetes-namespaces-java': PaquetesNamespacesJava,
 };
 
 const PresentationComponent = componentMap[slug];
