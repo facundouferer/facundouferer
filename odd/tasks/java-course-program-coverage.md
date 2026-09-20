@@ -128,7 +128,7 @@ and state the relevant tradeoffs and failure modes.
   - Acceptance: debugging and refactoring are taught as distinct feedback
     loops with a practical before/after example.
 
-- [ ] **JAVA-COVERAGE-12 — Complete Spring CRUD with PUT**
+- [x] **JAVA-COVERAGE-12 — Complete Spring CRUD with PUT**
   - Route: delegated; writer trigger (bilingual expansion plus tests).
   - Expand `22-testing-junit-y-spring-boot.{es,en}.md` with `@PutMapping`, the
     service/repository update path, validation, not-found behavior, and tests.
@@ -168,8 +168,17 @@ npm run build
 | JAVA-COVERAGE-09 | `21eb238` | `node --test tests/courses-java-program-coverage.test.mjs` — 16 passed | disabled/unmanaged |
 | JAVA-COVERAGE-10 | `de22085` | `node --test tests/courses-java-program-coverage.test.mjs` — 17 passed | disabled/unmanaged |
 | JAVA-COVERAGE-11 | `82afc93` | `node --test tests/courses-java-program-coverage.test.mjs` — 19 passed | disabled/unmanaged |
+| JAVA-COVERAGE-12 | `95ef9f5` | `node --test tests/courses-java-program-coverage.test.mjs` — 20 passed | disabled/unmanaged |
+
+## Feature completion evidence (2026-09-19)
+
+- `node --test tests/courses-java-program-coverage.test.mjs` — 20 passed.
+- `node --test tests/courses-filename-normalization.test.mjs tests/courses-schema.test.mjs tests/courses-java-namespaces.test.mjs` — 18 passed.
+- `npm test` — 161 tests, 156 passed, 5 failed. The 5 failures (CourseBreadcrumb x2, article language strategy, testimonials x2) also fail on `main` (141 tests, 5 failed) and are unrelated to this feature.
+- `npm run astro -- check` — 0 errors, 0 warnings.
+- `npm run build` — 285 pages built successfully.
 
 ## Next step
 
-Implement `JAVA-COVERAGE-12` with a delegated writer using strict RED → GREEN
-→ REFACTOR.
+All 12 tasks are complete. Open the single pull request from
+`feat/java-course-program-coverage` to `main` (user decision).
