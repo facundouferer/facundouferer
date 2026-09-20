@@ -71,7 +71,7 @@ and state the relevant tradeoffs and failure modes.
   - Acceptance: examples distinguish locals, parameters, fields, and `static`;
     recursion guidance explains both use cases and failure risks.
 
-- [ ] **JAVA-COVERAGE-04 — Git/GitHub foundations and remotes**
+- [x] **JAVA-COVERAGE-04 — Git/GitHub foundations and remotes**
   - Route: delegated; writer trigger (new bilingual lesson pair plus tests).
   - Add `24-git-github-fundamentos-y-remotos.{es,en}.md` covering installation,
     configuration, repositories, GitHub, clone, fetch, pull, and push.
@@ -160,8 +160,9 @@ npm run build
 | JAVA-COVERAGE-01 | `5926e19040d5b3c584fd641644ca583a2f1abd51` | `node --test tests/courses-java-program-coverage.test.mjs` — 3 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
 | JAVA-COVERAGE-02 | `36c37c842190599710d344c3134aafbc5c94d64f` | `node --test tests/courses-java-program-coverage.test.mjs` — 5 passed | disabled/unmanaged; assessment medium (`under_budget`) |
 | JAVA-COVERAGE-03 | `df76145afbbc852181afa785676257fd0a3a4c07` | `node --test tests/courses-java-program-coverage.test.mjs` — 7 passed | disabled/unmanaged; assessment medium (`under_budget`) |
+| JAVA-COVERAGE-04 | `9e58afc698bdba79ac72d9af3ac42472bede0932` | `node --test tests/courses-java-program-coverage.test.mjs` — 9 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
 
 ## Next step
 
-Implement `JAVA-COVERAGE-04` with a delegated writer using strict RED → GREEN
+Implement `JAVA-COVERAGE-05` with a delegated writer using strict RED → GREEN
 → REFACTOR.
