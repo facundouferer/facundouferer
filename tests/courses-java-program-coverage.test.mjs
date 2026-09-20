@@ -11,6 +11,7 @@ const METHODS_LESSON = '05-metodos-y-funciones';
 const GIT_FOUNDATIONS_LESSON = '24-git-github-fundamentos-y-remotos';
 const GIT_BRANCHING_LESSON = '25-git-ramas-merge-conflictos-y-rebase';
 const STACKS_QUEUES_LESSON = '14-tad-pilas-y-colas';
+const NARY_TREES_LESSON = '26-arboles-n-arios-y-representacion-con-vectores';
 
 async function readLesson(slug, lang) {
 	return readFile(path.join(JAVA_COURSE_DIR, `${slug}.${lang}.md`), 'utf8');
@@ -256,6 +257,46 @@ test('queues lesson teaches deterministic discrete-event simulation in both loca
 		assert.match(content, /MAX_EVENTS|MAX_EVENTOS/, `${locale}: bounded termination`);
 		assert.match(content, /waiting time|tiempo de espera/i, `${locale}: waiting-time metric`);
 		assert.match(content, /queue length|longitud de la cola/i, `${locale}: queue-length metric`);
+	}
+});
+
+test('N-ary trees lesson is bilingual and follows the binary trees lesson', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(NARY_TREES_LESSON, 'es'),
+		readLesson(NARY_TREES_LESSON, 'en'),
+	]);
+
+	assert.equal(frontmatterValue(spanish, 'slug'), NARY_TREES_LESSON);
+	assert.equal(frontmatterValue(english, 'slug'), NARY_TREES_LESSON);
+	assert.equal(frontmatterValue(spanish, 'lang'), 'es');
+	assert.equal(frontmatterValue(english, 'lang'), 'en');
+	assert.equal(Number(frontmatterValue(spanish, 'order')), 21);
+	assert.equal(Number(frontmatterValue(english, 'order')), 21);
+});
+
+test('N-ary trees lesson teaches transformations and validated indexed storage', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(NARY_TREES_LESSON, 'es'),
+		readLesson(NARY_TREES_LESSON, 'en'),
+	]);
+
+	for (const [locale, content] of [
+		['Spanish', spanish],
+		['English', english],
+	]) {
+		assert.match(content, /N-ary tree|[aá]rbol N-ario/i, `${locale}: N-ary terminology`);
+		assert.match(content, /first child|primer hijo/i, `${locale}: first-child transformation`);
+		assert.match(content, /next sibling|siguiente hermano/i, `${locale}: next-sibling transformation`);
+		assert.match(content, /preorder|preorden/i, `${locale}: traversal`);
+		assert.match(content, /record IndexedNode|record NodoIndexado/, `${locale}: indexed node`);
+		assert.match(content, /List<(?:IndexedNode|NodoIndexado)>/, `${locale}: vector-backed storage`);
+		assert.match(content, /NO_INDEX|SIN_INDICE/, `${locale}: absent-index sentinel`);
+		assert.match(content, /invalid index|[ií]ndice inv[aá]lido/i, `${locale}: invalid-index handling`);
+		assert.match(content, /cycle|ciclo/i, `${locale}: cycle validation`);
+		assert.match(content, /capacity|capacidad/i, `${locale}: capacity validation and tradeoff`);
+		assert.match(content, /O\(n\)/, `${locale}: traversal complexity`);
+		assert.match(content, /locality|localidad/i, `${locale}: memory-locality tradeoff`);
+		assert.match(content, /reference|referencia/i, `${locale}: reference-based comparison`);
 	}
 });
 
