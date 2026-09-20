@@ -245,3 +245,239 @@ public class DescargadorConcurrente {
 }
 ```
 </details>
+
+---
+
+## 7. Coordinación entre Hilos: `wait()`, `notify()` y Deadlocks
+
+`synchronized`, las variables atómicas y `volatile` resuelven el acceso exclusivo a un dato compartido, pero no alcanzan cuando un hilo necesita **esperar** a que otro hilo lleve una condición a un estado determinado (por ejemplo, "hay un elemento disponible" o "hay espacio libre"). Para eso Java expone `wait()`, `notify()` y `notifyAll()`, heredados de `Object`. Con ellos aparece también el riesgo opuesto a la condición de carrera: el **deadlock**, un punto muerto donde el programa deja de avanzar para siempre.
+
+### El monitor: por qué `wait()` y `notify()` exigen el lock
+
+Cada objeto en Java tiene asociado un **monitor** implícito. `wait()`, `notify()` y `notifyAll()` solo tienen sentido dentro de un bloque o método `synchronized` sobre ese mismo objeto, porque necesitan que el hilo llamante sea el **dueño** del monitor:
+
+- `wait()` libera el lock del monitor y suspende el hilo hasta que otro hilo llame a `notify()`/`notifyAll()` sobre el mismo objeto (o expire un timeout, si se usó la variante con tiempo). Antes de devolver el control, el hilo vuelve a **adquirir** el lock.
+- `notify()` despierta **un** hilo en espera sobre ese monitor, elegido de forma no determinística.
+- `notifyAll()` despierta a **todos** los hilos en espera sobre ese monitor; cada uno vuelve a competir por el lock.
+
+Si alguno de estos métodos se invoca fuera de un bloque `synchronized` sobre el objeto correspondiente, la JVM lanza `IllegalMonitorStateException` en tiempo de ejecución: no hay forma de "esperar" o "avisar" sobre un lock que el hilo no posee.
+
+```java
+public class SharedResource {
+    private final Object lock = new Object();
+    private boolean dataReady = false;
+
+    public void produce() {
+        synchronized (lock) {
+            dataReady = true;
+            lock.notifyAll(); // despierta a todos los hilos en espera sobre "lock"
+        }
+    }
+
+    public void consume() throws InterruptedException {
+        synchronized (lock) {
+            while (!dataReady) {
+                lock.wait(); // libera "lock" y espera a que produce() avise
+            }
+            System.out.println("Dato listo para consumir");
+        }
+    }
+}
+
+// lock.wait();          // fuera de synchronized (lock): IllegalMonitorStateException
+```
+
+### El bucle de espera: `while`, nunca `if`
+
+`wait()` puede retornar sin que la condición esperada sea realmente cierta. Esto ocurre por dos motivos:
+
+1. **Despertar espurio** (*spurious wakeup*): la especificación de Java permite que un hilo salga de `wait()` sin que nadie haya llamado a `notify()`/`notifyAll()`, por razones internas de la JVM o del sistema operativo.
+2. **Condición ya consumida**: con `notifyAll()`, varios hilos compiten por el lock; el primero en reobtenerlo puede dejar la condición en un estado que ya no aplica para los siguientes.
+
+Por eso la condición se comprueba dentro de un `while`, nunca de un `if`:
+
+```java
+synchronized (lock) {
+    while (!conditionMet()) { // re-verifica cada vez que el hilo despierta
+        lock.wait();
+    }
+    // acá sí está garantizado que conditionMet() es verdadera
+}
+```
+
+Un `if` solo comprueba la condición una vez, antes de dormir; si el hilo despierta por error (o la condición vuelve a cambiar), continúa con datos inválidos sin que el compilador ni el runtime lo adviertan.
+
+### Preferí notifyAll() en lugar de notify()
+
+`notify()` despierta un único hilo elegido arbitrariamente. Si el monitor tiene hilos esperando por **condiciones distintas** (por ejemplo, unos esperan "hay espacio" y otros "hay un elemento"), `notify()` puede despertar al hilo equivocado, que vuelve a comprobar su condición, la encuentra falsa y se duerme de nuevo: el hilo que sí podía avanzar nunca fue avisado. Esto se conoce como **señal perdida** (*lost wakeup*).
+
+`notifyAll()` despierta a todos; cada uno revisa su propio `while` y solo continúa el que corresponde. Cuesta más CPU porque todos compiten por el lock, pero es la opción segura por defecto. Usá `notify()` solamente cuando podés demostrar que todos los hilos en espera comparten exactamente la misma condición.
+
+### Ejemplo: buffer acotado productor-consumidor
+
+Un caso clásico de coordinación es un **buffer acotado**: los productores esperan si está lleno, los consumidores esperan si está vacío.
+
+```java
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+public class BoundedBuffer<T> {
+    private final Object lock = new Object();
+    private final Deque<T> items = new ArrayDeque<>();
+    private final int capacity;
+
+    public BoundedBuffer(int capacity) {
+        if (capacity <= 0) {
+            throw new IllegalArgumentException("capacity must be positive");
+        }
+        this.capacity = capacity;
+    }
+
+    public void put(T item) throws InterruptedException {
+        synchronized (lock) {
+            while (items.size() == capacity) {
+                lock.wait(); // sin espacio: esperar a que un consumidor libere uno
+            }
+            items.addLast(item);
+            lock.notifyAll(); // puede despertar a un consumidor esperando un elemento
+        }
+    }
+
+    public T take() throws InterruptedException {
+        synchronized (lock) {
+            while (items.isEmpty()) {
+                lock.wait(); // sin elementos: esperar a que un productor agregue uno
+            }
+            T item = items.removeFirst();
+            lock.notifyAll(); // puede despertar a un productor esperando espacio
+            return item;
+        }
+    }
+}
+```
+
+`put()` y `take()` comparten el mismo lock (el propio objeto `lock`), así que nunca se ejecutan al mismo tiempo. `notifyAll()` es obligatorio acá porque conviven dos condiciones distintas ("hay espacio" y "hay elemento") sobre el mismo monitor; `notify()` podría despertar al hilo equivocado y dejar al programa colgado.
+
+### Deadlocks: las cuatro condiciones de Coffman
+
+Un **deadlock** (interbloqueo) ocurre cuando dos o más hilos quedan bloqueados para siempre, cada uno esperando un recurso que retiene otro. Coffman describió cuatro condiciones que, dadas **todas juntas**, hacen posible un deadlock:
+
+1. **Exclusión mutua**: al menos un recurso (un lock) solo puede ser usado por un hilo a la vez.
+2. **Retención y espera** (*hold-and-wait*): un hilo mantiene un recurso mientras espera adquirir otro.
+3. **Sin apropiación** (*no preemption*): un recurso no puede ser arrebatado a un hilo; solo lo libera voluntariamente.
+4. **Espera circular** (*circular wait*): existe un ciclo de hilos donde cada uno espera un recurso que retiene el siguiente.
+
+Romper **cualquiera** de las cuatro condiciones evita el deadlock. En la práctica, la más fácil de atacar en código Java es la espera circular, mediante un orden consistente de adquisición.
+
+### Un deadlock mínimo con dos locks
+
+```java
+public class DeadlockDemo {
+    private static final Object LOCK_A = new Object();
+    private static final Object LOCK_B = new Object();
+
+    static void transferAtoB() {
+        synchronized (LOCK_A) {
+            sleepBriefly();
+            synchronized (LOCK_B) {
+                System.out.println("Transferencia A -> B completa");
+            }
+        }
+    }
+
+    static void transferBtoA() {
+        synchronized (LOCK_B) {
+            sleepBriefly();
+            synchronized (LOCK_A) {
+                System.out.println("Transferencia B -> A completa");
+            }
+        }
+    }
+
+    private static void sleepBriefly() {
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public static void main(String[] args) {
+        new Thread(DeadlockDemo::transferAtoB).start();
+        new Thread(DeadlockDemo::transferBtoA).start();
+        // con mala suerte en el entrelazado, ambos hilos quedan bloqueados
+        // para siempre: uno tiene LOCK_A y espera LOCK_B, el otro tiene
+        // LOCK_B y espera LOCK_A
+    }
+}
+```
+
+Si el primer hilo entra a `transferAtoB()` y adquiere `LOCK_A`, y casi al mismo tiempo el segundo hilo entra a `transferBtoA()` y adquiere `LOCK_B`, ambos quedan esperando un lock que el otro ya tiene y nunca va a soltar. El programa no lanza ninguna excepción: simplemente deja de progresar.
+
+### Prevención: orden de locks, `tryLock` con tiempo límite y bloqueos acotados
+
+- **Orden consistente de los locks.** Si todos los hilos adquieren `LOCK_A` antes que `LOCK_B` (nunca al revés), la espera circular es imposible. Cuando los locks son dinámicos, un orden estable como `System.identityHashCode()` sirve de criterio:
+
+```java
+static void transferOrdered(Object first, Object second, Runnable action) {
+    Object low = System.identityHashCode(first) <= System.identityHashCode(second) ? first : second;
+    Object high = low == first ? second : first;
+    synchronized (low) {
+        synchronized (high) {
+            action.run();
+        }
+    }
+}
+```
+
+- **`tryLock` con tiempo límite.** `ReentrantLock` permite intentar adquirir un lock con un timeout en lugar de bloquear indefinidamente. Si no se consigue el segundo lock, el hilo libera el primero y puede reintentar más tarde:
+
+```java
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+
+ReentrantLock lockA = new ReentrantLock();
+ReentrantLock lockB = new ReentrantLock();
+
+boolean transfer() throws InterruptedException {
+    if (lockA.tryLock(500, TimeUnit.MILLISECONDS)) {
+        try {
+            if (lockB.tryLock(500, TimeUnit.MILLISECONDS)) {
+                try {
+                    return true; // sección crítica con ambos locks
+                } finally {
+                    lockB.unlock();
+                }
+            }
+        } finally {
+            lockA.unlock();
+        }
+    }
+    return false; // no se pudieron obtener ambos locks: reintentar más tarde
+}
+```
+
+- **Bloqueos acotados.** Cuanto más corto sea el bloque `synchronized` (o el tramo entre `lock()` y `unlock()`), menos tiempo retiene un hilo un recurso y menor es la ventana para un deadlock. Evitá llamar a código desconocido (I/O, callbacks, otro lock) mientras sostenés un lock.
+
+### Diagnóstico: `jstack`, volcados de hilos y JConsole/VisualVM
+
+Cuando un programa deja de responder, la primera pregunta es si está en deadlock o simplemente lento. `jstack`, incluido en el JDK, genera un **volcado de hilos** (*thread dump*) con el estado y la pila de cada hilo de la JVM:
+
+```sh
+jps                        # lista procesos Java en ejecución con su PID
+jstack <pid> > thread-dump.txt
+grep -A 20 "Found one Java-level deadlock" thread-dump.txt
+```
+
+Si hay un deadlock, `jstack` lo detecta automáticamente e imprime una sección con el texto literal `Found one Java-level deadlock`, seguida de los hilos involucrados, qué lock tiene cada uno y cuál está esperando.
+
+**JConsole** y **VisualVM**, ambos incluidos o descargables junto al JDK, ofrecen la misma información con interfaz gráfica: la pestaña de hilos tiene un botón "Detect Deadlock" que resalta los hilos bloqueados entre sí y su cadena de espera, sin tener que leer un volcado de texto a mano.
+
+### Alternativas más seguras de alto nivel
+
+`wait()`/`notify()`/`synchronized` son las herramientas de más bajo nivel; usarlas a mano es propenso a errores. `java.util.concurrent` ofrece utilidades de más alto nivel que ya resuelven estos problemas internamente:
+
+- **`BlockingQueue`** (`ArrayBlockingQueue`, `LinkedBlockingQueue`): reemplaza directamente un buffer acotado hecho a mano. `put()` y `take()` ya manejan la espera y el aviso correctamente.
+- **`ReentrantLock` + `Condition`**: en vez de un único monitor con `wait()`/`notifyAll()`, `newCondition()` permite tener **múltiples colas de espera** independientes (por ejemplo, una para "no lleno" y otra para "no vacío"), evitando despertar hilos que no corresponden.
+- **`CountDownLatch`**: coordina un evento de "esperar hasta que N tareas terminen", como esperar a que varios hilos de arranque terminen antes de aceptar tráfico.
+- El resto de `java.util.concurrent` (`Semaphore`, `CyclicBarrier`, `ExecutorService`, `CompletableFuture`) cubre la gran mayoría de los escenarios de coordinación sin tocar `wait()`/`notify()` directamente. Reservá el monitor manual para entender estas herramientas o para mantener código heredado.

@@ -14,6 +14,7 @@ const STACKS_QUEUES_LESSON = '14-tad-pilas-y-colas';
 const NARY_TREES_LESSON = '26-arboles-n-arios-y-representacion-con-vectores';
 const GRAPHS_LESSON = '18-grafos-representacion-y-algoritmos';
 const PACKAGING_LESSON = '19-archivos-persistencia-y-empaquetado-jar';
+const CONCURRENCY_LESSON = '20-programacion-concurrente-hilos-y-pools';
 
 async function readLesson(slug, lang) {
 	return readFile(path.join(JAVA_COURSE_DIR, `${slug}.${lang}.md`), 'utf8');
@@ -357,6 +358,45 @@ test('packaging lesson teaches validated platform-native distribution', async ()
 		assert.match(content, /Launch4j/i, `${locale}: Launch4j comparison`);
 		assert.match(content, /bundled runtime|runtime incluido/i, `${locale}: runtime strategy`);
 		assert.match(content, /Get-Command jpackage/, `${locale}: safe PowerShell check`);
+	}
+});
+
+test('concurrency lesson teaches monitor coordination and deadlock diagnosis in both locales', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(CONCURRENCY_LESSON, 'es'),
+		readLesson(CONCURRENCY_LESSON, 'en'),
+	]);
+
+	for (const [locale, content] of [
+		['Spanish', spanish],
+		['English', english],
+	]) {
+		assert.match(content, /wait\(\)/, `${locale}: wait`);
+		assert.match(content, /notify\(\)/, `${locale}: notify`);
+		assert.match(content, /notifyAll\(\)/, `${locale}: notifyAll`);
+		assert.match(content, /IllegalMonitorStateException/, `${locale}: monitor ownership exception`);
+		assert.match(content, /spurious wakeup|despertar espurio/i, `${locale}: spurious wakeup`);
+		assert.match(content, /while\s*\(/, `${locale}: condition loop uses while`);
+		assert.match(content, /notifyAll\(\)\s*(?:en lugar de|instead of)\s*notify\(\)/i, `${locale}: prefer notifyAll guidance`);
+		assert.match(content, /BoundedBuffer/, `${locale}: producer-consumer bounded buffer example`);
+		assert.match(content, /mutual exclusion|exclusi[oó]n mutua/i, `${locale}: Coffman mutual exclusion`);
+		assert.match(content, /hold-and-wait|retenci[oó]n y espera/i, `${locale}: Coffman hold-and-wait`);
+		assert.match(content, /no preemption|sin apropiaci[oó]n/i, `${locale}: Coffman no preemption`);
+		assert.match(content, /circular wait|espera circular/i, `${locale}: Coffman circular wait`);
+		assert.match(content, /DeadlockDemo/, `${locale}: minimal two-lock deadlock example`);
+		assert.match(content, /lock ordering|orden de (?:los )?locks/i, `${locale}: consistent lock ordering`);
+		assert.match(content, /tryLock/, `${locale}: tryLock with timeout`);
+		assert.match(content, /TimeUnit/, `${locale}: timeout unit`);
+		assert.match(content, /jstack/, `${locale}: jstack diagnosis`);
+		assert.match(content, /thread dump|volcado de hilos/i, `${locale}: thread dump`);
+		assert.match(content, /Found one Java-level deadlock/, `${locale}: canonical deadlock report line`);
+		assert.match(content, /JConsole/i, `${locale}: JConsole`);
+		assert.match(content, /VisualVM/i, `${locale}: VisualVM`);
+		assert.match(content, /BlockingQueue/, `${locale}: BlockingQueue alternative`);
+		assert.match(content, /ReentrantLock/, `${locale}: ReentrantLock alternative`);
+		assert.match(content, /newCondition\(\)/, `${locale}: Condition alternative`);
+		assert.match(content, /CountDownLatch/, `${locale}: CountDownLatch alternative`);
+		assert.match(content, /deadlock|interbloqueo/i, `${locale}: deadlock terminology`);
 	}
 });
 
