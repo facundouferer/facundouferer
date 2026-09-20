@@ -78,7 +78,7 @@ and state the relevant tradeoffs and failure modes.
   - Acceptance: commands form a safe end-to-end local/remote workflow and
     explain common failure handling.
 
-- [ ] **JAVA-COVERAGE-05 — Git branches, merges, conflicts, and rebase**
+- [x] **JAVA-COVERAGE-05 — Git branches, merges, conflicts, and rebase**
   - Route: delegated; writer trigger (new bilingual lesson pair plus tests).
   - Add `25-git-ramas-merge-conflictos-y-rebase.{es,en}.md` with branch-based
     collaboration, merge, conflict resolution, and safe rebase guidance.
@@ -161,8 +161,9 @@ npm run build
 | JAVA-COVERAGE-02 | `36c37c842190599710d344c3134aafbc5c94d64f` | `node --test tests/courses-java-program-coverage.test.mjs` — 5 passed | disabled/unmanaged; assessment medium (`under_budget`) |
 | JAVA-COVERAGE-03 | `df76145afbbc852181afa785676257fd0a3a4c07` | `node --test tests/courses-java-program-coverage.test.mjs` — 7 passed | disabled/unmanaged; assessment medium (`under_budget`) |
 | JAVA-COVERAGE-04 | `9e58afc698bdba79ac72d9af3ac42472bede0932` | `node --test tests/courses-java-program-coverage.test.mjs` — 9 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
+| JAVA-COVERAGE-05 | `40fc8059869ceb7162181a38985a820c957e17cb` | `node --test tests/courses-java-program-coverage.test.mjs` — 11 passed | disabled/unmanaged; assessment medium (`slice_budget_reached`) |
 
 ## Next step
 
-Implement `JAVA-COVERAGE-05` with a delegated writer using strict RED → GREEN
+Implement `JAVA-COVERAGE-06` with a delegated writer using strict RED → GREEN
 → REFACTOR.
