@@ -472,6 +472,178 @@ Fijate además que la pila **nunca guarda más de lo necesario**: cada apertura 
 
 ---
 
+## 9. Simulación de eventos discretos con dos colas
+
+Una **simulación de eventos discretos** no espera que transcurra tiempo real. Mantiene un **reloj simulado** y salta directamente al instante del próximo evento. Por eso no usa `Thread.sleep`: dormir haría la prueba lenta y dependiente del reloj del equipo sin mejorar el modelo.
+
+Este problema necesita dos colas con responsabilidades diferentes:
+
+| Estructura | Orden | Responsabilidad |
+| :--- | :--- | :--- |
+| `PriorityQueue<Evento>` | Menor instante; luego menor secuencia | Agenda de eventos futuros: decide qué ocurre a continuación. |
+| `ArrayDeque<Cliente>` | FIFO | Cola de servicio: decide qué cliente espera y cuál será atendido. |
+
+Un instante no alcanza para ordenar: una llegada y una finalización pueden coincidir. La `secuencia` creciente funciona como desempate determinista. Con las mismas entradas, la simulación procesa exactamente el mismo orden.
+
+### Ejemplo ejecutable y acotado
+
+El modelo siguiente representa un servidor, llegadas conocidas y una duración de servicio constante. Cada `Evento` y cada `Cliente` es un `record` inmutable.
+
+```java
+import java.util.ArrayDeque;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.PriorityQueue;
+
+public final class SimuladorCola {
+    private static final int MAX_EVENTOS = 20_000;
+
+    private enum Tipo { LLEGADA, FINALIZACION }
+
+    private record Evento(long tiempo, long secuencia, Tipo tipo, int clienteId) {
+        Evento {
+            if (tiempo < 0 || secuencia < 0) {
+                throw new IllegalArgumentException("tiempo y secuencia deben ser no negativos");
+            }
+            Objects.requireNonNull(tipo, "tipo es obligatorio");
+        }
+    }
+
+    private record Cliente(int id, long llegada) {}
+
+    public record Metricas(int atendidos, double esperaPromedio, int longitudMaximaCola) {}
+
+    private final PriorityQueue<Evento> futuros = new PriorityQueue<>(
+        Comparator.comparingLong(Evento::tiempo)
+            .thenComparingLong(Evento::secuencia)
+    );
+    private final ArrayDeque<Cliente> colaServicio = new ArrayDeque<>();
+    private final long duracionServicio;
+    private long reloj = 0;
+    private long siguienteSecuencia = 0;
+    private long esperaTotal = 0;
+    private int atendidos = 0;
+    private int longitudMaxima = 0;
+    private boolean servidorOcupado = false;
+
+    private SimuladorCola(long duracionServicio) {
+        if (duracionServicio <= 0) {
+            throw new IllegalArgumentException("duracionServicio debe ser positiva");
+        }
+        this.duracionServicio = duracionServicio;
+    }
+
+    public static Metricas simular(long[] llegadas, long duracionServicio) {
+        if (llegadas == null || llegadas.length == 0) {
+            throw new IllegalArgumentException("llegadas debe contener al menos un instante");
+        }
+        if (llegadas.length * 2L > MAX_EVENTOS) {
+            throw new IllegalArgumentException("la simulación supera MAX_EVENTOS");
+        }
+
+        SimuladorCola simulador = new SimuladorCola(duracionServicio);
+        long anterior = -1;
+        for (int id = 0; id < llegadas.length; id++) {
+            long llegada = llegadas[id];
+            if (llegada < 0 || llegada < anterior) {
+                throw new IllegalArgumentException(
+                    "las llegadas deben ser no negativas y monótonas"
+                );
+            }
+            simulador.programar(llegada, Tipo.LLEGADA, id);
+            anterior = llegada;
+        }
+        return simulador.ejecutar();
+    }
+
+    private void programar(long tiempo, Tipo tipo, int clienteId) {
+        if (tiempo < reloj) {
+            throw new IllegalArgumentException("no se puede programar en el pasado");
+        }
+        futuros.add(new Evento(tiempo, siguienteSecuencia++, tipo, clienteId));
+    }
+
+    private Metricas ejecutar() {
+        int procesados = 0;
+        while (!futuros.isEmpty()) {
+            if (++procesados > MAX_EVENTOS) {
+                throw new IllegalStateException("la simulación no converge dentro del límite");
+            }
+
+            Evento evento = futuros.remove();
+            if (evento.tiempo() < reloj) {
+                throw new IllegalStateException("el reloj simulado no puede retroceder");
+            }
+            reloj = evento.tiempo();
+
+            if (evento.tipo() == Tipo.LLEGADA) {
+                colaServicio.addLast(new Cliente(evento.clienteId(), reloj));
+                if (!servidorOcupado) {
+                    iniciarSiguiente();
+                }
+                longitudMaxima = Math.max(longitudMaxima, colaServicio.size());
+            } else {
+                atendidos++;
+                servidorOcupado = false;
+                iniciarSiguiente();
+            }
+        }
+
+        if (servidorOcupado || !colaServicio.isEmpty()) {
+            throw new IllegalStateException("terminó la agenda con trabajo pendiente");
+        }
+        return new Metricas(atendidos, (double) esperaTotal / atendidos, longitudMaxima);
+    }
+
+    private void iniciarSiguiente() {
+        Cliente cliente = colaServicio.pollFirst();
+        if (cliente == null) {
+            return;
+        }
+        esperaTotal += reloj - cliente.llegada();
+        servidorOcupado = true;
+        long finalizacion = Math.addExact(reloj, duracionServicio);
+        programar(finalizacion, Tipo.FINALIZACION, cliente.id());
+    }
+
+    public static void main(String[] args) {
+        Metricas metricas = simular(new long[] {0, 1, 1, 5}, 3);
+        System.out.println(metricas);
+    }
+}
+```
+
+### Cómo avanza el modelo
+
+1. Todas las `LLEGADA` válidas se programan en la cola de eventos futuros.
+2. El bucle extrae el evento mínimo y mueve `reloj` a su instante; no incrementa el tiempo paso a paso.
+3. Una llegada entra en la cola FIFO. Si el servidor está libre, comienza el servicio y se programa `FINALIZACION`.
+4. Una finalización libera el servidor y comienza el siguiente servicio pendiente.
+5. La simulación termina cuando la agenda queda vacía y no existe trabajo pendiente.
+
+Cada llegada genera como máximo una finalización. Junto con `MAX_EVENTOS`, esa propiedad proporciona una terminación acotada. `Math.addExact` hace explícito un eventual desbordamiento del reloj.
+
+### Métricas y significado
+
+- **Tiempo de espera:** `reloj - llegada` cuando comienza el servicio. El promedio usa solo clientes atendidos.
+- **Longitud de la cola:** cantidad de clientes esperando, sin contar al que está en servicio. La longitud máxima ayuda a estimar capacidad.
+- **Reloj final:** puede añadirse para calcular rendimiento por unidad de tiempo, pero no es tiempo real.
+
+### Fallos frecuentes
+
+- Usar solo `tiempo` en el comparador: los empates quedan sin una política reproducible.
+- Usar una cola FIFO para eventos futuros: procesa por inserción, no por instante.
+- Usar `PriorityQueue` para clientes que deben conservar orden de llegada: cambia la disciplina de servicio.
+- Ejecutar `Thread.sleep`: mezcla simulación con tiempo de pared y vuelve lentas las pruebas.
+- Programar un evento anterior al reloj actual o aceptar tiempos negativos.
+- Generar eventos sin límite ni condición de terminación.
+- Calcular espera al llegar en vez de cuando empieza el servicio.
+- Omitir validaciones y terminar con clientes pendientes fuera de la agenda.
+
+La cola FIFO modela **quién sigue**; la cola de prioridad modela **qué ocurre después**. Confundir esas preguntas produce una simulación válida en sintaxis, pero incorrecta en comportamiento.
+
+---
+
 ## Para llevarte
 
 - Pila y cola son listas **con poderes restringidos**, y esa restricción es la característica, no la carencia.

@@ -10,6 +10,7 @@ const VARIABLES_LESSON = '02-variables-tipos-datos-y-operadores';
 const METHODS_LESSON = '05-metodos-y-funciones';
 const GIT_FOUNDATIONS_LESSON = '24-git-github-fundamentos-y-remotos';
 const GIT_BRANCHING_LESSON = '25-git-ramas-merge-conflictos-y-rebase';
+const STACKS_QUEUES_LESSON = '14-tad-pilas-y-colas';
 
 async function readLesson(slug, lang) {
 	return readFile(path.join(JAVA_COURSE_DIR, `${slug}.${lang}.md`), 'utf8');
@@ -229,6 +230,32 @@ test('Git branching lesson teaches safe merge, conflict, rebase, and recovery wo
 		assert.match(content, /git push --force(?!-with-lease)/, `${locale}: unsafe force-push comparison`);
 		assert.match(content, /git reflog/, `${locale}: reflog recovery`);
 		assert.match(content, /git status/, `${locale}: precondition and conflict status checks`);
+	}
+});
+
+test('queues lesson teaches deterministic discrete-event simulation in both locales', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(STACKS_QUEUES_LESSON, 'es'),
+		readLesson(STACKS_QUEUES_LESSON, 'en'),
+	]);
+
+	for (const [locale, content] of [
+		['Spanish', spanish],
+		['English', english],
+	]) {
+		assert.match(content, /discrete-event simulation|simulaci[oó]n de eventos discretos/i, `${locale}: simulation model`);
+		assert.match(content, /record Event|record Evento/, `${locale}: immutable event`);
+		assert.match(content, /PriorityQueue<(?:Event|Evento)>/, `${locale}: future-event priority queue`);
+		assert.match(content, /sequence|secuencia/i, `${locale}: deterministic tie-breaker`);
+		assert.match(content, /simulated clock|reloj simulado/i, `${locale}: simulated clock`);
+		assert.match(content, /Thread\.sleep/, `${locale}: no wall-clock sleeping`);
+		assert.match(content, /ARRIVAL|LLEGADA/, `${locale}: arrival event`);
+		assert.match(content, /COMPLETION|FINALIZACION|FINALIZACIÓN/, `${locale}: completion event`);
+		assert.match(content, /ArrayDeque/, `${locale}: FIFO service queue`);
+		assert.match(content, /IllegalArgumentException/, `${locale}: input validation`);
+		assert.match(content, /MAX_EVENTS|MAX_EVENTOS/, `${locale}: bounded termination`);
+		assert.match(content, /waiting time|tiempo de espera/i, `${locale}: waiting-time metric`);
+		assert.match(content, /queue length|longitud de la cola/i, `${locale}: queue-length metric`);
 	}
 });
 
