@@ -16,6 +16,7 @@ const GRAPHS_LESSON = '18-grafos-representacion-y-algoritmos';
 const PACKAGING_LESSON = '19-archivos-persistencia-y-empaquetado-jar';
 const CONCURRENCY_LESSON = '20-programacion-concurrente-hilos-y-pools';
 const DEBUGGING_LESSON = '27-depuracion-codigo-limpio-y-refactorizacion';
+const TESTING_SPRING_LESSON = '22-testing-junit-y-spring-boot';
 
 async function readLesson(slug, lang) {
 	return readFile(path.join(JAVA_COURSE_DIR, `${slug}.${lang}.md`), 'utf8');
@@ -465,6 +466,32 @@ test('Debugging and refactoring lesson teaches feedback loops, code smells, and 
 		assert.match(content, /green|verde/i, `${locale}: tests kept green`);
 		assert.match(content, /mixing them in a single step|mezclarlas en un mismo paso/i, `${locale}: never mix debugging and refactoring`);
 		assert.match(content, /are not the same step|no son el mismo paso/i, `${locale}: debugging vs refactoring distinction`);
+	}
+});
+
+test('testing and Spring Boot lesson completes the CRUD with an idempotent PUT in both locales', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(TESTING_SPRING_LESSON, 'es'),
+		readLesson(TESTING_SPRING_LESSON, 'en'),
+	]);
+
+	for (const [locale, content] of [
+		['Spanish', spanish],
+		['English', english],
+	]) {
+		assert.match(content, /@PutMapping\("\/\{id\}"\)/, `${locale}: PUT mapping`);
+		assert.match(content, /@Valid @RequestBody/, `${locale}: validated request body`);
+		assert.match(content, /notFound\(\)|404/, `${locale}: not-found response`);
+		assert.match(content, /idempoten/i, `${locale}: idempotency`);
+		assert.match(content, /PATCH/, `${locale}: PATCH contrast`);
+		assert.match(content, /400/, `${locale}: validation-failure status`);
+		assert.match(content, /mockMvc\.perform\(put\(/, `${locale}: MockMvc PUT test`);
+		assert.match(content, /CREATE/, `${locale}: CRUD table CREATE row`);
+		assert.match(content, /READ/, `${locale}: CRUD table READ row`);
+		assert.match(content, /UPDATE/, `${locale}: CRUD table UPDATE row`);
+		assert.match(content, /DELETE/, `${locale}: CRUD table DELETE row`);
+		assert.match(content, /201/, `${locale}: create status in CRUD table`);
+		assert.match(content, /204/, `${locale}: delete status in CRUD table`);
 	}
 });
 
