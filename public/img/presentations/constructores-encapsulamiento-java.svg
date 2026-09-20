@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="30" y="166" width="340" height="12" rx="6" fill="#dcd3c4"/>
+
+	<!-- Shield with padlock (Encapsulation) -->
+	<g transform="translate(60, 45)">
+		<path d="M50 15 Q80 15 90 40 Q90 90 50 115 Q10 90 10 40 Q20 15 50 15 Z" fill="#f2f5ea" stroke="#7a8a5e" stroke-width="3"/>
+		<!-- Padlock inside shield -->
+		<rect x="38" y="58" width="24" height="20" rx="3" fill="#8c491a"/>
+		<path d="M43 58 V48 A7 7 0 0 1 57 48 V58" stroke="#8c491a" stroke-width="3" fill="none"/>
+		<circle cx="50" cy="68" r="2.5" fill="#ebddc5"/>
+		<text x="50" y="98" font-family="'Caprasimo', serif" font-size="9" fill="#4d5c36" text-anchor="middle">private</text>
+	</g>
+
+	<!-- Constructor Gate (Middle) -->
+	<g transform="translate(190, 50)">
+		<rect x="0" y="0" width="150" height="95" rx="10" fill="#fdfbf7" stroke="#c67139" stroke-width="2"/>
+		<text x="75" y="24" font-family="'Caprasimo', serif" font-size="11" fill="#8c491a" text-anchor="middle">new Libro()</text>
+		<line x1="10" y1="32" x2="140" y2="32" stroke="#dcd3c4" stroke-width="1.5"/>
+		<text x="15" y="48" font-family="'Fira Code', monospace" font-size="9" fill="#7a8a5e">this(tit, "Anon")</text>
+		<path d="M15 58 L135 58" stroke="#c67139" stroke-width="1" stroke-dasharray="3 3"/>
+		<text x="15" y="74" font-family="'Fira Code', monospace" font-size="9" font-weight="700" fill="#8c491a">this(tit, aut, 0)</text>
+		<rect x="15" y="80" width="120" height="12" rx="3" fill="#7a8a5e"/>
+		<text x="75" y="90" font-family="'Figtree', sans-serif" font-size="8" font-weight="700" fill="#fdfbf7" text-anchor="middle">INVARIANTES OK</text>
+	</g>
+
+	<!-- Header Banner -->
+	<text x="200" y="32" font-family="'Caprasimo', serif" font-size="15" fill="#8c491a" text-anchor="middle">Constructores y Encapsulamiento</text>
+</svg>

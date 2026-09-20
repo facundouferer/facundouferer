@@ -1,7 +1,7 @@
 ---
 slug: 'java'
-title: 'Curso de Java — De Principiante a Profesional'
-title_en: 'Java Course — From Beginner to Professional'
+title: 'Java para Principiantes'
+title_en: 'Java for Beginners'
 description: 'De algoritmos básicos a patrones de diseño: domina Java con buenas prácticas profesionales'
 description_en: 'From basic algorithms to design patterns: master Java with professional best practices'
 technology: 'Java'

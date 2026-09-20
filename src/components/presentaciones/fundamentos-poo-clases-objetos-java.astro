@@ -1,0 +1,874 @@
+---
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="fo-screen" data-lang={lang}>
+	<div class="fo-shell">
+		<div class="deck-card">
+			<div class="deck-nav-bar">
+				<div class="deck-slide-indicator">
+					<span class="deck-step-dot"></span>
+					<span id="deck-slide-label">SLIDE 1 / 4</span>
+				</div>
+				<div class="deck-pills">
+					<button class="deck-pill-btn active" data-target-slide="1">1. {isEs ? 'Plano vs Edificación' : 'Blueprint vs Building'}</button>
+					<button class="deck-pill-btn" data-target-slide="2">2. {isEs ? 'El Ciclo en 4 Tiempos de new' : 'The 4-Step new Lifecycle'}</button>
+					<button class="deck-pill-btn" data-target-slide="3">3. {isEs ? 'Puntero this y Shadowing' : 'this Pointer & Shadowing'}</button>
+					<button class="deck-pill-btn" data-target-slide="4">4. {isEs ? 'Aliasing y Referencias' : 'Aliasing & References'}</button>
+				</div>
+			</div>
+
+			<div class="fo-viewport">
+				<!-- SLIDE 1: BLUEPRINT VS BUILDING -->
+				<div class="deck-slide active" data-slide="1">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">1. {isEs ? 'El Plano y las Edificaciones: Clase vs Objetos' : 'The Blueprint and the Buildings: Class vs Objects'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Una Clase es únicamente la plantilla o molde conceptual escrito en el código fuente. Los Objetos son las instancias reales que cobran vida en el Heap durante la ejecución. Un solo molde puede dar origen a miles de casas independientes.'
+									: 'A Class is merely the conceptual template written in source code. Objects are the tangible instances living in the Heap at runtime. A single architectural blueprint spawns thousands of autonomous houses.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Metáfora del plano arquitectónico frente a objetos independientes' : 'Blueprint template vs independent object instances'}>
+									<!-- Blueprint (Left) -->
+									<rect x="20" y="25" width="160" height="190" rx="10" class="deck-panel" stroke-dasharray="4 3" />
+									<text x="100" y="50" class="deck-svg-title-accent" text-anchor="middle">Plano: CuentaBancaria</text>
+									<line x1="30" y1="62" x2="170" y2="62" stroke="var(--color-divider)" stroke-width="1.5" />
+									<text x="35" y="85" class="deck-svg-mono-sm">String numero</text>
+									<text x="35" y="105" class="deck-svg-mono-sm">String titular</text>
+									<text x="35" y="125" class="deck-svg-mono-sm">double saldo</text>
+									<line x1="30" y1="140" x2="170" y2="140" stroke="var(--color-divider)" stroke-width="1.5" />
+									<text x="35" y="165" class="deck-svg-mono-sm" fill="var(--color-accent-700)">depositar(monto)</text>
+									<text x="35" y="185" class="deck-svg-mono-sm" fill="var(--color-accent-700)">retirar(monto)</text>
+
+									<!-- Houses / Instances in Heap (Right) -->
+									<g id="house-instances">
+										<!-- House 1 -->
+										<rect x="220" y="25" width="145" height="85" rx="8" class="deck-panel-accent house-card" id="house-0" />
+										<text x="292" y="48" class="deck-svg-bold" text-anchor="middle">c1 (@0x1001)</text>
+										<text x="235" y="68" class="deck-svg-sub">Lucía</text>
+										<text x="235" y="90" class="deck-svg-bold" fill="var(--color-accent-700)" id="house-bal-0">$5.000</text>
+
+										<!-- House 2 -->
+										<rect x="380" y="25" width="145" height="85" rx="8" class="deck-ground-card house-card" id="house-1" stroke="var(--color-accent-2-700)" stroke-width="2" />
+										<text x="452" y="48" class="deck-svg-bold" text-anchor="middle">c2 (@0x1002)</text>
+										<text x="395" y="68" class="deck-svg-sub">Marcos</text>
+										<text x="395" y="90" class="deck-svg-bold" fill="var(--color-accent-2-800)" id="house-bal-1">$120</text>
+
+										<!-- House 3 -->
+										<rect x="220" y="130" width="145" height="85" rx="8" class="deck-panel-accent house-card" id="house-2" />
+										<text x="292" y="153" class="deck-svg-bold" text-anchor="middle">c3 (@0x1003)</text>
+										<text x="235" y="173" class="deck-svg-sub">Elena</text>
+										<text x="235" y="195" class="deck-svg-bold" fill="var(--color-accent-700)" id="house-bal-2">$94.000</text>
+									</g>
+
+									<!-- Fork arrow from blueprint -->
+									<path d="M180 120 Q200 65 220 65" stroke="var(--color-accent)" stroke-width="2" fill="none" />
+									<path d="M180 120 H380" stroke="var(--color-accent)" stroke-width="2" fill="none" />
+									<path d="M180 120 Q200 170 220 170" stroke="var(--color-accent)" stroke-width="2" fill="none" />
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Aislamiento de Estado' : 'State Isolation'}</span>
+									<span class="deck-subtext">c2.depositar($500);</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary op-acc-btn active" data-action="deposit">{isEs ? 'Depositar en c2' : 'Deposit into c2'}</button>
+									<button class="btn btn-secondary op-acc-btn" data-action="reset">{isEs ? 'Reiniciar Cuentas' : 'Reset Accounts'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">Cuenta c1 (Lucía):</span>
+										<span class="state-val" id="acc-state-1">$5.000 (Sin cambios)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">Cuenta c2 (Marcos):</span>
+										<span class="state-val" id="acc-state-2" style="color: var(--color-accent-2-800); font-weight: 700;">$120</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">Cuenta c3 (Elena):</span>
+										<span class="state-val" id="acc-state-3">$94.000 (Sin cambios)</span>
+									</div>
+									<p class="deck-caption" id="acc-desc">
+										{isEs
+											? 'Cada instancia encapsula su propio estado. Modificar c2 no altera ni en un solo centavo las celdas de memoria de c1 o c3.'
+											: 'Each instance encapsulates its own state. Mutating c2 has zero impact on c1 or c3 memory.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 2: THE 4-STEP NEW LIFECYCLE -->
+				<div class="deck-slide" data-slide="2">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">2. {isEs ? 'El Ciclo en 4 Tiempos del Operador new' : 'The 4-Step Lifecycle of new Operator'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'La sentencia Persona p = new Persona("Ana", 28); no es un paso mágico indivisible. Ocurre en 4 tiempos estrictos de arquitectura: Reserva, Puesta a cero, Constructor y Asignación de puntero.'
+									: 'Persona p = new Persona("Ana", 28); executes in 4 distinct memory phases: Allocation, Zeroing, Constructor invocation, and Pointer assignment.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Secuencia de 4 pasos en memoria para el operador new' : '4-step memory sequence for new operator'}>
+									<!-- Stack Column -->
+									<rect x="25" y="25" width="130" height="190" rx="10" class="deck-panel" />
+									<text x="90" y="50" class="deck-svg-title">Stack (main)</text>
+									
+									<rect x="35" y="70" width="110" height="50" rx="6" class="deck-ground-card" id="svg-stack-box" stroke="var(--color-divider)" stroke-width="1.5" />
+									<text x="90" y="90" class="deck-svg-mono" text-anchor="middle">Persona p</text>
+									<text x="90" y="108" class="deck-svg-bold" text-anchor="middle" id="svg-stack-val" fill="color-mix(in srgb, var(--color-text) 50%, transparent)">null</text>
+
+									<!-- Heap Column -->
+									<rect x="180" y="25" width="335" height="190" rx="14" class="deck-panel" />
+									<text x="230" y="50" class="deck-svg-title">Heap</text>
+
+									<rect x="210" y="65" width="285" height="125" rx="10" class="deck-ground-card" id="svg-heap-obj" stroke="var(--color-divider)" stroke-width="2" opacity="0.2" />
+									<text x="260" y="90" class="deck-svg-bold" id="svg-heap-title">@0x5A10: Persona</text>
+									<line x1="220" y1="100" x2="480" y2="100" stroke="var(--color-divider)" stroke-width="1" />
+									<text x="230" y="125" class="deck-svg-mono" id="svg-field-nombre">nombre: null</text>
+									<text x="230" y="150" class="deck-svg-mono" id="svg-field-edad">edad: 0</text>
+									<text x="230" y="175" class="deck-svg-sub" id="svg-heap-caption">Memoria no reservada</text>
+
+									<!-- Connecting Pointer Wire -->
+									<path d="M145 95 H210" stroke="var(--color-accent)" stroke-width="3" id="svg-ptr-wire" opacity="0" marker-end="url(#arrow)" />
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge" id="new-stage-badge">FASE 1 / 4: RESERVA</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary" id="btn-new-prev" disabled>{isEs ? '← Anterior' : '← Prev'}</button>
+									<button class="btn btn-primary" id="btn-new-next">{isEs ? 'Siguiente Tiempo →' : 'Next Step →'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Fase Activa:' : 'Active Phase:'}</span>
+										<span class="state-val" id="new-phase-title" style="color: var(--color-accent-700);">1. Reserva de Memoria</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Variable local p:' : 'Local variable p:'}</span>
+										<span class="state-val" id="new-p-val">null (sin apuntar)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Estado en Heap:' : 'Heap State:'}</span>
+										<span class="state-val" id="new-heap-desc">Bloque reservado en 0x5A10</span>
+									</div>
+									<p class="deck-caption" id="new-phase-exp">
+										{isEs
+											? 'El operador new solicita a la JVM espacio contiguo suficiente para almacenar los campos de Persona en el Heap.'
+											: 'The new keyword requests continuous space in the Heap to accommodate Persona fields.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 3: THIS POINTER & SHADOWING -->
+				<div class="deck-slide" data-slide="3">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">3. {isEs ? 'El Puntero this y el Sombreamiento de Variables' : 'The this Pointer and Variable Shadowing'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Si el parámetro de un método o constructor se llama igual que un atributo ("nombre = nombre"), el parámetro oculta (sombrea) al atributo. La palabra clave this es la referencia explícita al objeto receptor actual.'
+									: 'When a method parameter shares an identical identifier with a field ("nombre = nombre"), the local parameter shadows the field. The this keyword explicitly addresses the current receiving instance.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Resolución del puntero this frente a sombreamiento' : 'this pointer resolution vs variable shadowing'}>
+									<!-- Method call box -->
+									<rect x="20" y="30" width="220" height="180" rx="10" class="deck-panel" />
+									<text x="35" y="55" class="deck-svg-title">setNombre(String nombre)</text>
+									
+									<rect x="35" y="70" width="190" height="40" rx="6" class="deck-panel-accent" />
+									<text x="45" y="95" class="deck-svg-mono" fill="var(--color-accent-700)">param nombre = "Pedro"</text>
+
+									<!-- Assignment line -->
+									<rect x="35" y="130" width="190" height="60" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+									<text x="45" y="155" class="deck-svg-mono" id="svg-assign-code">nombre = nombre;</text>
+									<text x="45" y="175" class="deck-svg-sub" id="svg-assign-warn" fill="rgb(255, 95, 86)">¡Se asigna a sí mismo!</text>
+
+									<!-- Object in Heap -->
+									<rect x="300" y="30" width="215" height="180" rx="12" class="deck-panel-accent" />
+									<text x="407" y="55" class="deck-svg-title-accent" text-anchor="middle">Objeto @0x5A10 (this)</text>
+
+									<rect x="320" y="75" width="175" height="50" rx="8" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="2" />
+									<text x="335" y="98" class="deck-svg-sub">this.nombre</text>
+									<text x="335" y="116" class="deck-svg-bold" id="svg-this-val" fill="rgb(255, 95, 86)">"Sin Nombre"</text>
+
+									<!-- Resolution indicator -->
+									<path d="M225 90 Q260 90 320 95" stroke="var(--color-accent-2-700)" stroke-width="3" id="svg-this-arrow" opacity="0" />
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Selector de Sintaxis' : 'Syntax Selector'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary this-btn active" data-mode="shadow">{isEs ? 'nombre = nombre (Error)' : 'nombre = nombre (Bug)'}</button>
+									<button class="btn btn-secondary this-btn" data-mode="this">{isEs ? 'this.nombre = nombre (Correcto)' : 'this.nombre = nombre (Fixed)'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Sentencia ejecutada:' : 'Statement executed:'}</span>
+										<span class="state-val" id="this-stmt-txt">nombre = nombre</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Atributo this.nombre:' : 'Field this.nombre:'}</span>
+										<span class="state-val" id="this-field-txt" style="color: rgb(255, 95, 86);">"Sin Nombre" (Intacto)</span>
+									</div>
+									<p class="deck-caption" id="this-exp-desc">
+										{isEs
+											? 'Sin this, la variable local sombrea al atributo. El parámetro se copia sobre sí mismo y el atributo del objeto jamás se actualiza.'
+											: 'Without this, the parameter shadows the field. It copies itself into itself, leaving the instance field untouched.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 4: ALIASING AND REFERENCES -->
+				<div class="deck-slide" data-slide="4">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">4. {isEs ? 'Referencias vs Copias: El peligro del Aliasing' : 'References vs Copies: The Risk of Aliasing'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'En Java, las variables de tipo objeto NO guardan el objeto: guardan la dirección de memoria. Asignar Persona b = a; no clona a la persona: crea un segundo control remoto hacia la mismísima dirección en el Heap.'
+									: 'In Java, object variables do NOT hold the object: they hold its memory reference. Writing Persona b = a; creates a second remote control aimed at the exact same Heap address.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Diagrama de aliasing con dos referencias apuntando al mismo objeto' : 'Aliasing diagram with two references to one object'}>
+									<!-- Stack with p1 and p2 -->
+									<rect x="25" y="30" width="140" height="180" rx="10" class="deck-panel" />
+									<text x="95" y="55" class="deck-svg-title">Stack</text>
+
+									<rect x="35" y="70" width="120" height="45" rx="6" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="2" />
+									<text x="45" y="92" class="deck-svg-mono">p1 = 0x5A10</text>
+
+									<rect x="35" y="135" width="120" height="45" rx="6" class="deck-ground-card" stroke="var(--color-accent-2-700)" stroke-width="2" />
+									<text x="45" y="157" class="deck-svg-mono">p2 = 0x5A10</text>
+
+									<!-- Single Heap Object -->
+									<rect x="260" y="45" width="245" height="150" rx="14" class="deck-panel-accent" />
+									<text x="382" y="75" class="deck-svg-title-accent" text-anchor="middle">Objeto Único en Heap @0x5A10</text>
+
+									<rect x="280" y="95" width="205" height="75" rx="8" class="deck-ground-card" stroke="var(--color-divider)" />
+									<text x="300" y="125" class="deck-svg-sub">nombre:</text>
+									<text x="300" y="150" class="deck-svg-bold" id="alias-heap-name" style="font-size: 1.25rem;" fill="var(--color-accent-700)">"Juan"</text>
+
+									<!-- Converging pointer arrows -->
+									<path d="M155 92 Q200 92 260 120" stroke="var(--color-accent)" stroke-width="3" fill="none" />
+									<path d="M155 157 Q200 157 260 135" stroke="var(--color-accent-2-700)" stroke-width="3" fill="none" />
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Simulador de Mutación por Aliasing' : 'Aliasing Mutation Simulator'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary alias-btn active" data-name="Juan">p1 ("Juan")</button>
+									<button class="btn btn-secondary alias-btn" data-name="Carlos">p2.setNombre("Carlos")</button>
+									<button class="btn btn-secondary alias-btn" data-name="Elena">p2.setNombre("Elena")</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">p1.getNombre():</span>
+										<span class="state-val" id="alias-p1-read" style="color: var(--color-accent-700); font-weight: 700;">"Juan"</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">p2.getNombre():</span>
+										<span class="state-val" id="alias-p2-read" style="color: var(--color-accent-2-800); font-weight: 700;">"Juan"</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Objetos en Heap:' : 'Objects in Heap:'}</span>
+										<span class="state-val">1 (¡No se duplicó!)</span>
+									</div>
+									<p class="deck-caption" id="alias-desc">
+										{isEs
+											? 'Al modificar el objeto a través del control remoto p2, la lectura desde p1 refleja el cambio inmediatamente porque apuntan al mismo bloque de memoria.'
+											: 'Modifying the object via p2 immediately affects p1 since both reference the exact same memory block.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	/* Slide Navigation */
+	const pills = document.querySelectorAll('.deck-pill-btn');
+	const slides = document.querySelectorAll('.deck-slide');
+	const slideLabel = document.getElementById('deck-slide-label');
+	const totalSlides = slides.length;
+
+	pills.forEach((pill) => {
+		pill.addEventListener('click', () => {
+			const target = pill.getAttribute('data-target-slide');
+			if (!target) return;
+
+			pills.forEach((p) => p.classList.remove('active'));
+			pill.classList.add('active');
+
+			slides.forEach((s) => {
+				s.classList.remove('active');
+				if (s.getAttribute('data-slide') === target) {
+					s.classList.add('active');
+				}
+			});
+
+			if (slideLabel) {
+				slideLabel.textContent = `SLIDE ${target} / ${totalSlides}`;
+			}
+		});
+	});
+
+	/* Slide 1: Account Isolation */
+	const opAccBtns = document.querySelectorAll('.op-acc-btn');
+	const houseBal1 = document.getElementById('house-bal-1');
+	const accState2 = document.getElementById('acc-state-2');
+	const accDesc = document.getElementById('acc-desc');
+
+	opAccBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			opAccBtns.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+
+			const action = btn.getAttribute('data-action');
+			if (action === 'deposit') {
+				if (houseBal1) houseBal1.textContent = '$620';
+				if (accState2) accState2.textContent = '$620 (+$500)';
+				if (accDesc) {
+					accDesc.textContent = '¡Saldo de Marcos incrementado a $620! Las cuentas de Lucía y Elena no sufrieron ningún cambio.';
+				}
+			} else {
+				if (houseBal1) houseBal1.textContent = '$120';
+				if (accState2) accState2.textContent = '$120';
+				if (accDesc) {
+					accDesc.textContent = 'Estado inicial restablecido: cada cuenta mantiene su valor propio en el Heap.';
+				}
+			}
+		});
+	});
+
+	/* Slide 2: The 4-Step new Lifecycle */
+	let newPhase = 0; // 0..3
+	const newStages = [
+		{
+			badge: 'FASE 1 / 4: RESERVA',
+			title: '1. Reserva de Memoria en Heap',
+			pVal: 'null (sin apuntar)',
+			heapDesc: 'Bloque reservado en 0x5A10',
+			exp: 'El operador new calcula cuántos bytes necesitan los atributos y solicita el bloque en el Heap.',
+			stackVal: 'null',
+			heapTitle: '@0x5A10: Persona (Crudo)',
+			nombre: 'nombre: [sin inicializar]',
+			edad: 'edad: [sin inicializar]',
+			heapCap: 'Bloque reservado sin formatear',
+			wire: 0,
+			heapOp: 0.5,
+		},
+		{
+			badge: 'FASE 2 / 4: VALORES POR DEFECTO',
+			title: '2. Puesta a Cero (Default Values)',
+			pVal: 'null',
+			heapDesc: 'Campos inicializados por defecto',
+			exp: 'Java limpia el bloque y coloca los valores neutros: null para referencias, 0 para números, false para booleanos.',
+			stackVal: 'null',
+			heapTitle: '@0x5A10: Persona (Limpio)',
+			nombre: 'nombre: null',
+			edad: 'edad: 0',
+			heapCap: 'Valores por defecto aplicados',
+			wire: 0,
+			heapOp: 0.8,
+		},
+		{
+			badge: 'FASE 3 / 4: CONSTRUCTOR',
+			title: '3. Ejecución del Constructor',
+			pVal: 'null',
+			heapDesc: 'this apunta a 0x5A10 y escribe datos',
+			exp: 'Se ejecuta Persona("Ana", 28). El cuerpo del constructor sobreescribe los ceros con los argumentos reales.',
+			stackVal: 'null',
+			heapTitle: '@0x5A10: Persona (Construido)',
+			nombre: 'nombre: "Ana"',
+			edad: 'edad: 28',
+			heapCap: 'Atributos configurados con éxito',
+			wire: 0,
+			heapOp: 1,
+		},
+		{
+			badge: 'FASE 4 / 4: ASIGNACIÓN',
+			title: '4. Asignación de Puntero al Stack',
+			pVal: '0x5A10 (Enlace completado)',
+			heapDesc: 'Referenciado activamente por p',
+			exp: 'La dirección 0x5A10 retornada por new se escribe en la variable local p del Stack. ¡Objeto listo para usarse!',
+			stackVal: '0x5A10',
+			heapTitle: '@0x5A10: Persona (Conectado)',
+			nombre: 'nombre: "Ana"',
+			edad: 'edad: 28',
+			heapCap: 'Enlazado por control remoto p',
+			wire: 1,
+			heapOp: 1,
+		},
+	];
+
+	const btnNewPrev = document.getElementById('btn-new-prev') as HTMLButtonElement | null;
+	const btnNewNext = document.getElementById('btn-new-next') as HTMLButtonElement | null;
+	const newStageBadge = document.getElementById('new-stage-badge');
+	const newPhaseTitle = document.getElementById('new-phase-title');
+	const newPVal = document.getElementById('new-p-val');
+	const newHeapDesc = document.getElementById('new-heap-desc');
+	const newPhaseExp = document.getElementById('new-phase-exp');
+
+	const svgStackVal = document.getElementById('svg-stack-val');
+	const svgHeapObj = document.getElementById('svg-heap-obj');
+	const svgHeapTitle = document.getElementById('svg-heap-title');
+	const svgFieldNombre = document.getElementById('svg-field-nombre');
+	const svgFieldEdad = document.getElementById('svg-field-edad');
+	const svgHeapCaption = document.getElementById('svg-heap-caption');
+	const svgPtrWire = document.getElementById('svg-ptr-wire');
+
+	function updateNewStageUI() {
+		const s = newStages[newPhase];
+		if (newStageBadge) newStageBadge.textContent = s.badge;
+		if (newPhaseTitle) newPhaseTitle.textContent = s.title;
+		if (newPVal) newPVal.textContent = s.pVal;
+		if (newHeapDesc) newHeapDesc.textContent = s.heapDesc;
+		if (newPhaseExp) newPhaseExp.textContent = s.exp;
+
+		if (svgStackVal) svgStackVal.textContent = s.stackVal;
+		if (svgHeapObj) svgHeapObj.setAttribute('opacity', s.heapOp.toString());
+		if (svgHeapTitle) svgHeapTitle.textContent = s.heapTitle;
+		if (svgFieldNombre) svgFieldNombre.textContent = s.nombre;
+		if (svgFieldEdad) svgFieldEdad.textContent = s.edad;
+		if (svgHeapCaption) svgHeapCaption.textContent = s.heapCap;
+		if (svgPtrWire) svgPtrWire.setAttribute('opacity', s.wire.toString());
+
+		if (btnNewPrev) btnNewPrev.disabled = newPhase === 0;
+		if (btnNewNext) {
+			if (newPhase === newStages.length - 1) {
+				btnNewNext.textContent = 'Reiniciar Ciclo';
+			} else {
+				btnNewNext.textContent = 'Siguiente Tiempo →';
+			}
+		}
+	}
+
+	if (btnNewNext) {
+		btnNewNext.addEventListener('click', () => {
+			if (newPhase >= newStages.length - 1) {
+				newPhase = 0;
+			} else {
+				newPhase++;
+			}
+			updateNewStageUI();
+		});
+	}
+
+	if (btnNewPrev) {
+		btnNewPrev.addEventListener('click', () => {
+			if (newPhase > 0) {
+				newPhase--;
+				updateNewStageUI();
+			}
+		});
+	}
+
+	/* Slide 3: this Pointer */
+	const thisBtns = document.querySelectorAll('.this-btn');
+	const thisStmtTxt = document.getElementById('this-stmt-txt');
+	const thisFieldTxt = document.getElementById('this-field-txt');
+	const thisExpDesc = document.getElementById('this-exp-desc');
+	const svgAssignCode = document.getElementById('svg-assign-code');
+	const svgAssignWarn = document.getElementById('svg-assign-warn');
+	const svgThisVal = document.getElementById('svg-this-val');
+	const svgThisArrow = document.getElementById('svg-this-arrow');
+
+	thisBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			thisBtns.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+
+			const mode = btn.getAttribute('data-mode');
+			if (mode === 'shadow') {
+				if (thisStmtTxt) thisStmtTxt.textContent = 'nombre = nombre';
+				if (thisFieldTxt) {
+					thisFieldTxt.textContent = '"Sin Nombre" (Intacto)';
+					thisFieldTxt.style.color = 'rgb(255, 95, 86)';
+				}
+				if (thisExpDesc) {
+					thisExpDesc.textContent = 'Sin this, la variable local sombrea al atributo. El parámetro se copia sobre sí mismo y el objeto nunca recibe el valor.';
+				}
+				if (svgAssignCode) svgAssignCode.textContent = 'nombre = nombre;';
+				if (svgAssignWarn) {
+					svgAssignWarn.textContent = '¡Se asigna a sí mismo!';
+					svgAssignWarn.setAttribute('fill', 'rgb(255, 95, 86)');
+				}
+				if (svgThisVal) {
+					svgThisVal.textContent = '"Sin Nombre"';
+					svgThisVal.setAttribute('fill', 'rgb(255, 95, 86)');
+				}
+				if (svgThisArrow) svgThisArrow.setAttribute('opacity', '0');
+			} else {
+				if (thisStmtTxt) thisStmtTxt.textContent = 'this.nombre = nombre';
+				if (thisFieldTxt) {
+					thisFieldTxt.textContent = '"Pedro" (Actualizado)';
+					thisFieldTxt.style.color = 'var(--color-accent-2-800)';
+				}
+				if (thisExpDesc) {
+					thisExpDesc.textContent = 'this.nombre especifica inequívocamente el campo del objeto en Heap, guardando el valor "Pedro" con éxito.';
+				}
+				if (svgAssignCode) svgAssignCode.textContent = 'this.nombre = nombre;';
+				if (svgAssignWarn) {
+					svgAssignWarn.textContent = '✓ Asignación al Heap correcta';
+					svgAssignWarn.setAttribute('fill', 'var(--color-accent-700)');
+				}
+				if (svgThisVal) {
+					svgThisVal.textContent = '"Pedro"';
+					svgThisVal.setAttribute('fill', 'var(--color-accent-700)');
+				}
+				if (svgThisArrow) svgThisArrow.setAttribute('opacity', '1');
+			}
+		});
+	});
+
+	/* Slide 4: Aliasing */
+	const aliasBtns = document.querySelectorAll('.alias-btn');
+	const aliasHeapName = document.getElementById('alias-heap-name');
+	const aliasP1Read = document.getElementById('alias-p1-read');
+	const aliasP2Read = document.getElementById('alias-p2-read');
+	const aliasDesc = document.getElementById('alias-desc');
+
+	aliasBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			aliasBtns.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+
+			const name = btn.getAttribute('data-name') ?? 'Juan';
+			if (aliasHeapName) aliasHeapName.textContent = `"${name}"`;
+			if (aliasP1Read) aliasP1Read.textContent = `"${name}"`;
+			if (aliasP2Read) aliasP2Read.textContent = `"${name}"`;
+
+			if (aliasDesc) {
+				if (name === 'Juan') {
+					aliasDesc.textContent = 'Estado inicial: p1 y p2 apuntan a la misma casilla 0x5A10.';
+				} else {
+					aliasDesc.textContent = `Al invocar p2.setNombre("${name}"), la propiedad mutó en la dirección única 0x5A10. Leer p1 también devuelve "${name}".`;
+				}
+			}
+		});
+	});
+</script>
+
+<style>
+	.fo-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		padding: var(--space-4) var(--space-6);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.fo-shell { width: 100%; max-width: none; margin: 0; flex: 1; display: flex; flex-direction: column; }
+
+	.deck-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-xl);
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* Nav bar */
+	.deck-nav-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: color-mix(in srgb, var(--color-surface) 90%, var(--color-bg));
+		gap: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.deck-slide-indicator {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		letter-spacing: 0.05em;
+	}
+
+	.deck-step-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--color-accent);
+	}
+
+	.deck-pills {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-pill-btn {
+		background: transparent;
+		border: 1px solid transparent;
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-full);
+		font-size: 0.85rem;
+		color: var(--color-text);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.deck-pill-btn:hover {
+		background: var(--color-neutral-200);
+	}
+
+	.deck-pill-btn.active {
+		background: var(--color-accent-200);
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	/* Viewport & slides */
+	.fo-viewport {
+		padding: var(--space-6) var(--space-8);
+		min-height: 480px;
+	}
+
+	.fo-viewport { display: flex; flex-direction: column; justify-content: center; }
+	@media (min-width: 1440px) { .fo-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .fo-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .fo-viewport { zoom: 1.25; } }
+
+	.deck-slide {
+		display: none;
+	}
+
+	.deck-slide.active {
+		display: block;
+		animation: deckFade 0.25s ease-out;
+	}
+
+	@keyframes deckFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	/* Grid & Columns */
+	.deck-slide-grid {
+		display: grid;
+		grid-template-columns: 1.15fr 0.85fr;
+		gap: var(--space-8);
+		align-items: center;
+	}
+
+	@media (max-width: 960px) {
+		.deck-slide-grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-6);
+		}
+	}
+
+	.deck-slide-title {
+		font-family: var(--font-heading);
+		font-size: 1.45rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		margin-bottom: var(--space-3);
+		line-height: 1.25;
+	}
+
+	.deck-text {
+		font-size: 0.92rem;
+		line-height: 1.55;
+		color: var(--color-text);
+		margin-bottom: var(--space-4);
+	}
+
+	/* Figure SVG container */
+	.deck-figure {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-3);
+		box-shadow: inset var(--shadow-sm);
+	}
+
+	/* SVG styles */
+	.deck-panel {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+		stroke-width: 1.5;
+	}
+
+	.deck-panel-accent {
+		fill: var(--color-accent-200);
+		stroke: var(--color-accent);
+		stroke-width: 1.5;
+	}
+
+	.deck-sub-block-accent {
+		fill: var(--color-accent-2-200);
+		stroke: var(--color-accent-2-700);
+		stroke-width: 1.5;
+	}
+
+	.deck-svg-title {
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-title-accent {
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--color-accent-700);
+	}
+
+	.deck-svg-mono {
+		font-family: monospace;
+		font-size: 11px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-mono-sm {
+		font-family: monospace;
+		font-size: 9.5px;
+		fill: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+
+	.deck-svg-bold {
+		font-size: 11.5px;
+		font-weight: 700;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-sub {
+		font-size: 10px;
+		fill: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.deck-ground-card {
+		fill: var(--color-surface);
+	}
+
+	/* Interactive card styling */
+	.deck-interactive-card {
+		background: var(--color-neutral-100);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+	}
+
+	.deck-card-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--space-3);
+	}
+
+	.deck-badge {
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.deck-subtext {
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.deck-actions-row {
+		display: flex;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+		flex-wrap: wrap;
+	}
+
+	.deck-actions-row .btn.active {
+		background: var(--color-accent);
+		color: rgb(255, 255, 255);
+		border-color: var(--color-accent);
+	}
+
+	.deck-info-box {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.state-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		font-size: 0.85rem;
+		padding-bottom: var(--space-1);
+		border-bottom: 1px dashed var(--color-divider);
+	}
+
+	.state-label {
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+
+	.state-val {
+		font-family: monospace;
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	.deck-caption {
+		font-size: 0.82rem;
+		color: color-mix(in srgb, var(--color-text) 65%, transparent);
+		margin-top: var(--space-2);
+		margin-bottom: 0;
+		line-height: 1.4;
+	}
+</style>

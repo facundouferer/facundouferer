@@ -1,0 +1,1160 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="co-screen" data-presentation="concurrencia-hilos-pools-java">
+	<div class="co-shell">
+		<nav class="co-nav" aria-label="Controles de navegación">
+			<button class="co-btn" id="coPrevBtn" aria-label="Diapositiva anterior" disabled>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{isEs ? 'Anterior' : 'Previous'}</span>
+			</button>
+			<span class="co-counter" id="coSlideCounter" aria-live="polite">1 / 5</span>
+			<button class="co-btn" id="coNextBtn" aria-label="Siguiente diapositiva">
+				<span>{isEs ? 'Siguiente' : 'Next'}</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="co-viewport">
+			<!-- Slide 1: Concurrencia vs Paralelismo & JMM -->
+			<section class="co-slide is-active" data-slide="1">
+				<div class="co-header">
+					<span class="co-kicker">{isEs ? 'Fundamentos de Hardware y Memoria' : 'Hardware & Memory Foundations'}</span>
+					<h2 class="co-title">{isEs ? 'Concurrencia vs Paralelismo y el JMM (Stack vs Heap)' : 'Concurrency vs Parallelism and JMM (Stack vs Heap)'}</h2>
+					<p class="co-lead">
+						{isEs
+							? 'Concurrencia es gestionar múltiples tareas intercalando tiempo. Paralelismo es ejecutar tareas simultáneamente en distintos núcleos físicos. En el JMM cada hilo tiene su Stack privado, pero comparten el Heap.'
+							: 'Concurrency is dealing with multiple things via time-slicing. Parallelism is doing multiple things at once on physical cores. In JMM each thread has a private Stack, sharing the common Heap.'}
+					</p>
+				</div>
+
+				<div class="co-card">
+					<div class="co-mode-bar">
+						<button class="co-tab is-active" id="coModeSingle">{isEs ? '1 Núcleo: Concurrente (Time-Slicing)' : '1 Core: Concurrent (Time-Slicing)'}</button>
+						<button class="co-tab" id="coModeMulti">{isEs ? '2 Núcleos: Paralelo Simultáneo' : '2 Cores: Simultaneous Parallel'}</button>
+					</div>
+
+					<div class="co-jmm-grid">
+						<!-- Hardware layer -->
+						<div class="co-hw-panel">
+							<strong class="co-panel-title">{isEs ? 'Procesador (Hardware)' : 'Processor (Hardware)'}</strong>
+							<div class="co-cores-wrap">
+								<div class="co-core-box">
+									<div class="co-core-badge">CPU Core 0</div>
+									<div class="co-cache-label">L1 / L2 Cache</div>
+									<div class="co-core-active" id="coCore0Status">{isEs ? 'Hilo-1 (En ejecución)' : 'Thread-1 (Running)'}</div>
+								</div>
+
+								<div class="co-core-box" id="coCore1Box" style="opacity: 0.35;">
+									<div class="co-core-badge">CPU Core 1</div>
+									<div class="co-cache-label">L1 / L2 Cache</div>
+									<div class="co-core-active" id="coCore1Status">{isEs ? 'Inactivo (Modo 1 Core)' : 'Idle (1 Core Mode)'}</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- JVM Memory Layer -->
+						<div class="co-jvm-panel">
+							<strong class="co-panel-title">{isEs ? 'Memoria JVM (Java Memory Model)' : 'JVM Memory (Java Memory Model)'}</strong>
+							<div class="co-mem-diagram">
+								<!-- Stack 1 -->
+								<div class="co-stack-box">
+									<span class="co-badge">{isEs ? 'Stack Hilo-1' : 'Stack Thread-1'}</span>
+									<div class="co-frame">int x = 10;</div>
+									<div class="co-frame">ref -&gt; 0x4F10</div>
+								</div>
+
+								<!-- Shared Heap -->
+								<div class="co-heap-box">
+									<span class="co-badge co-badge-accent">{isEs ? 'Heap Compartido' : 'Shared Heap'}</span>
+									<div class="co-heap-obj">
+										<strong>Objeto en 0x4F10</strong>
+										<code>class Contador &#123; count = 42; &#125;</code>
+									</div>
+									<div class="co-heap-warning">⚠️ {isEs ? 'Zona Crítica de Conflicto' : 'Critical Conflict Zone'}</div>
+								</div>
+
+								<!-- Stack 2 -->
+								<div class="co-stack-box">
+									<span class="co-badge co-badge-alt">{isEs ? 'Stack Hilo-2' : 'Stack Thread-2'}</span>
+									<div class="co-frame">int y = 99;</div>
+									<div class="co-frame">ref -&gt; 0x4F10</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 2: Race Condition en count++ -->
+			<section class="co-slide" data-slide="2">
+				<div class="co-header">
+					<span class="co-kicker">{isEs ? 'Peligros de la Concurrencia' : 'Concurrency Hazards'}</span>
+					<h2 class="co-title">{isEs ? 'Anatomía de una Condición de Carrera: count++' : 'Anatomy of a Race Condition: count++'}</h2>
+					<p class="co-lead">
+						{isEs
+							? 'count++ parece una sola instrucción pero en bytecode son 3 pasos no atómicos: ILOAD (leer), IADD (incrementar) e ISTORE (escribir).'
+							: 'count++ looks like a single statement but in bytecode comprises 3 non-atomic steps: ILOAD (read), IADD (add) and ISTORE (write).'}
+					</p>
+				</div>
+
+				<div class="co-card">
+					<div class="co-sim-toolbar">
+						<button class="co-action-btn" id="coRaceStepBtn">{isEs ? 'Paso Siguiente (Reloj de CPU)' : 'Next Step (CPU Clock)'}</button>
+						<button class="co-reset-btn" id="coRaceResetBtn">{isEs ? 'Reiniciar' : 'Reset'}</button>
+						<span class="co-state-status" id="coRaceStatus">{isEs ? 'T0: Variable count = 5 en memoria compartida' : 'T0: Variable count = 5 in shared memory'}</span>
+					</div>
+
+					<div class="co-timeline-grid">
+						<!-- Timeline Thread 1 -->
+						<div class="co-time-col">
+							<div class="co-col-title co-text-accent">Hilo 1 (Thread-1)</div>
+							<div class="co-step-card" id="coT1Step1">1. ILOAD count (Lee 5 a registro local)</div>
+							<div class="co-step-card" id="coT1Step2">2. IADD 1 (Calcula 5 + 1 = 6)</div>
+							<div class="co-step-card" id="coT1Step3">3. ISTORE count (Escribe 6 en Heap)</div>
+						</div>
+
+						<!-- Shared Heap State -->
+						<div class="co-time-center">
+							<div class="co-heap-val-box">
+								<span class="co-heap-val-label">{isEs ? 'Valor en Heap' : 'Heap Value'}</span>
+								<span class="co-heap-number" id="coSharedCount">5</span>
+							</div>
+							<div class="co-verdict-box" id="coVerdictBox">
+								<span>{isEs ? 'Esperado: 7' : 'Expected: 7'}</span>
+								<strong class="co-lost-update" id="coLostUpdateMsg">...</strong>
+							</div>
+						</div>
+
+						<!-- Timeline Thread 2 -->
+						<div class="co-time-col">
+							<div class="co-col-title co-text-alt">Hilo 2 (Thread-2)</div>
+							<div class="co-step-card" id="coT2Step1">1. ILOAD count (¡Lee 5 antes de que H1 escriba!)</div>
+							<div class="co-step-card" id="coT2Step2">2. IADD 1 (Calcula 5 + 1 = 6)</div>
+							<div class="co-step-card" id="coT2Step3">3. ISTORE count (Sobrescribe con 6)</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 3: synchronized vs Atómicos (CAS) -->
+			<section class="co-slide" data-slide="3">
+				<div class="co-header">
+					<span class="co-kicker">{isEs ? 'Mecanismos de Sincronización' : 'Synchronization Mechanisms'}</span>
+					<h2 class="co-title">{isEs ? 'El Cerrojo Intrínseco (synchronized) vs Atómicos Hardware (CAS)' : 'Intrinsic Lock (synchronized) vs Hardware Atomics (CAS)'}</h2>
+					<p class="co-lead">
+						{isEs
+							? 'synchronized suspende hilos en el monitor del sistema operativo (pesado). AtomicInteger usa Compare-And-Swap del CPU sin bloquear (lock-free).'
+							: 'synchronized parks threads using OS monitor locks (heavy). AtomicInteger relies on CPU Compare-And-Swap instructions without blocking (lock-free).'}
+					</p>
+				</div>
+
+				<div class="co-card">
+					<div class="co-dual-grid">
+						<!-- Synchronized Panel -->
+						<div class="co-panel">
+							<div class="co-panel-head">
+								<span class="co-badge">synchronized (Lock Pesado)</span>
+								<span class="co-pill">Exclusión Mutua</span>
+							</div>
+							<p class="co-subtext">
+								{isEs
+									? 'Un hilo adquiere el cerrojo del monitor. Los demás pasan a estado BLOCKED esperando que se libere la llave.'
+									: 'One thread acquires the object monitor lock. Competing threads enter BLOCKED state waiting for release.'}
+							</p>
+							<div class="co-lock-viz">
+								<svg viewBox="0 0 240 100" class="co-svg-box">
+									<rect x="20" y="20" width="100" height="60" rx="8" class="co-room-box" />
+									<text x="70" y="55" class="co-room-txt">Hilo 1 (Dentro)</text>
+									<!-- Lock icon closed -->
+									<circle cx="120" cy="50" r="14" fill="var(--color-accent)" />
+									<path d="M 115,50 L 125,50 M 120,44 L 120,50" stroke="var(--color-surface)" stroke-width="2.5" />
+
+									<rect x="150" y="20" width="75" height="60" rx="8" class="co-wait-box" />
+									<text x="187" y="55" class="co-wait-txt">Hilo 2 (BLOCKED)</text>
+								</svg>
+							</div>
+							<pre class="co-pre"><code>public synchronized void incrementar() &#123;
+    count++; // Protegido por Monitor
+&#125;</code></pre>
+						</div>
+
+						<!-- CAS AtomicInteger Panel -->
+						<div class="co-panel">
+							<div class="co-panel-head">
+								<span class="co-badge co-badge-alt">AtomicInteger (CAS Lock-Free)</span>
+								<span class="co-pill">Hardware CPU</span>
+							</div>
+							<p class="co-subtext">
+								{isEs
+									? 'Compara el valor esperado con la memoria. Si coincide, intercambia en 1 ciclo de hardware; si no, reintenta sin suspenderse.'
+									: 'Compares expected value against memory. If matched, swaps atomically in 1 hardware cycle; otherwise retries without parking.'}
+							</p>
+							<div class="co-lock-viz">
+								<svg viewBox="0 0 240 100" class="co-svg-box">
+									<circle cx="60" cy="50" r="30" class="co-cas-circle" />
+									<text x="60" y="54" class="co-cas-txt">CAS Loop</text>
+
+									<path d="M 100,50 L 140,50" stroke="var(--color-accent-2, rgb(100, 140, 90))" stroke-width="2.5" marker-end="url(#coArrow)" />
+									<rect x="145" y="25" width="85" height="50" rx="8" class="co-cas-ok-box" />
+									<text x="187" y="54" class="co-cas-ok-txt">1 Ciclo CPU</text>
+								</svg>
+							</div>
+							<pre class="co-pre"><code>private AtomicInteger count = new AtomicInteger();
+// Sin locks: lock-free hardware atomic
+count.incrementAndGet();</code></pre>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 4: Deadlock -->
+			<section class="co-slide" data-slide="4">
+				<div class="co-header">
+					<span class="co-kicker">{isEs ? 'Bloqueo Mutuo' : 'Mutual Block'}</span>
+					<h2 class="co-title">{isEs ? 'El Peligro del Deadlock y las Reglas de Prevención' : 'The Danger of Deadlock and Prevention Rules'}</h2>
+					<p class="co-lead">
+						{isEs
+							? 'Un Deadlock ocurre cuando dos o más hilos quedan congelados eternamente esperando recursos retenidos mutuamente. Se previene imponiendo un orden canónico de adquisición.'
+							: 'A Deadlock occurs when two or more threads freeze permanently waiting for resources held by each other. Prevented by enforcing strict canonical lock ordering.'}
+					</p>
+				</div>
+
+				<div class="co-card">
+					<div class="co-sim-toolbar">
+						<button class="co-tab is-active" id="coDeadlockCycleBtn">{isEs ? 'Ver Ciclo de Deadlock' : 'View Deadlock Cycle'}</button>
+						<button class="co-tab" id="coDeadlockFixBtn">{isEs ? 'Aplicar Orden Canónico (Solución)' : 'Apply Canonical Ordering (Fix)'}</button>
+					</div>
+
+					<div class="co-deadlock-viz">
+						<svg id="coDeadlockSvg" viewBox="0 0 440 200" class="co-svg-deadlock">
+							<!-- Node Thread A -->
+							<g transform="translate(90, 60)">
+								<circle r="32" class="co-dl-node co-dl-thread" />
+								<text dy="5" class="co-dl-txt">Hilo A</text>
+							</g>
+
+							<!-- Node Thread B -->
+							<g transform="translate(350, 60)">
+								<circle r="32" class="co-dl-node co-dl-thread" />
+								<text dy="5" class="co-dl-txt">Hilo B</text>
+							</g>
+
+							<!-- Lock 1 -->
+							<g transform="translate(220, 30)">
+								<rect x="-35" y="-20" width="70" height="40" rx="6" class="co-dl-node co-dl-lock" />
+								<text dy="5" class="co-dl-txt">Lock 1</text>
+							</g>
+
+							<!-- Lock 2 -->
+							<g transform="translate(220, 150)">
+								<rect x="-35" y="-20" width="70" height="40" rx="6" class="co-dl-node co-dl-lock" />
+								<text dy="5" class="co-dl-txt">Lock 2</text>
+							</g>
+
+							<!-- Arrows in Deadlock mode -->
+							<g id="coCycleArrows">
+								<!-- Hilo A posee Lock 1 -->
+								<line x1="120" y1="50" x2="185" y2="35" class="co-arrow-holds" />
+								<text x="145" y="35" class="co-edge-lbl">{isEs ? 'Retiene' : 'Holds'}</text>
+
+								<!-- Hilo A espera Lock 2 -->
+								<line x1="105" y1="90" x2="190" y2="140" class="co-arrow-waits" />
+								<text x="125" y="130" class="co-edge-lbl co-text-accent">{isEs ? 'Espera' : 'Waits'}</text>
+
+								<!-- Hilo B posee Lock 2 -->
+								<line x1="320" y1="70" x2="255" y2="140" class="co-arrow-holds" />
+								<text x="290" y="125" class="co-edge-lbl">{isEs ? 'Retiene' : 'Holds'}</text>
+
+								<!-- Hilo B espera Lock 1 -->
+								<line x1="320" y1="50" x2="255" y2="35" class="co-arrow-waits" />
+								<text x="290" y="35" class="co-edge-lbl co-text-accent">{isEs ? 'Espera' : 'Waits'}</text>
+							</g>
+						</svg>
+					</div>
+
+					<div class="co-info-callout" id="coDeadlockExplanation">
+						<strong>{isEs ? 'Condición de Espera Circular:' : 'Circular Wait Condition:'}</strong> {isEs ? 'El Hilo A no liberará Lock 1 hasta obtener Lock 2; el Hilo B no liberará Lock 2 hasta obtener Lock 1. Congelamiento total de la aplicación.' : 'Thread A won’t release Lock 1 until getting Lock 2; Thread B won’t release Lock 2 until getting Lock 1. Permanent application freeze.'}
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 5: Virtual Threads (Loom) -->
+			<section class="co-slide" data-slide="5">
+				<div class="co-header">
+					<span class="co-kicker">{isEs ? 'La Revolución de Java 21' : 'Java 21 Revolution'}</span>
+					<h2 class="co-title">{isEs ? 'De Platform Threads a Pools y Virtual Threads (Project Loom)' : 'From Platform Threads to Pools and Virtual Threads (Project Loom)'}</h2>
+					<p class="co-lead">
+						{isEs
+							? '1 hilo tradicional del SO pesa ~1 MB de stack y es costoso de crear. Los Virtual Threads de Java 21 son ultraligeros (~1 KB) y gestionados íntegramente por la JVM.'
+							: 'A classic OS platform thread costs ~1 MB stack and heavy kernel overhead. Java 21 Virtual Threads are lightweight (~1 KB) managed purely by the JVM.'}
+					</p>
+				</div>
+
+				<div class="co-card">
+					<div class="co-loom-grid">
+						<!-- Traditional Platform Threads -->
+						<div class="co-loom-card">
+							<span class="co-badge co-badge-legacy">{isEs ? 'Hilos Tradicionales del SO' : 'Traditional OS Threads'}</span>
+							<div class="co-metric-row">
+								<span>10.000 {isEs ? 'Hilos' : 'Threads'}:</span>
+								<strong class="co-text-accent">~10 GB RAM (OutOfMemoryError)</strong>
+							</div>
+							<div class="co-bar-track">
+								<div class="co-bar-fill co-bar-slow" style="width: 95%;"></div>
+							</div>
+							<p class="co-subtext">{isEs ? '1 Hilo Java = 1 Hilo pesado del kernel del SO. Bloquearse en I/O suspende el hilo nativo.' : '1 Java Thread = 1 heavyweight OS kernel thread. Blocking in I/O stalls native thread.'}</p>
+						</div>
+
+						<!-- Virtual Threads Loom -->
+						<div class="co-loom-card">
+							<span class="co-badge co-badge-alt">{isEs ? 'Virtual Threads (Project Loom)' : 'Virtual Threads (Project Loom)'}</span>
+							<div class="co-metric-row">
+								<span>10.000 {isEs ? 'Hilos' : 'Threads'}:</span>
+								<strong class="co-text-accent-2">~15 MB RAM (¡Ultraligero!)</strong>
+							</div>
+							<div class="co-bar-track">
+								<div class="co-bar-fill co-bar-fast" style="width: 4%;"></div>
+							</div>
+							<p class="co-subtext">{isEs ? 'Millones de hilos virtuales montados dinámicamente sobre pocos Carrier Threads. Si hay I/O, el virtual thread se desmonta sin frenar el CPU.' : 'Millions of virtual threads mounted onto few carrier threads. On I/O block, it unmounts cleanly.'}</p>
+						</div>
+					</div>
+
+					<div class="co-loom-code">
+						<span class="co-badge co-badge-alt">{isEs ? 'Sintaxis en Java 21+' : 'Java 21+ Syntax'}</span>
+						<pre class="co-pre"><code>// 1 millón de hilos concurrentes sin colapsar la máquina:
+try (var executor = Executors.newVirtualThreadPerTaskExecutor()) &#123;
+    IntStream.range(0, 10_000).forEach(i -&gt; &#123;
+        executor.submit(() -&gt; &#123;
+            Thread.sleep(1000); // Se desmonta de la CPU durante el sleep
+            return i;
+        &#125;);
+    &#125;);
+&#125; // AutoCloseable espera a que todos terminen</code></pre>
+					</div>
+				</div>
+			</section>
+		</main>
+	</div>
+</div>
+
+<style>
+	.co-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.co-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.co-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	.co-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
+	.co-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.co-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent);
+	}
+
+	.co-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.co-counter {
+		font-size: var(--text-sm);
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.co-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 1100px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.co-slide.is-active {
+		display: block;
+		animation: coFade 0.25s ease-out;
+	}
+
+	@keyframes coFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.co-header {
+		margin-bottom: var(--space-5);
+	}
+
+	.co-kicker {
+		font-size: var(--text-xs);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent);
+	}
+
+	.co-title {
+		font-family: var(--font-display);
+		font-size: var(--text-2xl);
+		color: var(--color-text);
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.co-lead {
+		font-size: var(--text-base);
+		color: var(--color-text-muted);
+		line-height: 1.5;
+		margin: 0;
+	}
+
+	.co-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.co-mode-bar {
+		display: flex;
+		gap: var(--space-2);
+		margin-bottom: var(--space-4);
+		border-bottom: 1px solid var(--color-border);
+		padding-bottom: var(--space-3);
+	}
+
+	.co-tab {
+		background: transparent;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-1) var(--space-3);
+		font-size: var(--text-xs);
+		font-weight: 600;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.co-tab.is-active {
+		background: var(--color-accent);
+		color: var(--color-surface);
+		border-color: var(--color-accent);
+	}
+
+	/* Slide 1: Hardware & JMM */
+	.co-jmm-grid {
+		display: grid;
+		grid-template-columns: 1fr 1.6fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 768px) {
+		.co-jmm-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.co-hw-panel, .co-jvm-panel {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.co-panel-title {
+		display: block;
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		margin-bottom: var(--space-3);
+	}
+
+	.co-cores-wrap {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.co-core-box {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		transition: opacity 0.3s;
+	}
+
+	.co-core-badge {
+		font-weight: 700;
+		font-size: var(--text-xs);
+		color: var(--color-accent);
+	}
+
+	.co-cache-label {
+		font-size: 10px;
+		color: var(--color-text-muted);
+		margin-bottom: var(--space-1);
+	}
+
+	.co-core-active {
+		font-size: var(--text-xs);
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	.co-mem-diagram {
+		display: grid;
+		grid-template-columns: 1fr 1.2fr 1fr;
+		gap: var(--space-2);
+		align-items: center;
+	}
+
+	@media (max-width: 640px) {
+		.co-mem-diagram {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.co-stack-box {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-2);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.co-frame {
+		font-family: monospace;
+		font-size: 10px;
+		background: var(--color-bg);
+		padding: 2px 4px;
+		border-radius: var(--radius-sm);
+	}
+
+	.co-heap-box {
+		background: var(--color-surface);
+		border: 2px solid var(--color-accent);
+		border-radius: var(--radius-md);
+		padding: var(--space-2);
+		text-align: center;
+	}
+
+	.co-heap-obj {
+		margin: var(--space-2) 0;
+		font-size: 11px;
+	}
+
+	.co-heap-obj code {
+		display: block;
+		font-family: monospace;
+		font-size: 10px;
+		color: var(--color-accent);
+	}
+
+	.co-heap-warning {
+		font-size: 10px;
+		color: var(--color-accent);
+		font-weight: 700;
+	}
+
+	.co-badge {
+		display: inline-block;
+		font-size: 10px;
+		font-weight: 700;
+		background: var(--color-accent);
+		color: var(--color-surface);
+		padding: 2px 6px;
+		border-radius: var(--radius-full);
+	}
+
+	.co-badge-accent {
+		background: var(--color-accent);
+	}
+
+	.co-badge-alt {
+		background: var(--color-accent-2, rgb(100, 140, 90));
+		color: var(--color-surface);
+	}
+
+	.co-badge-legacy {
+		background: var(--color-text-muted);
+		color: var(--color-surface);
+	}
+
+	/* Slide 2: Timeline */
+	.co-sim-toolbar {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		margin-bottom: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.co-action-btn {
+		background: var(--color-accent);
+		color: var(--color-surface);
+		font-weight: 600;
+		font-size: var(--text-sm);
+		padding: var(--space-2) var(--space-4);
+		border: none;
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: opacity 0.2s;
+	}
+
+	.co-action-btn:hover {
+		opacity: 0.9;
+	}
+
+	.co-reset-btn {
+		background: transparent;
+		color: var(--color-text-muted);
+		font-size: var(--text-sm);
+		padding: var(--space-2) var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+	}
+
+	.co-state-status {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		font-style: italic;
+	}
+
+	.co-timeline-grid {
+		display: grid;
+		grid-template-columns: 1fr 0.8fr 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 768px) {
+		.co-timeline-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.co-time-col {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.co-col-title {
+		font-weight: 700;
+		font-size: var(--text-xs);
+		margin-bottom: var(--space-1);
+	}
+
+	.co-text-accent {
+		color: var(--color-accent);
+	}
+
+	.co-text-alt {
+		color: var(--color-accent-2, rgb(100, 140, 90));
+	}
+
+	.co-step-card {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-2);
+		font-family: monospace;
+		font-size: 11px;
+		transition: all 0.3s;
+	}
+
+	.co-step-card.is-active {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+		font-weight: 700;
+	}
+
+	.co-time-center {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: var(--space-3);
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.co-heap-val-box {
+		text-align: center;
+	}
+
+	.co-heap-val-label {
+		display: block;
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+	}
+
+	.co-heap-number {
+		font-family: var(--font-display);
+		font-size: 3rem;
+		color: var(--color-accent);
+		font-weight: 700;
+	}
+
+	.co-verdict-box {
+		font-size: var(--text-xs);
+		text-align: center;
+	}
+
+	.co-lost-update {
+		display: block;
+		margin-top: var(--space-1);
+		font-size: 11px;
+	}
+
+	/* Slide 3: Dual Grid */
+	.co-dual-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 768px) {
+		.co-dual-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.co-panel {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.co-panel-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: var(--space-2);
+	}
+
+	.co-pill {
+		font-size: 10px;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		padding: 2px 6px;
+		border-radius: var(--radius-full);
+		color: var(--color-text-muted);
+	}
+
+	.co-subtext {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		line-height: 1.4;
+		margin-bottom: var(--space-3);
+	}
+
+	.co-lock-viz {
+		background: var(--color-surface);
+		border-radius: var(--radius-md);
+		padding: var(--space-2);
+		margin-bottom: var(--space-3);
+		display: flex;
+		justify-content: center;
+	}
+
+	.co-svg-box {
+		width: 100%;
+		max-height: 90px;
+	}
+
+	.co-room-box {
+		fill: color-mix(in srgb, var(--color-accent) 15%, transparent);
+		stroke: var(--color-accent);
+		stroke-width: 2;
+	}
+
+	.co-room-txt {
+		font-size: 10px;
+		font-weight: 700;
+		fill: var(--color-accent);
+		text-anchor: middle;
+	}
+
+	.co-wait-box {
+		fill: var(--color-bg);
+		stroke: var(--color-border);
+		stroke-width: 1.5;
+		stroke-dasharray: 3,3;
+	}
+
+	.co-wait-txt {
+		font-size: 9px;
+		fill: var(--color-text-muted);
+		text-anchor: middle;
+	}
+
+	.co-cas-circle {
+		fill: color-mix(in srgb, var(--color-accent-2, rgb(100, 140, 90)) 15%, transparent);
+		stroke: var(--color-accent-2, rgb(100, 140, 90));
+		stroke-width: 2;
+	}
+
+	.co-cas-txt {
+		font-size: 10px;
+		font-weight: 700;
+		fill: var(--color-accent-2, rgb(100, 140, 90));
+		text-anchor: middle;
+	}
+
+	.co-cas-ok-box {
+		fill: var(--color-surface);
+		stroke: var(--color-accent-2, rgb(100, 140, 90));
+		stroke-width: 1.5;
+	}
+
+	.co-cas-ok-txt {
+		font-size: 10px;
+		font-weight: 700;
+		fill: var(--color-accent-2, rgb(100, 140, 90));
+		text-anchor: middle;
+	}
+
+	.co-pre {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		font-family: monospace;
+		font-size: 11px;
+		line-height: 1.5;
+		margin: 0;
+	}
+
+	/* Slide 4: Deadlock */
+	.co-deadlock-viz {
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		justify-content: center;
+		margin-bottom: var(--space-3);
+	}
+
+	.co-svg-deadlock {
+		width: 100%;
+		max-height: 200px;
+	}
+
+	.co-dl-node {
+		fill: var(--color-surface);
+		stroke-width: 2;
+	}
+
+	.co-dl-thread {
+		stroke: var(--color-accent);
+	}
+
+	.co-dl-lock {
+		stroke: var(--color-accent-2, rgb(100, 140, 90));
+	}
+
+	.co-dl-txt {
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--color-text);
+		text-anchor: middle;
+	}
+
+	.co-arrow-holds {
+		stroke: var(--color-accent-2, rgb(100, 140, 90));
+		stroke-width: 2.5;
+	}
+
+	.co-arrow-waits {
+		stroke: var(--color-accent);
+		stroke-width: 2.5;
+		stroke-dasharray: 4,4;
+	}
+
+	.co-edge-lbl {
+		font-size: 9px;
+		font-weight: 700;
+		fill: var(--color-text-muted);
+	}
+
+	.co-info-callout {
+		background: var(--color-bg);
+		border-left: 3px solid var(--color-accent);
+		padding: var(--space-3);
+		font-size: var(--text-xs);
+		color: var(--color-text);
+		border-radius: 0 var(--radius-md) var(--radius-md) 0;
+	}
+
+	/* Slide 5: Loom */
+	.co-loom-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-4);
+		margin-bottom: var(--space-4);
+	}
+
+	@media (max-width: 768px) {
+		.co-loom-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.co-loom-card {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.co-metric-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		font-size: var(--text-xs);
+		margin: var(--space-2) 0;
+	}
+
+	.co-text-accent-2 {
+		color: var(--color-accent-2, rgb(100, 140, 90));
+	}
+
+	.co-bar-track {
+		height: 10px;
+		background: var(--color-surface);
+		border-radius: var(--radius-full);
+		overflow: hidden;
+		margin-bottom: var(--space-2);
+		border: 1px solid var(--color-border);
+	}
+
+	.co-bar-fill {
+		height: 100%;
+		border-radius: var(--radius-full);
+	}
+
+	.co-bar-slow {
+		background: var(--color-accent);
+	}
+
+	.co-bar-fast {
+		background: var(--color-accent-2, rgb(100, 140, 90));
+	}
+
+	.co-loom-code {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	@media (min-width: 1440px) { .co-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .co-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .co-viewport { zoom: 1.25; } }
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 5;
+
+	const prevBtn = document.getElementById('coPrevBtn') as HTMLButtonElement;
+	const nextBtn = document.getElementById('coNextBtn') as HTMLButtonElement;
+	const counter = document.getElementById('coSlideCounter') as HTMLElement;
+	const slides = document.querySelectorAll<HTMLElement>('.co-slide');
+
+	function updateSlide(target: number) {
+		if (target < 1 || target > totalSlides) return;
+		currentSlide = target;
+		slides.forEach((s) => s.classList.remove('is-active'));
+		document.querySelector(`.co-slide[data-slide="${currentSlide}"]`)?.classList.add('is-active');
+
+		if (counter) counter.textContent = `${currentSlide} / ${totalSlides}`;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	}
+
+	prevBtn?.addEventListener('click', () => updateSlide(currentSlide - 1));
+	nextBtn?.addEventListener('click', () => updateSlide(currentSlide + 1));
+
+	// Slide 1: Hardware toggle
+	const modeSingle = document.getElementById('coModeSingle');
+	const modeMulti = document.getElementById('coModeMulti');
+	const core1Box = document.getElementById('coCore1Box');
+	const core1Status = document.getElementById('coCore1Status');
+
+	modeSingle?.addEventListener('click', () => {
+		modeSingle.classList.add('is-active');
+		modeMulti?.classList.remove('is-active');
+		if (core1Box) core1Box.style.opacity = '0.35';
+		if (core1Status) core1Status.textContent = 'Inactivo (Modo 1 Core)';
+	});
+
+	modeMulti?.addEventListener('click', () => {
+		modeMulti.classList.add('is-active');
+		modeSingle?.classList.remove('is-active');
+		if (core1Box) core1Box.style.opacity = '1';
+		if (core1Status) core1Status.textContent = 'Hilo-2 (Paralelo Simultáneo)';
+	});
+
+	// Slide 2: Race Condition Simulator
+	let raceStep = 0;
+	const raceStepBtn = document.getElementById('coRaceStepBtn');
+	const raceResetBtn = document.getElementById('coRaceResetBtn');
+	const raceStatus = document.getElementById('coRaceStatus');
+	const sharedCount = document.getElementById('coSharedCount');
+	const lostUpdateMsg = document.getElementById('coLostUpdateMsg');
+
+	const t1Steps = [
+		document.getElementById('coT1Step1'),
+		document.getElementById('coT1Step2'),
+		document.getElementById('coT1Step3'),
+	];
+	const t2Steps = [
+		document.getElementById('coT2Step1'),
+		document.getElementById('coT2Step2'),
+		document.getElementById('coT2Step3'),
+	];
+
+	function renderRace() {
+		t1Steps.forEach((el) => el?.classList.remove('is-active'));
+		t2Steps.forEach((el) => el?.classList.remove('is-active'));
+
+		if (raceStep === 0) {
+			if (sharedCount) sharedCount.textContent = '5';
+			if (raceStatus) raceStatus.textContent = 'T0: Variable count = 5 en memoria compartida';
+			if (lostUpdateMsg) lostUpdateMsg.textContent = '...';
+		} else if (raceStep === 1) {
+			t1Steps[0]?.classList.add('is-active');
+			if (raceStatus) raceStatus.textContent = 'T1: Hilo 1 lee count (5) a su registro local';
+		} else if (raceStep === 2) {
+			t1Steps[0]?.classList.add('is-active');
+			t2Steps[0]?.classList.add('is-active');
+			if (raceStatus) raceStatus.textContent = 'T2: Hilo 2 lee count (5) a su registro local (¡Antes de que Hilo 1 actualice!)';
+		} else if (raceStep === 3) {
+			t1Steps[1]?.classList.add('is-active');
+			t2Steps[1]?.classList.add('is-active');
+			if (raceStatus) raceStatus.textContent = 'T3: Ambos hilos calculan localmente 5 + 1 = 6';
+		} else if (raceStep === 4) {
+			t1Steps[2]?.classList.add('is-active');
+			if (sharedCount) sharedCount.textContent = '6';
+			if (raceStatus) raceStatus.textContent = 'T4: Hilo 1 escribe 6 en el Heap compartido';
+		} else if (raceStep === 5) {
+			t1Steps[2]?.classList.add('is-active');
+			t2Steps[2]?.classList.add('is-active');
+			if (sharedCount) sharedCount.textContent = '6';
+			if (raceStatus) raceStatus.textContent = 'T5: Hilo 2 escribe su 6, sobreescribiendo el Heap. ¡Se perdió 1 incremento!';
+			if (lostUpdateMsg) {
+				lostUpdateMsg.textContent = '❌ ¡Condición de Carrera! count = 6 en vez de 7 (Lost Update).';
+				lostUpdateMsg.style.color = 'var(--color-accent)';
+			}
+		}
+	}
+
+	raceStepBtn?.addEventListener('click', () => {
+		if (raceStep < 5) {
+			raceStep++;
+			renderRace();
+		}
+	});
+
+	raceResetBtn?.addEventListener('click', () => {
+		raceStep = 0;
+		renderRace();
+	});
+
+	// Slide 4: Deadlock Toggle
+	const deadlockCycleBtn = document.getElementById('coDeadlockCycleBtn');
+	const deadlockFixBtn = document.getElementById('coDeadlockFixBtn');
+	const cycleArrows = document.getElementById('coCycleArrows');
+	const deadlockExplanation = document.getElementById('coDeadlockExplanation');
+
+	deadlockCycleBtn?.addEventListener('click', () => {
+		deadlockCycleBtn.classList.add('is-active');
+		deadlockFixBtn?.classList.remove('is-active');
+		if (cycleArrows) {
+			cycleArrows.innerHTML = `
+				<line x1="120" y1="50" x2="185" y2="35" class="co-arrow-holds" />
+				<text x="145" y="35" class="co-edge-lbl">Retiene</text>
+				<line x1="105" y1="90" x2="190" y2="140" class="co-arrow-waits" />
+				<text x="125" y="130" class="co-edge-lbl co-text-accent">Espera</text>
+				<line x1="320" y1="70" x2="255" y2="140" class="co-arrow-holds" />
+				<text x="290" y="125" class="co-edge-lbl">Retiene</text>
+				<line x1="320" y1="50" x2="255" y2="35" class="co-arrow-waits" />
+				<text x="290" y="35" class="co-edge-lbl co-text-accent">Espera</text>
+			`;
+		}
+		if (deadlockExplanation) {
+			deadlockExplanation.innerHTML = '<strong>Condición de Espera Circular:</strong> El Hilo A no liberará Lock 1 hasta obtener Lock 2; el Hilo B no liberará Lock 2 hasta obtener Lock 1. Congelamiento total de la aplicación.';
+		}
+	});
+
+	deadlockFixBtn?.addEventListener('click', () => {
+		deadlockFixBtn.classList.add('is-active');
+		deadlockCycleBtn?.classList.remove('is-active');
+		if (cycleArrows) {
+			cycleArrows.innerHTML = `
+				<line x1="120" y1="50" x2="185" y2="35" class="co-arrow-holds" />
+				<text x="145" y="35" class="co-edge-lbl">Retiene</text>
+				<line x1="105" y1="90" x2="190" y2="140" class="co-arrow-holds" />
+				<text x="135" y="125" class="co-edge-lbl">Adquiere Lock 2</text>
+				<line x1="320" y1="50" x2="255" y2="35" class="co-arrow-waits" />
+				<text x="280" y="35" class="co-edge-lbl co-text-accent">Espera Lock 1</text>
+			`;
+		}
+		if (deadlockExplanation) {
+			deadlockExplanation.innerHTML = '<strong>Orden Canónico de Adquisición (Solución):</strong> Ambos hilos siempre piden Lock 1 antes que Lock 2. El ciclo circular se rompe por completo y el Deadlock es matemáticamente imposible.';
+		}
+	});
+</script>

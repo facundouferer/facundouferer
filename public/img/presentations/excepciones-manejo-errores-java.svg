@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="25" y="170" width="350" height="10" rx="5" fill="#dcd3c4"/>
+
+	<!-- Title -->
+	<text x="200" y="28" font-family="'Caprasimo', serif" font-size="14" fill="#8c491a" text-anchor="middle">Manejo de Excepciones</text>
+	<text x="200" y="42" font-family="'Figtree', sans-serif" font-size="9" fill="#7a8a5e" text-anchor="middle">Jerarquía Throwable, Call Stack y Robustez</text>
+
+	<!-- Left: Throwable Tree hierarchy -->
+	<g transform="translate(35, 55)">
+		<!-- Throwable root -->
+		<rect x="35" y="0" width="90" height="26" rx="5" fill="#fdfbf7" stroke="#8c491a" stroke-width="1.5"/>
+		<text x="80" y="17" font-family="'Caprasimo', serif" font-size="8" fill="#8c491a" text-anchor="middle">Throwable</text>
+
+		<!-- Branch Left: Error -->
+		<path d="M55 26 L30 50" stroke="#c67139" stroke-width="1.5"/>
+		<rect x="0" y="50" width="65" height="25" rx="4" fill="#fdfbf7" stroke="#c67139" stroke-width="1.5"/>
+		<text x="32" y="66" font-family="'Figtree', sans-serif" font-size="7.5" font-weight="700" fill="#c67139" text-anchor="middle">Error ✕</text>
+
+		<!-- Branch Right: Exception -->
+		<path d="M105 26 L130 50" stroke="#7a8a5e" stroke-width="1.5"/>
+		<rect x="95" y="50" width="75" height="25" rx="4" fill="#fdfbf7" stroke="#7a8a5e" stroke-width="1.5"/>
+		<text x="132" y="66" font-family="'Figtree', sans-serif" font-size="7.5" font-weight="700" fill="#7a8a5e" text-anchor="middle">Exception</text>
+
+		<!-- Checked vs Runtime -->
+		<path d="M115 75 L105 92" stroke="#7a8a5e" stroke-width="1"/>
+		<text x="100" y="103" font-family="'Fira Code', monospace" font-size="6" fill="#8c491a">Checked</text>
+
+		<path d="M150 75 L160 92" stroke="#7a8a5e" stroke-width="1"/>
+		<text x="160" y="103" font-family="'Fira Code', monospace" font-size="6" fill="#7a8a5e">Runtime</text>
+	</g>
+
+	<!-- Right: Call Stack & try-catch shield -->
+	<g transform="translate(230, 55)">
+		<rect x="0" y="0" width="135" height="95" rx="8" fill="#fdfbf7" stroke="#8c491a" stroke-width="1.5"/>
+		<text x="67" y="18" font-family="'Caprasimo', serif" font-size="8" fill="#8c491a" text-anchor="middle">Call Stack</text>
+		
+		<!-- Frame 3 -->
+		<rect x="10" y="26" width="115" height="18" rx="3" fill="#ebddc5"/>
+		<text x="67" y="38" font-family="'Fira Code', monospace" font-size="6.5" fill="#8c491a" text-anchor="middle">main() [try-catch]</text>
+
+		<!-- Frame 2 -->
+		<rect x="10" y="48" width="115" height="18" rx="3" fill="#dcd3c4"/>
+		<text x="67" y="60" font-family="'Fira Code', monospace" font-size="6.5" fill="#201e1d" text-anchor="middle">procesar()</text>
+
+		<!-- Frame 1: Explosion -->
+		<rect x="10" y="70" width="115" height="18" rx="3" fill="#f2f5ea" stroke="#c67139"/>
+		<text x="67" y="82" font-family="'Fira Code', monospace" font-weight="700" font-size="6.5" fill="#c67139" text-anchor="middle">throw Exception! ⚡</text>
+	</g>
+</svg>

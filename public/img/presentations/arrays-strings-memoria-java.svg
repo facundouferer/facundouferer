@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="30" y="166" width="340" height="12" rx="6" fill="#dcd3c4"/>
+
+	<!-- Array memory cells -->
+	<g transform="translate(35, 75)">
+		<rect x="0" y="0" width="40" height="40" rx="8" fill="#fdfbf7" stroke="#c67139" stroke-width="2.5"/>
+		<text x="20" y="24" font-family="'Fira Code', monospace" font-size="14" font-weight="700" fill="#8c491a" text-anchor="middle">[0]</text>
+		<text x="20" y="-8" font-family="'Figtree', sans-serif" font-size="10" fill="#7a8a5e" text-anchor="middle">0x2000</text>
+
+		<rect x="46" y="0" width="40" height="40" rx="8" fill="#fdfbf7" stroke="#c67139" stroke-width="2.5"/>
+		<text x="66" y="24" font-family="'Fira Code', monospace" font-size="14" font-weight="700" fill="#8c491a" text-anchor="middle">[1]</text>
+		<text x="66" y="-8" font-family="'Figtree', sans-serif" font-size="10" fill="#7a8a5e" text-anchor="middle">+4B</text>
+
+		<rect x="92" y="0" width="40" height="40" rx="8" fill="#fdfbf7" stroke="#c67139" stroke-width="2.5"/>
+		<text x="112" y="24" font-family="'Fira Code', monospace" font-size="14" font-weight="700" fill="#8c491a" text-anchor="middle">[2]</text>
+		<text x="112" y="-8" font-family="'Figtree', sans-serif" font-size="10" fill="#7a8a5e" text-anchor="middle">+8B</text>
+
+		<rect x="138" y="0" width="40" height="40" rx="8" fill="#fdfbf7" stroke="#c67139" stroke-width="2.5"/>
+		<text x="158" y="24" font-family="'Fira Code', monospace" font-size="14" font-weight="700" fill="#8c491a" text-anchor="middle">[3]</text>
+		<text x="158" y="-8" font-family="'Figtree', sans-serif" font-size="10" fill="#7a8a5e" text-anchor="middle">+12B</text>
+	</g>
+
+	<!-- Pointer wire to String Pool -->
+	<path d="M225 95 Q250 65 275 80" stroke="#8c491a" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="4 3"/>
+	<polygon points="278,77 282,85 273,84" fill="#8c491a"/>
+
+	<!-- String Pool capsule -->
+	<rect x="260" y="65" width="105" height="60" rx="16" fill="#f2f5ea" stroke="#7a8a5e" stroke-width="2"/>
+	<text x="312" y="86" font-family="'Caprasimo', serif" font-size="11" fill="#4d5c36" text-anchor="middle">String Pool</text>
+	<rect x="272" y="93" width="80" height="22" rx="6" fill="#fdfbf7" stroke="#7a8a5e" stroke-width="1.5"/>
+	<text x="312" y="108" font-family="'Fira Code', monospace" font-size="11" font-weight="700" fill="#8c491a" text-anchor="middle">"Java"</text>
+
+	<!-- Header Banner -->
+	<text x="200" y="32" font-family="'Caprasimo', serif" font-size="15" fill="#8c491a" text-anchor="middle">Arrays y String Constant Pool</text>
+</svg>

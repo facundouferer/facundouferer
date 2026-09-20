@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="20" y="175" width="360" height="8" rx="4" fill="#dcd3c4"/>
+
+	<!-- Title -->
+	<text x="200" y="26" font-family="'Caprasimo', serif" font-size="12.5" fill="#8c491a" text-anchor="middle">Depuración, Código Limpio y Refactorización</text>
+	<text x="200" y="40" font-family="'Figtree', sans-serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">Stack Traces, Debugger, Code Smells &amp; Refactor Seguro</text>
+
+	<!-- Visual Central Section -->
+	<g transform="translate(38, 55)">
+		<!-- Stack Trace panel -->
+		<g transform="translate(0, 14)">
+			<rect x="0" y="0" width="82" height="68" rx="8" fill="#fdfbf7" stroke="#c67139" stroke-width="2"/>
+			<rect x="0" y="0" width="82" height="18" rx="8" fill="#c67139"/>
+			<text x="41" y="12" font-family="'Figtree', sans-serif" font-weight="700" font-size="7.5" fill="#fdfbf7" text-anchor="middle">Stack Trace</text>
+			<text x="8" y="32" font-family="monospace" font-size="6.5" fill="#2c2a29">NullPointerException</text>
+			<text x="8" y="44" font-family="monospace" font-size="6.5" fill="#c67139">at Order.total():14</text>
+			<text x="8" y="56" font-family="monospace" font-size="6.5" fill="#2c2a29">at Main.main():9</text>
+		</g>
+
+		<!-- Arrow Stack Trace -> Debugger -->
+		<path d="M 85,48 L 122,48" stroke="#c67139" stroke-width="2.5" stroke-dasharray="3,3"/>
+
+		<!-- Debugger core in center -->
+		<g transform="translate(125, 4)">
+			<rect x="0" y="0" width="86" height="88" rx="10" fill="#fdfbf7" stroke="#8c491a" stroke-width="2.5"/>
+			<rect x="0" y="0" width="86" height="20" rx="10" fill="#8c491a"/>
+			<text x="43" y="14" font-family="'Caprasimo', serif" font-size="8" fill="#fdfbf7" text-anchor="middle">Debugger</text>
+
+			<!-- magnifying glass -->
+			<circle cx="34" cy="46" r="14" fill="none" stroke="#8c491a" stroke-width="3"/>
+			<line x1="44" y1="56" x2="54" y2="66" stroke="#8c491a" stroke-width="3.5" stroke-linecap="round"/>
+			<!-- breakpoint dot -->
+			<circle cx="66" cy="42" r="5" fill="#c67139"/>
+
+			<text x="43" y="80" font-family="'Figtree', sans-serif" font-size="6.5" fill="#2c2a29" text-anchor="middle">breakpoints · watches</text>
+		</g>
+
+		<!-- Arrow Debugger -> Refactor -->
+		<path d="M 250,48 L 213,48" stroke="#7a8a5e" stroke-width="2.5" stroke-dasharray="3,3"/>
+
+		<!-- Refactor panel -->
+		<g transform="translate(253, 14)">
+			<rect x="0" y="0" width="82" height="68" rx="8" fill="#fdfbf7" stroke="#7a8a5e" stroke-width="2"/>
+			<rect x="0" y="0" width="82" height="18" rx="8" fill="#7a8a5e"/>
+			<text x="41" y="12" font-family="'Figtree', sans-serif" font-weight="700" font-size="7.5" fill="#fdfbf7" text-anchor="middle">Refactor</text>
+			<path d="M 12,34 L 20,42 L 34,26" fill="none" stroke="#7a8a5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+			<text x="46" y="39" font-family="monospace" font-size="6.5" fill="#2c2a29">JUnit verde</text>
+			<text x="8" y="56" font-family="monospace" font-size="6.5" fill="#7a8a5e">IVA_GENERAL</text>
+		</g>
+	</g>
+
+	<!-- Labels below -->
+	<text x="80" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#c67139" text-anchor="middle">Depuración</text>
+	<text x="200" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#8c491a" text-anchor="middle">Code Smells</text>
+	<text x="320" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">Refactor Seguro</text>
+</svg>

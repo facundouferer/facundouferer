@@ -79,11 +79,74 @@ const schema = buildCourseBreadcrumbSchema({
 	schema={schema}
 >
 	<div class="container lesson-page">
+		<button
+			type="button"
+			class="btn btn-primary mobile-sidebar-toggle elev-md"
+			aria-haspopup="dialog"
+			aria-expanded="false"
+			aria-controls="lesson-sidebar-drawer"
+			aria-label={t('courses.mobileNav.openButton')}
+			data-mobile-sidebar-toggle
+		>
+			<svg
+				aria-hidden="true"
+				xmlns="http://www.w3.org/2000/svg"
+				width="20"
+				height="20"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2.75"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<line x1="8" y1="6" x2="21" y2="6"></line>
+				<line x1="8" y1="12" x2="21" y2="12"></line>
+				<line x1="8" y1="18" x2="21" y2="18"></line>
+				<line x1="3" y1="6" x2="3.01" y2="6"></line>
+				<line x1="3" y1="12" x2="3.01" y2="12"></line>
+				<line x1="3" y1="18" x2="3.01" y2="18"></line>
+			</svg>
+			<span class="mobile-toggle-label">{t('courses.mobileNav.openButton')}</span>
+		</button>
+		<div class="mobile-sidebar-backdrop" data-mobile-sidebar-backdrop aria-hidden="true"></div>
+
 		<div class="lesson-layout">
-			<aside class="lesson-sidebar">
+			<aside
+				class="lesson-sidebar"
+				id="lesson-sidebar-drawer"
+				role="dialog"
+				aria-modal="true"
+				aria-label={t('courses.mobileNav.dialogTitle')}
+				data-mobile-sidebar-drawer
+			>
 				<div class="sidebar-header">
-					<span class="sidebar-course-name">{course.data.title_en}</span>
-					<span class="sidebar-course-meta">{course.data.technology} · {course.data.difficulty}</span>
+					<div class="sidebar-header-titles">
+						<span class="sidebar-course-name">{course.data.title_en}</span>
+						<span class="sidebar-course-meta">{course.data.technology} · {course.data.difficulty}</span>
+					</div>
+					<button
+						type="button"
+						class="btn btn-ghost sidebar-close-btn"
+						aria-label={t('courses.mobileNav.closeButton')}
+						data-mobile-sidebar-close
+					>
+						<svg
+							aria-hidden="true"
+							xmlns="http://www.w3.org/2000/svg"
+							width="18"
+							height="18"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2.75"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<line x1="18" y1="6" x2="6" y2="18"></line>
+							<line x1="6" y1="6" x2="18" y2="18"></line>
+						</svg>
+					</button>
 				</div>
 				<nav class="sidebar-lessons scroll-organic" aria-label="Lessons">
 					<LessonsList
@@ -143,6 +206,68 @@ const schema = buildCourseBreadcrumbSchema({
 	</div>
 </BaseLayout>
 
+<script>
+	function setupMobileSidebar() {
+		const toggle = document.querySelector<HTMLButtonElement>('[data-mobile-sidebar-toggle]');
+		const drawer = document.querySelector<HTMLElement>('[data-mobile-sidebar-drawer]');
+		const backdrop = document.querySelector<HTMLElement>('[data-mobile-sidebar-backdrop]');
+		const closeBtn = document.querySelector<HTMLButtonElement>('[data-mobile-sidebar-close]');
+
+		if (!toggle || !drawer || !backdrop) return;
+
+		const currentToggle = toggle;
+		const currentDrawer = drawer;
+		const currentBackdrop = backdrop;
+
+		function openSidebar() {
+			currentDrawer.classList.add('is-open');
+			currentBackdrop.classList.add('is-open');
+			currentToggle.setAttribute('aria-expanded', 'true');
+			document.body.style.overflow = 'hidden';
+			if (closeBtn) closeBtn.focus();
+		}
+
+		function closeSidebar() {
+			currentDrawer.classList.remove('is-open');
+			currentBackdrop.classList.remove('is-open');
+			currentToggle.setAttribute('aria-expanded', 'false');
+			document.body.style.overflow = '';
+			currentToggle.focus();
+		}
+
+		currentToggle.addEventListener('click', () => {
+			const isOpen = currentDrawer.classList.contains('is-open');
+			if (isOpen) {
+				closeSidebar();
+			} else {
+				openSidebar();
+			}
+		});
+
+		if (closeBtn) {
+			closeBtn.addEventListener('click', closeSidebar);
+		}
+
+		currentBackdrop.addEventListener('click', closeSidebar);
+
+		const lessonLinks = currentDrawer.querySelectorAll('a');
+		lessonLinks.forEach((link) => {
+			link.addEventListener('click', () => {
+				closeSidebar();
+			});
+		});
+
+		window.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape' && currentDrawer.classList.contains('is-open')) {
+				closeSidebar();
+			}
+		});
+	}
+
+	setupMobileSidebar();
+	document.addEventListener('astro:page-load', setupMobileSidebar);
+</script>
+
 <style>
 	@import '../../../../styles/article-body.css';
 
@@ -156,7 +281,40 @@ const schema = buildCourseBreadcrumbSchema({
 		margin-top: var(--space-4);
 	}
 
-	/* Sidebar */
+	/* Floating Action Button for Mobile */
+	.mobile-sidebar-toggle {
+		position: fixed;
+		bottom: var(--space-4);
+		right: var(--space-4);
+		z-index: 40;
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		min-height: 44px;
+		padding: var(--space-2) var(--space-4);
+		border-radius: var(--radius-full);
+		box-shadow: var(--shadow-lg);
+		font-weight: 600;
+	}
+
+	.mobile-sidebar-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 45;
+		background: color-mix(in srgb, var(--color-text) 35%, transparent);
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.2s ease;
+	}
+
+	.mobile-sidebar-backdrop.is-open {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	/* Sidebar base styles */
 	.lesson-sidebar {
 		background: var(--color-surface);
 		border-radius: var(--radius-lg);
@@ -230,8 +388,78 @@ const schema = buildCourseBreadcrumbSchema({
 		flex-wrap: wrap;
 	}
 
-	/* Desktop: sidebar left, content right */
+	/* Mobile styles (< 960px) */
+	@media (width < 960px) {
+		.lesson-sidebar {
+			position: fixed;
+			inset-inline: var(--space-4);
+			bottom: var(--space-4);
+			top: auto;
+			max-height: min(560px, calc(100dvh - var(--space-12)));
+			z-index: 50;
+			display: flex;
+			flex-direction: column;
+			box-shadow: var(--shadow-xl);
+			visibility: hidden;
+			opacity: 0;
+			pointer-events: none;
+			transform: translateY(16px);
+			transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+		}
+
+		.lesson-sidebar.is-open {
+			visibility: visible;
+			opacity: 1;
+			pointer-events: auto;
+			transform: translateY(0);
+		}
+
+		.sidebar-header {
+			display: flex;
+			align-items: flex-start;
+			justify-content: space-between;
+			gap: var(--space-2);
+		}
+
+		.sidebar-close-btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 44px;
+			min-height: 44px;
+			padding: 0;
+			color: var(--color-text);
+			background: transparent;
+			border: none;
+			cursor: pointer;
+			border-radius: var(--radius-sm);
+		}
+
+		.sidebar-close-btn:hover {
+			background: var(--color-neutral-200);
+		}
+
+		.sidebar-lessons {
+			flex: 1;
+			overflow-y: auto;
+			min-height: 0;
+		}
+	}
+
+	/* Desktop: sidebar left, content right (>= 960px) */
 	@media (width >= 960px) {
+		.mobile-sidebar-toggle {
+			display: none;
+		}
+
+		.mobile-sidebar-backdrop {
+			display: none;
+		}
+
+		.sidebar-close-btn {
+			display: none;
+		}
+
 		.lesson-layout {
 			grid-template-columns: 300px 1fr;
 		}
@@ -243,6 +471,13 @@ const schema = buildCourseBreadcrumbSchema({
 			max-height: calc(100vh - 7rem - 15px);
 			display: flex;
 			flex-direction: column;
+			visibility: visible;
+			opacity: 1;
+			pointer-events: auto;
+			transform: none;
+			box-shadow: none;
+			inset: auto;
+			z-index: auto;
 		}
 
 		/* Only the lesson list scrolls — course name and back link stay put. */

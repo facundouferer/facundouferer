@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="30" y="166" width="340" height="12" rx="6" fill="#dcd3c4"/>
+
+	<!-- Blueprint Card (Left) -->
+	<rect x="40" y="55" width="115" height="95" rx="8" fill="#fdfbf7" stroke="#8c491a" stroke-width="2" stroke-dasharray="4 3"/>
+	<text x="97" y="76" font-family="'Caprasimo', serif" font-size="11" fill="#8c491a" text-anchor="middle">class Auto</text>
+	<line x1="50" y1="84" x2="145" y2="84" stroke="#dcd3c4" stroke-width="1.5"/>
+	<text x="52" y="98" font-family="'Fira Code', monospace" font-size="9" fill="#7a8a5e">String color</text>
+	<text x="52" y="112" font-family="'Fira Code', monospace" font-size="9" fill="#7a8a5e">int velocidad</text>
+	<text x="52" y="132" font-family="'Fira Code', monospace" font-size="9" font-weight="700" fill="#c67139">acelerar()</text>
+
+	<!-- Arrow new Operator -->
+	<path d="M165 100 Q190 75 215 95" stroke="#c67139" stroke-width="3" fill="none"/>
+	<polygon points="218,92 222,100 213,99" fill="#c67139"/>
+	<text x="190" y="72" font-family="'Fira Code', monospace" font-size="11" font-weight="700" fill="#c67139" text-anchor="middle">new</text>
+
+	<!-- Instantiated Object in Heap (Right) -->
+	<rect x="230" y="55" width="130" height="95" rx="10" fill="#f2f5ea" stroke="#7a8a5e" stroke-width="2.5"/>
+	<text x="295" y="76" font-family="'Caprasimo', serif" font-size="11" fill="#4d5c36" text-anchor="middle">Auto @0x5A10</text>
+	<line x1="240" y1="84" x2="350" y2="84" stroke="#7a8a5e" stroke-width="1.5"/>
+	<text x="242" y="100" font-family="'Fira Code', monospace" font-size="9" fill="#201e1d">color: "Rojo"</text>
+	<text x="242" y="118" font-family="'Fira Code', monospace" font-size="9" fill="#201e1d">velocidad: 80</text>
+	<rect x="242" y="126" width="60" height="15" rx="3" fill="#c67139"/>
+	<text x="272" y="137" font-family="'Figtree', sans-serif" font-size="8" font-weight="700" fill="#fdfbf7" text-anchor="middle">EN HEAP</text>
+
+	<!-- Header Banner -->
+	<text x="200" y="32" font-family="'Caprasimo', serif" font-size="15" fill="#8c491a" text-anchor="middle">Clases, Objetos y new en Java</text>
+</svg>

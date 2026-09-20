@@ -1,0 +1,1767 @@
+---
+interface Props {
+	lang?: 'es' | 'en';
+}
+
+const { lang = 'es' } = Astro.props;
+
+const t = {
+	es: {
+		kicker: 'Java Collections Framework & Genéricos',
+		title: 'Colecciones en Java y Genéricos (JCF)',
+		subtitle: 'Jerarquía completa, taxonomía List/Set/Map/Queue, anatomía de HashMap y Type Erasure.',
+		slide: 'Diapositiva',
+		of: 'de',
+		prev: 'Anterior',
+		next: 'Siguiente',
+		reset: 'Reiniciar',
+		step: 'Paso',
+		status: 'Estado',
+		code: 'Código Java',
+		s1Title: 'El Mapa Taxonómico del Java Collections Framework',
+		s1Desc: 'La arquitectura del JCF se organiza en dos grandes ramas: la jerarquía Collection (elementos individuales) y la jerarquía Map (pares clave-valor).',
+		s2Title: 'Genéricos: Adiós a los ClassCastException en Runtime',
+		s2Desc: 'Antes de Java 5, las colecciones guardaban Object, obligando a castear a ciegas en tiempo de ejecución. Los genéricos mueven el error a tiempo de compilación.',
+		s3Title: 'Las 4 Familias: Árbol de Decisión Interactivo',
+		s3Desc: 'Elegir la colección correcta define el rendimiento y la legibilidad de tu sistema. Respondé las preguntas para encontrar la estructura ideal.',
+		s4Title: 'Anatomía Interna de HashMap: Cubetas (Buckets) y Hashing',
+		s4Desc: 'HashMap logra acceso O(1) promedio indexando un array interno mediante el hashCode() de la clave y una operación bit a bit.',
+		s5Title: 'Manejo de Colisiones y Treeification (Árboles Rojo-Negro)',
+		s5Desc: 'Cuando dos claves caen en el mismo bucket ocurre una colisión. Java 8+ transforma la lista enlazada en un árbol rojo-negro si supera 8 elementos.',
+		s6Title: 'Simulador Interactivo de HashMap en Vivo',
+		s6Desc: 'Experimentá agregando claves, forzando colisiones y observando el factor de carga (Load Factor) y el resize() automático.',
+		s7Title: 'Type Erasure: La Letra Chica de los Genéricos',
+		s7Desc: 'Los genéricos existen solo para el compilador. En el bytecode de la JVM desaparecen y se reemplazan por Object con casteos automáticos.',
+	},
+	en: {
+		kicker: 'Java Collections Framework & Generics',
+		title: 'Java Collections Framework and Generics',
+		subtitle: 'Full hierarchy, List/Set/Map/Queue taxonomy, HashMap internals, and Type Erasure.',
+		slide: 'Slide',
+		of: 'of',
+		prev: 'Previous',
+		next: 'Next',
+		reset: 'Reset',
+		step: 'Step',
+		status: 'Status',
+		code: 'Java Code',
+		s1Title: 'Taxonomic Map of the Java Collections Framework',
+		s1Desc: 'JCF architecture splits into two main branches: the Collection hierarchy (individual items) and the Map hierarchy (key-value pairs).',
+		s2Title: 'Generics: Farewell to Runtime ClassCastException',
+		s2Desc: 'Prior to Java 5, collections stored raw Objects, forcing blind runtime casting. Generics shift type bugs to compile-time.',
+		s3Title: 'The 4 Families: Interactive Decision Tree',
+		s3Desc: 'Choosing the right collection determines performance and maintainability. Answer the criteria to reveal the optimal structure.',
+		s4Title: 'HashMap Anatomy: Buckets Array and Hashing Math',
+		s4Desc: 'HashMap achieves average O(1) lookup by indexing an internal array using the key hashCode() and a bitwise mask.',
+		s5Title: 'Collision Resolution and Treeification (Red-Black Trees)',
+		s5Desc: 'When keys share a bucket, collisions occur. Java 8+ transforms linked lists into Red-Black trees once collisions exceed 8 nodes.',
+		s6Title: 'Interactive Live HashMap Simulator',
+		s6Desc: 'Insert keys, watch bucket distribution, trigger collisions, and inspect the load factor and automated table resizing.',
+		s7Title: 'Type Erasure: The Fine Print of Java Generics',
+		s7Desc: 'Generics only exist at compile time. In bytecode, types are erased and substituted with Object plus automated compiler casts.',
+	},
+}[lang];
+---
+
+<section class="cg-screen" aria-label="Presentación Java Collections Framework y Genéricos">
+	<div class="cg-shell">
+		<header class="cg-nav-top">
+			<div class="cg-nav-title">
+				<span class="cg-kicker">{t.kicker}</span>
+				<h1 class="cg-main-title">{t.title}</h1>
+			</div>
+			<div class="cg-nav-controls">
+				<button type="button" class="cg-btn cg-btn-secondary" id="cg-prev-btn" aria-label={t.prev}>
+					← {t.prev}
+				</button>
+				<span class="cg-counter" id="cg-slide-counter">1 {t.of} 7</span>
+				<button type="button" class="cg-btn cg-btn-secondary" id="cg-next-btn" aria-label={t.next}>
+					{t.next} →
+				</button>
+			</div>
+		</header>
+
+		<div class="cg-progress-track" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="7">
+			<div class="cg-progress-bar" id="cg-progress-bar" style="width: 14.28%;"></div>
+		</div>
+
+		<main class="cg-viewport">
+			<!-- SLIDE 1: MAPA TAXONÓMICO -->
+			<article class="cg-slide active" data-slide="1">
+				<div class="cg-slide-header">
+					<span class="cg-slide-tag tag tag-accent">Slide 1 / 7 • Taxonomy & Hierarchy</span>
+					<h2 class="cg-slide-title">{t.s1Title}</h2>
+					<p class="cg-slide-desc">{t.s1Desc}</p>
+				</div>
+
+				<div class="cg-dual-grid">
+					<div class="cg-card cg-tree-box">
+						<div class="cg-card-header">
+							<span class="cg-card-label">Jerarquía Interactiva (Hacé click en una colección)</span>
+							<span class="cg-badge text-accent">JCF Core</span>
+						</div>
+
+						<div class="cg-hierarchy-visual">
+							<!-- Branch 1: Collection -->
+							<div class="cg-branch-group">
+								<div class="cg-node cg-node-root">
+									<span class="cg-node-type">&lt;&lt;interface&gt;&gt;</span>
+									<strong>Collection&lt;E&gt;</strong>
+								</div>
+								<div class="cg-branch-children">
+									<!-- List -->
+									<div class="cg-family-col">
+										<div class="cg-node cg-node-iface">List&lt;E&gt;</div>
+										<div class="cg-impl-list">
+											<button type="button" class="cg-node-impl is-active" data-info="arraylist">ArrayList</button>
+											<button type="button" class="cg-node-impl" data-info="linkedlist">LinkedList</button>
+										</div>
+									</div>
+
+									<!-- Set -->
+									<div class="cg-family-col">
+										<div class="cg-node cg-node-iface">Set&lt;E&gt;</div>
+										<div class="cg-impl-list">
+											<button type="button" class="cg-node-impl" data-info="hashset">HashSet</button>
+											<button type="button" class="cg-node-impl" data-info="treeset">TreeSet</button>
+										</div>
+									</div>
+
+									<!-- Queue -->
+									<div class="cg-family-col">
+										<div class="cg-node cg-node-iface">Queue&lt;E&gt;</div>
+										<div class="cg-impl-list">
+											<button type="button" class="cg-node-impl" data-info="arraydeque">ArrayDeque</button>
+											<button type="button" class="cg-node-impl" data-info="priorityqueue">PriorityQueue</button>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Branch 2: Map (Standalone) -->
+							<div class="cg-branch-group standalone">
+								<div class="cg-node cg-node-root-map">
+									<span class="cg-node-type">&lt;&lt;interface&gt;&gt;</span>
+									<strong>Map&lt;K, V&gt;</strong>
+								</div>
+								<div class="cg-impl-list map-impls">
+									<button type="button" class="cg-node-impl" data-info="hashmap">HashMap</button>
+									<button type="button" class="cg-node-impl" data-info="treemap">TreeMap</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="cg-card cg-detail-card" id="cg-info-panel">
+						<div class="cg-card-header">
+							<span class="cg-card-label" id="cg-info-title">Ficha Técnica: ArrayList&lt;E&gt;</span>
+							<span class="cg-badge" id="cg-info-family">Familia: List</span>
+						</div>
+						<div class="cg-specs-grid">
+							<div class="cg-spec-tile">
+								<span class="cg-spec-k">¿Permite Duplicados?</span>
+								<span class="cg-spec-v" id="cg-spec-dups">Sí</span>
+							</div>
+							<div class="cg-spec-tile">
+								<span class="cg-spec-k">Orden de Elementos</span>
+								<span class="cg-spec-v" id="cg-spec-order">Posicional (por índice)</span>
+							</div>
+							<div class="cg-spec-tile">
+								<span class="cg-spec-k">Acceso por Índice</span>
+								<span class="cg-spec-v text-accent" id="cg-spec-access">O(1)</span>
+							</div>
+							<div class="cg-spec-tile">
+								<span class="cg-spec-k">Búsqueda por Valor</span>
+								<span class="cg-spec-v" id="cg-spec-search">O(N)</span>
+							</div>
+						</div>
+						<div class="cg-callout" id="cg-spec-desc">
+							<strong>Estructura interna:</strong> Arreglo dinámico que redimensiona copiando a un nuevo array (+50%) cuando se llena. Es la opción por defecto cuando necesitás acceso rápido por índice.
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 2: GENÉRICOS -->
+			<article class="cg-slide" data-slide="2">
+				<div class="cg-slide-header">
+					<span class="cg-slide-tag tag tag-accent">Slide 2 / 7 • Type Safety</span>
+					<h2 class="cg-slide-title">{t.s2Title}</h2>
+					<p class="cg-slide-desc">{t.s2Desc}</p>
+				</div>
+
+				<div class="cg-dual-grid">
+					<!-- Java 1.4 Raw Types -->
+					<div class="cg-card cg-danger-box">
+						<div class="cg-card-header">
+							<span class="cg-card-label">Java 1.4: Tipos Crudos (Raw Types)</span>
+							<span class="cg-badge is-error">Bomba de Tiempo en Runtime</span>
+						</div>
+						<div class="cg-code-block">
+							<pre><code>// Lista sin tipo (acepta Object)
+List lista = new ArrayList();
+lista.add("Hola mundo");
+lista.add(42); // Se cuela un Integer
+
+// Compila sin avisar, pero al leer:
+String s1 = (String) lista.get(0); // OK
+String s2 = (String) lista.get(1); // ¡BOOM!
+// ClassCastException: Integer cannot be cast to String</code></pre>
+						</div>
+						<div class="cg-shield-indicator error">
+							<span class="cg-shield-icon">⚠️</span>
+							<span>El compilador calla. El fallo explota en el servidor en producción.</span>
+						</div>
+					</div>
+
+					<!-- Java 5+ Generics -->
+					<div class="cg-card cg-success-box">
+						<div class="cg-card-header">
+							<span class="cg-card-label">Java 5+: Colecciones Parametrizadas</span>
+							<span class="cg-badge text-accent">Escudo en Compilación</span>
+						</div>
+						<div class="cg-code-block">
+							<pre><code>// Lista tipada con genérico &lt;String&gt;
+List&lt;String&gt; lista = new ArrayList&lt;&gt;();
+lista.add("Hola mundo");
+
+// ¡El compilador bloquea de inmediato!
+lista.add(42); 
+// ERROR: incompatible types: int cannot be converted to String
+
+String s = lista.get(0); // Sin casteo manual</code></pre>
+						</div>
+						<div class="cg-shield-indicator success">
+							<span class="cg-shield-icon">🛡️</span>
+							<span>Detección estática instantánea antes de que el código se ejecute.</span>
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 3: ÁRBOL DE DECISIÓN -->
+			<article class="cg-slide" data-slide="3">
+				<div class="cg-slide-header">
+					<span class="cg-slide-tag tag tag-accent">Slide 3 / 7 • Practical Decision Guide</span>
+					<h2 class="cg-slide-title">{t.s3Title}</h2>
+					<p class="cg-slide-desc">{t.s3Desc}</p>
+				</div>
+
+				<div class="cg-dual-grid">
+					<div class="cg-card cg-wizard-box">
+						<div class="cg-card-header">
+							<span class="cg-card-label">Asistente de Selección de Colección</span>
+							<span class="cg-badge" id="cg-wizard-step-badge">Paso 1 de 3</span>
+						</div>
+
+						<div class="cg-wizard-questions">
+							<!-- Question 1 -->
+							<div class="cg-q-step is-active" id="cg-q1">
+								<p class="cg-q-text">1. ¿Tus datos son pares Clave → Valor (ej. DNI → Persona)?</p>
+								<div class="cg-q-options">
+									<button type="button" class="cg-btn cg-btn-secondary" data-q1="yes">Sí, asocio claves a valores</button>
+									<button type="button" class="cg-btn cg-btn-secondary" data-q1="no">No, son elementos individuales</button>
+								</div>
+							</div>
+
+							<!-- Question 2 (Collection path) -->
+							<div class="cg-q-step" id="cg-q2-col" style="display: none;">
+								<p class="cg-q-text">2. ¿Tu colección puede tener elementos repetidos (duplicados)?</p>
+								<div class="cg-q-options">
+									<button type="button" class="cg-btn cg-btn-secondary" data-q2c="no">No, cada elemento debe ser único</button>
+									<button type="button" class="cg-btn cg-btn-secondary" data-q2c="yes">Sí, permito duplicados</button>
+								</div>
+							</div>
+
+							<!-- Question 3 (Set path) -->
+							<div class="cg-q-step" id="cg-q3-set" style="display: none;">
+								<p class="cg-q-text">3. ¿Necesitás que el Set esté ordenado naturalmente (alfabético/numérico)?</p>
+								<div class="cg-q-options">
+									<button type="button" class="cg-btn cg-btn-secondary" data-q3s="yes">Sí, orden natural constante</button>
+									<button type="button" class="cg-btn cg-btn-secondary" data-q3s="no">No, prioridad absoluta en velocidad O(1)</button>
+								</div>
+							</div>
+
+							<!-- Question 3 (List vs Queue path) -->
+							<div class="cg-q-step" id="cg-q3-list" style="display: none;">
+								<p class="cg-q-text">3. ¿Necesitás acceder por número de índice o es una cola FIFO/LIFO?</p>
+								<div class="cg-q-options">
+									<button type="button" class="cg-btn cg-btn-secondary" data-q3l="index">Acceso por índice arbitrario lista.get(i)</button>
+									<button type="button" class="cg-btn cg-btn-secondary" data-q3l="queue">Es una cola de trabajo FIFO / Pila LIFO</button>
+								</div>
+							</div>
+
+							<!-- Question 2 (Map path) -->
+							<div class="cg-q-step" id="cg-q2-map" style="display: none;">
+								<p class="cg-q-text">2. ¿Necesitás que las claves del Map estén ordenadas?</p>
+								<div class="cg-q-options">
+									<button type="button" class="cg-btn cg-btn-secondary" data-q2m="yes">Sí, claves ordenadas (Comparable)</button>
+									<button type="button" class="cg-btn cg-btn-secondary" data-q2m="no">No, velocidad O(1) con HashMap</button>
+								</div>
+							</div>
+						</div>
+
+						<div class="cg-action-bar">
+							<button type="button" class="cg-btn cg-btn-ghost" id="cg-wizard-reset">↺ Reiniciar Preguntas</button>
+						</div>
+					</div>
+
+					<!-- Recommendation card -->
+					<div class="cg-card cg-recommend-card" id="cg-recommend-box">
+						<div class="cg-card-header">
+							<span class="cg-card-label">Colección Recomendada</span>
+							<span class="cg-badge text-accent" id="cg-rec-name">ArrayList&lt;T&gt;</span>
+						</div>
+						<div class="cg-rec-body">
+							<h3 class="cg-rec-title" id="cg-rec-heading">La opción por defecto para listas</h3>
+							<p class="cg-rec-reason" id="cg-rec-text">
+								Si necesitás almacenar elementos individuales, permitís duplicados y requerís acceso rápido por índice posicional, <code>ArrayList</code> es el estándar indiscutido en la industria.
+							</p>
+							<div class="cg-code-block">
+								<pre><code id="cg-rec-code">List&lt;String&gt; lista = new ArrayList&lt;&gt;();
+lista.add("Elemento");
+String item = lista.get(0); // O(1)</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 4: ANATOMÍA DE HASHMAP -->
+			<article class="cg-slide" data-slide="4">
+				<div class="cg-slide-header">
+					<span class="cg-slide-tag tag tag-accent">Slide 4 / 7 • Under the Hood</span>
+					<h2 class="cg-slide-title">{t.s4Title}</h2>
+					<p class="cg-slide-desc">{t.s4Desc}</p>
+				</div>
+
+				<div class="cg-dual-grid">
+					<div class="cg-card cg-simulator-box">
+						<div class="cg-card-header">
+							<span class="cg-card-label">Matemática del Hashing: Clave → Índice de Cubeta</span>
+							<span class="cg-badge">table.length = 16</span>
+						</div>
+
+						<div class="cg-hash-math-box">
+							<div class="cg-hash-step">
+								<span class="cg-step-num">1</span>
+								<div class="cg-step-content">
+									<strong>Clave de entrada:</strong>
+									<span class="cg-mono-val">String key = "juan"</span>
+								</div>
+							</div>
+							<div class="cg-hash-step">
+								<span class="cg-step-num">2</span>
+								<div class="cg-step-content">
+									<strong>Cálculo de Hash Code:</strong>
+									<span class="cg-mono-val">int h = "juan".hashCode() → 3254921</span>
+								</div>
+							</div>
+							<div class="cg-hash-step">
+								<span class="cg-step-num">3</span>
+								<div class="cg-step-content">
+									<strong>Compresión Bit a Bit (h &amp; (16 - 1)):</strong>
+									<span class="cg-mono-val">3254921 &amp; 15 → Índice: [9]</span>
+								</div>
+							</div>
+							<div class="cg-hash-step">
+								<span class="cg-step-num">4</span>
+								<div class="cg-step-content">
+									<strong>Almacenamiento en Cubeta table[9]:</strong>
+									<span class="cg-mono-val">Node("juan", valor, next = null)</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="cg-callout">
+							<strong>¿Por qué potencias de 2?</strong> Al ser la capacidad una potencia de dos (16, 32, 64...), la operación <code>h % 16</code> es idéntica a <code>h &amp; (16 - 1)</code>, la cual se ejecuta a nivel de microprocesador en un solo ciclo de reloj.
+						</div>
+					</div>
+
+					<div class="cg-card cg-theory-box">
+						<h3 class="cg-card-title">Estructura del Nodo Interno</h3>
+						<div class="cg-code-block">
+							<pre><code>// Clase interna de HashMap (Node&lt;K,V&gt;)
+static class Node&lt;K,V&gt; implements Map.Entry&lt;K,V&gt; &#123;
+    final int hash;    // Hash precomputado
+    final K key;       // Clave original
+    V value;           // Valor asociado
+    Node&lt;K,V&gt; next;    // Enlace si hay colisión
+&#125;
+
+// El mapa es simplemente:
+transient Node&lt;K,V&gt;[] table;</code></pre>
+						</div>
+						<div class="cg-callout">
+							<strong>Claves inmutables:</strong> Si mutás un objeto luego de usarlo como clave en un HashMap, su <code>hashCode()</code> cambia y el mapa <em>nunca más podrá encontrarlo</em> (fuga de memoria silenciosa).
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 5: COLISIONES Y TREEIFICATION -->
+			<article class="cg-slide" data-slide="5">
+				<div class="cg-slide-header">
+					<span class="cg-slide-tag tag tag-accent">Slide 5 / 7 • Collisions & Trees</span>
+					<h2 class="cg-slide-title">{t.s5Title}</h2>
+					<p class="cg-slide-desc">{t.s5Desc}</p>
+				</div>
+
+				<div class="cg-dual-grid">
+					<div class="cg-card cg-collision-diagram">
+						<div class="cg-card-header">
+							<span class="cg-card-label">Evolución de una Cubeta: Lista → Árbol</span>
+							<span class="cg-badge text-accent">Java 8 Optimization</span>
+						</div>
+
+						<div class="cg-stages-box">
+							<!-- Stage 1: Chaining -->
+							<div class="cg-stage-item">
+								<span class="cg-stage-tag">&le; 8 Nodos: Encadenamiento Lineal O(N)</span>
+								<div class="cg-chain-visual">
+									<div class="cg-chain-node">N1</div>
+									<span class="cg-chain-arrow">→</span>
+									<div class="cg-chain-node">N2</div>
+									<span class="cg-chain-arrow">→</span>
+									<div class="cg-chain-node">N3</div>
+									<span class="cg-chain-arrow">→</span>
+									<span class="cg-null-tag">null</span>
+								</div>
+							</div>
+
+							<!-- Stage 2: Treeification -->
+							<div class="cg-stage-item">
+								<span class="cg-stage-tag text-accent">&gt; 8 Nodos: Treeification a Red-Black Tree O(log N)</span>
+								<div class="cg-tree-visual">
+									<div class="cg-rbt-root">Raíz (Black)</div>
+									<div class="cg-rbt-row">
+										<div class="cg-rbt-node red">Hijo Izq</div>
+										<div class="cg-rbt-node red">Hijo Der</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="cg-callout">
+							<strong>Ataques DoS prevenidos:</strong> En versiones antiguas de Java, atacantes enviaban miles de claves diseñadas para colisionar en el mismo bucket, degradando el HashMap a una lista $O(N)$ y saturando el CPU al 100%. Con árboles balanceados, el peor caso se limita a $O(\log N)$.
+						</div>
+					</div>
+
+					<div class="cg-card cg-theory-box">
+						<h3 class="cg-card-title">Constantes Críticas en HashMap</h3>
+						<div class="cg-specs-grid">
+							<div class="cg-spec-tile">
+								<span class="cg-spec-k">DEFAULT_INITIAL_CAPACITY</span>
+								<span class="cg-spec-v">16</span>
+							</div>
+							<div class="cg-spec-tile">
+								<span class="cg-spec-k">DEFAULT_LOAD_FACTOR</span>
+								<span class="cg-spec-v text-accent">0.75</span>
+							</div>
+							<div class="cg-spec-tile">
+								<span class="cg-spec-k">TREEIFY_THRESHOLD</span>
+								<span class="cg-spec-v">8</span>
+							</div>
+							<div class="cg-spec-tile">
+								<span class="cg-spec-k">UNTREEIFY_THRESHOLD</span>
+								<span class="cg-spec-v">6</span>
+							</div>
+						</div>
+						<p class="cg-small-text">
+							Si un bucket con árbol se reduce a 6 elementos por eliminaciones, Java lo des-arboliza volviendo a lista enlazada para ahorrar memoria.
+						</p>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 6: SIMULADOR INTERACTIVO HASHMAP -->
+			<article class="cg-slide" data-slide="6">
+				<div class="cg-slide-header">
+					<span class="cg-slide-tag tag tag-accent">Slide 6 / 7 • Interactive Live Lab</span>
+					<h2 class="cg-slide-title">{t.s6Title}</h2>
+					<p class="cg-slide-desc">{t.s6Desc}</p>
+				</div>
+
+				<div class="cg-dual-grid">
+					<div class="cg-card cg-sim-card">
+						<div class="cg-card-header">
+							<span class="cg-card-label">Cubetas (Buckets) en Memoria</span>
+							<span class="cg-badge" id="cg-map-stats">Items: 3 | Capacidad: 8 | Carga: 37%</span>
+						</div>
+
+						<div class="cg-action-bar">
+							<div class="cg-input-group">
+								<input type="text" id="cg-key-input" class="cg-input" value="usuario" placeholder="Clave" aria-label="Clave" />
+								<input type="text" id="cg-val-input" class="cg-input" value="101" placeholder="Valor" aria-label="Valor" />
+								<button type="button" class="cg-btn cg-btn-primary" id="cg-btn-put">+ put(k, v)</button>
+							</div>
+							<button type="button" class="cg-btn cg-btn-secondary" id="cg-btn-get">🔍 get(k)</button>
+							<button type="button" class="cg-btn cg-btn-outline" id="cg-btn-remove">🗑 remove(k)</button>
+							<button type="button" class="cg-btn cg-btn-ghost" id="cg-btn-map-reset">↺ {t.reset}</button>
+						</div>
+
+						<!-- Buckets visual grid -->
+						<div class="cg-buckets-display" id="cg-buckets-container">
+							<!-- Dynamically rendered via JS -->
+						</div>
+
+						<div class="cg-status-banner" id="cg-map-log">
+							HashMap inicializado con capacidad 8. Ingresá una clave para observar su hashing y asignación.
+						</div>
+					</div>
+
+					<div class="cg-card cg-metrics-box">
+						<h3 class="cg-card-title">Métricas de Rendimiento</h3>
+						<div class="cg-metric-tile">
+							<span class="cg-metric-label">Factor de Carga Actual</span>
+							<div class="cg-progress-track">
+								<div class="cg-progress-bar" id="cg-load-meter" style="width: 37%;"></div>
+							</div>
+							<span class="cg-small-text" id="cg-load-text">0.375 / Umbral: 0.75</span>
+						</div>
+						<div class="cg-metric-tile">
+							<span class="cg-metric-label">¿Requiere Resize?</span>
+							<span class="cg-metric-value" id="cg-resize-flag">No (Capacidad suficiente)</span>
+						</div>
+						<div class="cg-callout">
+							<strong>Efecto del Resize:</strong> Cuando $N &gt; capacidad \times 0.75$, la tabla duplica su tamaño ($8 \to 16 \to 32$) y reubica todos los nodos con el nuevo bitmask.
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 7: TYPE ERASURE -->
+			<article class="cg-slide" data-slide="7">
+				<div class="cg-slide-header">
+					<span class="cg-slide-tag tag tag-accent">Slide 7 / 7 • Bytecode & JVM Internals</span>
+					<h2 class="cg-slide-title">{t.s7Title}</h2>
+					<p class="cg-slide-desc">{t.s7Desc}</p>
+				</div>
+
+				<div class="cg-dual-grid">
+					<!-- Source Code -->
+					<div class="cg-card cg-theory-box">
+						<div class="cg-card-header">
+							<span class="cg-card-label">Código Fuente (Java Source)</span>
+							<span class="cg-badge">Lo que escribís</span>
+						</div>
+						<div class="cg-code-block">
+							<pre><code>public class Caja&lt;T&gt; &#123;
+    private T contenido;
+
+    public void guardar(T dato) &#123;
+        this.contenido = dato;
+    &#125;
+
+    public T obtener() &#123;
+        return this.contenido;
+    &#125;
+&#125;</code></pre>
+						</div>
+					</div>
+
+					<!-- Bytecode Decompiled -->
+					<div class="cg-card cg-theory-box">
+						<div class="cg-card-header">
+							<span class="cg-card-label">Bytecode Compilado (Type Erasure)</span>
+							<span class="cg-badge text-accent">Lo que ve la JVM</span>
+						</div>
+						<div class="cg-code-block">
+							<pre><code>public class Caja &#123;
+    private Object contenido; // T se borró
+
+    public void guardar(Object dato) &#123;
+        this.contenido = dato;
+    &#125;
+
+    public Object obtener() &#123;
+        return this.contenido;
+    &#125;
+&#125;</code></pre>
+						</div>
+					</div>
+				</div>
+
+				<div class="cg-card cg-consequences-box">
+					<h3 class="cg-card-title">Consecuencias Inevitables del Type Erasure en Java</h3>
+					<div class="cg-specs-grid">
+						<div class="cg-spec-tile">
+							<span class="cg-spec-k">1. Prohibido new T()</span>
+							<p class="cg-small-text">En runtime la JVM no sabe qué constructor llamar porque <code>T</code> ya no existe.</p>
+						</div>
+						<div class="cg-spec-tile">
+							<span class="cg-spec-k">2. Prohibido new T[10]</span>
+							<p class="cg-small-text">Los arreglos en Java son reificados (conocen su tipo en runtime); los genéricos no.</p>
+						</div>
+						<div class="cg-spec-tile">
+							<span class="cg-spec-k">3. No hay List&lt;int&gt;</span>
+							<p class="cg-small-text">Los primitivos no heredan de <code>Object</code>, exigiendo wrappers como <code>Integer</code>.</p>
+						</div>
+					</div>
+				</div>
+			</article>
+		</main>
+	</div>
+</section>
+
+<script>
+	function setupCollectionsFramework() {
+		// --- SLIDE NAVIGATION ---
+		const slides = document.querySelectorAll<HTMLElement>('.cg-slide');
+		const prevBtn = document.getElementById('cg-prev-btn') as HTMLButtonElement | null;
+		const nextBtn = document.getElementById('cg-next-btn') as HTMLButtonElement | null;
+		const counter = document.getElementById('cg-slide-counter');
+		const progressBar = document.getElementById('cg-progress-bar');
+		let currentSlide = 1;
+		const totalSlides = slides.length;
+
+		function goToSlide(index: number) {
+			if (index < 1 || index > totalSlides) return;
+			currentSlide = index;
+			slides.forEach((s) => {
+				const sIndex = Number(s.dataset.slide);
+				s.classList.toggle('active', sIndex === currentSlide);
+			});
+
+			if (prevBtn) prevBtn.disabled = currentSlide === 1;
+			if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+			if (counter) counter.textContent = `${currentSlide} de ${totalSlides}`;
+			if (progressBar) {
+				const pct = (currentSlide / totalSlides) * 100;
+				progressBar.style.width = `${pct}%`;
+			}
+		}
+
+		prevBtn?.addEventListener('click', () => goToSlide(currentSlide - 1));
+		nextBtn?.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+		document.addEventListener('keydown', (e) => {
+			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+			if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+			if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+		});
+
+		// --- SLIDE 1: INTERACTIVE TAXONOMY ---
+		const collectionData: Record<string, {
+			title: string;
+			family: string;
+			dups: string;
+			order: string;
+			access: string;
+			search: string;
+			desc: string;
+		}> = {
+			arraylist: {
+				title: 'ArrayList<E>',
+				family: 'List',
+				dups: 'Sí',
+				order: 'Posicional (índice 0..N)',
+				access: 'O(1)',
+				search: 'O(N)',
+				desc: 'Arreglo dinámico que redimensiona copiando a un nuevo array (+50%). Excelente para lectura aleatoria continua.',
+			},
+			linkedlist: {
+				title: 'LinkedList<E>',
+				family: 'List / Deque',
+				dups: 'Sí',
+				order: 'Secuencial doblemente enlazado',
+				access: 'O(N)',
+				search: 'O(N)',
+				desc: 'Nodos dispersos en Heap con punteros anterior y siguiente. Inserción O(1) en extremos, pero acceso O(N) costoso.',
+			},
+			hashset: {
+				title: 'HashSet<E>',
+				family: 'Set',
+				dups: 'No (elementos únicos)',
+				order: 'Sin orden garantizado',
+				access: 'No aplicable',
+				search: 'O(1) promedio',
+				desc: 'Respaldado internamente por un HashMap donde el elemento es la clave. Ideal para pruebas de membresía ultra rápidas.',
+			},
+			treeset: {
+				title: 'TreeSet<E>',
+				family: 'NavigableSet',
+				dups: 'No (elementos únicos)',
+				order: 'Orden Natural (Comparable/Comparator)',
+				access: 'No aplicable',
+				search: 'O(log N)',
+				desc: 'Basado en un Árbol Rojo-Negro (TreeMap). Los elementos se mantienen siempre perfectamente ordenados.',
+			},
+			arraydeque: {
+				title: 'ArrayDeque<E>',
+				family: 'Queue / Deque',
+				dups: 'Sí',
+				order: 'FIFO o LIFO en extremos',
+				access: 'O(1) en extremos',
+				search: 'O(N)',
+				desc: 'Arreglo circular dinámico sin punteros de nodo. Más rápido y con menos consumo de memoria que Stack o LinkedList.',
+			},
+			priorityqueue: {
+				title: 'PriorityQueue<E>',
+				family: 'Queue',
+				dups: 'Sí',
+				order: 'Por prioridad (Min-Heap binario)',
+				access: 'O(1) para consultar mínimo',
+				search: 'O(log N) inserción/extracción',
+				desc: 'Montículo binario que garantiza que el elemento con menor valor (o mayor prioridad) siempre sale primero.',
+			},
+			hashmap: {
+				title: 'HashMap<K, V>',
+				family: 'Map',
+				dups: 'Claves únicas / Valores duplicables',
+				order: 'Sin orden garantizado',
+				access: 'O(1) promedio por clave',
+				search: 'O(1) promedio',
+				desc: 'Estructura rey de la industria. Tabla de cubetas indexada por hash de la clave con cadenas de nodos y árboles rojo-negro.',
+			},
+			treemap: {
+				title: 'TreeMap<K, V>',
+				family: 'NavigableMap',
+				dups: 'Claves únicas / Valores duplicables',
+				order: 'Claves en orden natural constante',
+				access: 'O(log N) por clave',
+				search: 'O(log N)',
+				desc: 'Árbol Rojo-Negro balanceado. Proporciona operaciones de rango como subMap, firstKey y pollFirstEntry.',
+			},
+		};
+
+		const infoTitle = document.getElementById('cg-info-title');
+		const infoFamily = document.getElementById('cg-info-family');
+		const specDups = document.getElementById('cg-spec-dups');
+		const specOrder = document.getElementById('cg-spec-order');
+		const specAccess = document.getElementById('cg-spec-access');
+		const specSearch = document.getElementById('cg-spec-search');
+		const specDesc = document.getElementById('cg-spec-desc');
+		const implButtons = document.querySelectorAll<HTMLButtonElement>('.cg-node-impl');
+
+		implButtons.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				implButtons.forEach((b) => b.classList.remove('is-active'));
+				btn.classList.add('is-active');
+				const key = btn.dataset.info || 'arraylist';
+				const data = collectionData[key];
+				if (!data) return;
+
+				if (infoTitle) infoTitle.textContent = `Ficha Técnica: ${data.title}`;
+				if (infoFamily) infoFamily.textContent = `Familia: ${data.family}`;
+				if (specDups) specDups.textContent = data.dups;
+				if (specOrder) specOrder.textContent = data.order;
+				if (specAccess) specAccess.textContent = data.access;
+				if (specSearch) specSearch.textContent = data.search;
+				if (specDesc) specDesc.innerHTML = `<strong>Estructura interna:</strong> ${data.desc}`;
+			});
+		});
+
+		// --- SLIDE 3: WIZARD TREE ---
+		const q1 = document.getElementById('cg-q1');
+		const q2Col = document.getElementById('cg-q2-col');
+		const q3Set = document.getElementById('cg-q3-set');
+		const q3List = document.getElementById('cg-q3-list');
+		const q2Map = document.getElementById('cg-q2-map');
+
+		const recName = document.getElementById('cg-rec-name');
+		const recHeading = document.getElementById('cg-rec-heading');
+		const recText = document.getElementById('cg-rec-text');
+		const recCode = document.getElementById('cg-rec-code');
+		const wizardStepBadge = document.getElementById('cg-wizard-step-badge');
+
+		function showRec(name: string, heading: string, text: string, code: string) {
+			if (recName) recName.textContent = name;
+			if (recHeading) recHeading.textContent = heading;
+			if (recText) recText.textContent = text;
+			if (recCode) recCode.textContent = code;
+		}
+
+		document.querySelectorAll('[data-q1]').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				const val = (e.currentTarget as HTMLElement).dataset.q1;
+				if (q1) q1.style.display = 'none';
+				if (wizardStepBadge) wizardStepBadge.textContent = 'Paso 2 de 3';
+
+				if (val === 'yes') {
+					if (q2Map) q2Map.style.display = 'block';
+				} else {
+					if (q2Col) q2Col.style.display = 'block';
+				}
+			});
+		});
+
+		document.querySelectorAll('[data-q2m]').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				const val = (e.currentTarget as HTMLElement).dataset.q2m;
+				if (q2Map) q2Map.style.display = 'none';
+				if (wizardStepBadge) wizardStepBadge.textContent = 'Decisión Completa';
+
+				if (val === 'yes') {
+					showRec(
+						'TreeMap<K, V>',
+						'Diccionario Ordenado por Claves',
+						'Mantiene las entradas ordenadas según el orden natural de las claves o un Comparator provisto. Costo O(log N).',
+						'Map<String, Integer> map = new TreeMap<>();\nmap.put("Zulma", 28);\nmap.put("Ana", 30);\n// Itera en orden alfabético: Ana, Zulma',
+					);
+				} else {
+					showRec(
+						'HashMap<K, V>',
+						'La estructura clave-valor por defecto',
+						'Máxima velocidad O(1) promedio para inserciones y búsquedas por clave.',
+						'Map<String, Usuario> mapa = new HashMap<>();\nmapa.put("user_10", u);\nUsuario hallado = mapa.get("user_10"); // O(1)',
+					);
+				}
+			});
+		});
+
+		document.querySelectorAll('[data-q2c]').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				const val = (e.currentTarget as HTMLElement).dataset.q2c;
+				if (q2Col) q2Col.style.display = 'none';
+				if (wizardStepBadge) wizardStepBadge.textContent = 'Paso 3 de 3';
+
+				if (val === 'no') {
+					if (q3Set) q3Set.style.display = 'block';
+				} else {
+					if (q3List) q3List.style.display = 'block';
+				}
+			});
+		});
+
+		document.querySelectorAll('[data-q3s]').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				const val = (e.currentTarget as HTMLElement).dataset.q3s;
+				if (q3Set) q3Set.style.display = 'none';
+				if (wizardStepBadge) wizardStepBadge.textContent = 'Decisión Completa';
+
+				if (val === 'yes') {
+					showRec(
+						'TreeSet<T>',
+						'Conjunto de Elementos Únicos Ordenados',
+						'Garantiza unicidad de elementos y los mantiene en orden natural mediante un árbol balanceado O(log N).',
+						'Set<Integer> ordenados = new TreeSet<>();\nordenados.add(50);\nordenados.add(10);\n// Itera: 10, 50',
+					);
+				} else {
+					showRec(
+						'HashSet<T>',
+						'Conjunto Único de Máxima Velocidad',
+						'Garantiza unicidad con tiempo O(1) promedio gracias a la tabla de hash.',
+						'Set<String> roles = new HashSet<>();\nroles.add("ADMIN");\nroles.add("EDITOR");\nboolean esAdmin = roles.contains("ADMIN"); // O(1)',
+					);
+				}
+			});
+		});
+
+		document.querySelectorAll('[data-q3l]').forEach((btn) => {
+			btn.addEventListener('click', (e) => {
+				const val = (e.currentTarget as HTMLElement).dataset.q3l;
+				if (q3List) q3List.style.display = 'none';
+				if (wizardStepBadge) wizardStepBadge.textContent = 'Decisión Completa';
+
+				if (val === 'index') {
+					showRec(
+						'ArrayList<T>',
+						'La Opción Universal para Listas',
+						'La colección más usada en Java. Respaldada por un arreglo contiguo en memoria con acceso indexado O(1).',
+						'List<String> items = new ArrayList<>();\nitems.add("Primero");\nString primero = items.get(0); // O(1)',
+					);
+				} else {
+					showRec(
+						'ArrayDeque<T>',
+						'Pilas y Colas Ultra Eficientes',
+						'Implementación de Deque basada en array circular sin overhead de punteros ni sincronización innecesaria.',
+						'Deque<String> cola = new ArrayDeque<>();\ncola.offer("Cliente1");\nString atendido = cola.poll(); // FIFO O(1)',
+					);
+				}
+			});
+		});
+
+		document.getElementById('cg-wizard-reset')?.addEventListener('click', () => {
+			if (q1) q1.style.display = 'block';
+			if (q2Col) q2Col.style.display = 'none';
+			if (q3Set) q3Set.style.display = 'none';
+			if (q3List) q3List.style.display = 'none';
+			if (q2Map) q2Map.style.display = 'none';
+			if (wizardStepBadge) wizardStepBadge.textContent = 'Paso 1 de 3';
+			showRec(
+				'ArrayList<T>',
+				'La opción por defecto para listas',
+				'Si necesitás almacenar elementos individuales, permitís duplicados y requerís acceso rápido por índice posicional, ArrayList es el estándar indiscutido.',
+				'List<String> lista = new ArrayList<>();\nlista.add("Elemento");\nString item = lista.get(0); // O(1)',
+			);
+		});
+
+		// --- SLIDE 6: HASHMAP SIMULATOR ---
+		let mapCap = 8;
+		interface MapNode {
+			key: string;
+			val: string;
+		}
+		let mapBuckets: Array<MapNode[]> = Array.from({ length: mapCap }, () => []);
+
+		// Preload 3 initial items
+		mapBuckets[1].push({ key: 'ana', val: '25' });
+		mapBuckets[3].push({ key: 'beto', val: '40' });
+		mapBuckets[1].push({ key: 'caro', val: '19' }); // intentional collision on bucket 1
+
+		const bucketsContainer = document.getElementById('cg-buckets-container');
+		const mapStats = document.getElementById('cg-map-stats');
+		const mapLog = document.getElementById('cg-map-log');
+		const loadMeter = document.getElementById('cg-load-meter');
+		const loadText = document.getElementById('cg-load-text');
+		const resizeFlag = document.getElementById('cg-resize-flag');
+
+		function simpleHash(key: string, capacity: number): number {
+			let h = 0;
+			for (let i = 0; i < key.length; i++) {
+				h = (h * 31 + key.charCodeAt(i)) >>> 0;
+			}
+			return h & (capacity - 1);
+		}
+
+		function renderHashMap() {
+			if (!bucketsContainer) return;
+			bucketsContainer.innerHTML = '';
+
+			let totalCount = 0;
+			mapBuckets.forEach((bucket, idx) => {
+				totalCount += bucket.length;
+				const bBox = document.createElement('div');
+				bBox.className = `cg-bucket-row ${bucket.length > 1 ? 'has-collision' : ''}`;
+
+				let chainHtml = '';
+				if (bucket.length === 0) {
+					chainHtml = '<span class="cg-bucket-empty">null</span>';
+				} else {
+					chainHtml = bucket
+						.map(
+							(node) =>
+								`<div class="cg-map-node"><span class="cg-k">${node.key}</span>:<span class="cg-v">${node.val}</span></div>`,
+						)
+						.join('<span class="cg-chain-arrow">→</span>');
+				}
+
+				bBox.innerHTML = `
+					<div class="cg-bucket-id">[${idx}]</div>
+					<div class="cg-bucket-nodes">${chainHtml}</div>
+				`;
+				bucketsContainer.appendChild(bBox);
+			});
+
+			const loadFactor = totalCount / mapCap;
+			const pct = Math.min(100, Math.round(loadFactor * 100));
+
+			if (mapStats) {
+				mapStats.textContent = `Items: ${totalCount} | Capacidad: ${mapCap} | Carga: ${pct}%`;
+			}
+			if (loadMeter) {
+				loadMeter.style.width = `${pct}%`;
+				loadMeter.style.background = loadFactor > 0.75 ? 'var(--color-accent-700)' : 'var(--color-accent)';
+			}
+			if (loadText) {
+				loadText.textContent = `${loadFactor.toFixed(3)} / Umbral: 0.75`;
+			}
+			if (resizeFlag) {
+				if (loadFactor > 0.75) {
+					resizeFlag.textContent = `¡Sobrecargado! Se requiere resize() a ${mapCap * 2}`;
+					resizeFlag.className = 'cg-metric-value text-accent';
+				} else {
+					resizeFlag.textContent = 'No (Capacidad suficiente)';
+					resizeFlag.className = 'cg-metric-value';
+				}
+			}
+		}
+
+		const keyInput = document.getElementById('cg-key-input') as HTMLInputElement | null;
+		const valInput = document.getElementById('cg-val-input') as HTMLInputElement | null;
+
+		document.getElementById('cg-btn-put')?.addEventListener('click', () => {
+			const k = keyInput?.value.trim() || 'k';
+			const v = valInput?.value.trim() || '1';
+
+			const bIdx = simpleHash(k, mapCap);
+			const bucket = mapBuckets[bIdx];
+			const existing = bucket.find((node) => node.key === k);
+
+			if (existing) {
+				existing.val = v;
+				if (mapLog) mapLog.textContent = `put("${k}", "${v}"): Clave ya existía en bucket [${bIdx}]. Valor actualizado.`;
+			} else {
+				bucket.push({ key: k, val: v });
+				if (mapLog) {
+					if (bucket.length > 1) {
+						mapLog.textContent = `put("${k}", "${v}"): ¡Colisión en bucket [${bIdx}]! Se encadena al final de la lista.`;
+					} else {
+						mapLog.textContent = `put("${k}", "${v}"): Asignado al bucket [${bIdx}].`;
+					}
+				}
+			}
+
+			// Check if resize needed
+			let totalCount = 0;
+			mapBuckets.forEach((b) => (totalCount += b.length));
+			if (totalCount / mapCap > 0.75 && mapCap < 16) {
+				const oldCap = mapCap;
+				mapCap = 16;
+				const newBuckets: Array<MapNode[]> = Array.from({ length: mapCap }, () => []);
+				mapBuckets.forEach((b) => {
+					b.forEach((item) => {
+						const newIdx = simpleHash(item.key, mapCap);
+						newBuckets[newIdx].push(item);
+					});
+				});
+				mapBuckets = newBuckets;
+				if (mapLog) mapLog.textContent += ` [RESIZE TRIGGERED: Capacidad duplicada de ${oldCap} a ${mapCap}]`;
+			}
+
+			renderHashMap();
+		});
+
+		document.getElementById('cg-btn-get')?.addEventListener('click', () => {
+			const k = keyInput?.value.trim() || '';
+			const bIdx = simpleHash(k, mapCap);
+			const found = mapBuckets[bIdx].find((n) => n.key === k);
+			if (found) {
+				if (mapLog) mapLog.textContent = `get("${k}"): Encontrado en bucket [${bIdx}] con valor "${found.val}". O(1) tiempo.`;
+			} else {
+				if (mapLog) mapLog.textContent = `get("${k}"): Clave no encontrada en bucket [${bIdx}]. Retorna null.`;
+			}
+		});
+
+		document.getElementById('cg-btn-remove')?.addEventListener('click', () => {
+			const k = keyInput?.value.trim() || '';
+			const bIdx = simpleHash(k, mapCap);
+			const idx = mapBuckets[bIdx].findIndex((n) => n.key === k);
+			if (idx !== -1) {
+				mapBuckets[bIdx].splice(idx, 1);
+				if (mapLog) mapLog.textContent = `remove("${k}"): Eliminado con éxito de bucket [${bIdx}].`;
+			} else {
+				if (mapLog) mapLog.textContent = `remove("${k}"): La clave no existía en el mapa.`;
+			}
+			renderHashMap();
+		});
+
+		document.getElementById('cg-btn-map-reset')?.addEventListener('click', () => {
+			mapCap = 8;
+			mapBuckets = Array.from({ length: mapCap }, () => []);
+			mapBuckets[1].push({ key: 'ana', val: '25' });
+			mapBuckets[3].push({ key: 'beto', val: '40' });
+			mapBuckets[1].push({ key: 'caro', val: '19' });
+			if (mapLog) mapLog.textContent = 'HashMap reiniciado al estado base con capacidad 8.';
+			renderHashMap();
+		});
+
+		renderHashMap();
+	}
+
+	setupCollectionsFramework();
+	document.addEventListener('astro:page-load', setupCollectionsFramework);
+</script>
+
+<style>
+	.cg-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.cg-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.cg-nav-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		background: var(--color-surface);
+		border-bottom: 1px solid var(--color-divider);
+		gap: var(--space-4);
+	}
+
+	.cg-kicker {
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-accent-700);
+		display: block;
+	}
+
+	.cg-main-title {
+		font-family: var(--font-heading);
+		font-size: 1.15rem;
+		margin: 0;
+		color: var(--color-text);
+	}
+
+	.cg-nav-controls {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	.cg-counter {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+		min-width: 60px;
+		text-align: center;
+	}
+
+	.cg-progress-track {
+		height: 4px;
+		background: var(--color-divider);
+		width: 100%;
+	}
+
+	.cg-progress-bar {
+		height: 100%;
+		background: var(--color-accent);
+		transition: width 0.25s ease;
+	}
+
+	.cg-viewport {
+		flex: 1;
+		width: 100%;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: var(--space-6) var(--space-4);
+	}
+
+	.cg-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	.cg-slide {
+		display: none;
+		flex-direction: column;
+		gap: var(--space-5);
+		animation: cgFade 0.25s ease forwards;
+	}
+
+	.cg-slide.active {
+		display: flex;
+	}
+
+	@keyframes cgFade {
+		from {
+			opacity: 0;
+			transform: translateY(4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.cg-slide-header {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.cg-slide-title {
+		font-family: var(--font-heading);
+		font-size: 1.5rem;
+		color: var(--color-text);
+		margin: 0;
+	}
+
+	.cg-slide-desc {
+		color: var(--color-text-muted);
+		margin: 0;
+		font-size: 0.95rem;
+		line-height: 1.5;
+	}
+
+	.cg-dual-grid {
+		display: grid;
+		grid-template-columns: 1.2fr 1fr;
+		gap: var(--space-5);
+		align-items: stretch;
+	}
+
+	.cg-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.cg-card-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		border-bottom: 1px solid var(--color-divider);
+		padding-bottom: var(--space-2);
+	}
+
+	.cg-card-label {
+		font-weight: 700;
+		font-size: 0.9rem;
+		color: var(--color-text);
+	}
+
+	.cg-card-title {
+		font-family: var(--font-heading);
+		font-size: 1.1rem;
+		margin: 0;
+	}
+
+	.cg-badge {
+		font-size: 0.75rem;
+		font-weight: 600;
+		padding: 2px 8px;
+		border-radius: var(--radius-sm);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+	}
+
+	.cg-badge.text-accent {
+		color: var(--color-accent-700);
+		border-color: var(--color-accent);
+	}
+
+	.cg-badge.is-error {
+		color: var(--color-accent-700);
+		background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+		border-color: var(--color-accent);
+	}
+
+	/* TAXONOMY GRAPH */
+	.cg-hierarchy-visual {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.cg-branch-group {
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3);
+		background: var(--color-bg);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.cg-node-root, .cg-node-root-map {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		border: 1.5px solid var(--color-accent);
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		align-self: flex-start;
+	}
+
+	.cg-node-type {
+		font-size: 0.7rem;
+		color: var(--color-text-muted);
+	}
+
+	.cg-branch-children {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		gap: var(--space-2);
+	}
+
+	.cg-family-col {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.cg-node-iface {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		font-weight: 700;
+		padding: 2px 6px;
+		background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+		border-radius: var(--radius-sm);
+		text-align: center;
+	}
+
+	.cg-impl-list {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.cg-impl-list.map-impls {
+		flex-direction: row;
+		gap: var(--space-2);
+	}
+
+	.cg-node-impl {
+		padding: 4px 8px;
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 600;
+		cursor: pointer;
+		text-align: left;
+		transition: all 0.15s ease;
+		color: var(--color-text);
+	}
+
+	.cg-node-impl:hover {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+	}
+
+	.cg-node-impl.is-active {
+		border-color: var(--color-accent);
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	/* SPECS GRID */
+	.cg-specs-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-2);
+	}
+
+	.cg-spec-tile {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.cg-spec-k {
+		font-size: 0.7rem;
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+		font-weight: 600;
+	}
+
+	.cg-spec-v {
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		font-weight: 700;
+	}
+
+	/* SHIELD INDICATORS */
+	.cg-shield-indicator {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-3);
+		border-radius: var(--radius-sm);
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+
+	.cg-shield-indicator.error {
+		background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+		border: 1px solid var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.cg-shield-indicator.success {
+		background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+		border: 1px solid var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.cg-shield-icon {
+		font-size: 1.4rem;
+	}
+
+	/* WIZARD QUESTIONS */
+	.cg-wizard-questions {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.cg-q-step {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.cg-q-text {
+		font-weight: 700;
+		font-size: 0.95rem;
+		margin: 0;
+	}
+
+	.cg-q-options {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.cg-rec-title {
+		font-family: var(--font-heading);
+		font-size: 1.15rem;
+		margin: 0;
+	}
+
+	.cg-rec-reason {
+		font-size: 0.9rem;
+		line-height: 1.5;
+		color: var(--color-text-muted);
+		margin: 0;
+	}
+
+	/* HASH MATH */
+	.cg-hash-math-box {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.cg-hash-step {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2) var(--space-3);
+	}
+
+	.cg-step-num {
+		width: 24px;
+		height: 24px;
+		border-radius: 999px;
+		background: var(--color-accent);
+		color: var(--color-bg);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		font-size: 0.75rem;
+	}
+
+	.cg-step-content {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		font-size: 0.8rem;
+	}
+
+	.cg-mono-val {
+		font-family: var(--font-mono);
+		color: var(--color-accent-700);
+		font-weight: 700;
+	}
+
+	/* COLLISION STAGES */
+	.cg-stages-box {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.cg-stage-item {
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3);
+		background: var(--color-bg);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.cg-stage-tag {
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.cg-chain-visual {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.cg-chain-node {
+		padding: 4px 10px;
+		background: var(--color-surface);
+		border: 1.5px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		font-weight: 700;
+	}
+
+	.cg-chain-arrow {
+		color: var(--color-accent-700);
+		font-weight: 700;
+	}
+
+	.cg-null-tag {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+
+	.cg-tree-visual {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.cg-rbt-root {
+		padding: 4px 12px;
+		background: var(--color-text);
+		color: var(--color-bg);
+		border-radius: var(--radius-sm);
+		font-size: 0.75rem;
+		font-weight: 700;
+	}
+
+	.cg-rbt-row {
+		display: flex;
+		gap: var(--space-4);
+	}
+
+	.cg-rbt-node.red {
+		padding: 3px 8px;
+		background: color-mix(in srgb, var(--color-accent) 25%, var(--color-surface));
+		border: 1px solid var(--color-accent);
+		color: var(--color-accent-700);
+		border-radius: var(--radius-sm);
+		font-size: 0.75rem;
+		font-weight: 700;
+	}
+
+	/* SIMULATOR BUCKETS */
+	.cg-buckets-display {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		max-height: 240px;
+		overflow-y: auto;
+	}
+
+	.cg-bucket-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: 2px 4px;
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+	}
+
+	.cg-bucket-row.has-collision {
+		border-left: 3px solid var(--color-accent);
+	}
+
+	.cg-bucket-id {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.75rem;
+		color: var(--color-accent-700);
+		min-width: 28px;
+	}
+
+	.cg-bucket-nodes {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		flex-wrap: wrap;
+	}
+
+	.cg-map-node {
+		display: inline-flex;
+		align-items: center;
+		gap: 2px;
+		padding: 2px 6px;
+		background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+		border: 1px solid var(--color-accent);
+		border-radius: 3px;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+	}
+
+	.cg-map-node .cg-k {
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	.cg-bucket-empty {
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		color: var(--color-text-muted);
+	}
+
+	/* ATOMS & BUTTONS */
+	.cg-action-bar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-items: center;
+	}
+
+	.cg-input-group {
+		display: flex;
+		gap: var(--space-1);
+		align-items: center;
+	}
+
+	.cg-input {
+		padding: var(--space-1) var(--space-2);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		color: var(--color-text);
+		max-width: 100px;
+	}
+
+	.cg-btn {
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-sm);
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.15s ease, border-color 0.15s ease;
+		border: 1px solid transparent;
+		font-family: var(--font-body);
+	}
+
+	.cg-btn-primary {
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.cg-btn-primary:hover {
+		background: var(--color-accent-700);
+	}
+
+	.cg-btn-secondary {
+		background: var(--color-surface);
+		color: var(--color-text);
+		border-color: var(--color-divider);
+	}
+
+	.cg-btn-secondary:hover {
+		border-color: var(--color-accent);
+	}
+
+	.cg-btn-outline {
+		background: transparent;
+		color: var(--color-text);
+		border-color: var(--color-divider);
+	}
+
+	.cg-btn-outline:hover {
+		border-color: var(--color-accent);
+	}
+
+	.cg-btn-ghost {
+		background: transparent;
+		color: var(--color-text-muted);
+	}
+
+	.cg-btn-ghost:hover {
+		color: var(--color-text);
+	}
+
+	.cg-status-banner {
+		font-size: 0.8rem;
+		padding: var(--space-2);
+		background: var(--color-bg);
+		border-left: 3px solid var(--color-accent);
+		color: var(--color-text);
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+
+	.cg-code-block {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3);
+		overflow-x: auto;
+	}
+
+	.cg-code-block pre {
+		margin: 0;
+	}
+
+	.cg-code-block code {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		line-height: 1.45;
+		color: var(--color-text);
+	}
+
+	.cg-callout {
+		font-size: 0.85rem;
+		line-height: 1.45;
+		padding: var(--space-3);
+		background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+		border-left: 3px solid var(--color-accent);
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+
+	.cg-small-text {
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+		margin: 0;
+	}
+
+	.text-accent {
+		color: var(--color-accent-700);
+	}
+
+	.cg-metric-tile {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.cg-metric-label {
+		font-size: 0.7rem;
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+		font-weight: 600;
+	}
+
+	.cg-metric-value {
+		font-family: var(--font-mono);
+		font-size: 0.95rem;
+		font-weight: 700;
+	}
+
+	/* RESPONSIVE & WIDE SCREEN QUERIES */
+	@media (max-width: 900px) {
+		.cg-dual-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (min-width: 1440px) { .cg-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .cg-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .cg-viewport { zoom: 1.25; } }
+</style>

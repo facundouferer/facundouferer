@@ -1,0 +1,1050 @@
+---
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="cf-screen" data-lang={lang}>
+	<div class="cf-shell">
+		<div class="deck-card">
+			<div class="deck-nav-bar">
+				<div class="deck-slide-indicator">
+					<span class="deck-step-dot"></span>
+					<span id="deck-slide-label">SLIDE 1 / 6</span>
+				</div>
+				<div class="deck-pills">
+					<button class="deck-pill-btn active" data-target-slide="1">1. {isEs ? 'if / else if / else' : 'if / else if / else'}</button>
+					<button class="deck-pill-btn" data-target-slide="2">2. {isEs ? 'Operador Ternario' : 'Ternary Operator'}</button>
+					<button class="deck-pill-btn" data-target-slide="3">3. {isEs ? 'switch vs switch ->' : 'switch vs switch ->'}</button>
+					<button class="deck-pill-btn" data-target-slide="4">4. {isEs ? 'El reloj del for' : 'for Loop 4-Step Clock'}</button>
+					<button class="deck-pill-btn" data-target-slide="5">5. {isEs ? 'while vs do-while' : 'while vs do-while'}</button>
+					<button class="deck-pill-btn" data-target-slide="6">6. {isEs ? 'break vs continue' : 'break vs continue'}</button>
+				</div>
+			</div>
+
+			<div class="cf-viewport">
+				<!-- SLIDE 1: IF / ELSE IF / ELSE -->
+				<div class="deck-slide active" data-slide="1">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">1. {isEs ? 'Bifurcaciones Excluyentes: if, else if, else' : 'Exclusive Branching: if, else if, else'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Las ramas if / else if se evalúan en estricto orden descendente. En cuanto una condición resulta verdadera (true), su bloque se ejecuta e inmediatamente se saltan todas las ramas posteriores.'
+									: 'if / else if branches evaluate sequentially downwards. As soon as one condition evaluates to true, its block executes and all remaining branches are skipped.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'Diagrama de flujo de decisiones excluyentes con if y else' : 'Exclusive branching decision flowchart'}>
+									<!-- Entry -->
+									<circle cx="270" cy="20" r="10" fill="var(--color-accent-700)" />
+									<path d="M270 30 V50" stroke="var(--color-accent)" stroke-width="2.5" />
+
+									<!-- Diamond 1: edad < 13 -->
+									<polygon points="270,50 340,75 270,100 200,75" class="deck-diamond" id="dia-1" />
+									<text x="270" y="79" class="deck-svg-chip" text-anchor="middle">edad &lt; 13 ?</text>
+
+									<!-- Branch 1: True -> Infantil -->
+									<path d="M340 75 H430 V110" stroke="var(--color-divider)" stroke-width="2" fill="none" id="wire-b1" />
+									<rect x="380" y="110" width="100" height="35" rx="8" class="deck-sub-block branch-target" id="box-b1" />
+									<text x="430" y="132" class="deck-svg-chip" text-anchor="middle">"Infantil"</text>
+
+									<!-- False -> Diamond 2 -->
+									<path d="M270 100 V125" stroke="var(--color-divider)" stroke-width="2.5" id="wire-d2" />
+									<polygon points="270,125 340,150 270,175 200,150" class="deck-diamond" id="dia-2" />
+									<text x="270" y="154" class="deck-svg-chip" text-anchor="middle">edad &lt; 18 ?</text>
+
+									<!-- Branch 2: True -> Juvenil -->
+									<path d="M340 150 H430 V175" stroke="var(--color-divider)" stroke-width="2" fill="none" id="wire-b2" />
+									<rect x="380" y="175" width="100" height="35" rx="8" class="deck-sub-block branch-target" id="box-b2" />
+									<text x="430" y="197" class="deck-svg-chip" text-anchor="middle">"Juvenil"</text>
+
+									<!-- False -> Else: Adulto -->
+									<path d="M270 175 V200" stroke="var(--color-divider)" stroke-width="2.5" id="wire-b3" />
+									<rect x="220" y="200" width="100" height="35" rx="8" class="deck-sub-block branch-target" id="box-b3" />
+									<text x="270" y="222" class="deck-svg-chip" text-anchor="middle">"Adulto"</text>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Simulador de Rieles' : 'Branching Simulator'}</span>
+									<span class="deck-subtext">{isEs ? 'Probá cambiar la edad' : 'Adjust age value'}</span>
+								</div>
+								<div class="deck-cli-box">
+									<label for="slide1-age-input" class="state-label">{isEs ? 'Edad del usuario:' : 'User age:'}</label>
+									<input type="range" id="slide1-age-input" min="5" max="65" value="16" style="flex: 1;" />
+									<span id="slide1-age-val" style="font-weight: 700; min-width: 32px; text-align: right;">16</span>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Rama seleccionada:' : 'Selected branch:'}</span>
+										<span class="state-val" id="slide1-branch-res" style="color: var(--color-accent); font-size: 1.15rem;">else if (edad &lt; 18)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Salida por consola:' : 'Console output:'}</span>
+										<span class="state-val" id="slide1-out">"Categoría Juvenil"</span>
+									</div>
+									<p class="deck-caption">
+										{isEs
+											? 'Aunque un adulto de 30 años técnicamente no cumple edad < 13 ni edad < 18, cae en el else por descarte natural.'
+											: 'When neither condition matches, the thread of execution falls naturally into the catch-all else clause.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 2: TERNARY OPERATOR -->
+				<div class="deck-slide" data-slide="2">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">2. {isEs ? 'El Operador Ternario: Condicional en una Línea' : 'The Ternary Operator: Inline Conditional'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'El operador ternario (? :) es una expresión compacta que devuelve un valor u otro según una condición booleana. A diferencia de un bloque if tradicional, produce un resultado que puede asignarse de inmediato.'
+									: 'The ternary operator (? :) is a compact expression yielding one of two values based on a boolean condition. Unlike if statements, it evaluates to an assignable value.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 220" width="100%" role="img" aria-label={isEs ? 'Estructura visual del operador ternario' : 'Ternary operator visual structure'}>
+									<!-- Condition -->
+									<rect x="20" y="40" width="160" height="60" rx="12" class="deck-panel-accent" />
+									<text x="100" y="65" class="deck-svg-title-accent" text-anchor="middle">saldo &gt;= 0</text>
+									<text x="100" y="85" class="deck-svg-mono-sm" text-anchor="middle">{isEs ? 'Condición booleana' : 'Boolean condition'}</text>
+
+									<text x="205" y="76" font-size="28" font-weight="700" fill="var(--color-accent)">?</text>
+
+									<!-- True Value -->
+									<rect x="235" y="20" width="130" height="45" rx="8" class="deck-sub-block" />
+									<text x="300" y="48" class="deck-svg-chip" text-anchor="middle">"Al día"</text>
+
+									<text x="385" y="76" font-size="28" font-weight="700" fill="var(--color-accent)">:</text>
+
+									<!-- False Value -->
+									<rect x="410" y="80" width="115" height="45" rx="8" class="deck-sub-block" />
+									<text x="467" y="108" class="deck-svg-chip" text-anchor="middle">"Deudor"</text>
+
+									<!-- Result variable assignment -->
+									<rect x="20" y="140" width="500" height="50" rx="10" class="deck-ground-card" />
+									<text x="270" y="170" class="deck-svg-mono" text-anchor="middle" font-size="13">
+										String estado = (saldo &gt;= 0) ? "Al día" : "Deudor";
+									</text>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Laboratorio Ternario' : 'Ternary Evaluator'}</span>
+								</div>
+								<div class="deck-cli-box">
+									<label for="ternary-saldo" class="state-label">{isEs ? 'Saldo en cuenta ($):' : 'Account balance ($):'}</label>
+									<input type="number" id="ternary-saldo" class="input" value="50" style="max-width: 120px;" />
+									<button class="btn btn-primary btn-sm" id="btn-eval-ternary">{isEs ? 'Evaluar ? :' : 'Evaluate ? :'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Condición (saldo >= 0):' : 'Condition (balance >= 0):'}</span>
+										<span class="state-val" id="tern-cond">true</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Valor asignado a estado:' : 'Result string assigned:'}</span>
+										<span class="state-val" id="tern-res" style="color: var(--color-accent); font-size: 1.15rem;">"Al día"</span>
+									</div>
+									<p class="deck-caption">
+										{isEs
+											? 'Regla de oro: Usar el operador ternario solo cuando la expresión sea corta y evidente. Si anidás ternarios (? : dentro de ? :), el código se vuelve ilegible.'
+											: 'Golden rule: Use ternaries only for simple, punchy decisions. Nesting ternaries ruins code readability.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 3: SWITCH CLASSIC VS MODERN -->
+				<div class="deck-slide" data-slide="3">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">3. {isEs ? 'switch Clásico (Fall-through) vs switch Moderno (->)' : 'Classic switch (Fall-through) vs Modern switch (->)'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'En el switch clásico, olvidar un break provoca la caída en cascada (*fall-through*), ejecutando los casos siguientes por error. Java 14 introdujo la sintaxis con flecha (->) que erradica este bug por diseño.'
+									: 'In classic switch statements, omitting break causes dangerous fall-through. Java 14 introduced arrow syntax (->) eliminating fall-through bugs by design.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Comparación de switch clásico con caída frente a switch moderno con flechas' : 'Classic switch with fall-through vs modern switch with arrows'}>
+									<!-- Classic with bug -->
+									<rect x="15" y="20" width="245" height="205" rx="12" class="deck-panel" />
+									<text x="30" y="44" class="deck-svg-title">{isEs ? 'Clásico (con peligro de olvido)' : 'Classic switch'}</text>
+									<text x="30" y="70" class="deck-svg-mono-sm">case 1:</text>
+									<text x="45" y="88" class="deck-svg-mono-sm">msg = "Uno";</text>
+									<text x="45" y="106" class="deck-svg-mono-sm" fill="rgb(255, 95, 86)">// ¡FALTA BREAK!</text>
+									<text x="30" y="128" class="deck-svg-mono-sm">case 2:</text>
+									<text x="45" y="146" class="deck-svg-mono-sm">msg = "Dos"; break;</text>
+									<rect x="25" y="165" width="225" height="45" rx="6" class="deck-ground-card" stroke="rgb(255, 95, 86)" />
+									<text x="135" y="184" class="deck-svg-sub" text-anchor="middle" fill="rgb(255, 95, 86)">{isEs ? 'Si entra al 1, ejecuta el 2 también' : 'Entering 1 falls through to 2'}</text>
+									<text x="135" y="198" class="deck-svg-bold" text-anchor="middle" fill="rgb(255, 95, 86)">msg queda como "Dos"</text>
+
+									<!-- Modern with arrow -->
+									<rect x="280" y="20" width="245" height="205" rx="12" class="deck-panel-accent" />
+									<text x="295" y="44" class="deck-svg-title-accent">{isEs ? 'Moderno Java 14+ (Flechas)' : 'Modern Arrow Syntax'}</text>
+									<text x="295" y="75" class="deck-svg-mono">case 1 -&gt; "Uno";</text>
+									<text x="295" y="105" class="deck-svg-mono">case 2 -&gt; "Dos";</text>
+									<text x="295" y="135" class="deck-svg-mono">default -&gt; "Otro";</text>
+									<rect x="290" y="165" width="225" height="45" rx="6" class="deck-sub-block-accent" />
+									<text x="402" y="184" class="deck-svg-sub" text-anchor="middle" fill="var(--color-accent-2-800)">✓ {isEs ? 'Sin fall-through' : 'No fall-through possible'}</text>
+									<text x="402" y="198" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">{isEs ? 'Retorna valor directamente' : 'Can return values directly'}</text>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Demostración de Fall-Through' : 'Fall-Through Demo'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary switch-btn active" data-mode="classic">{isEs ? 'Modo Clásico (sin break)' : 'Classic (no break)'}</button>
+									<button class="btn btn-secondary switch-btn" data-mode="modern">{isEs ? 'Modo Moderno (->)' : 'Modern (->)'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Entrada evaluada:' : 'Input evaluated:'}</span>
+										<span class="state-val">dia = 1 (Lunes)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Resultado final de msg:' : 'Final msg variable:'}</span>
+										<span class="state-val" id="switch-demo-res" style="color: rgb(255, 95, 86); font-size: 1.15rem;">"Martes" (¡Sobreescrito!)</span>
+									</div>
+									<p class="deck-caption" id="switch-demo-desc">
+										{isEs
+											? 'Al no tener break, el flujo continuó hacia el case 2 sobreescribiendo el valor "Lunes". En código moderno con -> cada rama es totalmente aislada.'
+											: 'Without a break, execution falls through to case 2 and overwrites "Monday". With arrow syntax, each branch is strictly isolated.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 4: FOR LOOP 4-STEP CLOCK -->
+				<div class="deck-slide" data-slide="4">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">4. {isEs ? 'El Reloj de 4 Tiempos del Bucle for' : 'The 4-Step Clock of the for Loop'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Un bucle for no ejecuta todo al mismo tiempo. Sigue un compás estricto: 1. Inicialización (una sola vez), 2. Chequeo de condición, 3. Ejecución del cuerpo, 4. Incremento. Luego vuelve al paso 2.'
+									: 'A for loop does not run all its clauses at once. It follows a rhythmic 4-step sequence: 1. Init (once), 2. Condition check, 3. Body, 4. Increment. Then loops back to step 2.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'Reloj de 4 pasos de ejecución de un bucle for' : 'for loop 4-step execution clock'}>
+									<!-- Center circle -->
+									<circle cx="270" cy="125" r="90" fill="none" stroke="var(--color-divider)" stroke-width="3" />
+									
+									<!-- Clock Step 1 (Top Left) -->
+									<rect x="50" y="40" width="160" height="50" rx="8" class="deck-sub-block clock-box" id="clk-1" />
+									<text x="130" y="62" class="deck-svg-bold" text-anchor="middle">1. int i = 0;</text>
+									<text x="130" y="78" class="deck-svg-sub" text-anchor="middle">{isEs ? '(Solo 1 vez al inicio)' : '(Once at startup)'}</text>
+
+									<!-- Clock Step 2 (Top Right) -->
+									<rect x="330" y="40" width="160" height="50" rx="8" class="deck-sub-block clock-box" id="clk-2" />
+									<text x="410" y="62" class="deck-svg-bold" text-anchor="middle">2. ¿i &lt; 3?</text>
+									<text x="410" y="78" class="deck-svg-sub" text-anchor="middle">{isEs ? 'Si true sigue; si false sale' : 'Checks boundary'}</text>
+
+									<!-- Clock Step 3 (Bottom Right) -->
+									<rect x="330" y="160" width="160" height="50" rx="8" class="deck-sub-block clock-box" id="clk-3" />
+									<text x="410" y="182" class="deck-svg-bold" text-anchor="middle">3. Cuerpo del bucle</text>
+									<text x="410" y="198" class="deck-svg-sub" text-anchor="middle">println(i)</text>
+
+									<!-- Clock Step 4 (Bottom Left) -->
+									<rect x="50" y="160" width="160" height="50" rx="8" class="deck-sub-block clock-box" id="clk-4" />
+									<text x="130" y="182" class="deck-svg-bold" text-anchor="middle">4. i++</text>
+									<text x="130" y="198" class="deck-svg-sub" text-anchor="middle">{isEs ? 'Incrementa y vuelve a 2' : 'Increments, loops to 2'}</text>
+
+									<!-- Hand pointer -->
+									<line x1="270" y1="125" x2="210" y2="70" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round" id="clock-hand" />
+									<circle cx="270" cy="125" r="8" fill="var(--color-accent-700)" />
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Paso a Paso del Reloj' : 'Step-Through Simulator'}</span>
+									<span class="deck-subtext" id="clk-counter">Paso 1 / 12</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-primary btn-sm" id="btn-clock-tick">{isEs ? 'Avanzar Tic →' : 'Tick Step →'}</button>
+									<button class="btn btn-ghost btn-sm" id="btn-clock-reset">{isEs ? 'Reiniciar' : 'Reset'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Fase activa:' : 'Active phase:'}</span>
+										<span class="state-val" id="clk-phase-txt">1. Inicialización (int i = 0)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Valor de i:' : 'Variable i:'}</span>
+										<span class="state-val" id="clk-var-i">0</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Consola impresa:' : 'Printed output:'}</span>
+										<span class="state-val" id="clk-console-out">[]</span>
+									</div>
+									<p class="deck-caption" id="clk-caption">
+										{isEs
+											? 'Presioná "Avanzar Tic" para ver la aguja del reloj recorrer las 4 estaciones de cada ciclo.'
+											: 'Click "Tick Step" to observe the clock hand visit each phase of the loop cycle.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 5: WHILE VS DO-WHILE -->
+				<div class="deck-slide" data-slide="5">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">5. {isEs ? 'while vs do-while: ¿Dónde está el molinete?' : 'while vs do-while: Where is the Turnstile?'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'En un while tradicional, la condición se comprueba antes de entrar: si es falsa de inicio, el cuerpo puede ejecutarse 0 veces. En un do-while, el cuerpo se ejecuta primero y la condición se comprueba al final: garantiza al menos 1 ejecución.'
+									: 'In a while loop, the condition checks at the gate: if false, the body runs 0 times. In a do-while loop, execution runs first and validates at exit: guaranteed to run at least 1 time.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Metáfora del molinete de acceso en while frente a do-while' : 'Turnstile gate metaphor comparing while vs do-while'}>
+									<!-- While -->
+									<rect x="20" y="25" width="235" height="195" rx="14" class="deck-panel" />
+									<text x="35" y="55" class="deck-svg-title">while (condicion)</text>
+									<rect x="35" y="70" width="200" height="35" rx="6" class="deck-panel-accent" />
+									<text x="135" y="92" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">{isEs ? '🚪 Molinete en la ENTRADA' : '🚪 Gate at ENTRANCE'}</text>
+									<text x="35" y="130" class="deck-svg-sub">{isEs ? 'Si condicion == false de entrada:' : 'If initial condition is false:'}</text>
+									<text x="35" y="150" class="deck-svg-bold" fill="rgb(255, 95, 86)">{isEs ? '→ Se ejecuta 0 VECES' : '→ Runs 0 TIMES'}</text>
+									<text x="35" y="185" class="deck-svg-mono-sm">while (!archivo.fin()) &#123; ... &#125;</text>
+
+									<!-- Do-While -->
+									<rect x="285" y="25" width="235" height="195" rx="14" class="deck-panel-accent" />
+									<text x="300" y="55" class="deck-svg-title-accent">do &#123; ... &#125; while (condicion);</text>
+									<text x="300" y="90" class="deck-svg-sub">{isEs ? 'Entra primero y ejecuta el cuerpo' : 'Executes body first without checks'}</text>
+									<rect x="300" y="110" width="200" height="35" rx="6" class="deck-sub-block-accent" />
+									<text x="400" y="132" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">{isEs ? '🚪 Molinete en la SALIDA' : '🚪 Gate at EXIT'}</text>
+									<text x="300" y="165" class="deck-svg-bold" fill="var(--color-accent-2-800)">{isEs ? '→ Garantiza al menos 1 VEZ' : '→ Guaranteed 1+ TIMES'}</text>
+									<text x="300" y="195" class="deck-svg-mono-sm">{isEs ? 'Ideal para menús de usuario' : 'Ideal for CLI menus'}</text>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Comparador en Vivo' : 'Live Comparison'}</span>
+									<span class="deck-subtext">condicion = false</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary loop-cmp-btn active" data-loop="while">while (false)</button>
+									<button class="btn btn-secondary loop-cmp-btn" data-loop="dowhile">do &#123; &#125; while (false)</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Iteraciones ejecutadas:' : 'Iterations executed:'}</span>
+										<span class="state-val" id="loop-cmp-count" style="font-size: 1.2rem; color: rgb(255, 95, 86);">0</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Uso recomendado:' : 'Best practice usage:'}</span>
+										<span class="state-val" id="loop-cmp-use">{isEs ? 'Lectura de flujos, sockets, buffers' : 'Streams, sockets, buffers'}</span>
+									</div>
+									<p class="deck-caption" id="loop-cmp-desc">
+										{isEs
+											? 'Al ser la condición falsa antes de iniciar, el bucle while no se ejecuta ni una sola vez.'
+											: 'Because the condition is false upfront, the while body is completely bypassed.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 6: BREAK VS CONTINUE -->
+				<div class="deck-slide" data-slide="6">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">6. {isEs ? 'Interrupción de Bucles: break vs continue' : 'Loop Control: break vs continue'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'break finaliza abruptamente la totalidad del bucle y salta a la siguiente instrucción fuera de él. continue omite únicamente el resto de la iteración en curso y avanza de inmediato al siguiente ciclo.'
+									: 'break immediately terminates the entire loop and jumps past it. continue skips only the remainder of the current iteration and advances straight to the next.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Comportamiento visual de break frente a continue en una secuencia' : 'Visual comparison of break vs continue in a sequence'}>
+									<!-- Sequence of numbers 1 to 6 -->
+									<g id="seq-circles">
+										<circle cx="50" cy="80" r="18" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-700)" stroke-width="2" />
+										<text x="50" y="85" class="deck-svg-bold" text-anchor="middle">1</text>
+
+										<circle cx="110" cy="80" r="18" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-700)" stroke-width="2" />
+										<text x="110" y="85" class="deck-svg-bold" text-anchor="middle">2</text>
+
+										<!-- Trigger element at 3 -->
+										<circle cx="170" cy="80" r="18" fill="rgb(255, 95, 86)" stroke="rgb(32, 30, 29)" stroke-width="2" />
+										<text x="170" y="85" class="deck-svg-bold" text-anchor="middle" fill="rgb(255, 255, 255)">3</text>
+
+										<circle cx="230" cy="80" r="18" fill="var(--color-neutral-200)" stroke="var(--color-divider)" stroke-width="2" />
+										<text x="230" y="85" class="deck-svg-bold" text-anchor="middle">4</text>
+
+										<circle cx="290" cy="80" r="18" fill="var(--color-neutral-200)" stroke="var(--color-divider)" stroke-width="2" />
+										<text x="290" y="85" class="deck-svg-bold" text-anchor="middle">5</text>
+									</g>
+
+									<!-- break visual banner -->
+									<rect x="40" y="130" width="220" height="85" rx="10" class="deck-panel" />
+									<text x="55" y="155" class="deck-svg-bold" fill="rgb(255, 95, 86)">break en i == 3:</text>
+									<text x="55" y="175" class="deck-svg-sub">{isEs ? 'Cancela el bucle entero.' : 'Aborts the entire loop.'}</text>
+									<text x="55" y="195" class="deck-svg-mono" font-size="11">Imprime: [1, 2]</text>
+
+									<!-- continue visual banner -->
+									<rect x="280" y="130" width="220" height="85" rx="10" class="deck-panel-accent" />
+									<text x="295" y="155" class="deck-svg-bold" fill="var(--color-accent-700)">continue en i == 3:</text>
+									<text x="295" y="175" class="deck-svg-sub">{isEs ? 'Solo esquiva el 3 y sigue.' : 'Skips 3 and continues.'}</text>
+									<text x="295" y="195" class="deck-svg-mono" font-size="11">Imprime: [1, 2, 4, 5]</text>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-summary-card">
+								<h3 class="deck-summary-title">{isEs ? 'Resumen de Control de Flujo' : 'Control Flow Summary'}</h3>
+								<ul class="deck-checklist">
+									<li>
+										<strong>if / else if:</strong> {isEs ? 'Evaluación secuencial excluyente; solo entra a una rama.' : 'Sequential short-circuiting; executes strictly one branch.'}
+									</li>
+									<li>
+										<strong>switch con flechas (->):</strong> {isEs ? 'Elimina por completo la trampa del fall-through sin requerir break.' : 'Eliminates fall-through bugs without needing break.'}
+									</li>
+									<li>
+										<strong>for de 4 tiempos:</strong> {isEs ? 'Init (1) -> Condición (2) -> Cuerpo (3) -> Incremento (4).' : 'Init (1) -> Condition (2) -> Body (3) -> Increment (4).'}
+									</li>
+									<li>
+										<strong>do-while:</strong> {isEs ? 'Revisión en la puerta de salida; garantiza al menos una ejecución.' : 'Validated at exit gate; guarantees at least one execution.'}
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Navigation Bar Footer -->
+			<div class="deck-footer-bar">
+				<button class="btn btn-secondary" id="deck-prev-btn" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="deck-keys-hint">
+					<span class="key-cap">←</span> <span class="key-cap">→</span> {isEs ? 'para navegar' : 'to navigate'}
+				</div>
+				<button class="btn btn-primary" id="deck-next-btn">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
+
+	const slideLabel = document.getElementById('deck-slide-label');
+	const prevBtn = document.getElementById('deck-prev-btn') as HTMLButtonElement | null;
+	const nextBtn = document.getElementById('deck-next-btn') as HTMLButtonElement | null;
+	const pillBtns = document.querySelectorAll<HTMLButtonElement>('.deck-pill-btn');
+	const slides = document.querySelectorAll<HTMLElement>('.deck-slide');
+
+	function goToSlide(target: number) {
+		if (target < 1 || target > totalSlides) return;
+		currentSlide = target;
+
+		slides.forEach((slide) => {
+			const slideIdx = parseInt(slide.getAttribute('data-slide') || '0', 10);
+			slide.classList.toggle('active', slideIdx === currentSlide);
+		});
+
+		pillBtns.forEach((btn) => {
+			const targetIdx = parseInt(btn.getAttribute('data-target-slide') || '0', 10);
+			btn.classList.toggle('active', targetIdx === currentSlide);
+		});
+
+		if (slideLabel) {
+			slideLabel.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+		}
+
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	}
+
+	pillBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const target = parseInt(btn.getAttribute('data-target-slide') || '1', 10);
+			goToSlide(target);
+		});
+	});
+
+	prevBtn?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	nextBtn?.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+	window.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
+
+	/* Slide 1: Age slider */
+	const ageSlider = document.getElementById('slide1-age-input') as HTMLInputElement | null;
+	const ageVal = document.getElementById('slide1-age-val');
+	const branchRes = document.getElementById('slide1-branch-res');
+	const outRes = document.getElementById('slide1-out');
+
+	const boxB1 = document.getElementById('box-b1');
+	const boxB2 = document.getElementById('box-b2');
+	const boxB3 = document.getElementById('box-b3');
+
+	function updateAgeBranches() {
+		if (!ageSlider) return;
+		const age = parseInt(ageSlider.value, 10);
+		if (ageVal) ageVal.textContent = String(age);
+
+		[boxB1, boxB2, boxB3].forEach((b) => b?.classList.remove('active'));
+
+		if (age < 13) {
+			boxB1?.classList.add('active');
+			if (branchRes) branchRes.textContent = 'if (edad < 13)';
+			if (outRes) outRes.textContent = '"Categoría Infantil"';
+		} else if (age < 18) {
+			boxB2?.classList.add('active');
+			if (branchRes) branchRes.textContent = 'else if (edad < 18)';
+			if (outRes) outRes.textContent = '"Categoría Juvenil"';
+		} else {
+			boxB3?.classList.add('active');
+			if (branchRes) branchRes.textContent = 'else';
+			if (outRes) outRes.textContent = '"Categoría Adulto"';
+		}
+	}
+
+	ageSlider?.addEventListener('input', updateAgeBranches);
+
+	/* Slide 2: Ternary evaluator */
+	const ternarySaldo = document.getElementById('ternary-saldo') as HTMLInputElement | null;
+	const btnEvalTernary = document.getElementById('btn-eval-ternary');
+	const ternCond = document.getElementById('tern-cond');
+	const ternRes = document.getElementById('tern-res');
+
+	btnEvalTernary?.addEventListener('click', () => {
+		if (!ternarySaldo) return;
+		const saldo = parseFloat(ternarySaldo.value) || 0;
+		const isPositive = saldo >= 0;
+		if (ternCond) ternCond.textContent = String(isPositive);
+		if (ternRes) ternRes.textContent = isPositive ? '"Al día"' : '"Deudor"';
+	});
+
+	/* Slide 3: Switch demo */
+	const switchBtns = document.querySelectorAll<HTMLButtonElement>('.switch-btn');
+	const switchDemoRes = document.getElementById('switch-demo-res');
+	const switchDemoDesc = document.getElementById('switch-demo-desc');
+
+	switchBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			switchBtns.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+			const mode = btn.getAttribute('data-mode');
+
+			if (mode === 'classic') {
+				if (switchDemoRes) {
+					switchDemoRes.textContent = '"Martes" (¡Sobreescrito!)';
+					switchDemoRes.style.color = 'rgb(255, 95, 86)';
+				}
+				if (switchDemoDesc) {
+					switchDemoDesc.textContent = 'Al no tener break, el flujo continuó hacia el case 2 sobreescribiendo el valor "Lunes".';
+				}
+			} else {
+				if (switchDemoRes) {
+					switchDemoRes.textContent = '"Lunes" (Correcto)';
+					switchDemoRes.style.color = 'var(--color-accent-2-800)';
+				}
+				if (switchDemoDesc) {
+					switchDemoDesc.textContent = 'Con flecha (->), el compilador ejecuta estrictamente la rama coincidente y sale de inmediato.';
+				}
+			}
+		});
+	});
+
+	/* Slide 4: Loop clock */
+	let loopStep = 0; // 0..12
+
+	const loopStages = [
+		{ phase: '1. Inicialización (int i = 0)', i: 0, out: '[]', clk: 1, angle: 315 },
+		{ phase: '2. Condición (¿0 < 3? -> true)', i: 0, out: '[]', clk: 2, angle: 45 },
+		{ phase: '3. Cuerpo (println(0))', i: 0, out: '[0]', clk: 3, angle: 135 },
+		{ phase: '4. Incremento (i++ -> 1)', i: 1, out: '[0]', clk: 4, angle: 225 },
+		{ phase: '2. Condición (¿1 < 3? -> true)', i: 1, out: '[0]', clk: 2, angle: 45 },
+		{ phase: '3. Cuerpo (println(1))', i: 1, out: '[0, 1]', clk: 3, angle: 135 },
+		{ phase: '4. Incremento (i++ -> 2)', i: 2, out: '[0, 1]', clk: 4, angle: 225 },
+		{ phase: '2. Condición (¿2 < 3? -> true)', i: 2, out: '[0, 1]', clk: 2, angle: 45 },
+		{ phase: '3. Cuerpo (println(2))', i: 2, out: '[0, 1, 2]', clk: 3, angle: 135 },
+		{ phase: '4. Incremento (i++ -> 3)', i: 3, out: '[0, 1, 2]', clk: 4, angle: 225 },
+		{ phase: '2. Condición (¿3 < 3? -> false)', i: 3, out: '[0, 1, 2]', clk: 2, angle: 45 },
+		{ phase: 'FIN: Bucle terminado. Ejecuta siguiente línea.', i: 3, out: '[0, 1, 2]', clk: 0, angle: 0 },
+	];
+
+	const btnClockTick = document.getElementById('btn-clock-tick');
+	const btnClockReset = document.getElementById('btn-clock-reset');
+	const clkCounter = document.getElementById('clk-counter');
+	const clkPhaseTxt = document.getElementById('clk-phase-txt');
+	const clkVarI = document.getElementById('clk-var-i');
+	const clkConsoleOut = document.getElementById('clk-console-out');
+	const clockHand = document.getElementById('clock-hand');
+
+	function updateClockUI() {
+		const cur = loopStages[loopStep];
+		if (clkCounter) clkCounter.textContent = `Paso ${loopStep + 1} / ${loopStages.length}`;
+		if (clkPhaseTxt) clkPhaseTxt.textContent = cur.phase;
+		if (clkVarI) clkVarI.textContent = String(cur.i);
+		if (clkConsoleOut) clkConsoleOut.textContent = cur.out;
+
+		for (let c = 1; c <= 4; c++) {
+			const b = document.getElementById(`clk-${c}`);
+			if (b) b.classList.toggle('active', c === cur.clk);
+		}
+
+		if (clockHand) {
+			const rad = (cur.angle * Math.PI) / 180;
+			const targetX = 270 + Math.sin(rad) * 60;
+			const targetY = 125 - Math.cos(rad) * 60;
+			clockHand.setAttribute('x2', String(targetX));
+			clockHand.setAttribute('y2', String(targetY));
+		}
+	}
+
+	btnClockTick?.addEventListener('click', () => {
+		if (loopStep < loopStages.length - 1) {
+			loopStep++;
+			updateClockUI();
+		}
+	});
+
+	btnClockReset?.addEventListener('click', () => {
+		loopStep = 0;
+		updateClockUI();
+	});
+
+	/* Slide 5: Loop comparison */
+	const loopCmpBtns = document.querySelectorAll<HTMLButtonElement>('.loop-cmp-btn');
+	const loopCmpCount = document.getElementById('loop-cmp-count');
+	const loopCmpUse = document.getElementById('loop-cmp-use');
+	const loopCmpDesc = document.getElementById('loop-cmp-desc');
+
+	loopCmpBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			loopCmpBtns.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+			const loopType = btn.getAttribute('data-loop');
+
+			if (loopType === 'while') {
+				if (loopCmpCount) {
+					loopCmpCount.textContent = '0';
+					loopCmpCount.style.color = 'rgb(255, 95, 86)';
+				}
+				if (loopCmpUse) loopCmpUse.textContent = 'Lectura de flujos, sockets, buffers';
+				if (loopCmpDesc) {
+					loopCmpDesc.textContent = 'Al ser la condición falsa antes de iniciar, el bucle while no se ejecuta ni una sola vez.';
+				}
+			} else {
+				if (loopCmpCount) {
+					loopCmpCount.textContent = '1';
+					loopCmpCount.style.color = 'var(--color-accent-2-800)';
+				}
+				if (loopCmpUse) loopCmpUse.textContent = 'Menús interactivos, reintentos con al menos 1 intento';
+				if (loopCmpDesc) {
+					loopCmpDesc.textContent = 'El cuerpo corre primero sin consultar el molinete. La condición se valida a la salida, asegurando 1 ejecución mínima.';
+				}
+			}
+		});
+	});
+</script>
+
+<style>
+	.cf-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		padding: var(--space-4) var(--space-6);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.cf-shell { width: 100%; max-width: none; margin: 0; flex: 1; display: flex; flex-direction: column; }
+
+	.deck-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-xl);
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* Nav bar */
+	.deck-nav-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: color-mix(in srgb, var(--color-surface) 90%, var(--color-bg));
+		gap: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.deck-slide-indicator {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		letter-spacing: 0.05em;
+	}
+
+	.deck-step-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--color-accent);
+	}
+
+	.deck-pills {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-pill-btn {
+		background: transparent;
+		border: 1px solid transparent;
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-full);
+		font-size: 0.85rem;
+		color: var(--color-text);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.deck-pill-btn:hover {
+		background: var(--color-neutral-200);
+	}
+
+	.deck-pill-btn.active {
+		background: var(--color-accent-200);
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	/* Viewport & slides */
+	.cf-viewport {
+		padding: var(--space-6) var(--space-8);
+		min-height: 480px;
+	}
+
+	.cf-viewport { display: flex; flex-direction: column; justify-content: center; }
+	@media (min-width: 1440px) { .cf-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .cf-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .cf-viewport { zoom: 1.25; } }
+
+	.deck-slide {
+		display: none;
+	}
+
+	.deck-slide.active {
+		display: block;
+		animation: deckFade 0.25s ease-out;
+	}
+
+	@keyframes deckFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.deck-slide-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-8);
+		align-items: start;
+	}
+
+	@media (max-width: 960px) {
+		.deck-slide-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.deck-slide-title {
+		font-family: var(--font-heading);
+		font-size: 1.6rem;
+		color: var(--color-text);
+		margin-top: 0;
+		margin-bottom: var(--space-3);
+	}
+
+	.deck-text {
+		font-size: 0.95rem;
+		line-height: 1.6;
+		color: color-mix(in srgb, var(--color-text) 85%, transparent);
+		margin-bottom: var(--space-4);
+	}
+
+	/* SVG styles */
+	.deck-figure {
+		background: var(--color-neutral-100);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-3);
+	}
+
+	.deck-panel {
+		fill: var(--color-neutral-200);
+		stroke: var(--color-divider);
+		stroke-width: 1.5;
+	}
+
+	.deck-panel-accent {
+		fill: var(--color-accent-200);
+		stroke: var(--color-accent);
+		stroke-width: 2;
+	}
+
+	.deck-diamond {
+		fill: var(--color-surface);
+		stroke: var(--color-accent);
+		stroke-width: 2;
+	}
+
+	.deck-sub-block {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+		transition: all 0.2s;
+	}
+
+	.deck-sub-block.active {
+		fill: var(--color-accent-200);
+		stroke: var(--color-accent);
+	}
+
+	.deck-sub-block-accent {
+		fill: var(--color-surface);
+		stroke: var(--color-accent);
+	}
+
+	.deck-svg-title {
+		font-family: var(--font-heading);
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-title-accent {
+		font-family: var(--font-heading);
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--color-accent-700);
+	}
+
+	.deck-svg-chip {
+		font-size: 11px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-bold {
+		font-size: 11.5px;
+		font-weight: 700;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-sub {
+		font-size: 10px;
+		fill: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.deck-svg-mono {
+		font-family: monospace;
+		font-size: 11px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-mono-sm {
+		font-family: monospace;
+		font-size: 9.5px;
+		fill: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+
+	.deck-ground-card {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+	}
+
+	/* Interactive card */
+	.deck-interactive-card,
+	.deck-summary-card {
+		background: var(--color-neutral-100);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+	}
+
+	.deck-card-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--space-3);
+	}
+
+	.deck-badge {
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.deck-subtext {
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.deck-actions-row {
+		display: flex;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+		flex-wrap: wrap;
+	}
+
+	.deck-actions-row .btn.active {
+		background: var(--color-accent);
+		color: rgb(255, 255, 255);
+		border-color: var(--color-accent);
+	}
+
+	.deck-info-box {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.state-row {
+		display: flex;
+		justify-content: space-between;
+		font-size: 0.85rem;
+		align-items: baseline;
+	}
+
+	.state-label {
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.state-val {
+		font-family: monospace;
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	.deck-caption {
+		font-size: 0.82rem;
+		color: color-mix(in srgb, var(--color-text) 65%, transparent);
+		margin-top: var(--space-2);
+		margin-bottom: 0;
+		line-height: 1.4;
+	}
+
+	.deck-cli-box {
+		display: flex;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+		align-items: center;
+		flex-wrap: wrap;
+	}
+
+	/* Summary checklist */
+	.deck-summary-title {
+		font-family: var(--font-heading);
+		font-size: 1.2rem;
+		margin-top: 0;
+		margin-bottom: var(--space-3);
+		color: var(--color-accent-700);
+	}
+
+	.deck-checklist {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.deck-checklist li {
+		position: relative;
+		padding-left: var(--space-5);
+		font-size: 0.9rem;
+		line-height: 1.5;
+	}
+
+	.deck-checklist li::before {
+		content: "✓";
+		position: absolute;
+		left: 0;
+		color: var(--color-accent-2-700);
+		font-weight: 700;
+	}
+
+	/* Footer bar */
+	.deck-footer-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-top: 1px solid var(--color-divider);
+		background: color-mix(in srgb, var(--color-surface) 90%, var(--color-bg));
+	}
+
+	.deck-keys-hint {
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+		display: flex;
+		align-items: center;
+		gap: var(--space-1);
+	}
+
+	.key-cap {
+		display: inline-block;
+		padding: 1px 6px;
+		background: var(--color-neutral-200);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		font-family: monospace;
+		font-size: 0.75rem;
+	}
+</style>

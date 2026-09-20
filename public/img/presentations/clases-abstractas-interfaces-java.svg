@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="25" y="170" width="350" height="10" rx="5" fill="#dcd3c4"/>
+
+	<!-- Title Banner -->
+	<text x="200" y="28" font-family="'Caprasimo', serif" font-size="14" fill="#8c491a" text-anchor="middle">Clases Abstractas e Interfaces</text>
+	<text x="200" y="42" font-family="'Figtree', sans-serif" font-size="9" fill="#7a8a5e" text-anchor="middle">Contratos, Jerarquías y Modelado UML</text>
+
+	<!-- Abstract Class Box (Left) -->
+	<g transform="translate(40, 55)">
+		<rect x="0" y="0" width="140" height="95" rx="8" fill="#fdfbf7" stroke="#c67139" stroke-width="2"/>
+		<text x="70" y="18" font-family="'Figtree', sans-serif" font-size="7.5" font-style="italic" fill="#c67139" text-anchor="middle">&lt;&lt;abstract&gt;&gt;</text>
+		<text x="70" y="32" font-family="'Caprasimo', serif" font-size="10" fill="#8c491a" text-anchor="middle">Figura</text>
+		<line x1="8" y1="40" x2="132" y2="40" stroke="#dcd3c4" stroke-width="1"/>
+		<text x="14" y="54" font-family="'Fira Code', monospace" font-size="7" fill="#7a8a5e"># color: String</text>
+		<line x1="8" y1="62" x2="132" y2="62" stroke="#dcd3c4" stroke-width="1"/>
+		<text x="14" y="76" font-family="'Fira Code', monospace" font-size="7" font-style="italic" fill="#c67139">+ calcularArea(): dbl</text>
+		<text x="14" y="88" font-family="'Fira Code', monospace" font-size="7" fill="#201e1d">+ describir(): void</text>
+	</g>
+
+	<!-- Interface Plug/Socket Box (Right) -->
+	<g transform="translate(220, 55)">
+		<rect x="0" y="0" width="140" height="95" rx="8" fill="#fdfbf7" stroke="#7a8a5e" stroke-width="2"/>
+		<text x="70" y="18" font-family="'Figtree', sans-serif" font-size="7.5" font-style="italic" fill="#7a8a5e" text-anchor="middle">&lt;&lt;interface&gt;&gt;</text>
+		<text x="70" y="32" font-family="'Caprasimo', serif" font-size="10" fill="#7a8a5e" text-anchor="middle">Dibujable</text>
+		<line x1="8" y1="40" x2="132" y2="40" stroke="#dcd3c4" stroke-width="1"/>
+		<text x="14" y="54" font-family="'Fira Code', monospace" font-size="7" fill="#7a8a5e">+ DIBUJO_HD: bool</text>
+		<line x1="8" y1="62" x2="132" y2="62" stroke="#dcd3c4" stroke-width="1"/>
+		<text x="14" y="76" font-family="'Fira Code', monospace" font-size="7" font-style="italic" fill="#7a8a5e">+ dibujar(): void</text>
+		<text x="14" y="88" font-family="'Fira Code', monospace" font-size="7" fill="#8c491a">+ default zoom(): void</text>
+	</g>
+
+	<!-- Connector Arrow -->
+	<path d="M180 102 L220 102" stroke="#8c491a" stroke-width="1.5" stroke-dasharray="3 3"/>
+</svg>

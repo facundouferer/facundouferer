@@ -1,0 +1,1350 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="av-screen" data-presentation="algoritmia-verificacion-complejidad-java" data-lang={lang}>
+	<div class="av-shell">
+		<nav class="av-nav" aria-label="Controles de navegación">
+			<button class="av-btn" id="avPrevBtn" aria-label="Diapositiva anterior" disabled>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{isEs ? 'Anterior' : 'Previous'}</span>
+			</button>
+			<span class="av-counter" id="avSlideCounter" aria-live="polite">1 / 5</span>
+			<button class="av-btn" id="avNextBtn" aria-label="Siguiente diapositiva">
+				<span>{isEs ? 'Siguiente' : 'Next'}</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="av-viewport">
+			<!-- Slide 1: La Tripleta de Hoare {P} C {Q} -->
+			<section class="av-slide is-active" data-slide="1">
+				<div class="av-header">
+					<span class="av-kicker">{isEs ? 'Contratos Formales' : 'Formal Contracts'}</span>
+					<h2 class="av-title">{isEs ? 'La Tripleta de Hoare {P} C {Q}: El Contrato Matemático' : 'The Hoare Triple {P} C {Q}: The Mathematical Contract'}</h2>
+					<p class="av-lead">
+						{isEs
+							? 'Si la precondición P es verdadera antes de ejecutar el bloque C, entonces la postcondición Q será indefectiblemente verdadera al terminar. Es el contrato formal entre una especificación y su implementación.'
+							: 'If precondition P holds before block C runs, then postcondition Q holds unfailingly when it finishes. This is the formal contract between a specification and its implementation.'}
+					</p>
+				</div>
+
+				<div class="av-card">
+					<div class="av-hoare-tunnel">
+						<div class="av-stage av-stage-gate" id="avGateP">
+							<svg class="av-stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+								<g id="avGatePIcon">
+									<circle cx="12" cy="12" r="10" stroke-dasharray="4 3" />
+								</g>
+							</svg>
+							<span class="av-stage-tag">P</span>
+							<strong class="av-stage-title">{isEs ? 'Precondición' : 'Precondition'}</strong>
+							<code class="av-stage-code">valores != null &amp;&amp; length &gt; 0</code>
+							<span class="av-stage-status" id="avGatePStatus">{isEs ? 'Esperando prueba…' : 'Awaiting test…'}</span>
+						</div>
+
+						<div class="av-stage-arrow">
+							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+								<path d="m9 18 6-6-6-6" />
+							</svg>
+						</div>
+
+						<div class="av-stage av-stage-chamber" id="avChamberC">
+							<svg class="av-stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+								<path d="m18 16 4-4-4-4" />
+								<path d="m6 8-4 4 4 4" />
+							</svg>
+							<span class="av-stage-tag">C</span>
+							<strong class="av-stage-title">{isEs ? 'Bloque de código' : 'Code block'}</strong>
+							<code class="av-stage-code">maximoActual = maximo(valores)</code>
+							<span class="av-stage-status" id="avChamberStatus">{isEs ? 'Inactivo' : 'Idle'}</span>
+						</div>
+
+						<div class="av-stage-arrow">
+							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+								<path d="m9 18 6-6-6-6" />
+							</svg>
+						</div>
+
+						<div class="av-stage av-stage-gate" id="avGateQ">
+							<svg class="av-stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+								<g id="avGateQIcon">
+									<circle cx="12" cy="12" r="10" stroke-dasharray="4 3" />
+								</g>
+							</svg>
+							<span class="av-stage-tag">Q</span>
+							<strong class="av-stage-title">{isEs ? 'Postcondición' : 'Postcondition'}</strong>
+							<code class="av-stage-code">∀x ∈ valores: x ≤ maximoActual</code>
+							<span class="av-stage-status" id="avGateQStatus">{isEs ? 'Esperando prueba…' : 'Awaiting test…'}</span>
+						</div>
+					</div>
+
+					<div class="av-sim-block">
+						<div class="av-sim-label">
+							<strong>{isEs ? 'Simulador: probá el contrato con distintos valores' : 'Simulator: test the contract with different inputs'}</strong>
+							<span class="av-hint">{isEs ? 'maximo(valores) — busca el máximo de un array' : 'maximo(valores) — finds the maximum of an array'}</span>
+						</div>
+						<div class="av-sim-buttons">
+							<button class="av-action-btn" id="avTestValidBtn">{isEs ? 'Probar con [4, 9, 2, 7] (válido)' : 'Test with [4, 9, 2, 7] (valid)'}</button>
+							<button class="av-ghost-btn" id="avTestInvalidBtn">{isEs ? 'Probar con [] (inválido)' : 'Test with [] (invalid)'}</button>
+						</div>
+						<div class="av-result-box" id="avHoareResult">
+							<span class="av-code-sample">{isEs ? 'Elegí un caso para ejecutar el contrato.' : 'Pick a case to run the contract.'}</span>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 2: Invariantes de Bucle -->
+			<section class="av-slide" data-slide="2">
+				<div class="av-header">
+					<span class="av-kicker">{isEs ? 'Verificación de Bucles' : 'Loop Verification'}</span>
+					<h2 class="av-title">{isEs ? 'Invariantes de Bucle: El Estado que Nunca se Rompe' : 'Loop Invariants: The State That Never Breaks'}</h2>
+					<p class="av-lead">
+						{isEs
+							? 'Un invariante es una afirmación lógica verdadera antes de iniciar el bucle, al final de cada iteración y al terminar, garantizando la postcondición. En maximo(), dice: valores[0..i-1] ya fue recorrido y maximoActual es su máximo.'
+							: 'An invariant is a logical statement that holds before the loop starts, after every iteration, and when it ends, guaranteeing the postcondition. In maximo(), it states: valores[0..i-1] has been scanned and maximoActual is its maximum.'}
+					</p>
+				</div>
+
+				<div class="av-card">
+					<div class="av-array-toolbar">
+						<span class="av-invariant-formula">{isEs ? 'Invariante: valores[0..i-1] ya recorrido, maximoActual = máximo parcial' : 'Invariant: valores[0..i-1] scanned, maximoActual = partial maximum'}</span>
+					</div>
+
+					<div class="av-array-viz" id="avArrayViz">
+						<div class="av-cell" data-index="0"><span class="av-cell-index">0</span><span class="av-cell-value">4</span></div>
+						<div class="av-cell" data-index="1"><span class="av-cell-index">1</span><span class="av-cell-value">9</span></div>
+						<div class="av-cell" data-index="2"><span class="av-cell-index">2</span><span class="av-cell-value">2</span></div>
+						<div class="av-cell" data-index="3"><span class="av-cell-index">3</span><span class="av-cell-value">7</span></div>
+						<div class="av-cell" data-index="4"><span class="av-cell-index">4</span><span class="av-cell-value">5</span></div>
+						<div class="av-cell" data-index="5"><span class="av-cell-index">5</span><span class="av-cell-value">1</span></div>
+						<div class="av-cell" data-index="6"><span class="av-cell-index">6</span><span class="av-cell-value">8</span></div>
+						<div class="av-cell" data-index="7"><span class="av-cell-index">7</span><span class="av-cell-value">3</span></div>
+					</div>
+
+					<div class="av-legend-strip">
+						<span class="av-legend-item"><span class="av-legend-swatch av-swatch-processed"></span>{isEs ? 'Procesado (invariante satisfecho)' : 'Processed (invariant holds)'}</span>
+						<span class="av-legend-item"><span class="av-legend-swatch av-swatch-active"></span>{isEs ? 'Elemento activo' : 'Active element'}</span>
+						<span class="av-legend-item"><span class="av-legend-swatch av-swatch-pending"></span>{isEs ? 'Pendiente' : 'Pending'}</span>
+					</div>
+
+					<div class="av-invariant-controls">
+						<button class="av-action-btn" id="avAdvanceBtn">{isEs ? 'Avanzar iteración' : 'Advance iteration'}</button>
+						<button class="av-ghost-btn" id="avResetInvariantBtn">{isEs ? 'Reiniciar' : 'Reset'}</button>
+						<span class="av-invariant-readout" id="avInvariantReadout">i = 0 · maximoActual = —</span>
+					</div>
+
+					<p class="av-invariant-status" id="avInvariantStatus">
+						{isEs
+							? 'Antes de empezar: el segmento [0..-1] está vacío, el invariante se cumple trivialmente.'
+							: 'Before starting: segment [0..-1] is empty, the invariant holds trivially.'}
+					</p>
+				</div>
+			</section>
+
+			<!-- Slide 3: Corrección Total y Función Cota -->
+			<section class="av-slide" data-slide="3">
+				<div class="av-header">
+					<span class="av-kicker">{isEs ? 'Terminación Garantizada' : 'Guaranteed Termination'}</span>
+					<h2 class="av-title">{isEs ? 'Corrección Total y Función Cota: V = n − i' : 'Total Correctness and the Bound Function: V = n − i'}</h2>
+					<p class="av-lead">
+						{isEs
+							? 'La corrección parcial garantiza que, si el bucle termina, la respuesta es correcta. La corrección total exige además que termine: una función cota entera y positiva que decrece estrictamente en cada iteración lo demuestra.'
+							: 'Partial correctness guarantees that if the loop terminates, the answer is correct. Total correctness also requires it to terminate: a positive integer bound function that strictly decreases each iteration proves it.'}
+					</p>
+				</div>
+
+				<div class="av-card">
+					<div class="av-bound-readout">
+						<div class="av-bound-metric">
+							<span class="av-metric-label">n</span>
+							<span class="av-metric-value" id="avBoundN">8</span>
+						</div>
+						<div class="av-bound-metric">
+							<span class="av-metric-label">i</span>
+							<span class="av-metric-value" id="avBoundI">0</span>
+						</div>
+						<div class="av-bound-metric av-bound-metric-accent">
+							<span class="av-metric-label">V = n − i</span>
+							<span class="av-metric-value" id="avBoundV">8</span>
+						</div>
+					</div>
+
+					<div class="av-bound-track">
+						<div class="av-bound-fill" id="avBoundFill" style="width: 100%;"></div>
+					</div>
+
+					<div class="av-bound-controls">
+						<button class="av-action-btn" id="avBoundStepBtn">{isEs ? 'Ejecutar iteración' : 'Run iteration'}</button>
+						<button class="av-ghost-btn" id="avBoundResetBtn">{isEs ? 'Reiniciar' : 'Reset'}</button>
+					</div>
+
+					<p class="av-bound-status" id="avBoundStatus">
+						{isEs
+							? 'V comienza en n = 8. Cada iteración lo reduce en 1. Mientras V sea positivo, el bucle puede seguir; nunca puede volverse negativo.'
+							: 'V starts at n = 8. Each iteration reduces it by 1. While V stays positive, the loop may continue; it can never go negative.'}
+					</p>
+				</div>
+			</section>
+
+			<!-- Slide 4: El Gráfico Interactivo de Notación Big-O -->
+			<section class="av-slide" data-slide="4">
+				<div class="av-header">
+					<span class="av-kicker">{isEs ? 'Análisis Asintótico' : 'Asymptotic Analysis'}</span>
+					<h2 class="av-title">{isEs ? 'El Gráfico Interactivo de la Notación Big-O' : 'The Interactive Big-O Notation Chart'}</h2>
+					<p class="av-lead">
+						{isEs
+							? 'Big-O describe cómo escala el tiempo de ejecución cuando el tamaño de entrada N crece hacia el infinito, ignorando constantes y términos menores para enfocarse en el factor dominante.'
+							: 'Big-O describes how running time scales as the input size N grows toward infinity, ignoring constants and lower-order terms to focus on the dominant factor.'}
+					</p>
+				</div>
+
+				<div class="av-card">
+					<div class="av-chart-wrap">
+						<svg viewBox="0 0 640 300" class="av-svg-chart" role="img" aria-label={isEs ? 'Gráfico de curvas de complejidad' : 'Complexity curves chart'}>
+							<line x1="60" y1="20" x2="60" y2="260" class="av-axis" />
+							<line x1="60" y1="260" x2="580" y2="260" class="av-axis" />
+
+							<path d="M60,250 L580,246" class="av-curve av-curve-a" />
+							<path d="M60,250 C220,240 400,215 580,196" class="av-curve av-curve-a av-curve-dashed" />
+							<path d="M60,250 L580,90" class="av-curve av-curve-b" />
+							<path d="M60,250 C300,190 460,110 580,45" class="av-curve av-curve-b av-curve-dashed" />
+							<path d="M60,250 C230,246 350,170 410,90 C428,64 440,38 448,20" class="av-curve av-curve-c" />
+							<path d="M60,250 L118,249 C136,248 152,226 162,150 C168,96 172,50 175,20" class="av-curve av-curve-d" />
+
+							<line id="avChartMarker" x1="60" y1="20" x2="60" y2="260" class="av-chart-marker" />
+
+							<text x="60" y="278" class="av-tick-label">10</text>
+							<text x="164" y="278" class="av-tick-label">100</text>
+							<text x="268" y="278" class="av-tick-label">1K</text>
+							<text x="372" y="278" class="av-tick-label">10K</text>
+							<text x="476" y="278" class="av-tick-label">100K</text>
+							<text x="580" y="278" class="av-tick-label">1M</text>
+						</svg>
+						<span class="av-chart-axis-label">{isEs ? 'N (tamaño de entrada) →' : 'N (input size) →'}</span>
+					</div>
+
+					<div class="av-legend-strip">
+						<span class="av-legend-item"><span class="av-legend-swatch av-swatch-a"></span>O(1) · O(log N)</span>
+						<span class="av-legend-item"><span class="av-legend-swatch av-swatch-b"></span>O(N) · O(N log N)</span>
+						<span class="av-legend-item"><span class="av-legend-swatch av-swatch-c"></span>O(N²)</span>
+						<span class="av-legend-item"><span class="av-legend-swatch av-swatch-d"></span>O(2^N)</span>
+					</div>
+
+					<div class="av-slider-row">
+						<label for="avNSlider">{isEs ? 'Tamaño de entrada:' : 'Input size:'}</label>
+						<input type="range" id="avNSlider" min="0" max="5" step="1" value="0" class="av-slider" />
+						<span class="av-n-value" id="avNValue">N = 10</span>
+					</div>
+
+					<div class="av-readout-grid">
+						<div class="av-readout-row">
+							<span class="av-readout-label">O(1)</span>
+							<span class="av-readout-value" id="avOpsConst">1</span>
+						</div>
+						<div class="av-readout-row">
+							<span class="av-readout-label">O(log N)</span>
+							<span class="av-readout-value" id="avOpsLog">4</span>
+						</div>
+						<div class="av-readout-row">
+							<span class="av-readout-label">O(N)</span>
+							<span class="av-readout-value" id="avOpsLinear">10</span>
+						</div>
+						<div class="av-readout-row">
+							<span class="av-readout-label">O(N log N)</span>
+							<span class="av-readout-value" id="avOpsLinLog">40</span>
+						</div>
+						<div class="av-readout-row">
+							<span class="av-readout-label">O(N²)</span>
+							<span class="av-readout-value" id="avOpsQuad">100</span>
+						</div>
+						<div class="av-readout-row av-readout-row-accent">
+							<span class="av-readout-label">O(2^N)</span>
+							<span class="av-readout-value" id="avOpsExp">{isEs ? '1.024' : '1,024'}</span>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 5: Mejor, Peor y Caso Promedio -->
+			<section class="av-slide" data-slide="5">
+				<div class="av-header">
+					<span class="av-kicker">{isEs ? 'Casos de Análisis' : 'Case Analysis'}</span>
+					<h2 class="av-title">{isEs ? 'Mejor, Peor y Caso Promedio en una Búsqueda Lineal' : 'Best, Worst, and Average Case in a Linear Search'}</h2>
+					<p class="av-lead">
+						{isEs
+							? 'Un algoritmo no tiene una única velocidad: la búsqueda lineal es O(1) en el mejor caso si el valor está al principio, y O(N) en el peor caso si no existe. Sin aclaración, suele informarse el peor caso.'
+							: 'An algorithm does not have a single speed: linear search is O(1) in the best case if the value sits at the front, and O(N) in the worst case if it is absent. Unless stated otherwise, the worst case is usually reported.'}
+					</p>
+				</div>
+
+				<div class="av-card">
+					<div class="av-case-tabs">
+						<button class="av-tab is-active" id="avCaseBestBtn">{isEs ? 'Mejor Caso' : 'Best Case'}</button>
+						<button class="av-tab" id="avCaseAvgBtn">{isEs ? 'Caso Promedio' : 'Average Case'}</button>
+						<button class="av-tab" id="avCaseWorstBtn">{isEs ? 'Peor Caso' : 'Worst Case'}</button>
+					</div>
+
+					<p class="av-case-target">
+						{isEs ? 'Buscando el valor' : 'Searching for value'} <code class="av-code-inline" id="avCaseTargetValue">12</code> {isEs ? 'en el arreglo:' : 'in the array:'}
+					</p>
+
+					<div class="av-case-array" id="avCaseArray">
+						<div class="av-cell" data-index="0"><span class="av-cell-value">12</span></div>
+						<div class="av-cell" data-index="1"><span class="av-cell-value">45</span></div>
+						<div class="av-cell" data-index="2"><span class="av-cell-value">7</span></div>
+						<div class="av-cell" data-index="3"><span class="av-cell-value">89</span></div>
+						<div class="av-cell" data-index="4"><span class="av-cell-value">34</span></div>
+						<div class="av-cell" data-index="5"><span class="av-cell-value">2</span></div>
+						<div class="av-cell" data-index="6"><span class="av-cell-value">67</span></div>
+						<div class="av-cell" data-index="7"><span class="av-cell-value">90</span></div>
+						<div class="av-cell" data-index="8"><span class="av-cell-value">15</span></div>
+					</div>
+
+					<div class="av-case-footer">
+						<span class="av-case-status" id="avCaseStatus">{isEs ? '1 comparación: el valor está en el índice 0.' : '1 comparison: the value is at index 0.'}</span>
+						<span class="av-case-badge" id="avCaseBadge">O(1)</span>
+					</div>
+				</div>
+			</section>
+		</main>
+	</div>
+</div>
+
+<style>
+	.av-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.av-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.av-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	.av-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
+	.av-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.av-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent);
+	}
+
+	.av-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.av-counter {
+		font-size: var(--text-sm);
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.av-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 1100px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.av-slide.is-active {
+		display: block;
+		animation: avFade 0.25s ease-out;
+	}
+
+	@keyframes avFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.av-header {
+		margin-bottom: var(--space-5);
+	}
+
+	.av-kicker {
+		font-size: var(--text-xs);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent);
+	}
+
+	.av-title {
+		font-family: var(--font-display);
+		font-size: var(--text-2xl);
+		color: var(--color-text);
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.av-lead {
+		font-size: var(--text-base);
+		color: var(--color-text-muted);
+		line-height: 1.5;
+		margin: 0;
+	}
+
+	.av-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+		box-shadow: var(--shadow-sm);
+	}
+
+	/* Shared: buttons, tabs, badges, legends */
+	.av-action-btn {
+		background: var(--color-accent);
+		color: var(--color-surface);
+		font-weight: 600;
+		font-size: var(--text-sm);
+		padding: var(--space-2) var(--space-4);
+		border: none;
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: opacity 0.2s;
+	}
+
+	.av-action-btn:hover {
+		opacity: 0.9;
+	}
+
+	.av-action-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.av-ghost-btn {
+		background: transparent;
+		color: var(--color-text-muted);
+		font-size: var(--text-sm);
+		padding: var(--space-2) var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+	}
+
+	.av-tab {
+		background: transparent;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-1) var(--space-3);
+		font-size: var(--text-xs);
+		font-weight: 600;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.av-tab.is-active {
+		background: var(--color-accent);
+		color: var(--color-surface);
+		border-color: var(--color-accent);
+	}
+
+	.av-code-inline {
+		font-family: monospace;
+		font-size: var(--text-xs);
+		background: var(--color-bg);
+		padding: 1px 6px;
+		border-radius: var(--radius-sm);
+		color: var(--color-accent-700);
+	}
+
+	.av-legend-strip {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-4);
+		margin-top: var(--space-4);
+		padding-top: var(--space-3);
+		border-top: 1px solid var(--color-border);
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+	}
+
+	.av-legend-item {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+	}
+
+	.av-legend-swatch {
+		display: inline-block;
+		width: 12px;
+		height: 12px;
+		border-radius: var(--radius-full);
+	}
+
+	/* Slide 1: Hoare tunnel */
+	.av-hoare-tunnel {
+		display: flex;
+		align-items: stretch;
+		gap: var(--space-3);
+		margin-bottom: var(--space-4);
+	}
+
+	@media (max-width: 900px) {
+		.av-hoare-tunnel {
+			flex-direction: column;
+		}
+
+		.av-stage-arrow {
+			transform: rotate(90deg);
+		}
+	}
+
+	.av-stage {
+		flex: 1;
+		background: var(--color-bg);
+		border: 2px dashed var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		transition: all 0.3s ease;
+	}
+
+	.av-stage-icon {
+		width: 28px;
+		height: 28px;
+		color: var(--color-text-muted);
+	}
+
+	.av-stage.is-valid {
+		border-style: solid;
+		border-color: var(--color-accent-2, rgb(100, 140, 90));
+		background: color-mix(in srgb, var(--color-accent-2, rgb(100, 140, 90)) 12%, transparent);
+	}
+
+	.av-stage.is-valid .av-stage-icon {
+		color: var(--color-accent-2, rgb(100, 140, 90));
+	}
+
+	.av-stage.is-blocked {
+		border-style: solid;
+		border-color: var(--color-accent-800);
+		background: color-mix(in srgb, var(--color-accent-800) 10%, transparent);
+		opacity: 0.85;
+	}
+
+	.av-stage.is-blocked .av-stage-icon {
+		color: var(--color-accent-800);
+	}
+
+	.av-stage.is-running {
+		border-style: solid;
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+	}
+
+	.av-stage.is-running .av-stage-icon {
+		color: var(--color-accent);
+	}
+
+	.av-stage.is-skipped {
+		opacity: 0.5;
+	}
+
+	.av-stage-tag {
+		font-family: var(--font-display);
+		font-size: var(--text-lg);
+		color: var(--color-accent);
+	}
+
+	.av-stage-title {
+		font-size: var(--text-sm);
+	}
+
+	.av-stage-code {
+		font-family: monospace;
+		font-size: 11px;
+		background: var(--color-surface);
+		border-radius: var(--radius-sm);
+		padding: var(--space-1) var(--space-2);
+		word-break: break-word;
+	}
+
+	.av-stage-status {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		margin-top: auto;
+	}
+
+	.av-stage-arrow {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--color-text-muted);
+	}
+
+	.av-sim-block {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.av-sim-label {
+		display: flex;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		font-size: var(--text-sm);
+		margin-bottom: var(--space-3);
+	}
+
+	.av-hint {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+	}
+
+	.av-sim-buttons {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+
+	.av-result-box {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.av-code-sample {
+		font-family: monospace;
+		font-size: var(--text-base);
+		font-weight: 700;
+	}
+
+	.av-tag-ok {
+		color: var(--color-accent-2-700);
+		font-weight: 700;
+		font-size: var(--text-xs);
+	}
+
+	.av-tag-err {
+		color: var(--color-accent-800);
+		font-weight: 700;
+		font-size: var(--text-xs);
+	}
+
+	/* Slide 2: Loop invariant */
+	.av-array-toolbar {
+		margin-bottom: var(--space-3);
+	}
+
+	.av-invariant-formula {
+		font-family: monospace;
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+	}
+
+	.av-array-viz {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+		margin-bottom: var(--space-3);
+	}
+
+	.av-cell {
+		flex: 1;
+		min-width: 48px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+		background: var(--color-neutral-200);
+		border: 2px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-2);
+		transition: all 0.3s ease;
+	}
+
+	.av-cell-index {
+		font-size: 10px;
+		color: var(--color-text-muted);
+	}
+
+	.av-cell-value {
+		font-family: monospace;
+		font-weight: 700;
+		font-size: var(--text-sm);
+	}
+
+	.av-cell.is-processed {
+		background: color-mix(in srgb, var(--color-accent-2, rgb(100, 140, 90)) 20%, transparent);
+		border-color: var(--color-accent-2, rgb(100, 140, 90));
+	}
+
+	.av-cell.is-active {
+		background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+		border-color: var(--color-accent);
+		transform: scale(1.06);
+	}
+
+	.av-cell.is-pending {
+		background: var(--color-neutral-200);
+		border-color: var(--color-neutral-400);
+		opacity: 0.8;
+	}
+
+	.av-cell.is-scanned {
+		background: color-mix(in srgb, var(--color-accent-2, rgb(100, 140, 90)) 16%, transparent);
+		border-color: var(--color-accent-2, rgb(100, 140, 90));
+	}
+
+	.av-cell.is-found {
+		background: color-mix(in srgb, var(--color-accent) 25%, transparent);
+		border-color: var(--color-accent);
+		transform: scale(1.08);
+	}
+
+	.av-swatch-processed { background: var(--color-accent-2, rgb(100, 140, 90)); }
+	.av-swatch-active { background: var(--color-accent); }
+	.av-swatch-pending { background: var(--color-neutral-400); }
+
+	.av-invariant-controls {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+		margin: var(--space-4) 0 var(--space-2);
+	}
+
+	.av-invariant-readout {
+		font-family: monospace;
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+	}
+
+	.av-invariant-status {
+		font-size: var(--text-xs);
+		color: var(--color-text);
+		background: var(--color-bg);
+		border-left: 3px solid var(--color-accent);
+		border-radius: 0 var(--radius-md) var(--radius-md) 0;
+		padding: var(--space-3);
+		margin: 0;
+	}
+
+	/* Slide 3: Bound function */
+	.av-bound-readout {
+		display: flex;
+		gap: var(--space-4);
+		margin-bottom: var(--space-4);
+	}
+
+	.av-bound-metric {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		text-align: center;
+		flex: 1;
+	}
+
+	.av-bound-metric-accent {
+		border-color: var(--color-accent);
+	}
+
+	.av-metric-label {
+		display: block;
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		font-family: monospace;
+	}
+
+	.av-metric-value {
+		display: block;
+		font-family: var(--font-display);
+		font-size: var(--text-2xl);
+		color: var(--color-accent);
+	}
+
+	.av-bound-track {
+		height: 22px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-full);
+		overflow: hidden;
+		margin-bottom: var(--space-4);
+	}
+
+	.av-bound-fill {
+		height: 100%;
+		background: var(--color-accent);
+		transition: width 0.35s ease;
+	}
+
+	.av-bound-controls {
+		display: flex;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+
+	.av-bound-status {
+		font-size: var(--text-xs);
+		color: var(--color-text);
+		background: var(--color-bg);
+		border-left: 3px solid var(--color-accent);
+		border-radius: 0 var(--radius-md) var(--radius-md) 0;
+		padding: var(--space-3);
+		margin: 0;
+		transition: all 0.3s ease;
+	}
+
+	.av-bound-status.is-done {
+		border-left-color: var(--color-accent-2, rgb(100, 140, 90));
+		color: var(--color-accent-2-700);
+		font-weight: 600;
+	}
+
+	/* Slide 4: Big-O chart */
+	.av-chart-wrap {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.av-svg-chart {
+		width: 100%;
+		max-height: 300px;
+	}
+
+	.av-chart-axis-label {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		margin-top: var(--space-1);
+	}
+
+	.av-axis {
+		stroke: var(--color-border);
+		stroke-width: 2;
+	}
+
+	.av-tick-label {
+		font-size: 10px;
+		fill: var(--color-text-muted);
+		text-anchor: middle;
+	}
+
+	.av-curve {
+		fill: none;
+		stroke-width: 3;
+		stroke-linecap: round;
+	}
+
+	.av-curve-dashed {
+		stroke-dasharray: 5,5;
+	}
+
+	.av-curve-a { stroke: var(--color-accent-2-300); }
+	.av-curve-b { stroke: var(--color-accent-2-700); }
+	.av-curve-c { stroke: var(--color-accent); }
+	.av-curve-d { stroke: var(--color-accent-800); stroke-width: 3.5; }
+
+	.av-swatch-a { background: var(--color-accent-2-300); }
+	.av-swatch-b { background: var(--color-accent-2-700); }
+	.av-swatch-c { background: var(--color-accent); }
+	.av-swatch-d { background: var(--color-accent-800); }
+
+	.av-chart-marker {
+		stroke: var(--color-text);
+		stroke-width: 1.5;
+		stroke-dasharray: 3,3;
+		opacity: 0.6;
+	}
+
+	.av-slider-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		margin: var(--space-4) 0;
+		flex-wrap: wrap;
+	}
+
+	.av-slider-row label {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+	}
+
+	.av-slider {
+		flex: 1;
+		min-width: 160px;
+		accent-color: var(--color-accent);
+	}
+
+	.av-n-value {
+		font-family: monospace;
+		font-weight: 700;
+		font-size: var(--text-sm);
+		color: var(--color-accent);
+	}
+
+	.av-readout-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: var(--space-2);
+	}
+
+	@media (max-width: 640px) {
+		.av-readout-grid {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+
+	.av-readout-row {
+		display: flex;
+		justify-content: space-between;
+		gap: var(--space-2);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2) var(--space-3);
+		font-size: var(--text-xs);
+	}
+
+	.av-readout-row-accent {
+		border-color: var(--color-accent-800);
+	}
+
+	.av-readout-label {
+		font-family: monospace;
+		color: var(--color-text-muted);
+	}
+
+	.av-readout-value {
+		font-weight: 700;
+	}
+
+	/* Slide 5: Best/avg/worst case */
+	.av-case-tabs {
+		display: flex;
+		gap: var(--space-2);
+		margin-bottom: var(--space-4);
+	}
+
+	.av-case-target {
+		font-size: var(--text-sm);
+		color: var(--color-text-muted);
+		margin: 0 0 var(--space-3);
+	}
+
+	.av-case-array {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+		margin-bottom: var(--space-3);
+	}
+
+	.av-case-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.av-case-status {
+		font-size: var(--text-xs);
+		color: var(--color-text);
+	}
+
+	.av-case-badge {
+		font-family: monospace;
+		font-weight: 700;
+		font-size: var(--text-xs);
+		background: var(--color-accent);
+		color: var(--color-surface);
+		padding: 2px 8px;
+		border-radius: var(--radius-full);
+	}
+
+	@media (min-width: 1440px) { .av-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .av-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .av-viewport { zoom: 1.25; } }
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 5;
+
+	const screenEl = document.querySelector('.av-screen');
+	const pageLang = screenEl?.getAttribute('data-lang') === 'en' ? 'en' : 'es';
+	const locale = pageLang === 'es' ? 'es-AR' : 'en-US';
+
+	const prevBtn = document.getElementById('avPrevBtn') as HTMLButtonElement;
+	const nextBtn = document.getElementById('avNextBtn') as HTMLButtonElement;
+	const counter = document.getElementById('avSlideCounter') as HTMLElement;
+	const slides = document.querySelectorAll<HTMLElement>('.av-slide');
+
+	function updateSlide(target: number) {
+		if (target < 1 || target > totalSlides) return;
+		currentSlide = target;
+		slides.forEach((s) => s.classList.remove('is-active'));
+		document.querySelector(`.av-slide[data-slide="${currentSlide}"]`)?.classList.add('is-active');
+
+		if (counter) counter.textContent = `${currentSlide} / ${totalSlides}`;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	}
+
+	prevBtn?.addEventListener('click', () => updateSlide(currentSlide - 1));
+	nextBtn?.addEventListener('click', () => updateSlide(currentSlide + 1));
+
+	window.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') updateSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') updateSlide(currentSlide - 1);
+	});
+
+	// Slide 1: Hoare triple simulator
+	const gateP = document.getElementById('avGateP');
+	const gateQ = document.getElementById('avGateQ');
+	const chamberC = document.getElementById('avChamberC');
+	const gatePIcon = document.getElementById('avGatePIcon');
+	const gateQIcon = document.getElementById('avGateQIcon');
+	const gatePStatus = document.getElementById('avGatePStatus');
+	const gateQStatus = document.getElementById('avGateQStatus');
+	const chamberStatus = document.getElementById('avChamberStatus');
+	const hoareResult = document.getElementById('avHoareResult');
+	const testValidBtn = document.getElementById('avTestValidBtn');
+	const testInvalidBtn = document.getElementById('avTestInvalidBtn');
+
+	const ICON_CHECK = '<circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" />';
+	const ICON_X = '<circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" />';
+	const ICON_NEUTRAL = '<circle cx="12" cy="12" r="10" stroke-dasharray="4 3" />';
+
+	function runHoareTest(valid: boolean) {
+		gateP?.classList.remove('is-valid', 'is-blocked');
+		gateQ?.classList.remove('is-valid', 'is-blocked');
+		chamberC?.classList.remove('is-running', 'is-skipped');
+
+		if (valid) {
+			gateP?.classList.add('is-valid');
+			if (gatePIcon) gatePIcon.innerHTML = ICON_CHECK;
+			if (gatePStatus) {
+				gatePStatus.textContent = pageLang === 'es'
+					? '✓ Se cumple: [4, 9, 2, 7] no es null ni vacío'
+					: '✓ Holds: [4, 9, 2, 7] is neither null nor empty';
+			}
+
+			chamberC?.classList.add('is-running');
+			if (chamberStatus) {
+				chamberStatus.textContent = pageLang === 'es'
+					? 'Ejecutado: recorre el array comparando cada valor'
+					: 'Executed: scans the array comparing each value';
+			}
+
+			gateQ?.classList.add('is-valid');
+			if (gateQIcon) gateQIcon.innerHTML = ICON_CHECK;
+			if (gateQStatus) {
+				gateQStatus.textContent = pageLang === 'es'
+					? '✓ Se cumple: 9 ≥ todos los demás valores'
+					: '✓ Holds: 9 ≥ every other value';
+			}
+
+			if (hoareResult) {
+				hoareResult.innerHTML = `
+					<span class="av-code-sample">maximoActual == 9</span>
+					<span class="av-tag-ok">${pageLang === 'es' ? '✓ Postcondición Q verificada' : '✓ Postcondition Q verified'}</span>
+				`;
+			}
+		} else {
+			gateP?.classList.add('is-blocked');
+			if (gatePIcon) gatePIcon.innerHTML = ICON_X;
+			if (gatePStatus) {
+				gatePStatus.textContent = pageLang === 'es'
+					? '✗ No se cumple: el array está vacío'
+					: '✗ Fails: the array is empty';
+			}
+
+			chamberC?.classList.add('is-skipped');
+			if (chamberStatus) {
+				chamberStatus.textContent = pageLang === 'es'
+					? 'Nunca se ejecuta: la compuerta P se cerró antes'
+					: 'Never runs: gate P closed beforehand';
+			}
+
+			if (gateQIcon) gateQIcon.innerHTML = ICON_NEUTRAL;
+			if (gateQStatus) {
+				gateQStatus.textContent = pageLang === 'es'
+					? 'No evaluada: C nunca corrió'
+					: 'Not evaluated: C never ran';
+			}
+
+			if (hoareResult) {
+				hoareResult.innerHTML = `
+					<span class="av-code-sample">IllegalArgumentException</span>
+					<span class="av-tag-err">${pageLang === 'es' ? '✗ valores debe contener al menos un elemento' : '✗ valores must contain at least one element'}</span>
+				`;
+			}
+		}
+	}
+
+	testValidBtn?.addEventListener('click', () => runHoareTest(true));
+	testInvalidBtn?.addEventListener('click', () => runHoareTest(false));
+
+	// Slide 2: Loop invariant stepper
+	const arrayValues = [4, 9, 2, 7, 5, 1, 8, 3];
+	const invariantN = arrayValues.length;
+	let invariantI = 0;
+	let runningMax: number | null = null;
+
+	const invariantCells = document.querySelectorAll<HTMLElement>('#avArrayViz .av-cell');
+	const advanceBtn = document.getElementById('avAdvanceBtn') as HTMLButtonElement;
+	const resetInvariantBtn = document.getElementById('avResetInvariantBtn');
+	const invariantReadout = document.getElementById('avInvariantReadout');
+	const invariantStatus = document.getElementById('avInvariantStatus');
+
+	function renderInvariant() {
+		invariantCells.forEach((cell, idx) => {
+			cell.classList.remove('is-processed', 'is-active', 'is-pending');
+			if (idx < invariantI) cell.classList.add('is-processed');
+			else if (idx === invariantI && invariantI < invariantN) cell.classList.add('is-active');
+			else cell.classList.add('is-pending');
+		});
+
+		if (advanceBtn) advanceBtn.disabled = invariantI >= invariantN;
+
+		if (invariantReadout) {
+			invariantReadout.textContent = `i = ${invariantI} · maximoActual = ${runningMax === null ? '—' : runningMax}`;
+		}
+
+		if (invariantStatus) {
+			if (invariantI === 0) {
+				invariantStatus.textContent = pageLang === 'es'
+					? 'Antes de empezar: el segmento [0..-1] está vacío, el invariante se cumple trivialmente.'
+					: 'Before starting: segment [0..-1] is empty, the invariant holds trivially.';
+			} else if (invariantI < invariantN) {
+				invariantStatus.textContent = pageLang === 'es'
+					? `Tras ${invariantI} iteración(es): valores[0..${invariantI - 1}] ya fue recorrido. maximoActual = ${runningMax} sigue siendo el máximo de ese segmento.`
+					: `After ${invariantI} iteration(s): valores[0..${invariantI - 1}] has been scanned. maximoActual = ${runningMax} remains the maximum of that segment.`;
+			} else {
+				invariantStatus.textContent = pageLang === 'es'
+					? `✓ Bucle terminado: el segmento cubre todo el arreglo. La postcondición se cumple: maximoActual = ${runningMax} es el máximo global.`
+					: `✓ Loop finished: the segment covers the whole array. The postcondition holds: maximoActual = ${runningMax} is the global maximum.`;
+			}
+		}
+	}
+
+	advanceBtn?.addEventListener('click', () => {
+		if (invariantI >= invariantN) return;
+		const value = arrayValues[invariantI];
+		runningMax = runningMax === null ? value : Math.max(runningMax, value);
+		invariantI++;
+		renderInvariant();
+	});
+
+	resetInvariantBtn?.addEventListener('click', () => {
+		invariantI = 0;
+		runningMax = null;
+		renderInvariant();
+	});
+
+	renderInvariant();
+
+	// Slide 3: Bound function stepper
+	const boundN = 8;
+	let boundI = 0;
+
+	const boundIEl = document.getElementById('avBoundI');
+	const boundVEl = document.getElementById('avBoundV');
+	const boundFill = document.getElementById('avBoundFill');
+	const boundStepBtn = document.getElementById('avBoundStepBtn') as HTMLButtonElement;
+	const boundResetBtn = document.getElementById('avBoundResetBtn');
+	const boundStatus = document.getElementById('avBoundStatus');
+
+	function renderBound() {
+		const v = boundN - boundI;
+		if (boundIEl) boundIEl.textContent = String(boundI);
+		if (boundVEl) boundVEl.textContent = String(v);
+		if (boundFill) boundFill.style.width = `${(v / boundN) * 100}%`;
+		if (boundStepBtn) boundStepBtn.disabled = v <= 0;
+
+		if (boundStatus) {
+			if (v > 0) {
+				boundStatus.textContent = pageLang === 'es'
+					? `V = ${v}. Función cota positiva: todavía quedan ${v} iteración(es) antes de llegar a 0.`
+					: `V = ${v}. Positive bound function: ${v} iteration(s) remain before reaching 0.`;
+				boundStatus.classList.remove('is-done');
+			} else {
+				boundStatus.textContent = pageLang === 'es'
+					? '✓ V llegó a 0: el bucle se detiene físicamente. Terminación garantizada, sin loops infinitos.'
+					: '✓ V reached 0: the loop stops physically. Termination is guaranteed, no infinite loops.';
+				boundStatus.classList.add('is-done');
+			}
+		}
+	}
+
+	boundStepBtn?.addEventListener('click', () => {
+		if (boundN - boundI <= 0) return;
+		boundI++;
+		renderBound();
+	});
+
+	boundResetBtn?.addEventListener('click', () => {
+		boundI = 0;
+		renderBound();
+	});
+
+	renderBound();
+
+	// Slide 4: Big-O interactive chart
+	const nSteps = [10, 100, 1000, 10000, 100000, 1000000];
+	const markerPositions = [60, 164, 268, 372, 476, 580];
+
+	const nSlider = document.getElementById('avNSlider') as HTMLInputElement;
+	const nValueLabel = document.getElementById('avNValue');
+	const chartMarker = document.getElementById('avChartMarker');
+	const opsConst = document.getElementById('avOpsConst');
+	const opsLog = document.getElementById('avOpsLog');
+	const opsLinear = document.getElementById('avOpsLinear');
+	const opsLinLog = document.getElementById('avOpsLinLog');
+	const opsQuad = document.getElementById('avOpsQuad');
+	const opsExp = document.getElementById('avOpsExp');
+
+	function formatOps(value: number): string {
+		if (!Number.isFinite(value)) {
+			return pageLang === 'es' ? 'Inviable (crecimiento no computable)' : 'Infeasible (uncomputable growth)';
+		}
+		if (value >= 1e15) {
+			return value.toExponential(2).replace('e+', 'e');
+		}
+		return Math.round(value).toLocaleString(locale);
+	}
+
+	function renderChart() {
+		const stepIndex = Number(nSlider.value);
+		const n = nSteps[stepIndex];
+
+		if (nValueLabel) nValueLabel.textContent = `N = ${n.toLocaleString(locale)}`;
+		if (chartMarker) {
+			const x = String(markerPositions[stepIndex]);
+			chartMarker.setAttribute('x1', x);
+			chartMarker.setAttribute('x2', x);
+		}
+
+		const logN = Math.ceil(Math.log2(n));
+		if (opsConst) opsConst.textContent = formatOps(1);
+		if (opsLog) opsLog.textContent = formatOps(logN);
+		if (opsLinear) opsLinear.textContent = formatOps(n);
+		if (opsLinLog) opsLinLog.textContent = formatOps(n * logN);
+		if (opsQuad) opsQuad.textContent = formatOps(n * n);
+		if (opsExp) opsExp.textContent = formatOps(Math.pow(2, n));
+	}
+
+	nSlider?.addEventListener('input', renderChart);
+	renderChart();
+
+	// Slide 5: Best / average / worst case search
+	type CaseScenario = 'best' | 'avg' | 'worst';
+
+	const caseCells = document.querySelectorAll<HTMLElement>('#avCaseArray .av-cell');
+	const caseBestBtn = document.getElementById('avCaseBestBtn');
+	const caseAvgBtn = document.getElementById('avCaseAvgBtn');
+	const caseWorstBtn = document.getElementById('avCaseWorstBtn');
+	const caseTargetValue = document.getElementById('avCaseTargetValue');
+	const caseStatus = document.getElementById('avCaseStatus');
+	const caseBadge = document.getElementById('avCaseBadge');
+
+	const caseScenarios: Record<CaseScenario, { target: number; scanned: number; foundIndex: number | null }> = {
+		best: { target: 12, scanned: 1, foundIndex: 0 },
+		avg: { target: 34, scanned: 5, foundIndex: 4 },
+		worst: { target: 99, scanned: 9, foundIndex: null },
+	};
+
+	function renderCase(scenario: CaseScenario) {
+		const data = caseScenarios[scenario];
+
+		[caseBestBtn, caseAvgBtn, caseWorstBtn].forEach((btn) => btn?.classList.remove('is-active'));
+		const activeBtn = scenario === 'best' ? caseBestBtn : scenario === 'avg' ? caseAvgBtn : caseWorstBtn;
+		activeBtn?.classList.add('is-active');
+
+		if (caseTargetValue) caseTargetValue.textContent = String(data.target);
+
+		caseCells.forEach((cell, idx) => {
+			cell.classList.remove('is-scanned', 'is-found');
+			if (idx < data.scanned) cell.classList.add('is-scanned');
+			if (data.foundIndex !== null && idx === data.foundIndex) cell.classList.add('is-found');
+		});
+
+		if (caseStatus) {
+			if (data.foundIndex !== null) {
+				caseStatus.textContent = pageLang === 'es'
+					? `${data.scanned} comparación(es): el valor está en el índice ${data.foundIndex}.`
+					: `${data.scanned} comparison(s): the value is at index ${data.foundIndex}.`;
+			} else {
+				caseStatus.textContent = pageLang === 'es'
+					? `${data.scanned} comparaciones: se recorrió todo el arreglo y el valor no está.`
+					: `${data.scanned} comparisons: the whole array was scanned and the value is absent.`;
+			}
+		}
+
+		if (caseBadge) {
+			caseBadge.textContent = scenario === 'best' ? 'O(1)' : scenario === 'avg' ? 'O(N/2) ≈ O(N)' : 'O(N)';
+		}
+	}
+
+	caseBestBtn?.addEventListener('click', () => renderCase('best'));
+	caseAvgBtn?.addEventListener('click', () => renderCase('avg'));
+	caseWorstBtn?.addEventListener('click', () => renderCase('worst'));
+
+	renderCase('best');
+</script>

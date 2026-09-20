@@ -1,0 +1,1168 @@
+---
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="hp-screen" data-lang={lang}>
+	<div class="hp-shell">
+		<div class="deck-card">
+			<div class="deck-nav-bar">
+				<div class="deck-slide-indicator">
+					<span class="deck-step-dot"></span>
+					<span id="deck-slide-label">SLIDE 1 / 5</span>
+				</div>
+				<div class="deck-pills">
+					<button class="deck-pill-btn active" data-target-slide="1">1. {isEs ? '"Es un" vs "Tiene un"' : '"Is a" vs "Has a"'}</button>
+					<button class="deck-pill-btn" data-target-slide="2">2. {isEs ? 'Heap y super()' : 'Heap & super()'}</button>
+					<button class="deck-pill-btn" data-target-slide="3">3. {isEs ? 'Sobrecarga vs Sobrescritura' : 'Overload vs Override'}</button>
+					<button class="deck-pill-btn" data-target-slide="4">4. {isEs ? 'Despacho Dinámico (vtable)' : 'Dynamic Dispatch (vtable)'}</button>
+					<button class="deck-pill-btn" data-target-slide="5">5. {isEs ? 'Polimorfismo y instanceof' : 'Polymorphism & instanceof'}</button>
+				</div>
+			</div>
+
+			<div class="hp-viewport">
+				<!-- SLIDE 1: IS-A VS HAS-A -->
+				<div class="deck-slide active" data-slide="1">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">1. {isEs ? 'El Filtro Mental: "Es un" vs "Tiene un"' : 'The Mental Filter: "Is a" vs "Has a"'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'La herencia (extends) genera el acoplamiento más fuerte en POO. Si la relación no pasa la prueba estricta "X es un Y", NUNCA se hereda: se compone mediante un campo privado ("X tiene un Y").'
+									: 'Inheritance (extends) creates the strongest coupling in OOP. If the domain relationship fails the strict "X is a Y" test, NEVER inherit: compose via a private field ("X has a Y").'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'Herencia versus composición UML' : 'Inheritance versus composition UML'}>
+									<!-- Left Side: Valid Inheritance -->
+									<g transform="translate(15, 20)">
+										<rect x="0" y="0" width="240" height="210" rx="10" class="deck-panel" />
+										<text x="120" y="24" class="deck-svg-title" fill="var(--color-accent-2-700)" text-anchor="middle">✓ Herencia Válida ("Es un")</text>
+
+										<!-- Superclass Vehiculo -->
+										<g transform="translate(45, 40)">
+											<rect x="0" y="0" width="150" height="42" rx="6" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="1.5" />
+											<text x="75" y="18" class="deck-svg-bold" text-anchor="middle">Vehiculo</text>
+											<text x="75" y="32" class="deck-svg-mono-sm" fill="var(--color-accent-700)" text-anchor="middle">arrancar() | frenar()</text>
+										</g>
+
+										<!-- UML Triangle Arrow -->
+										<path d="M120 83 L120 102" stroke="var(--color-accent)" stroke-width="1.5" />
+										<polygon points="120,82 114,90 126,90" fill="var(--color-surface)" stroke="var(--color-accent)" stroke-width="1.5" />
+
+										<!-- Subclass Auto -->
+										<g transform="translate(45, 105)">
+											<rect x="0" y="0" width="150" height="45" rx="6" class="deck-panel-accent" />
+											<text x="75" y="20" class="deck-svg-bold" text-anchor="middle">Auto</text>
+											<text x="75" y="35" class="deck-svg-mono-sm" text-anchor="middle">Auto extends Vehiculo</text>
+										</g>
+
+										<rect x="25" y="165" width="190" height="30" rx="6" fill="color-mix(in srgb, var(--color-accent-2-700) 12%, var(--color-surface))" />
+										<text x="120" y="184" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle">Regla: Todo Auto ES un Vehículo</text>
+									</g>
+
+									<!-- Right Side: Anti-Pattern & Composition -->
+									<g transform="translate(285, 20)">
+										<rect x="0" y="0" width="240" height="210" rx="10" class="deck-panel" />
+										<text x="120" y="24" class="deck-svg-title" fill="rgb(239, 68, 68)" text-anchor="middle">✕ Anti-Patrón de Modelado</text>
+
+										<!-- False inheritance -->
+										<g transform="translate(45, 40)">
+											<rect x="0" y="0" width="150" height="42" rx="6" class="deck-ground-card" stroke="rgb(239, 68, 68)" stroke-dasharray="3 3" />
+											<text x="75" y="18" class="deck-svg-bold" fill="rgb(239, 68, 68)" text-anchor="middle">Motor</text>
+											<text x="75" y="32" class="deck-svg-mono-sm" text-anchor="middle">cilindrada, rpm</text>
+										</g>
+
+										<text x="120" y="100" class="deck-svg-bold" fill="rgb(239, 68, 68)" text-anchor="middle">¿Auto extends Motor? ✕ ¡NO!</text>
+
+										<!-- Correct Composition -->
+										<g transform="translate(25, 115)">
+											<rect x="0" y="0" width="190" height="45" rx="6" class="deck-panel-accent" />
+											<text x="95" y="18" class="deck-svg-bold" text-anchor="middle">Auto (Composición)</text>
+											<text x="95" y="34" class="deck-svg-mono-sm" fill="var(--color-accent-700)" text-anchor="middle">private Motor motor; ◆</text>
+										</g>
+
+										<rect x="25" y="168" width="190" height="28" rx="6" fill="color-mix(in srgb, var(--color-accent-700) 12%, var(--color-surface))" />
+										<text x="120" y="186" class="deck-svg-bold" fill="var(--color-accent-700)" text-anchor="middle">Solución: Auto TIENE un Motor</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Test de Relación' : 'Relationship Tester'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary rel-btn active" data-rel="auto-vehiculo">Auto / Vehículo</button>
+									<button class="btn btn-secondary rel-btn" data-rel="auto-motor">Auto / Motor</button>
+									<button class="btn btn-secondary rel-btn" data-rel="cliente-persona">Cliente / Persona</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Pregunta Conceptual:' : 'Conceptual Question:'}</span>
+										<span class="state-val" id="rel-q-txt">{isEs ? '¿Un Auto es un Vehículo?' : 'Is a Car a Vehicle?'}</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Veredicto Arquitectura:' : 'Architectural Verdict:'}</span>
+										<span class="state-val" id="rel-verdict-txt" style="color: var(--color-accent-2-700); font-weight: 700;">HERENCIA (extends)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Razón de Diseño:' : 'Design Rationale:'}</span>
+										<span class="state-val" id="rel-reason-txt">{isEs ? 'Sustitución Liskov 100% válida.' : '100% valid Liskov substitution.'}</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code id="rel-code-txt"><span class="tok-comment">// Herencia limpia: Auto ES UN Vehículo</span>
+<span class="tok-kw">public class</span> Auto <span class="tok-kw">extends</span> Vehiculo &#123;
+  <span class="tok-kw">private</span> Motor motor; <span class="tok-comment">// Composición interna</span>
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 2: THE HEAP IN LAYERS & super() -->
+				<div class="deck-slide" data-slide="2">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">2. {isEs ? 'El Heap en Capas y el Encadenamiento con super()' : 'The Heap in Layers and super() Chaining'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Al hacer new Auto("Toyota"), NO se crean dos objetos en memoria. Se crea un ÚNICO bloque en el Heap organizado en capas. Por contrato de la JVM, la superclase se construye primero mediante super() antes de que corra el código de la subclase.'
+									: 'Executing new Auto("Toyota") does NOT instantiate two objects. It allocates a SINGLE block in the Heap with concentric state layers. The JVM enforces that super() initializes the superclass state before subclass code executes.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'Estructura en capas en el Heap y super' : 'Layered Heap structure and super'}>
+									<!-- Heap Object Boundary Box -->
+									<g transform="translate(30, 25)">
+										<rect x="0" y="0" width="240" height="200" rx="12" class="deck-panel-accent" stroke-width="2" />
+										<text x="120" y="24" class="deck-svg-title-accent" text-anchor="middle">Objeto Único en Heap @0x7B20</text>
+										<text x="120" y="38" class="deck-svg-sub" text-anchor="middle">new Auto("Toyota", true)</text>
+
+										<!-- Outer Shell: Subclass fields (Auto) -->
+										<rect x="15" y="48" width="210" height="135" rx="8" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="1.5" id="svg-sub-layer" />
+										<text x="25" y="66" class="deck-svg-bold" fill="var(--color-accent-700)">Capa Externa: Auto</text>
+										<text x="25" y="82" class="deck-svg-mono-sm">baulAbierto = true</text>
+
+										<!-- Inner Core: Superclass fields (Vehiculo) -->
+										<g transform="translate(25, 95)">
+											<rect x="0" y="0" width="190" height="75" rx="6" fill="color-mix(in srgb, var(--color-accent-2-700) 15%, var(--color-surface))" stroke="var(--color-accent-2-700)" stroke-width="1.5" id="svg-super-layer" />
+											<text x="15" y="22" class="deck-svg-bold" fill="var(--color-accent-2-700)">Núcleo: Vehiculo (super)</text>
+											<text x="15" y="42" class="deck-svg-mono-sm">marca = "Toyota"</text>
+											<text x="15" y="60" class="deck-svg-mono-sm">velocidad = 0</text>
+										</g>
+									</g>
+
+									<!-- Constructor Chaining Stepper Diagram -->
+									<g transform="translate(290, 25)">
+										<rect x="0" y="0" width="225" height="200" rx="10" class="deck-panel" />
+										<text x="112" y="22" class="deck-svg-title" text-anchor="middle">Orden de Ejecución</text>
+
+										<!-- Step 1 -->
+										<g id="step-trace-1" class="step-trace active-trace">
+											<circle cx="25" cy="50" r="12" fill="var(--color-accent)" />
+											<text x="25" y="54" class="deck-svg-bold" fill="rgb(255, 255, 255)" text-anchor="middle">1</text>
+											<text x="45" y="48" class="deck-svg-bold">new Auto("Toyota")</text>
+											<text x="45" y="62" class="deck-svg-sub">Entrada al constructor Auto</text>
+										</g>
+
+										<!-- Step 2 -->
+										<g id="step-trace-2" class="step-trace">
+											<circle cx="25" cy="95" r="12" fill="var(--color-surface-subtle)" stroke="var(--color-divider)" />
+											<text x="25" y="99" class="deck-svg-bold" text-anchor="middle">2</text>
+											<text x="45" y="93" class="deck-svg-bold">super("Toyota")</text>
+											<text x="45" y="107" class="deck-svg-sub">1ra línea: cede control a Vehiculo</text>
+										</g>
+
+										<!-- Step 3 -->
+										<g id="step-trace-3" class="step-trace">
+											<circle cx="25" cy="140" r="12" fill="var(--color-surface-subtle)" stroke="var(--color-divider)" />
+											<text x="25" y="144" class="deck-svg-bold" text-anchor="middle">3</text>
+											<text x="45" y="138" class="deck-svg-bold">Núcleo Vehiculo Listo</text>
+											<text x="45" y="152" class="deck-svg-sub">Atributos base inicializados</text>
+										</g>
+
+										<!-- Step 4 -->
+										<g id="step-trace-4" class="step-trace">
+											<circle cx="25" cy="185" r="12" fill="var(--color-surface-subtle)" stroke="var(--color-divider)" />
+											<text x="25" y="189" class="deck-svg-bold" text-anchor="middle">4</text>
+											<text x="45" y="183" class="deck-svg-bold">Cuerpo de Auto</text>
+											<text x="45" y="197" class="deck-svg-sub">this.baulAbierto = true</text>
+										</g>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Traza de Constructores' : 'Constructor Tracer'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary" id="btn-trace-step">{isEs ? 'Avanzar Paso (super)' : 'Step Trace (super)'}</button>
+									<button class="btn btn-secondary" id="btn-trace-reset">{isEs ? 'Reiniciar' : 'Reset'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Fase Actual:' : 'Current Phase:'}</span>
+										<span class="state-val" id="trace-phase-txt">{isEs ? '1. Invocación de new Auto()' : '1. Calling new Auto()'}</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Regla JVM Obligatoria:' : 'Mandatory JVM Rule:'}</span>
+										<span class="state-val" id="trace-rule-txt" style="color: var(--color-accent-700); font-weight: 600;">super() siempre se ejecuta primero</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-kw">public</span> Auto(String marca) &#123;
+  <span class="tok-kw">super</span>(marca); <span class="tok-comment">// &lt;-- ¡Debe ser la 1ra sentencia!</span>
+  <span class="tok-kw">this</span>.baulAbierto = <span class="tok-kw">false</span>;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 3: OVERLOAD VS OVERRIDE -->
+				<div class="deck-slide" data-slide="3">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">3. {isEs ? 'Sobrecarga vs Sobrescritura: Compilación vs Runtime' : 'Overload vs Override: Compile-Time vs Runtime'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Sobrecarga (Overload): misma clase, mismo nombre, parámetros diferentes; resuelto estáticamente por javac. Sobrescritura (Override): herencia, misma firma; resuelto en caliente por la JVM según el objeto real.'
+									: 'Overload: same class, same name, different parameters; resolved at compile-time by javac. Override: subclassing, identical signature; resolved dynamically at runtime by JVM according to the concrete instance.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Matriz comparativa sobrecarga y sobrescritura' : 'Overload and override comparison matrix'}>
+									<!-- Column 1: Overload -->
+									<g transform="translate(20, 20)">
+										<rect x="0" y="0" width="240" height="200" rx="10" class="deck-panel" />
+										<text x="120" y="24" class="deck-svg-title" text-anchor="middle">Sobrecarga (Overload)</text>
+										<rect x="15" y="38" width="210" height="30" rx="4" class="deck-ground-card" />
+										<text x="120" y="58" class="deck-svg-mono-sm" text-anchor="middle">void acelerar(int kmh)</text>
+										<rect x="15" y="74" width="210" height="30" rx="4" class="deck-ground-card" />
+										<text x="120" y="94" class="deck-svg-mono-sm" text-anchor="middle">void acelerar(int kmh, boolean turbo)</text>
+
+										<line x1="20" y1="120" x2="220" y2="120" stroke="var(--color-divider)" stroke-width="1" />
+										<text x="30" y="142" class="deck-svg-bold">Ámbito: Misma clase</text>
+										<text x="30" y="162" class="deck-svg-bold">Resuelto por: javac (Estático)</text>
+										<text x="30" y="182" class="deck-svg-sub">Firma distinta; no requiere herencia.</text>
+									</g>
+
+									<!-- Column 2: Override -->
+									<g transform="translate(280, 20)">
+										<rect x="0" y="0" width="240" height="200" rx="10" class="deck-panel-accent" />
+										<text x="120" y="24" class="deck-svg-title-accent" text-anchor="middle">Sobrescritura (@Override)</text>
+										
+										<rect x="15" y="38" width="210" height="30" rx="4" class="deck-ground-card" stroke="var(--color-accent)" />
+										<text x="120" y="58" class="deck-svg-mono-sm" text-anchor="middle">Vehiculo: void arrancar()</text>
+										<rect x="15" y="74" width="210" height="30" rx="4" class="deck-ground-card" stroke="var(--color-accent)" />
+										<text x="120" y="94" class="deck-svg-mono-sm" fill="var(--color-accent-700)" text-anchor="middle">Auto: @Override void arrancar()</text>
+
+										<line x1="20" y1="120" x2="220" y2="120" stroke="var(--color-divider)" stroke-width="1" />
+										<text x="30" y="142" class="deck-svg-bold">Ámbito: Subclase (Herencia)</text>
+										<text x="30" y="162" class="deck-svg-bold" fill="var(--color-accent-700)">Resuelto por: JVM (Dinámico)</text>
+										<text x="30" y="182" class="deck-svg-sub">Misma firma; reemplaza comportamiento base.</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Peligro Sin @Override' : 'Danger Without @Override'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary over-btn active" data-mode="safe">{isEs ? 'Con @Override (Seguro)' : 'With @Override (Safe)'}</button>
+									<button class="btn btn-secondary over-btn" data-mode="typo" style="border-color: rgb(239, 68, 68);">{isEs ? 'Error Tipográfico Sin Anotación' : 'Typo Without Annotation'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Anotación:' : 'Annotation:'}</span>
+										<span class="state-val" id="over-annot-txt">@Override presente</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Diagnóstico Compilador:' : 'Compiler Diagnostic:'}</span>
+										<span class="state-val" id="over-diag-txt" style="color: var(--color-accent-2-700); font-weight: 600;">✓ Sobrescritura validada</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Efecto en Runtime:' : 'Runtime Effect:'}</span>
+										<span class="state-val" id="over-effect-txt">{isEs ? 'Despacho dinámico a la subclase.' : 'Dynamic dispatch to subclass.'}</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code id="over-code-txt"><span class="tok-comment">// El compilador verifica que la firma coincida</span>
+@Override
+<span class="tok-kw">public void</span> arrancar() &#123;
+  <span class="tok-kw">System</span>.out.println(<span class="tok-str">"Auto arrancando con llave codificada"</span>);
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 4: DYNAMIC METHOD DISPATCH & VTABLE -->
+				<div class="deck-slide" data-slide="4">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">4. {isEs ? 'Despacho Dinámico y la Tabla de Métodos Virtuales (vtable)' : 'Dynamic Method Dispatch and the vtable'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Con `Vehiculo v = new Auto()`, el compilador valida el tipo estático (Vehiculo). Pero al invocar `v.arrancar()`, la JVM consulta en runtime la vtable del objeto concreto en el Heap y salta directamente al código de Auto.'
+									: 'With `Vehiculo v = new Auto()`, the compiler checks the static reference type (Vehiculo). But when calling `v.arrancar()`, the JVM looks up the vtable of the concrete Heap instance and jumps straight to Auto code.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'Diagrama vtable y despacho dinámico' : 'vtable and dynamic method dispatch diagram'}>
+									<!-- Stack Variable -->
+									<g transform="translate(15, 30)">
+										<rect x="0" y="0" width="105" height="190" rx="8" class="deck-panel" />
+										<text x="52" y="24" class="deck-svg-title" text-anchor="middle">Stack</text>
+										<rect x="8" y="70" width="89" height="65" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="52" y="90" class="deck-svg-mono" text-anchor="middle">Vehiculo v</text>
+										<text x="52" y="106" class="deck-svg-sub" text-anchor="middle">(Tipo estático)</text>
+										<text x="52" y="124" class="deck-svg-bold" fill="var(--color-accent-700)" text-anchor="middle">@0x4000 →</text>
+									</g>
+
+									<!-- Arrow Stack to Heap -->
+									<path d="M120 135 L145 135" stroke="var(--color-accent)" stroke-width="2" />
+
+									<!-- Heap Object with Klass Word -->
+									<g transform="translate(150, 30)">
+										<rect x="0" y="0" width="165" height="190" rx="10" class="deck-panel-accent" />
+										<text x="82" y="24" class="deck-svg-title-accent" text-anchor="middle" id="disp-obj-title">Heap @0x4000</text>
+										<text x="82" y="38" class="deck-svg-sub" text-anchor="middle" id="disp-obj-sub">new Auto("Toyota")</text>
+
+										<rect x="10" y="55" width="145" height="50" rx="6" class="deck-ground-card" stroke="var(--color-accent)" />
+										<text x="20" y="74" class="deck-svg-sub">Header / Klass Pointer:</text>
+										<text x="20" y="92" class="deck-svg-bold" id="disp-klass-txt">→ Auto.class (vtable)</text>
+
+										<rect x="10" y="115" width="145" height="55" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="20" y="135" class="deck-svg-sub">Campos en memoria:</text>
+										<text x="20" y="152" class="deck-svg-mono-sm" id="disp-fields-txt">marca: "Toyota"</text>
+									</g>
+
+									<!-- Arrow Object to vtable -->
+									<path d="M315 105 L340 105" stroke="var(--color-accent-700)" stroke-width="2.5" />
+
+									<!-- vtable & Code Pointers -->
+									<g transform="translate(345, 25)">
+										<rect x="0" y="0" width="180" height="200" rx="10" class="deck-panel" />
+										<text x="90" y="24" class="deck-svg-title" text-anchor="middle">vtable: Punteros de Código</text>
+
+										<rect x="10" y="45" width="160" height="40" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="18" y="65" class="deck-svg-mono-sm">toString() -&gt; Object</text>
+
+										<rect x="10" y="95" width="160" height="55" rx="6" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="2" id="vtable-active-entry" />
+										<text x="18" y="115" class="deck-svg-bold" fill="var(--color-accent-700)">arrancar()</text>
+										<text x="18" y="135" class="deck-svg-mono-sm" id="vtable-target-code">→ Auto.arrancar()</text>
+
+										<rect x="10" y="160" width="160" height="30" rx="6" fill="color-mix(in srgb, var(--color-accent-2-700) 15%, var(--color-surface))" />
+										<text x="90" y="180" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle" id="vtable-exec-msg">¡Ejecuta Auto en caliente!</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Simulador de Despacho' : 'Dispatch Simulator'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary disp-btn active" data-type="auto">Vehiculo v = new Auto()</button>
+									<button class="btn btn-secondary disp-btn" data-type="moto">Vehiculo v = new Moto()</button>
+									<button class="btn btn-secondary disp-btn" data-type="camion">Vehiculo v = new Camion()</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Tipo Estático (Compilación):' : 'Static Type (Compile-time):'}</span>
+										<span class="state-val mono">Vehiculo</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Tipo Dinámico (Heap):' : 'Dynamic Type (Heap):'}</span>
+										<span class="state-val mono" id="disp-dyn-txt">Auto</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Entrada vtable consultada:' : 'vtable target resolved:'}</span>
+										<span class="state-val" id="disp-res-txt" style="color: var(--color-accent-700); font-weight: 700;">Auto.arrancar()</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code id="disp-code-snippet"><span class="tok-kw">Vehiculo</span> v = <span class="tok-kw">new</span> <span class="tok-kw">Auto</span>(<span class="tok-str">"Toyota"</span>);
+v.arrancar(); <span class="tok-comment">// JVM consulta vtable -&gt; Auto.arrancar()</span></code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 5: POLYMORPHIC COLLECTIONS & INSTANCEOF -->
+				<div class="deck-slide" data-slide="5">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">5. {isEs ? 'Colecciones Polimórficas y Pattern Matching' : 'Polymorphic Collections and Pattern Matching'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Una lista heterogénea `List<Vehiculo>` permite manipular distintos objetos de manera uniforme sin usar switch ni condicionales. Para acceder a métodos exclusivos de una subclase, Java 16+ ofrece Pattern Matching para instanceof.'
+									: 'A polymorphic `List<Vehiculo>` handles different vehicles uniformly without switch or if-chains. When accessing subclass-specific methods, modern Java 16+ provides Pattern Matching for instanceof.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Colección polimórfica y pattern matching' : 'Polymorphic collection and pattern matching'}>
+									<!-- Conveyor Track (List<Vehiculo>) -->
+									<rect x="20" y="40" width="500" height="75" rx="10" class="deck-panel" />
+									<text x="270" y="30" class="deck-svg-title" text-anchor="middle">List&lt;Vehiculo&gt; flota = List.of(auto, moto, camion);</text>
+
+									<!-- Vehicle 1: Auto -->
+									<g id="conv-veh-0" class="conv-item active-conv" transform="translate(40, 50)">
+										<rect x="0" y="0" width="135" height="55" rx="6" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="2" />
+										<text x="12" y="22" class="deck-svg-bold" fill="var(--color-accent-700)">[0] Auto</text>
+										<text x="12" y="38" class="deck-svg-mono-sm">arrancar()</text>
+										<text x="12" y="48" class="deck-svg-sub">abrirBaul() *exclusivo</text>
+									</g>
+
+									<!-- Vehicle 2: Moto -->
+									<g id="conv-veh-1" class="conv-item" transform="translate(200, 50)">
+										<rect x="0" y="0" width="135" height="55" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="12" y="22" class="deck-svg-bold">[1] Moto</text>
+										<text x="12" y="38" class="deck-svg-mono-sm">arrancar()</text>
+										<text x="12" y="48" class="deck-svg-sub">hacerWheelie() *exclusivo</text>
+									</g>
+
+									<!-- Vehicle 3: Camion -->
+									<g id="conv-veh-2" class="conv-item" transform="translate(360, 50)">
+										<rect x="0" y="0" width="135" height="55" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="12" y="22" class="deck-svg-bold">[2] Camion</text>
+										<text x="12" y="38" class="deck-svg-mono-sm">arrancar()</text>
+										<text x="12" y="48" class="deck-svg-sub">cargarRemolque() *exclusivo</text>
+									</g>
+
+									<!-- Output Action Card -->
+									<g transform="translate(20, 135)">
+										<rect x="0" y="0" width="500" height="85" rx="10" class="deck-panel-accent" />
+										<text x="20" y="30" class="deck-svg-title-accent" id="poly-log-title">for (Vehiculo v : flota) &#123; v.arrancar(); &#125;</text>
+										<text x="20" y="52" class="deck-svg-mono-sm" id="poly-log-sound">✓ Auto arrancando con llave codificada [Rummm suave]</text>
+										<text x="20" y="74" class="deck-svg-bold" fill="var(--color-accent-2-700)" id="poly-match-txt">Pattern matching: if (v instanceof Auto a) -&gt; a.abrirBaul();</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Ejecución Polimórfica' : 'Polymorphic Runner'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary" id="btn-poly-next">{isEs ? 'Siguiente en Lista (v)' : 'Next in List (v)'}</button>
+									<button class="btn btn-secondary" id="btn-poly-all">{isEs ? 'Recorrer Todos' : 'Run All'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Elemento Actual:' : 'Current Element:'}</span>
+										<span class="state-val mono" id="poly-curr-veh">flota.get(0) -&gt; Auto</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Comportamiento Ejecutado:' : 'Executed Behavior:'}</span>
+										<span class="state-val" id="poly-curr-action">Auto.arrancar()</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-kw">for</span> (<span class="tok-kw">Vehiculo</span> v : flota) &#123;
+  v.arrancar(); <span class="tok-comment">// Polimorfismo puro</span>
+
+  <span class="tok-comment">// Java 16+ Pattern Matching (sin cast manual):</span>
+  <span class="tok-kw">if</span> (v <span class="tok-kw">instanceof</span> <span class="tok-kw">Auto</span> a) &#123;
+    a.abrirBaul();
+  &#125;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- FOOTER CONTROLS -->
+			<div class="deck-footer">
+				<button class="btn btn-secondary deck-nav-prev" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="deck-dots">
+					<button class="deck-dot active" data-target-slide="1" aria-label="Slide 1"></button>
+					<button class="deck-dot" data-target-slide="2" aria-label="Slide 2"></button>
+					<button class="deck-dot" data-target-slide="3" aria-label="Slide 3"></button>
+					<button class="deck-dot" data-target-slide="4" aria-label="Slide 4"></button>
+					<button class="deck-dot" data-target-slide="5" aria-label="Slide 5"></button>
+				</div>
+				<button class="btn btn-secondary deck-nav-next">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	function initPresentation() {
+		const screen = document.querySelector('.hp-screen');
+		if (!screen) return;
+
+		let currentSlide = 1;
+		const totalSlides = 5;
+
+		const slideLabel = document.getElementById('deck-slide-label');
+		const prevBtn = screen.querySelector('.deck-nav-prev') as HTMLButtonElement;
+		const nextBtn = screen.querySelector('.deck-nav-next') as HTMLButtonElement;
+		const pills = screen.querySelectorAll('.deck-pill-btn');
+		const dots = screen.querySelectorAll('.deck-dot');
+		const slides = screen.querySelectorAll('.deck-slide');
+
+		function goToSlide(target: number) {
+			if (target < 1 || target > totalSlides) return;
+			currentSlide = target;
+
+			if (slideLabel) {
+				slideLabel.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+			}
+
+			slides.forEach((sl) => {
+				const sNum = parseInt(sl.getAttribute('data-slide') || '0', 10);
+				sl.classList.toggle('active', sNum === currentSlide);
+			});
+
+			pills.forEach((p) => {
+				const tNum = parseInt(p.getAttribute('data-target-slide') || '0', 10);
+				p.classList.toggle('active', tNum === currentSlide);
+			});
+
+			dots.forEach((d) => {
+				const tNum = parseInt(d.getAttribute('data-target-slide') || '0', 10);
+				d.classList.toggle('active', tNum === currentSlide);
+			});
+
+			if (prevBtn) prevBtn.disabled = currentSlide === 1;
+			if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+		}
+
+		prevBtn?.addEventListener('click', () => goToSlide(currentSlide - 1));
+		nextBtn?.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+		pills.forEach((p) => {
+			p.addEventListener('click', () => {
+				const t = parseInt(p.getAttribute('data-target-slide') || '1', 10);
+				goToSlide(t);
+			});
+		});
+
+		dots.forEach((d) => {
+			d.addEventListener('click', () => {
+				const t = parseInt(d.getAttribute('data-target-slide') || '1', 10);
+				goToSlide(t);
+			});
+		});
+
+		window.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+			if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+		});
+
+		// --- SLIDE 1: Relationship Tester ---
+		const relBtns = screen.querySelectorAll('.rel-btn');
+		const relQTxt = document.getElementById('rel-q-txt');
+		const relVerdictTxt = document.getElementById('rel-verdict-txt');
+		const relReasonTxt = document.getElementById('rel-reason-txt');
+		const relCodeTxt = document.getElementById('rel-code-txt');
+
+		const relData: Record<string, { q: string; verdict: string; isOk: boolean; reason: string; code: string }> = {
+			'auto-vehiculo': {
+				q: '¿Un Auto es un Vehículo?',
+				verdict: 'HERENCIA (extends)',
+				isOk: true,
+				reason: 'Sustitución Liskov 100% válida.',
+				code: '// Herencia limpia: Auto ES UN Vehículo\npublic class Auto extends Vehiculo {\n  private Motor motor; // Composición interna\n}',
+			},
+			'auto-motor': {
+				q: '¿Un Auto es un Motor?',
+				verdict: 'COMPOSICIÓN (private Motor)',
+				isOk: false,
+				reason: 'Un Auto TIENE un Motor; no es un Motor.',
+				code: '// ¡NO heredes del motor!\npublic class Auto {\n  private Motor motor; // Correcto: composición\n}',
+			},
+			'cliente-persona': {
+				q: '¿Un Cliente es una Persona?',
+				verdict: 'HERENCIA O ROL (Persona)',
+				isOk: true,
+				reason: 'Persona comparte identidad fundamental.',
+				code: '// Cliente ES UNA Persona\npublic class Cliente extends Persona {\n  private String nroCliente;\n}',
+			},
+		};
+
+		relBtns.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				relBtns.forEach((b) => b.classList.remove('active'));
+				btn.classList.add('active');
+				const relKey = btn.getAttribute('data-rel') || 'auto-vehiculo';
+				const data = relData[relKey];
+
+				if (relQTxt) relQTxt.textContent = data.q;
+				if (relVerdictTxt) {
+					relVerdictTxt.textContent = data.verdict;
+					relVerdictTxt.style.color = data.isOk ? 'var(--color-accent-2-700)' : 'var(--color-accent-700)';
+				}
+				if (relReasonTxt) relReasonTxt.textContent = data.reason;
+				if (relCodeTxt) relCodeTxt.textContent = data.code;
+			});
+		});
+
+		// --- SLIDE 2: Constructor Chaining Trace ---
+		let traceStep = 1;
+		const btnTraceStep = document.getElementById('btn-trace-step');
+		const btnTraceReset = document.getElementById('btn-trace-reset');
+		const tracePhaseTxt = document.getElementById('trace-phase-txt');
+		const traceRuleTxt = document.getElementById('trace-rule-txt');
+		const subLayer = document.getElementById('svg-sub-layer');
+		const superLayer = document.getElementById('svg-super-layer');
+
+		const tracePhases = [
+			{ phase: '1. Invocación new Auto("Toyota")', rule: 'La JVM reserva espacio en el Heap para Auto y Vehiculo' },
+			{ phase: '2. super("Toyota") en 1ra línea', rule: 'Auto transfiere el control al constructor de Vehiculo' },
+			{ phase: '3. Núcleo Vehiculo inicializado', rule: 'marca = "Toyota" y velocidad = 0 quedan establecidos' },
+			{ phase: '4. Cuerpo de Auto ejecutado', rule: 'this.baulAbierto = false se ejecuta; el objeto está completo' },
+		];
+
+		function updateTraceView() {
+			if (tracePhaseTxt) tracePhaseTxt.textContent = tracePhases[traceStep - 1].phase;
+			if (traceRuleTxt) traceRuleTxt.textContent = tracePhases[traceStep - 1].rule;
+
+			for (let i = 1; i <= 4; i++) {
+				const group = document.getElementById(`step-trace-${i}`);
+				const circle = group?.querySelector('circle');
+				const txt = group?.querySelector('text');
+
+				if (i <= traceStep) {
+					group?.classList.add('active-trace');
+					if (circle) {
+						circle.setAttribute('fill', i === traceStep ? 'var(--color-accent)' : 'var(--color-accent-2-700)');
+					}
+					if (txt) txt.setAttribute('fill', 'rgb(255, 255, 255)');
+				} else {
+					group?.classList.remove('active-trace');
+					if (circle) circle.setAttribute('fill', 'var(--color-surface-subtle)');
+					if (txt) txt.setAttribute('fill', 'var(--color-text)');
+				}
+			}
+
+			if (superLayer) {
+				superLayer.setAttribute(
+					'stroke-width',
+					traceStep >= 2 && traceStep <= 3 ? '2.5' : '1.5',
+				);
+			}
+
+			if (subLayer) {
+				subLayer.setAttribute(
+					'stroke-width',
+					traceStep === 4 ? '2.5' : '1.5',
+				);
+			}
+		}
+
+		btnTraceStep?.addEventListener('click', () => {
+			traceStep = (traceStep % 4) + 1;
+			updateTraceView();
+		});
+
+		btnTraceReset?.addEventListener('click', () => {
+			traceStep = 1;
+			updateTraceView();
+		});
+
+		// --- SLIDE 3: Overload vs Override Danger ---
+		const overBtns = screen.querySelectorAll('.over-btn');
+		const overAnnotTxt = document.getElementById('over-annot-txt');
+		const overDiagTxt = document.getElementById('over-diag-txt');
+		const overEffectTxt = document.getElementById('over-effect-txt');
+		const overCodeTxt = document.getElementById('over-code-txt');
+
+		overBtns.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				overBtns.forEach((b) => b.classList.remove('active'));
+				btn.classList.add('active');
+				const mode = btn.getAttribute('data-mode');
+
+				if (mode === 'safe') {
+					if (overAnnotTxt) overAnnotTxt.textContent = '@Override presente';
+					if (overDiagTxt) {
+						overDiagTxt.textContent = '✓ Sobrescritura validada por compilador';
+						overDiagTxt.style.color = 'var(--color-accent-2-700)';
+					}
+					if (overEffectTxt) overEffectTxt.textContent = 'Despacho dinámico a Auto.arrancar() en runtime.';
+					if (overCodeTxt) {
+						overCodeTxt.textContent = '// Con @Override, si hay un error de firma javac avisa\n@Override\npublic void arrancar() {\n  System.out.println("Auto arrancando");\n}';
+					}
+				} else {
+					if (overAnnotTxt) overAnnotTxt.textContent = 'Sin @Override (Peligro)';
+					if (overDiagTxt) {
+						overDiagTxt.textContent = '⚠️ ¡Sobrecarga accidental silenciosa!';
+						overDiagTxt.style.color = 'rgb(239, 68, 68)';
+					}
+					if (overEffectTxt) overEffectTxt.textContent = 'El método de Vehiculo nunca se sobrescribe; se ejecuta el genérico!';
+					if (overCodeTxt) {
+						overCodeTxt.textContent = '// Error tipográfico: arrankar en vez de arrancar\npublic void arrankar() {\n  // ¡Javac compila sin error pero es una sobrecarga silenciosa!\n}';
+					}
+				}
+			});
+		});
+
+		// --- SLIDE 4: Dynamic Dispatch & vtable Simulator ---
+		const dispBtns = screen.querySelectorAll('.disp-btn');
+		const dispDynTxt = document.getElementById('disp-dyn-txt');
+		const dispResTxt = document.getElementById('disp-res-txt');
+		const dispObjTitle = document.getElementById('disp-obj-title');
+		const dispObjSub = document.getElementById('disp-obj-sub');
+		const dispKlassTxt = document.getElementById('disp-klass-txt');
+		const dispFieldsTxt = document.getElementById('disp-fields-txt');
+		const vtableTargetCode = document.getElementById('vtable-target-code');
+		const vtableExecMsg = document.getElementById('vtable-exec-msg');
+		const dispCodeSnippet = document.getElementById('disp-code-snippet');
+
+		const dispData: Record<string, { dyn: string; sub: string; klass: string; fields: string; target: string; msg: string; code: string }> = {
+			auto: {
+				dyn: 'Auto',
+				sub: 'new Auto("Toyota")',
+				klass: '→ Auto.class (vtable)',
+				fields: 'marca: "Toyota", baul: true',
+				target: '→ Auto.arrancar()',
+				msg: '¡Ejecuta Auto en caliente!',
+				code: 'Vehiculo v = new Auto("Toyota");\nv.arrancar(); // JVM consulta vtable -> Auto.arrancar()',
+			},
+			moto: {
+				dyn: 'Moto',
+				sub: 'new Moto("Yamaha")',
+				klass: '→ Moto.class (vtable)',
+				fields: 'marca: "Yamaha", casco: true',
+				target: '→ Moto.arrancar()',
+				msg: '¡Ejecuta Moto en caliente!',
+				code: 'Vehiculo v = new Moto("Yamaha");\nv.arrancar(); // JVM consulta vtable -> Moto.arrancar()',
+			},
+			camion: {
+				dyn: 'Camion',
+				sub: 'new Camion("Scania")',
+				klass: '→ Camion.class (vtable)',
+				fields: 'marca: "Scania", ejes: 6',
+				target: '→ Camion.arrancar()',
+				msg: '¡Ejecuta Camion en caliente!',
+				code: 'Vehiculo v = new Camion("Scania");\nv.arrancar(); // JVM consulta vtable -> Camion.arrancar()',
+			},
+		};
+
+		dispBtns.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				dispBtns.forEach((b) => b.classList.remove('active'));
+				btn.classList.add('active');
+				const typeKey = btn.getAttribute('data-type') || 'auto';
+				const data = dispData[typeKey];
+
+				if (dispDynTxt) dispDynTxt.textContent = data.dyn;
+				if (dispResTxt) dispResTxt.textContent = data.target.replace('→ ', '');
+				if (dispObjTitle) dispObjTitle.textContent = `Heap @0x4000 (${data.dyn})`;
+				if (dispObjSub) dispObjSub.textContent = data.sub;
+				if (dispKlassTxt) dispKlassTxt.textContent = data.klass;
+				if (dispFieldsTxt) dispFieldsTxt.textContent = data.fields;
+				if (vtableTargetCode) vtableTargetCode.textContent = data.target;
+				if (vtableExecMsg) vtableExecMsg.textContent = data.msg;
+				if (dispCodeSnippet) dispCodeSnippet.textContent = data.code;
+			});
+		});
+
+		// --- SLIDE 5: Polymorphic Runner ---
+		let polyIdx = 0;
+		const polyVehicles = [
+			{ name: 'Auto', sound: '✓ Auto arrancando con llave codificada [Rummm suave]', pattern: 'if (v instanceof Auto a) -> a.abrirBaul(); ejecutado' },
+			{ name: 'Moto', sound: '✓ Moto arrancando por patada [Brap brap]', pattern: 'if (v instanceof Moto m) -> m.hacerWheelie(); ejecutado' },
+			{ name: 'Camion', sound: '✓ Camión encendiendo motor diesel [Tractor roar]', pattern: 'if (v instanceof Camion c) -> c.cargarRemolque(); ejecutado' },
+		];
+
+		const btnPolyNext = document.getElementById('btn-poly-next');
+		const btnPolyAll = document.getElementById('btn-poly-all');
+		const polyCurrVeh = document.getElementById('poly-curr-veh');
+		const polyCurrAction = document.getElementById('poly-curr-action');
+		const polyLogSound = document.getElementById('poly-log-sound');
+		const polyMatchTxt = document.getElementById('poly-match-txt');
+
+		function updatePolyView() {
+			const v = polyVehicles[polyIdx];
+			if (polyCurrVeh) polyCurrVeh.textContent = `flota.get(${polyIdx}) -> ${v.name}`;
+			if (polyCurrAction) polyCurrAction.textContent = `${v.name}.arrancar()`;
+			if (polyLogSound) polyLogSound.textContent = v.sound;
+			if (polyMatchTxt) polyMatchTxt.textContent = v.pattern;
+
+			[0, 1, 2].forEach((i) => {
+				const item = document.getElementById(`conv-veh-${i}`);
+				const rect = item?.querySelector('rect');
+				if (item) {
+					item.classList.toggle('active-conv', i === polyIdx);
+				}
+				if (rect) {
+					rect.setAttribute('stroke', i === polyIdx ? 'var(--color-accent)' : 'var(--color-divider)');
+					rect.setAttribute('stroke-width', i === polyIdx ? '2' : '1');
+				}
+			});
+		}
+
+		btnPolyNext?.addEventListener('click', () => {
+			polyIdx = (polyIdx + 1) % polyVehicles.length;
+			updatePolyView();
+		});
+
+		btnPolyAll?.addEventListener('click', () => {
+			let count = 0;
+			const interval = setInterval(() => {
+				polyIdx = count;
+				updatePolyView();
+				count++;
+				if (count >= polyVehicles.length) clearInterval(interval);
+			}, 600);
+		});
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initPresentation);
+	} else {
+		initPresentation();
+	}
+</script>
+
+<style>
+	.hp-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		padding: var(--space-4) var(--space-6);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.hp-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.deck-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		box-shadow: var(--shadow-sm);
+		overflow: hidden;
+	}
+
+	.deck-nav-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: var(--color-surface-subtle);
+		gap: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.deck-slide-indicator {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		color: var(--color-accent-700);
+	}
+
+	.deck-step-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--color-accent);
+	}
+
+	.deck-pills {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-pill-btn {
+		font-family: var(--font-body);
+		font-size: var(--text-xs);
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-full);
+		border: 1px solid var(--color-divider);
+		background: var(--color-surface);
+		color: var(--color-text-muted);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.deck-pill-btn:hover {
+		background: var(--color-surface-subtle);
+		color: var(--color-text);
+	}
+
+	.deck-pill-btn.active {
+		background: var(--color-accent-subtle, color-mix(in srgb, var(--color-accent) 15%, transparent));
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	.hp-viewport {
+		padding: var(--space-6) var(--space-8);
+		min-height: 480px;
+		flex: 1;
+	}
+
+	.hp-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .hp-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .hp-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .hp-viewport { zoom: 1.25; } }
+
+	.deck-slide {
+		display: none;
+		animation: fadeIn 0.3s ease;
+	}
+
+	.deck-slide.active {
+		display: block;
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; transform: translateY(4px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.deck-slide-grid {
+		display: grid;
+		grid-template-columns: 1.15fr 0.85fr;
+		gap: var(--space-8);
+		align-items: start;
+	}
+
+	@media (max-width: 900px) {
+		.deck-slide-grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-6);
+		}
+	}
+
+	.deck-col {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.deck-slide-title {
+		font-family: var(--font-display);
+		font-size: var(--text-2xl);
+		color: var(--color-text);
+		margin: 0;
+		line-height: 1.25;
+	}
+
+	.deck-text {
+		font-size: var(--text-sm);
+		line-height: 1.6;
+		color: var(--color-text-muted);
+		margin: 0;
+	}
+
+	.deck-figure {
+		background: var(--color-surface-subtle);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		overflow: hidden;
+	}
+
+	.deck-interactive-card {
+		background: var(--color-surface-subtle);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-5);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.deck-card-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.deck-badge {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		padding: var(--space-1) var(--space-2);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	.deck-actions-row {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-actions-row .btn.active {
+		background: var(--color-accent);
+		color: rgb(255, 255, 255);
+		border-color: var(--color-accent);
+	}
+
+	.deck-info-box {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3) var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.state-row {
+		display: flex;
+		justify-content: space-between;
+		font-size: var(--text-xs);
+		gap: var(--space-2);
+	}
+
+	.state-label {
+		color: var(--color-text-muted);
+	}
+
+	.state-val {
+		color: var(--color-text);
+		font-weight: 600;
+		text-align: right;
+	}
+
+	.state-val.mono {
+		font-family: var(--font-mono);
+	}
+
+	.deck-code-snippet {
+		margin: 0;
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		line-height: 1.5;
+		overflow-x: auto;
+	}
+
+	.tok-kw { color: var(--color-accent-700); font-weight: 600; }
+	.tok-str { color: var(--color-accent-2-700); }
+	.tok-comment { color: var(--color-text-muted); font-style: italic; }
+
+	.deck-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-top: 1px solid var(--color-divider);
+		background: var(--color-surface-subtle);
+	}
+
+	.deck-dots {
+		display: flex;
+		gap: var(--space-2);
+	}
+
+	.deck-dot {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		border: 1px solid var(--color-divider);
+		background: var(--color-surface);
+		cursor: pointer;
+		padding: 0;
+		transition: all 0.2s ease;
+	}
+
+	.deck-dot.active {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		transform: scale(1.2);
+	}
+
+	/* SVG Internal Styles */
+	.deck-panel {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+		stroke-width: 1.5;
+	}
+
+	.deck-panel-accent {
+		fill: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+		stroke: var(--color-accent);
+		stroke-width: 1.5;
+	}
+
+	.deck-ground-card {
+		fill: var(--color-surface);
+	}
+
+	.deck-svg-title {
+		font-family: var(--font-display);
+		font-size: 11px;
+		fill: var(--color-text);
+		font-weight: 700;
+	}
+
+	.deck-svg-title-accent {
+		font-family: var(--font-display);
+		font-size: 11px;
+		fill: var(--color-accent-700);
+		font-weight: 700;
+	}
+
+	.deck-svg-bold {
+		font-family: var(--font-body);
+		font-size: 11px;
+		fill: var(--color-text);
+		font-weight: 700;
+	}
+
+	.deck-svg-mono {
+		font-family: var(--font-mono);
+		font-size: 10px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-mono-sm {
+		font-family: var(--font-mono);
+		font-size: 9px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-sub {
+		font-family: var(--font-body);
+		font-size: 8px;
+		fill: var(--color-text-muted);
+	}
+</style>

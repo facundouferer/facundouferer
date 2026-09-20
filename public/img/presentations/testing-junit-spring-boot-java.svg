@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="20" y="175" width="360" height="8" rx="4" fill="#dcd3c4"/>
+
+	<!-- Title -->
+	<text x="200" y="24" font-family="'Caprasimo', serif" font-size="13" fill="#8c491a" text-anchor="middle">Testing: JUnit 5, Mockito &amp; Spring Boot</text>
+	<text x="200" y="38" font-family="'Figtree', sans-serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">Pirámide de Tests, Patrón AAA, Mocks y 3 Capas</text>
+
+	<!-- Visual Central Section -->
+	<g transform="translate(20, 46)">
+		<!-- Testing Pyramid: Unit (base) -> Integration -> E2E (top) -->
+		<rect x="6" y="64" width="140" height="22" rx="11" fill="#7a8a5e"/>
+		<text x="76" y="79" font-family="monospace" font-weight="700" font-size="7.5" fill="#f5ead8" text-anchor="middle">UNIT 75% · ms</text>
+
+		<rect x="31" y="38" width="90" height="22" rx="11" fill="#8c491a"/>
+		<text x="76" y="53" font-family="monospace" font-weight="700" font-size="7" fill="#f5ead8" text-anchor="middle">INTEGR. 20% · s</text>
+
+		<rect x="51" y="12" width="50" height="22" rx="11" fill="#c67139"/>
+		<text x="76" y="27" font-family="monospace" font-weight="700" font-size="6.5" fill="#f5ead8" text-anchor="middle">E2E 5%</text>
+
+		<!-- Spring Boot 3-layer architecture -->
+		<rect x="200" y="10" width="160" height="24" rx="10" fill="#f5ead8" stroke="#c67139" stroke-width="2.5"/>
+		<text x="280" y="26" font-family="monospace" font-weight="700" font-size="8" fill="#8c491a" text-anchor="middle">@RestController</text>
+
+		<path d="M280,34 L280,44" stroke="#8c491a" stroke-width="2.5" stroke-linecap="round"/>
+		<path d="M276,40 L280,45 L284,40" stroke="#8c491a" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+		<rect x="200" y="44" width="160" height="24" rx="10" fill="#f5ead8" stroke="#7a8a5e" stroke-width="2.5"/>
+		<text x="280" y="60" font-family="monospace" font-weight="700" font-size="8" fill="#56633f" text-anchor="middle">@Service</text>
+		<circle cx="368" cy="56" r="9" fill="#c67139"/>
+		<text x="368" y="59" font-family="monospace" font-weight="700" font-size="9" fill="#f5ead8" text-anchor="middle">M</text>
+
+		<path d="M280,68 L280,78" stroke="#8c491a" stroke-width="2.5" stroke-linecap="round"/>
+		<path d="M276,74 L280,79 L284,74" stroke="#8c491a" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+		<rect x="200" y="78" width="160" height="24" rx="10" fill="#f5ead8" stroke="#8c491a" stroke-width="2.5"/>
+		<text x="280" y="94" font-family="monospace" font-weight="700" font-size="8" fill="#8c491a" text-anchor="middle">@Repository</text>
+	</g>
+
+	<!-- AAA / assertEquals checkmark badge, bridging the two halves -->
+	<circle cx="200" cy="95" r="15" fill="#7a8a5e" stroke="#f5ead8" stroke-width="2"/>
+	<path d="M192,95 L198,101 L210,87" stroke="#f5ead8" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+	<!-- Labels below -->
+	<text x="85" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">Pirámide de Tests</text>
+	<text x="200" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#8c491a" text-anchor="middle">AAA &amp; Mocks</text>
+	<text x="315" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#c67139" text-anchor="middle">3 Capas Spring Boot</text>
+</svg>

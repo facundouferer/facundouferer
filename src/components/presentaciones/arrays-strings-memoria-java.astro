@@ -1,0 +1,978 @@
+---
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="as-screen" data-lang={lang}>
+	<div class="as-shell">
+		<div class="deck-card">
+			<div class="deck-nav-bar">
+				<div class="deck-slide-indicator">
+					<span class="deck-step-dot"></span>
+					<span id="deck-slide-label">SLIDE 1 / 5</span>
+				</div>
+				<div class="deck-pills">
+					<button class="deck-pill-btn active" data-target-slide="1">1. {isEs ? 'Memoria Contigua y Offset 0' : 'Contiguous Memory & Offset 0'}</button>
+					<button class="deck-pill-btn" data-target-slide="2">2. {isEs ? 'Matrices y Jagged Arrays' : 'Matrices & Jagged Arrays'}</button>
+					<button class="deck-pill-btn" data-target-slide="3">3. {isEs ? 'Inmutabilidad de String' : 'String Immutability'}</button>
+					<button class="deck-pill-btn" data-target-slide="4">4. {isEs ? 'String Pool: == vs equals' : 'String Pool: == vs equals'}</button>
+					<button class="deck-pill-btn" data-target-slide="5">5. {isEs ? 'StringBuilder y el Buffer' : 'StringBuilder & Buffer'}</button>
+				</div>
+			</div>
+
+			<div class="as-viewport">
+				<!-- SLIDE 1: CONTIGUOUS MEMORY & BASE OFFSET -->
+				<div class="deck-slide active" data-slide="1">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">1. {isEs ? 'Memoria Contigua: Por qué los Arrays inician en 0' : 'Contiguous Memory: Why Arrays Start at 0'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Un array en Java almacena sus casillas pegadas una tras otra en memoria. El índice no es un "número de casilla ordinal", sino un desplazamiento (offset). Por eso acceder a un índice cualquiera toma exactamente el mismo tiempo: O(1).'
+									: 'An array in Java stores its elements side by side in physical RAM. The index is not an ordinal ranking, but an address offset. This is why accessing any random index takes strictly O(1) time.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Direccionamiento de memoria contigua en arrays' : 'Contiguous array memory addressing'}>
+									<!-- Base pointer tag -->
+									<rect x="20" y="20" width="150" height="34" rx="8" class="deck-panel-accent" />
+									<text x="95" y="42" class="deck-svg-title-accent" text-anchor="middle">base = 0x2000</text>
+
+									<!-- Memory cells -->
+									<g id="mem-cells-row">
+										<!-- Cell 0 -->
+										<rect x="25" y="80" width="75" height="75" rx="8" class="deck-ground-card mem-cell active-cell" id="svg-cell-0" stroke="var(--color-accent)" stroke-width="2.5" />
+										<text x="62" y="105" class="deck-svg-bold" text-anchor="middle">[0]</text>
+										<text x="62" y="130" class="deck-svg-title" text-anchor="middle">10</text>
+										<text x="62" y="175" class="deck-svg-mono-sm" text-anchor="middle">0x2000</text>
+
+										<!-- Cell 1 -->
+										<rect x="105" y="80" width="75" height="75" rx="8" class="deck-ground-card mem-cell" id="svg-cell-1" stroke="var(--color-divider)" stroke-width="1.5" />
+										<text x="142" y="105" class="deck-svg-bold" text-anchor="middle">[1]</text>
+										<text x="142" y="130" class="deck-svg-title" text-anchor="middle">20</text>
+										<text x="142" y="175" class="deck-svg-mono-sm" text-anchor="middle">0x2004</text>
+
+										<!-- Cell 2 -->
+										<rect x="185" y="80" width="75" height="75" rx="8" class="deck-ground-card mem-cell" id="svg-cell-2" stroke="var(--color-divider)" stroke-width="1.5" />
+										<text x="222" y="105" class="deck-svg-bold" text-anchor="middle">[2]</text>
+										<text x="222" y="130" class="deck-svg-title" text-anchor="middle">30</text>
+										<text x="222" y="175" class="deck-svg-mono-sm" text-anchor="middle">0x2008</text>
+
+										<!-- Cell 3 -->
+										<rect x="265" y="80" width="75" height="75" rx="8" class="deck-ground-card mem-cell" id="svg-cell-3" stroke="var(--color-divider)" stroke-width="1.5" />
+										<text x="302" y="105" class="deck-svg-bold" text-anchor="middle">[3]</text>
+										<text x="302" y="130" class="deck-svg-title" text-anchor="middle">40</text>
+										<text x="302" y="175" class="deck-svg-mono-sm" text-anchor="middle">0x200C</text>
+
+										<!-- Cell 4 -->
+										<rect x="345" y="80" width="75" height="75" rx="8" class="deck-ground-card mem-cell" id="svg-cell-4" stroke="var(--color-divider)" stroke-width="1.5" />
+										<text x="382" y="105" class="deck-svg-bold" text-anchor="middle">[4]</text>
+										<text x="382" y="130" class="deck-svg-title" text-anchor="middle">50</text>
+										<text x="382" y="175" class="deck-svg-mono-sm" text-anchor="middle">0x2010</text>
+									</g>
+
+									<!-- Out of bounds danger block -->
+									<g id="svg-oob-block" opacity="0.3">
+										<rect x="430" y="80" width="85" height="75" rx="8" fill="color-mix(in srgb, rgb(255, 95, 86) 15%, transparent)" stroke="rgb(255, 95, 86)" stroke-width="2" stroke-dasharray="4 4" />
+										<text x="472" y="112" class="deck-svg-bold" text-anchor="middle" fill="rgb(255, 95, 86)">[5]</text>
+										<text x="472" y="135" class="deck-svg-mono-sm" text-anchor="middle" fill="rgb(255, 95, 86)">¡FUERA!</text>
+									</g>
+
+									<!-- Dynamic Jump Arrow -->
+									<path d="M62 60 L62 75" stroke="var(--color-accent)" stroke-width="3" id="svg-jump-arrow" marker-end="url(#arrow)" />
+									<text x="270" y="215" class="deck-svg-sub" text-anchor="middle">{isEs ? 'Cada int ocupa exactamente 4 bytes contiguos.' : 'Each int takes exactly 4 contiguous bytes.'}</text>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Calculadora de Salto de Memoria' : 'Memory Jump Calculator'}</span>
+									<span class="deck-subtext">int[] numeros = new int[5];</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary idx-btn active" data-idx="0">[0]</button>
+									<button class="btn btn-secondary idx-btn" data-idx="1">[1]</button>
+									<button class="btn btn-secondary idx-btn" data-idx="2">[2]</button>
+									<button class="btn btn-secondary idx-btn" data-idx="3">[3]</button>
+									<button class="btn btn-secondary idx-btn" data-idx="4">[4]</button>
+									<button class="btn btn-secondary idx-btn" data-idx="5" style="border-color: rgb(255, 95, 86);">[5] (!)</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Fórmula de Hardware:' : 'Hardware Formula:'}</span>
+										<span class="state-val" id="mem-calc-formula">0x2000 + 0 * 4 bytes</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Dirección resultante:' : 'Resolved RAM Address:'}</span>
+										<span class="state-val" id="mem-calc-addr" style="color: var(--color-accent-700);">0x2000</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Valor guardado:' : 'Value stored:'}</span>
+										<span class="state-val" id="mem-calc-val">10</span>
+									</div>
+									<p class="deck-caption" id="mem-calc-desc">
+										{isEs
+											? 'Al ser índice 0, el desplazamiento es 0 * 4 = 0 bytes. Por eso se lee instantáneamente el inicio del array.'
+											: 'Index 0 results in 0 * 4 = 0 bytes offset, pointing straight to the array start.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 2: MATRICES & JAGGED ARRAYS -->
+				<div class="deck-slide" data-slide="2">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">2. {isEs ? 'Matrices en Java: Arrays de Arrays (Jagged)' : 'Matrices in Java: Arrays of Arrays (Jagged)'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'En Java no existe una tabla rectangular continua en RAM. Una matriz int[][] es en realidad un array principal que contiene punteros a otros arrays independientes, cada uno con su propia longitud y ubicación en el Heap.'
+									: 'Java has no contiguous 2D grid matrix in RAM. A matrix int[][] is strictly an array containing references to independent row arrays, each able to hold a different length.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Estructura de matriz irregular (jagged array)' : 'Jagged array memory structure'}>
+									<!-- Main Spine Array (Vertical) -->
+									<rect x="30" y="30" width="90" height="180" rx="10" class="deck-panel" />
+									<text x="75" y="52" class="deck-svg-bold" text-anchor="middle">matriz[][]</text>
+									
+									<rect x="40" y="65" width="70" height="35" rx="6" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="2" />
+									<text x="75" y="87" class="deck-svg-mono" text-anchor="middle">[0] ref</text>
+
+									<rect x="40" y="110" width="70" height="35" rx="6" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="2" />
+									<text x="75" y="132" class="deck-svg-mono" text-anchor="middle">[1] ref</text>
+
+									<rect x="40" y="155" width="70" height="35" rx="6" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="2" />
+									<text x="75" y="177" class="deck-svg-mono" text-anchor="middle">[2] ref</text>
+
+									<!-- Row 0: 2 cols -->
+									<path d="M110 82 H170" stroke="var(--color-accent)" stroke-width="2" stroke-dasharray="3 3" />
+									<rect x="170" y="65" width="80" height="35" rx="6" class="deck-panel-accent" />
+									<text x="210" y="87" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">[ 2 cols ]</text>
+
+									<!-- Row 1: 5 cols -->
+									<path d="M110 127 H170" stroke="var(--color-accent)" stroke-width="2" stroke-dasharray="3 3" />
+									<rect x="170" y="110" width="190" height="35" rx="6" class="deck-sub-block-accent" />
+									<text x="265" y="132" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-2-800)">[ 5 columnas: irregular ]</text>
+
+									<!-- Row 2: 3 cols -->
+									<path d="M110 172 H170" stroke="var(--color-accent)" stroke-width="2" stroke-dasharray="3 3" />
+									<rect x="170" y="155" width="120" height="35" rx="6" class="deck-panel-accent" />
+									<text x="230" y="177" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">[ 3 cols ]</text>
+
+									<text x="350" y="215" class="deck-svg-sub" text-anchor="middle">{isEs ? 'Cada fila tiene su propio .length independiente.' : 'Each row holds an autonomous .length property.'}</text>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Inspector de Filas Irregulares' : 'Jagged Row Inspector'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary row-btn active" data-row="0">matriz[0]</button>
+									<button class="btn btn-secondary row-btn" data-row="1">matriz[1]</button>
+									<button class="btn btn-secondary row-btn" data-row="2">matriz[2]</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Longitud (.length):' : 'Length property:'}</span>
+										<span class="state-val" id="row-inspect-len" style="color: var(--color-accent-700);">2</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Elementos en memoria:' : 'Stored elements:'}</span>
+										<span class="state-val" id="row-inspect-vals">[10, 20]</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Dirección en Heap:' : 'Heap Reference:'}</span>
+										<span class="state-val" id="row-inspect-ref">@0x7a20 (Independiente)</span>
+									</div>
+									<p class="deck-caption" id="row-inspect-desc">
+										{isEs
+											? 'La fila 0 tiene 2 casillas. Podés reasignarla con matriz[0] = new int[500]; sin alterar las demás filas.'
+											: 'Row 0 has 2 slots. You can reassign it with new int[500] without affecting other rows.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 3: STRING IMMUTABILITY -->
+				<div class="deck-slide" data-slide="3">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">3. {isEs ? 'Inmutabilidad de String: Grabado en Piedra' : 'String Immutability: Written in Stone'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Un objeto String en Java NUNCA puede ser modificado. Métodos como .toUpperCase(), .trim() o .replace() no alteran el String original: instancian un NUEVO objeto en el Heap. Si no guardás la referencia, se pierde en el Garbage Collector.'
+									: 'A String object in Java can NEVER be altered. Methods like .toUpperCase(), .trim(), or .replace() create a BRAND NEW object in the Heap. If unassigned, it is immediately discarded.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Diagrama de inmutabilidad de String y creación de objetos huérfanos' : 'String immutability and orphaned objects diagram'}>
+									<!-- Stack variable -->
+									<rect x="30" y="40" width="130" height="60" rx="10" class="deck-panel" />
+									<text x="95" y="65" class="deck-svg-title">Stack</text>
+									<text x="95" y="85" class="deck-svg-bold">String s1</text>
+
+									<!-- Heap object original -->
+									<rect x="230" y="40" width="120" height="60" rx="12" class="deck-panel-accent" />
+									<text x="290" y="62" class="deck-svg-sub" text-anchor="middle">Heap: 0x4010</text>
+									<text x="290" y="85" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">"hola"</text>
+
+									<!-- Arrow stack to heap -->
+									<path d="M160 70 H230" stroke="var(--color-accent)" stroke-width="3" id="imm-main-wire" />
+
+									<!-- Heap object created by toUpperCase -->
+									<g id="imm-upper-group" opacity="0.4">
+										<rect x="380" y="40" width="130" height="60" rx="12" class="deck-ground-card" stroke="var(--color-accent-2-700)" stroke-width="2" />
+										<text x="445" y="62" class="deck-svg-sub" text-anchor="middle">Heap: 0x4080</text>
+										<text x="445" y="85" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-2-800)">"HOLA"</text>
+									</g>
+
+									<!-- Orphan skull or GC icon -->
+									<rect x="230" y="140" width="280" height="70" rx="10" class="deck-ground-card" stroke="var(--color-divider)" />
+									<text x="370" y="168" class="deck-svg-sub" text-anchor="middle">{isEs ? 'Estado tras ejecutar s1.toUpperCase();' : 'State after s1.toUpperCase();'}</text>
+									<text x="370" y="192" class="deck-svg-bold" text-anchor="middle" id="imm-svg-verdict" fill="rgb(255, 95, 86)">{isEs ? 's1 sigue valiendo "hola"' : 's1 still points to "hola"'}</text>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Simulador de Asignación' : 'Assignment Simulator'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary imm-btn active" data-assign="no">{isEs ? 's1.toUpperCase(); (Sin asignar)' : 's1.toUpperCase(); (Ignored)'}</button>
+									<button class="btn btn-secondary imm-btn" data-assign="yes">{isEs ? 's1 = s1.toUpperCase(); (Reasignado)' : 's1 = s1.toUpperCase(); (Reassigned)'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Valor actual de s1:' : 'Current s1 value:'}</span>
+										<span class="state-val" id="imm-val-result" style="color: rgb(255, 95, 86);">"hola"</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Objeto "HOLA" en Heap:' : '"HOLA" Heap Object:'}</span>
+										<span class="state-val" id="imm-heap-status">{isEs ? 'Hué́rfano → Para el Garbage Collector' : 'Orphaned → Sent to GC'}</span>
+									</div>
+									<p class="deck-caption" id="imm-desc-text">
+										{isEs
+											? '¡El error clásico del principiante! Llamar al método sin guardar el retorno deja a la variable apuntando al texto viejo.'
+											: 'The quintessential beginner trap! Invoking the method without catching the return leaves s1 unchanged.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 4: STRING CONSTANT POOL -->
+				<div class="deck-slide" data-slide="4">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">4. {isEs ? 'El String Constant Pool: == vs .equals()' : 'The String Constant Pool: == vs .equals()'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'La JVM optimiza la memoria guardando los literales entre comillas en una piscina especial (String Pool). Si dos variables usan "java", apuntan al mismo objeto. Pero si usás new String("java"), forzás un objeto duplicado afuera. ¡Por eso JAMÁS se compara con ==!'
+									: 'The JVM saves memory by storing literal strings inside the String Constant Pool. Two literals point to the same address. However, new String() forces a separate instance. This is why you must never compare strings with ==.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'String Constant Pool frente al Heap general' : 'String Constant Pool vs general Heap'}>
+									<!-- Stack variables -->
+									<rect x="20" y="30" width="100" height="175" rx="10" class="deck-panel" />
+									<text x="70" y="55" class="deck-svg-title">Stack</text>
+									
+									<text x="70" y="85" class="deck-svg-mono" text-anchor="middle">String a</text>
+									<text x="70" y="130" class="deck-svg-mono" text-anchor="middle">String b</text>
+									<text x="70" y="175" class="deck-svg-mono" text-anchor="middle">String c</text>
+
+									<!-- General Heap Box -->
+									<rect x="160" y="25" width="360" height="190" rx="14" class="deck-panel" />
+									<text x="210" y="48" class="deck-svg-title">Heap</text>
+
+									<!-- String Pool Capsule -->
+									<rect x="180" y="60" width="190" height="100" rx="14" class="deck-panel-accent" />
+									<text x="275" y="82" class="deck-svg-title-accent" text-anchor="middle">String Constant Pool</text>
+									<rect x="205" y="95" width="140" height="40" rx="8" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="2" />
+									<text x="275" y="120" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">"java" @0x5010</text>
+
+									<!-- new String object outside pool -->
+									<rect x="390" y="95" width="120" height="65" rx="10" class="deck-ground-card" stroke="rgb(255, 95, 86)" stroke-width="2" />
+									<text x="450" y="120" class="deck-svg-mono-sm" text-anchor="middle">new String</text>
+									<text x="450" y="140" class="deck-svg-bold" text-anchor="middle" fill="rgb(255, 95, 86)">"java" @0x7890</text>
+
+									<!-- Wire a -> pool -->
+									<path d="M100 80 Q150 70 205 105" stroke="var(--color-accent)" stroke-width="2.5" fill="none" />
+									<!-- Wire b -> pool (shared) -->
+									<path d="M100 125 Q150 125 205 118" stroke="var(--color-accent)" stroke-width="2.5" fill="none" />
+									<!-- Wire c -> heap outside -->
+									<path d="M100 170 Q250 200 390 140" stroke="rgb(255, 95, 86)" stroke-width="2" stroke-dasharray="4 3" fill="none" />
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Verificador de Igualdad' : 'Equality Verifier'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary pool-btn active" data-cmp="ab">a == b</button>
+									<button class="btn btn-secondary pool-btn" data-cmp="ac">a == c</button>
+									<button class="btn btn-secondary pool-btn" data-cmp="equals">a.equals(c)</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Operación:' : 'Operation:'}</span>
+										<span class="state-val" id="pool-op-label">a == b (Direcciones)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Resultado Booleano:' : 'Boolean Result:'}</span>
+										<span class="state-val" id="pool-result" style="color: var(--color-accent-2-800); font-size: 1.15rem; font-weight: 700;">true</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Motivo JVM:' : 'JVM Rationale:'}</span>
+										<span class="state-val" id="pool-reason">{isEs ? 'Misma referencia en el String Pool (@0x5010)' : 'Shared reference in Pool (@0x5010)'}</span>
+									</div>
+									<p class="deck-caption" id="pool-caption">
+										{isEs
+											? 'Ambos literales reutilizan la misma celda de memoria. == compara punteros y devuelve true por casualidad.'
+											: 'Both literals share the same slot. == compares memory addresses and coincidentally yields true.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 5: STRINGBUILDER BUFFER -->
+				<div class="deck-slide" data-slide="5">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">5. {isEs ? 'StringBuilder: El Buffer Mutable de Texto' : 'StringBuilder: The Mutable Text Buffer'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Concatenar texto en un bucle con + ("s += i") crea un nuevo String por cada vuelta, colapsando el Heap con miles de objetos basura. StringBuilder mantiene un único array interno de caracteres (char[]) que se expande dinámicamente.'
+									: 'Appending inside a loop with + ("s += i") allocates a new String per iteration, stressing the Garbage Collector. StringBuilder maintains a single internal char[] buffer that dynamically expands.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Comparación de String más frente a StringBuilder' : 'String plus vs StringBuilder comparison'}>
+									<!-- Bad approach: String += -->
+									<rect x="20" y="25" width="240" height="195" rx="12" class="deck-panel" />
+									<text x="35" y="50" class="deck-svg-title">String s += palabra;</text>
+									<rect x="35" y="65" width="210" height="50" rx="6" fill="color-mix(in srgb, rgb(255, 95, 86) 12%, transparent)" stroke="rgb(255, 95, 86)" />
+									<text x="140" y="88" class="deck-svg-bold" text-anchor="middle" fill="rgb(255, 95, 86)">Heap saturado de basura</text>
+									<text x="140" y="105" class="deck-svg-sub" text-anchor="middle">N vueltas = N objetos huérfanos</text>
+									<text x="35" y="145" class="deck-svg-mono-sm">"a"</text>
+									<text x="65" y="145" class="deck-svg-mono-sm">→ "ab"</text>
+									<text x="110" y="145" class="deck-svg-mono-sm">→ "abc"</text>
+									<text x="160" y="145" class="deck-svg-mono-sm">→ "abcd"...</text>
+									<text x="35" y="185" class="deck-svg-bold" fill="rgb(255, 95, 86)">Complejidad O(N²)</text>
+
+									<!-- Good approach: StringBuilder -->
+									<rect x="280" y="25" width="240" height="195" rx="12" class="deck-panel-accent" />
+									<text x="295" y="50" class="deck-svg-title-accent">StringBuilder sb</text>
+									<rect x="295" y="65" width="210" height="60" rx="6" class="deck-sub-block-accent" />
+									<text x="400" y="88" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">1 Solo Objeto en Heap</text>
+									<text x="400" y="108" class="deck-svg-sub" text-anchor="middle" fill="var(--color-accent-2-800)">char[] mutable: [a|b|c|d|e|_|_]</text>
+									<text x="295" y="150" class="deck-svg-mono-sm">sb.append("..."); // in-situ</text>
+									<text x="295" y="185" class="deck-svg-bold" fill="var(--color-accent-700)">Complejidad O(N)</text>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Simulador de Carga: 1.000 Concatenaciones' : 'Load Simulator: 1,000 Appends'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary sb-btn active" data-mode="plus">{isEs ? 'Con operador +' : 'With + operator'}</button>
+									<button class="btn btn-secondary sb-btn" data-mode="builder">{isEs ? 'Con StringBuilder' : 'With StringBuilder'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Objetos instanciados en Heap:' : 'Objects allocated in Heap:'}</span>
+										<span class="state-val" id="sb-obj-count" style="color: rgb(255, 95, 86); font-size: 1.2rem; font-weight: 700;">1.000 objetos</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Impacto en Garbage Collector:' : 'Garbage Collector overhead:'}</span>
+										<span class="state-val" id="sb-gc-impact">{isEs ? 'Crítico (999 objetos basura)' : 'Critical (999 garbage objects)'}</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Tiempo estimado:' : 'Relative execution speed:'}</span>
+										<span class="state-val" id="sb-speed-val" style="color: rgb(255, 95, 86); font-weight: 600;">~120 ms (Lento)</span>
+									</div>
+									<p class="deck-caption" id="sb-caption">
+										{isEs
+											? 'Cada concatenación copia todos los caracteres anteriores a un nuevo array. Para 1.000 vueltas, el costo es exponencial.'
+											: 'Each concatenation re-copies preceding characters into a fresh array. Cost scales quadratically.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	/* Slide Navigation */
+	const pills = document.querySelectorAll('.deck-pill-btn');
+	const slides = document.querySelectorAll('.deck-slide');
+	const slideLabel = document.getElementById('deck-slide-label');
+	const totalSlides = slides.length;
+
+	pills.forEach((pill) => {
+		pill.addEventListener('click', () => {
+			const target = pill.getAttribute('data-target-slide');
+			if (!target) return;
+
+			pills.forEach((p) => p.classList.remove('active'));
+			pill.classList.add('active');
+
+			slides.forEach((s) => {
+				s.classList.remove('active');
+				if (s.getAttribute('data-slide') === target) {
+					s.classList.add('active');
+				}
+			});
+
+			if (slideLabel) {
+				slideLabel.textContent = `SLIDE ${target} / ${totalSlides}`;
+			}
+		});
+	});
+
+	/* Slide 1: Memory Jump Calculator */
+	const idxBtns = document.querySelectorAll('.idx-btn');
+	const memCalcFormula = document.getElementById('mem-calc-formula');
+	const memCalcAddr = document.getElementById('mem-calc-addr');
+	const memCalcVal = document.getElementById('mem-calc-val');
+	const memCalcDesc = document.getElementById('mem-calc-desc');
+	const svgJumpArrow = document.getElementById('svg-jump-arrow');
+	const svgOobBlock = document.getElementById('svg-oob-block');
+
+	const cellPositions = [62, 142, 222, 302, 382];
+	const hexAddresses = ['0x2000', '0x2004', '0x2008', '0x200C', '0x2010'];
+	const values = ['10', '20', '30', '40', '50'];
+
+	idxBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			idxBtns.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+
+			const idxStr = btn.getAttribute('data-idx') ?? '0';
+			const idx = parseInt(idxStr, 10);
+
+			for (let i = 0; i < 5; i++) {
+				const cell = document.getElementById(`svg-cell-${i}`);
+				if (cell) {
+					if (i === idx) {
+						cell.setAttribute('stroke', 'var(--color-accent)');
+						cell.setAttribute('stroke-width', '2.5');
+					} else {
+						cell.setAttribute('stroke', 'var(--color-divider)');
+						cell.setAttribute('stroke-width', '1.5');
+					}
+				}
+			}
+
+			if (idx < 5) {
+				if (svgOobBlock) svgOobBlock.setAttribute('opacity', '0.3');
+				const x = cellPositions[idx];
+				if (svgJumpArrow) {
+					svgJumpArrow.setAttribute('d', `M${x} 60 L${x} 75`);
+					svgJumpArrow.setAttribute('stroke', 'var(--color-accent)');
+				}
+				if (memCalcFormula) memCalcFormula.textContent = `0x2000 + ${idx} * 4 bytes`;
+				if (memCalcAddr) {
+					memCalcAddr.textContent = hexAddresses[idx];
+					memCalcAddr.style.color = 'var(--color-accent-700)';
+				}
+				if (memCalcVal) memCalcVal.textContent = values[idx];
+				if (memCalcDesc) {
+					memCalcDesc.textContent = `Salto de hardware: dirección base + (${idx} * 4) = ${hexAddresses[idx]}. Tiempo de cálculo constante O(1).`;
+				}
+			} else {
+				if (svgOobBlock) svgOobBlock.setAttribute('opacity', '1');
+				if (svgJumpArrow) {
+					svgJumpArrow.setAttribute('d', `M472 60 L472 75`);
+					svgJumpArrow.setAttribute('stroke', 'rgb(255, 95, 86)');
+				}
+				if (memCalcFormula) memCalcFormula.textContent = `0x2000 + 5 * 4 = 0x2014 (Fuera)`;
+				if (memCalcAddr) {
+					memCalcAddr.textContent = '¡VIOLACIÓN DE LÍMITE!';
+					memCalcAddr.style.color = 'rgb(255, 95, 86)';
+				}
+				if (memCalcVal) memCalcVal.textContent = 'ArrayIndexOutOfBoundsException';
+				if (memCalcDesc) {
+					memCalcDesc.textContent = 'El runtime de Java valida automáticamente el límite superior (.length). Si intentás leer [5], aborta de inmediato protegiendo la memoria.';
+				}
+			}
+		});
+	});
+
+	/* Slide 2: Jagged Row Inspector */
+	const rowBtns = document.querySelectorAll('.row-btn');
+	const rowInspectLen = document.getElementById('row-inspect-len');
+	const rowInspectVals = document.getElementById('row-inspect-vals');
+	const rowInspectRef = document.getElementById('row-inspect-ref');
+	const rowInspectDesc = document.getElementById('row-inspect-desc');
+
+	const rowDetails = [
+		{ len: '2', vals: '[10, 20]', ref: '@0x7a20 (Independiente)', desc: 'Fila 0 tiene 2 columnas. Cada fila es un objeto array separado.' },
+		{ len: '5', vals: '[30, 40, 50, 60, 70]', ref: '@0x9b50 (Independiente)', desc: 'Fila 1 es más larga (5 columnas). En Java cada fila puede crecer o achicarse sin afectar a las demás.' },
+		{ len: '3', vals: '[80, 90, 100]', ref: '@0xc210 (Independiente)', desc: 'Fila 2 tiene 3 columnas. Es un array jagged o dentado.' },
+	];
+
+	rowBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			rowBtns.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+
+			const r = parseInt(btn.getAttribute('data-row') ?? '0', 10);
+			const cur = rowDetails[r];
+
+			if (rowInspectLen) rowInspectLen.textContent = cur.len;
+			if (rowInspectVals) rowInspectVals.textContent = cur.vals;
+			if (rowInspectRef) rowInspectRef.textContent = cur.ref;
+			if (rowInspectDesc) rowInspectDesc.textContent = cur.desc;
+		});
+	});
+
+	/* Slide 3: String Immutability */
+	const immBtns = document.querySelectorAll('.imm-btn');
+	const immValResult = document.getElementById('imm-val-result');
+	const immHeapStatus = document.getElementById('imm-heap-status');
+	const immDescText = document.getElementById('imm-desc-text');
+	const immUpperGroup = document.getElementById('imm-upper-group');
+	const immSvgVerdict = document.getElementById('imm-svg-verdict');
+
+	immBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			immBtns.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+
+			const assign = btn.getAttribute('data-assign');
+			if (assign === 'no') {
+				if (immValResult) {
+					immValResult.textContent = '"hola"';
+					immValResult.style.color = 'rgb(255, 95, 86)';
+				}
+				if (immHeapStatus) immHeapStatus.textContent = 'Huérfano → Para el Garbage Collector';
+				if (immDescText) {
+					immDescText.textContent = '¡El error clásico! Al no reasignar s1, el nuevo String "HOLA" queda huérfano en el Heap y s1 sigue apuntando a "hola".';
+				}
+				if (immUpperGroup) immUpperGroup.setAttribute('opacity', '0.4');
+				if (immSvgVerdict) {
+					immSvgVerdict.textContent = 's1 sigue valiendo "hola"';
+					immSvgVerdict.setAttribute('fill', 'rgb(255, 95, 86)');
+				}
+			} else {
+				if (immValResult) {
+					immValResult.textContent = '"HOLA" (Actualizado)';
+					immValResult.style.color = 'var(--color-accent-2-800)';
+				}
+				if (immHeapStatus) immHeapStatus.textContent = 'Referenciado por s1 (@0x4080)';
+				if (immDescText) {
+					immDescText.textContent = 'Al hacer s1 = s1.toUpperCase(), el puntero de la variable s1 ahora apunta al nuevo objeto "HOLA". El viejo "hola" podrá ser recolectado.';
+				}
+				if (immUpperGroup) immUpperGroup.setAttribute('opacity', '1');
+				if (immSvgVerdict) {
+					immSvgVerdict.textContent = 's1 ahora apunta a "HOLA"';
+					immSvgVerdict.setAttribute('fill', 'var(--color-accent-700)');
+				}
+			}
+		});
+	});
+
+	/* Slide 4: String Pool */
+	const poolBtns = document.querySelectorAll('.pool-btn');
+	const poolOpLabel = document.getElementById('pool-op-label');
+	const poolResult = document.getElementById('pool-result');
+	const poolReason = document.getElementById('pool-reason');
+	const poolCaption = document.getElementById('pool-caption');
+
+	poolBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			poolBtns.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+
+			const cmp = btn.getAttribute('data-cmp');
+
+			if (cmp === 'ab') {
+				if (poolOpLabel) poolOpLabel.textContent = 'a == b (Dirección de Memoria)';
+				if (poolResult) {
+					poolResult.textContent = 'true';
+					poolResult.style.color = 'var(--color-accent-2-800)';
+				}
+				if (poolReason) poolReason.textContent = 'Misma referencia en el String Pool (@0x5010)';
+				if (poolCaption) {
+					poolCaption.textContent = 'Ambos literales apuntan al mismo objeto en la piscina. Comparar con == da true por optimización de memoria.';
+				}
+			} else if (cmp === 'ac') {
+				if (poolOpLabel) poolOpLabel.textContent = 'a == c (Dirección de Memoria)';
+				if (poolResult) {
+					poolResult.textContent = 'false';
+					poolResult.style.color = 'rgb(255, 95, 86)';
+				}
+				if (poolReason) poolReason.textContent = 'Pool @0x5010 != Heap @0x7890';
+				if (poolCaption) {
+					poolCaption.textContent = '¡LA TRAMPA! Ambos tienen el texto "java", pero "new String" creó un nuevo objeto afuera del Pool. Con == da FALSE.';
+				}
+			} else {
+				if (poolOpLabel) poolOpLabel.textContent = 'a.equals(c) (Contenido de Caracteres)';
+				if (poolResult) {
+					poolResult.textContent = 'true';
+					poolResult.style.color = 'var(--color-accent-2-800)';
+				}
+				if (poolReason) poolReason.textContent = 'Caracteres idénticos: ["j","a","v","a"]';
+				if (poolCaption) {
+					poolCaption.textContent = '¡La forma correcta! .equals() compara los caracteres uno a uno sin importar dónde viven los objetos.';
+				}
+			}
+		});
+	});
+
+	/* Slide 5: StringBuilder Load */
+	const sbBtns = document.querySelectorAll('.sb-btn');
+	const sbObjCount = document.getElementById('sb-obj-count');
+	const sbGcImpact = document.getElementById('sb-gc-impact');
+	const sbSpeedVal = document.getElementById('sb-speed-val');
+	const sbCaption = document.getElementById('sb-caption');
+
+	sbBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			sbBtns.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+
+			const mode = btn.getAttribute('data-mode');
+
+			if (mode === 'plus') {
+				if (sbObjCount) {
+					sbObjCount.textContent = '1.000 objetos';
+					sbObjCount.style.color = 'rgb(255, 95, 86)';
+				}
+				if (sbGcImpact) sbGcImpact.textContent = 'Crítico (999 objetos basura en Heap)';
+				if (sbSpeedVal) {
+					sbSpeedVal.textContent = '~120 ms (Lento)';
+					sbSpeedVal.style.color = 'rgb(255, 95, 86)';
+				}
+				if (sbCaption) {
+					sbCaption.textContent = 'El operador + crea un nuevo objeto en cada vuelta y copia los caracteres. El Garbage Collector debe trabajar intensamente.';
+				}
+			} else {
+				if (sbObjCount) {
+					sbObjCount.textContent = '1 solo objeto';
+					sbObjCount.style.color = 'var(--color-accent-2-800)';
+				}
+				if (sbGcImpact) sbGcImpact.textContent = 'Mínimo (0 objetos huérfanos)';
+				if (sbSpeedVal) {
+					sbSpeedVal.textContent = '~1.5 ms (80x más veloz)';
+					sbSpeedVal.style.color = 'var(--color-accent-2-800)';
+				}
+				if (sbCaption) {
+					sbCaption.textContent = 'StringBuilder muta su char[] interno. Si se satura, duplica su capacidad (cap * 2 + 2) minimizando copias.';
+				}
+			}
+		});
+	});
+</script>
+
+<style>
+	.as-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		padding: var(--space-4) var(--space-6);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.as-shell { width: 100%; max-width: none; margin: 0; flex: 1; display: flex; flex-direction: column; }
+
+	.deck-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-xl);
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* Nav bar */
+	.deck-nav-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: color-mix(in srgb, var(--color-surface) 90%, var(--color-bg));
+		gap: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.deck-slide-indicator {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		letter-spacing: 0.05em;
+	}
+
+	.deck-step-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--color-accent);
+	}
+
+	.deck-pills {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-pill-btn {
+		background: transparent;
+		border: 1px solid transparent;
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-full);
+		font-size: 0.85rem;
+		color: var(--color-text);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.deck-pill-btn:hover {
+		background: var(--color-neutral-200);
+	}
+
+	.deck-pill-btn.active {
+		background: var(--color-accent-200);
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	/* Viewport & slides */
+	.as-viewport {
+		padding: var(--space-6) var(--space-8);
+		min-height: 480px;
+	}
+
+	.as-viewport { display: flex; flex-direction: column; justify-content: center; }
+	@media (min-width: 1440px) { .as-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .as-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .as-viewport { zoom: 1.25; } }
+
+	.deck-slide {
+		display: none;
+	}
+
+	.deck-slide.active {
+		display: block;
+		animation: deckFade 0.25s ease-out;
+	}
+
+	@keyframes deckFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	/* Grid & Columns */
+	.deck-slide-grid {
+		display: grid;
+		grid-template-columns: 1.15fr 0.85fr;
+		gap: var(--space-8);
+		align-items: center;
+	}
+
+	@media (max-width: 960px) {
+		.deck-slide-grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-6);
+		}
+	}
+
+	.deck-slide-title {
+		font-family: var(--font-heading);
+		font-size: 1.45rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		margin-bottom: var(--space-3);
+		line-height: 1.25;
+	}
+
+	.deck-text {
+		font-size: 0.92rem;
+		line-height: 1.55;
+		color: var(--color-text);
+		margin-bottom: var(--space-4);
+	}
+
+	/* Figure SVG container */
+	.deck-figure {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-3);
+		box-shadow: inset var(--shadow-sm);
+	}
+
+	/* SVG styles */
+	.deck-panel {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+		stroke-width: 1.5;
+	}
+
+	.deck-panel-accent {
+		fill: var(--color-accent-200);
+		stroke: var(--color-accent);
+		stroke-width: 1.5;
+	}
+
+	.deck-sub-block-accent {
+		fill: var(--color-accent-2-200);
+		stroke: var(--color-accent-2-700);
+		stroke-width: 1.5;
+	}
+
+	.deck-svg-title {
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-title-accent {
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--color-accent-700);
+	}
+
+	.deck-svg-mono {
+		font-family: monospace;
+		font-size: 11px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-mono-sm {
+		font-family: monospace;
+		font-size: 9.5px;
+		fill: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+
+	.deck-svg-bold {
+		font-size: 11.5px;
+		font-weight: 700;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-sub {
+		font-size: 10px;
+		fill: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.deck-ground-card {
+		fill: var(--color-surface);
+	}
+
+	/* Interactive card styling */
+	.deck-interactive-card {
+		background: var(--color-neutral-100);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+	}
+
+	.deck-card-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--space-3);
+	}
+
+	.deck-badge {
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.deck-subtext {
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.deck-actions-row {
+		display: flex;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+		flex-wrap: wrap;
+	}
+
+	.deck-actions-row .btn.active {
+		background: var(--color-accent);
+		color: rgb(255, 255, 255);
+		border-color: var(--color-accent);
+	}
+
+	.deck-info-box {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.state-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		font-size: 0.85rem;
+		padding-bottom: var(--space-1);
+		border-bottom: 1px dashed var(--color-divider);
+	}
+
+	.state-label {
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+
+	.state-val {
+		font-family: monospace;
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	.deck-caption {
+		font-size: 0.82rem;
+		color: color-mix(in srgb, var(--color-text) 65%, transparent);
+		margin-top: var(--space-2);
+		margin-bottom: 0;
+		line-height: 1.4;
+	}
+</style>

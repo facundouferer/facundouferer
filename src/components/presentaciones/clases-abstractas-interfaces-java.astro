@@ -1,0 +1,1176 @@
+---
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="ci-screen" data-lang={lang}>
+	<div class="ci-shell">
+		<div class="deck-card">
+			<div class="deck-nav-bar">
+				<div class="deck-slide-indicator">
+					<span class="deck-step-dot"></span>
+					<span id="deck-slide-label">SLIDE 1 / 7</span>
+				</div>
+				<div class="deck-pills">
+					<button class="deck-pill-btn active" data-target-slide="1">1. {isEs ? 'Clase Abstracta' : 'Abstract Class'}</button>
+					<button class="deck-pill-btn" data-target-slide="2">2. {isEs ? 'Interfaces: El Enchufe' : 'Interfaces: Universal Plug'}</button>
+					<button class="deck-pill-btn" data-target-slide="3">3. {isEs ? 'Métodos default y Diamante' : 'default Methods & Diamond'}</button>
+					<button class="deck-pill-btn" data-target-slide="4">4. {isEs ? 'is-a vs can-do' : 'is-a vs can-do'}</button>
+					<button class="deck-pill-btn" data-target-slide="5">5. {isEs ? 'Packages y Colisiones' : 'Packages & Collisions'}</button>
+					<button class="deck-pill-btn" data-target-slide="6">6. {isEs ? 'UML: Asociación a Composición' : 'UML: Association to Composition'}</button>
+					<button class="deck-pill-btn" data-target-slide="7">7. {isEs ? 'Simulador Medios de Pago' : 'Payment Simulator'}</button>
+				</div>
+			</div>
+
+			<div class="ci-viewport">
+				<!-- SLIDE 1: ABSTRACT CLASS -->
+				<div class="deck-slide active" data-slide="1">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">1. {isEs ? 'Clase Abstracta: El Molde Incompleto en Memoria' : 'Abstract Class: The Incomplete Blueprint in Memory'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Una clase abstracta representa un concepto que no puede existir por sí mismo en el mundo real (ej. "Figura"). El compilador prohíbe taxativamente hacer new Figura(); solo sus subclases concretas completas pueden nacer en el Heap.'
+									: 'An abstract class models a concept that cannot exist on its own in the real world (e.g. "Shape"). The compiler forbids new Shape(); only complete concrete subclasses can be instantiated in the Heap.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'Clase abstracta e instancias concretas' : 'Abstract class and concrete instances'}>
+									<!-- Direct Instantiation Attempt Blocked -->
+									<g transform="translate(20, 20)">
+										<rect x="0" y="0" width="230" height="95" rx="8" class="deck-panel" stroke="rgb(239, 68, 68)" stroke-width="1.5" stroke-dasharray="4 4" />
+										<text x="115" y="24" class="deck-svg-title" fill="rgb(239, 68, 68)" text-anchor="middle">new Figura() ✕</text>
+										<rect x="30" y="38" width="170" height="42" rx="6" fill="color-mix(in srgb, rgb(239, 68, 68) 12%, var(--color-surface))" />
+										<text x="115" y="56" class="deck-svg-bold" fill="rgb(239, 68, 68)" text-anchor="middle">ERROR DE COMPILACIÓN</text>
+										<text x="115" y="72" class="deck-svg-sub" text-anchor="middle">Figura is abstract; cannot be instantiated</text>
+									</g>
+
+									<!-- Concrete Instances in Heap -->
+									<g transform="translate(20, 130)">
+										<rect x="0" y="0" width="500" height="105" rx="10" class="deck-panel-accent" />
+										<text x="250" y="20" class="deck-svg-title-accent" text-anchor="middle">Heap: Instancias Concretas Válidas</text>
+
+										<!-- Circulo -->
+										<g transform="translate(20, 30)">
+											<rect x="0" y="0" width="215" height="62" rx="6" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="1.5" id="fig-box-circulo" />
+											<text x="15" y="20" class="deck-svg-bold" fill="var(--color-accent-700)">Circulo @0x91A0</text>
+											<text x="15" y="36" class="deck-svg-mono-sm">radio = 5.0 | color = "Rojo"</text>
+											<text x="15" y="52" class="deck-svg-sub">calcularArea() -&gt; Math.PI * r * r</text>
+										</g>
+
+										<!-- Rectangulo -->
+										<g transform="translate(265, 30)">
+											<rect x="0" y="0" width="215" height="62" rx="6" class="deck-ground-card" stroke="var(--color-divider)" id="fig-box-rect" />
+											<text x="15" y="20" class="deck-svg-bold">Rectangulo @0x91B4</text>
+											<text x="15" y="36" class="deck-svg-mono-sm">base = 4.0 | altura = 6.0</text>
+											<text x="15" y="52" class="deck-svg-sub">calcularArea() -&gt; base * altura</text>
+										</g>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Inspección de Contrato' : 'Contract Inspection'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary fig-btn active" data-fig="circulo">{isEs ? 'Circulo (radio = 5)' : 'Circle (radius = 5)'}</button>
+									<button class="btn btn-secondary fig-btn" data-fig="rectangulo">{isEs ? 'Rectángulo (4 x 6)' : 'Rectangle (4 x 6)'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Clase Base Abstracta:' : 'Base Abstract Class:'}</span>
+										<span class="state-val mono">public abstract class Figura</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Método Abstracto Forzado:' : 'Enforced Abstract Method:'}</span>
+										<span class="state-val mono">abstract double calcularArea()</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Cálculo de Área Resuelto:' : 'Calculated Area Result:'}</span>
+										<span class="state-val" id="fig-res-area" style="color: var(--color-accent-700); font-weight: 700;">78.54 u²</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code id="fig-code-txt"><span class="tok-kw">public abstract class</span> Figura &#123;
+  <span class="tok-kw">private</span> String color;
+  <span class="tok-kw">public abstract double</span> calcularArea(); <span class="tok-comment">// Sin cuerpo</span>
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 2: INTERFACES: UNIVERSAL PLUG -->
+				<div class="deck-slide" data-slide="2">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">2. {isEs ? 'Interfaces: El Enchufe y Contrato Universal' : 'Interfaces: The Universal Socket and Contract'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Una interfaz es un puerto estándar que desacopla por completo quién consume un servicio de cómo se implementa. El cliente solo habla con la interfaz Exportable sin saber si los bytes van a PDF, Excel o JSON.'
+									: 'An interface is a standardized port that decouples the service caller from the underlying implementation. The caller interacts only with Exportable without knowing whether data flows to PDF, Excel, or JSON.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'Metáfora de interfaz como puerto universal' : 'Interface universal socket metaphor'}>
+									<!-- Client Box -->
+									<g transform="translate(20, 75)">
+										<rect x="0" y="0" width="115" height="100" rx="8" class="deck-panel" />
+										<text x="57" y="30" class="deck-svg-title" text-anchor="middle">Cliente</text>
+										<text x="57" y="55" class="deck-svg-mono-sm" text-anchor="middle">ReporteServicio</text>
+										<rect x="15" y="70" width="85" height="20" rx="4" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="57" y="84" class="deck-svg-sub" text-anchor="middle">exportar()</text>
+									</g>
+
+									<!-- Central Socket / Interface -->
+									<g transform="translate(160, 45)">
+										<rect x="0" y="0" width="160" height="160" rx="12" class="deck-panel-accent" stroke-width="2" />
+										<text x="80" y="26" class="deck-svg-title-accent" text-anchor="middle">&lt;&lt;interface&gt;&gt;</text>
+										<text x="80" y="44" class="deck-svg-bold" text-anchor="middle">Exportable</text>
+										<line x1="15" y1="56" x2="145" y2="56" stroke="var(--color-divider)" />
+										<text x="80" y="78" class="deck-svg-mono-sm" text-anchor="middle">byte[] exportar();</text>
+										
+										<!-- Plug Pins -->
+										<circle cx="45" cy="110" r="10" fill="var(--color-surface)" stroke="var(--color-accent)" stroke-width="2" />
+										<circle cx="80" cy="110" r="10" fill="var(--color-surface)" stroke="var(--color-accent)" stroke-width="2" />
+										<circle cx="115" cy="110" r="10" fill="var(--color-surface)" stroke="var(--color-accent)" stroke-width="2" />
+										<text x="80" y="142" class="deck-svg-sub" text-anchor="middle">Puerto universal USB</text>
+									</g>
+
+									<!-- Concrete Implementations -->
+									<g transform="translate(350, 20)">
+										<g id="plug-pdf" class="plug-item active-plug" style="cursor: pointer;">
+											<rect x="0" y="0" width="165" height="55" rx="6" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="2" />
+											<text x="15" y="24" class="deck-svg-bold" fill="var(--color-accent-700)">DocumentoPDF</text>
+											<text x="15" y="42" class="deck-svg-sub">implements Exportable</text>
+										</g>
+										<g id="plug-excel" class="plug-item" transform="translate(0, 68)" style="cursor: pointer;">
+											<rect x="0" y="0" width="165" height="55" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+											<text x="15" y="24" class="deck-svg-bold">ReporteExcel</text>
+											<text x="15" y="42" class="deck-svg-sub">implements Exportable</text>
+										</g>
+										<g id="plug-json" class="plug-item" transform="translate(0, 136)" style="cursor: pointer;">
+											<rect x="0" y="0" width="165" height="55" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+											<text x="15" y="24" class="deck-svg-bold">MensajeJSON</text>
+											<text x="15" y="42" class="deck-svg-sub">implements Exportable</text>
+										</g>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Conector de Formatos' : 'Format Socket'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary plug-btn active" data-plug="pdf">DocumentoPDF</button>
+									<button class="btn btn-secondary plug-btn" data-plug="excel">ReporteExcel</button>
+									<button class="btn btn-secondary plug-btn" data-plug="json">MensajeJSON</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Tipo de Conexión:' : 'Connection Type:'}</span>
+										<span class="state-val mono" id="plug-wire-txt">Exportable exp = new DocumentoPDF()</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Salida Generada:' : 'Generated Output:'}</span>
+										<span class="state-val" id="plug-out-txt" style="color: var(--color-accent-2-700); font-weight: 700;">application/pdf (bytes[])</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code id="plug-code-txt"><span class="tok-kw">public void</span> procesar(<span class="tok-kw">Exportable</span> exp) &#123;
+  <span class="tok-kw">byte</span>[] datos = exp.exportar(); <span class="tok-comment">// Desacople total</span>
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 3: DEFAULT METHODS & DIAMOND -->
+				<div class="deck-slide" data-slide="3">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">3. {isEs ? 'Métodos default y la Resolución del Diamante' : 'default Methods and Diamond Problem Resolution'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Java 8 incorporó métodos default para evolucionar interfaces sin romper implementaciones existentes. Si una clase implementa dos interfaces que definen el mismo método default, el compilador exige resolver la colisión explícitamente.'
+									: 'Java 8 added default methods to evolve interfaces without breaking contracts. If a class implements two interfaces declaring conflicting default methods, the compiler mandates an explicit override resolution.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'Problema del diamante en interfaces y métodos default' : 'Diamond problem in interfaces and default methods'}>
+									<!-- Interface A -->
+									<g transform="translate(195, 15)">
+										<rect x="0" y="0" width="150" height="40" rx="6" class="deck-panel" />
+										<text x="75" y="25" class="deck-svg-bold" text-anchor="middle">Interfaz Base</text>
+									</g>
+
+									<!-- Interface B (Left) -->
+									<g transform="translate(45, 80)">
+										<rect x="0" y="0" width="180" height="55" rx="6" class="deck-panel-accent" stroke="var(--color-accent)" />
+										<text x="90" y="20" class="deck-svg-title-accent" text-anchor="middle">Interfaz ImpresoraA</text>
+										<text x="90" y="40" class="deck-svg-mono-sm" text-anchor="middle">default void imprimir()</text>
+									</g>
+
+									<!-- Interface C (Right) -->
+									<g transform="translate(315, 80)">
+										<rect x="0" y="0" width="180" height="55" rx="6" class="deck-panel-accent" stroke="var(--color-accent-2-700)" />
+										<text x="90" y="20" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle">Interfaz ImpresoraB</text>
+										<text x="90" y="40" class="deck-svg-mono-sm" text-anchor="middle">default void imprimir()</text>
+									</g>
+
+									<!-- Diamond Arrows -->
+									<path d="M135 135 L220 175" stroke="var(--color-accent)" stroke-width="1.5" />
+									<path d="M405 135 L320 175" stroke="var(--color-accent-2-700)" stroke-width="1.5" />
+
+									<!-- Class D Collision resolver -->
+									<g transform="translate(160, 175)">
+										<rect x="0" y="0" width="220" height="60" rx="8" class="deck-ground-card" stroke="var(--color-accent-700)" stroke-width="2" />
+										<text x="110" y="22" class="deck-svg-bold" text-anchor="middle">Clase Multifuncion</text>
+										<text x="110" y="42" class="deck-svg-mono-sm" fill="var(--color-accent-700)" text-anchor="middle">ImpresoraA.super.imprimir();</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Resolución de Conflicto' : 'Conflict Resolution'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary diam-btn active" data-pick="a">{isEs ? 'Elegir ImpresoraA.super' : 'Select ImpresoraA.super'}</button>
+									<button class="btn btn-secondary diam-btn" data-pick="b">{isEs ? 'Elegir ImpresoraB.super' : 'Select ImpresoraB.super'}</button>
+									<button class="btn btn-secondary diam-btn" data-pick="custom">{isEs ? 'Lógica Propia Nueva' : 'Brand New Logic'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Colisión de Firmas:' : 'Signature Clash:'}</span>
+										<span class="state-val" style="color: rgb(217, 119, 6);">Ambas tienen default void imprimir()</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Solución Java Obligatoria:' : 'Enforced Java Solution:'}</span>
+										<span class="state-val" id="diam-sol-txt" style="color: var(--color-accent-2-700); font-weight: 700;">ImpresoraA.super.imprimir();</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code id="diam-code-snippet">@Override
+<span class="tok-kw">public void</span> imprimir() &#123;
+  <span class="tok-kw">ImpresoraA</span>.<span class="tok-kw">super</span>.imprimir(); <span class="tok-comment">// Desambiguación explícita</span>
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 4: IS-A VS CAN-DO -->
+				<div class="deck-slide" data-slide="4">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">4. {isEs ? 'Herencia vs Implementación: is-a frente a can-do' : 'Inheritance vs Implementation: is-a vs can-do'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Una clase solo puede extender una superclase ("is-a", identidad y estado compartido), pero puede implementar infinitas interfaces ("can-do", habilidades ortogonales).'
+									: 'A class can only extend one superclass ("is-a", shared identity and state), but it can implement infinite interfaces ("can-do", orthogonal capabilities).'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Pato extendiendo Ave e implementando interfaces' : 'Duck extending Bird and implementing interfaces'}>
+									<!-- Abstract Base: Ave -->
+									<g transform="translate(190, 15)">
+										<rect x="0" y="0" width="160" height="50" rx="6" class="deck-panel" />
+										<text x="80" y="20" class="deck-svg-title" text-anchor="middle">abstract class Ave</text>
+										<text x="80" y="38" class="deck-svg-sub" text-anchor="middle">estado: plumaje, pico (is-a)</text>
+									</g>
+
+									<!-- Extends Arrow -->
+									<path d="M270 65 L270 95" stroke="var(--color-accent)" stroke-width="2" />
+									<polygon points="270,65 264,75 276,75" fill="var(--color-surface)" stroke="var(--color-accent)" stroke-width="1.5" />
+
+									<!-- Concrete Class: Pato -->
+									<g transform="translate(180, 95)">
+										<rect x="0" y="0" width="180" height="55" rx="8" class="deck-ground-card" stroke="var(--color-accent-700)" stroke-width="2" />
+										<text x="90" y="24" class="deck-svg-bold" fill="var(--color-accent-700)" text-anchor="middle">class Pato</text>
+										<text x="90" y="42" class="deck-svg-sub" text-anchor="middle">extends Ave</text>
+									</g>
+
+									<!-- Interface 1: Volador (Left) -->
+									<g transform="translate(30, 165)">
+										<rect x="0" y="0" width="150" height="50" rx="6" class="deck-panel-accent" stroke="var(--color-accent-2-700)" />
+										<text x="75" y="22" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle">&lt;&lt;Volador&gt;&gt;</text>
+										<text x="75" y="38" class="deck-svg-sub" text-anchor="middle">can-do: volar()</text>
+									</g>
+
+									<!-- Interface 2: Nadador (Right) -->
+									<g transform="translate(360, 165)">
+										<rect x="0" y="0" width="150" height="50" rx="6" class="deck-panel-accent" stroke="var(--color-accent-2-700)" />
+										<text x="75" y="22" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle">&lt;&lt;Nadador&gt;&gt;</text>
+										<text x="75" y="38" class="deck-svg-sub" text-anchor="middle">can-do: nadar()</text>
+									</g>
+
+									<!-- Dashed Implementation Lines -->
+									<path d="M220 150 L140 165" stroke="var(--color-accent-2-700)" stroke-width="1.5" stroke-dasharray="3 3" />
+									<path d="M320 150 L400 165" stroke="var(--color-accent-2-700)" stroke-width="1.5" stroke-dasharray="3 3" />
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Matriz Comparativa' : 'Decision Matrix'}</span>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Herencia Simple:' : 'Single Inheritance:'}</span>
+										<span class="state-val">extends (1 sola clase base)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Implementación Múltiple:' : 'Multiple Implementation:'}</span>
+										<span class="state-val">implements (N interfaces)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Estado en Memoria:' : 'State in Memory:'}</span>
+										<span class="state-val">Variables de instancia solo en clases</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-kw">public class</span> Pato <span class="tok-kw">extends</span> Ave 
+    <span class="tok-kw">implements</span> Volador, Nadador &#123;
+  <span class="tok-comment">// Hereda estado de Ave</span>
+  <span class="tok-comment">// Cumple contratos de Volador y Nadador</span>
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 5: PACKAGES & NAMESPACES -->
+				<div class="deck-slide" data-slide="5">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">5. {isEs ? 'Namespaces y Paquetes: Evitar Colisiones' : 'Namespaces and Packages: Collision Avoidance'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Los paquetes en Java estructuran el código y resuelven colisiones de nombres mediante el FQCN (Fully Qualified Class Name). Dos clases llamadas Item pueden coexistir si pertenecen a paquetes distintos.'
+									: 'Packages provide code geography and prevent name clashes using FQCN (Fully Qualified Class Name). Two classes named Item can coexist cleanly across separate packages.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Colisión de paquetes resuelta por FQCN' : 'Package collision resolved by FQCN'}>
+									<!-- Package A -->
+									<g transform="translate(25, 30)">
+										<rect x="0" y="0" width="220" height="90" rx="8" class="deck-panel" />
+										<text x="15" y="24" class="deck-svg-bold" fill="var(--color-accent-700)">package com.tienda.pedidos;</text>
+										<rect x="15" y="36" width="190" height="42" rx="4" class="deck-ground-card" stroke="var(--color-accent)" />
+										<text x="25" y="60" class="deck-svg-bold">class Item &#123; ... &#125;</text>
+										<text x="25" y="72" class="deck-svg-sub">Artículo de catálogo pedido</text>
+									</g>
+
+									<!-- Package B -->
+									<g transform="translate(285, 30)">
+										<rect x="0" y="0" width="220" height="90" rx="8" class="deck-panel" />
+										<text x="15" y="24" class="deck-svg-bold" fill="var(--color-accent-2-700)">package com.tienda.envios;</text>
+										<rect x="15" y="36" width="190" height="42" rx="4" class="deck-ground-card" stroke="var(--color-accent-2-700)" />
+										<text x="25" y="60" class="deck-svg-bold">class Item &#123; ... &#125;</text>
+										<text x="25" y="72" class="deck-svg-sub">Bulto físico embalado</text>
+									</g>
+
+									<!-- Consumer Class Resolving with FQCN -->
+									<g transform="translate(25, 140)">
+										<rect x="0" y="0" width="480" height="85" rx="8" class="deck-panel-accent" />
+										<text x="20" y="24" class="deck-svg-title-accent">Desambiguación en Checkout.java</text>
+										<text x="20" y="48" class="deck-svg-mono-sm">import com.tienda.pedidos.Item; // Import simple para el más usado</text>
+										<text x="20" y="68" class="deck-svg-mono-sm">com.tienda.envios.Item bulto = new com.tienda.envios.Item(); // FQCN explícito</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Visibilidad de Paquete' : 'Package Visibility'}</span>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Modificador Default (sin keyword):' : 'Default Modifier (no keyword):'}</span>
+										<span class="state-val">package-private</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Acceso:' : 'Access:'}</span>
+										<span class="state-val" style="color: var(--color-accent-2-700);">Visible en mismo paquete</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Desde afuera del paquete:' : 'From outside package:'}</span>
+										<span class="state-val" style="color: rgb(239, 68, 68);">Invisible (encapsulado)</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-comment">// package-private: solo visible para el paquete</span>
+<span class="tok-kw">class</span> ValidadorInterno &#123;
+  <span class="tok-kw">void</span> validar() &#123; ... &#125;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 6: UML RELATIONSHIPS -->
+				<div class="deck-slide" data-slide="6">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">6. {isEs ? 'Modelado: Asociación, Agregación y Composición' : 'Modeling: Association, Aggregation, and Composition'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'No todo es herencia. El acoplamiento entre objetos se gradúa según la dependencia de su ciclo de vida en el Heap: Asociación (débil), Agregación (compartido) y Composición (fuerte, muerte en cascada).'
+									: 'Not everything is inheritance. Coupling between objects depends on their lifecycle in the Heap: Association (weak), Aggregation (shared), and Composition (strong cascade death).'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Relaciones UML y ciclo de vida en Heap' : 'UML relationships and Heap lifecycle'}>
+									<!-- Association -->
+									<g transform="translate(20, 25)">
+										<rect x="0" y="0" width="490" height="55" rx="6" class="deck-panel" />
+										<text x="15" y="24" class="deck-svg-bold">1. Asociación (Uso mutuo)</text>
+										<text x="15" y="42" class="deck-svg-mono-sm">Conductor ────&gt; Vehiculo</text>
+										<text x="320" y="34" class="deck-svg-sub">Ciclos de vida independientes</text>
+									</g>
+
+									<!-- Aggregation -->
+									<g transform="translate(20, 90)">
+										<rect x="0" y="0" width="490" height="55" rx="6" class="deck-panel" />
+										<text x="15" y="24" class="deck-svg-bold">2. Agregación (Rombo blanco ◇)</text>
+										<text x="15" y="42" class="deck-svg-mono-sm">Departamento ◇──── Profesor</text>
+										<text x="320" y="34" class="deck-svg-sub" id="agg-life-txt">Si cierra depto, el profesor sobrevive</text>
+									</g>
+
+									<!-- Composition -->
+									<g transform="translate(20, 155)">
+										<rect x="0" y="0" width="490" height="65" rx="6" class="deck-panel-accent" stroke="var(--color-accent-700)" id="comp-box" />
+										<text x="15" y="24" class="deck-svg-title-accent">3. Composición (Rombo negro ◆)</text>
+										<text x="15" y="44" class="deck-svg-mono-sm">Factura ◆──── ItemFactura</text>
+										<text x="320" y="34" class="deck-svg-sub" id="comp-life-txt" fill="rgb(239, 68, 68)">Si muere Factura, mueren sus ítems (GC)</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Simulador de Ciclo de Vida' : 'Lifecycle Simulator'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary" id="btn-kill-container">{isEs ? 'Destruir Contenedor (GC)' : 'Destroy Container (GC)'}</button>
+									<button class="btn btn-secondary" id="btn-reset-container">{isEs ? 'Restaurar' : 'Restore'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Estado Profesor (Agregación):' : 'Professor State (Aggregation):'}</span>
+										<span class="state-val" id="gc-prof-txt" style="color: var(--color-accent-2-700);">VIVO en Heap (independiente)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Estado ItemFactura (Composición):' : 'InvoiceItem State (Composition):'}</span>
+										<span class="state-val" id="gc-item-txt">Intacto</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-comment">// Composición: la Factura crea y posee sus items</span>
+<span class="tok-kw">public class</span> Factura &#123;
+  <span class="tok-kw">private final</span> List&lt;Item&gt; items = <span class="tok-kw">new</span> ArrayList&lt;&gt;();
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 7: INTERACTIVE PAYMENT SIMULATOR -->
+				<div class="deck-slide" data-slide="7">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">7. {isEs ? 'Desafío: Simulador Polimórfico de Medios de Pago' : 'Challenge: Polymorphic Payment Simulator'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Ejecución polimórfica en acción: una clase abstracta MedioPago define procesarPago(monto) y una interfaz Reembolsable agrega la capacidad reembolsar(). Probá cada medio y verificá cómo reacciona el sistema.'
+									: 'Polymorphism in action: an abstract MedioPago class declares procesarPago(amount) and a Reembolsable interface exposes reembolsar(). Test each gateway to witness how the system reacts.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'Simulador de medios de pago' : 'Payment gateway simulator'}>
+									<!-- Selected Payment Card -->
+									<g transform="translate(30, 25)">
+										<rect x="0" y="0" width="480" height="90" rx="10" class="deck-panel-accent" />
+										<text x="20" y="28" class="deck-svg-title-accent" id="pay-card-title">Tarjeta de Crédito (Visa/Mastercard)</text>
+										<text x="20" y="50" class="deck-svg-mono-sm" id="pay-card-contract">implements Reembolsable, Notificable</text>
+										<text x="20" y="70" class="deck-svg-sub" id="pay-card-calc">Comisión: 3.5% | Proceso con pasarela bancaria</text>
+									</g>
+
+									<!-- Result Screen -->
+									<g transform="translate(30, 130)">
+										<rect x="0" y="0" width="480" height="95" rx="8" class="deck-panel" />
+										<text x="20" y="26" class="deck-svg-bold">Estado de la Transacción ($1,000.00)</text>
+										<line x1="20" y1="36" x2="460" y2="36" stroke="var(--color-divider)" />
+										<text x="20" y="58" class="deck-svg-mono-sm" id="pay-res-status">✓ Pago APROBADO: $1,035.00 debitado</text>
+										<text x="20" y="78" class="deck-svg-bold" fill="var(--color-accent-2-700)" id="pay-res-refund">instanceof Reembolsable: SÍ -&gt; Reembolso habilitado</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Pasarela de Cobro' : 'Payment Gateway'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary pay-btn active" data-gw="card">Tarjeta Crédito</button>
+									<button class="btn btn-secondary pay-btn" data-gw="mp">MercadoPago</button>
+									<button class="btn btn-secondary pay-btn" data-gw="crypto">Crypto Transfer</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Monto Base:' : 'Base Amount:'}</span>
+										<span class="state-val mono">$1,000.00</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Comisión Calculada:' : 'Fee Calculated:'}</span>
+										<span class="state-val mono" id="pay-fee-txt">+$35.00 (3.5%)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Permite Reembolso:' : 'Allows Refund:'}</span>
+										<span class="state-val" id="pay-can-refund" style="color: var(--color-accent-2-700); font-weight: 700;">SÍ</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-kw">public void</span> procesar(<span class="tok-kw">MedioPago</span> m, <span class="tok-kw">double</span> monto) &#123;
+  m.procesarPago(monto); <span class="tok-comment">// Abstracto</span>
+  <span class="tok-kw">if</span> (m <span class="tok-kw">instanceof</span> <span class="tok-kw">Reembolsable</span> r) &#123;
+    r.emitirComprobante();
+  &#125;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- FOOTER CONTROLS -->
+			<div class="deck-footer">
+				<button class="btn btn-secondary deck-nav-prev" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="deck-dots">
+					<button class="deck-dot active" data-target-slide="1" aria-label="Slide 1"></button>
+					<button class="deck-dot" data-target-slide="2" aria-label="Slide 2"></button>
+					<button class="deck-dot" data-target-slide="3" aria-label="Slide 3"></button>
+					<button class="deck-dot" data-target-slide="4" aria-label="Slide 4"></button>
+					<button class="deck-dot" data-target-slide="5" aria-label="Slide 5"></button>
+					<button class="deck-dot" data-target-slide="6" aria-label="Slide 6"></button>
+					<button class="deck-dot" data-target-slide="7" aria-label="Slide 7"></button>
+				</div>
+				<button class="btn btn-secondary deck-nav-next">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	function initPresentation() {
+		const screen = document.querySelector('.ci-screen');
+		if (!screen) return;
+
+		let currentSlide = 1;
+		const totalSlides = 7;
+
+		const slideLabel = document.getElementById('deck-slide-label');
+		const prevBtn = screen.querySelector('.deck-nav-prev') as HTMLButtonElement;
+		const nextBtn = screen.querySelector('.deck-nav-next') as HTMLButtonElement;
+		const pills = screen.querySelectorAll('.deck-pill-btn');
+		const dots = screen.querySelectorAll('.deck-dot');
+		const slides = screen.querySelectorAll('.deck-slide');
+
+		function goToSlide(target: number) {
+			if (target < 1 || target > totalSlides) return;
+			currentSlide = target;
+
+			if (slideLabel) {
+				slideLabel.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+			}
+
+			slides.forEach((sl) => {
+				const sNum = parseInt(sl.getAttribute('data-slide') || '0', 10);
+				sl.classList.toggle('active', sNum === currentSlide);
+			});
+
+			pills.forEach((p) => {
+				const tNum = parseInt(p.getAttribute('data-target-slide') || '0', 10);
+				p.classList.toggle('active', tNum === currentSlide);
+			});
+
+			dots.forEach((d) => {
+				const tNum = parseInt(d.getAttribute('data-target-slide') || '0', 10);
+				d.classList.toggle('active', tNum === currentSlide);
+			});
+
+			if (prevBtn) prevBtn.disabled = currentSlide === 1;
+			if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+		}
+
+		prevBtn?.addEventListener('click', () => goToSlide(currentSlide - 1));
+		nextBtn?.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+		pills.forEach((p) => {
+			p.addEventListener('click', () => {
+				const t = parseInt(p.getAttribute('data-target-slide') || '1', 10);
+				goToSlide(t);
+			});
+		});
+
+		dots.forEach((d) => {
+			d.addEventListener('click', () => {
+				const t = parseInt(d.getAttribute('data-target-slide') || '1', 10);
+				goToSlide(t);
+			});
+		});
+
+		window.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+			if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+		});
+
+		// --- SLIDE 1: Figure area calculator ---
+		const figBtns = screen.querySelectorAll('.fig-btn');
+		const figResArea = document.getElementById('fig-res-area');
+		const figCodeTxt = document.getElementById('fig-code-txt');
+		const boxCirculo = document.getElementById('fig-box-circulo');
+		const boxRect = document.getElementById('fig-box-rect');
+
+		figBtns.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				figBtns.forEach((b) => b.classList.remove('active'));
+				btn.classList.add('active');
+				const fig = btn.getAttribute('data-fig');
+
+				if (fig === 'circulo') {
+					if (figResArea) figResArea.textContent = '78.54 u²';
+					if (figCodeTxt) {
+						figCodeTxt.textContent = 'public class Circulo extends Figura {\n  private double radio = 5.0;\n  @Override\n  public double calcularArea() {\n    return Math.PI * radio * radio;\n  }\n}';
+					}
+					if (boxCirculo) {
+						boxCirculo.setAttribute('stroke', 'var(--color-accent)');
+						boxCirculo.setAttribute('stroke-width', '2');
+					}
+					if (boxRect) {
+						boxRect.setAttribute('stroke', 'var(--color-divider)');
+						boxRect.setAttribute('stroke-width', '1');
+					}
+				} else {
+					if (figResArea) figResArea.textContent = '24.00 u²';
+					if (figCodeTxt) {
+						figCodeTxt.textContent = 'public class Rectangulo extends Figura {\n  private double base = 4.0, altura = 6.0;\n  @Override\n  public double calcularArea() {\n    return base * altura;\n  }\n}';
+					}
+					if (boxCirculo) {
+						boxCirculo.setAttribute('stroke', 'var(--color-divider)');
+						boxCirculo.setAttribute('stroke-width', '1');
+					}
+					if (boxRect) {
+						boxRect.setAttribute('stroke', 'var(--color-accent)');
+						boxRect.setAttribute('stroke-width', '2');
+					}
+				}
+			});
+		});
+
+		// --- SLIDE 2: Interfaces Socket ---
+		const plugBtns = screen.querySelectorAll('.plug-btn');
+		const plugWireTxt = document.getElementById('plug-wire-txt');
+		const plugOutTxt = document.getElementById('plug-out-txt');
+
+		plugBtns.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				plugBtns.forEach((b) => b.classList.remove('active'));
+				btn.classList.add('active');
+				const plugKey = btn.getAttribute('data-plug');
+
+				const plugs = ['pdf', 'excel', 'json'];
+				plugs.forEach((k) => {
+					const el = document.getElementById(`plug-${k}`);
+					const rect = el?.querySelector('rect');
+					if (rect) {
+						rect.setAttribute('stroke', k === plugKey ? 'var(--color-accent)' : 'var(--color-divider)');
+						rect.setAttribute('stroke-width', k === plugKey ? '2' : '1');
+					}
+				});
+
+				if (plugKey === 'pdf') {
+					if (plugWireTxt) plugWireTxt.textContent = 'Exportable exp = new DocumentoPDF()';
+					if (plugOutTxt) plugOutTxt.textContent = 'application/pdf (%PDF-1.4 bytes)';
+				} else if (plugKey === 'excel') {
+					if (plugWireTxt) plugWireTxt.textContent = 'Exportable exp = new ReporteExcel()';
+					if (plugOutTxt) plugOutTxt.textContent = 'application/vnd.ms-excel (XLSX)';
+				} else {
+					if (plugWireTxt) plugWireTxt.textContent = 'Exportable exp = new MensajeJSON()';
+					if (plugOutTxt) plugOutTxt.textContent = 'application/json (UTF-8 bytes)';
+				}
+			});
+		});
+
+		// --- SLIDE 3: Diamond conflict resolver ---
+		const diamBtns = screen.querySelectorAll('.diam-btn');
+		const diamSolTxt = document.getElementById('diam-sol-txt');
+		const diamCodeSnippet = document.getElementById('diam-code-snippet');
+
+		diamBtns.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				diamBtns.forEach((b) => b.classList.remove('active'));
+				btn.classList.add('active');
+				const pick = btn.getAttribute('data-pick');
+
+				if (pick === 'a') {
+					if (diamSolTxt) diamSolTxt.textContent = 'ImpresoraA.super.imprimir();';
+					if (diamCodeSnippet) diamCodeSnippet.textContent = '@Override\npublic void imprimir() {\n  ImpresoraA.super.imprimir(); // Elige rama A\n}';
+				} else if (pick === 'b') {
+					if (diamSolTxt) diamSolTxt.textContent = 'ImpresoraB.super.imprimir();';
+					if (diamCodeSnippet) diamCodeSnippet.textContent = '@Override\npublic void imprimir() {\n  ImpresoraB.super.imprimir(); // Elige rama B\n}';
+				} else {
+					if (diamSolTxt) diamSolTxt.textContent = 'Lógica completamente propia';
+					if (diamCodeSnippet) diamCodeSnippet.textContent = '@Override\npublic void imprimir() {\n  System.out.println("Impresión híbrida propia");\n}';
+				}
+			});
+		});
+
+		// --- SLIDE 6: UML Lifecycle & GC ---
+		const btnKill = document.getElementById('btn-kill-container');
+		const btnReset = document.getElementById('btn-reset-container');
+		const gcItemTxt = document.getElementById('gc-item-txt');
+		const compBox = document.getElementById('comp-box');
+
+		btnKill?.addEventListener('click', () => {
+			if (gcItemTxt) {
+				gcItemTxt.textContent = '⚡ ELIMINADO por Garbage Collector';
+				gcItemTxt.style.color = 'rgb(239, 68, 68)';
+				gcItemTxt.style.fontWeight = '700';
+			}
+			if (compBox) {
+				compBox.setAttribute('stroke', 'rgb(239, 68, 68)');
+			}
+		});
+
+		btnReset?.addEventListener('click', () => {
+			if (gcItemTxt) {
+				gcItemTxt.textContent = 'Intacto en Heap';
+				gcItemTxt.style.color = 'var(--color-text)';
+				gcItemTxt.style.fontWeight = '600';
+			}
+			if (compBox) {
+				compBox.setAttribute('stroke', 'var(--color-accent-700)');
+			}
+		});
+
+		// --- SLIDE 7: Payment Simulator ---
+		const payBtns = screen.querySelectorAll('.pay-btn');
+		const payCardTitle = document.getElementById('pay-card-title');
+		const payCardContract = document.getElementById('pay-card-contract');
+		const payCardCalc = document.getElementById('pay-card-calc');
+		const payResStatus = document.getElementById('pay-res-status');
+		const payResRefund = document.getElementById('pay-res-refund');
+		const payFeeTxt = document.getElementById('pay-fee-txt');
+		const payCanRefund = document.getElementById('pay-can-refund');
+
+		const payGateways: Record<string, { title: string; contract: string; calc: string; status: string; refund: string; fee: string; canRefund: string; refundOk: boolean }> = {
+			card: {
+				title: 'Tarjeta de Crédito (Visa/Mastercard)',
+				contract: 'implements Reembolsable, Notificable',
+				calc: 'Comisión: 3.5% | Proceso bancario',
+				status: '✓ Pago APROBADO: $1,035.00 debitado',
+				refund: 'instanceof Reembolsable: SÍ -> Reembolso habilitado',
+				fee: '+$35.00 (3.5%)',
+				canRefund: 'SÍ',
+				refundOk: true,
+			},
+			mp: {
+				title: 'MercadoPago QR / Wallet',
+				contract: 'implements Reembolsable',
+				calc: 'Comisión: 1.0% | Wallet digital',
+				status: '✓ Pago APROBADO: $1,010.00 debitado',
+				refund: 'instanceof Reembolsable: SÍ -> Reembolso habilitado',
+				fee: '+$10.00 (1.0%)',
+				canRefund: 'SÍ',
+				refundOk: true,
+			},
+			crypto: {
+				title: 'Crypto Transfer (USDT / Bitcoin)',
+				contract: 'NO implements Reembolsable (Inmutable en Blockchain)',
+				calc: 'Comisión de red: $2.50 fija',
+				status: '✓ Transacción confirmada en bloque 840,112',
+				refund: 'instanceof Reembolsable: NO -> Reembolso imposible',
+				fee: '+$2.50 (Red)',
+				canRefund: 'NO',
+				refundOk: false,
+			},
+		};
+
+		payBtns.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				payBtns.forEach((b) => b.classList.remove('active'));
+				btn.classList.add('active');
+				const gwKey = btn.getAttribute('data-gw') || 'card';
+				const gw = payGateways[gwKey];
+
+				if (payCardTitle) payCardTitle.textContent = gw.title;
+				if (payCardContract) payCardContract.textContent = gw.contract;
+				if (payCardCalc) payCardCalc.textContent = gw.calc;
+				if (payResStatus) payResStatus.textContent = gw.status;
+				if (payResRefund) {
+					payResRefund.textContent = gw.refund;
+					payResRefund.setAttribute('fill', gw.refundOk ? 'var(--color-accent-2-700)' : 'rgb(239, 68, 68)');
+				}
+				if (payFeeTxt) payFeeTxt.textContent = gw.fee;
+				if (payCanRefund) {
+					payCanRefund.textContent = gw.canRefund;
+					payCanRefund.style.color = gw.refundOk ? 'var(--color-accent-2-700)' : 'rgb(239, 68, 68)';
+				}
+			});
+		});
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initPresentation);
+	} else {
+		initPresentation();
+	}
+</script>
+
+<style>
+	.ci-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		padding: var(--space-4) var(--space-6);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.ci-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.deck-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		box-shadow: var(--shadow-sm);
+		overflow: hidden;
+	}
+
+	.deck-nav-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: var(--color-surface-subtle);
+		gap: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.deck-slide-indicator {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		color: var(--color-accent-700);
+	}
+
+	.deck-step-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--color-accent);
+	}
+
+	.deck-pills {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-pill-btn {
+		font-family: var(--font-body);
+		font-size: var(--text-xs);
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-full);
+		border: 1px solid var(--color-divider);
+		background: var(--color-surface);
+		color: var(--color-text-muted);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.deck-pill-btn:hover {
+		background: var(--color-surface-subtle);
+		color: var(--color-text);
+	}
+
+	.deck-pill-btn.active {
+		background: var(--color-accent-subtle, color-mix(in srgb, var(--color-accent) 15%, transparent));
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	.ci-viewport {
+		padding: var(--space-6) var(--space-8);
+		min-height: 480px;
+		flex: 1;
+	}
+
+	.ci-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .ci-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .ci-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .ci-viewport { zoom: 1.25; } }
+
+	.deck-slide {
+		display: none;
+		animation: fadeIn 0.3s ease;
+	}
+
+	.deck-slide.active {
+		display: block;
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; transform: translateY(4px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.deck-slide-grid {
+		display: grid;
+		grid-template-columns: 1.15fr 0.85fr;
+		gap: var(--space-8);
+		align-items: start;
+	}
+
+	@media (max-width: 900px) {
+		.deck-slide-grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-6);
+		}
+	}
+
+	.deck-col {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.deck-slide-title {
+		font-family: var(--font-display);
+		font-size: var(--text-2xl);
+		color: var(--color-text);
+		margin: 0;
+		line-height: 1.25;
+	}
+
+	.deck-text {
+		font-size: var(--text-sm);
+		line-height: 1.6;
+		color: var(--color-text-muted);
+		margin: 0;
+	}
+
+	.deck-figure {
+		background: var(--color-surface-subtle);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		overflow: hidden;
+	}
+
+	.deck-interactive-card {
+		background: var(--color-surface-subtle);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-5);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.deck-card-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.deck-badge {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		padding: var(--space-1) var(--space-2);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	.deck-actions-row {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-actions-row .btn.active {
+		background: var(--color-accent);
+		color: rgb(255, 255, 255);
+		border-color: var(--color-accent);
+	}
+
+	.deck-info-box {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3) var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.state-row {
+		display: flex;
+		justify-content: space-between;
+		font-size: var(--text-xs);
+		gap: var(--space-2);
+	}
+
+	.state-label {
+		color: var(--color-text-muted);
+	}
+
+	.state-val {
+		color: var(--color-text);
+		font-weight: 600;
+		text-align: right;
+	}
+
+	.state-val.mono {
+		font-family: var(--font-mono);
+	}
+
+	.deck-code-snippet {
+		margin: 0;
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		line-height: 1.5;
+		overflow-x: auto;
+	}
+
+	.tok-kw { color: var(--color-accent-700); font-weight: 600; }
+	.tok-str { color: var(--color-accent-2-700); }
+	.tok-comment { color: var(--color-text-muted); font-style: italic; }
+
+	.deck-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-top: 1px solid var(--color-divider);
+		background: var(--color-surface-subtle);
+	}
+
+	.deck-dots {
+		display: flex;
+		gap: var(--space-2);
+	}
+
+	.deck-dot {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		border: 1px solid var(--color-divider);
+		background: var(--color-surface);
+		cursor: pointer;
+		padding: 0;
+		transition: all 0.2s ease;
+	}
+
+	.deck-dot.active {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		transform: scale(1.2);
+	}
+
+	/* SVG Internal Styles */
+	.deck-panel {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+		stroke-width: 1.5;
+	}
+
+	.deck-panel-accent {
+		fill: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+		stroke: var(--color-accent);
+		stroke-width: 1.5;
+	}
+
+	.deck-ground-card {
+		fill: var(--color-surface);
+	}
+
+	.deck-svg-title {
+		font-family: var(--font-display);
+		font-size: 11px;
+		fill: var(--color-text);
+		font-weight: 700;
+	}
+
+	.deck-svg-title-accent {
+		font-family: var(--font-display);
+		font-size: 11px;
+		fill: var(--color-accent-700);
+		font-weight: 700;
+	}
+
+	.deck-svg-bold {
+		font-family: var(--font-body);
+		font-size: 11px;
+		fill: var(--color-text);
+		font-weight: 700;
+	}
+
+	.deck-svg-mono {
+		font-family: var(--font-mono);
+		font-size: 10px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-mono-sm {
+		font-family: var(--font-mono);
+		font-size: 9px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-sub {
+		font-family: var(--font-body);
+		font-size: 8px;
+		fill: var(--color-text-muted);
+	}
+</style>

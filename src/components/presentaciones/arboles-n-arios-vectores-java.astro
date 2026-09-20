@@ -1,0 +1,1381 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="an-screen" data-presentation="arboles-n-arios-vectores-java" data-lang={lang}>
+	<div class="an-shell">
+		<nav class="an-nav" aria-label="Controles de navegación">
+			<button class="an-btn" id="anPrevBtn" aria-label="Diapositiva anterior" disabled>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{isEs ? 'Anterior' : 'Previous'}</span>
+			</button>
+			<span class="an-counter" id="anSlideCounter" aria-live="polite">1 / 7</span>
+			<button class="an-btn" id="anNextBtn" aria-label="Siguiente diapositiva">
+				<span>{isEs ? 'Siguiente' : 'Next'}</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="an-viewport">
+			<!-- Slide 1: Árboles N-arios — el modelo del mundo real -->
+			<section class="an-slide is-active" data-slide="1">
+				<div class="an-header">
+					<span class="an-kicker">{isEs ? 'Modelo del Mundo Real' : 'Real-World Modeling'}</span>
+					<h2 class="an-title">{isEs ? 'Árboles N-arios: Más Allá del Binario' : 'N-ary Trees: Beyond Binary'}</h2>
+					<p class="an-lead">
+						{isEs
+							? 'A diferencia de un árbol binario, un nodo puede tener 0, 1, 2… K hijos. Un sistema de archivos, el DOM de una página o una jerarquía de categorías son árboles generales.'
+							: 'Unlike a binary tree, a node can have 0, 1, 2… K children. A filesystem, an HTML DOM tree, or a category hierarchy are all general trees.'}
+					</p>
+				</div>
+
+				<div class="an-card">
+					<div class="an-fs-viz">
+						<svg viewBox="0 0 760 226" class="an-svg-tree" role="img" aria-label={isEs ? 'Árbol de directorios de un sistema de archivos' : 'Directory tree of a filesystem'}>
+							<!-- edges -->
+							<path d="M360,40 L80,95" class="an-edge" />
+							<path d="M360,40 L270,95" class="an-edge" />
+							<path d="M360,40 L470,95" class="an-edge" />
+							<path d="M360,40 L670,95" class="an-edge" />
+							<path d="M270,125 L210,180" class="an-edge" />
+							<path d="M270,125 L330,180" class="an-edge" />
+							<path d="M470,125 L400,180" class="an-edge" />
+							<path d="M470,125 L460,180" class="an-edge" />
+							<path d="M470,125 L520,180" class="an-edge" />
+							<path d="M470,125 L596,180" class="an-edge" />
+							<path d="M470,125 L668,180" class="an-edge" />
+
+							<!-- root -->
+							<rect x="335" y="10" width="50" height="30" rx="8" class="an-node-rect an-node-root" />
+							<text x="360" y="30" class="an-node-text an-node-text-inverse" text-anchor="middle">/</text>
+
+							<!-- level 2 -->
+							<rect x="45" y="95" width="70" height="30" rx="8" class="an-node-rect" />
+							<text x="80" y="115" class="an-node-text" text-anchor="middle">bin</text>
+
+							<rect x="235" y="95" width="70" height="30" rx="8" class="an-node-rect" />
+							<text x="270" y="115" class="an-node-text" text-anchor="middle">home</text>
+							<circle cx="301" cy="93" r="9" class="an-degree-badge" /><text x="301" y="96.5" class="an-degree-text" text-anchor="middle">2</text>
+
+							<rect x="435" y="95" width="70" height="30" rx="8" class="an-node-rect" />
+							<text x="470" y="115" class="an-node-text" text-anchor="middle">etc</text>
+							<circle cx="501" cy="93" r="9" class="an-degree-badge" /><text x="501" y="96.5" class="an-degree-text" text-anchor="middle">5</text>
+
+							<rect x="635" y="95" width="70" height="30" rx="8" class="an-node-rect" />
+							<text x="670" y="115" class="an-node-text" text-anchor="middle">var</text>
+
+							<circle cx="381" cy="8" r="9" class="an-degree-badge an-degree-badge-root" /><text x="381" y="11.5" class="an-degree-text" text-anchor="middle">4</text>
+
+							<!-- level 3: home children -->
+							<rect x="168" y="180" width="84" height="30" rx="8" class="an-node-rect an-node-leaf" />
+							<text x="210" y="200" class="an-node-text an-node-text-sm" text-anchor="middle">facundo</text>
+							<rect x="288" y="180" width="84" height="30" rx="8" class="an-node-rect an-node-leaf" />
+							<text x="330" y="200" class="an-node-text an-node-text-sm" text-anchor="middle">invitado</text>
+
+							<!-- level 3: etc children -->
+							<rect x="364" y="180" width="72" height="30" rx="8" class="an-node-rect an-node-leaf" />
+							<text x="400" y="200" class="an-node-text an-node-text-sm" text-anchor="middle">nginx</text>
+							<rect x="428" y="180" width="64" height="30" rx="8" class="an-node-rect an-node-leaf" />
+							<text x="460" y="200" class="an-node-text an-node-text-sm" text-anchor="middle">ssh</text>
+							<rect x="488" y="180" width="64" height="30" rx="8" class="an-node-rect an-node-leaf" />
+							<text x="520" y="200" class="an-node-text an-node-text-sm" text-anchor="middle">hosts</text>
+							<rect x="550" y="180" width="92" height="30" rx="8" class="an-node-rect an-node-leaf" />
+							<text x="596" y="200" class="an-node-text an-node-text-sm" text-anchor="middle">resolv.conf</text>
+							<rect x="636" y="180" width="64" height="30" rx="8" class="an-node-rect an-node-leaf" />
+							<text x="668" y="200" class="an-node-text an-node-text-sm" text-anchor="middle">ssl</text>
+						</svg>
+					</div>
+					<p class="an-caption">
+						{isEs
+							? 'El grado (cantidad de hijos) no está acotado ni es uniforme: home tiene 2 hijos, etc/ tiene 5, mientras que bin/ y var/ son hojas con 0 hijos. Esa asimetría es imposible de modelar con un árbol binario.'
+							: 'The degree (number of children) is neither bounded nor uniform: home has 2 children, etc/ has 5, while bin/ and var/ are leaves with 0 children. That asymmetry cannot be modeled with a binary tree.'}
+					</p>
+				</div>
+			</section>
+
+			<!-- Slide 2: El dilema de implementación -->
+			<section class="an-slide" data-slide="2">
+				<div class="an-header">
+					<span class="an-kicker">{isEs ? 'Dilema de Implementación' : 'Implementation Dilemma'}</span>
+					<h2 class="an-title">{isEs ? 'Array Fijo de Hijos vs Lista Dinámica' : 'Fixed Children Array vs Dynamic List'}</h2>
+					<p class="an-lead">
+						{isEs
+							? 'Nodo[] hijos = new Nodo[MAX] reserva memoria fija por adelantado: brutal en nodos hoja. List<Nodo> hijos crece según necesidad, a costa de la sobrecarga de un objeto ArrayList por nodo.'
+							: 'Nodo[] hijos = new Nodo[MAX] reserves fixed memory upfront: brutal on leaf nodes. List<Nodo> hijos grows as needed, at the cost of an ArrayList object overhead per node.'}
+					</p>
+				</div>
+
+				<div class="an-card">
+					<div class="an-mem-grid">
+						<!-- Option A -->
+						<div class="an-mem-panel">
+							<div class="an-mem-head">
+								<span class="an-badge">{isEs ? 'Opción A · Array Fijo' : 'Option A · Fixed Array'}</span>
+								<strong>Nodo[] hijos = new Nodo[8]</strong>
+							</div>
+							<p class="an-mem-sub">{isEs ? 'Nodo etc/ (5 hijos reales) reserva 8 punteros por adelantado:' : 'The etc/ node (5 real children) reserves 8 pointers upfront:'}</p>
+							<div class="an-cell-row">
+								<span class="an-mem-cell is-used">nginx</span>
+								<span class="an-mem-cell is-used">ssh</span>
+								<span class="an-mem-cell is-used">hosts</span>
+								<span class="an-mem-cell is-used">resolv.conf</span>
+								<span class="an-mem-cell is-used">ssl</span>
+								<span class="an-mem-cell is-empty">null</span>
+								<span class="an-mem-cell is-empty">null</span>
+								<span class="an-mem-cell is-empty">null</span>
+							</div>
+							<p class="an-mem-stat"><strong class="an-text-accent">3 / 8</strong> {isEs ? 'celdas desperdiciadas (37,5%)' : 'wasted cells (37.5%)'}</p>
+							<p class="an-mem-sub">{isEs ? 'Nodo hoja bin/ (0 hijos) reserva las mismas 8 celdas:' : 'The leaf node bin/ (0 children) reserves the same 8 cells:'}</p>
+							<div class="an-cell-row">
+								<span class="an-mem-cell is-empty">null</span>
+								<span class="an-mem-cell is-empty">null</span>
+								<span class="an-mem-cell is-empty">null</span>
+								<span class="an-mem-cell is-empty">null</span>
+								<span class="an-mem-cell is-empty">null</span>
+								<span class="an-mem-cell is-empty">null</span>
+								<span class="an-mem-cell is-empty">null</span>
+								<span class="an-mem-cell is-empty">null</span>
+							</div>
+							<p class="an-mem-stat"><strong class="an-text-accent">8 / 8</strong> {isEs ? 'celdas desperdiciadas (100%)' : 'wasted cells (100%)'}</p>
+						</div>
+
+						<!-- Option B -->
+						<div class="an-mem-panel">
+							<div class="an-mem-head">
+								<span class="an-badge an-badge-alt">{isEs ? 'Opción B · Lista Dinámica' : 'Option B · Dynamic List'}</span>
+								<strong>List&lt;Nodo&gt; hijos = new ArrayList&lt;&gt;()</strong>
+							</div>
+							<p class="an-mem-sub">{isEs ? 'Nodo etc/ (5 hijos): la lista crece exactamente a 5 elementos.' : 'The etc/ node (5 children): the list grows to exactly 5 elements.'}</p>
+							<div class="an-cell-row">
+								<span class="an-mem-cell is-used">nginx</span>
+								<span class="an-mem-cell is-used">ssh</span>
+								<span class="an-mem-cell is-used">hosts</span>
+								<span class="an-mem-cell is-used">resolv.conf</span>
+								<span class="an-mem-cell is-used">ssl</span>
+							</div>
+							<p class="an-mem-stat"><strong class="an-text-accent-2">0</strong> {isEs ? 'celdas desperdiciadas, pero +overhead de objeto ArrayList por nodo' : 'wasted cells, but +ArrayList object overhead per node'}</p>
+							<p class="an-mem-sub">{isEs ? 'Nodo hoja bin/ (0 hijos): la lista queda vacía.' : 'The leaf node bin/ (0 children): the list stays empty.'}</p>
+							<div class="an-cell-row">
+								<span class="an-mem-cell is-empty-list">{isEs ? '(vacía)' : '(empty)'}</span>
+							</div>
+							<p class="an-mem-stat"><strong class="an-text-accent-2">0</strong> {isEs ? 'celdas desperdiciadas, aún así carga un objeto ArrayList por hoja' : 'wasted cells, yet still carries one ArrayList object per leaf'}</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 3: Transformación Primer Hijo / Siguiente Hermano (LCRS) -->
+			<section class="an-slide" data-slide="3">
+				<div class="an-header">
+					<span class="an-kicker">{isEs ? 'Transformación Estructural' : 'Structural Transformation'}</span>
+					<h2 class="an-title">{isEs ? 'Primer Hijo / Siguiente Hermano (LCRS)' : 'Left-Child Right-Sibling (LCRS)'}</h2>
+					<p class="an-lead">
+						{isEs
+							? 'Cada nodo solo necesita dos referencias: primerHijo (el hijo más a la izquierda) y siguienteHermano (el próximo nodo a su derecha en el mismo nivel). Deslizá para transformar el árbol N-ario en un árbol binario estricto.'
+							: 'Each node only needs two references: primerHijo (leftmost child) and siguienteHermano (next node to its right at the same level). Drag to transform the N-ary tree into a strict binary tree.'}
+					</p>
+				</div>
+
+				<div class="an-card">
+					<div class="an-lcrs-slider-row">
+						<span class="an-lcrs-label" id="anLcrsLabelNary">{isEs ? 'Vista N-aria' : 'N-ary View'}</span>
+						<input type="range" id="anLcrsSlider" class="an-lcrs-slider" min="0" max="100" value="0" step="1" aria-label={isEs ? 'Transición entre vista N-aria y vista LCRS binaria' : 'Transition between N-ary view and binary LCRS view'} />
+						<span class="an-lcrs-label" id="anLcrsLabelBinary">{isEs ? 'Vista Binaria (LCRS)' : 'Binary View (LCRS)'}</span>
+					</div>
+
+					<div class="an-lcrs-viz">
+						<svg viewBox="0 0 420 250" class="an-svg-lcrs">
+							<!-- N-ary group -->
+							<g id="anNaryGroup">
+								<path d="M210,45 L118,102" class="an-edge an-edge-primary" />
+								<path d="M210,45 L210,102" class="an-edge an-edge-primary" />
+								<path d="M210,45 L302,102" class="an-edge an-edge-primary" />
+								<path d="M110,125 L74,182" class="an-edge an-edge-primary" />
+								<path d="M110,125 L150,182" class="an-edge an-edge-primary" />
+
+								<circle cx="210" cy="30" r="20" class="an-lcrs-node" /><text x="210" y="35" class="an-lcrs-text" text-anchor="middle">A</text>
+								<circle cx="110" cy="110" r="20" class="an-lcrs-node" /><text x="110" y="115" class="an-lcrs-text" text-anchor="middle">B</text>
+								<circle cx="210" cy="110" r="20" class="an-lcrs-node" /><text x="210" y="115" class="an-lcrs-text" text-anchor="middle">C</text>
+								<circle cx="310" cy="110" r="20" class="an-lcrs-node" /><text x="310" y="115" class="an-lcrs-text" text-anchor="middle">D</text>
+								<circle cx="70" cy="190" r="18" class="an-lcrs-node an-lcrs-node-sm" /><text x="70" y="195" class="an-lcrs-text" text-anchor="middle">E</text>
+								<circle cx="150" cy="190" r="18" class="an-lcrs-node an-lcrs-node-sm" /><text x="150" y="195" class="an-lcrs-text" text-anchor="middle">F</text>
+							</g>
+
+							<!-- LCRS binary group -->
+							<g id="anLcrsGroup">
+								<path d="M210,45 L145,85" class="an-edge an-edge-first" />
+								<path d="M145,110 L88,165" class="an-edge an-edge-first" />
+								<path d="M145,110 L275,140" class="an-edge an-edge-sibling" />
+								<path d="M280,150 L345,190" class="an-edge an-edge-sibling" />
+								<path d="M88,180 L175,215" class="an-edge an-edge-sibling" />
+
+								<circle cx="210" cy="30" r="20" class="an-lcrs-node" /><text x="210" y="35" class="an-lcrs-text" text-anchor="middle">A</text>
+								<circle cx="145" cy="100" r="20" class="an-lcrs-node" /><text x="145" y="105" class="an-lcrs-text" text-anchor="middle">B</text>
+								<circle cx="290" cy="150" r="20" class="an-lcrs-node" /><text x="290" y="155" class="an-lcrs-text" text-anchor="middle">C</text>
+								<circle cx="355" cy="200" r="18" class="an-lcrs-node an-lcrs-node-sm" /><text x="355" y="205" class="an-lcrs-text" text-anchor="middle">D</text>
+								<circle cx="80" cy="175" r="20" class="an-lcrs-node" /><text x="80" y="180" class="an-lcrs-text" text-anchor="middle">E</text>
+								<circle cx="185" cy="225" r="18" class="an-lcrs-node an-lcrs-node-sm" /><text x="185" y="230" class="an-lcrs-text" text-anchor="middle">F</text>
+							</g>
+						</svg>
+					</div>
+
+					<div class="an-lcrs-legend">
+						<span class="an-legend-item"><span class="an-legend-dot an-legend-dot-first"></span>primerHijo</span>
+						<span class="an-legend-item"><span class="an-legend-dot an-legend-dot-sibling"></span>siguienteHermano</span>
+					</div>
+					<p class="an-subtext" id="anLcrsExplain">
+						{isEs
+							? 'En 0%: árbol N-ario tradicional, cada nodo con una lista de hijos. En 100%: solo el hijo más izquierdo cuelga hacia abajo (primerHijo); los demás se encadenan hacia la derecha (siguienteHermano), formando un árbol binario estricto.'
+							: 'At 0%: the traditional N-ary tree, each node with a list of children. At 100%: only the leftmost child hangs downward (primerHijo); the rest chain to the right (siguienteHermano), forming a strict binary tree.'}
+					</p>
+				</div>
+			</section>
+
+			<!-- Slide 4: Recorrido en Preorden -->
+			<section class="an-slide" data-slide="4">
+				<div class="an-header">
+					<span class="an-kicker">{isEs ? 'Recorrido en Profundidad' : 'Depth-First Traversal'}</span>
+					<h2 class="an-title">{isEs ? 'Preorden: el Padre Antes que sus Hijos' : 'Preorder: Parent Before Its Children'}</h2>
+					<p class="an-lead">
+						{isEs
+							? 'Se visita el nodo, luego se recorre cada subárbol de izquierda a derecha. El mismo recorrido, aplicado sobre la versión LCRS, produce exactamente la misma secuencia.'
+							: 'Visit the node, then walk each subtree left to right. The same traversal, applied to the LCRS version, yields the exact same sequence.'}
+					</p>
+				</div>
+
+				<div class="an-card">
+					<div class="an-sim-toolbar">
+						<button class="an-action-btn" id="anPreorderNextBtn">{isEs ? 'Siguiente paso' : 'Next step'}</button>
+						<button class="an-reset-btn" id="anPreorderResetBtn">{isEs ? 'Reiniciar' : 'Reset'}</button>
+						<span class="an-state-status" id="anPreorderStatus">{isEs ? 'Presioná "Siguiente paso" para iniciar el recorrido' : 'Press "Next step" to start the traversal'}</span>
+					</div>
+
+					<div class="an-preorder-row">
+						<div class="an-preorder-col">
+							<span class="an-col-title">{isEs ? 'Árbol N-ario' : 'N-ary Tree'}</span>
+							<svg viewBox="0 0 420 250" class="an-svg-lcrs" id="anPoNarySvg">
+								<path d="M210,45 L118,102" class="an-edge an-edge-primary" />
+								<path d="M210,45 L210,102" class="an-edge an-edge-primary" />
+								<path d="M210,45 L302,102" class="an-edge an-edge-primary" />
+								<path d="M110,125 L74,182" class="an-edge an-edge-primary" />
+								<path d="M110,125 L150,182" class="an-edge an-edge-primary" />
+
+								<g data-order="1" class="an-po-node"><circle cx="210" cy="30" r="20" class="an-lcrs-node" /><text x="210" y="35" class="an-lcrs-text" text-anchor="middle">A</text></g>
+								<g data-order="2" class="an-po-node"><circle cx="110" cy="110" r="20" class="an-lcrs-node" /><text x="110" y="115" class="an-lcrs-text" text-anchor="middle">B</text></g>
+								<g data-order="5" class="an-po-node"><circle cx="210" cy="110" r="20" class="an-lcrs-node" /><text x="210" y="115" class="an-lcrs-text" text-anchor="middle">C</text></g>
+								<g data-order="6" class="an-po-node"><circle cx="310" cy="110" r="20" class="an-lcrs-node" /><text x="310" y="115" class="an-lcrs-text" text-anchor="middle">D</text></g>
+								<g data-order="3" class="an-po-node"><circle cx="70" cy="190" r="18" class="an-lcrs-node an-lcrs-node-sm" /><text x="70" y="195" class="an-lcrs-text" text-anchor="middle">E</text></g>
+								<g data-order="4" class="an-po-node"><circle cx="150" cy="190" r="18" class="an-lcrs-node an-lcrs-node-sm" /><text x="150" y="195" class="an-lcrs-text" text-anchor="middle">F</text></g>
+							</svg>
+						</div>
+						<div class="an-preorder-col">
+							<span class="an-col-title">{isEs ? 'Árbol LCRS (binario)' : 'LCRS Tree (binary)'}</span>
+							<svg viewBox="0 0 420 250" class="an-svg-lcrs" id="anPoLcrsSvg">
+								<path d="M210,45 L145,85" class="an-edge an-edge-first" />
+								<path d="M145,110 L88,165" class="an-edge an-edge-first" />
+								<path d="M145,110 L275,140" class="an-edge an-edge-sibling" />
+								<path d="M280,150 L345,190" class="an-edge an-edge-sibling" />
+								<path d="M88,180 L175,215" class="an-edge an-edge-sibling" />
+
+								<g data-order="1" class="an-po-node"><circle cx="210" cy="30" r="20" class="an-lcrs-node" /><text x="210" y="35" class="an-lcrs-text" text-anchor="middle">A</text></g>
+								<g data-order="2" class="an-po-node"><circle cx="145" cy="100" r="20" class="an-lcrs-node" /><text x="145" y="105" class="an-lcrs-text" text-anchor="middle">B</text></g>
+								<g data-order="5" class="an-po-node"><circle cx="290" cy="150" r="20" class="an-lcrs-node" /><text x="290" y="155" class="an-lcrs-text" text-anchor="middle">C</text></g>
+								<g data-order="6" class="an-po-node"><circle cx="355" cy="200" r="18" class="an-lcrs-node an-lcrs-node-sm" /><text x="355" y="205" class="an-lcrs-text" text-anchor="middle">D</text></g>
+								<g data-order="3" class="an-po-node"><circle cx="80" cy="175" r="20" class="an-lcrs-node" /><text x="80" y="180" class="an-lcrs-text" text-anchor="middle">E</text></g>
+								<g data-order="4" class="an-po-node"><circle cx="185" cy="225" r="18" class="an-lcrs-node an-lcrs-node-sm" /><text x="185" y="230" class="an-lcrs-text" text-anchor="middle">F</text></g>
+							</svg>
+						</div>
+					</div>
+
+					<div class="an-seq-row" id="anPreorderSequence" aria-live="polite">
+						<span class="an-seq-chip" data-chip="1">1: A</span>
+						<span class="an-seq-chip" data-chip="2">2: B</span>
+						<span class="an-seq-chip" data-chip="3">3: E</span>
+						<span class="an-seq-chip" data-chip="4">4: F</span>
+						<span class="an-seq-chip" data-chip="5">5: C</span>
+						<span class="an-seq-chip" data-chip="6">6: D</span>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 5: Vector de padres -->
+			<section class="an-slide" data-slide="5">
+				<div class="an-header">
+					<span class="an-kicker">{isEs ? 'Representación Compacta en Memoria' : 'Compact Memory Representation'}</span>
+					<h2 class="an-title">{isEs ? 'Vector de Padres: int[] padre' : 'Parent Vector: int[] padre'}</h2>
+					<p class="an-lead">
+						{isEs
+							? 'Se numeran los nodos de 0 a N-1. padre[i] guarda el índice del padre del nodo i (la raíz vale -1). Hacé click en cualquier celda de la tabla para iluminar la relación en el árbol.'
+							: 'Nodes are numbered 0 through N-1. padre[i] stores the parent index of node i (the root is -1). Click any table cell to highlight the relationship in the tree.'}
+					</p>
+				</div>
+
+				<div class="an-card">
+					<div class="an-vector-wrap">
+						<svg viewBox="0 0 400 150" class="an-svg-vector-tree">
+							<path id="anEdge-1" d="M200,45 L100,95" class="an-edge an-vector-edge" data-index="1" />
+							<path id="anEdge-2" d="M200,45 L200,95" class="an-edge an-vector-edge" data-index="2" />
+							<path id="anEdge-3" d="M200,45 L300,95" class="an-edge an-vector-edge" data-index="3" />
+							<path id="anEdge-4" d="M100,125 L60,165" class="an-edge an-vector-edge" data-index="4" />
+
+							<circle cx="200" cy="30" r="20" class="an-lcrs-node an-vector-node" data-node="0" /><text x="200" y="35" class="an-lcrs-text" text-anchor="middle">0</text>
+							<circle cx="100" cy="110" r="20" class="an-lcrs-node an-vector-node" data-node="1" /><text x="100" y="115" class="an-lcrs-text" text-anchor="middle">1</text>
+							<circle cx="200" cy="110" r="20" class="an-lcrs-node an-vector-node" data-node="2" /><text x="200" y="115" class="an-lcrs-text" text-anchor="middle">2</text>
+							<circle cx="300" cy="110" r="20" class="an-lcrs-node an-vector-node" data-node="3" /><text x="300" y="115" class="an-lcrs-text" text-anchor="middle">3</text>
+						</svg>
+						<svg viewBox="0 0 120 190" class="an-svg-vector-tree an-svg-vector-tree-node4">
+							<circle cx="60" cy="180" r="18" class="an-lcrs-node an-vector-node an-lcrs-node-sm" data-node="4" /><text x="60" y="185" class="an-lcrs-text" text-anchor="middle">4</text>
+						</svg>
+					</div>
+
+					<table class="an-vector-table">
+						<thead>
+							<tr>
+								<th>i</th>
+								<th class="an-vector-cell" data-index="0">0</th>
+								<th class="an-vector-cell" data-index="1">1</th>
+								<th class="an-vector-cell" data-index="2">2</th>
+								<th class="an-vector-cell" data-index="3">3</th>
+								<th class="an-vector-cell" data-index="4">4</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>padre[i]</td>
+								<td class="an-vector-cell" data-index="0">-1</td>
+								<td class="an-vector-cell" data-index="1">0</td>
+								<td class="an-vector-cell" data-index="2">0</td>
+								<td class="an-vector-cell" data-index="3">0</td>
+								<td class="an-vector-cell" data-index="4">1</td>
+							</tr>
+						</tbody>
+					</table>
+					<p class="an-hint" id="anVectorHint">{isEs ? 'Hacé click en un índice de la tabla para ver su relación padre-hijo.' : 'Click an index in the table to see its parent-child relationship.'}</p>
+				</div>
+			</section>
+
+			<!-- Slide 6: Algoritmos sobre el vector de padres -->
+			<section class="an-slide" data-slide="6">
+				<div class="an-header">
+					<span class="an-kicker">{isEs ? 'Algoritmos sobre el Vector' : 'Algorithms over the Vector'}</span>
+					<h2 class="an-title">{isEs ? 'Subir a la Raíz: O(1) vs Listar Hijos: O(N)' : 'Climbing to Root: O(1) vs Listing Children: O(N)'}</h2>
+					<p class="an-lead">
+						{isEs
+							? 'Subir hacia la raíz es instantáneo: while (p != -1) p = padre[p];. Listar los hijos de un nodo requiere barrer todo el array buscando padre[j] == nodo, en O(N).'
+							: 'Climbing to the root is instant: while (p != -1) p = padre[p];. Listing a node’s children requires scanning the whole array for padre[j] == node, in O(N).'}
+					</p>
+				</div>
+
+				<div class="an-card">
+					<div class="an-node-select-row" role="group" aria-label={isEs ? 'Seleccionar nodo' : 'Select node'}>
+						<span class="an-col-title">{isEs ? 'Nodo seleccionado:' : 'Selected node:'}</span>
+						<button class="an-node-select-btn is-active" data-node="0">0</button>
+						<button class="an-node-select-btn" data-node="1">1</button>
+						<button class="an-node-select-btn" data-node="2">2</button>
+						<button class="an-node-select-btn" data-node="3">3</button>
+						<button class="an-node-select-btn is-active" data-node="4" id="anDefaultNodeBtn">4</button>
+					</div>
+
+					<div class="an-array-strip" id="anArrayStrip">
+						<div class="an-array-cell" id="anArrCell-0"><span class="an-array-idx">0</span><span class="an-array-val">-1</span></div>
+						<div class="an-array-cell" id="anArrCell-1"><span class="an-array-idx">1</span><span class="an-array-val">0</span></div>
+						<div class="an-array-cell" id="anArrCell-2"><span class="an-array-idx">2</span><span class="an-array-val">0</span></div>
+						<div class="an-array-cell" id="anArrCell-3"><span class="an-array-idx">3</span><span class="an-array-val">0</span></div>
+						<div class="an-array-cell" id="anArrCell-4"><span class="an-array-idx">4</span><span class="an-array-val">1</span></div>
+					</div>
+
+					<div class="an-sim-toolbar">
+						<button class="an-action-btn" id="anClimbBtn">{isEs ? 'Subir a la raíz — O(1)' : 'Climb to root — O(1)'}</button>
+						<button class="an-action-btn an-action-btn-alt" id="anListBtn">{isEs ? 'Listar hijos — O(N)' : 'List children — O(N)'}</button>
+						<button class="an-reset-btn" id="anSimResetBtn">{isEs ? 'Reiniciar' : 'Reset'}</button>
+					</div>
+					<p class="an-hint" id="anSimLog" aria-live="polite">{isEs ? 'Elegí un nodo y una operación.' : 'Pick a node and an operation.'}</p>
+				</div>
+			</section>
+
+			<!-- Slide 7: Árboles K-arios completos -->
+			<section class="an-slide" data-slide="7">
+				<div class="an-header">
+					<span class="an-kicker">{isEs ? 'Árboles Completos y Aritmética de Índices' : 'Complete Trees and Index Arithmetic'}</span>
+					<h2 class="an-title">{isEs ? 'Árbol Ternario Completo: Sin Punteros, Solo Fórmulas' : 'Complete Ternary Tree: No Pointers, Just Formulas'}</h2>
+					<p class="an-lead">
+						{isEs
+							? 'Si el árbol es K-ario completo, la posición de cada nodo se calcula: hijo j-ésimo de i está en 3i + j; el padre de i está en ⌊(i-1) / 3⌋. Hacé click en un nodo o una celda del array.'
+							: 'If the tree is a complete K-ary tree, each node’s position is computed: the j-th child of i sits at 3i + j; the parent of i sits at ⌊(i-1) / 3⌋. Click a tree node or an array cell.'}
+					</p>
+				</div>
+
+				<div class="an-card">
+					<svg viewBox="0 0 460 260" class="an-svg-kary">
+						<path d="M230,45 L115,95" class="an-edge an-edge-primary" />
+						<path d="M230,45 L230,95" class="an-edge an-edge-primary" />
+						<path d="M230,45 L345,95" class="an-edge an-edge-primary" />
+						<path d="M115,125 L50,165" class="an-edge an-edge-primary" />
+						<path d="M115,125 L115,165" class="an-edge an-edge-primary" />
+						<path d="M115,125 L180,165" class="an-edge an-edge-primary" />
+
+						<path d="M230,30 L230,200" class="an-edge an-guide" />
+						<path d="M115,110 L107,200" class="an-edge an-guide" />
+						<path d="M345,110 L223,200" class="an-edge an-guide" />
+						<path d="M50,180 L49,200" class="an-edge an-guide" />
+						<path d="M115,180 L165,200" class="an-edge an-guide" />
+						<path d="M180,180 L281,200" class="an-edge an-guide" />
+
+						<g class="an-kary-node" data-kary="0"><circle cx="230" cy="30" r="20" class="an-lcrs-node" /><text x="230" y="35" class="an-lcrs-text" text-anchor="middle">0</text></g>
+						<g class="an-kary-node" data-kary="1"><circle cx="115" cy="110" r="20" class="an-lcrs-node" /><text x="115" y="115" class="an-lcrs-text" text-anchor="middle">1</text></g>
+						<g class="an-kary-node" data-kary="2"><circle cx="230" cy="110" r="20" class="an-lcrs-node" /><text x="230" y="115" class="an-lcrs-text" text-anchor="middle">2</text></g>
+						<g class="an-kary-node" data-kary="3"><circle cx="345" cy="110" r="20" class="an-lcrs-node" /><text x="345" y="115" class="an-lcrs-text" text-anchor="middle">3</text></g>
+						<g class="an-kary-node" data-kary="4"><circle cx="50" cy="180" r="18" class="an-lcrs-node an-lcrs-node-sm" /><text x="50" y="185" class="an-lcrs-text" text-anchor="middle">4</text></g>
+						<g class="an-kary-node" data-kary="5"><circle cx="115" cy="180" r="18" class="an-lcrs-node an-lcrs-node-sm" /><text x="115" y="185" class="an-lcrs-text" text-anchor="middle">5</text></g>
+						<g class="an-kary-node" data-kary="6"><circle cx="180" cy="180" r="18" class="an-lcrs-node an-lcrs-node-sm" /><text x="180" y="185" class="an-lcrs-text" text-anchor="middle">6</text></g>
+
+						<g class="an-kary-cell" data-kary="0"><rect x="205" y="200" width="50" height="34" rx="6" class="an-array-rect" /><text x="230" y="221" class="an-array-rect-text" text-anchor="middle">i=0</text></g>
+						<g class="an-kary-cell" data-kary="1"><rect x="82" y="200" width="50" height="34" rx="6" class="an-array-rect" /><text x="107" y="221" class="an-array-rect-text" text-anchor="middle">i=1</text></g>
+						<g class="an-kary-cell" data-kary="2"><rect x="198" y="200" width="50" height="34" rx="6" class="an-array-rect" /><text x="223" y="221" class="an-array-rect-text" text-anchor="middle">i=2</text></g>
+						<g class="an-kary-cell" data-kary="3"><rect x="314" y="200" width="50" height="34" rx="6" class="an-array-rect" /><text x="339" y="221" class="an-array-rect-text" text-anchor="middle">i=3</text></g>
+						<g class="an-kary-cell" data-kary="4"><rect x="24" y="200" width="50" height="34" rx="6" class="an-array-rect" /><text x="49" y="221" class="an-array-rect-text" text-anchor="middle">i=4</text></g>
+						<g class="an-kary-cell" data-kary="5"><rect x="140" y="200" width="50" height="34" rx="6" class="an-array-rect" /><text x="165" y="221" class="an-array-rect-text" text-anchor="middle">i=5</text></g>
+						<g class="an-kary-cell" data-kary="6"><rect x="256" y="200" width="50" height="34" rx="6" class="an-array-rect" /><text x="281" y="221" class="an-array-rect-text" text-anchor="middle">i=6</text></g>
+					</svg>
+
+					<div class="an-kary-formulas">
+						<code class="an-kary-formula">hijo_j(i) = 3×i + j &nbsp;(j = 1, 2, 3)</code>
+						<code class="an-kary-formula">padre(i) = ⌊(i − 1) / 3⌋</code>
+					</div>
+					<p class="an-hint" id="anKaryResult" aria-live="polite">{isEs ? 'Nodo 1: padre = 0 · hijos = 4, 5, 6 (3×1+1, 3×1+2, 3×1+3)' : 'Node 1: parent = 0 · children = 4, 5, 6 (3×1+1, 3×1+2, 3×1+3)'}</p>
+				</div>
+			</section>
+		</main>
+	</div>
+</div>
+
+<style>
+	.an-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.an-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.an-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	.an-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: var(--color-surface);
+	}
+
+	.an-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.an-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.an-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.an-counter {
+		font-size: 13px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	.an-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 1100px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.an-slide.is-active {
+		display: block;
+		animation: anFade 0.25s ease-out;
+	}
+
+	@keyframes anFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.an-header {
+		margin-bottom: var(--space-5);
+	}
+
+	.an-kicker {
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.an-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 26px;
+		color: var(--color-text);
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.an-lead {
+		font-size: 15px;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+		line-height: 1.5;
+		margin: 0;
+	}
+
+	.an-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.an-caption, .an-subtext, .an-hint {
+		font-size: 12.5px;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+		line-height: 1.5;
+		margin: var(--space-3) 0 0;
+	}
+
+	/* Slide 1: filesystem tree */
+	.an-fs-viz {
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.an-svg-tree { width: 100%; height: auto; }
+
+	.an-node-rect {
+		fill: var(--color-surface);
+		stroke: var(--color-accent);
+		stroke-width: 2;
+	}
+
+	.an-node-root {
+		fill: var(--color-accent);
+	}
+
+	.an-node-leaf {
+		stroke: var(--color-accent-2);
+	}
+
+	.an-node-text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--color-text);
+	}
+
+	.an-node-text-inverse {
+		fill: var(--color-bg);
+	}
+
+	.an-node-text-sm {
+		font-size: 10px;
+		fill: var(--color-accent-2-700);
+	}
+
+	.an-edge {
+		fill: none;
+		stroke: color-mix(in srgb, var(--color-text) 35%, transparent);
+		stroke-width: 2;
+		stroke-linecap: round;
+	}
+
+	.an-degree-badge {
+		fill: var(--color-accent-2);
+	}
+
+	.an-degree-badge-root {
+		fill: var(--color-accent-700);
+	}
+
+	.an-degree-text {
+		font-size: 9px;
+		font-weight: 700;
+		fill: var(--color-bg);
+	}
+
+	/* Slide 2: memory grids */
+	.an-mem-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 768px) {
+		.an-mem-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.an-mem-panel {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.an-mem-head {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		margin-bottom: var(--space-2);
+		font-size: 12px;
+	}
+
+	.an-badge {
+		display: inline-block;
+		width: fit-content;
+		background: var(--color-accent);
+		color: var(--color-bg);
+		font-size: 10px;
+		font-weight: 700;
+		padding: 2px 8px;
+		border-radius: 999px;
+	}
+
+	.an-badge-alt {
+		background: var(--color-accent-2);
+	}
+
+	.an-mem-sub {
+		font-size: 11.5px;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+		margin: var(--space-2) 0 var(--space-1);
+	}
+
+	.an-cell-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+	}
+
+	.an-mem-cell {
+		font-family: monospace;
+		font-size: 9.5px;
+		padding: 4px 6px;
+		border-radius: var(--radius-sm);
+		border: 1px solid var(--color-divider);
+	}
+
+	.an-mem-cell.is-used {
+		background: color-mix(in srgb, var(--color-accent-2) 22%, transparent);
+		color: var(--color-accent-2-700);
+		font-weight: 700;
+	}
+
+	.an-mem-cell.is-empty {
+		background: transparent;
+		color: color-mix(in srgb, var(--color-text) 40%, transparent);
+		border-style: dashed;
+	}
+
+	.an-mem-cell.is-empty-list {
+		background: transparent;
+		color: color-mix(in srgb, var(--color-text) 40%, transparent);
+		border-style: dashed;
+		font-style: italic;
+	}
+
+	.an-mem-stat {
+		font-size: 11px;
+		margin: var(--space-1) 0 0;
+	}
+
+	.an-text-accent { color: var(--color-accent-700); }
+	.an-text-accent-2 { color: var(--color-accent-2-700); }
+
+	/* Slide 3: LCRS slider */
+	.an-lcrs-slider-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		margin-bottom: var(--space-3);
+	}
+
+	.an-lcrs-label {
+		font-size: 11.5px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+		white-space: nowrap;
+		transition: color 0.2s;
+	}
+
+	.an-lcrs-label.is-active {
+		color: var(--color-accent-700);
+	}
+
+	.an-lcrs-slider {
+		flex: 1;
+		accent-color: var(--color-accent);
+		cursor: pointer;
+	}
+
+	.an-lcrs-viz {
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		justify-content: center;
+	}
+
+	.an-svg-lcrs { width: 100%; max-width: 420px; height: auto; }
+
+	.an-lcrs-node {
+		fill: var(--color-surface);
+		stroke: var(--color-accent);
+		stroke-width: 2.5;
+	}
+
+	.an-lcrs-node-sm {
+		stroke: var(--color-accent-2);
+	}
+
+	.an-lcrs-text {
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--color-text);
+	}
+
+	.an-edge-primary {
+		stroke: color-mix(in srgb, var(--color-text) 30%, transparent);
+	}
+
+	.an-edge-first {
+		stroke: var(--color-accent);
+		stroke-width: 3;
+	}
+
+	.an-edge-sibling {
+		stroke: var(--color-accent-2);
+		stroke-width: 3;
+		stroke-dasharray: 5, 4;
+	}
+
+	.an-lcrs-legend {
+		display: flex;
+		gap: var(--space-4);
+		margin-top: var(--space-3);
+		font-size: 12px;
+		font-weight: 600;
+	}
+
+	.an-legend-item {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.an-legend-dot {
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+	}
+
+	.an-legend-dot-first { background: var(--color-accent); }
+	.an-legend-dot-sibling { background: var(--color-accent-2); }
+
+	/* Slide 4: preorder */
+	.an-sim-toolbar {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		margin-bottom: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.an-action-btn {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		font-weight: 600;
+		font-size: 13px;
+		padding: var(--space-2) var(--space-4);
+		border: none;
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: opacity 0.2s;
+	}
+
+	.an-action-btn:hover {
+		opacity: 0.9;
+	}
+
+	.an-action-btn-alt {
+		background: var(--color-accent-2);
+	}
+
+	.an-reset-btn {
+		background: transparent;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+		font-size: 13px;
+		padding: var(--space-2) var(--space-3);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+	}
+
+	.an-state-status {
+		font-size: 12px;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+		font-style: italic;
+	}
+
+	.an-preorder-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 768px) {
+		.an-preorder-row {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.an-preorder-col {
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.an-col-title {
+		display: block;
+		font-size: 11px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+		margin-bottom: var(--space-2);
+	}
+
+	.an-po-node .an-lcrs-node {
+		transition: fill 0.25s, stroke 0.25s;
+	}
+
+	.an-po-node.is-visited .an-lcrs-node {
+		fill: color-mix(in srgb, var(--color-accent-2) 25%, var(--color-surface));
+		stroke: var(--color-accent-2);
+	}
+
+	.an-po-node.is-current .an-lcrs-node {
+		fill: var(--color-accent);
+		stroke: var(--color-accent-700);
+	}
+
+	.an-po-node.is-current .an-lcrs-text {
+		fill: var(--color-bg);
+	}
+
+	.an-seq-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-top: var(--space-4);
+	}
+
+	.an-seq-chip {
+		font-family: monospace;
+		font-size: 11px;
+		padding: 4px 8px;
+		border-radius: 999px;
+		border: 1px solid var(--color-divider);
+		color: color-mix(in srgb, var(--color-text) 45%, transparent);
+		transition: all 0.2s;
+	}
+
+	.an-seq-chip.is-visited {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		border-color: var(--color-accent);
+		font-weight: 700;
+	}
+
+	/* Slide 5: parent vector */
+	.an-vector-wrap {
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+		gap: var(--space-2);
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.an-svg-vector-tree { width: 60%; max-width: 400px; height: auto; }
+	.an-svg-vector-tree-node4 { width: 16%; max-width: 100px; }
+
+	.an-vector-edge {
+		stroke: color-mix(in srgb, var(--color-text) 30%, transparent);
+		transition: stroke 0.25s, stroke-width 0.25s;
+	}
+
+	.an-vector-edge.is-active {
+		stroke: var(--color-accent);
+		stroke-width: 4;
+	}
+
+	.an-vector-node {
+		transition: fill 0.25s, stroke 0.25s;
+	}
+
+	.an-vector-node.is-active {
+		fill: var(--color-accent);
+		stroke: var(--color-accent-700);
+	}
+
+	.an-vector-table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-top: var(--space-4);
+		font-family: monospace;
+		font-size: 13px;
+	}
+
+	.an-vector-table th,
+	.an-vector-table td {
+		border: 1px solid var(--color-divider);
+		padding: var(--space-2);
+		text-align: center;
+	}
+
+	.an-vector-table th:first-child,
+	.an-vector-table td:first-child {
+		font-family: var(--font-body);
+		font-weight: 700;
+		text-align: left;
+	}
+
+	.an-vector-cell {
+		cursor: pointer;
+		transition: background 0.2s, color 0.2s;
+	}
+
+	.an-vector-cell:hover {
+		background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+	}
+
+	.an-vector-cell.is-active {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		font-weight: 700;
+	}
+
+	/* Slide 6: climb / list simulator */
+	.an-node-select-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+		margin-bottom: var(--space-4);
+	}
+
+	.an-node-select-btn {
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		border: 1px solid var(--color-divider);
+		background: var(--color-bg);
+		font-weight: 700;
+		font-size: 13px;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.an-node-select-btn.is-active {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.an-array-strip {
+		display: flex;
+		gap: var(--space-2);
+		margin-bottom: var(--space-4);
+	}
+
+	.an-array-cell {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 4px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-2);
+		font-family: monospace;
+		transition: all 0.25s;
+	}
+
+	.an-array-idx {
+		font-size: 10px;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	.an-array-val {
+		font-size: 16px;
+		font-weight: 700;
+	}
+
+	.an-array-cell.is-path {
+		background: color-mix(in srgb, var(--color-accent) 20%, transparent);
+		border-color: var(--color-accent);
+	}
+
+	.an-array-cell.is-checking {
+		border-color: var(--color-accent-2);
+	}
+
+	.an-array-cell.is-hit {
+		background: color-mix(in srgb, var(--color-accent-2) 25%, transparent);
+		border-color: var(--color-accent-2);
+	}
+
+	/* Slide 7: K-ary */
+	.an-svg-kary { width: 100%; height: auto; }
+
+	.an-kary-node { cursor: pointer; }
+
+	.an-kary-node .an-lcrs-node,
+	.an-kary-cell .an-array-rect {
+		transition: fill 0.2s, stroke 0.2s;
+	}
+
+	.an-guide {
+		stroke: color-mix(in srgb, var(--color-text) 18%, transparent);
+		stroke-dasharray: 2, 3;
+	}
+
+	.an-array-rect {
+		fill: var(--color-bg);
+		stroke: var(--color-divider);
+		stroke-width: 1.5;
+		cursor: pointer;
+	}
+
+	.an-array-rect-text {
+		font-family: monospace;
+		font-size: 11px;
+		fill: var(--color-text);
+	}
+
+	.an-kary-node.is-selected .an-lcrs-node,
+	.an-kary-cell.is-selected .an-array-rect {
+		fill: var(--color-accent);
+		stroke: var(--color-accent-700);
+	}
+
+	.an-kary-node.is-selected .an-lcrs-text,
+	.an-kary-cell.is-selected .an-array-rect-text {
+		fill: var(--color-bg);
+	}
+
+	.an-kary-node.is-parent .an-lcrs-node,
+	.an-kary-cell.is-parent .an-array-rect {
+		stroke: var(--color-accent-2);
+		stroke-width: 2.5;
+	}
+
+	.an-kary-node.is-child .an-lcrs-node,
+	.an-kary-cell.is-child .an-array-rect {
+		fill: color-mix(in srgb, var(--color-accent-2) 25%, transparent);
+		stroke: var(--color-accent-2);
+	}
+
+	.an-kary-formulas {
+		display: flex;
+		gap: var(--space-3);
+		flex-wrap: wrap;
+		margin-top: var(--space-4);
+	}
+
+	.an-kary-formula {
+		font-family: monospace;
+		font-size: 12px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2) var(--space-3);
+		color: var(--color-accent-700);
+	}
+
+	@media (min-width: 1440px) { .an-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .an-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .an-viewport { zoom: 1.25; } }
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 7;
+
+	const rootEl = document.querySelector('.an-screen') as HTMLElement | null;
+	const isEsGlobal = rootEl?.getAttribute('data-lang') !== 'en';
+
+	const prevBtn = document.getElementById('anPrevBtn') as HTMLButtonElement;
+	const nextBtn = document.getElementById('anNextBtn') as HTMLButtonElement;
+	const counter = document.getElementById('anSlideCounter') as HTMLElement;
+	const slides = document.querySelectorAll<HTMLElement>('.an-slide');
+
+	function updateSlide(target: number) {
+		if (target < 1 || target > totalSlides) return;
+		currentSlide = target;
+		slides.forEach((s) => s.classList.remove('is-active'));
+		document.querySelector(`.an-slide[data-slide="${currentSlide}"]`)?.classList.add('is-active');
+
+		if (counter) counter.textContent = `${currentSlide} / ${totalSlides}`;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	}
+
+	prevBtn?.addEventListener('click', () => updateSlide(currentSlide - 1));
+	nextBtn?.addEventListener('click', () => updateSlide(currentSlide + 1));
+
+	document.addEventListener('keydown', (e) => {
+		if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+		if (e.key === 'ArrowRight') updateSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') updateSlide(currentSlide - 1);
+	});
+
+	// Slide 3: LCRS slider crossfade
+	const lcrsSlider = document.getElementById('anLcrsSlider') as HTMLInputElement;
+	const naryGroup = document.getElementById('anNaryGroup');
+	const lcrsGroup = document.getElementById('anLcrsGroup');
+	const lcrsLabelNary = document.getElementById('anLcrsLabelNary');
+	const lcrsLabelBinary = document.getElementById('anLcrsLabelBinary');
+
+	function renderLcrs() {
+		if (!lcrsSlider) return;
+		const t = Number(lcrsSlider.value) / 100;
+		if (naryGroup) {
+			naryGroup.style.opacity = String(1 - t);
+			naryGroup.style.transform = `translateY(${-t * 10}px)`;
+		}
+		if (lcrsGroup) {
+			lcrsGroup.style.opacity = String(t);
+			lcrsGroup.style.transform = `translateY(${(1 - t) * 10}px)`;
+		}
+		lcrsLabelNary?.classList.toggle('is-active', t < 0.5);
+		lcrsLabelBinary?.classList.toggle('is-active', t >= 0.5);
+	}
+
+	lcrsSlider?.addEventListener('input', renderLcrs);
+	renderLcrs();
+
+	// Slide 4: preorder stepper
+	const preorderNextBtn = document.getElementById('anPreorderNextBtn');
+	const preorderResetBtn = document.getElementById('anPreorderResetBtn');
+	const preorderStatus = document.getElementById('anPreorderStatus');
+	const poNodes = document.querySelectorAll<HTMLElement>('.an-po-node');
+	const seqChips = document.querySelectorAll<HTMLElement>('.an-seq-chip');
+	const preorderLabels: Record<number, string> = { 1: 'A', 2: 'B', 3: 'E', 4: 'F', 5: 'C', 6: 'D' };
+	let preorderStep = 0;
+
+	function renderPreorder() {
+		poNodes.forEach((node) => {
+			const order = Number(node.getAttribute('data-order'));
+			node.classList.toggle('is-visited', order < preorderStep);
+			node.classList.toggle('is-current', order === preorderStep);
+		});
+		seqChips.forEach((chip) => {
+			const chipOrder = Number(chip.getAttribute('data-chip'));
+			chip.classList.toggle('is-visited', chipOrder <= preorderStep);
+		});
+		if (preorderStatus) {
+			if (preorderStep === 0) {
+				preorderStatus.textContent = isEsGlobal ? 'Presioná "Siguiente paso" para iniciar el recorrido' : 'Press "Next step" to start the traversal';
+			} else {
+				const visited = Object.entries(preorderLabels)
+					.filter(([order]) => Number(order) <= preorderStep)
+					.map(([, label]) => label)
+					.join(' → ');
+				preorderStatus.textContent = (isEsGlobal ? 'Orden de visita: ' : 'Visit order: ') + visited;
+			}
+		}
+	}
+
+	preorderNextBtn?.addEventListener('click', () => {
+		if (preorderStep < 6) {
+			preorderStep++;
+			renderPreorder();
+		}
+	});
+
+	preorderResetBtn?.addEventListener('click', () => {
+		preorderStep = 0;
+		renderPreorder();
+	});
+
+	// Slide 5: parent vector table -> tree edge highlight
+	const parentVector5 = [-1, 0, 0, 0, 1];
+	const vectorCells = document.querySelectorAll<HTMLElement>('.an-vector-cell');
+	const vectorEdges = document.querySelectorAll<SVGPathElement>('.an-vector-edge');
+	const vectorNodes = document.querySelectorAll<SVGCircleElement>('.an-vector-node');
+	const vectorHint = document.getElementById('anVectorHint');
+
+	function selectVectorIndex(index: number) {
+		vectorCells.forEach((cell) => cell.classList.toggle('is-active', Number(cell.getAttribute('data-index')) === index));
+		vectorEdges.forEach((edge) => edge.classList.toggle('is-active', Number(edge.getAttribute('data-index')) === index));
+		vectorNodes.forEach((node) => node.classList.toggle('is-active', Number(node.getAttribute('data-node')) === index));
+		const parent = parentVector5[index];
+		if (vectorHint) {
+			vectorHint.textContent = parent === -1
+				? (isEsGlobal ? `padre[${index}] = -1 → el nodo ${index} es la raíz, no tiene padre.` : `padre[${index}] = -1 → node ${index} is the root, it has no parent.`)
+				: (isEsGlobal ? `padre[${index}] = ${parent} → el nodo ${index} apunta a su padre, el nodo ${parent}.` : `padre[${index}] = ${parent} → node ${index} points to its parent, node ${parent}.`);
+		}
+	}
+
+	vectorCells.forEach((cell) => {
+		cell.addEventListener('click', () => selectVectorIndex(Number(cell.getAttribute('data-index'))));
+	});
+
+	// Slide 6: climb / list children simulator
+	const parentVector6 = [-1, 0, 0, 0, 1];
+	let climbSelected = 4;
+	const nodeSelectBtns = document.querySelectorAll<HTMLElement>('.an-node-select-btn');
+	const arrayCells = document.querySelectorAll<HTMLElement>('.an-array-cell');
+	const climbBtn = document.getElementById('anClimbBtn');
+	const listBtn = document.getElementById('anListBtn');
+	const simResetBtn = document.getElementById('anSimResetBtn');
+	const simLog = document.getElementById('anSimLog');
+
+	function clearArrayClasses() {
+		arrayCells.forEach((cell) => cell.classList.remove('is-path', 'is-checking', 'is-hit'));
+	}
+
+	nodeSelectBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			climbSelected = Number(btn.getAttribute('data-node'));
+			nodeSelectBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+			clearArrayClasses();
+			if (simLog) simLog.textContent = isEsGlobal ? `Nodo ${climbSelected} seleccionado.` : `Node ${climbSelected} selected.`;
+		});
+	});
+
+	climbBtn?.addEventListener('click', () => {
+		clearArrayClasses();
+		const path: number[] = [climbSelected];
+		let cur = climbSelected;
+		while (parentVector6[cur] !== -1) {
+			cur = parentVector6[cur];
+			path.push(cur);
+		}
+		path.forEach((idx, i) => {
+			setTimeout(() => {
+				document.getElementById(`anArrCell-${idx}`)?.classList.add('is-path');
+				if (simLog) {
+					const trail = path.slice(0, i + 1).join(' → ');
+					const done = i === path.length - 1;
+					simLog.textContent = isEsGlobal
+						? `Camino a la raíz: ${trail}${done ? ' (raíz alcanzada, O(altura))' : ''}`
+						: `Path to root: ${trail}${done ? ' (root reached, O(height))' : ''}`;
+				}
+			}, i * 450);
+		});
+	});
+
+	listBtn?.addEventListener('click', () => {
+		clearArrayClasses();
+		const hits: number[] = [];
+		for (let j = 0; j < parentVector6.length; j++) {
+			setTimeout(() => {
+				const cell = document.getElementById(`anArrCell-${j}`);
+				cell?.classList.add('is-checking');
+				const isHit = parentVector6[j] === climbSelected;
+				if (isHit) {
+					hits.push(j);
+					cell?.classList.add('is-hit');
+				}
+				if (simLog) {
+					const last = j === parentVector6.length - 1;
+					simLog.textContent = last
+						? (isEsGlobal ? `Hijos de ${climbSelected}: [${hits.join(', ')}] — se revisaron ${parentVector6.length} celdas, O(N).` : `Children of ${climbSelected}: [${hits.join(', ')}] — scanned ${parentVector6.length} cells, O(N).`)
+						: (isEsGlobal ? `Revisando índice ${j}…` : `Checking index ${j}…`);
+				}
+			}, j * 350);
+		}
+	});
+
+	simResetBtn?.addEventListener('click', () => {
+		clearArrayClasses();
+		if (simLog) simLog.textContent = isEsGlobal ? 'Elegí un nodo y una operación.' : 'Pick a node and an operation.';
+	});
+
+	// Slide 7: K-ary index formulas
+	const K = 3;
+	const N = 7;
+	const karyNodes = document.querySelectorAll<HTMLElement>('.an-kary-node');
+	const karyCells = document.querySelectorAll<HTMLElement>('.an-kary-cell');
+	const karyResult = document.getElementById('anKaryResult');
+
+	function selectKary(i: number) {
+		const parent = i === 0 ? null : Math.floor((i - 1) / K);
+		const children = [1, 2, 3].map((j) => K * i + j).filter((c) => c <= N - 1);
+
+		[...karyNodes, ...karyCells].forEach((el) => {
+			const idx = Number(el.getAttribute('data-kary'));
+			el.classList.toggle('is-selected', idx === i);
+			el.classList.toggle('is-parent', parent !== null && idx === parent);
+			el.classList.toggle('is-child', children.includes(idx));
+		});
+
+		if (karyResult) {
+			const parentText = parent === null
+				? (isEsGlobal ? 'ninguno (raíz)' : 'none (root)')
+				: `${parent} = ⌊(${i}-1)/${K}⌋`;
+			const childrenText = children.length
+				? children.join(', ')
+				: (isEsGlobal ? `ninguno (fuera de rango, N=${N})` : `none (out of range, N=${N})`);
+			karyResult.textContent = isEsGlobal
+				? `Nodo ${i}: padre = ${parentText} · hijos = ${childrenText}`
+				: `Node ${i}: parent = ${parentText} · children = ${childrenText}`;
+		}
+	}
+
+	[...karyNodes, ...karyCells].forEach((el) => {
+		el.addEventListener('click', () => selectKary(Number(el.getAttribute('data-kary'))));
+	});
+</script>

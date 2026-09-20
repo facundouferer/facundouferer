@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground line -->
+	<rect x="30" y="166" width="340" height="12" rx="6" fill="#dcd3c4"/>
+
+	<!-- Memory Boxes showing bit capacities -->
+	<!-- Box 1: byte (8 bits) -->
+	<rect x="40" y="110" width="45" height="48" rx="10" fill="#f5ead8" stroke="#c67139" stroke-width="2.5"/>
+	<text x="62" y="132" font-family="'Caprasimo', serif" font-size="12" fill="#c67139" text-anchor="middle">byte</text>
+	<text x="62" y="148" font-family="'Figtree', sans-serif" font-size="9" font-weight="700" fill="#8c491a" text-anchor="middle">8b</text>
+
+	<!-- Box 2: short (16 bits) -->
+	<rect x="95" y="94" width="55" height="64" rx="12" fill="#f5ead8" stroke="#c67139" stroke-width="2.5"/>
+	<text x="122" y="122" font-family="'Caprasimo', serif" font-size="12" fill="#c67139" text-anchor="middle">short</text>
+	<text x="122" y="142" font-family="'Figtree', sans-serif" font-size="9" font-weight="700" fill="#8c491a" text-anchor="middle">16b</text>
+
+	<!-- Box 3: int (32 bits) -->
+	<rect x="160" y="76" width="68" height="82" rx="14" fill="#f5ead8" stroke="#7a8a5e" stroke-width="3"/>
+	<text x="194" y="112" font-family="'Caprasimo', serif" font-size="14" fill="#7a8a5e" text-anchor="middle">int</text>
+	<text x="194" y="136" font-family="'Figtree', sans-serif" font-size="10" font-weight="700" fill="#201e1d" text-anchor="middle">32 bits</text>
+
+	<!-- Box 4: long (64 bits) -->
+	<rect x="238" y="52" width="76" height="106" rx="16" fill="#f5ead8" stroke="#8c491a" stroke-width="3.5"/>
+	<text x="276" y="98" font-family="'Caprasimo', serif" font-size="15" fill="#8c491a" text-anchor="middle">long</text>
+	<text x="276" y="126" font-family="'Figtree', sans-serif" font-size="10" font-weight="700" fill="#201e1d" text-anchor="middle">64 bits</text>
+
+	<!-- Switch Icon (Logical operator &&) -->
+	<circle cx="345" cy="95" r="18" fill="#7a8a5e" stroke="#201e1d" stroke-width="2"/>
+	<text x="345" y="102" font-family="'Caprasimo', serif" font-size="16" fill="#f5ead8" text-anchor="middle">&amp;&amp;</text>
+	<path d="M330 130 H360" stroke="#7a8a5e" stroke-width="3" stroke-linecap="round"/>
+
+	<!-- Header Banner -->
+	<text x="200" y="32" font-family="'Caprasimo', serif" font-size="15" fill="#8c491a" text-anchor="middle">Tipos Primitivos y Operadores</text>
+</svg>

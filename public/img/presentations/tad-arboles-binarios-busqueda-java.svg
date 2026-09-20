@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="20" y="175" width="360" height="8" rx="4" fill="#dcd3c4"/>
+
+	<!-- Title -->
+	<text x="200" y="26" font-family="'Caprasimo', serif" font-size="13" fill="#8c491a" text-anchor="middle">TAD Árboles Binarios &amp; Búsqueda (ABB)</text>
+	<text x="200" y="40" font-family="'Figtree', sans-serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">Recorridos DFS/BFS &amp; Búsqueda O(log N)</text>
+
+	<!-- Tree visual centered -->
+	<g transform="translate(200, 50)">
+		<!-- Edges Level 0 -> Level 1 -->
+		<line x1="0" y1="12" x2="-65" y2="48" stroke="#7a8a5e" stroke-width="2"/>
+		<line x1="0" y1="12" x2="65" y2="48" stroke="#7a8a5e" stroke-width="2"/>
+
+		<!-- Edges Level 1 -> Level 2 -->
+		<line x1="-65" y1="48" x2="-95" y2="85" stroke="#7a8a5e" stroke-width="1.5"/>
+		<line x1="-65" y1="48" x2="-35" y2="85" stroke="#7a8a5e" stroke-width="1.5"/>
+
+		<line x1="65" y1="48" x2="35" y2="85" stroke="#7a8a5e" stroke-width="1.5"/>
+		<line x1="65" y1="48" x2="95" y2="85" stroke="#7a8a5e" stroke-width="1.5"/>
+
+		<!-- Level 2 Nodes (Leaves) -->
+		<!-- Node 20 -->
+		<circle cx="-95" cy="85" r="14" fill="#fdfbf7" stroke="#7a8a5e" stroke-width="1.5"/>
+		<text x="-95" y="89" font-family="'Figtree', sans-serif" font-weight="700" font-size="9" fill="#2c2a29" text-anchor="middle">20</text>
+
+		<!-- Node 40 -->
+		<circle cx="-35" cy="85" r="14" fill="#fdfbf7" stroke="#7a8a5e" stroke-width="1.5"/>
+		<text x="-35" y="89" font-family="'Figtree', sans-serif" font-weight="700" font-size="9" fill="#2c2a29" text-anchor="middle">40</text>
+
+		<!-- Node 60 -->
+		<circle cx="35" cy="85" r="14" fill="#fdfbf7" stroke="#7a8a5e" stroke-width="1.5"/>
+		<text x="35" y="89" font-family="'Figtree', sans-serif" font-weight="700" font-size="9" fill="#2c2a29" text-anchor="middle">60</text>
+
+		<!-- Node 80 -->
+		<circle cx="95" cy="85" r="14" fill="#fdfbf7" stroke="#7a8a5e" stroke-width="1.5"/>
+		<text x="95" y="89" font-family="'Figtree', sans-serif" font-weight="700" font-size="9" fill="#2c2a29" text-anchor="middle">80</text>
+
+		<!-- Level 1 Nodes -->
+		<!-- Node 30 -->
+		<circle cx="-65" cy="48" r="16" fill="#fdfbf7" stroke="#c67139" stroke-width="2"/>
+		<text x="-65" y="52" font-family="'Figtree', sans-serif" font-weight="700" font-size="10" fill="#8c491a" text-anchor="middle">30</text>
+
+		<!-- Node 70 -->
+		<circle cx="65" cy="48" r="16" fill="#fdfbf7" stroke="#c67139" stroke-width="2"/>
+		<text x="65" y="52" font-family="'Figtree', sans-serif" font-weight="700" font-size="10" fill="#8c491a" text-anchor="middle">70</text>
+
+		<!-- Root Node: 50 -->
+		<circle cx="0" cy="12" r="18" fill="#fdfbf7" stroke="#8c491a" stroke-width="2.5"/>
+		<text x="0" y="16" font-family="'Figtree', sans-serif" font-weight="700" font-size="11" fill="#8c491a" text-anchor="middle">50</text>
+		<text x="0" y="-12" font-family="'Caprasimo', serif" font-size="8.5" fill="#8c491a" text-anchor="middle">Raíz</text>
+	</g>
+
+	<!-- Invariant indicators -->
+	<text x="75" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">Izq &lt; 50</text>
+	<text x="325" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#c67139" text-anchor="middle">Der &gt; 50</text>
+</svg>

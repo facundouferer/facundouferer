@@ -1,0 +1,1474 @@
+---
+interface Props {
+	lang?: 'es' | 'en';
+}
+
+const { lang = 'es' } = Astro.props;
+
+const t = {
+	es: {
+		kicker: 'Contratos Fundamentales en Java',
+		title: 'Iteradores, Ordenamiento y Contrato equals/hashCode',
+		subtitle: 'Bucle for-each desazucarado, ConcurrentModificationException, Comparable/Comparator y colisiones en HashSet.',
+		slide: 'Diapositiva',
+		of: 'de',
+		prev: 'Anterior',
+		next: 'Siguiente',
+		reset: 'Reiniciar',
+		step: 'Paso',
+		status: 'Estado',
+		code: 'Código Java',
+		s1Title: 'Qué hay realmente detrás de un for-each',
+		s1Desc: 'El bucle for-each no existe en el bytecode. El compilador lo traduce a la creación de un objeto Iterator con un cursor interno que llama a hasNext() y next().',
+		s2Title: 'La Pesadilla de ConcurrentModificationException',
+		s2Desc: 'Cada colección mantiene un modCount. El iterador guarda expectedModCount. Si alterás la colección directamente mientras iterás, ambos divergen y explota la excepción.',
+		s3Title: 'Comparable: El Orden Natural de una Clase',
+		s3Desc: 'Comparable<T> impone un único orden intrínseco con compareTo(T otro). El signo del resultado gobierna la posición relativa.',
+		s4Title: 'Comparator: Múltiples Criterios de Ordenamiento a Demanda',
+		s4Desc: 'Cuando necesitás ordenar por diferentes criterios (edad, nombre, salario) sin modificar la clase original o combinar ordenamientos.',
+		s5Title: 'El Contrato equals(): Las 5 Reglas Inviolables',
+		s5Desc: 'Reflexiva, simétrica, transitiva, consistente y segura ante null. El peligro oculto de romper la simetría con instanceof en herencia.',
+		s6Title: 'El Contrato de Oro: equals y hashCode',
+		s6Desc: 'Si dos objetos son iguales según equals, deben tener idéntico hashCode. Si rompés esta regla, tus objetos desaparecen dentro de un HashSet o HashMap.',
+		s7Title: 'Claves Mutables en Colecciones Hash: El Objeto Atrapado',
+		s7Desc: 'Modificar los campos de un objeto que ya está dentro de un Set o Map altera su hash futuro pero no mueve su cubeta, dejándolo inalcanzable para siempre.',
+	},
+	en: {
+		kicker: 'Fundamental Java Contracts',
+		title: 'Iterators, Sorting, and equals/hashCode Contract',
+		subtitle: 'Desugared for-each, ConcurrentModificationException, Comparable/Comparator, and HashSet collisions.',
+		slide: 'Slide',
+		of: 'of',
+		prev: 'Previous',
+		next: 'Next',
+		reset: 'Reset',
+		step: 'Step',
+		status: 'Status',
+		code: 'Java Code',
+		s1Title: 'What Really Lies Behind a for-each Loop',
+		s1Desc: 'For-each is pure compiler syntax sugar. Under the hood, it creates an Iterator object tracking an internal cursor with hasNext() and next().',
+		s2Title: 'The Nightmare of ConcurrentModificationException',
+		s2Desc: 'Collections track mutations via modCount. The iterator holds expectedModCount. Altering the collection mid-loop causes divergence and throws an exception.',
+		s3Title: 'Comparable: The Natural Order of a Class',
+		s3Desc: 'Comparable<T> defines a single intrinsic order via compareTo(T other). The sign of the return value governs relative ordering.',
+		s4Title: 'Comparator: Multiple Sorting Criteria on Demand',
+		s4Desc: 'Sort by distinct attributes (age, name, salary) without mutating the target class, composing comparisons fluidly.',
+		s5Title: 'The equals() Contract: 5 Inviolable Rules',
+		s5Desc: 'Reflexive, symmetric, transitive, consistent, and null-safe. The subtle trap of breaking symmetry using instanceof with subclasses.',
+		s6Title: 'The Golden Contract: equals and hashCode',
+		s6Desc: 'If two objects are equal, their hashCodes MUST match. Breaking this rule causes objects to vanish inside HashSets and HashMaps.',
+		s7Title: 'Mutable Keys in Hash Collections: The Trapped Object',
+		s7Desc: 'Mutating fields on an object already stored in a hash collection changes its computed hash without relocating its bucket, stranding it permanently.',
+	},
+}[lang];
+---
+
+<section class="it-screen" aria-label="Presentación Iteradores y equals/hashCode Java">
+	<div class="it-shell">
+		<header class="it-nav-top">
+			<div class="it-nav-title">
+				<span class="it-kicker">{t.kicker}</span>
+				<h1 class="it-main-title">{t.title}</h1>
+			</div>
+			<div class="it-nav-controls">
+				<button type="button" class="it-btn it-btn-secondary" id="it-prev-btn" aria-label={t.prev}>
+					← {t.prev}
+				</button>
+				<span class="it-counter" id="it-slide-counter">1 {t.of} 7</span>
+				<button type="button" class="it-btn it-btn-secondary" id="it-next-btn" aria-label={t.next}>
+					{t.next} →
+				</button>
+			</div>
+		</header>
+
+		<div class="it-progress-track" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="7">
+			<div class="it-progress-bar" id="it-progress-bar" style="width: 14.28%;"></div>
+		</div>
+
+		<main class="it-viewport">
+			<!-- SLIDE 1: DETRÁS DEL FOR-EACH -->
+			<article class="it-slide active" data-slide="1">
+				<div class="it-slide-header">
+					<span class="it-slide-tag tag tag-accent">Slide 1 / 7 • Syntax Sugar Demystified</span>
+					<h2 class="it-slide-title">{t.s1Title}</h2>
+					<p class="it-slide-desc">{t.s1Desc}</p>
+				</div>
+
+				<div class="it-dual-grid">
+					<div class="it-card it-code-compare">
+						<div class="it-card-header">
+							<span class="it-card-label">Lo que vos escribís vs Lo que compila</span>
+							<span class="it-badge text-accent">Desazucarado</span>
+						</div>
+						<div class="it-code-block">
+							<pre><code>// 1. Azúcar sintáctico (Java 5+)
+for (String fruta : cesta) &#123;
+    System.out.println(fruta);
+&#125;
+
+// 2. Lo que realmente se ejecuta en Bytecode:
+Iterator&lt;String&gt; it = cesta.iterator();
+while (it.hasNext()) &#123;
+    String fruta = it.next();
+    System.out.println(fruta);
+&#125;</code></pre>
+						</div>
+						<div class="it-callout">
+							<strong>Requisito formal:</strong> Cualquier clase puede usarse en un bucle <code>for-each</code> siempre que implemente la interfaz <code>Iterable&lt;T&gt;</code>, la cual exige un único método: <code>Iterator&lt;T&gt; iterator()</code>.
+						</div>
+					</div>
+
+					<!-- Visual Cursor Step -->
+					<div class="it-card it-sim-box">
+						<div class="it-card-header">
+							<span class="it-card-label">El Cursor del Iterador en Memoria</span>
+							<span class="it-badge" id="it-cursor-badge">Cursor: Posición 0</span>
+						</div>
+
+						<div class="it-cursor-track-wrap">
+							<div class="it-tape-cells" id="it-tape-cells">
+								<div class="it-cell is-current" id="it-c0"><span class="it-c-idx">[0]</span> "Manzana"</div>
+								<div class="it-cell" id="it-c1"><span class="it-c-idx">[1]</span> "Pera"</div>
+								<div class="it-cell" id="it-c2"><span class="it-c-idx">[2]</span> "Uva"</div>
+								<div class="it-cell" id="it-c3"><span class="it-c-idx">[3]</span> "Kiwi"</div>
+							</div>
+							<div class="it-cursor-pointer" id="it-cursor-indicator">
+								<span>▲ cursor apunta aquí</span>
+							</div>
+						</div>
+
+						<div class="it-action-bar">
+							<button type="button" class="it-btn it-btn-primary" id="it-btn-it-next">it.next() ▶</button>
+							<button type="button" class="it-btn it-btn-ghost" id="it-btn-it-reset">↺ {t.reset}</button>
+						</div>
+						<div class="it-status-banner" id="it-cursor-log">
+							it.hasNext() retorna true. Presiona it.next() para avanzar el cursor y retornar el elemento.
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 2: CONCURRENT MODIFICATION EXCEPTION -->
+			<article class="it-slide" data-slide="2">
+				<div class="it-slide-header">
+					<span class="it-slide-tag tag tag-accent">Slide 2 / 7 • Fail-Fast Iterators</span>
+					<h2 class="it-slide-title">{t.s2Title}</h2>
+					<p class="it-slide-desc">{t.s2Desc}</p>
+				</div>
+
+				<div class="it-dual-grid">
+					<div class="it-card it-sim-box">
+						<div class="it-card-header">
+							<span class="it-card-label">Odómetros de Mutación (modCount)</span>
+							<span class="it-badge" id="it-mod-status-badge">Sincronizados (5 == 5)</span>
+						</div>
+
+						<div class="it-odometers-row">
+							<div class="it-odometer-tile">
+								<span class="it-odo-label">lista.modCount</span>
+								<span class="it-odo-val" id="it-odo-list">5</span>
+								<span class="it-odo-sub">Mutaciones en la lista</span>
+							</div>
+							<div class="it-odo-comparator" id="it-odo-comp">==</div>
+							<div class="it-odometer-tile">
+								<span class="it-odo-label">it.expectedModCount</span>
+								<span class="it-odo-val" id="it-odo-it">5</span>
+								<span class="it-odo-sub">Copia que guarda el iterador</span>
+							</div>
+						</div>
+
+						<div class="it-action-bar">
+							<button type="button" class="it-btn it-btn-secondary" id="it-btn-safe-next">1. it.next() (Seguro)</button>
+							<button type="button" class="it-btn it-btn-primary" id="it-btn-safe-remove">2. it.remove() (Válido)</button>
+							<button type="button" class="it-btn it-btn-outline" id="it-btn-illegal-remove">⚠️ lista.remove() (Ilegal)</button>
+							<button type="button" class="it-btn it-btn-ghost" id="it-btn-reset-mod">↺ {t.reset}</button>
+						</div>
+
+						<div class="it-status-banner" id="it-mod-log">
+							Estado normal: modCount coincide con expectedModCount. Todo llamado a next() es seguro.
+						</div>
+					</div>
+
+					<div class="it-card it-theory-box">
+						<h3 class="it-card-title">¿Por qué falla de inmediato (Fail-Fast)?</h3>
+						<div class="it-code-block">
+							<pre><code>// Implementación real de ArrayList.Itr:
+final void checkForComodification() &#123;
+    if (modCount != expectedModCount)
+        throw new ConcurrentModificationException();
+&#125;
+
+// La forma correcta de borrar mientras iterás:
+Iterator&lt;String&gt; it = lista.iterator();
+while (it.hasNext()) &#123;
+    String item = it.next();
+    if (item.startsWith("X")) &#123;
+        it.remove(); // Actualiza ambos contadores
+    &#125;
+&#125;</code></pre>
+						</div>
+						<div class="it-callout">
+							<strong>No requiere múltiples hilos:</strong> A pesar de llamarse "Concurrent", esta excepción ocurre con frecuencia en un solo hilo cuando intentás borrar de una lista dentro de un `for-each`.
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 3: COMPARABLE (ORDEN NATURAL) -->
+			<article class="it-slide" data-slide="3">
+				<div class="it-slide-header">
+					<span class="it-slide-tag tag tag-accent">Slide 3 / 7 • Intrinsic Ordering</span>
+					<h2 class="it-slide-title">{t.s3Title}</h2>
+					<p class="it-slide-desc">{t.s3Desc}</p>
+				</div>
+
+				<div class="it-dual-grid">
+					<!-- Interactive Balance Scale -->
+					<div class="it-card it-sim-box">
+						<div class="it-card-header">
+							<span class="it-card-label">Balanza de compareTo(otro): A vs B</span>
+							<span class="it-badge text-accent" id="it-scale-badge">Resultado: +2 (A &gt; B)</span>
+						</div>
+
+						<div class="it-scale-diagram-wrap">
+							<svg viewBox="0 0 300 180" class="it-scale-svg">
+								<!-- Fulcrum base -->
+								<polygon points="150,150 135,175 165,175" fill="var(--color-text)" />
+								<!-- Beam tilting dynamically -->
+								<g id="it-scale-beam" transform="rotate(-6 150 150)">
+									<line x1="40" y1="150" x2="260" y2="150" stroke="var(--color-accent-700)" stroke-width="4" stroke-linecap="round" />
+									<!-- Left Pan (A) -->
+									<line x1="50" y1="150" x2="50" y2="170" stroke="var(--color-text-muted)" stroke-width="1.5" />
+									<rect x="20" y="170" width="60" height="12" rx="3" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="1" />
+									<!-- Right Pan (B) -->
+									<line x1="250" y1="150" x2="250" y2="170" stroke="var(--color-text-muted)" stroke-width="1.5" />
+									<rect x="220" y="170" width="60" height="12" rx="3" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="1" />
+								</g>
+							</svg>
+
+							<div class="it-scale-controls">
+								<div class="it-pan-control">
+									<label for="it-grade-a">Estudiante A (Nota):</label>
+									<input type="number" id="it-grade-a" class="it-input" value="8" min="1" max="10" />
+								</div>
+								<div class="it-scale-math" id="it-scale-math">
+									8 - 6 = +2 &gt; 0
+								</div>
+								<div class="it-pan-control">
+									<label for="it-grade-b">Estudiante B (Nota):</label>
+									<input type="number" id="it-grade-b" class="it-input" value="6" min="1" max="10" />
+								</div>
+							</div>
+						</div>
+
+						<div class="it-status-banner" id="it-scale-log">
+							this.nota (8) - otro.nota (6) = +2. Número positivo indica que Estudiante A va DESPUÉS que B.
+						</div>
+					</div>
+
+					<div class="it-card it-theory-box">
+						<h3 class="it-card-title">La Regla del Signo en compareTo</h3>
+						<div class="it-specs-grid">
+							<div class="it-spec-tile">
+								<span class="it-spec-k">Negativo (&lt; 0)</span>
+								<span class="it-spec-v">this &lt; otro (va antes)</span>
+							</div>
+							<div class="it-spec-tile">
+								<span class="it-spec-k">Cero (== 0)</span>
+								<span class="it-spec-v">this == otro (empate)</span>
+							</div>
+							<div class="it-spec-tile">
+								<span class="it-spec-k">Positivo (&gt; 0)</span>
+								<span class="it-spec-v text-accent">this &gt; otro (va después)</span>
+							</div>
+						</div>
+						<div class="it-code-block">
+							<pre><code>public class Estudiante implements Comparable&lt;Estudiante&gt; &#123;
+    private int nota;
+
+    @Override
+    public int compareTo(Estudiante otro) &#123;
+        return Integer.compare(this.nota, otro.nota);
+    &#125;
+&#125;</code></pre>
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 4: COMPARATOR (MÚLTIPLES ÓRDENES) -->
+			<article class="it-slide" data-slide="4">
+				<div class="it-slide-header">
+					<span class="it-slide-tag tag tag-accent">Slide 4 / 7 • Flexible Strategies</span>
+					<h2 class="it-slide-title">{t.s4Title}</h2>
+					<p class="it-slide-desc">{t.s4Desc}</p>
+				</div>
+
+				<div class="it-dual-grid">
+					<div class="it-card it-sim-box">
+						<div class="it-card-header">
+							<span class="it-card-label">Lista de Empleados: Reordenamiento Dinámico</span>
+							<span class="it-badge" id="it-current-sort-badge">Orden: Por Edad</span>
+						</div>
+
+						<div class="it-action-bar">
+							<button type="button" class="it-btn it-btn-primary is-active" id="it-btn-sort-age">Ordenar por Edad</button>
+							<button type="button" class="it-btn it-btn-secondary" id="it-btn-sort-salary">Ordenar por Salario</button>
+							<button type="button" class="it-btn it-btn-secondary" id="it-btn-sort-name">Ordenar por Nombre</button>
+						</div>
+
+						<!-- Cards list -->
+						<div class="it-cards-stack" id="it-cards-stack">
+							<!-- Rendered via JS -->
+						</div>
+					</div>
+
+					<div class="it-card it-theory-box">
+						<h3 class="it-card-title">Encadenamiento con Lambdas en Java 8+</h3>
+						<div class="it-code-block">
+							<pre><code>// Orden por salario descendente, luego por apellido
+Comparator&lt;Empleado&gt; comp = Comparator
+    .comparing(Empleado::getSalario)
+    .reversed()
+    .thenComparing(Empleado::getApellido);
+
+// Aplicar a lista:
+empleados.sort(comp);
+
+// O en Stream:
+empleados.stream()
+    .sorted(comp)
+    .forEach(System.out::println);</code></pre>
+						</div>
+						<div class="it-callout">
+							<strong>Comparable vs Comparator:</strong> Comparable define el orden por defecto <em>dentro</em> de la clase. Comparator define estrategias externas <em>fuera</em> de la clase sin tocar su código.
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 5: EL CONTRATO EQUALS -->
+			<article class="it-slide" data-slide="5">
+				<div class="it-slide-header">
+					<span class="it-slide-tag tag tag-accent">Slide 5 / 7 • Object Identity</span>
+					<h2 class="it-slide-title">{t.s5Title}</h2>
+					<p class="it-slide-desc">{t.s5Desc}</p>
+				</div>
+
+				<div class="it-dual-grid">
+					<div class="it-card it-rules-box">
+						<div class="it-card-header">
+							<span class="it-card-label">Los 5 Mandamientos de equals(Object o)</span>
+							<span class="it-badge text-accent">Java Language Spec</span>
+						</div>
+
+						<ul class="it-rules-list">
+							<li>
+								<span class="it-rule-num">1</span>
+								<div>
+									<strong>Reflexiva:</strong> <code>x.equals(x)</code> debe retornar <code>true</code> siempre.
+								</div>
+							</li>
+							<li>
+								<span class="it-rule-num">2</span>
+								<div>
+									<strong>Simétrica:</strong> <code>x.equals(y)</code> debe retornar lo mismo que <code>y.equals(x)</code>.
+								</div>
+							</li>
+							<li>
+								<span class="it-rule-num">3</span>
+								<div>
+									<strong>Transitiva:</strong> Si <code>x.equals(y)</code> y <code>y.equals(z)</code>, entonces <code>x.equals(z)</code>.
+								</div>
+							</li>
+							<li>
+								<span class="it-rule-num">4</span>
+								<div>
+									<strong>Consistente:</strong> Múltiples llamadas retornan lo mismo salvo que se mute el objeto.
+								</div>
+							</li>
+							<li>
+								<span class="it-rule-num">5</span>
+								<div>
+									<strong>Null-check:</strong> <code>x.equals(null)</code> debe retornar <code>false</code> (nunca lanzar NullPointerException).
+								</div>
+							</li>
+						</ul>
+					</div>
+
+					<div class="it-card it-danger-box">
+						<h3 class="it-card-title">La Trampa Mortal de `instanceof` en Subclases</h3>
+						<div class="it-code-block">
+							<pre><code>// Punto(x, y) usa instanceof
+Punto p = new Punto(1, 2);
+PuntoColor pc = new PuntoColor(1, 2, "Rojo");
+
+// ¡Rompe la simetría!
+p.equals(pc);  // true (pc es instanceof Punto)
+pc.equals(p);  // false (p no tiene color)
+
+// Solución canónica:
+if (this.getClass() != obj.getClass()) 
+    return false;</code></pre>
+						</div>
+						<div class="it-callout">
+							<strong>Regla arquitectónica:</strong> No hay forma perfecta de extender una clase instanciable y agregarle un nuevo componente de valor preservando la simetría y transitividad de `equals` si se usa `instanceof`. Preferí composición sobre herencia.
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 6: CONTRATO DE ORO EQUALS Y HASHCODE -->
+			<article class="it-slide" data-slide="6">
+				<div class="it-slide-header">
+					<span class="it-slide-tag tag tag-accent">Slide 6 / 7 • The Golden Rule</span>
+					<h2 class="it-slide-title">{t.s6Title}</h2>
+					<p class="it-slide-desc">{t.s6Desc}</p>
+				</div>
+
+				<div class="it-dual-grid">
+					<!-- Interactive HashSet simulator -->
+					<div class="it-card it-sim-box">
+						<div class="it-card-header">
+							<span class="it-card-label">Búsqueda en HashSet: set.contains(new Producto("A1", 50))</span>
+							<span class="it-badge" id="it-hash-badge">Modo: Con Violación de Hash</span>
+						</div>
+
+						<div class="it-toggle-bar">
+							<label class="it-switch-label">
+								<input type="checkbox" id="it-chk-hashcode" />
+								<span>Sobrescribir hashCode() coherentemente</span>
+							</label>
+						</div>
+
+						<div class="it-buckets-visual" id="it-buckets-hash-demo">
+							<!-- 4 Buckets: 0, 1, 2, 3 -->
+							<div class="it-bucket-col" id="it-bcol-0">
+								<span class="it-b-header">Bucket [0]</span>
+								<div class="it-b-slot">vacio</div>
+							</div>
+							<div class="it-bucket-col" id="it-bcol-1">
+								<span class="it-b-header">Bucket [1]</span>
+								<div class="it-b-slot" id="it-b1-item">
+									<strong>Producto("A1")</strong>
+									<span class="it-b-addr">addr: 0x9AF1</span>
+								</div>
+							</div>
+							<div class="it-bucket-col" id="it-bcol-2">
+								<span class="it-b-header">Bucket [2]</span>
+								<div class="it-b-slot">vacio</div>
+							</div>
+							<div class="it-bucket-col" id="it-bcol-3">
+								<span class="it-b-header">Bucket [3]</span>
+								<div class="it-b-slot" id="it-b3-item" style="display: none;">
+									<strong>Producto("A1")</strong>
+									<span class="it-b-addr">addr: 0x22C0</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="it-action-bar">
+							<button type="button" class="it-btn it-btn-primary" id="it-btn-test-contains">Probar set.contains(pNuevo)</button>
+						</div>
+
+						<div class="it-status-banner" id="it-hash-log">
+							Sobrescribiste equals() pero NO hashCode(). El objeto insertado usó su dirección de memoria (Bucket 1).
+						</div>
+					</div>
+
+					<div class="it-card it-theory-box">
+						<h3 class="it-card-title">El Contrato Formal de Java</h3>
+						<div class="it-callout">
+							<strong>1. Si dos objetos son iguales por equals():</strong><br />
+							<code>a.equals(b) == true &rArr; a.hashCode() == b.hashCode()</code> (MANDATORIO).
+						</div>
+						<div class="it-callout">
+							<strong>2. Si dos objetos tienen diferente hashCode():</strong><br />
+							Son distintos con total certeza. El Set ni siquiera revisa el bucket.
+						</div>
+						<div class="it-callout">
+							<strong>3. Si tienen el mismo hashCode() pero son distintos:</strong><br />
+							Es una colisión normal. Se resuelve comparando con <code>equals()</code> dentro del bucket.
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 7: CLAVES MUTABLES (OBJETO ATRAPADO) -->
+			<article class="it-slide" data-slide="7">
+				<div class="it-slide-header">
+					<span class="it-slide-tag tag tag-accent">Slide 7 / 7 • Silent Memory Leaks</span>
+					<h2 class="it-slide-title">{t.s7Title}</h2>
+					<p class="it-slide-desc">{t.s7Desc}</p>
+				</div>
+
+				<div class="it-dual-grid">
+					<div class="it-card it-sim-box">
+						<div class="it-card-header">
+							<span class="it-card-label">El Objeto Fantasma en el Bucket</span>
+							<span class="it-badge is-error">Fuga de Memoria</span>
+						</div>
+
+						<div class="it-trap-diagram">
+							<div class="it-trap-step">
+								<strong>1. Inserción Inicial:</strong>
+								<p class="it-small-text"><code>p = new Persona("Carlos"); set.add(p);</code><br />
+								"Carlos".hashCode() apunta al <strong>Bucket [2]</strong>. El objeto descansa ahí.</p>
+							</div>
+							<div class="it-trap-step">
+								<strong>2. Mutación Prohibida:</strong>
+								<p class="it-small-text"><code>p.setNombre("Alberto");</code><br />
+								El objeto muta en el Heap. Ahora su nuevo hash apunta al <strong>Bucket [6]</strong>, pero el objeto <em>sigue físicamente atrapado en la cubeta 2</em>.</p>
+							</div>
+							<div class="it-trap-step">
+								<strong>3. Búsqueda y Borrado Rotos:</strong>
+								<p class="it-small-text"><code>set.contains(p)</code> calcula el hash de "Alberto", busca en Bucket 6 (¡está vacío!). Retorna <code>false</code>. Tampoco podés borrarlo con <code>set.remove(p)</code>.</p>
+							</div>
+						</div>
+
+						<div class="it-action-bar">
+							<button type="button" class="it-btn it-btn-primary" id="it-btn-trap-demo">Simular Mutación y Búsqueda</button>
+							<button type="button" class="it-btn it-btn-ghost" id="it-btn-trap-reset">↺ {t.reset}</button>
+						</div>
+
+						<div class="it-status-banner" id="it-trap-log">
+							Presiona simular para observar cómo mutar una propiedad rompe la colección hash.
+						</div>
+					</div>
+
+					<div class="it-card it-theory-box">
+						<h3 class="it-card-title">Regla de Diseño Inviolable</h3>
+						<div class="it-callout">
+							<strong>Claves Inmutables Siempre:</strong><br />
+							Toda clase utilizada como clave en un <code>Map</code> o elemento en un <code>Set</code> debe ser <strong>inmutable</strong> (o al menos los campos que participan en <code>hashCode()</code> y <code>equals()</code> deben ser <code>final</code>).
+						</div>
+						<div class="it-code-block">
+							<pre><code>// Diseño seguro: Java 14+ Record
+public record UsuarioId(String codigo, int sucursal) &#123;
+    // Inmutable por diseño: 
+    // equals() y hashCode() generados de forma 
+    // coherente y determinística.
+&#125;</code></pre>
+						</div>
+					</div>
+				</div>
+			</article>
+		</main>
+	</div>
+</section>
+
+<script>
+	function setupIteradoresPresentation() {
+		// --- SLIDES NAVIGATION ---
+		const slides = document.querySelectorAll<HTMLElement>('.it-slide');
+		const prevBtn = document.getElementById('it-prev-btn') as HTMLButtonElement | null;
+		const nextBtn = document.getElementById('it-next-btn') as HTMLButtonElement | null;
+		const counter = document.getElementById('it-slide-counter');
+		const progressBar = document.getElementById('it-progress-bar');
+		let currentSlide = 1;
+		const totalSlides = slides.length;
+
+		function goToSlide(index: number) {
+			if (index < 1 || index > totalSlides) return;
+			currentSlide = index;
+			slides.forEach((s) => {
+				const sIndex = Number(s.dataset.slide);
+				s.classList.toggle('active', sIndex === currentSlide);
+			});
+
+			if (prevBtn) prevBtn.disabled = currentSlide === 1;
+			if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+			if (counter) counter.textContent = `${currentSlide} de ${totalSlides}`;
+			if (progressBar) {
+				const pct = (currentSlide / totalSlides) * 100;
+				progressBar.style.width = `${pct}%`;
+			}
+		}
+
+		prevBtn?.addEventListener('click', () => goToSlide(currentSlide - 1));
+		nextBtn?.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+		document.addEventListener('keydown', (e) => {
+			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+			if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+			if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+		});
+
+		// --- SLIDE 1: ITERATOR CURSOR ---
+		let cursorIdx = 0;
+		const tapeCells = [
+			document.getElementById('it-c0'),
+			document.getElementById('it-c1'),
+			document.getElementById('it-c2'),
+			document.getElementById('it-c3'),
+		];
+		const cursorBadge = document.getElementById('it-cursor-badge');
+		const cursorLog = document.getElementById('it-cursor-log');
+		const cursorIndicator = document.getElementById('it-cursor-indicator');
+
+		function updateCursor() {
+			tapeCells.forEach((c, i) => {
+				if (!c) return;
+				c.classList.toggle('is-current', i === cursorIdx);
+			});
+			if (cursorBadge) cursorBadge.textContent = `Cursor: Posición ${cursorIdx}`;
+			if (cursorIndicator) {
+				cursorIndicator.style.transform = `translateX(${cursorIdx * 70}px)`;
+			}
+		}
+
+		document.getElementById('it-btn-it-next')?.addEventListener('click', () => {
+			if (cursorIdx < 4) {
+				cursorIdx++;
+				updateCursor();
+				if (cursorIdx === 4) {
+					if (cursorLog) cursorLog.textContent = 'it.hasNext() == false. Fin de la colección. Llamar a next() ahora lanzaría NoSuchElementException.';
+				} else {
+					if (cursorLog) cursorLog.textContent = `it.next() retornó el elemento [${cursorIdx - 1}]. El cursor avanzó a la siguiente casilla.`;
+				}
+			}
+		});
+
+		document.getElementById('it-btn-it-reset')?.addEventListener('click', () => {
+			cursorIdx = 0;
+			updateCursor();
+			if (cursorLog) cursorLog.textContent = 'Iterador reiniciado a la posición inicial [0]. hasNext() == true.';
+		});
+
+		// --- SLIDE 2: CONCURRENT MODIFICATION EXCEPTION ---
+		let modCount = 5;
+		let expectedModCount = 5;
+		const odoList = document.getElementById('it-odo-list');
+		const odoIt = document.getElementById('it-odo-it');
+		const odoComp = document.getElementById('it-odo-comp');
+		const modStatusBadge = document.getElementById('it-mod-status-badge');
+		const modLog = document.getElementById('it-mod-log');
+
+		function renderOdometers() {
+			if (odoList) odoList.textContent = String(modCount);
+			if (odoIt) odoIt.textContent = String(expectedModCount);
+
+			if (modCount === expectedModCount) {
+				if (odoComp) {
+					odoComp.textContent = '==';
+					odoComp.className = 'it-odo-comparator';
+				}
+				if (modStatusBadge) {
+					modStatusBadge.textContent = `Sincronizados (${modCount} == ${expectedModCount})`;
+					modStatusBadge.className = 'it-badge text-accent';
+				}
+			} else {
+				if (odoComp) {
+					odoComp.textContent = '!=';
+					odoComp.className = 'it-odo-comparator is-error';
+				}
+				if (modStatusBadge) {
+					modStatusBadge.textContent = `¡Desincronizados! (${modCount} != ${expectedModCount})`;
+					modStatusBadge.className = 'it-badge is-error';
+				}
+			}
+		}
+
+		document.getElementById('it-btn-safe-next')?.addEventListener('click', () => {
+			if (modCount !== expectedModCount) {
+				if (modLog) modLog.innerHTML = '<strong>¡CRASH!</strong> <code>checkForComodification()</code> detectó <code>modCount != expectedModCount</code> y lanzó <code>ConcurrentModificationException</code>.';
+			} else {
+				if (modLog) modLog.textContent = 'it.next() ejecutado con éxito. Ambos odómetros coinciden en 5.';
+			}
+		});
+
+		document.getElementById('it-btn-safe-remove')?.addEventListener('click', () => {
+			if (modCount !== expectedModCount) {
+				if (modLog) modLog.innerHTML = '<strong>¡CRASH!</strong> No podés operar un iterador ya desincronizado.';
+				return;
+			}
+			modCount++;
+			expectedModCount++;
+			renderOdometers();
+			if (modLog) modLog.textContent = `it.remove(): La lista mutó (modCount = ${modCount}), y el iterador actualizó su expectedModCount = ${expectedModCount}. Continúa en armonía.`;
+		});
+
+		document.getElementById('it-btn-illegal-remove')?.addEventListener('click', () => {
+			modCount++; // List mutated directly, iterator is unaware
+			renderOdometers();
+			if (modLog) modLog.innerHTML = `<strong>¡MUTACIÓN ILEGAL!</strong> Se llamó a <code>lista.remove()</code> directamente. <code>modCount</code> subió a ${modCount}, pero el iterador sigue creyendo que es ${expectedModCount}. El próximo <code>it.next()</code> va a explotar.`;
+		});
+
+		document.getElementById('it-btn-reset-mod')?.addEventListener('click', () => {
+			modCount = 5;
+			expectedModCount = 5;
+			renderOdometers();
+			if (modLog) modLog.textContent = 'Odómetros reiniciados al estado base sincronizado (5 == 5).';
+		});
+
+		// --- SLIDE 3: COMPARABLE BALANCE SCALE ---
+		const gradeA = document.getElementById('it-grade-a') as HTMLInputElement | null;
+		const gradeB = document.getElementById('it-grade-b') as HTMLInputElement | null;
+		const scaleBeam = document.getElementById('it-scale-beam');
+		const scaleBadge = document.getElementById('it-scale-badge');
+		const scaleMath = document.getElementById('it-scale-math');
+		const scaleLog = document.getElementById('it-scale-log');
+
+		function updateScale() {
+			const a = parseInt(gradeA?.value || '8', 10);
+			const b = parseInt(gradeB?.value || '6', 10);
+			const diff = a - b;
+
+			const angle = Math.max(-15, Math.min(15, -diff * 3));
+			if (scaleBeam) {
+				scaleBeam.setAttribute('transform', `rotate(${angle} 150 150)`);
+			}
+
+			if (scaleMath) {
+				scaleMath.textContent = `${a} - ${b} = ${diff > 0 ? '+' : ''}${diff}`;
+			}
+
+			if (diff > 0) {
+				if (scaleBadge) scaleBadge.textContent = `Resultado: +${diff} (A > B)`;
+				if (scaleLog) scaleLog.textContent = `compareTo retornó +${diff}. A tiene mayor nota que B, por lo que A va DESPUÉS en orden ascendente.`;
+			} else if (diff < 0) {
+				if (scaleBadge) scaleBadge.textContent = `Resultado: ${diff} (A < B)`;
+				if (scaleLog) scaleLog.textContent = `compareTo retornó ${diff}. A tiene menor nota que B, por lo que A va ANTES en orden ascendente.`;
+			} else {
+				if (scaleBadge) scaleBadge.textContent = 'Resultado: 0 (A == B)';
+				if (scaleLog) scaleLog.textContent = 'compareTo retornó 0. A y B tienen la misma nota (empate de orden natural).';
+			}
+		}
+
+		gradeA?.addEventListener('input', updateScale);
+		gradeB?.addEventListener('input', updateScale);
+
+		// --- SLIDE 4: COMPARATOR MULTI-SORT ---
+		interface Employee {
+			id: number;
+			name: string;
+			age: number;
+			salary: number;
+		}
+
+		const employees: Employee[] = [
+			{ id: 1, name: 'Lucas Rossi', age: 34, salary: 4500 },
+			{ id: 2, name: 'Ana Gomez', age: 24, salary: 6200 },
+			{ id: 3, name: 'Belen Perez', age: 29, salary: 3800 },
+			{ id: 4, name: 'Carlos Diaz', age: 42, salary: 5100 },
+		];
+
+		const cardsStack = document.getElementById('it-cards-stack');
+		const currentSortBadge = document.getElementById('it-current-sort-badge');
+
+		function renderEmployees(list: Employee[]) {
+			if (!cardsStack) return;
+			cardsStack.innerHTML = '';
+			list.forEach((emp, rank) => {
+				const card = document.createElement('div');
+				card.className = 'it-emp-card';
+				card.innerHTML = `
+					<span class="it-emp-rank">#${rank + 1}</span>
+					<div class="it-emp-details">
+						<strong>${emp.name}</strong>
+						<span class="it-small-text">Edad: ${emp.age} años | Salario: $${emp.salary}</span>
+					</div>
+				`;
+				cardsStack.appendChild(card);
+			});
+		}
+
+		document.getElementById('it-btn-sort-age')?.addEventListener('click', () => {
+			const sorted = [...employees].sort((a, b) => a.age - b.age);
+			renderEmployees(sorted);
+			if (currentSortBadge) currentSortBadge.textContent = 'Orden: Por Edad (Ascendente)';
+		});
+
+		document.getElementById('it-btn-sort-salary')?.addEventListener('click', () => {
+			const sorted = [...employees].sort((a, b) => b.salary - a.salary);
+			renderEmployees(sorted);
+			if (currentSortBadge) currentSortBadge.textContent = 'Orden: Por Salario (Descendente)';
+		});
+
+		document.getElementById('it-btn-sort-name')?.addEventListener('click', () => {
+			const sorted = [...employees].sort((a, b) => a.name.localeCompare(b.name));
+			renderEmployees(sorted);
+			if (currentSortBadge) currentSortBadge.textContent = 'Orden: Por Nombre (Alfabético)';
+		});
+
+		renderEmployees(employees);
+
+		// --- SLIDE 6: EQUALS & HASHCODE IN HASHSET ---
+		const chkHashCode = document.getElementById('it-chk-hashcode') as HTMLInputElement | null;
+		const hashBadge = document.getElementById('it-hash-badge');
+		const hashLog = document.getElementById('it-hash-log');
+		const b3Item = document.getElementById('it-b3-item');
+		const bcol1 = document.getElementById('it-bcol-1');
+		const bcol3 = document.getElementById('it-bcol-3');
+
+		chkHashCode?.addEventListener('change', () => {
+			const isGood = chkHashCode.checked;
+			if (hashBadge) {
+				hashBadge.textContent = isGood ? 'Modo: Contrato Cumplido (Hash Coherente)' : 'Modo: Con Violación de Hash';
+				hashBadge.className = isGood ? 'it-badge text-accent' : 'it-badge is-error';
+			}
+			if (hashLog) {
+				hashLog.textContent = isGood
+					? 'Sobrescribiste hashCode() basándote en el código del producto. Objetos iguales caerán en el mismo bucket.'
+					: 'Sobrescribiste equals() pero NO hashCode(). Objetos iguales caerán en buckets distintos por su dirección de memoria.';
+			}
+			if (bcol1) bcol1.classList.remove('is-found', 'is-not-found');
+			if (bcol3) bcol3.classList.remove('is-found', 'is-not-found');
+		});
+
+		document.getElementById('it-btn-test-contains')?.addEventListener('click', () => {
+			const isGood = chkHashCode?.checked ?? false;
+			if (isGood) {
+				// Success: both land in Bucket 1
+				if (bcol1) bcol1.classList.add('is-found');
+				if (bcol3) bcol3.classList.remove('is-not-found');
+				if (b3Item) b3Item.style.display = 'none';
+				if (hashLog) {
+					hashLog.innerHTML = '<strong>¡ÉXITO!</strong> <code>new Producto("A1", 50)</code> calculó el mismo hash y fue a buscar directamente al <strong>Bucket [1]</strong>. Se llamó a <code>equals()</code> y retornó <code>true</code>.';
+				}
+			} else {
+				// Failure: searches in Bucket 3 because of different memory address
+				if (bcol1) bcol1.classList.remove('is-found');
+				if (bcol3) {
+					bcol3.classList.add('is-not-found');
+				}
+				if (b3Item) b3Item.style.display = 'block';
+				if (hashLog) {
+					hashLog.innerHTML = '<strong>¡FALLO SILENCIOSO!</strong> El nuevo objeto tiene otra dirección de memoria y su hash apunta al <strong>Bucket [3]</strong> (que está vacío). <code>contains()</code> dice que NO existe aunque está adentro en el Bucket [1].';
+				}
+			}
+		});
+
+		// --- SLIDE 7: MUTABLE KEYS DEMO ---
+		const trapLog = document.getElementById('it-trap-log');
+		document.getElementById('it-btn-trap-demo')?.addEventListener('click', () => {
+			if (trapLog) {
+				trapLog.innerHTML = '<strong>Mutación ejecutada:</strong> <code>persona.setNombre("Alberto")</code>. Buscamos <code>set.contains("Alberto")</code> &rarr; Hash apunta a Bucket [6] (vacío). Buscamos <code>set.contains("Carlos")</code> &rarr; Hash apunta a Bucket [2], pero el objeto dice llamarse "Alberto", fallando equals(). <strong>¡El objeto quedó atrapado e irrecuperable!</strong>';
+			}
+		});
+
+		document.getElementById('it-btn-trap-reset')?.addEventListener('click', () => {
+			if (trapLog) trapLog.textContent = 'Simulador reiniciado. El objeto está sano en su cubeta original.';
+		});
+	}
+
+	setupIteradoresPresentation();
+	document.addEventListener('astro:page-load', setupIteradoresPresentation);
+</script>
+
+<style>
+	.it-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.it-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.it-nav-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		background: var(--color-surface);
+		border-bottom: 1px solid var(--color-divider);
+		gap: var(--space-4);
+	}
+
+	.it-kicker {
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-accent-700);
+		display: block;
+	}
+
+	.it-main-title {
+		font-family: var(--font-heading);
+		font-size: 1.15rem;
+		margin: 0;
+		color: var(--color-text);
+	}
+
+	.it-nav-controls {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	.it-counter {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+		min-width: 60px;
+		text-align: center;
+	}
+
+	.it-progress-track {
+		height: 4px;
+		background: var(--color-divider);
+		width: 100%;
+	}
+
+	.it-progress-bar {
+		height: 100%;
+		background: var(--color-accent);
+		transition: width 0.25s ease;
+	}
+
+	.it-viewport {
+		flex: 1;
+		width: 100%;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: var(--space-6) var(--space-4);
+	}
+
+	.it-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	.it-slide {
+		display: none;
+		flex-direction: column;
+		gap: var(--space-5);
+		animation: itFade 0.25s ease forwards;
+	}
+
+	.it-slide.active {
+		display: flex;
+	}
+
+	@keyframes itFade {
+		from {
+			opacity: 0;
+			transform: translateY(4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.it-slide-header {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.it-slide-title {
+		font-family: var(--font-heading);
+		font-size: 1.5rem;
+		color: var(--color-text);
+		margin: 0;
+	}
+
+	.it-slide-desc {
+		color: var(--color-text-muted);
+		margin: 0;
+		font-size: 0.95rem;
+		line-height: 1.5;
+	}
+
+	.it-dual-grid {
+		display: grid;
+		grid-template-columns: 1.2fr 1fr;
+		gap: var(--space-5);
+		align-items: stretch;
+	}
+
+	.it-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.it-card-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		border-bottom: 1px solid var(--color-divider);
+		padding-bottom: var(--space-2);
+	}
+
+	.it-card-label {
+		font-weight: 700;
+		font-size: 0.9rem;
+		color: var(--color-text);
+	}
+
+	.it-card-title {
+		font-family: var(--font-heading);
+		font-size: 1.1rem;
+		margin: 0;
+	}
+
+	.it-badge {
+		font-size: 0.75rem;
+		font-weight: 600;
+		padding: 2px 8px;
+		border-radius: var(--radius-sm);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+	}
+
+	.it-badge.text-accent {
+		color: var(--color-accent-700);
+		border-color: var(--color-accent);
+	}
+
+	.it-badge.is-error {
+		color: var(--color-accent-700);
+		background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+		border-color: var(--color-accent);
+	}
+
+	/* SLIDE 1 CURSOR TRACK */
+	.it-cursor-track-wrap {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3);
+	}
+
+	.it-tape-cells {
+		display: flex;
+		gap: var(--space-2);
+	}
+
+	.it-cell {
+		flex: 1;
+		height: 50px;
+		background: var(--color-surface);
+		border: 1.5px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		font-weight: 700;
+		transition: all 0.2s ease;
+	}
+
+	.it-cell.is-current {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 15%, var(--color-surface));
+		box-shadow: 0 2px 4px color-mix(in srgb, var(--color-accent) 20%, transparent);
+	}
+
+	.it-c-idx {
+		font-size: 0.65rem;
+		color: var(--color-text-muted);
+	}
+
+	.it-cursor-pointer {
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		font-family: var(--font-mono);
+		transition: transform 0.2s ease;
+	}
+
+	/* ODOMETERS */
+	.it-odometers-row {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-4);
+		padding: var(--space-3) 0;
+	}
+
+	.it-odometer-tile {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+		min-width: 140px;
+	}
+
+	.it-odo-label {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.it-odo-val {
+		font-family: var(--font-mono);
+		font-size: 2rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	.it-odo-sub {
+		font-size: 0.7rem;
+		color: var(--color-text-muted);
+	}
+
+	.it-odo-comparator {
+		font-family: var(--font-mono);
+		font-size: 1.5rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	.it-odo-comparator.is-error {
+		color: var(--color-accent-700);
+	}
+
+	/* SCALE */
+	.it-scale-diagram-wrap {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.it-scale-svg {
+		width: 240px;
+		height: 120px;
+	}
+
+	.it-scale-controls {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		gap: var(--space-2);
+	}
+
+	.it-pan-control {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
+
+	.it-scale-math {
+		font-family: var(--font-mono);
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	/* EMPLOYEES LIST */
+	.it-cards-stack {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.it-emp-card {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-2) var(--space-3);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+	}
+
+	.it-emp-rank {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.9rem;
+		color: var(--color-accent-700);
+	}
+
+	.it-emp-details {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	/* EQUALS RULES LIST */
+	.it-rules-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.it-rules-list li {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--space-3);
+		font-size: 0.85rem;
+		line-height: 1.4;
+	}
+
+	.it-rule-num {
+		width: 22px;
+		height: 22px;
+		border-radius: 999px;
+		background: var(--color-accent);
+		color: var(--color-bg);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		font-size: 0.75rem;
+		flex-shrink: 0;
+	}
+
+	/* BUCKETS DEMO */
+	.it-toggle-bar {
+		display: flex;
+		align-items: center;
+		padding: var(--space-2) 0;
+	}
+
+	.it-switch-label {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 0.85rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.it-buckets-visual {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: var(--space-2);
+	}
+
+	.it-bucket-col {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		transition: all 0.2s ease;
+	}
+
+	.it-bucket-col.is-found {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 15%, var(--color-bg));
+	}
+
+	.it-bucket-col.is-not-found {
+		border-color: var(--color-accent-700);
+		background: color-mix(in srgb, var(--color-accent) 20%, var(--color-bg));
+	}
+
+	.it-b-header {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.it-b-slot {
+		padding: var(--space-2);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: 3px;
+		font-size: 0.75rem;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.it-b-addr {
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		color: var(--color-accent-700);
+	}
+
+	/* TRAP STEPS */
+	.it-trap-diagram {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.it-trap-step {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2) var(--space-3);
+	}
+
+	/* GENERIC ATOMS */
+	.it-specs-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-2);
+	}
+
+	.it-spec-tile {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.it-spec-k {
+		font-size: 0.7rem;
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+		font-weight: 600;
+	}
+
+	.it-spec-v {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		font-weight: 700;
+	}
+
+	.it-action-bar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-items: center;
+	}
+
+	.it-input {
+		padding: var(--space-1) var(--space-2);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		color: var(--color-text);
+		max-width: 70px;
+	}
+
+	.it-btn {
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-sm);
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.15s ease, border-color 0.15s ease;
+		border: 1px solid transparent;
+		font-family: var(--font-body);
+	}
+
+	.it-btn-primary {
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.it-btn-primary:hover {
+		background: var(--color-accent-700);
+	}
+
+	.it-btn-secondary {
+		background: var(--color-surface);
+		color: var(--color-text);
+		border-color: var(--color-divider);
+	}
+
+	.it-btn-secondary:hover {
+		border-color: var(--color-accent);
+	}
+
+	.it-btn-outline {
+		background: transparent;
+		color: var(--color-text);
+		border-color: var(--color-divider);
+	}
+
+	.it-btn-outline:hover {
+		border-color: var(--color-accent);
+	}
+
+	.it-btn-ghost {
+		background: transparent;
+		color: var(--color-text-muted);
+	}
+
+	.it-btn-ghost:hover {
+		color: var(--color-text);
+	}
+
+	.it-status-banner {
+		font-size: 0.8rem;
+		padding: var(--space-2);
+		background: var(--color-bg);
+		border-left: 3px solid var(--color-accent);
+		color: var(--color-text);
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+
+	.it-code-block {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3);
+		overflow-x: auto;
+	}
+
+	.it-code-block pre {
+		margin: 0;
+	}
+
+	.it-code-block code {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		line-height: 1.45;
+		color: var(--color-text);
+	}
+
+	.it-callout {
+		font-size: 0.85rem;
+		line-height: 1.45;
+		padding: var(--space-3);
+		background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+		border-left: 3px solid var(--color-accent);
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+
+	.it-small-text {
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+		margin: 0;
+	}
+
+	.text-accent {
+		color: var(--color-accent-700);
+	}
+
+	/* RESPONSIVE & WIDE SCREEN QUERIES */
+	@media (max-width: 900px) {
+		.it-dual-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (min-width: 1440px) { .it-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .it-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .it-viewport { zoom: 1.25; } }
+</style>

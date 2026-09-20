@@ -27,6 +27,29 @@ import SwitchPasoAPaso from '../../components/presentaciones/switch-paso-a-paso.
 import TiposDeDatosEnJavascript from '../../components/presentaciones/tipos_de_datos_en_javascript.astro';
 import VariablesYConstantes from '../../components/presentaciones/variables_y_constantes.astro';
 import WhilePasoAPaso from '../../components/presentaciones/while-paso-a-paso.astro';
+import ConceptosBasicosJvmJava from '../../components/presentaciones/conceptos-basicos-jvm-java.astro';
+import VariablesTiposDatosOperadoresJava from '../../components/presentaciones/variables-tipos-datos-operadores-java.astro';
+import ControlFlujoBuclesJava from '../../components/presentaciones/control-flujo-bucles-java.astro';
+import ArraysStringsMemoriaJava from '../../components/presentaciones/arrays-strings-memoria-java.astro';
+import FundamentosPooClasesObjetosJava from '../../components/presentaciones/fundamentos-poo-clases-objetos-java.astro';
+import ConstructoresEncapsulamientoJava from '../../components/presentaciones/constructores-encapsulamiento-java.astro';
+import ArraysDeObjetosJava from '../../components/presentaciones/arrays-de-objetos-java.astro';
+import HerenciaPolimorfismoSobrecargaJava from '../../components/presentaciones/herencia-polimorfismo-sobrecarga-java.astro';
+import ClasesAbstractasInterfacesJava from '../../components/presentaciones/clases-abstractas-interfaces-java.astro';
+import ExcepcionesManejoErroresJava from '../../components/presentaciones/excepciones-manejo-errores-java.astro';
+import TadListasEnlazadasJava from '../../components/presentaciones/tad-listas-enlazadas-java.astro';
+import TadPilasColasJava from '../../components/presentaciones/tad-pilas-colas-java.astro';
+import CollectionsFrameworkGenericosJava from '../../components/presentaciones/collections-framework-genericos-java.astro';
+import IteradoresOrdenamientoEqualsHashcodeJava from '../../components/presentaciones/iteradores-ordenamiento-equals-hashcode-java.astro';
+import TadArbolesBinariosBusquedaJava from '../../components/presentaciones/tad-arboles-binarios-busqueda-java.astro';
+import GrafosAlgoritmosJava from '../../components/presentaciones/grafos-algoritmos-java.astro';
+import ArchivosPersistenciaJarJava from '../../components/presentaciones/archivos-persistencia-jar-java.astro';
+import ConcurrenciaHilosPoolsJava from '../../components/presentaciones/concurrencia-hilos-pools-java.astro';
+import AccesoDatosJdbcJava from '../../components/presentaciones/acceso-datos-jdbc-java.astro';
+import TestingJunitSpringBootJava from '../../components/presentaciones/testing-junit-spring-boot-java.astro';
+import AlgoritmiaVerificacionComplejidadJava from '../../components/presentaciones/algoritmia-verificacion-complejidad-java.astro';
+import ArbolesNAriosVectoresJava from '../../components/presentaciones/arboles-n-arios-vectores-java.astro';
+import DepuracionCodigoLimpioJava from '../../components/presentaciones/depuracion-codigo-limpio-java.astro';
 
 export function getStaticPaths() {
 	return presentations.map((p) => ({
@@ -66,6 +89,29 @@ const componentMap: Record<string, any> = {
 	'tipos_de_datos_en_javascript': TiposDeDatosEnJavascript,
 	'variables_y_constantes': VariablesYConstantes,
 	'while-paso-a-paso': WhilePasoAPaso,
+	'conceptos-basicos-jvm-java': ConceptosBasicosJvmJava,
+	'variables-tipos-datos-operadores-java': VariablesTiposDatosOperadoresJava,
+	'control-flujo-bucles-java': ControlFlujoBuclesJava,
+	'arrays-strings-memoria-java': ArraysStringsMemoriaJava,
+	'fundamentos-poo-clases-objetos-java': FundamentosPooClasesObjetosJava,
+	'constructores-encapsulamiento-java': ConstructoresEncapsulamientoJava,
+	'arrays-de-objetos-java': ArraysDeObjetosJava,
+	'herencia-polimorfismo-sobrecarga-java': HerenciaPolimorfismoSobrecargaJava,
+	'clases-abstractas-interfaces-java': ClasesAbstractasInterfacesJava,
+	'excepciones-manejo-errores-java': ExcepcionesManejoErroresJava,
+	'tad-listas-enlazadas-java': TadListasEnlazadasJava,
+	'tad-pilas-colas-java': TadPilasColasJava,
+	'collections-framework-genericos-java': CollectionsFrameworkGenericosJava,
+	'iteradores-ordenamiento-equals-hashcode-java': IteradoresOrdenamientoEqualsHashcodeJava,
+	'tad-arboles-binarios-busqueda-java': TadArbolesBinariosBusquedaJava,
+	'grafos-algoritmos-java': GrafosAlgoritmosJava,
+	'archivos-persistencia-jar-java': ArchivosPersistenciaJarJava,
+	'concurrencia-hilos-pools-java': ConcurrenciaHilosPoolsJava,
+	'acceso-datos-jdbc-java': AccesoDatosJdbcJava,
+	'testing-junit-spring-boot-java': TestingJunitSpringBootJava,
+	'algoritmia-verificacion-complejidad-java': AlgoritmiaVerificacionComplejidadJava,
+	'arboles-n-arios-vectores-java': ArbolesNAriosVectoresJava,
+	'depuracion-codigo-limpio-java': DepuracionCodigoLimpioJava,
 };
 
 const PresentationComponent = componentMap[slug];

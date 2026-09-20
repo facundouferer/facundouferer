@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="20" y="175" width="360" height="8" rx="4" fill="#dcd3c4"/>
+
+	<!-- Title -->
+	<text x="200" y="26" font-family="'Caprasimo', serif" font-size="13" fill="#8c491a" text-anchor="middle">Concurrencia: Hilos, Locks &amp; Loom</text>
+	<text x="200" y="40" font-family="'Figtree', sans-serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">JMM, Race Conditions, Synchronized, CAS &amp; Virtual Threads</text>
+
+	<!-- Visual Central Section -->
+	<g transform="translate(40, 55)">
+		<!-- Thread 1 (Stack A) -->
+		<g transform="translate(0, 10)">
+			<rect x="0" y="0" width="75" height="70" rx="8" fill="#fdfbf7" stroke="#c67139" stroke-width="2"/>
+			<rect x="0" y="0" width="75" height="18" rx="8" fill="#c67139"/>
+			<text x="37" y="12" font-family="'Figtree', sans-serif" font-weight="700" font-size="8" fill="#fdfbf7" text-anchor="middle">Thread-1 (Stack)</text>
+			<text x="8" y="32" font-family="monospace" font-size="7.5" fill="#2c2a29">temp = read()</text>
+			<text x="8" y="45" font-family="monospace" font-size="7.5" fill="#2c2a29">temp = temp + 1</text>
+			<text x="8" y="58" font-family="monospace" font-size="7.5" fill="#c67139">write(temp)</text>
+		</g>
+
+		<!-- Arrow Thread 1 -> Shared Heap -->
+		<path d="M 78,45 L 115,45" stroke="#c67139" stroke-width="2.5" stroke-dasharray="3,3"/>
+
+		<!-- Shared Heap Object in Center -->
+		<g transform="translate(118, 5)">
+			<rect x="0" y="0" width="84" height="80" rx="10" fill="#fdfbf7" stroke="#8c491a" stroke-width="2.5"/>
+			<rect x="0" y="0" width="84" height="20" rx="10" fill="#8c491a"/>
+			<text x="42" y="14" font-family="'Caprasimo', serif" font-size="8.5" fill="#fdfbf7" text-anchor="middle">Shared Heap</text>
+
+			<text x="42" y="38" font-family="monospace" font-size="8" fill="#2c2a29" text-anchor="middle">Contador</text>
+			<rect x="18" y="44" width="48" height="22" rx="4" fill="#ebddc5"/>
+			<text x="42" y="59" font-family="monospace" font-weight="700" font-size="11" fill="#8c491a" text-anchor="middle">count++</text>
+			<!-- Lock Icon -->
+			<circle cx="70" cy="10" r="6" fill="#c67139"/>
+			<path d="M 67,10 L 73,10 M 70,7 L 70,10" stroke="#fdfbf7" stroke-width="1.5" fill="none"/>
+		</g>
+
+		<!-- Arrow Thread 2 -> Shared Heap -->
+		<path d="M 242,45 L 205,45" stroke="#7a8a5e" stroke-width="2.5" stroke-dasharray="3,3"/>
+
+		<!-- Thread 2 (Stack B) -->
+		<g transform="translate(245, 10)">
+			<rect x="0" y="0" width="75" height="70" rx="8" fill="#fdfbf7" stroke="#7a8a5e" stroke-width="2"/>
+			<rect x="0" y="0" width="75" height="18" rx="8" fill="#7a8a5e"/>
+			<text x="37" y="12" font-family="'Figtree', sans-serif" font-weight="700" font-size="8" fill="#fdfbf7" text-anchor="middle">Thread-2 (Stack)</text>
+			<text x="8" y="32" font-family="monospace" font-size="7.5" fill="#2c2a29">temp = read()</text>
+			<text x="8" y="45" font-family="monospace" font-size="7.5" fill="#2c2a29">temp = temp + 1</text>
+			<text x="8" y="58" font-family="monospace" font-size="7.5" fill="#7a8a5e">write(temp)</text>
+		</g>
+	</g>
+
+	<!-- Labels below -->
+	<text x="85" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#c67139" text-anchor="middle">Race Condition</text>
+	<text x="200" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#8c491a" text-anchor="middle">Monitor &amp; CAS</text>
+	<text x="315" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">Virtual Threads (Loom)</text>
+</svg>

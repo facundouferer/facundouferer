@@ -1,0 +1,1334 @@
+---
+interface Props {
+	lang?: 'es' | 'en';
+}
+
+const { lang = 'es' } = Astro.props;
+
+const t = {
+	es: {
+		kicker: 'Estructuras de Datos Jerárquicas',
+		title: 'TAD Árboles Binarios y Búsqueda (ABB) en Java',
+		subtitle: 'Recorridos DFS/BFS, invariante ABB, inserción, eliminación y balanceo.',
+		slide: 'Diapositiva',
+		of: 'de',
+		prev: 'Anterior',
+		next: 'Siguiente',
+		reset: 'Reiniciar',
+		step: 'Paso',
+		status: 'Estado',
+		code: 'Código Java',
+		s1Title: 'Anatomía y Vocabulario de un Árbol Binario',
+		s1Desc: 'Estructura jerárquica no lineal donde cada nodo tiene a lo sumo dos descendientes: hijo izquierdo e hijo derecho.',
+		s2Title: 'Los 3 Recorridos en Profundidad (DFS)',
+		s2Desc: 'Preorden, Inorden y Postorden: el orden en que se visita la raíz frente a sus subárboles define el propósito del algoritmo.',
+		s3Title: 'Recorrido por Niveles (BFS) con una Cola',
+		s3Desc: 'Exploración horizontal piso por piso orquestada mediante una cola auxiliar FIFO.',
+		s4Title: 'Invariante del Árbol Binario de Búsqueda (ABB)',
+		s4Desc: 'Todo nodo izquierdo es estrictamente menor y todo nodo derecho es mayor. Permite descartar la mitad del árbol en cada comparación.',
+		s5Title: 'Simulador de Inserción en ABB',
+		s5Desc: 'Búsqueda del hueco natural: el nuevo valor desciende comparando hasta hallar un puntero null donde enlazarse.',
+		s6Title: 'Eliminación en ABB: Los 3 Casos Críticos',
+		s6Desc: 'Borrar una hoja, un nodo con un solo hijo o un nodo con dos hijos (sucesor inorden).',
+		s7Title: 'El Problema del Desbalanceo y Rotaciones',
+		s7Desc: 'Insertar datos ordenados degenera el árbol en una lista enlazada O(N). Los árboles balanceados (AVL y Red-Black) previenen esta catástrofe.',
+	},
+	en: {
+		kicker: 'Hierarchical Data Structures',
+		title: 'Binary Trees and Binary Search Trees (BST) in Java',
+		subtitle: 'DFS/BFS traversals, BST invariant, insertion, deletion, and tree balance.',
+		slide: 'Slide',
+		of: 'of',
+		prev: 'Previous',
+		next: 'Next',
+		reset: 'Reset',
+		step: 'Step',
+		status: 'Status',
+		code: 'Java Code',
+		s1Title: 'Binary Tree Anatomy and Core Terminology',
+		s1Desc: 'Non-linear hierarchical structure where each node carries at most two descendants: left child and right child.',
+		s2Title: 'The 3 Depth-First Traversals (DFS)',
+		s2Desc: 'Preorder, Inorder, and Postorder: visiting the root relative to its subtrees defines the algorithm output.',
+		s3Title: 'Breadth-First Level-Order Traversal (BFS) with a Queue',
+		s3Desc: 'Horizontal layer-by-layer exploration coordinated by an auxiliary FIFO queue.',
+		s4Title: 'The Binary Search Tree (BST) Invariant',
+		s4Desc: 'Left subtree values are smaller, right values are greater. Discard half the search space at each comparison.',
+		s5Title: 'Interactive BST Insertion Simulator',
+		s5Desc: 'Descending through comparisons until reaching a null pointer where the new leaf attaches.',
+		s6Title: 'BST Deletion: The 3 Critical Cases',
+		s6Desc: 'Deleting a leaf, a node with 1 child, or a node with 2 children (inorder successor replacement).',
+		s7Title: 'Tree Degeneration and Balanced Trees',
+		s7Desc: 'Sorted insertions degrade trees into O(N) linked lists. Self-balancing trees (AVL and Red-Black) maintain O(log N).',
+	},
+}[lang];
+---
+
+<section class="bb-screen" aria-label="Presentación Árboles Binarios y ABB Java">
+	<div class="bb-shell">
+		<header class="bb-nav-top">
+			<div class="bb-nav-title">
+				<span class="bb-kicker">{t.kicker}</span>
+				<h1 class="bb-main-title">{t.title}</h1>
+			</div>
+			<div class="bb-nav-controls">
+				<button type="button" class="bb-btn bb-btn-secondary" id="bb-prev-btn" aria-label={t.prev}>
+					← {t.prev}
+				</button>
+				<span class="bb-counter" id="bb-slide-counter">1 {t.of} 7</span>
+				<button type="button" class="bb-btn bb-btn-secondary" id="bb-next-btn" aria-label={t.next}>
+					{t.next} →
+				</button>
+			</div>
+		</header>
+
+		<div class="bb-progress-track" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="7">
+			<div class="bb-progress-bar" id="bb-progress-bar" style="width: 14.28%;"></div>
+		</div>
+
+		<main class="bb-viewport">
+			<!-- SLIDE 1: ANATOMÍA DE UN ÁRBOL BINARIO -->
+			<article class="bb-slide active" data-slide="1">
+				<div class="bb-slide-header">
+					<span class="bb-slide-tag tag tag-accent">Slide 1 / 7 • Hierarchical Vocabulary</span>
+					<h2 class="bb-slide-title">{t.s1Title}</h2>
+					<p class="bb-slide-desc">{t.s1Desc}</p>
+				</div>
+
+				<div class="bb-dual-grid">
+					<!-- Interactive SVG Tree -->
+					<div class="bb-card bb-tree-canvas-box">
+						<div class="bb-card-header">
+							<span class="bb-card-label">Árbol de 7 Nodos (Hacé click en cualquier nodo)</span>
+							<span class="bb-badge text-accent">Nodos: 7 | Altura: 3</span>
+						</div>
+
+						<div class="bb-svg-wrap">
+							<svg viewBox="0 0 340 220" class="bb-tree-svg" id="bb-anatomy-svg">
+								<!-- Level guide lines -->
+								<line x1="10" y1="35" x2="330" y2="35" stroke="var(--color-divider)" stroke-dasharray="3 3" />
+								<text x="25" y="30" font-family="var(--font-mono)" font-size="8" fill="var(--color-text-muted)">Nivel 0</text>
+
+								<line x1="10" y1="95" x2="330" y2="95" stroke="var(--color-divider)" stroke-dasharray="3 3" />
+								<text x="25" y="90" font-family="var(--font-mono)" font-size="8" fill="var(--color-text-muted)">Nivel 1</text>
+
+								<line x1="10" y1="165" x2="330" y2="165" stroke="var(--color-divider)" stroke-dasharray="3 3" />
+								<text x="25" y="160" font-family="var(--font-mono)" font-size="8" fill="var(--color-text-muted)">Nivel 2</text>
+
+								<!-- Tree Edges -->
+								<line x1="170" y1="35" x2="100" y2="95" stroke="var(--color-divider)" stroke-width="2.5" />
+								<line x1="170" y1="35" x2="240" y2="95" stroke="var(--color-divider)" stroke-width="2.5" />
+
+								<line x1="100" y1="95" x2="60" y2="165" stroke="var(--color-divider)" stroke-width="2" />
+								<line x1="100" y1="95" x2="135" y2="165" stroke="var(--color-divider)" stroke-width="2" />
+
+								<line x1="240" y1="95" x2="205" y2="165" stroke="var(--color-divider)" stroke-width="2" />
+								<line x1="240" y1="95" x2="275" y2="165" stroke="var(--color-divider)" stroke-width="2" />
+
+								<!-- Node 50 (Root) -->
+								<g class="bb-node-group" data-val="50" data-level="0" data-type="Raíz">
+									<circle cx="170" cy="35" r="18" fill="var(--color-surface)" stroke="var(--color-accent)" stroke-width="2.5" />
+									<text x="170" y="40" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="11" fill="var(--color-text)">50</text>
+								</g>
+
+								<!-- Level 1 Nodes -->
+								<g class="bb-node-group" data-val="30" data-level="1" data-type="Rama interna">
+									<circle cx="100" cy="95" r="16" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="2" />
+									<text x="100" y="100" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="10" fill="var(--color-text)">30</text>
+								</g>
+								<g class="bb-node-group" data-val="70" data-level="1" data-type="Rama interna">
+									<circle cx="240" cy="95" r="16" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="2" />
+									<text x="240" y="100" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="10" fill="var(--color-text)">70</text>
+								</g>
+
+								<!-- Level 2 Leaves -->
+								<g class="bb-node-group" data-val="20" data-level="2" data-type="Hoja">
+									<circle cx="60" cy="165" r="14" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="2" />
+									<text x="60" y="169" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="9" fill="var(--color-text)">20</text>
+								</g>
+								<g class="bb-node-group" data-val="40" data-level="2" data-type="Hoja">
+									<circle cx="135" cy="165" r="14" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="2" />
+									<text x="135" y="169" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="9" fill="var(--color-text)">40</text>
+								</g>
+								<g class="bb-node-group" data-val="60" data-level="2" data-type="Hoja">
+									<circle cx="205" cy="165" r="14" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="2" />
+									<text x="205" y="169" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="9" fill="var(--color-text)">60</text>
+								</g>
+								<g class="bb-node-group" data-val="80" data-level="2" data-type="Hoja">
+									<circle cx="275" cy="165" r="14" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="2" />
+									<text x="275" y="169" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="9" fill="var(--color-text)">80</text>
+								</g>
+							</svg>
+						</div>
+
+						<div class="bb-status-banner" id="bb-node-inspector">
+							Hacé click en cualquier nodo para inspeccionar su rol, nivel y descendientes.
+						</div>
+					</div>
+
+					<!-- Terminology details -->
+					<div class="bb-card bb-theory-box">
+						<h3 class="bb-card-title">Conceptos Fundamentales</h3>
+						<div class="bb-specs-grid">
+							<div class="bb-spec-tile">
+								<span class="bb-spec-k">Raíz (Root)</span>
+								<p class="bb-small-text">El único nodo sin padre (aquí: 50). Punto de entrada a la estructura.</p>
+							</div>
+							<div class="bb-spec-tile">
+								<span class="bb-spec-k">Hojas (Leaves)</span>
+								<p class="bb-small-text">Nodos sin ningún hijo (izq == null &amp;&amp; der == null): 20, 40, 60, 80.</p>
+							</div>
+							<div class="bb-spec-tile">
+								<span class="bb-spec-k">Nivel de un nodo</span>
+								<p class="bb-small-text">Distancia en aristas desde la raíz. La raíz está en nivel 0.</p>
+							</div>
+							<div class="bb-spec-tile">
+								<span class="bb-spec-k">Altura (Height)</span>
+								<p class="bb-small-text">Cantidad máxima de niveles desde la raíz a la hoja más profunda ($H = 3$).</p>
+							</div>
+						</div>
+						<div class="bb-callout">
+							<strong>Definición recursiva:</strong> Un árbol binario está vacío (`null`) o consta de un nodo raíz con dos subárboles binarios disjuntos: el subárbol izquierdo y el subárbol derecho.
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 2: LOS 3 RECORRIDOS DFS -->
+			<article class="bb-slide" data-slide="2">
+				<div class="bb-slide-header">
+					<span class="bb-slide-tag tag tag-accent">Slide 2 / 7 • Depth-First Search</span>
+					<h2 class="bb-slide-title">{t.s2Title}</h2>
+					<p class="bb-slide-desc">{t.s2Desc}</p>
+				</div>
+
+				<div class="bb-dual-grid">
+					<div class="bb-card bb-sim-box">
+						<div class="bb-card-header">
+							<span class="bb-card-label">Simulador de Recorridos en Profundidad</span>
+							<span class="bb-badge" id="bb-dfs-step-badge">Paso 0 de 7</span>
+						</div>
+
+						<div class="bb-action-bar">
+							<button type="button" class="bb-btn bb-btn-primary is-active" id="bb-btn-mode-inorder">Inorden (Izq-R-Der)</button>
+							<button type="button" class="bb-btn bb-btn-secondary" id="bb-btn-mode-preorder">Preorden (R-Izq-Der)</button>
+							<button type="button" class="bb-btn bb-btn-secondary" id="bb-btn-mode-postorder">Postorden (Izq-Der-R)</button>
+						</div>
+
+						<!-- Output Tape -->
+						<div class="bb-tape-section">
+							<span class="bb-tape-title">Cinta de Salida (Secuencia Visitada):</span>
+							<div class="bb-tape-display" id="bb-dfs-tape">
+								<span class="bb-tape-placeholder">Presiona "Paso Siguiente" para comenzar...</span>
+							</div>
+						</div>
+
+						<div class="bb-action-bar">
+							<button type="button" class="bb-btn bb-btn-primary" id="bb-btn-dfs-step">▶ Paso Siguiente</button>
+							<button type="button" class="bb-btn bb-btn-ghost" id="bb-btn-dfs-reset">↺ {t.reset}</button>
+						</div>
+
+						<div class="bb-status-banner" id="bb-dfs-log">
+							Modo Inorden activo. En un ABB, este recorrido entrega los datos ordenados: [20, 30, 40, 50, 60, 70, 80].
+						</div>
+					</div>
+
+					<div class="bb-card bb-theory-box">
+						<h3 class="bb-card-title">Propósitos en el Mundo Real</h3>
+						<ul class="bb-bullets">
+							<li>
+								<strong>Inorden (L-N-R):</strong> En un ABB produce la secuencia de elementos en <strong>estricto orden ascendente</strong>. Clave para iteradores ordenados.
+							</li>
+							<li>
+								<strong>Preorden (N-L-R):</strong> Visita la raíz antes que los hijos. Ideal para <strong>serializar, clonar o guardar</strong> el árbol en archivo preservando la topología.
+							</li>
+							<li>
+								<strong>Postorden (L-R-N):</strong> Procesa los hijos antes que el padre. Esencial para <strong>liberar memoria</strong> (destruir hijos primero) o calcular el tamaño acumulado de carpetas en disco.
+							</li>
+						</ul>
+						<div class="bb-code-block">
+							<pre><code>void inorden(Nodo n) &#123;
+    if (n == null) return;
+    inorden(n.izq);
+    System.out.print(n.dato + " ");
+    inorden(n.der);
+&#125;</code></pre>
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 3: RECORRIDO BFS (POR NIVELES CON COLA) -->
+			<article class="bb-slide" data-slide="3">
+				<div class="bb-slide-header">
+					<span class="bb-slide-tag tag tag-accent">Slide 3 / 7 • Breadth-First Search</span>
+					<h2 class="bb-slide-title">{t.s3Title}</h2>
+					<p class="bb-slide-desc">{t.s3Desc}</p>
+				</div>
+
+				<div class="bb-dual-grid">
+					<div class="bb-card bb-sim-box">
+						<div class="bb-card-header">
+							<span class="bb-card-label">Exploración por Capas con Cola Auxiliar</span>
+							<span class="bb-badge text-accent" id="bb-bfs-badge">Nivel 0 en proceso</span>
+						</div>
+
+						<!-- Visual Queue below tree -->
+						<div class="bb-bfs-queue-zone">
+							<span class="bb-queue-label">Cola FIFO (offer / poll):</span>
+							<div class="bb-bfs-queue-pipe" id="bb-bfs-pipe">
+								<!-- Rendered dynamically -->
+							</div>
+						</div>
+
+						<!-- Visited output tape -->
+						<div class="bb-tape-section">
+							<span class="bb-tape-title">Orden de Visita por Niveles:</span>
+							<div class="bb-tape-display" id="bb-bfs-tape">
+								<span class="bb-tape-placeholder">Piso por piso: [50] &rarr; [30, 70] &rarr; [20, 40, 60, 80]</span>
+							</div>
+						</div>
+
+						<div class="bb-action-bar">
+							<button type="button" class="bb-btn bb-btn-primary" id="bb-btn-bfs-step">▶ Avanzar BFS (Poll y Encolar Hijos)</button>
+							<button type="button" class="bb-btn bb-btn-ghost" id="bb-btn-bfs-reset">↺ {t.reset}</button>
+						</div>
+
+						<div class="bb-status-banner" id="bb-bfs-log">
+							Cola inicializada con la raíz [50]. Presioná avanzar para desencolar y agregar sus hijos.
+						</div>
+					</div>
+
+					<div class="bb-card bb-theory-box">
+						<h3 class="bb-card-title">Algoritmo BFS Canónico</h3>
+						<div class="bb-code-block">
+							<pre><code>public void porNiveles(Nodo raiz) &#123;
+    if (raiz == null) return;
+    Cola&lt;Nodo&gt; cola = new ArrayDeque&lt;&gt;();
+    cola.offer(raiz);
+
+    while (!cola.isEmpty()) &#123;
+        Nodo actual = cola.poll();
+        System.out.print(actual.dato + " ");
+
+        if (actual.izq != null) cola.offer(actual.izq);
+        if (actual.der != null) cola.offer(actual.der);
+    &#125;
+&#125;</code></pre>
+						</div>
+						<div class="bb-callout">
+							<strong>Complejidad óptima:</strong> Tiempo $O(N)$ visitando cada nodo una vez. Memoria $O(W)$ donde $W$ es el ancho máximo del árbol (hasta $N/2$ nodos en el último nivel de un árbol completo).
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 4: INVARIANTE DEL ABB -->
+			<article class="bb-slide" data-slide="4">
+				<div class="bb-slide-header">
+					<span class="bb-slide-tag tag tag-accent">Slide 4 / 7 • BST Invariant</span>
+					<h2 class="bb-slide-title">{t.s4Title}</h2>
+					<p class="bb-slide-desc">{t.s4Desc}</p>
+				</div>
+
+				<div class="bb-dual-grid">
+					<div class="bb-card bb-sim-box">
+						<div class="bb-card-header">
+							<span class="bb-card-label">Búsqueda Binaria O(log N): Buscar un Valor</span>
+							<span class="bb-badge" id="bb-search-badge">En espera</span>
+						</div>
+
+						<div class="bb-action-bar">
+							<div class="bb-input-group">
+								<input type="number" id="bb-search-input" class="bb-input" value="60" min="1" max="99" aria-label="Valor a buscar" />
+								<button type="button" class="bb-btn bb-btn-primary" id="bb-btn-search">🔍 Buscar en ABB</button>
+							</div>
+						</div>
+
+						<div class="bb-search-path-display" id="bb-search-path">
+							<!-- Steps rendered dynamically -->
+							<div class="bb-search-step">Ingresa un número (ej. 60, 20, 99) y pulsa buscar.</div>
+						</div>
+
+						<div class="bb-status-banner" id="bb-search-log">
+							Para cualquier nodo K: subárbol izquierdo &lt; K, subárbol derecho &gt; K.
+						</div>
+					</div>
+
+					<div class="bb-card bb-theory-box">
+						<h3 class="bb-card-title">El Poder del Descarte Logarítmico</h3>
+						<div class="bb-specs-grid">
+							<div class="bb-spec-tile">
+								<span class="bb-spec-k">N = 1,000 elementos</span>
+								<span class="bb-spec-v">&asymp; 10 comparaciones</span>
+							</div>
+							<div class="bb-spec-tile">
+								<span class="bb-spec-k">N = 1,000,000 elementos</span>
+								<span class="bb-spec-v text-accent">&asymp; 20 comparaciones</span>
+							</div>
+							<div class="bb-spec-tile">
+								<span class="bb-spec-k">N = 1,000,000,000 elementos</span>
+								<span class="bb-spec-v">&asymp; 30 comparaciones</span>
+							</div>
+							<div class="bb-spec-tile">
+								<span class="bb-spec-k">Lista Enlazada O(N)</span>
+								<span class="bb-spec-v is-error">1,000,000,000 pasos</span>
+							</div>
+						</div>
+						<div class="bb-callout">
+							<strong>En cada paso:</strong> Comparar con el nodo actual te permite descartar instantáneamente el 50% de los elementos restantes sin siquiera mirarlos.
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 5: SIMULADOR DE INSERCIÓN EN ABB -->
+			<article class="bb-slide" data-slide="5">
+				<div class="bb-slide-header">
+					<span class="bb-slide-tag tag tag-accent">Slide 5 / 7 • BST Insertion</span>
+					<h2 class="bb-slide-title">{t.s5Title}</h2>
+					<p class="bb-slide-desc">{t.s5Desc}</p>
+				</div>
+
+				<div class="bb-dual-grid">
+					<div class="bb-card bb-sim-box">
+						<div class="bb-card-header">
+							<span class="bb-card-label">Inserción Paso a Paso</span>
+							<span class="bb-badge text-accent">Árbol Dinámico</span>
+						</div>
+
+						<div class="bb-action-bar">
+							<div class="bb-input-group">
+								<input type="number" id="bb-insert-input" class="bb-input" value="65" min="1" max="99" aria-label="Valor a insertar" />
+								<button type="button" class="bb-btn bb-btn-primary" id="bb-btn-insert">+ Insertar en ABB</button>
+							</div>
+							<button type="button" class="bb-btn bb-btn-ghost" id="bb-btn-reset-tree">↺ Restaurar Base</button>
+						</div>
+
+						<div class="bb-insert-log-box" id="bb-insert-log-box">
+							Presiona "Insertar" para ver la trayectoria del nodo bajando por el árbol hasta enlazarse como hoja.
+						</div>
+
+						<div class="bb-status-banner" id="bb-insert-status">
+							Base actual: [50, 30, 70, 20, 40, 60, 80].
+						</div>
+					</div>
+
+					<div class="bb-card bb-theory-box">
+						<h3 class="bb-card-title">Algoritmo Recursivo de Inserción</h3>
+						<div class="bb-code-block">
+							<pre><code>public Nodo insertar(Nodo actual, int dato) &#123;
+    if (actual == null) &#123;
+        return new Nodo(dato); // Hueco encontrado
+    &#125;
+    if (dato &lt; actual.dato) &#123;
+        actual.izq = insertar(actual.izq, dato);
+    &#125; else if (dato &gt; actual.dato) &#123;
+        actual.der = insertar(actual.der, dato);
+    &#125;
+    // Si dato == actual.dato, ya existe (no duplicados)
+    return actual;
+&#125;</code></pre>
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 6: ELIMINACIÓN EN ABB (LOS 3 CASOS) -->
+			<article class="bb-slide" data-slide="6">
+				<div class="bb-slide-header">
+					<span class="bb-slide-tag tag tag-accent">Slide 6 / 7 • Deletion Cases</span>
+					<h2 class="bb-slide-title">{t.s6Title}</h2>
+					<p class="bb-slide-desc">{t.s6Desc}</p>
+				</div>
+
+				<div class="bb-dual-grid">
+					<div class="bb-card bb-sim-box">
+						<div class="bb-card-header">
+							<span class="bb-card-label">Los 3 Escenarios de Eliminación</span>
+							<span class="bb-badge text-accent" id="bb-delete-case-badge">Caso 3: Dos Hijos</span>
+						</div>
+
+						<div class="bb-action-bar">
+							<button type="button" class="bb-btn bb-btn-secondary" id="bb-btn-case-leaf">Caso 1: Eliminar Hoja (ej. 20)</button>
+							<button type="button" class="bb-btn bb-btn-secondary" id="bb-btn-case-one">Caso 2: 1 Hijo (ej. 70 con hijo 80)</button>
+							<button type="button" class="bb-btn bb-btn-primary is-active" id="bb-btn-case-two">Caso 3: 2 Hijos (ej. Raíz 50)</button>
+						</div>
+
+						<div class="bb-case-explanation" id="bb-case-explanation">
+							<!-- Rendered via JS -->
+						</div>
+
+						<div class="bb-status-banner" id="bb-delete-log">
+							Caso 3: Se busca el sucesor inorden (el menor del subárbol derecho: 60) y se reemplaza en la raíz.
+						</div>
+					</div>
+
+					<div class="bb-card bb-theory-box">
+						<h3 class="bb-card-title">Por qué el Sucesor Inorden</h3>
+						<div class="bb-callout">
+							<strong>El sucesor inorden:</strong> Es el elemento inmediatamente mayor que el nodo a borrar. Al ser el más chico de la derecha, se garantiza que es mayor que todo el subárbol izquierdo y menor que todo el resto del subárbol derecho, preservando la invariante del ABB intacta.
+						</div>
+						<div class="bb-code-block">
+							<pre><code>// Caso 3: Dos hijos
+Nodo sucesor = encontrarMinimo(nodo.der);
+nodo.dato = sucesor.dato; // Copia valor
+nodo.der = eliminar(nodo.der, sucesor.dato); // Borra sucesor</code></pre>
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 7: EL PROBLEMA DEL DESBALANCEO -->
+			<article class="bb-slide" data-slide="7">
+				<div class="bb-slide-header">
+					<span class="bb-slide-tag tag tag-accent">Slide 7 / 7 • Degeneration & Self-Balancing</span>
+					<h2 class="bb-slide-title">{t.s7Title}</h2>
+					<p class="bb-slide-desc">{t.s7Desc}</p>
+				</div>
+
+				<div class="bb-dual-grid">
+					<!-- Balanced Tree -->
+					<div class="bb-card bb-sim-box">
+						<div class="bb-card-header">
+							<span class="bb-card-label">Árbol Balanceado (AVL / Red-Black)</span>
+							<span class="bb-badge text-accent">Altura H = 3 | Costo O(log N)</span>
+						</div>
+						<div class="bb-balance-diag">
+							<svg viewBox="0 0 200 120" class="bb-mini-svg">
+								<line x1="100" y1="20" x2="50" y2="50" stroke="var(--color-divider)" stroke-width="2"/>
+								<line x1="100" y1="20" x2="150" y2="50" stroke="var(--color-divider)" stroke-width="2"/>
+								<line x1="50" y1="50" x2="25" y2="90" stroke="var(--color-divider)" stroke-width="1.5"/>
+								<line x1="50" y1="50" x2="75" y2="90" stroke="var(--color-divider)" stroke-width="1.5"/>
+								<line x1="150" y1="50" x2="125" y2="90" stroke="var(--color-divider)" stroke-width="1.5"/>
+								<line x1="150" y1="50" x2="175" y2="90" stroke="var(--color-divider)" stroke-width="1.5"/>
+
+								<circle cx="100" cy="20" r="10" fill="var(--color-surface)" stroke="var(--color-accent)" stroke-width="2"/>
+								<circle cx="50" cy="50" r="9" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="1.5"/>
+								<circle cx="150" cy="50" r="9" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="1.5"/>
+								<circle cx="25" cy="90" r="8" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="1.5"/>
+								<circle cx="75" cy="90" r="8" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="1.5"/>
+								<circle cx="125" cy="90" r="8" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="1.5"/>
+								<circle cx="175" cy="90" r="8" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="1.5"/>
+							</svg>
+						</div>
+						<p class="bb-small-text">Forma piramidal compacta. Descarte del 50% en cada salto.</p>
+					</div>
+
+					<!-- Degenerated Tree -->
+					<div class="bb-card bb-danger-box">
+						<div class="bb-card-header">
+							<span class="bb-card-label">Árbol Degenerado (Insertado en Orden)</span>
+							<span class="bb-badge is-error">Altura H = 7 | Costo O(N)</span>
+						</div>
+						<div class="bb-balance-diag">
+							<svg viewBox="0 0 200 120" class="bb-mini-svg">
+								<line x1="30" y1="15" x2="55" y2="32" stroke="var(--color-accent-700)" stroke-width="2"/>
+								<line x1="55" y1="32" x2="80" y2="49" stroke="var(--color-accent-700)" stroke-width="2"/>
+								<line x1="80" y1="49" x2="105" y2="66" stroke="var(--color-accent-700)" stroke-width="2"/>
+								<line x1="105" y1="66" x2="130" y2="83" stroke="var(--color-accent-700)" stroke-width="2"/>
+								<line x1="130" y1="83" x2="155" y2="100" stroke="var(--color-accent-700)" stroke-width="2"/>
+
+								<circle cx="30" cy="15" r="8" fill="var(--color-surface)" stroke="var(--color-accent-700)" stroke-width="2"/>
+								<circle cx="55" cy="32" r="8" fill="var(--color-surface)" stroke="var(--color-accent-700)" stroke-width="2"/>
+								<circle cx="80" cy="49" r="8" fill="var(--color-surface)" stroke="var(--color-accent-700)" stroke-width="2"/>
+								<circle cx="105" cy="66" r="8" fill="var(--color-surface)" stroke="var(--color-accent-700)" stroke-width="2"/>
+								<circle cx="130" cy="83" r="8" fill="var(--color-surface)" stroke="var(--color-accent-700)" stroke-width="2"/>
+								<circle cx="155" cy="100" r="8" fill="var(--color-surface)" stroke="var(--color-accent-700)" stroke-width="2"/>
+							</svg>
+						</div>
+						<p class="bb-small-text">¡Se convirtió en una lista enlazada disfrazada! Se pierde todo el beneficio del árbol.</p>
+					</div>
+				</div>
+			</article>
+		</main>
+	</div>
+</section>
+
+<script>
+	function setupArbolesBinarios() {
+		// --- SLIDES NAVIGATION ---
+		const slides = document.querySelectorAll<HTMLElement>('.bb-slide');
+		const prevBtn = document.getElementById('bb-prev-btn') as HTMLButtonElement | null;
+		const nextBtn = document.getElementById('bb-next-btn') as HTMLButtonElement | null;
+		const counter = document.getElementById('bb-slide-counter');
+		const progressBar = document.getElementById('bb-progress-bar');
+		let currentSlide = 1;
+		const totalSlides = slides.length;
+
+		function goToSlide(index: number) {
+			if (index < 1 || index > totalSlides) return;
+			currentSlide = index;
+			slides.forEach((s) => {
+				const sIndex = Number(s.dataset.slide);
+				s.classList.toggle('active', sIndex === currentSlide);
+			});
+
+			if (prevBtn) prevBtn.disabled = currentSlide === 1;
+			if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+			if (counter) counter.textContent = `${currentSlide} de ${totalSlides}`;
+			if (progressBar) {
+				const pct = (currentSlide / totalSlides) * 100;
+				progressBar.style.width = `${pct}%`;
+			}
+		}
+
+		prevBtn?.addEventListener('click', () => goToSlide(currentSlide - 1));
+		nextBtn?.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+		document.addEventListener('keydown', (e) => {
+			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+			if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+			if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+		});
+
+		// --- SLIDE 1: ANATOMY INSPECTOR ---
+		const nodeInspector = document.getElementById('bb-node-inspector');
+		document.querySelectorAll<SVGGElement>('.bb-node-group').forEach((g) => {
+			g.addEventListener('click', () => {
+				const val = g.dataset.val;
+				const level = g.dataset.level;
+				const type = g.dataset.type;
+				if (nodeInspector) {
+					nodeInspector.innerHTML = `Nodo seleccionado: <strong>[${val}]</strong> | Rol: <strong>${type}</strong> | Nivel: <strong>${level}</strong>`;
+				}
+			});
+		});
+
+		// --- SLIDE 2: DFS TRAVERSALS ---
+		type DfsMode = 'inorder' | 'preorder' | 'postorder';
+		let currentDfsMode: DfsMode = 'inorder';
+		const dfsSequences: Record<DfsMode, number[]> = {
+			inorder: [20, 30, 40, 50, 60, 70, 80],
+			preorder: [50, 30, 20, 40, 70, 60, 80],
+			postorder: [20, 40, 30, 60, 80, 70, 50],
+		};
+		let dfsStepIdx = 0;
+		const dfsTape = document.getElementById('bb-dfs-tape');
+		const dfsStepBadge = document.getElementById('bb-dfs-step-badge');
+		const dfsLog = document.getElementById('bb-dfs-log');
+
+		function resetDfs() {
+			dfsStepIdx = 0;
+			if (dfsTape) dfsTape.innerHTML = '<span class="bb-tape-placeholder">Presiona "Paso Siguiente" para comenzar...</span>';
+			if (dfsStepBadge) dfsStepBadge.textContent = 'Paso 0 de 7';
+		}
+
+		document.getElementById('bb-btn-mode-inorder')?.addEventListener('click', (e) => {
+			currentDfsMode = 'inorder';
+			document.querySelectorAll('#bb-btn-mode-inorder, #bb-btn-mode-preorder, #bb-btn-mode-postorder').forEach((b) => b.classList.remove('is-active'));
+			(e.currentTarget as HTMLElement).classList.add('is-active');
+			resetDfs();
+			if (dfsLog) dfsLog.textContent = 'Modo Inorden (Izq - Raíz - Der): entrega los números en orden ascendente.';
+		});
+
+		document.getElementById('bb-btn-mode-preorder')?.addEventListener('click', (e) => {
+			currentDfsMode = 'preorder';
+			document.querySelectorAll('#bb-btn-mode-inorder, #bb-btn-mode-preorder, #bb-btn-mode-postorder').forEach((b) => b.classList.remove('is-active'));
+			(e.currentTarget as HTMLElement).classList.add('is-active');
+			resetDfs();
+			if (dfsLog) dfsLog.textContent = 'Modo Preorden (Raíz - Izq - Der): útil para clonar la estructura jerárquica.';
+		});
+
+		document.getElementById('bb-btn-mode-postorder')?.addEventListener('click', (e) => {
+			currentDfsMode = 'postorder';
+			document.querySelectorAll('#bb-btn-mode-inorder, #bb-btn-mode-preorder, #bb-btn-mode-postorder').forEach((b) => b.classList.remove('is-active'));
+			(e.currentTarget as HTMLElement).classList.add('is-active');
+			resetDfs();
+			if (dfsLog) dfsLog.textContent = 'Modo Postorden (Izq - Der - Raíz): ideal para cálculo de espacios o borrado seguro de subárboles.';
+		});
+
+		document.getElementById('bb-btn-dfs-step')?.addEventListener('click', () => {
+			const seq = dfsSequences[currentDfsMode];
+			if (dfsStepIdx < seq.length) {
+				if (dfsStepIdx === 0 && dfsTape) dfsTape.innerHTML = '';
+				const val = seq[dfsStepIdx];
+				dfsStepIdx++;
+				if (dfsStepBadge) dfsStepBadge.textContent = `Paso ${dfsStepIdx} de ${seq.length}`;
+
+				const span = document.createElement('span');
+				span.className = 'bb-tape-cell';
+				span.textContent = String(val);
+				dfsTape?.appendChild(span);
+
+				if (dfsLog) dfsLog.textContent = `Visitado nodo [${val}] en posición ${dfsStepIdx}.`;
+			}
+		});
+
+		document.getElementById('bb-btn-dfs-reset')?.addEventListener('click', resetDfs);
+
+		// --- SLIDE 3: BFS WITH QUEUE ---
+		const bfsNodes = [50, 30, 70, 20, 40, 60, 80];
+		let bfsStepIdx = 0;
+		const bfsPipe = document.getElementById('bb-bfs-pipe');
+		const bfsTape = document.getElementById('bb-bfs-tape');
+		const bfsLog = document.getElementById('bb-bfs-log');
+
+		function resetBfs() {
+			bfsStepIdx = 0;
+			if (bfsPipe) bfsPipe.innerHTML = '<div class="bb-q-pill">[50]</div>';
+			if (bfsTape) bfsTape.innerHTML = '<span class="bb-tape-placeholder">Piso por piso: [50] &rarr; [30, 70] &rarr; [20, 40, 60, 80]</span>';
+			if (bfsLog) bfsLog.textContent = 'Cola inicializada con la raíz [50].';
+		}
+
+		document.getElementById('bb-btn-bfs-step')?.addEventListener('click', () => {
+			if (bfsStepIdx < bfsNodes.length) {
+				if (bfsStepIdx === 0 && bfsTape) bfsTape.innerHTML = '';
+				const current = bfsNodes[bfsStepIdx];
+				bfsStepIdx++;
+
+				const span = document.createElement('span');
+				span.className = 'bb-tape-cell';
+				span.textContent = String(current);
+				bfsTape?.appendChild(span);
+
+				if (bfsLog) bfsLog.textContent = `poll(): Nodo [${current}] sale de la cola y se procesa.`;
+			}
+		});
+
+		document.getElementById('bb-btn-bfs-reset')?.addEventListener('click', resetBfs);
+		resetBfs();
+
+		// --- SLIDE 4: BST SEARCH SIMULATOR ---
+		const searchInput = document.getElementById('bb-search-input') as HTMLInputElement | null;
+		const searchBadge = document.getElementById('bb-search-badge');
+		const searchPath = document.getElementById('bb-search-path');
+		const searchLog = document.getElementById('bb-search-log');
+
+		document.getElementById('bb-btn-search')?.addEventListener('click', () => {
+			const target = parseInt(searchInput?.value || '60', 10);
+			if (isNaN(target)) return;
+
+			if (searchPath) searchPath.innerHTML = '';
+			let curr: number | null = 50;
+			let steps = 0;
+			const path: string[] = [];
+
+			while (curr !== null) {
+				steps++;
+				if (target === curr) {
+					path.push(`Paso ${steps}: Comparar con [${curr}] &rarr; ¡Encontrado!`);
+					break;
+				} else if (target < curr) {
+					path.push(`Paso ${steps}: ${target} &lt; [${curr}] &rarr; Doblar a la IZQUIERDA`);
+					if (curr === 50) curr = 30;
+					else if (curr === 30) curr = 20;
+					else if (curr === 70) curr = 60;
+					else curr = null;
+				} else {
+					path.push(`Paso ${steps}: ${target} &gt; [${curr}] &rarr; Doblar a la DERECHA`);
+					if (curr === 50) curr = 70;
+					else if (curr === 30) curr = 40;
+					else if (curr === 70) curr = 80;
+					else curr = null;
+				}
+			}
+
+			const found = curr === target;
+			if (searchBadge) {
+				searchBadge.textContent = found ? `¡Encontrado en ${steps} pasos!` : 'No encontrado (null alcanzado)';
+				searchBadge.className = found ? 'bb-badge text-accent' : 'bb-badge is-error';
+			}
+
+			path.forEach((p) => {
+				const div = document.createElement('div');
+				div.className = 'bb-search-step';
+				div.textContent = p;
+				searchPath?.appendChild(div);
+			});
+
+			if (searchLog) {
+				searchLog.textContent = found
+					? `Búsqueda exitosa del valor ${target} en solo ${steps} comparaciones O(log N).`
+					: `El valor ${target} no existe en el árbol (se alcanzó una referencia null).`;
+			}
+		});
+
+		// --- SLIDE 5: BST INSERT SIMULATOR ---
+		const insertInput = document.getElementById('bb-insert-input') as HTMLInputElement | null;
+		const insertLogBox = document.getElementById('bb-insert-log-box');
+		const insertStatus = document.getElementById('bb-insert-status');
+
+		document.getElementById('bb-btn-insert')?.addEventListener('click', () => {
+			const val = parseInt(insertInput?.value || '65', 10);
+			if (isNaN(val)) return;
+
+			if (insertLogBox) {
+				insertLogBox.innerHTML = `
+					<strong>Insertando [${val}]:</strong><br/>
+					1. Comparar con Raíz [50]: ${val} &gt; 50 &rarr; Subárbol derecho [70].<br/>
+					2. Comparar con [70]: ${val} &lt; 70 &rarr; Subárbol izquierdo [60].<br/>
+					3. Comparar con [60]: ${val} &gt; 60 &rarr; Subárbol derecho es null.<br/>
+					<strong>¡Enlazado!</strong> <code>nodo60.der = new Nodo(${val})</code>.
+				`;
+			}
+			if (insertStatus) {
+				insertStatus.textContent = `Nodo [${val}] insertado como nueva hoja derecha de [60].`;
+			}
+		});
+
+		document.getElementById('bb-btn-reset-tree')?.addEventListener('click', () => {
+			if (insertLogBox) insertLogBox.textContent = 'Árbol restablecido a los 7 nodos base.';
+			if (insertStatus) insertStatus.textContent = 'Base actual: [50, 30, 70, 20, 40, 60, 80].';
+		});
+
+		// --- SLIDE 6: DELETION CASES ---
+		const caseBadge = document.getElementById('bb-delete-case-badge');
+		const caseExplanation = document.getElementById('bb-case-explanation');
+		const deleteLog = document.getElementById('bb-delete-log');
+
+		function showCase(caseNum: number) {
+			if (!caseExplanation) return;
+			if (caseNum === 1) {
+				if (caseBadge) caseBadge.textContent = 'Caso 1: Eliminar Hoja';
+				caseExplanation.innerHTML = `
+					<strong>Eliminar nodo hoja [20]:</strong><br/>
+					El nodo 20 no tiene hijos (izq == null &amp;&amp; der == null).<br/>
+					Su padre (30) simplemente actualiza su puntero izquierdo a <code>null</code>.<br/>
+					El recolector de basura de la JVM recupera la memoria del nodo 20.
+				`;
+				if (deleteLog) deleteLog.textContent = 'Caso 1: Muy simple. Se desconecta el puntero del padre en O(log N).';
+			} else if (caseNum === 2) {
+				if (caseBadge) caseBadge.textContent = 'Caso 2: Un Solo Hijo';
+				caseExplanation.innerHTML = `
+					<strong>Eliminar nodo con 1 hijo [70 con hijo 80]:</strong><br/>
+					El padre de 70 (la raíz 50) "saltea" a 70 y apunta directamente a 80:<br/>
+					<code>padre.der = nodoAEliminar.der;</code><br/>
+					El subárbol del hijo asciende un nivel sin alterar el orden relativo.
+				`;
+				if (deleteLog) deleteLog.textContent = 'Caso 2: El único descendiente sustituye al nodo eliminado.';
+			} else {
+				if (caseBadge) caseBadge.textContent = 'Caso 3: Dos Hijos';
+				caseExplanation.innerHTML = `
+					<strong>Eliminar nodo con dos hijos (ej. Raíz 50):</strong><br/>
+					1. Se busca el <strong>sucesor inorden</strong>: el nodo más pequeño del subárbol derecho (mínimo de 70 &rarr; 60).<br/>
+					2. Se copia el valor <code>60</code> en el nodo raíz.<br/>
+					3. Se elimina el nodo <code>60</code> original de la rama derecha (que cae en caso 1 o 2).<br/>
+					<strong>¡Invariante preservada a la perfección!</strong>
+				`;
+				if (deleteLog) deleteLog.textContent = 'Caso 3: Reemplazo por sucesor inorden mantiene la estructura válida.';
+			}
+		}
+
+		document.getElementById('bb-btn-case-leaf')?.addEventListener('click', (e) => {
+			document.querySelectorAll('#bb-btn-case-leaf, #bb-btn-case-one, #bb-btn-case-two').forEach((b) => b.classList.remove('is-active'));
+			(e.currentTarget as HTMLElement).classList.add('is-active');
+			showCase(1);
+		});
+
+		document.getElementById('bb-btn-case-one')?.addEventListener('click', (e) => {
+			document.querySelectorAll('#bb-btn-case-leaf, #bb-btn-case-one, #bb-btn-case-two').forEach((b) => b.classList.remove('is-active'));
+			(e.currentTarget as HTMLElement).classList.add('is-active');
+			showCase(2);
+		});
+
+		document.getElementById('bb-btn-case-two')?.addEventListener('click', (e) => {
+			document.querySelectorAll('#bb-btn-case-leaf, #bb-btn-case-one, #bb-btn-case-two').forEach((b) => b.classList.remove('is-active'));
+			(e.currentTarget as HTMLElement).classList.add('is-active');
+			showCase(3);
+		});
+
+		showCase(3);
+	}
+
+	setupArbolesBinarios();
+	document.addEventListener('astro:page-load', setupArbolesBinarios);
+</script>
+
+<style>
+	.bb-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.bb-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.bb-nav-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		background: var(--color-surface);
+		border-bottom: 1px solid var(--color-divider);
+		gap: var(--space-4);
+	}
+
+	.bb-kicker {
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-accent-700);
+		display: block;
+	}
+
+	.bb-main-title {
+		font-family: var(--font-heading);
+		font-size: 1.15rem;
+		margin: 0;
+		color: var(--color-text);
+	}
+
+	.bb-nav-controls {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	.bb-counter {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+		min-width: 60px;
+		text-align: center;
+	}
+
+	.bb-progress-track {
+		height: 4px;
+		background: var(--color-divider);
+		width: 100%;
+	}
+
+	.bb-progress-bar {
+		height: 100%;
+		background: var(--color-accent);
+		transition: width 0.25s ease;
+	}
+
+	.bb-viewport {
+		flex: 1;
+		width: 100%;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: var(--space-6) var(--space-4);
+	}
+
+	.bb-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	.bb-slide {
+		display: none;
+		flex-direction: column;
+		gap: var(--space-5);
+		animation: bbFade 0.25s ease forwards;
+	}
+
+	.bb-slide.active {
+		display: flex;
+	}
+
+	@keyframes bbFade {
+		from {
+			opacity: 0;
+			transform: translateY(4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.bb-slide-header {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.bb-slide-title {
+		font-family: var(--font-heading);
+		font-size: 1.5rem;
+		color: var(--color-text);
+		margin: 0;
+	}
+
+	.bb-slide-desc {
+		color: var(--color-text-muted);
+		margin: 0;
+		font-size: 0.95rem;
+		line-height: 1.5;
+	}
+
+	.bb-dual-grid {
+		display: grid;
+		grid-template-columns: 1.2fr 1fr;
+		gap: var(--space-5);
+		align-items: stretch;
+	}
+
+	.bb-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.bb-card-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		border-bottom: 1px solid var(--color-divider);
+		padding-bottom: var(--space-2);
+	}
+
+	.bb-card-label {
+		font-weight: 700;
+		font-size: 0.9rem;
+		color: var(--color-text);
+	}
+
+	.bb-card-title {
+		font-family: var(--font-heading);
+		font-size: 1.1rem;
+		margin: 0;
+	}
+
+	.bb-badge {
+		font-size: 0.75rem;
+		font-weight: 600;
+		padding: 2px 8px;
+		border-radius: var(--radius-sm);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+	}
+
+	.bb-badge.text-accent {
+		color: var(--color-accent-700);
+		border-color: var(--color-accent);
+	}
+
+	.bb-badge.is-error {
+		color: var(--color-accent-700);
+		background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+		border-color: var(--color-accent);
+	}
+
+	/* TREE SVG CANVAS */
+	.bb-svg-wrap {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+	}
+
+	.bb-tree-svg {
+		width: 100%;
+		max-width: 380px;
+		height: auto;
+	}
+
+	.bb-node-group {
+		cursor: pointer;
+		transition: transform 0.15s ease;
+	}
+
+	.bb-node-group:hover circle {
+		stroke: var(--color-accent-700);
+		fill: color-mix(in srgb, var(--color-accent) 15%, var(--color-surface));
+	}
+
+	/* TAPE DISPLAY */
+	.bb-tape-section {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.bb-tape-title {
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.bb-tape-display {
+		min-height: 48px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		overflow-x: auto;
+	}
+
+	.bb-tape-cell {
+		padding: 4px 10px;
+		background: var(--color-surface);
+		border: 1.5px solid var(--color-accent);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		color: var(--color-accent-700);
+		font-size: 0.9rem;
+	}
+
+	.bb-tape-placeholder {
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+	}
+
+	/* BFS QUEUE PIPE */
+	.bb-bfs-queue-zone {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.bb-queue-label {
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.bb-bfs-queue-pipe {
+		height: 44px;
+		background: var(--color-bg);
+		border-top: 2px solid var(--color-accent-700);
+		border-bottom: 2px solid var(--color-accent-700);
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: 0 var(--space-3);
+	}
+
+	.bb-q-pill {
+		padding: 3px 8px;
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: 3px;
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		font-weight: 700;
+	}
+
+	/* SEARCH PATH */
+	.bb-search-path-display {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		min-height: 80px;
+	}
+
+	.bb-search-step {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		color: var(--color-text);
+	}
+
+	/* CASE EXPLANATION */
+	.bb-case-explanation {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3);
+		font-size: 0.85rem;
+		line-height: 1.45;
+	}
+
+	.bb-insert-log-box {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3);
+		font-size: 0.85rem;
+		line-height: 1.45;
+	}
+
+	/* BALANCE DIAG */
+	.bb-balance-diag {
+		display: flex;
+		justify-content: center;
+		padding: var(--space-2) 0;
+	}
+
+	.bb-mini-svg {
+		width: 160px;
+		height: 100px;
+	}
+
+	/* GENERIC ATOMS */
+	.bb-specs-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-2);
+	}
+
+	.bb-spec-tile {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.bb-spec-k {
+		font-size: 0.7rem;
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+		font-weight: 600;
+	}
+
+	.bb-spec-v {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		font-weight: 700;
+	}
+
+	.bb-action-bar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-items: center;
+	}
+
+	.bb-input-group {
+		display: flex;
+		gap: var(--space-1);
+		align-items: center;
+	}
+
+	.bb-input {
+		padding: var(--space-1) var(--space-2);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		color: var(--color-text);
+		max-width: 80px;
+	}
+
+	.bb-btn {
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-sm);
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.15s ease, border-color 0.15s ease;
+		border: 1px solid transparent;
+		font-family: var(--font-body);
+	}
+
+	.bb-btn-primary {
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.bb-btn-primary:hover {
+		background: var(--color-accent-700);
+	}
+
+	.bb-btn-secondary {
+		background: var(--color-surface);
+		color: var(--color-text);
+		border-color: var(--color-divider);
+	}
+
+	.bb-btn-secondary:hover {
+		border-color: var(--color-accent);
+	}
+
+	.bb-btn.is-active {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		border-color: var(--color-accent);
+	}
+
+	.bb-btn-ghost {
+		background: transparent;
+		color: var(--color-text-muted);
+	}
+
+	.bb-btn-ghost:hover {
+		color: var(--color-text);
+	}
+
+	.bb-status-banner {
+		font-size: 0.8rem;
+		padding: var(--space-2);
+		background: var(--color-bg);
+		border-left: 3px solid var(--color-accent);
+		color: var(--color-text);
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+
+	.bb-code-block {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3);
+		overflow-x: auto;
+	}
+
+	.bb-code-block pre {
+		margin: 0;
+	}
+
+	.bb-code-block code {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		line-height: 1.45;
+		color: var(--color-text);
+	}
+
+	.bb-callout {
+		font-size: 0.85rem;
+		line-height: 1.45;
+		padding: var(--space-3);
+		background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+		border-left: 3px solid var(--color-accent);
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+
+	.bb-bullets {
+		margin: 0;
+		padding-left: var(--space-4);
+		font-size: 0.85rem;
+		line-height: 1.45;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.bb-small-text {
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+		margin: 0;
+	}
+
+	.text-accent {
+		color: var(--color-accent-700);
+	}
+
+	/* RESPONSIVE & WIDE SCREEN QUERIES */
+	@media (max-width: 900px) {
+		.bb-dual-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (min-width: 1440px) { .bb-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .bb-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .bb-viewport { zoom: 1.25; } }
+</style>

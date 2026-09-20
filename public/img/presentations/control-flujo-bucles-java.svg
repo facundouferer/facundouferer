@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="30" y="166" width="340" height="12" rx="6" fill="#dcd3c4"/>
+
+	<!-- Rail Fork (if/else) -->
+	<!-- Main track -->
+	<path d="M40 100 H120 Q150 100 170 70 L210 70" stroke="#8c491a" stroke-width="4" fill="none" stroke-linecap="round"/>
+	<path d="M120 100 Q150 100 170 130 L210 130" stroke="#7a8a5e" stroke-width="4" fill="none" stroke-linecap="round"/>
+	
+	<!-- Fork decision diamond -->
+	<polygon points="120,88 132,100 120,112 108,100" fill="#c67139" stroke="#201e1d" stroke-width="2"/>
+
+	<text x="215" y="74" font-family="'Figtree', sans-serif" font-size="11" font-weight="700" fill="#8c491a">true</text>
+	<text x="215" y="134" font-family="'Figtree', sans-serif" font-size="11" font-weight="700" fill="#7a8a5e">false</text>
+
+	<!-- Loop Wheel (for/while) -->
+	<circle cx="310" cy="100" r="36" fill="none" stroke="#c67139" stroke-width="4" stroke-dasharray="160 40"/>
+	<polygon points="308,60 320,64 312,74" fill="#c67139"/>
+	<text x="310" y="105" font-family="'Caprasimo', serif" font-size="15" fill="#8c491a" text-anchor="middle">loop</text>
+
+	<!-- Header Banner -->
+	<text x="200" y="32" font-family="'Caprasimo', serif" font-size="15" fill="#8c491a" text-anchor="middle">Control de Flujo y Bucles</text>
+</svg>

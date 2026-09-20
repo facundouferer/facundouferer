@@ -1,0 +1,1211 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="dj-screen" data-presentation="acceso-datos-jdbc-java">
+	<div class="dj-shell">
+		<nav class="dj-nav" aria-label="Controles de navegación">
+			<button class="dj-btn" id="djPrevBtn" aria-label="Diapositiva anterior" disabled>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{isEs ? 'Anterior' : 'Previous'}</span>
+			</button>
+			<span class="dj-counter" id="djSlideCounter" aria-live="polite">1 / 5</span>
+			<button class="dj-btn" id="djNextBtn" aria-label="Siguiente diapositiva">
+				<span>{isEs ? 'Siguiente' : 'Next'}</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="dj-viewport">
+			<!-- Slide 1: JDBC Layered Architecture -->
+			<section class="dj-slide is-active" data-slide="1">
+				<div class="dj-header">
+					<span class="dj-kicker">{isEs ? 'Arquitectura de Acceso a Datos' : 'Data Access Architecture'}</span>
+					<h2 class="dj-title">{isEs ? 'La Arquitectura en Capas de JDBC' : 'The Layered Architecture of JDBC'}</h2>
+					<p class="dj-lead">
+						{isEs
+							? 'Tu código nunca habla con un motor de base de datos en particular: programa contra las interfaces de java.sql, y cada fabricante entrega el Driver que las implementa en binario.'
+							: 'Your code never talks to a specific database engine: it programs against the java.sql interfaces, and each vendor ships the Driver that implements them in binary.'}
+					</p>
+				</div>
+
+				<div class="dj-card">
+					<div class="dj-arch-viz">
+						<svg viewBox="0 0 640 260" class="dj-svg-arch" role="img" aria-label={isEs ? 'Diagrama de capas de JDBC' : 'JDBC layers diagram'}>
+							<defs>
+								<marker id="djArrow1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+									<path d="M0,0 L10,5 L0,10 z" class="dj-arrow-fill" />
+								</marker>
+							</defs>
+
+							<!-- Application layer -->
+							<rect x="10" y="10" width="620" height="56" rx="14" class="dj-layer-app" />
+							<text x="30" y="34" class="dj-layer-label">{isEs ? 'Aplicación — DAOs' : 'Application — DAOs'}</text>
+							<text x="30" y="52" class="dj-layer-sub">ProductoDAO · ClienteDAO</text>
+
+							<path d="M320 66 V88" class="dj-arch-arrow" marker-end="url(#djArrow1)" />
+
+							<!-- JDBC API layer -->
+							<rect x="10" y="92" width="620" height="56" rx="14" class="dj-layer-api" />
+							<text x="30" y="116" class="dj-layer-label dj-layer-label-accent">java.sql — {isEs ? 'API JDBC estándar' : 'standard JDBC API'}</text>
+							<text x="30" y="134" class="dj-layer-sub">Connection · Statement · ResultSet</text>
+
+							<path d="M320 148 V170" class="dj-arch-arrow" marker-end="url(#djArrow1)" />
+
+							<!-- Driver layer -->
+							<g id="djDriverPgBox" class="dj-driver-box is-active">
+								<rect x="10" y="174" width="196" height="76" rx="12" />
+								<text x="108" y="202" class="dj-driver-title" text-anchor="middle">PostgreSQL</text>
+								<text x="108" y="220" class="dj-driver-sub" text-anchor="middle">:5432</text>
+								<text x="108" y="238" class="dj-driver-sub" text-anchor="middle">{isEs ? 'Driver JDBC' : 'JDBC Driver'}</text>
+							</g>
+							<g id="djDriverMysqlBox" class="dj-driver-box">
+								<rect x="222" y="174" width="196" height="76" rx="12" />
+								<text x="320" y="202" class="dj-driver-title" text-anchor="middle">MySQL</text>
+								<text x="320" y="220" class="dj-driver-sub" text-anchor="middle">:3306</text>
+								<text x="320" y="238" class="dj-driver-sub" text-anchor="middle">{isEs ? 'Driver JDBC' : 'JDBC Driver'}</text>
+							</g>
+							<g id="djDriverH2Box" class="dj-driver-box">
+								<rect x="434" y="174" width="196" height="76" rx="12" />
+								<text x="532" y="202" class="dj-driver-title" text-anchor="middle">H2 / SQLite</text>
+								<text x="532" y="220" class="dj-driver-sub" text-anchor="middle">{isEs ? 'memoria local' : 'local memory'}</text>
+								<text x="532" y="238" class="dj-driver-sub" text-anchor="middle">{isEs ? 'Driver JDBC' : 'JDBC Driver'}</text>
+							</g>
+						</svg>
+					</div>
+
+					<div class="dj-sim-block">
+						<div class="dj-sim-label">
+							<strong>{isEs ? 'Selector de motor' : 'Engine selector'}</strong>
+							<span class="dj-hint">{isEs ? 'Cambiá de base de datos sin tocar una sola línea de ProductoDAO' : 'Switch databases without touching a single line of ProductoDAO'}</span>
+						</div>
+						<div class="dj-driver-buttons">
+							<button class="dj-tab is-active" id="djDriverPgBtn" data-driver="pg">PostgreSQL</button>
+							<button class="dj-tab" id="djDriverMysqlBtn" data-driver="mysql">MySQL</button>
+							<button class="dj-tab" id="djDriverH2Btn" data-driver="h2">H2 / SQLite</button>
+						</div>
+						<div class="dj-result-box">
+							<code class="dj-code-sample" id="djDriverUrl">jdbc:postgresql://localhost:5432/tienda</code>
+							<span class="dj-tag-ok">{isEs ? '0 líneas cambiadas en la capa de aplicación' : '0 lines changed in the application layer'}</span>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 2: SQL Injection vs PreparedStatement -->
+			<section class="dj-slide" data-slide="2">
+				<div class="dj-header">
+					<span class="dj-kicker">{isEs ? 'Seguridad de la Capa de Datos' : 'Data Layer Security'}</span>
+					<h2 class="dj-title">{isEs ? 'Inyección SQL vs PreparedStatement: La Separación Estructural' : 'SQL Injection vs PreparedStatement: The Structural Separation'}</h2>
+					<p class="dj-lead">
+						{isEs
+							? 'Concatenar la entrada del usuario en el SQL confunde datos con código ejecutable. PreparedStatement compila la consulta como un árbol fijo antes de que el dato exista.'
+							: 'Concatenating user input into SQL confuses data with executable code. PreparedStatement compiles the query as a fixed tree before the data even exists.'}
+					</p>
+				</div>
+
+				<div class="dj-card">
+					<div class="dj-inj-grid">
+						<div class="dj-inj-panel dj-inj-panel-danger">
+							<div class="dj-inj-head">
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+									<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+									<path d="M12 9v4" />
+									<path d="M12 17h.01" />
+								</svg>
+								<span class="dj-badge dj-badge-danger">Statement</span>
+								<strong>{isEs ? 'Inseguro' : 'Insecure'}</strong>
+							</div>
+							<pre class="dj-pre"><code>String sql = "SELECT * FROM usuarios "
+    + "WHERE email = '" + entrada + "'";
+rs = statement.executeQuery(sql);</code></pre>
+							<div class="dj-inj-query-label">{isEs ? 'Consulta enviada al motor:' : 'Query sent to the engine:'}</div>
+							<code class="dj-inj-query" id="djStatementQuery">SELECT * FROM usuarios WHERE email = 'facundo@mail.com'</code>
+							<div class="dj-inj-result" id="djStatementResult">
+								<span class="dj-tag-ok">{isEs ? '1 fila' : '1 row'}</span>
+							</div>
+						</div>
+
+						<div class="dj-inj-panel dj-inj-panel-safe">
+							<div class="dj-inj-head">
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+									<rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+									<path d="M7 11V7a5 5 0 0 1 10 0v4" />
+								</svg>
+								<span class="dj-badge dj-badge-safe">PreparedStatement</span>
+								<strong>{isEs ? 'Seguro' : 'Safe'}</strong>
+							</div>
+							<pre class="dj-pre dj-pre-accent"><code>String sql = "SELECT * FROM usuarios "
+    + "WHERE email = ?";
+ps = conn.prepareStatement(sql);
+ps.setString(1, entrada);</code></pre>
+							<div class="dj-inj-query-label">{isEs ? 'Plantilla precompilada + parámetro:' : 'Precompiled template + parameter:'}</div>
+							<code class="dj-inj-query" id="djPreparedQuery">SELECT * FROM usuarios WHERE email = ?  →  "facundo@mail.com"</code>
+							<div class="dj-inj-result" id="djPreparedResult">
+								<span class="dj-tag-ok">{isEs ? '1 fila' : '1 row'}</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="dj-sim-block">
+						<div class="dj-sim-label">
+							<strong>{isEs ? 'Consola: probá un payload' : 'Console: try a payload'}</strong>
+							<span class="dj-hint">{isEs ? 'Elegí una entrada y mirá qué recibe cada consulta' : 'Pick an input and see what each query receives'}</span>
+						</div>
+						<div class="dj-payload-buttons">
+							<button class="dj-tab" id="djPayload1Btn" data-payload="injection">' OR '1'='1</button>
+							<button class="dj-tab" id="djPayload2Btn" data-payload="comment">admin'--</button>
+							<button class="dj-tab is-active" id="djPayload3Btn" data-payload="normal">facundo@mail.com</button>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 3: The ResultSet Cursor -->
+			<section class="dj-slide" data-slide="3">
+				<div class="dj-header">
+					<span class="dj-kicker">{isEs ? 'Lectura de Datos' : 'Data Reading'}</span>
+					<h2 class="dj-title">{isEs ? 'El Cursor de ResultSet: Recorriendo Registros en Memoria' : 'The ResultSet Cursor: Traversing Records in Memory'}</h2>
+					<p class="dj-lead">
+						{isEs
+							? 'ResultSet no es una lista cargada en memoria: es un cursor que apunta a un buffer y dialoga con la base fila por fila mediante rs.next().'
+							: 'ResultSet is not a list loaded into memory: it is a cursor pointing at a buffer that talks to the database row by row via rs.next().'}
+					</p>
+				</div>
+
+				<div class="dj-card">
+					<div class="dj-cursor-grid">
+						<div class="dj-cursor-table-wrap">
+							<table class="dj-cursor-table">
+								<thead>
+									<tr><th>id</th><th>{isEs ? 'nombre' : 'name'}</th><th>{isEs ? 'precio' : 'price'}</th></tr>
+								</thead>
+								<tbody>
+									<tr id="djRow1" class="dj-cursor-row"><td>1</td><td>Teclado</td><td>45.0</td></tr>
+									<tr id="djRow2" class="dj-cursor-row"><td>2</td><td>Mouse</td><td>20.0</td></tr>
+									<tr id="djRow3" class="dj-cursor-row"><td>3</td><td>Monitor</td><td>220.0</td></tr>
+								</tbody>
+							</table>
+						</div>
+
+						<div class="dj-cursor-panel">
+							<div class="dj-cursor-status" id="djCursorStatus">
+								{isEs ? '[ANTES DE LA PRIMERA FILA]' : '[BEFORE THE FIRST ROW]'}
+							</div>
+							<pre class="dj-pre" id="djCursorCode"><code>// {isEs ? 'todavía no se llamó a rs.next()' : "rs.next() hasn't been called yet"}</code></pre>
+							<div class="dj-cursor-controls">
+								<button class="dj-btn dj-btn-accent" id="djCursorNextBtn">rs.next()</button>
+								<button class="dj-btn" id="djCursorResetBtn">{isEs ? 'Reiniciar' : 'Reset'}</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 4: ACID Transactions -->
+			<section class="dj-slide" data-slide="4">
+				<div class="dj-header">
+					<span class="dj-kicker">{isEs ? 'Consistencia y Atomicidad' : 'Consistency and Atomicity'}</span>
+					<h2 class="dj-title">{isEs ? 'Transacciones ACID: El Protocolo Atómico de Transferencia' : 'ACID Transactions: The Atomic Transfer Protocol'}</h2>
+					<p class="dj-lead">
+						{isEs
+							? 'Si una transferencia de $100 entre dos cuentas se interrumpe a mitad de camino, el dinero no puede evaporarse: o se confirman todos los cambios con commit, o no se aplica ninguno con rollback.'
+							: 'If a $100 transfer between two accounts is interrupted halfway, the money cannot evaporate: either every change is confirmed with commit, or none is applied with rollback.'}
+					</p>
+				</div>
+
+				<div class="dj-card">
+					<div class="dj-tx-accounts">
+						<div class="dj-tx-account" id="djAccount1Box">
+							<span class="dj-tx-account-label">{isEs ? 'Cuenta 1' : 'Account 1'}</span>
+							<strong class="dj-tx-account-balance" id="djAccount1Balance">$500</strong>
+							<span class="dj-tx-account-state" id="djAccount1State">{isEs ? 'confirmado' : 'committed'}</span>
+						</div>
+						<div class="dj-tx-arrow" aria-hidden="true">→</div>
+						<div class="dj-tx-account" id="djAccount2Box">
+							<span class="dj-tx-account-label">{isEs ? 'Cuenta 2' : 'Account 2'}</span>
+							<strong class="dj-tx-account-balance" id="djAccount2Balance">$300</strong>
+							<span class="dj-tx-account-state" id="djAccount2State">{isEs ? 'confirmado' : 'committed'}</span>
+						</div>
+					</div>
+
+					<pre class="dj-pre" id="djTxLog"><code>conn.setAutoCommit(false);</code></pre>
+
+					<div class="dj-tx-controls">
+						<button class="dj-btn dj-btn-accent" id="djStartTxBtn">{isEs ? '1. Iniciar transacción' : '1. Start transaction'}</button>
+						<button class="dj-btn" id="djCommitBtn" disabled>{isEs ? '2a. Confirmar (commit)' : '2a. Commit'}</button>
+						<button class="dj-btn" id="djFailBtn" disabled>{isEs ? '2b. Simular caída de red' : '2b. Simulate network failure'}</button>
+						<button class="dj-btn" id="djResetTxBtn">{isEs ? 'Reiniciar' : 'Reset'}</button>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 5: Connection Pools (HikariCP) and the DAO Pattern -->
+			<section class="dj-slide" data-slide="5">
+				<div class="dj-header">
+					<span class="dj-kicker">{isEs ? 'Rendimiento y Arquitectura de Acceso a Datos' : 'Performance and Data Access Architecture'}</span>
+					<h2 class="dj-title">{isEs ? 'Pools de Conexiones (HikariCP) y el Patrón DAO' : 'Connection Pools (HikariCP) and the DAO Pattern'}</h2>
+					<p class="dj-lead">
+						{isEs
+							? 'Abrir una conexión TCP/TLS con autenticación cuesta cientos de milisegundos. Un pool como HikariCP mantiene conexiones ya abiertas listas para prestarse.'
+							: 'Opening a TCP/TLS connection with authentication costs hundreds of milliseconds. A pool like HikariCP keeps connections already open, ready to lend out.'}
+					</p>
+				</div>
+
+				<div class="dj-card">
+					<div class="dj-pool-split">
+						<div class="dj-pool-controls">
+							<div class="dj-toggle-wrap">
+								<label class="dj-toggle-label">
+									<input type="checkbox" id="djPoolToggle" checked />
+									<span>{isEs ? 'Usar HikariCP (pool de 10 conexiones)' : 'Use HikariCP (10-connection pool)'}</span>
+								</label>
+							</div>
+
+							<div class="dj-perf-panel">
+								<strong class="dj-perf-heading">{isEs ? 'Latencia por request:' : 'Latency per request:'}</strong>
+								<div class="dj-bar-track">
+									<div id="djLatencyBar" class="dj-bar-fill dj-bar-fast" style="width: 6%;"></div>
+								</div>
+								<div class="dj-perf-stats" id="djLatencyStats">
+									<span>{isEs ? 'Conexión tomada del pool' : 'Connection taken from the pool'}</span>
+									<strong class="dj-text-accent">2 ms</strong>
+								</div>
+								<p class="dj-subtext" id="djLatencyExplanation">
+									{isEs
+										? 'conn.close() no destruye la conexión: la devuelve al pool para el próximo request.'
+										: "conn.close() doesn't destroy the connection: it returns it to the pool for the next request."}
+								</p>
+							</div>
+						</div>
+
+						<div class="dj-dao-viz">
+							<svg viewBox="0 0 300 200" class="dj-svg-dao" role="img" aria-label={isEs ? 'Diagrama del patrón DAO' : 'DAO pattern diagram'}>
+								<defs>
+									<marker id="djArrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+										<path d="M0,0 L10,5 L0,10 z" class="dj-arrow-fill" />
+									</marker>
+								</defs>
+
+								<rect x="10" y="10" width="150" height="180" rx="12" class="dj-dao-box" />
+								<text x="85" y="32" class="dj-dao-title" text-anchor="middle">ProductoDAO</text>
+								<text x="24" y="58" class="dj-dao-method">buscarPorId(id)</text>
+								<text x="24" y="78" class="dj-dao-method">buscarPorCategoria(c)</text>
+								<text x="24" y="98" class="dj-dao-method">insertar(p)</text>
+								<text x="24" y="118" class="dj-dao-method">actualizarStock(id, d)</text>
+								<text x="24" y="138" class="dj-dao-method">eliminar(id)</text>
+								<text x="24" y="166" class="dj-dao-note">{isEs ? 'el SQL vive solo acá' : 'SQL lives only here'}</text>
+
+								<path d="M164 100 H196" class="dj-arch-arrow" marker-end="url(#djArrow2)" />
+
+								<rect x="200" y="60" width="90" height="80" rx="12" class="dj-dao-domain-box" />
+								<text x="245" y="84" class="dj-dao-title" text-anchor="middle">Producto</text>
+								<text x="215" y="104" class="dj-dao-method">id, nombre</text>
+								<text x="215" y="120" class="dj-dao-method">precio, stock</text>
+							</svg>
+						</div>
+					</div>
+				</div>
+			</section>
+		</main>
+	</div>
+</div>
+
+<style>
+	.dj-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.dj-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.dj-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	.dj-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: var(--color-surface);
+	}
+
+	.dj-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.dj-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.dj-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.dj-btn-accent {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		color: var(--color-surface);
+	}
+
+	.dj-btn-accent:hover:not(:disabled) {
+		color: var(--color-surface);
+		border-color: var(--color-accent-700);
+		background: var(--color-accent-700);
+	}
+
+	.dj-counter {
+		font-size: 13px;
+		font-weight: 700;
+		color: var(--color-neutral-700);
+	}
+
+	.dj-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 1100px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.dj-slide.is-active {
+		display: block;
+		animation: djFade 0.25s ease-out;
+	}
+
+	@keyframes djFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.dj-header {
+		margin-bottom: var(--space-6);
+	}
+
+	.dj-kicker {
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.dj-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 28px;
+		color: var(--color-text);
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.dj-lead {
+		font-size: 15px;
+		color: var(--color-neutral-700);
+		line-height: 1.5;
+		margin: 0;
+	}
+
+	.dj-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-6);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.dj-sim-block {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		margin-top: var(--space-4);
+	}
+
+	.dj-sim-label {
+		display: flex;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		font-size: 13px;
+		margin-bottom: var(--space-3);
+	}
+
+	.dj-hint {
+		font-size: 11px;
+		color: var(--color-neutral-700);
+	}
+
+	.dj-tab {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+		padding: var(--space-1) var(--space-3);
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--color-neutral-700);
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.dj-tab.is-active {
+		background: var(--color-accent);
+		color: var(--color-surface);
+		border-color: var(--color-accent);
+	}
+
+	.dj-result-box {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		margin-top: var(--space-3);
+	}
+
+	.dj-code-sample {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+	}
+
+	.dj-tag-ok {
+		color: var(--color-accent-2-700);
+		font-weight: 700;
+		font-size: 11px;
+	}
+
+	.dj-tag-err {
+		color: var(--color-accent-700);
+		font-weight: 700;
+		font-size: 11px;
+	}
+
+	.dj-pre {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		font-family: monospace;
+		font-size: 11px;
+		line-height: 1.5;
+		margin: 0 0 var(--space-3);
+		overflow-x: auto;
+	}
+
+	.dj-pre-accent {
+		border-color: var(--color-accent-2);
+	}
+
+	.dj-subtext {
+		font-size: 11px;
+		color: var(--color-neutral-700);
+		line-height: 1.4;
+		margin-top: var(--space-2);
+	}
+
+	.dj-text-accent {
+		color: var(--color-accent-700);
+	}
+
+	/* Slide 1: JDBC layers */
+	.dj-arch-viz {
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.dj-svg-arch {
+		width: 100%;
+		height: auto;
+	}
+
+	.dj-layer-app {
+		fill: color-mix(in srgb, var(--color-accent-2) 15%, transparent);
+		stroke: var(--color-accent-2);
+		stroke-width: 2;
+	}
+
+	.dj-layer-api {
+		fill: color-mix(in srgb, var(--color-accent) 12%, transparent);
+		stroke: var(--color-accent);
+		stroke-width: 2;
+	}
+
+	.dj-layer-label {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--color-accent-2-700);
+	}
+
+	.dj-layer-label-accent {
+		fill: var(--color-accent-700);
+	}
+
+	.dj-layer-sub {
+		font-family: monospace;
+		font-size: 10px;
+		fill: var(--color-neutral-700);
+	}
+
+	.dj-arch-arrow {
+		stroke: var(--color-neutral-600);
+		stroke-width: 2;
+		fill: none;
+	}
+
+	.dj-arrow-fill {
+		fill: var(--color-neutral-600);
+	}
+
+	.dj-driver-box rect {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+		stroke-width: 2;
+		transition: all 0.2s ease;
+	}
+
+	.dj-driver-box.is-active rect {
+		fill: color-mix(in srgb, var(--color-accent) 16%, transparent);
+		stroke: var(--color-accent);
+	}
+
+	.dj-driver-title {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--color-text);
+	}
+
+	.dj-driver-sub {
+		font-family: monospace;
+		font-size: 10px;
+		fill: var(--color-neutral-700);
+	}
+
+	.dj-driver-buttons {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+		margin-bottom: var(--space-3);
+	}
+
+	/* Slide 2: Injection vs PreparedStatement */
+	.dj-inj-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 768px) {
+		.dj-inj-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.dj-inj-panel {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.dj-inj-panel-danger {
+		border-color: var(--color-accent);
+	}
+
+	.dj-inj-panel-safe {
+		border-color: var(--color-accent-2);
+	}
+
+	.dj-inj-head {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		color: var(--color-text);
+		margin-bottom: var(--space-3);
+	}
+
+	.dj-badge {
+		font-size: 10px;
+		font-weight: 700;
+		padding: 2px 8px;
+		border-radius: 999px;
+		font-family: monospace;
+	}
+
+	.dj-badge-danger {
+		background: var(--color-accent);
+		color: var(--color-surface);
+	}
+
+	.dj-badge-safe {
+		background: var(--color-accent-2);
+		color: var(--color-surface);
+	}
+
+	.dj-inj-query-label {
+		font-size: 11px;
+		color: var(--color-neutral-700);
+		margin-bottom: var(--space-1);
+	}
+
+	.dj-inj-query {
+		display: block;
+		font-family: monospace;
+		font-size: 11px;
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		word-break: break-word;
+	}
+
+	.dj-inj-result {
+		margin-top: var(--space-3);
+	}
+
+	/* Slide 3: ResultSet cursor */
+	.dj-cursor-grid {
+		display: grid;
+		grid-template-columns: 1.1fr 1fr;
+		gap: var(--space-5, var(--space-4));
+	}
+
+	@media (max-width: 768px) {
+		.dj-cursor-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.dj-cursor-table-wrap {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.dj-cursor-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 12px;
+	}
+
+	.dj-cursor-table th,
+	.dj-cursor-table td {
+		text-align: left;
+		padding: var(--space-2);
+		border-bottom: 1px solid var(--color-divider);
+	}
+
+	.dj-cursor-table th {
+		font-size: 10px;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-neutral-700);
+	}
+
+	.dj-cursor-row {
+		font-family: monospace;
+		transition: background 0.2s ease;
+	}
+
+	.dj-cursor-row.is-current {
+		background: color-mix(in srgb, var(--color-accent) 16%, transparent);
+		font-weight: 700;
+	}
+
+	.dj-cursor-panel {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.dj-cursor-status {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.dj-cursor-controls {
+		display: flex;
+		gap: var(--space-2);
+	}
+
+	/* Slide 4: ACID transactions */
+	.dj-tx-accounts {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		gap: var(--space-3);
+		margin-bottom: var(--space-4);
+	}
+
+	@media (max-width: 768px) {
+		.dj-tx-accounts {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.dj-tx-account {
+		background: var(--color-bg);
+		border: 2px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		transition: all 0.25s ease;
+	}
+
+	.dj-tx-account.is-pending {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+	}
+
+	.dj-tx-account.is-reverted {
+		border-color: var(--color-neutral-500);
+	}
+
+	.dj-tx-account.is-committed-new {
+		border-color: var(--color-accent-2);
+		background: color-mix(in srgb, var(--color-accent-2) 12%, transparent);
+	}
+
+	.dj-tx-account-label {
+		font-size: 11px;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-neutral-700);
+	}
+
+	.dj-tx-account-balance {
+		font-family: monospace;
+		font-size: 24px;
+		color: var(--color-text);
+	}
+
+	.dj-tx-account-state {
+		font-size: 11px;
+		font-weight: 700;
+		color: var(--color-accent-2-700);
+	}
+
+	.dj-tx-arrow {
+		font-size: 20px;
+		font-weight: 700;
+		color: var(--color-neutral-600);
+		text-align: center;
+	}
+
+	.dj-tx-controls {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+
+	/* Slide 5: Pools and DAO */
+	.dj-pool-split {
+		display: grid;
+		grid-template-columns: 1.1fr 1fr;
+		gap: var(--space-5, var(--space-4));
+	}
+
+	@media (max-width: 768px) {
+		.dj-pool-split {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.dj-pool-controls {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.dj-toggle-wrap {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.dj-toggle-label {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.dj-perf-panel {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.dj-perf-heading {
+		display: block;
+		font-size: 11px;
+		color: var(--color-neutral-700);
+		margin-bottom: var(--space-2);
+	}
+
+	.dj-bar-track {
+		height: 12px;
+		background: var(--color-surface);
+		border-radius: 999px;
+		overflow: hidden;
+		margin-bottom: var(--space-2);
+		border: 1px solid var(--color-divider);
+	}
+
+	.dj-bar-fill {
+		height: 100%;
+		border-radius: 999px;
+		transition: width 0.4s ease, background 0.4s ease;
+	}
+
+	.dj-bar-fast {
+		background: var(--color-accent-2);
+	}
+
+	.dj-bar-slow {
+		background: var(--color-accent);
+	}
+
+	.dj-perf-stats {
+		display: flex;
+		justify-content: space-between;
+		font-size: 11px;
+	}
+
+	.dj-dao-viz {
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		justify-content: center;
+	}
+
+	.dj-svg-dao {
+		width: 100%;
+		max-height: 220px;
+	}
+
+	.dj-dao-box {
+		fill: color-mix(in srgb, var(--color-accent) 10%, transparent);
+		stroke: var(--color-accent);
+		stroke-width: 2;
+	}
+
+	.dj-dao-domain-box {
+		fill: color-mix(in srgb, var(--color-accent-2) 14%, transparent);
+		stroke: var(--color-accent-2);
+		stroke-width: 2;
+	}
+
+	.dj-dao-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 13px;
+		fill: var(--color-text);
+	}
+
+	.dj-dao-method {
+		font-family: monospace;
+		font-size: 9.5px;
+		fill: var(--color-neutral-800);
+	}
+
+	.dj-dao-note {
+		font-family: var(--font-body);
+		font-size: 9px;
+		font-style: italic;
+		fill: var(--color-accent-700);
+	}
+
+	@media (min-width: 1440px) { .dj-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .dj-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .dj-viewport { zoom: 1.25; } }
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 5;
+
+	const prevBtn = document.getElementById('djPrevBtn') as HTMLButtonElement;
+	const nextBtn = document.getElementById('djNextBtn') as HTMLButtonElement;
+	const counter = document.getElementById('djSlideCounter') as HTMLElement;
+	const slides = document.querySelectorAll<HTMLElement>('.dj-slide');
+
+	function updateSlide(target: number) {
+		if (target < 1 || target > totalSlides) return;
+		currentSlide = target;
+		slides.forEach((s) => s.classList.remove('is-active'));
+		document.querySelector(`.dj-slide[data-slide="${currentSlide}"]`)?.classList.add('is-active');
+
+		if (counter) counter.textContent = `${currentSlide} / ${totalSlides}`;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	}
+
+	prevBtn?.addEventListener('click', () => updateSlide(currentSlide - 1));
+	nextBtn?.addEventListener('click', () => updateSlide(currentSlide + 1));
+
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') updateSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') updateSlide(currentSlide - 1);
+	});
+
+	// Slide 1: Driver / engine selector
+	const driverConfig: Record<string, { url: string; box: string }> = {
+		pg: { url: 'jdbc:postgresql://localhost:5432/tienda', box: 'djDriverPgBox' },
+		mysql: { url: 'jdbc:mysql://localhost:3306/tienda', box: 'djDriverMysqlBox' },
+		h2: { url: 'jdbc:h2:mem:tienda;DB_CLOSE_DELAY=-1', box: 'djDriverH2Box' },
+	};
+	const driverButtons = document.querySelectorAll<HTMLButtonElement>('.dj-driver-buttons .dj-tab');
+	const driverUrl = document.getElementById('djDriverUrl');
+	const driverBoxes = document.querySelectorAll<SVGGElement>('.dj-driver-box');
+
+	driverButtons.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const driver = btn.dataset.driver ?? 'pg';
+			const config = driverConfig[driver];
+			if (!config) return;
+			driverButtons.forEach((b) => b.classList.remove('is-active'));
+			btn.classList.add('is-active');
+			driverBoxes.forEach((box) => box.classList.remove('is-active'));
+			document.getElementById(config.box)?.classList.add('is-active');
+			if (driverUrl) driverUrl.textContent = config.url;
+		});
+	});
+
+	// Slide 2: SQL injection console
+	type PayloadResult = { statementQuery: string; statementResult: string; preparedQuery: string; preparedResult: string };
+	const payloads: Record<string, PayloadResult> = {
+		injection: {
+			statementQuery: `SELECT * FROM usuarios WHERE email = '' OR '1'='1'`,
+			statementResult: `<span class="dj-tag-err">⚠ TODOS los usuarios (fuga total)</span>`,
+			preparedQuery: `SELECT * FROM usuarios WHERE email = ?  →  "' OR '1'='1"`,
+			preparedResult: `<span class="dj-tag-ok">✓ 0 filas — busca ese email literal</span>`,
+		},
+		comment: {
+			statementQuery: `SELECT * FROM usuarios WHERE email = 'admin'--'`,
+			statementResult: `<span class="dj-tag-err">⚠ 'admin' autenticado, resto del SQL comentado</span>`,
+			preparedQuery: `SELECT * FROM usuarios WHERE email = ?  →  "admin'--"`,
+			preparedResult: `<span class="dj-tag-ok">✓ 0 filas — ningún email es literalmente ese texto</span>`,
+		},
+		normal: {
+			statementQuery: `SELECT * FROM usuarios WHERE email = 'facundo@mail.com'`,
+			statementResult: `<span class="dj-tag-ok">✓ 1 fila</span>`,
+			preparedQuery: `SELECT * FROM usuarios WHERE email = ?  →  "facundo@mail.com"`,
+			preparedResult: `<span class="dj-tag-ok">✓ 1 fila</span>`,
+		},
+	};
+	const payloadButtons = document.querySelectorAll<HTMLButtonElement>('.dj-payload-buttons .dj-tab');
+	const statementQueryEl = document.getElementById('djStatementQuery');
+	const statementResultEl = document.getElementById('djStatementResult');
+	const preparedQueryEl = document.getElementById('djPreparedQuery');
+	const preparedResultEl = document.getElementById('djPreparedResult');
+
+	payloadButtons.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const key = btn.dataset.payload ?? 'normal';
+			const data = payloads[key];
+			if (!data) return;
+			payloadButtons.forEach((b) => b.classList.remove('is-active'));
+			btn.classList.add('is-active');
+			if (statementQueryEl) statementQueryEl.textContent = data.statementQuery;
+			if (statementResultEl) statementResultEl.innerHTML = data.statementResult;
+			if (preparedQueryEl) preparedQueryEl.textContent = data.preparedQuery;
+			if (preparedResultEl) preparedResultEl.innerHTML = data.preparedResult;
+		});
+	});
+
+	// Slide 3: ResultSet cursor stepper
+	const cursorRows = [
+		{ id: 'djRow1', dbId: 1, nombre: 'Teclado', precio: 45.0 },
+		{ id: 'djRow2', dbId: 2, nombre: 'Mouse', precio: 20.0 },
+		{ id: 'djRow3', dbId: 3, nombre: 'Monitor', precio: 220.0 },
+	];
+	let cursorPos = 0;
+	const cursorStatus = document.getElementById('djCursorStatus');
+	const cursorCode = document.getElementById('djCursorCode');
+	const cursorNextBtn = document.getElementById('djCursorNextBtn') as HTMLButtonElement;
+	const cursorResetBtn = document.getElementById('djCursorResetBtn');
+
+	function renderCursor() {
+		document.querySelectorAll('.dj-cursor-row').forEach((row) => row.classList.remove('is-current'));
+		if (cursorPos === 0) {
+			if (cursorStatus) cursorStatus.textContent = '[ANTES DE LA PRIMERA FILA]';
+			if (cursorCode) cursorCode.innerHTML = `<code>while (rs.next()) { ... }
+// todavía no se llamó a rs.next()</code>`;
+		} else if (cursorPos >= 1 && cursorPos <= 3) {
+			const row = cursorRows[cursorPos - 1];
+			document.getElementById(row.id)?.classList.add('is-current');
+			if (cursorStatus) cursorStatus.textContent = `Fila ${cursorPos} de 3 — rs.next() devolvió true`;
+			if (cursorCode) cursorCode.innerHTML = `<code>rs.getInt("id")        → ${row.dbId}
+rs.getString("nombre") → "${row.nombre}"
+rs.getDouble("precio") → ${row.precio}</code>`;
+		} else {
+			if (cursorStatus) cursorStatus.textContent = 'rs.next() → false';
+			if (cursorCode) cursorCode.innerHTML = `<code>// se recorrieron las 3 filas
+// el bucle while termina</code>`;
+		}
+		if (cursorNextBtn) cursorNextBtn.disabled = cursorPos >= 4;
+	}
+
+	cursorNextBtn?.addEventListener('click', () => {
+		cursorPos = Math.min(cursorPos + 1, 4);
+		renderCursor();
+	});
+
+	cursorResetBtn?.addEventListener('click', () => {
+		cursorPos = 0;
+		renderCursor();
+	});
+
+	// Slide 4: ACID transaction simulator
+	const INITIAL_BALANCE_1 = 500;
+	const INITIAL_BALANCE_2 = 300;
+	const TX_AMOUNT = 100;
+
+	const acc1Balance = document.getElementById('djAccount1Balance');
+	const acc1State = document.getElementById('djAccount1State');
+	const acc1Box = document.getElementById('djAccount1Box');
+	const acc2Balance = document.getElementById('djAccount2Balance');
+	const acc2State = document.getElementById('djAccount2State');
+	const acc2Box = document.getElementById('djAccount2Box');
+	const txLog = document.getElementById('djTxLog');
+	const startTxBtn = document.getElementById('djStartTxBtn') as HTMLButtonElement;
+	const commitBtn = document.getElementById('djCommitBtn') as HTMLButtonElement;
+	const failBtn = document.getElementById('djFailBtn') as HTMLButtonElement;
+	const resetTxBtn = document.getElementById('djResetTxBtn');
+
+	function resetTx() {
+		if (acc1Balance) acc1Balance.textContent = `$${INITIAL_BALANCE_1}`;
+		if (acc2Balance) acc2Balance.textContent = `$${INITIAL_BALANCE_2}`;
+		if (acc1State) acc1State.textContent = 'confirmado';
+		if (acc2State) acc2State.textContent = 'confirmado';
+		acc1Box?.classList.remove('is-pending', 'is-reverted');
+		acc2Box?.classList.remove('is-committed-new');
+		if (txLog) txLog.innerHTML = `<code>conn.setAutoCommit(false);</code>`;
+		if (startTxBtn) startTxBtn.disabled = false;
+		if (commitBtn) commitBtn.disabled = true;
+		if (failBtn) failBtn.disabled = true;
+	}
+
+	startTxBtn?.addEventListener('click', () => {
+		if (acc1Balance) acc1Balance.textContent = `$${INITIAL_BALANCE_1 - TX_AMOUNT}`;
+		if (acc1State) acc1State.textContent = 'pendiente (sin confirmar)';
+		acc1Box?.classList.add('is-pending');
+		if (txLog) txLog.innerHTML = `<code>conn.setAutoCommit(false);
+UPDATE cuenta SET saldo = saldo - 100 WHERE id = 1;
+// pendiente: todavía no se llamó a commit()</code>`;
+		if (startTxBtn) startTxBtn.disabled = true;
+		if (commitBtn) commitBtn.disabled = false;
+		if (failBtn) failBtn.disabled = false;
+	});
+
+	commitBtn?.addEventListener('click', () => {
+		if (acc2Balance) acc2Balance.textContent = `$${INITIAL_BALANCE_2 + TX_AMOUNT}`;
+		if (acc2State) acc2State.textContent = 'confirmado';
+		if (acc1State) acc1State.textContent = 'confirmado';
+		acc1Box?.classList.remove('is-pending');
+		acc2Box?.classList.add('is-committed-new');
+		if (txLog) txLog.innerHTML = `<code>UPDATE cuenta SET saldo = saldo + 100 WHERE id = 2;
+conn.commit();
+// las dos operaciones quedaron permanentes en disco</code>`;
+		if (commitBtn) commitBtn.disabled = true;
+		if (failBtn) failBtn.disabled = true;
+	});
+
+	failBtn?.addEventListener('click', () => {
+		if (acc1Balance) acc1Balance.textContent = `$${INITIAL_BALANCE_1}`;
+		if (acc1State) acc1State.textContent = 'revertido (rollback)';
+		acc1Box?.classList.remove('is-pending');
+		acc1Box?.classList.add('is-reverted');
+		if (txLog) txLog.innerHTML = `<code>// falla de red en el Paso 2
+catch (SQLException e) {
+    conn.rollback();
+}
+// la Cuenta 1 vuelve a $500: nunca pasó nada</code>`;
+		if (commitBtn) commitBtn.disabled = true;
+		if (failBtn) failBtn.disabled = true;
+	});
+
+	resetTxBtn?.addEventListener('click', resetTx);
+
+	// Slide 5: Connection pool toggle
+	const poolToggle = document.getElementById('djPoolToggle') as HTMLInputElement;
+	const latencyBar = document.getElementById('djLatencyBar');
+	const latencyStats = document.getElementById('djLatencyStats');
+	const latencyExplanation = document.getElementById('djLatencyExplanation');
+
+	poolToggle?.addEventListener('change', () => {
+		const pooled = poolToggle.checked;
+		if (pooled) {
+			if (latencyBar) { latencyBar.className = 'dj-bar-fill dj-bar-fast'; latencyBar.style.width = '6%'; }
+			if (latencyStats) {
+				latencyStats.innerHTML = `<span>Conexión tomada del pool</span><strong class="dj-text-accent">2 ms</strong>`;
+			}
+			if (latencyExplanation) {
+				latencyExplanation.textContent = 'conn.close() no destruye la conexión: la devuelve al pool para el próximo request.';
+			}
+		} else {
+			if (latencyBar) { latencyBar.className = 'dj-bar-fill dj-bar-slow'; latencyBar.style.width = '92%'; }
+			if (latencyStats) {
+				latencyStats.innerHTML = `<span>Socket TCP nuevo + handshake + auth</span><strong class="dj-text-accent">180 ms</strong>`;
+			}
+			if (latencyExplanation) {
+				latencyExplanation.textContent = 'Sin pool, cada request abre una conexión desde cero: resolución DNS, handshake TCP/TLS y autenticación.';
+			}
+		}
+	});
+</script>

@@ -1,0 +1,2097 @@
+---
+interface Props {
+	lang?: 'es' | 'en';
+}
+
+const { lang = 'es' } = Astro.props;
+
+const t = {
+	es: {
+		kicker: 'Estructuras de Datos Lineales',
+		title: 'TAD Pila (LIFO) y TAD Cola (FIFO) en Java',
+		subtitle: 'Disciplinas de acceso restringido, aritmética circular y aplicaciones algorítmicas.',
+		slide: 'Diapositiva',
+		of: 'de',
+		prev: 'Anterior',
+		next: 'Siguiente',
+		reset: 'Reiniciar',
+		step: 'Paso',
+		status: 'Estado',
+		code: 'Código Java',
+		s1Title: 'TAD Pila (LIFO): Disciplina Último en Entrar, Primero en Salir',
+		s1Desc: 'En una pila solo se puede interactuar con el extremo superior ("tope"). Todo elemento insertado se apila sobre el anterior y es el primero en ser desapilado.',
+		s1Push: 'Apilar (push)',
+		s1Pop: 'Desapilar (pop)',
+		s1Peek: 'Consultar (peek)',
+		s1Top: 'tope',
+		s1Empty: 'La pila está vacía (underflow si se desapila)',
+		s1Full: 'Capacidad máxima alcanzada (posible overflow)',
+		s2Title: 'TAD Cola (FIFO): Disciplina Primero en Entrar, Primero en Salir',
+		s2Desc: 'En una cola honesta, los elementos ingresan por la parte trasera (fin / tail) y se atienden o extraen por el frente (head).',
+		s2Enqueue: 'Encolar (enqueue)',
+		s2Dequeue: 'Desencolar (dequeue)',
+		s2Peek: 'Consultar frente',
+		s2Front: 'frente',
+		s2Rear: 'fin',
+		s3Title: 'Cola Circular sobre Array: La Aritmética Modular',
+		s3Desc: 'Un array lineal desperdicia espacio al desencolar. La cola circular reutiliza celdas conectando el índice final con el inicial mediante la fórmula: (fin + 1) % capacidad.',
+		s3StepEnqueue: 'Encolar siguiente',
+		s3StepDequeue: 'Desencolar',
+		s3Formula: 'Cálculo del puntero:',
+		s4Title: 'Pilas y Colas en la Arquitectura de Software Real',
+		s4Desc: 'Dónde residen estas estructuras en los sistemas productivos que usamos todos los días.',
+		s5Title: 'Algoritmo de Expresiones Balanceadas con Pila',
+		s5Desc: 'Verificación de delimitadores (), [], {} mediante apilado de aperturas y validación estricta al encontrar un cierre.',
+		s5Run: 'Validar paso a paso',
+		s5Auto: 'Ejecutar automático',
+		s5ValidBadge: 'Expresión Balanceada',
+		s5InvalidBadge: 'Expresión Desbalanceada',
+		s6Title: 'Simulación de Eventos Discretos: Dos Colas de Atención',
+		s6Desc: 'Modelado de un sistema de atención concurrente con cola rápida y cola general avanzando en el tiempo simulado.',
+		s6NextTick: 'Avanzar tiempo (Tick +1)',
+		s6AddClient: 'Llegada de cliente',
+	},
+	en: {
+		kicker: 'Linear Data Structures',
+		title: 'Stack ADT (LIFO) and Queue ADT (FIFO) in Java',
+		subtitle: 'Restricted access disciplines, modular circular arrays, and algorithmic applications.',
+		slide: 'Slide',
+		of: 'of',
+		prev: 'Previous',
+		next: 'Next',
+		reset: 'Reset',
+		step: 'Step',
+		status: 'Status',
+		code: 'Java Code',
+		s1Title: 'Stack ADT (LIFO): Last-In, First-Out Access',
+		s1Desc: 'In a stack you can only interact with the top. Elements are placed on top and are the first to be popped out.',
+		s1Push: 'Push',
+		s1Pop: 'Pop',
+		s1Peek: 'Peek',
+		s1Top: 'top',
+		s1Empty: 'Stack is empty (underflow if popped)',
+		s1Full: 'Maximum capacity reached (potential overflow)',
+		s2Title: 'Queue ADT (FIFO): First-In, First-Out Discipline',
+		s2Desc: 'In a fair queue, elements enter at the rear (tail) and are served or removed from the front (head).',
+		s2Enqueue: 'Enqueue',
+		s2Dequeue: 'Dequeue',
+		s2Peek: 'Peek front',
+		s2Front: 'front',
+		s2Rear: 'rear',
+		s3Title: 'Circular Queue on Arrays: Modular Arithmetic',
+		s3Desc: 'A linear array wastes slots when dequeuing. The circular queue wraps indices around using: (rear + 1) % capacity.',
+		s3StepEnqueue: 'Enqueue next',
+		s3StepDequeue: 'Dequeue',
+		s3Formula: 'Pointer computation:',
+		s4Title: 'Stacks and Queues in Real Software Architecture',
+		s4Desc: 'Where these structures live across everyday production platforms and runtime environments.',
+		s5Title: 'Balanced Expression Validator using a Stack',
+		s5Desc: 'Validating delimiters (), [], {} by pushing openings and checking matching closures against stack top.',
+		s5Run: 'Step-by-step validate',
+		s5Auto: 'Auto run',
+		s5ValidBadge: 'Balanced Expression',
+		s5InvalidBadge: 'Unbalanced Expression',
+		s6Title: 'Discrete-Event Simulation: Dual Service Queues',
+		s6Desc: 'Modeling concurrent service desks with fast and standard customer queues over simulated ticks.',
+		s6NextTick: 'Advance time (Tick +1)',
+		s6AddClient: 'Arrival of customer',
+	},
+}[lang];
+---
+
+<section class="pc-screen" aria-label="Presentación TAD Pila y Cola Java">
+	<div class="pc-shell">
+		<header class="pc-nav-top">
+			<div class="pc-nav-title">
+				<span class="pc-kicker">{t.kicker}</span>
+				<h1 class="pc-main-title">{t.title}</h1>
+			</div>
+			<div class="pc-nav-controls">
+				<button type="button" class="pc-btn pc-btn-secondary" id="pc-prev-btn" aria-label={t.prev}>
+					← {t.prev}
+				</button>
+				<span class="pc-counter" id="pc-slide-counter">1 {t.of} 6</span>
+				<button type="button" class="pc-btn pc-btn-secondary" id="pc-next-btn" aria-label={t.next}>
+					{t.next} →
+				</button>
+			</div>
+		</header>
+
+		<div class="pc-progress-track" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="6">
+			<div class="pc-progress-bar" id="pc-progress-bar" style="width: 16.66%;"></div>
+		</div>
+
+		<main class="pc-viewport">
+			<!-- SLIDE 1: LA PILA (LIFO) -->
+			<article class="pc-slide active" data-slide="1">
+				<div class="pc-slide-header">
+					<span class="pc-slide-tag tag tag-accent">Slide 1 / 6 • LIFO Discipline</span>
+					<h2 class="pc-slide-title">{t.s1Title}</h2>
+					<p class="pc-slide-desc">{t.s1Desc}</p>
+				</div>
+
+				<div class="pc-dual-grid">
+					<div class="pc-card pc-simulator-box">
+						<div class="pc-card-header">
+							<span class="pc-card-label">Simulador Visual de Pila (LIFO)</span>
+							<span class="pc-badge" id="pc-stack-badge">Capacidad: 5 / En uso: 3</span>
+						</div>
+
+						<div class="pc-stack-visual-zone">
+							<!-- Vertical Tube Container -->
+							<div class="pc-stack-tube" id="pc-stack-tube">
+								<div class="pc-tube-top-opening">
+									<span class="pc-top-arrow-indicator" id="pc-top-arrow">↓ {t.s1Top}</span>
+								</div>
+								<div class="pc-stack-slots" id="pc-stack-slots">
+									<!-- Elements rendered top-to-bottom or absolute -->
+									<div class="pc-stack-item item-3" id="pc-item-3">
+										<span class="pc-item-val">30</span>
+										<span class="pc-item-tag">Top Element</span>
+									</div>
+									<div class="pc-stack-item item-2" id="pc-item-2">
+										<span class="pc-item-val">20</span>
+									</div>
+									<div class="pc-stack-item item-1" id="pc-item-1">
+										<span class="pc-item-val">10</span>
+									</div>
+								</div>
+								<div class="pc-tube-bottom"></div>
+							</div>
+
+							<!-- State readout -->
+							<div class="pc-stack-readout">
+								<div class="pc-metric-tile">
+									<span class="pc-metric-label">Tope actual</span>
+									<span class="pc-metric-value text-accent" id="pc-readout-top">30</span>
+								</div>
+								<div class="pc-metric-tile">
+									<span class="pc-metric-label">Tamaño (size)</span>
+									<span class="pc-metric-value" id="pc-readout-size">3</span>
+								</div>
+								<div class="pc-metric-tile">
+									<span class="pc-metric-label">¿Está vacía?</span>
+									<span class="pc-metric-value" id="pc-readout-empty">false</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="pc-action-bar">
+							<div class="pc-input-group">
+								<input type="number" id="pc-stack-input" class="pc-input" value="40" min="1" max="99" aria-label="Valor para apilar" />
+								<button type="button" class="pc-btn pc-btn-primary" id="pc-btn-push">+ {t.s1Push}</button>
+							</div>
+							<button type="button" class="pc-btn pc-btn-secondary" id="pc-btn-pop">- {t.s1Pop}</button>
+							<button type="button" class="pc-btn pc-btn-outline" id="pc-btn-peek">👁 {t.s1Peek}</button>
+							<button type="button" class="pc-btn pc-btn-ghost" id="pc-btn-reset-stack">↺ {t.reset}</button>
+						</div>
+						<div class="pc-status-banner" id="pc-stack-status">
+							Acción: Estado inicial cargado con [10, 20, 30]. Tope en 30.
+						</div>
+					</div>
+
+					<div class="pc-card pc-theory-box">
+						<h3 class="pc-card-title">Anatomía y Contrato en Java</h3>
+						<div class="pc-code-block">
+							<pre><code>// Contrato del TAD Pila
+public interface Pila&lt;T&gt; &#123;
+    void push(T elemento);  // O(1)
+    T pop();                // O(1)
+    T peek();               // O(1)
+    boolean isEmpty();      // O(1)
+    int size();             // O(1)
+&#125;
+
+// Ejemplo de uso:
+Pila&lt;Integer&gt; p = new PilaEnlazada&lt;&gt;();
+p.push(10);
+p.push(20);
+p.push(30);
+int x = p.pop(); // Retorna 30 (LIFO)</code></pre>
+						</div>
+						<div class="pc-callout">
+							<strong>Regla de oro:</strong> Una pila prohíbe el acceso por índice arbitrario (`p.get(1)` es ilegal). Esto garantiza que el último estado registrado siempre sea recuperado de forma predecible e instantánea.
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 2: LA COLA (FIFO) -->
+			<article class="pc-slide" data-slide="2">
+				<div class="pc-slide-header">
+					<span class="pc-slide-tag tag tag-accent">Slide 2 / 6 • FIFO Discipline</span>
+					<h2 class="pc-slide-title">{t.s2Title}</h2>
+					<p class="pc-slide-desc">{t.s2Desc}</p>
+				</div>
+
+				<div class="pc-dual-grid">
+					<div class="pc-card pc-simulator-box">
+						<div class="pc-card-header">
+							<span class="pc-card-label">Tubería Horizontal FIFO</span>
+							<span class="pc-badge" id="pc-queue-badge">Capacidad: 6 / En uso: 3</span>
+						</div>
+
+						<div class="pc-queue-visual-zone">
+							<div class="pc-queue-labels">
+								<span class="pc-pointer-badge pc-pointer-out">← {t.s2Front} (Salida / poll)</span>
+								<span class="pc-pointer-badge pc-pointer-in">Entrada (offer) ← {t.s2Rear}</span>
+							</div>
+
+							<!-- Horizontal Pipe -->
+							<div class="pc-queue-pipe" id="pc-queue-pipe">
+								<div class="pc-queue-items" id="pc-queue-items">
+									<div class="pc-q-item q-front" id="pc-q-0">
+										<span class="pc-q-val">"Ana"</span>
+										<span class="pc-q-role">Head</span>
+									</div>
+									<div class="pc-q-item" id="pc-q-1">
+										<span class="pc-q-val">"Beto"</span>
+									</div>
+									<div class="pc-q-item q-rear" id="pc-q-2">
+										<span class="pc-q-val">"Caro"</span>
+										<span class="pc-q-role">Tail</span>
+									</div>
+								</div>
+							</div>
+
+							<div class="pc-stack-readout">
+								<div class="pc-metric-tile">
+									<span class="pc-metric-label">Próximo a salir</span>
+									<span class="pc-metric-value text-accent" id="pc-q-readout-front">"Ana"</span>
+								</div>
+								<div class="pc-metric-tile">
+									<span class="pc-metric-label">Último ingresado</span>
+									<span class="pc-metric-value" id="pc-q-readout-rear">"Caro"</span>
+								</div>
+								<div class="pc-metric-tile">
+									<span class="pc-metric-label">Tamaño</span>
+									<span class="pc-metric-value" id="pc-q-readout-size">3</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="pc-action-bar">
+							<div class="pc-input-group">
+								<input type="text" id="pc-queue-input" class="pc-input" value="David" maxlength="8" aria-label="Nombre para encolar" />
+								<button type="button" class="pc-btn pc-btn-primary" id="pc-btn-enqueue">+ {t.s2Enqueue}</button>
+							</div>
+							<button type="button" class="pc-btn pc-btn-secondary" id="pc-btn-dequeue">- {t.s2Dequeue}</button>
+							<button type="button" class="pc-btn pc-btn-outline" id="pc-btn-peek-queue">👁 {t.s2Peek}</button>
+							<button type="button" class="pc-btn pc-btn-ghost" id="pc-btn-reset-queue">↺ {t.reset}</button>
+						</div>
+						<div class="pc-status-banner" id="pc-queue-status">
+							Cola lista. "Ana" es atendida primero por ser la primera en llegar (FIFO).
+						</div>
+					</div>
+
+					<div class="pc-card pc-theory-box">
+						<h3 class="pc-card-title">El Principio de Equidad (Fairness)</h3>
+						<div class="pc-code-block">
+							<pre><code>// Contrato del TAD Cola
+public interface Cola&lt;T&gt; &#123;
+    boolean offer(T elemento); // encolar al final O(1)
+    T poll();                  // extraer del frente O(1)
+    T peek();                  // consultar frente O(1)
+    boolean isEmpty();         // O(1)
+    int size();                // O(1)
+&#125;
+
+// Disciplina en acción:
+Cola&lt;String&gt; c = new ColaEnlazada&lt;&gt;();
+c.offer("Ana");
+c.offer("Beto");
+c.offer("Caro");
+String atendido = c.poll(); // Retorna "Ana"</code></pre>
+						</div>
+						<div class="pc-callout">
+							<strong>Complejidad constante:</strong> Tanto encolar como desencolar deben resolverse en $O(1)$. En una lista enlazada mantenemos punteros `frente` y `fin`. En un array se requiere una <em>cola circular</em>.
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 3: COLA CIRCULAR SOBRE ARRAY -->
+			<article class="pc-slide" data-slide="3">
+				<div class="pc-slide-header">
+					<span class="pc-slide-tag tag tag-accent">Slide 3 / 6 • Circular Buffer</span>
+					<h2 class="pc-slide-title">{t.s3Title}</h2>
+					<p class="pc-slide-desc">{t.s3Desc}</p>
+				</div>
+
+				<div class="pc-dual-grid">
+					<div class="pc-card pc-simulator-box">
+						<div class="pc-card-header">
+							<span class="pc-card-label">Anillo de 8 Celdas (Índices 0 a 7)</span>
+							<span class="pc-badge" id="pc-circ-badge">fin = 2 | frente = 0</span>
+						</div>
+
+						<div class="pc-circular-zone">
+							<!-- Circular Ring SVG Diagram -->
+							<div class="pc-circ-canvas-wrap">
+								<svg viewBox="0 0 320 320" class="pc-circ-svg" id="pc-circ-svg" aria-label="Diagrama de Cola Circular">
+									<!-- Outer ring track -->
+									<circle cx="160" cy="160" r="110" fill="none" stroke="var(--color-divider)" stroke-width="44" />
+									
+									<!-- 8 circular segments/cells -->
+									<!-- Center circle for math display -->
+									<circle cx="160" cy="160" r="75" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="2" />
+									
+									<!-- Center text for formula -->
+									<text x="160" y="145" text-anchor="middle" font-family="var(--font-heading)" font-size="12" fill="var(--color-text-muted)">Aritmética Modular</text>
+									<text x="160" y="165" text-anchor="middle" font-family="var(--font-mono)" font-weight="700" font-size="13" fill="var(--color-accent-700)" id="pc-circ-calc-text">(fin + 1) % 8</text>
+									<text x="160" y="185" text-anchor="middle" font-family="var(--font-mono)" font-size="11" fill="var(--color-text)" id="pc-circ-calc-res">Índice: 2 → 3</text>
+
+									<!-- Slots positioned around the circle (radius 110) -->
+									<!-- Angle 0 = Top (0, -110): idx 0 -->
+									<g id="pc-slot-0" class="pc-circ-slot has-item">
+										<circle cx="160" cy="50" r="18" fill="var(--color-accent)" fill-opacity="0.25" stroke="var(--color-accent)" stroke-width="2" />
+										<text x="160" y="55" text-anchor="middle" font-family="var(--font-mono)" font-size="11" font-weight="700" fill="var(--color-text)">A</text>
+										<text x="160" y="24" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--color-text-muted)">[0]</text>
+									</g>
+									<g id="pc-slot-1" class="pc-circ-slot has-item">
+										<circle cx="237" cy="82" r="18" fill="var(--color-accent)" fill-opacity="0.25" stroke="var(--color-accent)" stroke-width="2" />
+										<text x="237" y="87" text-anchor="middle" font-family="var(--font-mono)" font-size="11" font-weight="700" fill="var(--color-text)">B</text>
+										<text x="258" y="70" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--color-text-muted)">[1]</text>
+									</g>
+									<g id="pc-slot-2" class="pc-circ-slot has-item">
+										<circle cx="270" cy="160" r="18" fill="var(--color-accent)" fill-opacity="0.25" stroke="var(--color-accent)" stroke-width="2" />
+										<text x="270" y="165" text-anchor="middle" font-family="var(--font-mono)" font-size="11" font-weight="700" fill="var(--color-text)">C</text>
+										<text x="300" y="164" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--color-text-muted)">[2]</text>
+									</g>
+									<g id="pc-slot-3" class="pc-circ-slot">
+										<circle cx="237" cy="237" r="18" fill="var(--color-bg)" stroke="var(--color-divider)" stroke-width="2" />
+										<text x="237" y="242" text-anchor="middle" font-family="var(--font-mono)" font-size="11" fill="var(--color-text-muted)">—</text>
+										<text x="258" y="258" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--color-text-muted)">[3]</text>
+									</g>
+									<g id="pc-slot-4" class="pc-circ-slot">
+										<circle cx="160" cy="270" r="18" fill="var(--color-bg)" stroke="var(--color-divider)" stroke-width="2" />
+										<text x="160" y="275" text-anchor="middle" font-family="var(--font-mono)" font-size="11" fill="var(--color-text-muted)">—</text>
+										<text x="160" y="302" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--color-text-muted)">[4]</text>
+									</g>
+									<g id="pc-slot-5" class="pc-circ-slot">
+										<circle cx="82" cy="237" r="18" fill="var(--color-bg)" stroke="var(--color-divider)" stroke-width="2" />
+										<text x="82" y="242" text-anchor="middle" font-family="var(--font-mono)" font-size="11" fill="var(--color-text-muted)">—</text>
+										<text x="60" y="258" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--color-text-muted)">[5]</text>
+									</g>
+									<g id="pc-slot-6" class="pc-circ-slot">
+										<circle cx="50" cy="160" r="18" fill="var(--color-bg)" stroke="var(--color-divider)" stroke-width="2" />
+										<text x="50" y="165" text-anchor="middle" font-family="var(--font-mono)" font-size="11" fill="var(--color-text-muted)">—</text>
+										<text x="20" y="164" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--color-text-muted)">[6]</text>
+									</g>
+									<g id="pc-slot-7" class="pc-circ-slot">
+										<circle cx="82" cy="82" r="18" fill="var(--color-bg)" stroke="var(--color-divider)" stroke-width="2" />
+										<text x="82" y="87" text-anchor="middle" font-family="var(--font-mono)" font-size="11" fill="var(--color-text-muted)">—</text>
+										<text x="60" y="70" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--color-text-muted)">[7]</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="pc-action-bar">
+							<button type="button" class="pc-btn pc-btn-primary" id="pc-circ-enqueue">+ {t.s3StepEnqueue}</button>
+							<button type="button" class="pc-btn pc-btn-secondary" id="pc-circ-dequeue">- {t.s3StepDequeue}</button>
+							<button type="button" class="pc-btn pc-btn-ghost" id="pc-circ-reset">↺ {t.reset}</button>
+						</div>
+						<div class="pc-status-banner" id="pc-circ-status">
+							El índice de fin avanza en sentido horario. Al llegar a 7, la operación (7 + 1) % 8 regresa suavemente a 0.
+						</div>
+					</div>
+
+					<div class="pc-card pc-theory-box">
+						<h3 class="pc-card-title">¿Por qué el operador módulo (%)?</h3>
+						<p>En un arreglo lineal sin ciclo:</p>
+						<div class="pc-linear-demo">
+							<div class="pc-linear-cell wasted">[0] Desperdiciado</div>
+							<div class="pc-linear-cell wasted">[1] Desperdiciado</div>
+							<div class="pc-linear-cell active">[2] Frente</div>
+							<div class="pc-linear-cell active">[3] Fin</div>
+						</div>
+						<p class="pc-small-text">Si no reciclamos las celdas [0] y [1], tendríamos que mover todos los elementos $O(N)$ o agotar el arreglo prematuramente.</p>
+						<div class="pc-code-block">
+							<pre><code>// Inserción en Cola Circular:
+fin = (fin + 1) % capacidad;
+elementos[fin] = item;
+size++;
+
+// Extracción:
+T item = elementos[frente];
+frente = (frente + 1) % capacidad;
+size--;</code></pre>
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 4: CASOS DE USO EN EL MUNDO REAL -->
+			<article class="pc-slide" data-slide="4">
+				<div class="pc-slide-header">
+					<span class="pc-slide-tag tag tag-accent">Slide 4 / 6 • Systems Architecture</span>
+					<h2 class="pc-slide-title">{t.s4Title}</h2>
+					<p class="pc-slide-desc">{t.s4Desc}</p>
+				</div>
+
+				<div class="pc-systems-grid">
+					<!-- Panel 1: Stack Applications -->
+					<div class="pc-card pc-system-card">
+						<div class="pc-system-header">
+							<span class="pc-icon-badge">🥞</span>
+							<h3 class="pc-card-title">La Pila en Sistemas Reales</h3>
+						</div>
+						<ul class="pc-system-list">
+							<li>
+								<strong>Call Stack de la JVM:</strong> Cada llamada a método crea un registro de activación (Stack Frame) con sus variables locales y dirección de retorno. Al retornar, el frame se desapila.
+							</li>
+							<li>
+								<strong>Deshacer / Rehacer (Undo / Redo):</strong> Dos pilas acopladas. Cada acción realizada se empuja en la pila `undoStack`. Al presionar Ctrl+Z, se desapila y se pasa a `redoStack`.
+							</li>
+							<li>
+								<strong>Evaluación de Expresiones Postfijas:</strong> Conversión de notación infija `(a+b)*c` a postfija `ab+c*` y resolución con una pila de operandos.
+							</li>
+							<li>
+								<strong>Algoritmo DFS (Búsqueda en Profundidad):</strong> Recorrido de grafos o árboles explorando ramas hasta el fondo antes de retroceder (backtracking).
+							</li>
+						</ul>
+					</div>
+
+					<!-- Panel 2: Queue Applications -->
+					<div class="pc-card pc-system-card">
+						<div class="pc-system-header">
+							<span class="pc-icon-badge">🎟</span>
+							<h3 class="pc-card-title">La Cola en Sistemas Reales</h3>
+						</div>
+						<ul class="pc-system-list">
+							<li>
+								<strong>Brokers de Mensajería (Kafka, RabbitMQ, SQS):</strong> Productores publican eventos en la cola sin bloquearse; consumidores procesan los mensajes en estricto orden de arribo.
+							</li>
+							<li>
+								<strong>Spooler de Impresión del Sistema Operativo:</strong> Si 10 usuarios envían documentos al mismo tiempo a una impresora, los trabajos se encolan y despachan secuencialmente.
+							</li>
+							<li>
+								<strong>Buffer de Paquetes en Routers:</strong> Almacena paquetes TCP/UDP cuando el ancho de banda del enlace está saturado momentáneamente.
+							</li>
+							<li>
+								<strong>Algoritmo BFS (Búsqueda en Amplitud):</strong> Exploración de grafos nivel por nivel usando una cola para visitar nodos vecinos contiguos.
+							</li>
+						</ul>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 5: SIMULADOR DE EXPRESIONES BALANCEADAS -->
+			<article class="pc-slide" data-slide="5">
+				<div class="pc-slide-header">
+					<span class="pc-slide-tag tag tag-accent">Slide 5 / 6 • Classic Algorithm</span>
+					<h2 class="pc-slide-title">{t.s5Title}</h2>
+					<p class="pc-slide-desc">{t.s5Desc}</p>
+				</div>
+
+				<div class="pc-dual-grid">
+					<div class="pc-card pc-simulator-box">
+						<div class="pc-card-header">
+							<span class="pc-card-label">Validador Paso a Paso de Expresiones</span>
+							<span class="pc-badge" id="pc-expr-result-badge">En espera</span>
+						</div>
+
+						<div class="pc-expr-control-bar">
+							<label for="pc-expr-select" class="pc-field-label">Seleccionar caso de prueba:</label>
+							<select id="pc-expr-select" class="pc-select">
+								<option value="{ [ ( a + b ) * c ] }">Caso Válido 1: &#123; [ ( a + b ) * c ] &#125;</option>
+								<option value="[ ( ) { } [ ( ) ] ]">Caso Válido 2: [ ( ) &#123; &#125; [ ( ) ] ]</option>
+								<option value="{ [ ( ] ) }">Caso Inválido 1 (Cierre Cruzado): &#123; [ ( ] ) &#125;</option>
+								<option value="{ [ ( ) ]">Caso Inválido 2 (Apertura Sobrante): &#123; [ ( ) ]</option>
+								<option value="custom">-- Expresión Personalizada --</option>
+							</select>
+							<input type="text" id="pc-expr-custom-input" class="pc-input" style="display: none;" placeholder="Escribe tu expresión aquí..." />
+						</div>
+
+						<!-- Tape of characters with read head -->
+						<div class="pc-tape-container">
+							<div class="pc-tape-label">Tira de Caracteres (Lectura Izq → Der):</div>
+							<div class="pc-char-tape" id="pc-char-tape">
+								<!-- Rendered via JS -->
+							</div>
+						</div>
+
+						<div class="pc-expr-work-area">
+							<!-- Mini visual stack for algorithm -->
+							<div class="pc-algo-stack-wrapper">
+								<span class="pc-algo-stack-label">Pila de Aperturas:</span>
+								<div class="pc-algo-stack-slots" id="pc-algo-stack-slots">
+									<div class="pc-algo-stack-empty">Vacia</div>
+								</div>
+							</div>
+
+							<!-- Step explanation log -->
+							<div class="pc-algo-log-wrapper">
+								<span class="pc-algo-stack-label">Explicación del Paso:</span>
+								<div class="pc-algo-log-box" id="pc-algo-log-box">
+									Selecciona una expresión y presiona "Paso Siguiente" para iniciar la lectura.
+								</div>
+							</div>
+						</div>
+
+						<div class="pc-action-bar">
+							<button type="button" class="pc-btn pc-btn-primary" id="pc-btn-expr-step">▶ Paso Siguiente</button>
+							<button type="button" class="pc-btn pc-btn-secondary" id="pc-btn-expr-auto">⚡ Ejecutar Todo</button>
+							<button type="button" class="pc-btn pc-btn-ghost" id="pc-btn-expr-reset">↺ Reiniciar</button>
+						</div>
+					</div>
+
+					<div class="pc-card pc-theory-box">
+						<h3 class="pc-card-title">Algoritmo en Pseudocódigo Java</h3>
+						<div class="pc-code-block">
+							<pre><code>public boolean estaBalanceada(String s) &#123;
+    Pila&lt;Character&gt; p = new PilaEnlazada&lt;&gt;();
+    
+    for (char c : s.toCharArray()) &#123;
+        // Si es apertura, apilar
+        if (c == '(' || c == '[' || c == '&#123;') &#123;
+            p.push(c);
+        &#125; 
+        // Si es cierre, verificar tope
+        else if (c == ')' || c == ']' || c == '&#125;') &#123;
+            if (p.isEmpty()) return false;
+            char tope = p.pop();
+            if (!coinciden(tope, c)) return false;
+        &#125;
+    &#125;
+    // Si la pila quedó vacía, está bien
+    return p.isEmpty();
+&#125;</code></pre>
+						</div>
+						<div class="pc-callout">
+							<strong>Complejidad Óptima:</strong> Tiempo $O(N)$ porque cada caracter se procesa una única vez. Espacio $O(N)$ en el peor caso (cuando la mitad de los símbolos son aperturas).
+						</div>
+					</div>
+				</div>
+			</article>
+
+			<!-- SLIDE 6: SIMULACIÓN DE EVENTOS DISCRETOS (DOS COLAS) -->
+			<article class="pc-slide" data-slide="6">
+				<div class="pc-slide-header">
+					<span class="pc-slide-tag tag tag-accent">Slide 6 / 6 • Discrete-Event Simulation</span>
+					<h2 class="pc-slide-title">{t.s6Title}</h2>
+					<p class="pc-slide-desc">{t.s6Desc}</p>
+				</div>
+
+				<div class="pc-dual-grid">
+					<div class="pc-card pc-simulator-box">
+						<div class="pc-card-header">
+							<span class="pc-card-label">Centro de Atención: Dos Ventanillas Concurrentes</span>
+							<span class="pc-badge" id="pc-sim-clock">Reloj: T = 0 seg</span>
+						</div>
+
+						<div class="pc-sim-lanes">
+							<!-- Lane 1: Caja Rápida -->
+							<div class="pc-lane">
+								<div class="pc-lane-head">
+									<span class="pc-desk-title">Caja 1: Atención Rápida (&le; 2 trámites)</span>
+									<span class="pc-desk-status idle" id="pc-desk1-status">Libre</span>
+								</div>
+								<div class="pc-lane-body">
+									<div class="pc-desk-server" id="pc-desk1-server">
+										<span class="pc-server-avatar">🧑‍💼</span>
+										<span class="pc-serving-client" id="pc-desk1-client">Esperando</span>
+									</div>
+									<div class="pc-lane-queue" id="pc-lane1-queue">
+										<!-- Clients in queue -->
+									</div>
+								</div>
+							</div>
+
+							<!-- Lane 2: Caja General -->
+							<div class="pc-lane">
+								<div class="pc-lane-head">
+									<span class="pc-desk-title">Caja 2: Atención General (Trámites largos)</span>
+									<span class="pc-desk-status idle" id="pc-desk2-status">Libre</span>
+								</div>
+								<div class="pc-lane-body">
+									<div class="pc-desk-server" id="pc-desk2-server">
+										<span class="pc-server-avatar">👩‍💼</span>
+										<span class="pc-serving-client" id="pc-desk2-client">Esperando</span>
+									</div>
+									<div class="pc-lane-queue" id="pc-lane2-queue">
+										<!-- Clients in queue -->
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Metrics summary -->
+						<div class="pc-metrics-row">
+							<div class="pc-metric-tile">
+								<span class="pc-metric-label">Clientes Atendidos</span>
+								<span class="pc-metric-value text-accent" id="pc-sim-served">0</span>
+							</div>
+							<div class="pc-metric-tile">
+								<span class="pc-metric-label">Espera Promedio</span>
+								<span class="pc-metric-value" id="pc-sim-avg-wait">0.0 s</span>
+							</div>
+							<div class="pc-metric-tile">
+								<span class="pc-metric-label">En Cola Total</span>
+								<span class="pc-metric-value" id="pc-sim-in-queue">0</span>
+							</div>
+						</div>
+
+						<div class="pc-action-bar">
+							<button type="button" class="pc-btn pc-btn-primary" id="pc-sim-tick">⏱ {t.s6NextTick}</button>
+							<button type="button" class="pc-btn pc-btn-secondary" id="pc-sim-add-client">👤 + {t.s6AddClient}</button>
+							<button type="button" class="pc-btn pc-btn-ghost" id="pc-sim-reset">↺ {t.reset}</button>
+						</div>
+						<div class="pc-status-banner" id="pc-sim-status">
+							Sistema en tiempo cero. Agrega clientes o avanza el reloj para simular llegadas y atenciones.
+						</div>
+					</div>
+
+					<div class="pc-card pc-theory-box">
+						<h3 class="pc-card-title">Modelado con Colas Múltiples</h3>
+						<p>Las simulaciones de eventos discretos utilizan colas para responder preguntas cruciales de negocio y capacidad:</p>
+						<ul class="pc-bullets">
+							<li>¿Cuántas ventanillas se necesitan para que la espera no supere los 5 minutos?</li>
+							<li>¿Es más eficiente una fila única con múltiples cajeros o filas separadas por cada caja?</li>
+							<li>¿Cómo impacta la variabilidad del tiempo de servicio en la acumulación de clientes?</li>
+						</ul>
+						<div class="pc-callout">
+							<strong>Teoría de Colas:</strong> Demuestra matemáticamente que cuando la tasa de llegada ($\lambda$) se acerca a la tasa de servicio ($\mu$), el tamaño de la cola y el tiempo de espera crecen exponencialmente hacia el infinito.
+						</div>
+					</div>
+				</div>
+			</article>
+		</main>
+	</div>
+</section>
+
+<script>
+	function setupTadPilasColas() {
+		// --- NAVIGATION ---
+		const slides = document.querySelectorAll<HTMLElement>('.pc-slide');
+		const prevBtn = document.getElementById('pc-prev-btn') as HTMLButtonElement | null;
+		const nextBtn = document.getElementById('pc-next-btn') as HTMLButtonElement | null;
+		const counter = document.getElementById('pc-slide-counter');
+		const progressBar = document.getElementById('pc-progress-bar');
+		let currentSlide = 1;
+		const totalSlides = slides.length;
+
+		function goToSlide(index: number) {
+			if (index < 1 || index > totalSlides) return;
+			currentSlide = index;
+			slides.forEach((s) => {
+				const sIndex = Number(s.dataset.slide);
+				s.classList.toggle('active', sIndex === currentSlide);
+			});
+
+			if (prevBtn) prevBtn.disabled = currentSlide === 1;
+			if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+			if (counter) counter.textContent = `${currentSlide} de ${totalSlides}`;
+			if (progressBar) {
+				const pct = (currentSlide / totalSlides) * 100;
+				progressBar.style.width = `${pct}%`;
+			}
+		}
+
+		prevBtn?.addEventListener('click', () => goToSlide(currentSlide - 1));
+		nextBtn?.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+		document.addEventListener('keydown', (e) => {
+			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+			if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+			if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+		});
+
+		// --- SLIDE 1: PILA LIFO SIMULATION ---
+		let stackData = [10, 20, 30];
+		const maxStackCap = 5;
+
+		const stackSlots = document.getElementById('pc-stack-slots');
+		const stackBadge = document.getElementById('pc-stack-badge');
+		const readoutTop = document.getElementById('pc-readout-top');
+		const readoutSize = document.getElementById('pc-readout-size');
+		const readoutEmpty = document.getElementById('pc-readout-empty');
+		const stackStatus = document.getElementById('pc-stack-status');
+		const stackInput = document.getElementById('pc-stack-input') as HTMLInputElement | null;
+
+		function renderStack() {
+			if (!stackSlots) return;
+			stackSlots.innerHTML = '';
+
+			// Stack items rendered from top to bottom
+			for (let i = stackData.length - 1; i >= 0; i--) {
+				const val = stackData[i];
+				const isTop = i === stackData.length - 1;
+				const div = document.createElement('div');
+				div.className = `pc-stack-item ${isTop ? 'is-top' : ''}`;
+				div.innerHTML = `<span class="pc-item-val">${val}</span>${isTop ? '<span class="pc-item-tag">Top</span>' : ''}`;
+				stackSlots.appendChild(div);
+			}
+
+			if (stackBadge) stackBadge.textContent = `Capacidad: ${maxStackCap} / En uso: ${stackData.length}`;
+			if (readoutSize) readoutSize.textContent = String(stackData.length);
+			if (readoutEmpty) readoutEmpty.textContent = stackData.length === 0 ? 'true' : 'false';
+			if (readoutTop) readoutTop.textContent = stackData.length > 0 ? String(stackData[stackData.length - 1]) : 'null';
+		}
+
+		document.getElementById('pc-btn-push')?.addEventListener('click', () => {
+			if (stackData.length >= maxStackCap) {
+				if (stackStatus) stackStatus.textContent = '¡Error StackOverflow! Capacidad máxima alcanzada (5 elementos).';
+				return;
+			}
+			const val = parseInt(stackInput?.value || '40', 10);
+			stackData.push(val);
+			renderStack();
+			if (stackStatus) stackStatus.textContent = `push(${val}) completado. ${val} se posa en la cima y ahora es el nuevo tope.`;
+			if (stackInput) stackInput.value = String(val + 10);
+		});
+
+		document.getElementById('pc-btn-pop')?.addEventListener('click', () => {
+			if (stackData.length === 0) {
+				if (stackStatus) stackStatus.textContent = '¡Error EmptyStackException (Underflow)! La pila ya está vacía.';
+				return;
+			}
+			const popped = stackData.pop();
+			renderStack();
+			if (stackStatus) stackStatus.textContent = `pop() retornó ${popped}. El elemento superior salió de la estructura.`;
+		});
+
+		document.getElementById('pc-btn-peek')?.addEventListener('click', () => {
+			if (stackData.length === 0) {
+				if (stackStatus) stackStatus.textContent = 'peek() en pila vacía lanza excepción o retorna null.';
+				return;
+			}
+			const topVal = stackData[stackData.length - 1];
+			if (stackStatus) stackStatus.textContent = `peek() inspecciona ${topVal} sin desapilarlo. El tamaño sigue siendo ${stackData.length}.`;
+		});
+
+		document.getElementById('pc-btn-reset-stack')?.addEventListener('click', () => {
+			stackData = [10, 20, 30];
+			renderStack();
+			if (stackStatus) stackStatus.textContent = 'Pila reiniciada a [10, 20, 30].';
+		});
+
+		// --- SLIDE 2: COLA FIFO SIMULATION ---
+		let queueData = ['Ana', 'Beto', 'Caro'];
+		const maxQueueCap = 6;
+		const queueItems = document.getElementById('pc-queue-items');
+		const queueBadge = document.getElementById('pc-queue-badge');
+		const qReadoutFront = document.getElementById('pc-q-readout-front');
+		const qReadoutRear = document.getElementById('pc-q-readout-rear');
+		const qReadoutSize = document.getElementById('pc-q-readout-size');
+		const queueStatus = document.getElementById('pc-queue-status');
+		const queueInput = document.getElementById('pc-queue-input') as HTMLInputElement | null;
+
+		function renderQueue() {
+			if (!queueItems) return;
+			queueItems.innerHTML = '';
+
+			queueData.forEach((name, idx) => {
+				const isFront = idx === 0;
+				const isRear = idx === queueData.length - 1;
+				const div = document.createElement('div');
+				div.className = `pc-q-item ${isFront ? 'q-front' : ''} ${isRear ? 'q-rear' : ''}`;
+				div.innerHTML = `<span class="pc-q-val">"${name}"</span>${isFront ? '<span class="pc-q-role">Front</span>' : isRear ? '<span class="pc-q-role">Rear</span>' : ''}`;
+				queueItems.appendChild(div);
+			});
+
+			if (queueBadge) queueBadge.textContent = `Capacidad: ${maxQueueCap} / En uso: ${queueData.length}`;
+			if (qReadoutSize) qReadoutSize.textContent = String(queueData.length);
+			if (qReadoutFront) qReadoutFront.textContent = queueData.length > 0 ? `"${queueData[0]}"` : 'null';
+			if (qReadoutRear) qReadoutRear.textContent = queueData.length > 0 ? `"${queueData[queueData.length - 1]}"` : 'null';
+		}
+
+		document.getElementById('pc-btn-enqueue')?.addEventListener('click', () => {
+			if (queueData.length >= maxQueueCap) {
+				if (queueStatus) queueStatus.textContent = 'Cola llena. Espera a que se atiendan clientes antes de encolar.';
+				return;
+			}
+			const name = queueInput?.value.trim() || 'Nuevo';
+			queueData.push(name);
+			renderQueue();
+			if (queueStatus) queueStatus.textContent = `offer("${name}"): ingresó al final de la fila (tail/rear).`;
+		});
+
+		document.getElementById('pc-btn-dequeue')?.addEventListener('click', () => {
+			if (queueData.length === 0) {
+				if (queueStatus) queueStatus.textContent = 'poll(): La cola está vacía. No hay nadie para atender.';
+				return;
+			}
+			const served = queueData.shift();
+			renderQueue();
+			if (queueStatus) queueStatus.textContent = `poll(): "${served}" fue atendido y sale por el frente (head).`;
+		});
+
+		document.getElementById('pc-btn-peek-queue')?.addEventListener('click', () => {
+			if (queueData.length === 0) {
+				if (queueStatus) queueStatus.textContent = 'peek(): Cola vacía.';
+				return;
+			}
+			if (queueStatus) queueStatus.textContent = `peek(): El próximo en turno es "${queueData[0]}".`;
+		});
+
+		document.getElementById('pc-btn-reset-queue')?.addEventListener('click', () => {
+			queueData = ['Ana', 'Beto', 'Caro'];
+			renderQueue();
+			if (queueStatus) queueStatus.textContent = 'Cola reiniciada con ["Ana", "Beto", "Caro"].';
+		});
+
+		// --- SLIDE 3: COLA CIRCULAR SIMULATION ---
+		const circCap = 8;
+		let circSlots: Array<string | null> = ['A', 'B', 'C', null, null, null, null, null];
+		let circFront = 0;
+		let circRear = 2;
+		let circCount = 3;
+
+		const circCalcText = document.getElementById('pc-circ-calc-text');
+		const circCalcRes = document.getElementById('pc-circ-calc-res');
+		const circBadge = document.getElementById('pc-circ-badge');
+		const circStatus = document.getElementById('pc-circ-status');
+
+		function renderCircularQueue() {
+			for (let i = 0; i < circCap; i++) {
+				const slotGroup = document.getElementById(`pc-slot-${i}`);
+				if (!slotGroup) continue;
+				const circle = slotGroup.querySelector('circle');
+				const text = slotGroup.querySelectorAll('text')[0];
+
+				const val = circSlots[i];
+				const isOccupied = val !== null;
+				const isFront = isOccupied && i === circFront;
+				const isRear = isOccupied && i === circRear;
+
+				if (circle) {
+					if (isFront && isRear) {
+						circle.setAttribute('fill', 'var(--color-accent)');
+						circle.setAttribute('fill-opacity', '0.6');
+						circle.setAttribute('stroke', 'var(--color-accent)');
+					} else if (isFront) {
+						circle.setAttribute('fill', 'var(--color-accent)');
+						circle.setAttribute('fill-opacity', '0.4');
+						circle.setAttribute('stroke', 'var(--color-accent-700)');
+					} else if (isRear) {
+						circle.setAttribute('fill', 'var(--color-surface)');
+						circle.setAttribute('fill-opacity', '1');
+						circle.setAttribute('stroke', 'var(--color-accent)');
+					} else if (isOccupied) {
+						circle.setAttribute('fill', 'var(--color-accent)');
+						circle.setAttribute('fill-opacity', '0.2');
+						circle.setAttribute('stroke', 'var(--color-divider)');
+					} else {
+						circle.setAttribute('fill', 'var(--color-bg)');
+						circle.setAttribute('fill-opacity', '1');
+						circle.setAttribute('stroke', 'var(--color-divider)');
+					}
+				}
+
+				if (text) {
+					text.textContent = val || '—';
+					text.setAttribute('fill', isOccupied ? 'var(--color-text)' : 'var(--color-text-muted)');
+				}
+			}
+
+			if (circBadge) circBadge.textContent = `frente: [${circFront}] | fin: [${circRear}] | ocupados: ${circCount}/${circCap}`;
+		}
+
+		document.getElementById('pc-circ-enqueue')?.addEventListener('click', () => {
+			if (circCount >= circCap) {
+				if (circStatus) circStatus.textContent = 'Cola circular llena. No se puede encolar sin sobreescribir.';
+				return;
+			}
+			const nextVal = String.fromCharCode(65 + ((circCount + circFront) % 26));
+			const oldRear = circRear;
+			circRear = (circRear + 1) % circCap;
+			circSlots[circRear] = nextVal;
+			circCount++;
+
+			if (circCalcText) circCalcText.textContent = `(${oldRear} + 1) % ${circCap}`;
+			if (circCalcRes) circCalcRes.textContent = `Nuevo fin = [${circRear}]`;
+			if (circStatus) circStatus.textContent = `Encolado '${nextVal}' en la celda [${circRear}]. Cálculo: (${oldRear} + 1) % 8 = ${circRear}.`;
+			renderCircularQueue();
+		});
+
+		document.getElementById('pc-circ-dequeue')?.addEventListener('click', () => {
+			if (circCount === 0) {
+				if (circStatus) circStatus.textContent = 'Cola circular vacía.';
+				return;
+			}
+			const removed = circSlots[circFront];
+			circSlots[circFront] = null;
+			const oldFront = circFront;
+			circFront = (circFront + 1) % circCap;
+			circCount--;
+
+			if (circCalcText) circCalcText.textContent = `(${oldFront} + 1) % ${circCap}`;
+			if (circCalcRes) circCalcRes.textContent = `Nuevo frente = [${circFront}]`;
+			if (circStatus) circStatus.textContent = `Desencolado '${removed}' de celda [${oldFront}]. El frente avanza a [${circFront}].`;
+			renderCircularQueue();
+		});
+
+		document.getElementById('pc-circ-reset')?.addEventListener('click', () => {
+			circSlots = ['A', 'B', 'C', null, null, null, null, null];
+			circFront = 0;
+			circRear = 2;
+			circCount = 3;
+			if (circCalcText) circCalcText.textContent = '(fin + 1) % 8';
+			if (circCalcRes) circCalcRes.textContent = 'Índice: 2 → 3';
+			if (circStatus) circStatus.textContent = 'Cola circular reiniciada al estado base [A, B, C].';
+			renderCircularQueue();
+		});
+
+		// --- SLIDE 5: BALANCED EXPRESSION VALIDATOR ---
+		const exprSelect = document.getElementById('pc-expr-select') as HTMLSelectElement | null;
+		const exprCustomInput = document.getElementById('pc-expr-custom-input') as HTMLInputElement | null;
+		const charTape = document.getElementById('pc-char-tape');
+		const algoStackSlots = document.getElementById('pc-algo-stack-slots');
+		const algoLogBox = document.getElementById('pc-algo-log-box');
+		const exprResultBadge = document.getElementById('pc-expr-result-badge');
+
+		let currentExpr = '{ [ ( a + b ) * c ] }';
+		let exprChars: string[] = [];
+		let exprIndex = 0;
+		let exprStack: string[] = [];
+		let exprFinished = false;
+
+		function loadExpression(expr: string) {
+			currentExpr = expr;
+			exprChars = expr.split('').filter((c) => c !== ' ');
+			exprIndex = 0;
+			exprStack = [];
+			exprFinished = false;
+
+			if (exprResultBadge) {
+				exprResultBadge.textContent = 'En progreso';
+				exprResultBadge.className = 'pc-badge';
+			}
+			if (algoLogBox) {
+				algoLogBox.textContent = `Expresión cargada: "${expr}". Pulsa "Paso Siguiente" para comenzar el análisis.`;
+			}
+
+			renderExprTape();
+			renderAlgoStack();
+		}
+
+		function renderExprTape() {
+			if (!charTape) return;
+			charTape.innerHTML = '';
+			exprChars.forEach((ch, idx) => {
+				const span = document.createElement('span');
+				span.className = `pc-char-cell ${idx === exprIndex ? 'is-current' : idx < exprIndex ? 'is-processed' : ''}`;
+				span.textContent = ch;
+				charTape.appendChild(span);
+			});
+		}
+
+		function renderAlgoStack() {
+			if (!algoStackSlots) return;
+			algoStackSlots.innerHTML = '';
+			if (exprStack.length === 0) {
+				algoStackSlots.innerHTML = '<div class="pc-algo-stack-empty">Pila vacía</div>';
+				return;
+			}
+			for (let i = exprStack.length - 1; i >= 0; i--) {
+				const item = document.createElement('div');
+				item.className = 'pc-algo-stack-item';
+				item.textContent = exprStack[i];
+				algoStackSlots.appendChild(item);
+			}
+		}
+
+		function matches(open: string, close: string): boolean {
+			return (
+				(open === '(' && close === ')') ||
+				(open === '[' && close === ']') ||
+				(open === '{' && close === '}')
+			);
+		}
+
+		function stepExpression() {
+			if (exprFinished) return;
+
+			if (exprIndex >= exprChars.length) {
+				exprFinished = true;
+				if (exprStack.length === 0) {
+					if (exprResultBadge) {
+						exprResultBadge.textContent = '¡Válida!';
+						exprResultBadge.className = 'pc-badge text-accent';
+					}
+					if (algoLogBox) {
+						algoLogBox.innerHTML = '<strong>Éxito:</strong> Fin de la cadena alcanzado y la pila está vacía. Todos los delimitadores coincidieron perfectamente.';
+					}
+				} else {
+					if (exprResultBadge) {
+						exprResultBadge.textContent = 'Inválida';
+						exprResultBadge.className = 'pc-badge is-error';
+					}
+					if (algoLogBox) {
+						algoLogBox.innerHTML = `<strong>Fallo de apertura:</strong> Quedaron símbolos sin cerrar en la pila: <code>${exprStack.join(', ')}</code>.`;
+					}
+				}
+				renderExprTape();
+				return;
+			}
+
+			const ch = exprChars[exprIndex];
+
+			if (ch === '(' || ch === '[' || ch === '{') {
+				exprStack.push(ch);
+				if (algoLogBox) {
+					algoLogBox.innerHTML = `Carácter <code>'${ch}'</code> es un delimitador de apertura. Se ejecuta <code>push('${ch}')</code> a la pila.`;
+				}
+				exprIndex++;
+			} else if (ch === ')' || ch === ']' || ch === '}') {
+				if (exprStack.length === 0) {
+					exprFinished = true;
+					if (exprResultBadge) {
+						exprResultBadge.textContent = 'Inválida';
+						exprResultBadge.className = 'pc-badge is-error';
+					}
+					if (algoLogBox) {
+						algoLogBox.innerHTML = `<strong>Error de subdesbordamiento:</strong> Se encontró un cierre <code>'${ch}'</code> pero la pila estaba vacía (cierre sin apertura previa).`;
+					}
+					renderExprTape();
+					return;
+				}
+				const top = exprStack.pop()!;
+				if (!matches(top, ch)) {
+					exprFinished = true;
+					if (exprResultBadge) {
+						exprResultBadge.textContent = 'Inválida';
+						exprResultBadge.className = 'pc-badge is-error';
+					}
+					if (algoLogBox) {
+						algoLogBox.innerHTML = `<strong>Error de coincidencia:</strong> Se esperaba el cierre de <code>'${top}'</code>, pero se encontró <code>'${ch}'</code> (cruce o desorden).`;
+					}
+					renderExprTape();
+					renderAlgoStack();
+					return;
+				}
+				if (algoLogBox) {
+					algoLogBox.innerHTML = `Carácter <code>'${ch}'</code> coincide con el tope <code>'${top}'</code>. Se desapila exitosamente con <code>pop()</code>.`;
+				}
+				exprIndex++;
+			} else {
+				// Non-delimiter operand or operator
+				if (algoLogBox) {
+					algoLogBox.innerHTML = `Carácter <code>'${ch}'</code> es un operando o símbolo neutral. Se ignora y continúa la lectura.`;
+				}
+				exprIndex++;
+			}
+
+			renderExprTape();
+			renderAlgoStack();
+
+			if (exprIndex === exprChars.length && !exprFinished) {
+				stepExpression();
+			}
+		}
+
+		exprSelect?.addEventListener('change', (e) => {
+			const val = (e.target as HTMLSelectElement).value;
+			if (val === 'custom') {
+				if (exprCustomInput) {
+					exprCustomInput.style.display = 'block';
+					loadExpression(exprCustomInput.value || '{ [ ] }');
+				}
+			} else {
+				if (exprCustomInput) exprCustomInput.style.display = 'none';
+				loadExpression(val);
+			}
+		});
+
+		exprCustomInput?.addEventListener('input', () => {
+			loadExpression(exprCustomInput.value);
+		});
+
+		document.getElementById('pc-btn-expr-step')?.addEventListener('click', stepExpression);
+		document.getElementById('pc-btn-expr-auto')?.addEventListener('click', () => {
+			while (!exprFinished && exprIndex < exprChars.length) {
+				stepExpression();
+			}
+			if (!exprFinished) stepExpression();
+		});
+		document.getElementById('pc-btn-expr-reset')?.addEventListener('click', () => {
+			loadExpression(currentExpr);
+		});
+
+		// Initial expr load
+		loadExpression(currentExpr);
+
+		// --- SLIDE 6: DISCRETE EVENT SIMULATION ---
+		let simTick = 0;
+		let clientsServed = 0;
+		let totalWaitTime = 0;
+
+		interface Client {
+			id: number;
+			serviceTicksRequired: number;
+			ticksWaited: number;
+		}
+
+		let nextClientId = 1;
+		let fastQueue: Client[] = [];
+		let generalQueue: Client[] = [];
+
+		let desk1Serving: Client | null = null;
+		let desk1Remaining = 0;
+
+		let desk2Serving: Client | null = null;
+		let desk2Remaining = 0;
+
+		const desk1Status = document.getElementById('pc-desk1-status');
+		const desk2Status = document.getElementById('pc-desk2-status');
+		const desk1Client = document.getElementById('pc-desk1-client');
+		const desk2Client = document.getElementById('pc-desk2-client');
+		const lane1Queue = document.getElementById('pc-lane1-queue');
+		const lane2Queue = document.getElementById('pc-lane2-queue');
+
+		const simClock = document.getElementById('pc-sim-clock');
+		const simServed = document.getElementById('pc-sim-served');
+		const simAvgWait = document.getElementById('pc-sim-avg-wait');
+		const simInQueue = document.getElementById('pc-sim-in-queue');
+		const simStatus = document.getElementById('pc-sim-status');
+
+		function renderSim() {
+			if (simClock) simClock.textContent = `Reloj: T = ${simTick} seg`;
+			if (simServed) simServed.textContent = String(clientsServed);
+			const avg = clientsServed > 0 ? (totalWaitTime / clientsServed).toFixed(1) : '0.0';
+			if (simAvgWait) simAvgWait.textContent = `${avg} s`;
+			if (simInQueue) simInQueue.textContent = String(fastQueue.length + generalQueue.length);
+
+			// Desk 1
+			if (desk1Serving) {
+				if (desk1Status) {
+					desk1Status.textContent = `Ocupado (${desk1Remaining}s)`;
+					desk1Status.className = 'pc-desk-status busy';
+				}
+				if (desk1Client) desk1Client.textContent = `Cliente C${desk1Serving.id}`;
+			} else {
+				if (desk1Status) {
+					desk1Status.textContent = 'Libre';
+					desk1Status.className = 'pc-desk-status idle';
+				}
+				if (desk1Client) desk1Client.textContent = 'Esperando';
+			}
+
+			// Desk 2
+			if (desk2Serving) {
+				if (desk2Status) {
+					desk2Status.textContent = `Ocupado (${desk2Remaining}s)`;
+					desk2Status.className = 'pc-desk-status busy';
+				}
+				if (desk2Client) desk2Client.textContent = `Cliente C${desk2Serving.id}`;
+			} else {
+				if (desk2Status) {
+					desk2Status.textContent = 'Libre';
+					desk2Status.className = 'pc-desk-status idle';
+				}
+				if (desk2Client) desk2Client.textContent = 'Esperando';
+			}
+
+			// Render queues
+			if (lane1Queue) {
+				lane1Queue.innerHTML = '';
+				fastQueue.forEach((c) => {
+					const div = document.createElement('div');
+					div.className = 'pc-client-pill';
+					div.textContent = `C${c.id} (${c.serviceTicksRequired}s)`;
+					lane1Queue.appendChild(div);
+				});
+			}
+
+			if (lane2Queue) {
+				lane2Queue.innerHTML = '';
+				generalQueue.forEach((c) => {
+					const div = document.createElement('div');
+					div.className = 'pc-client-pill';
+					div.textContent = `C${c.id} (${c.serviceTicksRequired}s)`;
+					lane2Queue.appendChild(div);
+				});
+			}
+		}
+
+		function addSimClient() {
+			const isFast = Math.random() > 0.4;
+			const serviceTicks = isFast ? 2 : 4;
+			const client: Client = {
+				id: nextClientId++,
+				serviceTicksRequired: serviceTicks,
+				ticksWaited: 0,
+			};
+
+			if (isFast) {
+				fastQueue.push(client);
+				if (simStatus) simStatus.textContent = `Nuevo Cliente C${client.id} (rápido, ${serviceTicks}s) se formó en la Caja 1.`;
+			} else {
+				generalQueue.push(client);
+				if (simStatus) simStatus.textContent = `Nuevo Cliente C${client.id} (general, ${serviceTicks}s) se formó en la Caja 2.`;
+			}
+			renderSim();
+		}
+
+		function advanceTick() {
+			simTick++;
+
+			// Increment wait times
+			fastQueue.forEach((c) => c.ticksWaited++);
+			generalQueue.forEach((c) => c.ticksWaited++);
+
+			// Process Desk 1
+			if (desk1Serving) {
+				desk1Remaining--;
+				if (desk1Remaining <= 0) {
+					clientsServed++;
+					totalWaitTime += desk1Serving.ticksWaited;
+					desk1Serving = null;
+				}
+			}
+			if (!desk1Serving && fastQueue.length > 0) {
+				desk1Serving = fastQueue.shift()!;
+				desk1Remaining = desk1Serving.serviceTicksRequired;
+			}
+
+			// Process Desk 2
+			if (desk2Serving) {
+				desk2Remaining--;
+				if (desk2Remaining <= 0) {
+					clientsServed++;
+					totalWaitTime += desk2Serving.ticksWaited;
+					desk2Serving = null;
+				}
+			}
+			if (!desk2Serving && generalQueue.length > 0) {
+				desk2Serving = generalQueue.shift()!;
+				desk2Remaining = desk2Serving.serviceTicksRequired;
+			}
+
+			// Random spontaneous arrival
+			if (Math.random() > 0.6) {
+				addSimClient();
+			}
+
+			renderSim();
+		}
+
+		document.getElementById('pc-sim-tick')?.addEventListener('click', advanceTick);
+		document.getElementById('pc-sim-add-client')?.addEventListener('click', addSimClient);
+		document.getElementById('pc-sim-reset')?.addEventListener('click', () => {
+			simTick = 0;
+			clientsServed = 0;
+			totalWaitTime = 0;
+			nextClientId = 1;
+			fastQueue = [];
+			generalQueue = [];
+			desk1Serving = null;
+			desk1Remaining = 0;
+			desk2Serving = null;
+			desk2Remaining = 0;
+			if (simStatus) simStatus.textContent = 'Simulación reiniciada a tiempo cero.';
+			renderSim();
+		});
+
+		// Initialize Slide 1 and 2
+		renderStack();
+		renderQueue();
+		renderCircularQueue();
+		renderSim();
+	}
+
+	setupTadPilasColas();
+	document.addEventListener('astro:page-load', setupTadPilasColas);
+</script>
+
+<style>
+	.pc-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.pc-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.pc-nav-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		background: var(--color-surface);
+		border-bottom: 1px solid var(--color-divider);
+		gap: var(--space-4);
+	}
+
+	.pc-kicker {
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-accent-700);
+		display: block;
+	}
+
+	.pc-main-title {
+		font-family: var(--font-heading);
+		font-size: 1.15rem;
+		margin: 0;
+		color: var(--color-text);
+	}
+
+	.pc-nav-controls {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	.pc-counter {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+		min-width: 60px;
+		text-align: center;
+	}
+
+	.pc-progress-track {
+		height: 4px;
+		background: var(--color-divider);
+		width: 100%;
+	}
+
+	.pc-progress-bar {
+		height: 100%;
+		background: var(--color-accent);
+		transition: width 0.25s ease;
+	}
+
+	.pc-viewport {
+		flex: 1;
+		width: 100%;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: var(--space-6) var(--space-4);
+	}
+
+	.pc-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	.pc-slide {
+		display: none;
+		flex-direction: column;
+		gap: var(--space-5);
+		animation: pcFade 0.25s ease forwards;
+	}
+
+	.pc-slide.active {
+		display: flex;
+	}
+
+	@keyframes pcFade {
+		from {
+			opacity: 0;
+			transform: translateY(4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.pc-slide-header {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.pc-slide-title {
+		font-family: var(--font-heading);
+		font-size: 1.5rem;
+		color: var(--color-text);
+		margin: 0;
+	}
+
+	.pc-slide-desc {
+		color: var(--color-text-muted);
+		margin: 0;
+		font-size: 0.95rem;
+		line-height: 1.5;
+	}
+
+	.pc-dual-grid {
+		display: grid;
+		grid-template-columns: 1.2fr 1fr;
+		gap: var(--space-5);
+		align-items: stretch;
+	}
+
+	.pc-systems-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-5);
+	}
+
+	.pc-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.pc-card-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		border-bottom: 1px solid var(--color-divider);
+		padding-bottom: var(--space-2);
+	}
+
+	.pc-card-label {
+		font-weight: 700;
+		font-size: 0.9rem;
+		color: var(--color-text);
+	}
+
+	.pc-badge {
+		font-size: 0.75rem;
+		font-weight: 600;
+		padding: 2px 8px;
+		border-radius: var(--radius-sm);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+	}
+
+	.pc-badge.text-accent {
+		color: var(--color-accent-700);
+		border-color: var(--color-accent);
+	}
+
+	.pc-badge.is-error {
+		color: var(--color-accent-700);
+		background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+		border-color: var(--color-accent);
+	}
+
+	/* STACK VISUALS */
+	.pc-stack-visual-zone {
+		display: flex;
+		gap: var(--space-6);
+		align-items: center;
+		justify-content: center;
+		padding: var(--space-3) 0;
+	}
+
+	.pc-stack-tube {
+		width: 140px;
+		height: 220px;
+		border-left: 4px solid var(--color-accent-700);
+		border-right: 4px solid var(--color-accent-700);
+		border-bottom: 6px solid var(--color-accent-700);
+		border-radius: 0 0 var(--radius-md) var(--radius-md);
+		background: var(--color-bg);
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		padding: var(--space-2);
+		box-shadow: inset 0 2px 6px color-mix(in srgb, var(--color-text) 5%, transparent);
+	}
+
+	.pc-tube-top-opening {
+		position: absolute;
+		top: -24px;
+		left: 0;
+		right: 0;
+		text-align: center;
+	}
+
+	.pc-top-arrow-indicator {
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		font-family: var(--font-mono);
+	}
+
+	.pc-stack-slots {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		width: 100%;
+	}
+
+	.pc-stack-item {
+		height: 32px;
+		background: var(--color-surface);
+		border: 2px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0 var(--space-3);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.9rem;
+		transition: all 0.2s ease;
+	}
+
+	.pc-stack-item.is-top {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 15%, var(--color-surface));
+		box-shadow: 0 2px 4px color-mix(in srgb, var(--color-accent) 20%, transparent);
+	}
+
+	.pc-item-tag {
+		font-size: 0.65rem;
+		padding: 1px 4px;
+		border-radius: 4px;
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.pc-stack-readout {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		min-width: 130px;
+	}
+
+	.pc-metric-tile {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.pc-metric-label {
+		font-size: 0.7rem;
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+		font-weight: 600;
+	}
+
+	.pc-metric-value {
+		font-family: var(--font-mono);
+		font-size: 1rem;
+		font-weight: 700;
+	}
+
+	/* QUEUE VISUALS */
+	.pc-queue-visual-zone {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		padding: var(--space-2) 0;
+	}
+
+	.pc-queue-labels {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.pc-pointer-badge {
+		font-size: 0.75rem;
+		font-weight: 700;
+		font-family: var(--font-mono);
+	}
+
+	.pc-pointer-out {
+		color: var(--color-accent-700);
+	}
+
+	.pc-pointer-in {
+		color: var(--color-text-muted);
+	}
+
+	.pc-queue-pipe {
+		height: 64px;
+		border-top: 3px solid var(--color-accent-700);
+		border-bottom: 3px solid var(--color-accent-700);
+		background: var(--color-bg);
+		display: flex;
+		align-items: center;
+		padding: 0 var(--space-3);
+		overflow-x: auto;
+	}
+
+	.pc-queue-items {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		width: 100%;
+	}
+
+	.pc-q-item {
+		min-width: 70px;
+		height: 44px;
+		background: var(--color-surface);
+		border: 2px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		font-weight: 700;
+	}
+
+	.pc-q-item.q-front {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 15%, var(--color-surface));
+	}
+
+	.pc-q-role {
+		font-size: 0.6rem;
+		color: var(--color-accent-700);
+		text-transform: uppercase;
+	}
+
+	/* CIRCULAR QUEUE */
+	.pc-circular-zone {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: var(--space-2);
+	}
+
+	.pc-circ-canvas-wrap {
+		width: 280px;
+		height: 280px;
+	}
+
+	.pc-circ-svg {
+		width: 100%;
+		height: 100%;
+	}
+
+	.pc-linear-demo {
+		display: flex;
+		gap: var(--space-2);
+		margin: var(--space-2) 0;
+	}
+
+	.pc-linear-cell {
+		padding: var(--space-2);
+		font-size: 0.75rem;
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-weight: 600;
+	}
+
+	.pc-linear-cell.wasted {
+		background: color-mix(in srgb, var(--color-text-muted) 15%, transparent);
+		color: var(--color-text-muted);
+		text-decoration: line-through;
+	}
+
+	.pc-linear-cell.active {
+		background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+		color: var(--color-accent-700);
+		border: 1px solid var(--color-accent);
+	}
+
+	/* SYSTEMS PANELS */
+	.pc-system-card {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.pc-system-header {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		border-bottom: 1px solid var(--color-divider);
+		padding-bottom: var(--space-2);
+	}
+
+	.pc-icon-badge {
+		font-size: 1.5rem;
+	}
+
+	.pc-system-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		font-size: 0.9rem;
+		line-height: 1.45;
+	}
+
+	/* EXPRESSIONS VALIDATOR */
+	.pc-expr-control-bar {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.pc-field-label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	.pc-select {
+		padding: var(--space-2);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.pc-tape-container {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.pc-tape-label {
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
+
+	.pc-char-tape {
+		display: flex;
+		gap: 4px;
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		overflow-x: auto;
+	}
+
+	.pc-char-cell {
+		width: 32px;
+		height: 32px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-family: var(--font-mono);
+		font-size: 0.95rem;
+		font-weight: 700;
+		border-radius: var(--radius-sm);
+		border: 1px solid var(--color-divider);
+		background: var(--color-surface);
+	}
+
+	.pc-char-cell.is-current {
+		border-color: var(--color-accent);
+		background: var(--color-accent);
+		color: var(--color-bg);
+		transform: scale(1.1);
+	}
+
+	.pc-char-cell.is-processed {
+		opacity: 0.5;
+	}
+
+	.pc-expr-work-area {
+		display: grid;
+		grid-template-columns: 120px 1fr;
+		gap: var(--space-3);
+		align-items: stretch;
+	}
+
+	.pc-algo-stack-wrapper, .pc-algo-log-wrapper {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.pc-algo-stack-label {
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.pc-algo-stack-slots {
+		border: 2px solid var(--color-divider);
+		border-top: none;
+		border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+		background: var(--color-bg);
+		min-height: 100px;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		gap: 4px;
+		padding: var(--space-1);
+	}
+
+	.pc-algo-stack-empty {
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+		text-align: center;
+		padding: var(--space-3) 0;
+	}
+
+	.pc-algo-stack-item {
+		background: color-mix(in srgb, var(--color-accent) 20%, var(--color-surface));
+		border: 1px solid var(--color-accent);
+		color: var(--color-accent-700);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 1rem;
+		text-align: center;
+		padding: 2px 0;
+		border-radius: 3px;
+	}
+
+	.pc-algo-log-box {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3);
+		font-size: 0.85rem;
+		line-height: 1.4;
+		flex: 1;
+	}
+
+	/* DISCRETE EVENT SIMULATION */
+	.pc-sim-lanes {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.pc-lane {
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		background: var(--color-bg);
+		padding: var(--space-2);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.pc-lane-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.pc-desk-title {
+		font-size: 0.85rem;
+		font-weight: 700;
+	}
+
+	.pc-desk-status {
+		font-size: 0.7rem;
+		font-weight: 700;
+		padding: 1px 6px;
+		border-radius: 4px;
+	}
+
+	.pc-desk-status.idle {
+		background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+		color: var(--color-accent-700);
+	}
+
+	.pc-desk-status.busy {
+		background: color-mix(in srgb, var(--color-accent-700) 20%, transparent);
+		color: var(--color-accent-700);
+	}
+
+	.pc-lane-body {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	.pc-desk-server {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-1) var(--space-2);
+		min-width: 80px;
+	}
+
+	.pc-server-avatar {
+		font-size: 1.2rem;
+	}
+
+	.pc-serving-client {
+		font-size: 0.7rem;
+		font-family: var(--font-mono);
+		color: var(--color-text-muted);
+	}
+
+	.pc-lane-queue {
+		display: flex;
+		gap: 6px;
+		overflow-x: auto;
+		flex: 1;
+	}
+
+	.pc-client-pill {
+		padding: 3px 8px;
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		white-space: nowrap;
+	}
+
+	.pc-metrics-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		gap: var(--space-2);
+	}
+
+	/* GENERIC ATOMS */
+	.pc-action-bar {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-items: center;
+	}
+
+	.pc-input-group {
+		display: flex;
+		gap: var(--space-1);
+		align-items: center;
+	}
+
+	.pc-input {
+		padding: var(--space-1) var(--space-2);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		color: var(--color-text);
+		max-width: 90px;
+	}
+
+	.pc-btn {
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-sm);
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.15s ease, border-color 0.15s ease;
+		border: 1px solid transparent;
+		font-family: var(--font-body);
+	}
+
+	.pc-btn-primary {
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.pc-btn-primary:hover {
+		background: var(--color-accent-700);
+	}
+
+	.pc-btn-secondary {
+		background: var(--color-surface);
+		color: var(--color-text);
+		border-color: var(--color-divider);
+	}
+
+	.pc-btn-secondary:hover {
+		border-color: var(--color-accent);
+	}
+
+	.pc-btn-outline {
+		background: transparent;
+		color: var(--color-text);
+		border-color: var(--color-divider);
+	}
+
+	.pc-btn-outline:hover {
+		border-color: var(--color-accent);
+	}
+
+	.pc-btn-ghost {
+		background: transparent;
+		color: var(--color-text-muted);
+	}
+
+	.pc-btn-ghost:hover {
+		color: var(--color-text);
+	}
+
+	.pc-status-banner {
+		font-size: 0.8rem;
+		padding: var(--space-2);
+		background: var(--color-bg);
+		border-left: 3px solid var(--color-accent);
+		color: var(--color-text);
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+
+	.pc-code-block {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3);
+		overflow-x: auto;
+	}
+
+	.pc-code-block pre {
+		margin: 0;
+	}
+
+	.pc-code-block code {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		line-height: 1.45;
+		color: var(--color-text);
+	}
+
+	.pc-callout {
+		font-size: 0.85rem;
+		line-height: 1.45;
+		padding: var(--space-3);
+		background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+		border-left: 3px solid var(--color-accent);
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+	}
+
+	.pc-bullets {
+		margin: 0;
+		padding-left: var(--space-4);
+		font-size: 0.85rem;
+		line-height: 1.45;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.pc-small-text {
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+		margin: 0;
+	}
+
+	.text-accent {
+		color: var(--color-accent-700);
+	}
+
+	/* RESPONSIVE & WIDE SCREEN QUERIES */
+	@media (max-width: 900px) {
+		.pc-dual-grid, .pc-systems-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (min-width: 1440px) { .pc-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .pc-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .pc-viewport { zoom: 1.25; } }
+</style>

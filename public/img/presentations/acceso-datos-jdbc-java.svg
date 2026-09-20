@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="20" y="175" width="360" height="8" rx="4" fill="#dcd3c4"/>
+
+	<!-- Title -->
+	<text x="200" y="26" font-family="'Caprasimo', serif" font-size="13" fill="#8c491a" text-anchor="middle">JDBC &amp; SQL Seguro</text>
+	<text x="200" y="40" font-family="'Figtree', sans-serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">PreparedStatement, ResultSet, Transacciones &amp; HikariCP</text>
+
+	<!-- Visual Central Section -->
+	<g transform="translate(35, 55)">
+		<!-- Left box: Java DAO -->
+		<g transform="translate(0, 10)">
+			<rect x="0" y="0" width="82" height="72" rx="8" fill="#fdfbf7" stroke="#7a8a5e" stroke-width="2"/>
+			<rect x="0" y="0" width="82" height="18" rx="8" fill="#7a8a5e"/>
+			<text x="41" y="12" font-family="'Figtree', sans-serif" font-weight="700" font-size="7.5" fill="#fdfbf7" text-anchor="middle">ProductoDAO</text>
+			<text x="8" y="34" font-family="monospace" font-size="7" fill="#2c2a29">ps.setString(1, id)</text>
+			<text x="8" y="47" font-family="monospace" font-size="7" fill="#2c2a29">ps.executeQuery()</text>
+			<text x="8" y="60" font-family="monospace" font-size="7" fill="#7a8a5e">rs.next()</text>
+		</g>
+
+		<!-- Arrow DAO -> PreparedStatement -->
+		<path d="M 84,46 L 112,46" stroke="#7a8a5e" stroke-width="2.5" stroke-dasharray="3,3"/>
+
+		<!-- Center box: PreparedStatement -->
+		<g transform="translate(115, 0)">
+			<rect x="0" y="0" width="100" height="92" rx="10" fill="#fdfbf7" stroke="#8c491a" stroke-width="2.5"/>
+			<rect x="0" y="0" width="100" height="20" rx="10" fill="#8c491a"/>
+			<text x="50" y="14" font-family="'Caprasimo', serif" font-size="8.5" fill="#fdfbf7" text-anchor="middle">Prepared</text>
+
+			<text x="50" y="42" font-family="monospace" font-size="7" fill="#2c2a29" text-anchor="middle">WHERE email = ?</text>
+			<rect x="14" y="50" width="72" height="24" rx="5" fill="#ebddc5"/>
+			<text x="50" y="66" font-family="monospace" font-weight="700" font-size="9" fill="#8c491a" text-anchor="middle">' OR '1'='1</text>
+			<text x="50" y="86" font-family="'Figtree', sans-serif" font-weight="700" font-size="7" fill="#7a8a5e" text-anchor="middle">0 filas — dato aislado</text>
+
+			<!-- Lock Icon -->
+			<circle cx="88" cy="10" r="7" fill="#c67139"/>
+			<rect x="84.5" y="8.5" width="7" height="6" rx="1.4" fill="#fdfbf7"/>
+			<path d="M 86,8.5 L 86,6.5 A 2,2 0 0 1 90,6.5 L 90,8.5" stroke="#fdfbf7" stroke-width="1.3" fill="none"/>
+		</g>
+
+		<!-- Arrow PreparedStatement -> DB -->
+		<path d="M 218,46 L 246,46" stroke="#c67139" stroke-width="2.5" stroke-dasharray="3,3"/>
+
+		<!-- Right box: Database / Transactions -->
+		<g transform="translate(249, 10)">
+			<rect x="0" y="0" width="82" height="72" rx="8" fill="#fdfbf7" stroke="#c67139" stroke-width="2"/>
+			<rect x="0" y="0" width="82" height="18" rx="8" fill="#c67139"/>
+			<text x="41" y="12" font-family="'Figtree', sans-serif" font-weight="700" font-size="7.5" fill="#fdfbf7" text-anchor="middle">Base de Datos</text>
+			<text x="8" y="34" font-family="monospace" font-size="7" fill="#2c2a29">conn.commit()</text>
+			<text x="8" y="47" font-family="monospace" font-size="7" fill="#2c2a29">conn.rollback()</text>
+			<text x="8" y="60" font-family="monospace" font-size="7" fill="#c67139">HikariCP pool</text>
+		</g>
+	</g>
+
+	<!-- Labels below -->
+	<text x="85" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">Arquitectura de Drivers</text>
+	<text x="200" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#8c491a" text-anchor="middle">SQL Injection Bloqueada</text>
+	<text x="315" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#c67139" text-anchor="middle">Transacciones ACID</text>
+</svg>

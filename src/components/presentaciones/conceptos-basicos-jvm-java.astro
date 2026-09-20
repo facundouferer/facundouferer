@@ -1,0 +1,1251 @@
+---
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="cb-screen" data-lang={lang}>
+	<div class="cb-shell">
+		<div class="deck-card">
+			<div class="deck-nav-bar">
+				<div class="deck-slide-indicator">
+					<span class="deck-step-dot"></span>
+					<span id="deck-slide-label">SLIDE 1 / 5</span>
+				</div>
+				<div class="deck-pills">
+					<button class="deck-pill-btn active" data-target-slide="1">1. {isEs ? 'Write Once, Run Anywhere' : 'Write Once, Run Anywhere'}</button>
+					<button class="deck-pill-btn" data-target-slide="2">2. {isEs ? 'Arquitectura JVM' : 'JVM Architecture'}</button>
+					<button class="deck-pill-btn" data-target-slide="3">3. {isEs ? 'Anatomía de main()' : 'Anatomy of main()'}</button>
+					<button class="deck-pill-btn" data-target-slide="4">4. {isEs ? 'I/O y Scanner' : 'I/O & Scanner'}</button>
+					<button class="deck-pill-btn" data-target-slide="5">5. {isEs ? 'Stack vs Heap' : 'Stack vs Heap'}</button>
+				</div>
+			</div>
+
+			<div class="cb-viewport">
+				<!-- SLIDE 1: WRITE ONCE, RUN ANYWHERE -->
+				<div class="deck-slide active" data-slide="1">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">1. {isEs ? 'El Lema: Write Once, Run Anywhere' : 'The Motto: Write Once, Run Anywhere'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'En lenguajes compilados tradicionales como C, el compilador genera código máquina atado a un procesador específico. En Java, el código fuente se compila a Bytecode (.class): un conjunto de instrucciones universal que cualquier máquina virtual (JVM) puede ejecutar en cualquier sistema operativo.'
+									: 'In traditional compiled languages like C, the compiler produces machine code tied to a specific processor. In Java, source code compiles to Bytecode (.class): a universal instruction set that any Java Virtual Machine (JVM) can execute on any operating system.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 580 260" width="100%" role="img" aria-label={isEs ? 'Pipeline de compilación de Java a Bytecode y ejecución en múltiples JVM' : 'Java compilation pipeline to Bytecode and multi-platform JVM execution'}>
+									<!-- Step 1: Source -->
+									<rect x="10" y="30" width="110" height="150" rx="16" class="deck-panel" />
+									<text x="65" y="60" class="deck-svg-title" text-anchor="middle">Hola.java</text>
+									<rect x="25" y="80" width="80" height="8" rx="4" class="deck-wire-dim" />
+									<rect x="25" y="96" width="65" height="8" rx="4" class="deck-wire-dim" />
+									<rect x="25" y="112" width="75" height="8" rx="4" class="deck-wire-dim" />
+									<text x="65" y="160" class="deck-svg-badge" text-anchor="middle">{isEs ? 'Código Fuente' : 'Source Code'}</text>
+
+									<!-- Arrow javac -->
+									<path d="M125 105 H175" class="deck-svg-arrow-line" />
+									<polygon points="175,99 185,105 175,111" class="deck-svg-arrow-head" />
+									<text x="155" y="95" class="deck-svg-tag" text-anchor="middle">javac</text>
+
+									<!-- Step 2: Bytecode -->
+									<rect x="190" y="30" width="120" height="150" rx="16" class="deck-panel-accent" />
+									<text x="250" y="60" class="deck-svg-title-accent" text-anchor="middle">Hola.class</text>
+									<text x="250" y="90" class="deck-svg-mono" text-anchor="middle">0xCAFEBABE</text>
+									<text x="250" y="110" class="deck-svg-mono" text-anchor="middle">aload_0</text>
+									<text x="250" y="126" class="deck-svg-mono" text-anchor="middle">invokespecial</text>
+									<text x="250" y="160" class="deck-svg-badge-accent" text-anchor="middle">{isEs ? 'Bytecode Universal' : 'Universal Bytecode'}</text>
+
+									<!-- Diverging Arrows to Platforms -->
+									<path d="M315 70 Q350 70 380 45" class="deck-svg-arrow-line" />
+									<polygon points="380,40 388,44 382,50" class="deck-svg-arrow-head" />
+
+									<path d="M315 105 H380" class="deck-svg-arrow-line" />
+									<polygon points="380,99 390,105 380,111" class="deck-svg-arrow-head" />
+
+									<path d="M315 140 Q350 140 380 165" class="deck-svg-arrow-line" />
+									<polygon points="382,160 388,166 380,170" class="deck-svg-arrow-head" />
+
+									<!-- Platforms -->
+									<!-- Windows x86 -->
+									<rect x="395" y="20" width="170" height="50" rx="12" class="deck-panel-subtle platform-box" data-platform="win" />
+									<text x="410" y="42" class="deck-svg-bold">JVM Windows (x86)</text>
+									<text x="410" y="58" class="deck-svg-sub">Intel / AMD instructions</text>
+
+									<!-- macOS ARM -->
+									<rect x="395" y="80" width="170" height="50" rx="12" class="deck-panel-subtle platform-box" data-platform="mac" />
+									<text x="410" y="102" class="deck-svg-bold">JVM macOS (ARM64)</text>
+									<text x="410" y="118" class="deck-svg-sub">Apple Silicon M-Series</text>
+
+									<!-- Linux Server -->
+									<rect x="395" y="140" width="170" height="50" rx="12" class="deck-panel-subtle platform-box" data-platform="linux" />
+									<text x="410" y="162" class="deck-svg-bold">JVM Linux Server</text>
+									<text x="410" y="178" class="deck-svg-sub">ELF binaries & cloud kernel</text>
+
+									<!-- Summary banner -->
+									<rect x="10" y="200" width="555" height="42" rx="10" class="deck-ground-card" />
+									<text x="287" y="226" class="deck-svg-banner" text-anchor="middle">
+										{isEs
+											? 'Un solo archivo .class corre inalterado en todas las plataformas gracias a su JVM local.'
+											: 'A single .class file runs unmodified across every OS through its local JVM.'}
+									</text>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Simulador de Bytecode' : 'Bytecode Inspector'}</span>
+									<span class="deck-subtext">{isEs ? 'Seleccioná la arquitectura' : 'Select target platform'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary platform-btn active" data-arch="win">Windows x86_64</button>
+									<button class="btn btn-secondary platform-btn" data-arch="mac">macOS ARM64</button>
+									<button class="btn btn-secondary platform-btn" data-arch="linux">Linux Server</button>
+								</div>
+								<div class="deck-console" id="platform-console">
+									<div class="console-head">
+										<span class="console-dot dot-red"></span>
+										<span class="console-dot dot-yellow"></span>
+										<span class="console-dot dot-green"></span>
+										<span class="console-title" id="arch-title">JVM Windows (x86_64)</span>
+									</div>
+									<pre class="console-body" id="arch-body"><code>// Bytecode (.class) es IDÉNTICO:
+0: getstatic #2 // System.out
+3: ldc #3       // "Hola Mundo"
+5: invokevirtual #4 // println
+
+// Instrucciones emitidas por la JVM nativa:
+mov eax, [rcx+0x10]
+lea rdx, [rel str_hola]
+call qword ptr [rax+0x28]</code></pre>
+								</div>
+								<p class="deck-caption" id="arch-caption">
+									{isEs
+										? 'El compilador javac nunca interactúa con la arquitectura final: la JVM nativa traduce el bytecode en caliente.'
+										: 'The javac compiler never talks to the target chip: the local native JVM translates bytecode at runtime.'}
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 2: JVM INTERNAL ARCHITECTURE -->
+				<div class="deck-slide" data-slide="2">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">2. {isEs ? 'Anatomía Interna de la JVM' : 'JVM Internal Architecture'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'La Máquina Virtual de Java se divide en tres subsistemas fundamentales: Carga de Clases (ClassLoader), Áreas de Memoria en Tiempo de Ejecución (Runtime Data Areas) y el Motor de Ejecución (Execution Engine).'
+									: 'The Java Virtual Machine is split into three foundational subsystems: ClassLoader, Runtime Data Areas, and Execution Engine.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 560 300" width="100%" role="img" aria-label={isEs ? 'Diagrama de bloques de la arquitectura JVM' : 'JVM Architecture Block Diagram'}>
+									<!-- ClassLoader -->
+									<rect x="10" y="20" width="160" height="260" rx="16" class="deck-panel jvm-block" data-info="classloader" />
+									<text x="90" y="50" class="deck-svg-title" text-anchor="middle">ClassLoader</text>
+									<rect x="25" y="70" width="130" height="35" rx="8" class="deck-sub-block" />
+									<text x="90" y="92" class="deck-svg-chip" text-anchor="middle">1. Loading (.class)</text>
+									<rect x="25" y="115" width="130" height="35" rx="8" class="deck-sub-block" />
+									<text x="90" y="137" class="deck-svg-chip" text-anchor="middle">2. Linking / Verifier</text>
+									<rect x="25" y="160" width="130" height="35" rx="8" class="deck-sub-block" />
+									<text x="90" y="182" class="deck-svg-chip" text-anchor="middle">3. Initialization</text>
+									<text x="90" y="240" class="deck-svg-sub" text-anchor="middle">{isEs ? 'Valida seguridad de bytecode' : 'Verifies bytecode security'}</text>
+
+									<!-- Memory Areas -->
+									<rect x="190" y="20" width="170" height="260" rx="16" class="deck-panel-accent jvm-block" data-info="memory" />
+									<text x="275" y="50" class="deck-svg-title-accent" text-anchor="middle">Runtime Memory</text>
+									<rect x="205" y="70" width="140" height="35" rx="8" class="deck-sub-block-accent" />
+									<text x="275" y="92" class="deck-svg-chip-accent" text-anchor="middle">Method Area (Clases)</text>
+									<rect x="205" y="115" width="140" height="45" rx="8" class="deck-sub-block-accent" />
+									<text x="275" y="135" class="deck-svg-chip-accent" text-anchor="middle">HEAP</text>
+									<text x="275" y="150" class="deck-svg-mono-sm" text-anchor="middle">{isEs ? 'Objetos vivos' : 'Live objects'}</text>
+									<rect x="205" y="170" width="140" height="45" rx="8" class="deck-sub-block-accent" />
+									<text x="275" y="190" class="deck-svg-chip-accent" text-anchor="middle">JVM Stacks</text>
+									<text x="275" y="205" class="deck-svg-mono-sm" text-anchor="middle">{isEs ? 'Hilos y métodos' : 'Threads & frames'}</text>
+									<rect x="205" y="225" width="140" height="35" rx="8" class="deck-sub-block-accent" />
+									<text x="275" y="247" class="deck-svg-chip-accent" text-anchor="middle">PC Registers</text>
+
+									<!-- Execution Engine -->
+									<rect x="380" y="20" width="170" height="260" rx="16" class="deck-panel jvm-block" data-info="engine" />
+									<text x="465" y="50" class="deck-svg-title" text-anchor="middle">Execution Engine</text>
+									<rect x="395" y="70" width="140" height="45" rx="8" class="deck-sub-block" />
+									<text x="465" y="90" class="deck-svg-chip" text-anchor="middle">{isEs ? 'Intérprete' : 'Interpreter'}</text>
+									<text x="465" y="105" class="deck-svg-mono-sm" text-anchor="middle">{isEs ? 'Línea a línea' : 'Line by line'}</text>
+
+									<rect x="395" y="125" width="140" height="60" rx="8" class="deck-sub-block highlight" />
+									<text x="465" y="147" class="deck-svg-bold" text-anchor="middle">JIT Compiler</text>
+									<text x="465" y="162" class="deck-svg-mono-sm" text-anchor="middle">{isEs ? 'Compila código caliente' : 'HotSpot native compiler'}</text>
+									<text x="465" y="176" class="deck-svg-mono-sm" text-anchor="middle">{isEs ? 'a velocidad C++' : 'to C++ speed'}</text>
+
+									<rect x="395" y="195" width="140" height="45" rx="8" class="deck-sub-block" />
+									<text x="465" y="215" class="deck-svg-chip" text-anchor="middle">Garbage Collector</text>
+									<text x="465" y="230" class="deck-svg-mono-sm" text-anchor="middle">{isEs ? 'Libera memoria huérfana' : 'Reclaims dead memory'}</text>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Explorador de Componentes' : 'Subsystem Deep Dive'}</span>
+									<span class="deck-subtext">{isEs ? 'Seleccioná un bloque' : 'Click a module'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary jvm-btn active" data-target="classloader">ClassLoader</button>
+									<button class="btn btn-secondary jvm-btn" data-target="memory">{isEs ? 'Memoria Runtime' : 'Runtime Memory'}</button>
+									<button class="btn btn-secondary jvm-btn" data-target="engine">{isEs ? 'Motor de Ejecución' : 'Execution Engine'}</button>
+								</div>
+								<div class="deck-info-box" id="jvm-info-box">
+									<h4 class="info-title" id="jvm-info-title">ClassLoader Subsystem</h4>
+									<p class="info-desc" id="jvm-info-desc">
+										{isEs
+											? 'Se encarga de localizar y cargar los archivos .class en memoria. El Bytecode Verifier analiza la estructura binaria para asegurar que no contenga punteros ilegales, accesos prohibidos ni desbordamientos de pila antes de permitir su ejecución.'
+											: 'Locates and loads .class files into memory. The Bytecode Verifier inspects the binary structure to ensure no illegal pointers, forbidden memory access, or stack overflows occur before running.'}
+									</p>
+									<div class="info-highlight" id="jvm-info-tag">
+										{isEs ? '✓ Garantía de Seguridad de Java' : '✓ Java Security Sandbox Guarantee'}
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 3: ANATOMY OF MAIN() -->
+				<div class="deck-slide" data-slide="3">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">3. {isEs ? 'Anatomía de public static void main(String[] args)' : 'Anatomy of public static void main(String[] args)'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Cada palabra en la firma del método de entrada tiene una razón técnica indiscutible en la arquitectura de Java.'
+									: 'Every single keyword in the entry method signature has a precise technical purpose in the Java architecture.'}
+							</p>
+
+							<div class="deck-keyword-list">
+								<div class="kw-item" data-kw="public">
+									<span class="kw-name">public</span>
+									<span class="kw-desc">{isEs ? 'Visible para el cargador de la JVM desde cualquier parte fuera de la clase.' : 'Visible to the JVM launcher from outside any package.'}</span>
+								</div>
+								<div class="kw-item" data-kw="static">
+									<span class="kw-name">static</span>
+									<span class="kw-desc">{isEs ? 'La JVM puede ejecutarlo directamente sin necesidad de crear un objeto previo con new.' : 'Executable directly by the JVM without allocating an instance first.'}</span>
+								</div>
+								<div class="kw-item" data-kw="void">
+									<span class="kw-name">void</span>
+									<span class="kw-desc">{isEs ? 'No devuelve ningún valor. Los errores se señalan mediante excepciones o códigos de salida.' : 'Returns nothing to the caller. Errors exit via exceptions or system exit codes.'}</span>
+								</div>
+								<div class="kw-item" data-kw="main">
+									<span class="kw-name">main</span>
+									<span class="kw-desc">{isEs ? 'Nombre canónico e identificador reservado por convención que busca el runtime para arrancar.' : 'Canonical entry point identifier sought by the JVM launcher.'}</span>
+								</div>
+								<div class="kw-item" data-kw="args">
+									<span class="kw-name">String[] args</span>
+									<span class="kw-desc">{isEs ? 'Arreglo de cadenas de texto con los argumentos pasados por consola al iniciar.' : 'String array containing command-line arguments supplied at startup.'}</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Simulador de Argumentos CLI' : 'CLI Arguments Simulator'}</span>
+									<span class="deck-subtext">{isEs ? 'Probá pasar parámetros' : 'Test passing parameters'}</span>
+								</div>
+								<div class="deck-cli-box">
+									<div class="cli-input-row">
+										<span class="cli-prompt">$ java MiApp</span>
+										<input type="text" id="cli-input" class="input" value="servidor.cfg 8080 --debug" placeholder="arg1 arg2 arg3" />
+									</div>
+									<button class="btn btn-primary btn-sm" id="btn-run-cli">{isEs ? 'Ejecutar main(args)' : 'Run main(args)'}</button>
+								</div>
+								<div class="deck-memory-dump" id="cli-memory-dump">
+									<div class="dump-header">{isEs ? 'Memoria del arreglo args en Stack/Heap:' : 'args array memory layout:'}</div>
+									<div class="dump-content" id="dump-output">
+										<div class="dump-row"><span class="dump-idx">args[0] =</span> <span class="dump-val">"servidor.cfg"</span></div>
+										<div class="dump-row"><span class="dump-idx">args[1] =</span> <span class="dump-val">"8080"</span></div>
+										<div class="dump-row"><span class="dump-idx">args[2] =</span> <span class="dump-val">"--debug"</span></div>
+										<div class="dump-row"><span class="dump-idx">args.length =</span> <span class="dump-val dump-num">3</span></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 4: I/O & SCANNER -->
+				<div class="deck-slide" data-slide="4">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">4. {isEs ? 'Flujos de Entrada y Salida (I/O) y Scanner' : 'Standard I/O Streams and Scanner'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'La clase System conecta el programa con los tres descriptores estándar del sistema operativo: entrada estándar (in), salida estándar (out) y salida de error (err). Scanner envuelve el stream de bytes y lo parsea en tipos tipados.'
+									: 'The System class wires Java to standard OS file descriptors: standard in, out, and err. Scanner wraps raw byte streams into typed tokens.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Flujo de datos entre el sistema operativo, System.in, Scanner y System.out' : 'Data flow between OS, System.in, Scanner, and System.out'}>
+									<!-- User Terminal -->
+									<rect x="10" y="40" width="120" height="150" rx="14" class="deck-panel" />
+									<text x="70" y="70" class="deck-svg-title" text-anchor="middle">Terminal</text>
+									<text x="70" y="100" class="deck-svg-mono" text-anchor="middle">"42 Juan\n"</text>
+									<text x="70" y="150" class="deck-svg-badge" text-anchor="middle">Teclado / Consola</text>
+
+									<!-- System.in Pipe -->
+									<path d="M130 90 H200" class="deck-svg-arrow-line" />
+									<polygon points="200,84 210,90 200,96" class="deck-svg-arrow-head" />
+									<text x="165" y="80" class="deck-svg-tag" text-anchor="middle">System.in</text>
+
+									<!-- Scanner Parser -->
+									<rect x="210" y="40" width="140" height="150" rx="16" class="deck-panel-accent" />
+									<text x="280" y="70" class="deck-svg-title-accent" text-anchor="middle">Scanner</text>
+									<rect x="225" y="85" width="110" height="28" rx="6" class="deck-sub-block-accent" />
+									<text x="280" y="103" class="deck-svg-chip-accent" text-anchor="middle">nextInt() → 42</text>
+									<rect x="225" y="120" width="110" height="28" rx="6" class="deck-sub-block-accent" />
+									<text x="280" y="138" class="deck-svg-chip-accent" text-anchor="middle">next() → "Juan"</text>
+
+									<!-- System.out Pipe -->
+									<path d="M350 90 H420" class="deck-svg-arrow-line" />
+									<polygon points="420,84 430,90 420,96" class="deck-svg-arrow-head" />
+									<text x="385" y="80" class="deck-svg-tag" text-anchor="middle">System.out</text>
+
+									<!-- Output Display -->
+									<rect x="420" y="40" width="110" height="150" rx="14" class="deck-panel" />
+									<text x="475" y="70" class="deck-svg-title" text-anchor="middle">Display</text>
+									<text x="475" y="110" class="deck-svg-mono" text-anchor="middle">println()</text>
+									<text x="475" y="150" class="deck-svg-badge" text-anchor="middle">{isEs ? 'Salida limpia' : 'Screen Output'}</text>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Laboratorio Scanner' : 'Scanner Tokenizer Demo'}</span>
+									<span class="deck-subtext">{isEs ? 'Paso a paso de lectura' : 'Token consumption'}</span>
+								</div>
+								<div class="deck-scanner-demo">
+									<div class="scanner-buffer">
+										<span class="buf-label">Buffer:</span>
+										<span class="buf-token consumed" id="tok-1">19</span>
+										<span class="buf-token active" id="tok-2">3.1415</span>
+										<span class="buf-token" id="tok-3">true</span>
+									</div>
+									<div class="scanner-controls">
+										<button class="btn btn-secondary btn-sm" id="btn-scan-next">{isEs ? 'Leer siguiente token' : 'Read next token'}</button>
+										<button class="btn btn-ghost btn-sm" id="btn-scan-reset">{isEs ? 'Reiniciar' : 'Reset'}</button>
+									</div>
+									<div class="scanner-state-card">
+										<div class="state-row">
+											<span class="state-label">{isEs ? 'Método usado:' : 'Invoked method:'}</span>
+											<span class="state-val" id="scanner-method">scanner.nextDouble()</span>
+										</div>
+										<div class="state-row">
+											<span class="state-label">{isEs ? 'Variable Java asignada:' : 'Assigned Java variable:'}</span>
+											<span class="state-val" id="scanner-var">double pi = 3.1415;</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 5: STACK VS HEAP FIRST LOOK -->
+				<div class="deck-slide" data-slide="5">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">5. {isEs ? 'Stack vs Heap: Primer Vistazo a la Memoria' : 'Stack vs Heap: First Look at Memory'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Toda variable en Java vive en el Stack o en el Heap. En este primer nivel, las variables primitivas del método main residen directamente en el marco de la Pila (Stack Frame), de acceso instantáneo y liberación automática al finalizar el bloque.'
+									: 'Every variable in Java lives on either the Stack or the Heap. At this entry level, local primitive variables inside main reside directly inside the Stack Frame: instant access and automatic cleanup upon exit.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 260" width="100%" role="img" aria-label={isEs ? 'Modelo de memoria inicial: Pila de ejecución con variables primitivas locales y Heap preparado' : 'Initial memory layout: Call Stack with primitive variables and ready Heap'}>
+									<!-- Stack Area -->
+									<rect x="20" y="20" width="220" height="220" rx="16" class="deck-panel" />
+									<text x="130" y="46" class="deck-svg-title" text-anchor="middle">Call Stack (Hilos)</text>
+									
+									<!-- Stack Frame for main -->
+									<rect x="35" y="60" width="190" height="160" rx="10" class="deck-sub-block" />
+									<text x="50" y="82" class="deck-svg-bold">Frame: main()</text>
+
+									<rect x="45" y="95" width="170" height="30" rx="6" class="deck-panel-subtle" />
+									<text x="55" y="115" class="deck-svg-mono">int edad = 25</text>
+
+									<rect x="45" y="132" width="170" height="30" rx="6" class="deck-panel-subtle" />
+									<text x="55" y="152" class="deck-svg-mono">double saldo = 1500.0</text>
+
+									<rect x="45" y="169" width="170" height="30" rx="6" class="deck-panel-subtle" />
+									<text x="55" y="189" class="deck-svg-mono">boolean activo = true</text>
+
+									<!-- Heap Area -->
+									<rect x="280" y="20" width="240" height="220" rx="16" class="deck-panel-accent" />
+									<text x="400" y="46" class="deck-svg-title-accent" text-anchor="middle">HEAP (Montón Global)</text>
+									
+									<rect x="300" y="70" width="200" height="140" rx="12" class="deck-sub-block-accent" stroke-dasharray="6 6" />
+									<text x="400" y="125" class="deck-svg-banner" text-anchor="middle">
+										{isEs ? 'Aún sin objetos instanciados' : 'No objects instantiated yet'}
+									</text>
+									<text x="400" y="145" class="deck-svg-sub" text-anchor="middle">
+										{isEs ? '(Reservado para "new" y Objetos en lecciones 07+)' : '(Reserved for "new" and Objects in lessons 07+)'}
+									</text>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-summary-card">
+								<h3 class="deck-summary-title">{isEs ? 'Puntos Clave para Recordar' : 'Key Takeaways'}</h3>
+								<ul class="deck-checklist">
+									<li>
+										<strong>Write Once, Run Anywhere:</strong> {isEs ? 'El compilador javac crea .class (bytecode); la JVM nativa de cada OS lo ejecuta.' : 'javac generates .class bytecode; each OS native JVM executes it.'}
+									</li>
+									<li>
+										<strong>Arquitectura JVM:</strong> {isEs ? 'ClassLoader carga y verifica seguridad; JIT compila bucles calientes a velocidad C++.' : 'ClassLoader verifies security; JIT compiles hotspots to native CPU speed.'}
+									</li>
+									<li>
+										<strong>Firma de main():</strong> {isEs ? 'public para acceso externo, static para arrancar sin new, void porque no retorna valor.' : 'public for JVM visibility, static to run without instantiation, void because it returns nothing.'}
+									</li>
+									<li>
+										<strong>Memoria Stack:</strong> {isEs ? 'Las variables locales primitivas de main viven directamente en el frame de la pila.' : 'Local primitive variables live directly within the stack frame.'}
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Navigation Bar Footer -->
+			<div class="deck-footer-bar">
+				<button class="btn btn-secondary" id="deck-prev-btn" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="deck-keys-hint">
+					<span class="key-cap">←</span> <span class="key-cap">→</span> {isEs ? 'para navegar' : 'to navigate'}
+				</div>
+				<button class="btn btn-primary" id="deck-next-btn">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 5;
+
+	const slideLabel = document.getElementById('deck-slide-label');
+	const prevBtn = document.getElementById('deck-prev-btn') as HTMLButtonElement | null;
+	const nextBtn = document.getElementById('deck-next-btn') as HTMLButtonElement | null;
+	const pillBtns = document.querySelectorAll<HTMLButtonElement>('.deck-pill-btn');
+	const slides = document.querySelectorAll<HTMLElement>('.deck-slide');
+
+	function goToSlide(target: number) {
+		if (target < 1 || target > totalSlides) return;
+		currentSlide = target;
+
+		slides.forEach((slide) => {
+			const slideIdx = parseInt(slide.getAttribute('data-slide') || '0', 10);
+			slide.classList.toggle('active', slideIdx === currentSlide);
+		});
+
+		pillBtns.forEach((btn) => {
+			const targetIdx = parseInt(btn.getAttribute('data-target-slide') || '0', 10);
+			btn.classList.toggle('active', targetIdx === currentSlide);
+		});
+
+		if (slideLabel) {
+			slideLabel.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+		}
+
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	}
+
+	pillBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const target = parseInt(btn.getAttribute('data-target-slide') || '1', 10);
+			goToSlide(target);
+		});
+	});
+
+	prevBtn?.addEventListener('click', () => goToSlide(currentSlide - 1));
+	nextBtn?.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+	window.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+	});
+
+	/* Slide 1: Platform switcher */
+	const platformData: Record<string, { title: string; code: string; desc: string }> = {
+		win: {
+			title: 'JVM Windows (x86_64)',
+			code: `// Bytecode (.class) es IDÉNTICO:\n0: getstatic #2 // System.out\n3: ldc #3       // "Hola Mundo"\n5: invokevirtual #4 // println\n\n// Instrucciones emitidas por la JVM nativa x86_64:\nmov eax, [rcx+0x10]\nlea rdx, [rel str_hola]\ncall qword ptr [rax+0x28]`,
+			desc: 'En Windows x86_64, el JIT traduce el bytecode a instrucciones Intel/AMD de 64 bits utilizando registros RAX, RDX y RCX.',
+		},
+		mac: {
+			title: 'JVM macOS (Apple Silicon ARM64)',
+			code: `// Bytecode (.class) es IDÉNTICO:\n0: getstatic #2 // System.out\n3: ldc #3       // "Hola Mundo"\n5: invokevirtual #4 // println\n\n// Instrucciones emitidas por la JVM nativa ARM64:\nadrp x0, str_hola@PAGE\nadd  x0, x0, str_hola@PAGEOFF\nbl   _printf_bridge`,
+			desc: 'En Apple Silicon (M1/M2/M3), la JVM emite instrucciones RISC ARM64 de tamaño fijo (32 bits) usando registros X0-X30.',
+		},
+		linux: {
+			title: 'JVM Linux Server (x86_64 Cloud)',
+			code: `// Bytecode (.class) es IDÉNTICO:\n0: getstatic #2 // System.out\n3: ldc #3       // "Hola Mundo"\n5: invokevirtual #4 // println\n\n// Instrucciones emitidas bajo convención System V AMD64:\nmov rdi, [rip+stdout_offset]\nlea rsi, [rip+str_msg]\ncall [rip+fn_vtable]`,
+			desc: 'En servidores Linux, la JVM optimiza intensamente el bytecode bajo perfiles de servidor con recolección de basura paralela.',
+		},
+	};
+
+	document.querySelectorAll<HTMLButtonElement>('.platform-btn').forEach((btn) => {
+		btn.addEventListener('click', () => {
+			document.querySelectorAll('.platform-btn').forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+			const arch = btn.getAttribute('data-arch') || 'win';
+			const data = platformData[arch];
+			if (data) {
+				const titleEl = document.getElementById('arch-title');
+				const bodyEl = document.getElementById('arch-body');
+				const captionEl = document.getElementById('arch-caption');
+				if (titleEl) titleEl.textContent = data.title;
+				if (bodyEl) bodyEl.innerHTML = `<code>${data.code}</code>`;
+				if (captionEl) captionEl.textContent = data.desc;
+			}
+		});
+	});
+
+	/* Slide 2: JVM modules */
+	const jvmData: Record<string, { title: string; desc: string; tag: string }> = {
+		classloader: {
+			title: 'ClassLoader Subsystem',
+			desc: 'Se encarga de localizar y cargar los archivos .class en memoria. El Bytecode Verifier analiza la estructura binaria para asegurar que no contenga punteros ilegales, accesos prohibidos ni desbordamientos de pila antes de permitir su ejecución.',
+			tag: '✓ Garantía de Seguridad de Java',
+		},
+		memory: {
+			title: 'Runtime Data Areas',
+			desc: 'El Heap aloja todos los objetos instanciados compartidos por la aplicación. Cada hilo posee su propio Stack privado con marcos de método (variables locales primitivas y direcciones de retorno). El Method Area guarda metadatos de clases y constantes.',
+			tag: '⚡ Gestión Dinámica de Memoria',
+		},
+		engine: {
+			title: 'Execution Engine & JIT',
+			desc: 'El Intérprete ejecuta el bytecode instrucción por instrucción al arrancar. El compilador JIT (Just-In-Time) detecta qué partes del código se llaman repetidamente (hotspots) y las compila directamente a código máquina nativo del procesador.',
+			tag: '🚀 Rendimiento Máximo en Caliente',
+		},
+	};
+
+	document.querySelectorAll<HTMLButtonElement>('.jvm-btn').forEach((btn) => {
+		btn.addEventListener('click', () => {
+			document.querySelectorAll('.jvm-btn').forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+			const target = btn.getAttribute('data-target') || 'classloader';
+			const item = jvmData[target];
+			if (item) {
+				const titleEl = document.getElementById('jvm-info-title');
+				const descEl = document.getElementById('jvm-info-desc');
+				const tagEl = document.getElementById('jvm-info-tag');
+				if (titleEl) titleEl.textContent = item.title;
+				if (descEl) descEl.textContent = item.desc;
+				if (tagEl) tagEl.textContent = item.tag;
+			}
+		});
+	});
+
+	/* Slide 3: CLI args simulation */
+	const runCliBtn = document.getElementById('btn-run-cli');
+	const cliInput = document.getElementById('cli-input') as HTMLInputElement | null;
+	const dumpOutput = document.getElementById('dump-output');
+
+	runCliBtn?.addEventListener('click', () => {
+		if (!cliInput || !dumpOutput) return;
+		const raw = cliInput.value.trim();
+		const tokens = raw.length > 0 ? raw.split(/\s+/) : [];
+		dumpOutput.innerHTML = '';
+
+		tokens.forEach((tok, idx) => {
+			const row = document.createElement('div');
+			row.className = 'dump-row';
+			row.innerHTML = `<span class="dump-idx">args[${idx}] =</span> <span class="dump-val">"${tok}"</span>`;
+			dumpOutput.appendChild(row);
+		});
+
+		const lenRow = document.createElement('div');
+		lenRow.className = 'dump-row';
+		lenRow.innerHTML = `<span class="dump-idx">args.length =</span> <span class="dump-val dump-num">${tokens.length}</span>`;
+		dumpOutput.appendChild(lenRow);
+	});
+
+	/* Slide 4: Scanner token simulation */
+	let scanStep = 0;
+	const scanSteps = [
+		{ method: 'scanner.nextInt()', variable: 'int edad = 19;', tokActive: 1 },
+		{ method: 'scanner.nextDouble()', variable: 'double pi = 3.1415;', tokActive: 2 },
+		{ method: 'scanner.nextBoolean()', variable: 'boolean esValido = true;', tokActive: 3 },
+	];
+
+	const btnScanNext = document.getElementById('btn-scan-next');
+	const btnScanReset = document.getElementById('btn-scan-reset');
+	const methodEl = document.getElementById('scanner-method');
+	const varEl = document.getElementById('scanner-var');
+
+	function updateScannerUI() {
+		for (let i = 1; i <= 3; i++) {
+			const tokEl = document.getElementById(`tok-${i}`);
+			if (!tokEl) continue;
+			tokEl.classList.remove('active', 'consumed');
+			if (i < scanStep + 1) tokEl.classList.add('consumed');
+			else if (i === scanStep + 1) tokEl.classList.add('active');
+		}
+
+		if (scanStep < scanSteps.length) {
+			const cur = scanSteps[scanStep];
+			if (methodEl) methodEl.textContent = cur.method;
+			if (varEl) varEl.textContent = cur.variable;
+		} else {
+			if (methodEl) methodEl.textContent = 'scanner.hasNext() → false';
+			if (varEl) varEl.textContent = '// Fin del stream de entrada';
+		}
+	}
+
+	btnScanNext?.addEventListener('click', () => {
+		if (scanStep < scanSteps.length) {
+			scanStep++;
+			updateScannerUI();
+		}
+	});
+
+	btnScanReset?.addEventListener('click', () => {
+		scanStep = 0;
+		updateScannerUI();
+	});
+</script>
+
+<style>
+	.cb-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		padding: var(--space-4) var(--space-6);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.cb-shell { width: 100%; max-width: none; margin: 0; flex: 1; display: flex; flex-direction: column; }
+
+	.deck-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-xl);
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* Nav bar */
+	.deck-nav-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: color-mix(in srgb, var(--color-surface) 90%, var(--color-bg));
+		gap: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.deck-slide-indicator {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		letter-spacing: 0.05em;
+	}
+
+	.deck-step-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--color-accent);
+	}
+
+	.deck-pills {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-pill-btn {
+		background: transparent;
+		border: 1px solid transparent;
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-full);
+		font-size: 0.85rem;
+		color: var(--color-text);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.deck-pill-btn:hover {
+		background: var(--color-neutral-200);
+	}
+
+	.deck-pill-btn.active {
+		background: var(--color-accent-200);
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	/* Viewport & slides */
+	.cb-viewport {
+		padding: var(--space-6) var(--space-8);
+		min-height: 480px;
+	}
+
+	.cb-viewport { display: flex; flex-direction: column; justify-content: center; }
+	@media (min-width: 1440px) { .cb-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .cb-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .cb-viewport { zoom: 1.25; } }
+
+	.deck-slide {
+		display: none;
+	}
+
+	.deck-slide.active {
+		display: block;
+		animation: deckFade 0.25s ease-out;
+	}
+
+	@keyframes deckFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.deck-slide-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-8);
+		align-items: start;
+	}
+
+	@media (max-width: 960px) {
+		.deck-slide-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.deck-slide-title {
+		font-family: var(--font-heading);
+		font-size: 1.6rem;
+		color: var(--color-text);
+		margin-top: 0;
+		margin-bottom: var(--space-3);
+	}
+
+	.deck-text {
+		font-size: 0.95rem;
+		line-height: 1.6;
+		color: color-mix(in srgb, var(--color-text) 85%, transparent);
+		margin-bottom: var(--space-4);
+	}
+
+	/* SVG tokens and styling */
+	.deck-figure {
+		background: var(--color-neutral-100);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-3);
+	}
+
+	.deck-panel {
+		fill: var(--color-neutral-200);
+		stroke: var(--color-divider);
+		stroke-width: 1.5;
+	}
+
+	.deck-panel-accent {
+		fill: var(--color-accent-200);
+		stroke: var(--color-accent);
+		stroke-width: 2;
+	}
+
+	.deck-panel-subtle {
+		fill: var(--color-neutral-100);
+		stroke: var(--color-divider);
+		stroke-width: 1.5;
+	}
+
+	.deck-svg-title {
+		font-family: var(--font-heading);
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-title-accent {
+		font-family: var(--font-heading);
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--color-accent-700);
+	}
+
+	.deck-wire-dim {
+		fill: var(--color-divider);
+	}
+
+	.deck-svg-badge {
+		font-size: 10px;
+		font-weight: 600;
+		fill: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.deck-svg-badge-accent {
+		font-size: 10px;
+		font-weight: 700;
+		fill: var(--color-accent-700);
+	}
+
+	.deck-svg-arrow-line {
+		stroke: var(--color-accent);
+		stroke-width: 2.5;
+		fill: none;
+	}
+
+	.deck-svg-arrow-head {
+		fill: var(--color-accent);
+	}
+
+	.deck-svg-tag {
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--color-accent-700);
+	}
+
+	.deck-svg-mono {
+		font-family: monospace;
+		font-size: 11px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-mono-sm {
+		font-family: monospace;
+		font-size: 9.5px;
+		fill: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+
+	.deck-svg-bold {
+		font-size: 11.5px;
+		font-weight: 700;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-sub {
+		font-size: 10px;
+		fill: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.deck-ground-card {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+	}
+
+	.deck-svg-banner {
+		font-size: 11px;
+		font-weight: 600;
+		fill: var(--color-accent-700);
+	}
+
+	.deck-sub-block {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+	}
+
+	.deck-sub-block-accent {
+		fill: var(--color-surface);
+		stroke: var(--color-accent);
+	}
+
+	.deck-sub-block.highlight {
+		fill: var(--color-accent-2-200);
+		stroke: var(--color-accent-2-600);
+	}
+
+	.deck-svg-chip {
+		font-size: 11px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-chip-accent {
+		font-size: 11px;
+		font-weight: 600;
+		fill: var(--color-accent-700);
+	}
+
+	/* Interactive card styling */
+	.deck-interactive-card,
+	.deck-summary-card {
+		background: var(--color-neutral-100);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+	}
+
+	.deck-card-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--space-3);
+	}
+
+	.deck-badge {
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.deck-subtext {
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.deck-actions-row {
+		display: flex;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+		flex-wrap: wrap;
+	}
+
+	.deck-actions-row .btn.active {
+		background: var(--color-accent);
+		color: rgb(255, 255, 255);
+		border-color: var(--color-accent);
+	}
+
+	/* Console mock */
+	.deck-console {
+		background: rgb(30, 30, 30);
+		color: rgb(212, 212, 212);
+		border-radius: var(--radius-md);
+		overflow: hidden;
+		box-shadow: var(--shadow-sm);
+	}
+
+	.console-head {
+		background: rgb(45, 45, 45);
+		padding: var(--space-2) var(--space-3);
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.console-dot {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+	}
+
+	.dot-red { background: rgb(255, 95, 86); }
+	.dot-yellow { background: rgb(255, 189, 46); }
+	.dot-green { background: rgb(39, 201, 63); }
+
+	.console-title {
+		font-size: 0.75rem;
+		color: rgb(160, 160, 160);
+		margin-left: var(--space-2);
+	}
+
+	.console-body {
+		padding: var(--space-3);
+		margin: 0;
+		font-family: monospace;
+		font-size: 0.8rem;
+		line-height: 1.45;
+		overflow-x: auto;
+	}
+
+	.deck-caption {
+		font-size: 0.82rem;
+		color: color-mix(in srgb, var(--color-text) 65%, transparent);
+		margin-top: var(--space-2);
+		margin-bottom: 0;
+		line-height: 1.4;
+	}
+
+	/* Info box */
+	.deck-info-box {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.info-title {
+		margin-top: 0;
+		margin-bottom: var(--space-2);
+		font-family: var(--font-heading);
+		font-size: 1.1rem;
+		color: var(--color-accent-700);
+	}
+
+	.info-desc {
+		font-size: 0.88rem;
+		line-height: 1.55;
+		margin-bottom: var(--space-3);
+	}
+
+	.info-highlight {
+		display: inline-block;
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: var(--color-accent-2-800);
+		background: var(--color-accent-2-200);
+		padding: var(--space-1) var(--space-2);
+		border-radius: var(--radius-sm);
+	}
+
+	/* Keyword list for slide 3 */
+	.deck-keyword-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.kw-item {
+		display: flex;
+		align-items: baseline;
+		gap: var(--space-3);
+		background: var(--color-neutral-100);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-2) var(--space-3);
+	}
+
+	.kw-name {
+		font-family: monospace;
+		font-weight: 700;
+		font-size: 0.95rem;
+		color: var(--color-accent-700);
+		min-width: 100px;
+	}
+
+	.kw-desc {
+		font-size: 0.85rem;
+		color: var(--color-text);
+	}
+
+	/* CLI simulator */
+	.deck-cli-box {
+		display: flex;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+		align-items: center;
+		flex-wrap: wrap;
+	}
+
+	.cli-input-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		flex: 1;
+		min-width: 240px;
+	}
+
+	.cli-prompt {
+		font-family: monospace;
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		white-space: nowrap;
+	}
+
+	.deck-memory-dump {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.dump-header {
+		font-size: 0.8rem;
+		font-weight: 700;
+		margin-bottom: var(--space-2);
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.dump-content {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.dump-row {
+		display: flex;
+		gap: var(--space-2);
+		font-family: monospace;
+		font-size: 0.85rem;
+	}
+
+	.dump-idx {
+		color: var(--color-accent-700);
+		min-width: 90px;
+	}
+
+	.dump-val {
+		color: var(--color-accent-2-800);
+		font-weight: 600;
+	}
+
+	.dump-num {
+		color: rgb(59, 130, 246);
+	}
+
+	/* Scanner simulation */
+	.deck-scanner-demo {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.scanner-buffer {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		background: var(--color-surface);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-md);
+		border: 1px solid var(--color-divider);
+	}
+
+	.buf-label {
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.buf-token {
+		font-family: monospace;
+		font-size: 0.85rem;
+		padding: 2px 8px;
+		border-radius: var(--radius-sm);
+		background: var(--color-neutral-200);
+		border: 1px solid var(--color-divider);
+		transition: all 0.2s;
+	}
+
+	.buf-token.active {
+		background: var(--color-accent-200);
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+		font-weight: 700;
+	}
+
+	.buf-token.consumed {
+		opacity: 0.4;
+		text-decoration: line-through;
+	}
+
+	.scanner-controls {
+		display: flex;
+		gap: var(--space-2);
+	}
+
+	.scanner-state-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.state-row {
+		display: flex;
+		justify-content: space-between;
+		font-size: 0.85rem;
+	}
+
+	.state-label {
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.state-val {
+		font-family: monospace;
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	/* Summary checklist */
+	.deck-summary-title {
+		font-family: var(--font-heading);
+		font-size: 1.2rem;
+		margin-top: 0;
+		margin-bottom: var(--space-3);
+		color: var(--color-accent-700);
+	}
+
+	.deck-checklist {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.deck-checklist li {
+		position: relative;
+		padding-left: var(--space-5);
+		font-size: 0.9rem;
+		line-height: 1.5;
+	}
+
+	.deck-checklist li::before {
+		content: "✓";
+		position: absolute;
+		left: 0;
+		color: var(--color-accent-2-700);
+		font-weight: 700;
+	}
+
+	/* Footer bar */
+	.deck-footer-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-top: 1px solid var(--color-divider);
+		background: color-mix(in srgb, var(--color-surface) 90%, var(--color-bg));
+	}
+
+	.deck-keys-hint {
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+		display: flex;
+		align-items: center;
+		gap: var(--space-1);
+	}
+
+	.key-cap {
+		display: inline-block;
+		padding: 1px 6px;
+		background: var(--color-neutral-200);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		font-family: monospace;
+		font-size: 0.75rem;
+	}
+</style>

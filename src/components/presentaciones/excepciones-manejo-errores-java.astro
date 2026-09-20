@@ -1,0 +1,1171 @@
+---
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="ex-screen" data-lang={lang}>
+	<div class="ex-shell">
+		<div class="deck-card">
+			<div class="deck-nav-bar">
+				<div class="deck-slide-indicator">
+					<span class="deck-step-dot"></span>
+					<span id="deck-slide-label">SLIDE 1 / 7</span>
+				</div>
+				<div class="deck-pills">
+					<button class="deck-pill-btn active" data-target-slide="1">1. {isEs ? 'Jerarquía Throwable' : 'Throwable Hierarchy'}</button>
+					<button class="deck-pill-btn" data-target-slide="2">2. {isEs ? 'Anatomía en Memoria' : 'Memory Anatomy'}</button>
+					<button class="deck-pill-btn" data-target-slide="3">3. {isEs ? 'Stack Unwinding' : 'Stack Unwinding'}</button>
+					<button class="deck-pill-btn" data-target-slide="4">4. {isEs ? 'try-catch-finally' : 'try-catch-finally'}</button>
+					<button class="deck-pill-btn" data-target-slide="5">5. {isEs ? 'try-with-resources' : 'try-with-resources'}</button>
+					<button class="deck-pill-btn" data-target-slide="6">6. {isEs ? 'Causas Encadenadas' : 'Chained Causes'}</button>
+					<button class="deck-pill-btn" data-target-slide="7">7. {isEs ? '4 Antipatrones' : '4 Anti-Patterns'}</button>
+				</div>
+			</div>
+
+			<div class="ex-viewport">
+				<!-- SLIDE 1: THROWABLE HIERARCHY -->
+				<div class="deck-slide active" data-slide="1">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">1. {isEs ? 'El Árbol Genealógico de Throwable' : 'The Throwable Family Tree'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Toda anomalía en Java desciende de Throwable. La rama Error representa fallos catastróficos de la JVM (no se atrapan). La rama Exception se divide entre Checked (obligatorias por compilador) y RuntimeException (bugs lógicos unchecked).'
+									: 'All anomalies in Java descend from Throwable. The Error branch models catastrophic JVM failures (do not catch). The Exception branch splits into Checked (compiler-enforced) and RuntimeException (unchecked logic bugs).'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'Jerarquía de clases Throwable en Java' : 'Throwable class hierarchy in Java'}>
+									<!-- Root: Throwable -->
+									<g transform="translate(200, 15)">
+										<rect x="0" y="0" width="140" height="38" rx="6" class="deck-ground-card" stroke="var(--color-accent-700)" stroke-width="2" />
+										<text x="70" y="24" class="deck-svg-title" text-anchor="middle">Throwable</text>
+									</g>
+
+									<!-- Connector lines -->
+									<path d="M230 53 L130 85" stroke="var(--color-divider)" stroke-width="1.5" />
+									<path d="M310 53 L370 85" stroke="var(--color-divider)" stroke-width="1.5" />
+
+									<!-- Branch Left: Error -->
+									<g id="box-error-branch" transform="translate(45, 85)">
+										<rect x="0" y="0" width="170" height="60" rx="8" class="deck-panel" stroke="rgb(239, 68, 68)" stroke-width="2" />
+										<text x="85" y="22" class="deck-svg-bold" fill="rgb(239, 68, 68)" text-anchor="middle">Error (Fatal JVM)</text>
+										<text x="85" y="38" class="deck-svg-sub" text-anchor="middle">OutOfMemoryError</text>
+										<text x="85" y="50" class="deck-svg-sub" text-anchor="middle">StackOverflowError</text>
+									</g>
+
+									<!-- Branch Right: Exception -->
+									<g id="box-exception-branch" transform="translate(285, 85)">
+										<rect x="0" y="0" width="220" height="50" rx="8" class="deck-panel-accent" stroke="var(--color-accent)" stroke-width="2" />
+										<text x="110" y="22" class="deck-svg-title-accent" text-anchor="middle">Exception (Recuperables)</text>
+										<text x="110" y="38" class="deck-svg-sub" text-anchor="middle">Aplicación puede responder</text>
+									</g>
+
+									<!-- Split Exception Sub-branches -->
+									<path d="M340 135 L280 165" stroke="var(--color-divider)" stroke-width="1.5" />
+									<path d="M450 135 L450 165" stroke="var(--color-divider)" stroke-width="1.5" />
+
+									<!-- Checked Sub-branch -->
+									<g id="box-checked" transform="translate(195, 165)">
+										<rect x="0" y="0" width="165" height="70" rx="6" class="deck-ground-card" stroke="var(--color-accent-700)" stroke-width="1.5" />
+										<text x="82" y="20" class="deck-svg-bold" fill="var(--color-accent-700)" text-anchor="middle">Checked Exception</text>
+										<text x="82" y="36" class="deck-svg-sub" text-anchor="middle">IOException, SQLException</text>
+										<text x="82" y="52" class="deck-svg-mono-sm" text-anchor="middle">throws o try/catch</text>
+									</g>
+
+									<!-- Unchecked (RuntimeException) -->
+									<g id="box-unchecked" transform="translate(370, 165)">
+										<rect x="0" y="0" width="160" height="70" rx="6" class="deck-ground-card" stroke="var(--color-accent-2-700)" stroke-width="1.5" />
+										<text x="80" y="20" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle">RuntimeException</text>
+										<text x="80" y="36" class="deck-svg-sub" text-anchor="middle">NullPointerException, Index...</text>
+										<text x="80" y="52" class="deck-svg-mono-sm" text-anchor="middle">Unchecked (Bugs lógicos)</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Filtro de Excepción' : 'Exception Filter'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary type-btn active" data-type="all">{isEs ? 'Ver Todas' : 'Show All'}</button>
+									<button class="btn btn-secondary type-btn" data-type="checked">{isEs ? 'Checked (Obligatorias)' : 'Checked (Enforced)'}</button>
+									<button class="btn btn-secondary type-btn" data-type="unchecked">{isEs ? 'Unchecked (Runtime)' : 'Unchecked (Runtime)'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Categoría:' : 'Category:'}</span>
+										<span class="state-val" id="cat-label-txt">{isEs ? 'Checked vs Unchecked' : 'Checked vs Unchecked'}</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Obligación del Compilador:' : 'Compiler Requirement:'}</span>
+										<span class="state-val" id="cat-req-txt" style="color: var(--color-accent-700); font-weight: 600;">Exige declarar o atrapar</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code id="cat-code-snippet"><span class="tok-comment">// Checked: Obligación sintáctica</span>
+<span class="tok-kw">public void</span> leerArchivo() <span class="tok-kw">throws</span> IOException &#123;
+  <span class="tok-kw">new</span> FileInputStream(<span class="tok-str">"datos.csv"</span>);
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 2: MEMORY ANATOMY -->
+				<div class="deck-slide" data-slide="2">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">2. {isEs ? 'Anatomía de una Excepción en Memoria' : 'Anatomy of an Exception in Memory'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Una excepción no es una simple señal de error: es un OBJETO REAL en el Heap. Al crearse con new, captura una instantánea exacta de la pila de llamadas (StackTrace), un mensaje explicativo y opcionalmente una causa original.'
+									: 'An exception is not a simple flag: it is a FULL OBJECT allocated in the Heap. Instantiating it takes an exact snapshot of the Call Stack (StackTrace), a descriptive message, and an optional root cause.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'Objeto excepción en el Heap' : 'Exception object in Heap'}>
+									<!-- Heap Object Container -->
+									<g transform="translate(30, 20)">
+										<rect x="0" y="0" width="480" height="210" rx="12" class="deck-panel-accent" stroke-width="2" />
+										<text x="240" y="24" class="deck-svg-title-accent" text-anchor="middle">Objeto en Heap: SaldoInsuficienteException @0x3E80</text>
+										<line x1="20" y1="36" x2="460" y2="36" stroke="var(--color-divider)" />
+
+										<!-- Field: message -->
+										<g transform="translate(20, 48)">
+											<rect x="0" y="0" width="440" height="42" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+											<text x="15" y="18" class="deck-svg-bold" fill="var(--color-accent-700)">String message:</text>
+											<text x="15" y="34" class="deck-svg-mono-sm">"Saldo insuficiente: requerido $500.00, disponible $120.00"</text>
+										</g>
+
+										<!-- Field: stackTrace -->
+										<g transform="translate(20, 98)">
+											<rect x="0" y="0" width="440" height="52" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+											<text x="15" y="18" class="deck-svg-bold" fill="var(--color-accent-700)">StackTraceElement[] stackTrace:</text>
+											<text x="15" y="32" class="deck-svg-mono-sm">at CuentaBancaria.debitar(CuentaBancaria.java:45)</text>
+											<text x="15" y="44" class="deck-svg-mono-sm">at CajeroService.retirar(CajeroService.java:22)</text>
+										</g>
+
+										<!-- Field: cause -->
+										<g transform="translate(20, 158)">
+											<rect x="0" y="0" width="440" height="38" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+											<text x="15" y="24" class="deck-svg-bold" fill="var(--color-accent-2-700)">Throwable cause: null (Error raíz primario)</text>
+										</g>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Campos de Diagnóstico' : 'Diagnostic Fields'}</span>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Método getMessage():' : 'getMessage() method:'}</span>
+										<span class="state-val">Explicación para humanos / logs</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Costo de new Exception:' : 'Cost of new Exception:'}</span>
+										<span class="state-val" style="color: rgb(217, 119, 6);">fillInStackTrace() recorre la pila</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Buena Práctica:' : 'Best Practice:'}</span>
+										<span class="state-val" style="color: var(--color-accent-2-700);">No usar excepciones para control de flujo</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-kw">if</span> (saldo &lt; monto) &#123;
+  <span class="tok-kw">throw new</span> SaldoInsuficienteException(
+    <span class="tok-str">"Saldo insuficiente: requerido "</span> + monto
+  );
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 3: STACK UNWINDING SIMULATOR -->
+				<div class="deck-slide" data-slide="3">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">3. {isEs ? 'Desenrollado de la Pila (Stack Unwinding)' : 'Call Stack Unwinding Simulator'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Cuando ocurre una excepción y el método no tiene catch, su marco de ejecución colapsa de inmediato y el error se propaga hacia el método que lo llamó, subiendo hasta encontrar un catch o tirar la JVM.'
+									: 'When an exception is thrown and the method has no catch block, its execution frame is destroyed and the exception propagates to the caller, bubbling up until caught or terminating the thread.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'Simulador de desenrollado de pila' : 'Call stack unwinding simulator'}>
+									<!-- Call Stack Frame Stack -->
+									<g transform="translate(30, 20)">
+										<rect x="0" y="0" width="220" height="210" rx="8" class="deck-panel" />
+										<text x="110" y="24" class="deck-svg-title" text-anchor="middle">Call Stack (Hilos Activos)</text>
+
+										<!-- Frame 1: main (has catch) -->
+										<g id="frame-main" class="stack-frame" transform="translate(15, 38)">
+											<rect x="0" y="0" width="190" height="38" rx="6" class="deck-panel-accent" stroke="var(--color-accent)" stroke-width="2" />
+											<text x="15" y="24" class="deck-svg-bold" fill="var(--color-accent-700)">main() [try-catch]</text>
+										</g>
+
+										<!-- Frame 2: procesarOrden -->
+										<g id="frame-orden" class="stack-frame" transform="translate(15, 80)">
+											<rect x="0" y="0" width="190" height="38" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+											<text x="15" y="24" class="deck-svg-mono-sm">procesarOrden()</text>
+										</g>
+
+										<!-- Frame 3: validarStock -->
+										<g id="frame-stock" class="stack-frame" transform="translate(15, 122)">
+											<rect x="0" y="0" width="190" height="38" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+											<text x="15" y="24" class="deck-svg-mono-sm">validarStock()</text>
+										</g>
+
+										<!-- Frame 4: consultarBD -->
+										<g id="frame-bd" class="stack-frame" transform="translate(15, 164)">
+											<rect x="0" y="0" width="190" height="38" rx="6" class="deck-ground-card" stroke="rgb(239, 68, 68)" stroke-width="1.5" />
+											<text x="15" y="24" class="deck-svg-bold" fill="rgb(239, 68, 68)">consultarBD() ⚡</text>
+										</g>
+									</g>
+
+									<!-- Explanation / Stepper Output Box -->
+									<g transform="translate(270, 20)">
+										<rect x="0" y="0" width="240" height="210" rx="10" class="deck-panel-accent" />
+										<text x="20" y="30" class="deck-svg-title-accent" id="unwind-phase-title">Paso 1: Error en consultarBD()</text>
+										<line x1="20" y1="42" x2="220" y2="42" stroke="var(--color-divider)" />
+										<text x="20" y="70" class="deck-svg-bold" id="unwind-phase-desc">SQLException detonada</text>
+										<text x="20" y="90" class="deck-svg-sub" id="unwind-phase-sub">Sin bloque catch local</text>
+
+										<rect x="20" y="115" width="200" height="75" rx="6" fill="var(--color-surface)" stroke="var(--color-divider)" />
+										<text x="30" y="138" class="deck-svg-sub">Acción de la JVM:</text>
+										<text x="30" y="156" class="deck-svg-bold" id="unwind-jvm-action" fill="rgb(239, 68, 68)">Destruir frame consultarBD()</text>
+										<text x="30" y="174" class="deck-svg-mono-sm" id="unwind-target-frame">Propaga a: validarStock()</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Simulador de Propagación' : 'Propagation Stepper'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary" id="btn-step-unwind">{isEs ? 'Avanzar Subida (Pop Frame)' : 'Step Up (Pop Frame)'}</button>
+									<button class="btn btn-secondary" id="btn-reset-unwind">{isEs ? 'Reiniciar' : 'Reset'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Marco Actual:' : 'Current Frame:'}</span>
+										<span class="state-val mono" id="unwind-curr-frame">consultarBD()</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? '¿Tiene catch coincidente?:' : 'Matching catch block?:'}</span>
+										<span class="state-val" id="unwind-has-catch" style="color: rgb(239, 68, 68);">NO -&gt; Frame destruido</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-kw">try</span> &#123;
+  servicio.procesarOrden();
+&#125; <span class="tok-kw">catch</span> (SQLException e) &#123;
+  <span class="tok-comment">// main() captura el error y rescata el hilo</span>
+  LOGGER.error(<span class="tok-str">"Fallo en BD: "</span> + e.getMessage());
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 4: TRY CATCH FINALLY STATE MACHINE -->
+				<div class="deck-slide" data-slide="4">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">4. {isEs ? 'Máquina de Estados: try-catch-finally' : 'State Machine: try-catch-finally'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'El bloque finally se ejecuta SIEMPRE: tanto si el try termina con éxito, como si ocurre una excepción atrapada, o incluso si la excepción no coincide y sigue subiendo por la pila.'
+									: 'The finally block is GUARANTEED to execute: when try finishes cleanly, when an exception is caught, and even when an uncaught exception keeps bubbling up.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Diagrama de flujo try catch finally' : 'try catch finally flow diagram'}>
+									<!-- Try block -->
+									<g transform="translate(30, 30)">
+										<rect x="0" y="0" width="130" height="60" rx="8" class="deck-panel-accent" stroke="var(--color-accent)" id="flow-try-box" />
+										<text x="65" y="26" class="deck-svg-bold" text-anchor="middle">Bloque try</text>
+										<text x="65" y="44" class="deck-svg-sub" text-anchor="middle">Código riesgoso</text>
+									</g>
+
+									<!-- Catch block -->
+									<g transform="translate(205, 30)">
+										<rect x="0" y="0" width="130" height="60" rx="8" class="deck-panel" stroke="var(--color-divider)" id="flow-catch-box" />
+										<text x="65" y="26" class="deck-svg-bold" text-anchor="middle">Bloque catch</text>
+										<text x="65" y="44" class="deck-svg-sub" text-anchor="middle">Manejo de error</text>
+									</g>
+
+									<!-- Finally block -->
+									<g transform="translate(380, 30)">
+										<rect x="0" y="0" width="130" height="60" rx="8" class="deck-ground-card" stroke="var(--color-accent-2-700)" stroke-width="2" id="flow-finally-box" />
+										<text x="65" y="26" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle">Bloque finally</text>
+										<text x="65" y="44" class="deck-svg-sub" text-anchor="middle">¡SIEMPRE corre!</text>
+									</g>
+
+									<!-- Connectors -->
+									<path d="M160 60 L205 60" stroke="var(--color-divider)" stroke-width="1.5" id="flow-arr-catch" />
+									<path d="M160 40 L380 40" stroke="var(--color-divider)" stroke-width="1.5" stroke-dasharray="3 3" id="flow-arr-happy" />
+									<path d="M335 60 L380 60" stroke="var(--color-divider)" stroke-width="1.5" id="flow-arr-caught-fin" />
+
+									<!-- Active route banner -->
+									<g transform="translate(30, 125)">
+										<rect x="0" y="0" width="480" height="85" rx="10" class="deck-panel-accent" />
+										<text x="20" y="30" class="deck-svg-title-accent" id="flow-route-title">Ruta Activa: Camino Feliz (Sin Excepción)</text>
+										<text x="20" y="52" class="deck-svg-mono-sm" id="flow-route-steps">1. Ejecuta try -&gt; 2. Saltea catch -&gt; 3. Ejecuta finally -&gt; 4. Sigue</text>
+										<text x="20" y="72" class="deck-svg-sub" id="flow-route-note">El bloque finally liberó recursos de forma segura.</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Selector de Rutas' : 'Route Selector'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary route-btn active" data-route="happy">{isEs ? '1. Camino Feliz' : '1. Happy Path'}</button>
+									<button class="btn btn-secondary route-btn" data-route="caught">{isEs ? '2. Error Atrapado' : '2. Caught Error'}</button>
+									<button class="btn btn-secondary route-btn" data-route="uncaught">{isEs ? '3. No Atrapado' : '3. Uncaught Error'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Ejecución de finally:' : 'finally Execution:'}</span>
+										<span class="state-val" style="color: var(--color-accent-2-700); font-weight: 700;">Garantizada al 100%</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Retorno en try:' : 'return inside try:'}</span>
+										<span class="state-val">finally corre antes de salir</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-kw">try</span> &#123;
+  <span class="tok-comment">// operacion()</span>
+&#125; <span class="tok-kw">catch</span> (Exception e) &#123;
+  <span class="tok-comment">// manejo()</span>
+&#125; <span class="tok-kw">finally</span> &#123;
+  conexion.cerrar(); <span class="tok-comment">// Siempre garantizado</span>
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 5: TRY WITH RESOURCES -->
+				<div class="deck-slide" data-slide="5">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">5. {isEs ? 'try-with-resources y AutoCloseable' : 'try-with-resources and AutoCloseable'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Desde Java 7, cualquier recurso que implemente AutoCloseable se puede abrir en los paréntesis del try. La JVM garantiza llamar a close() automáticamente al salir del bloque, incluso ante excepciones.'
+									: 'Since Java 7, any class implementing AutoCloseable can be opened within try parentheses. The JVM guarantees calling close() automatically upon exiting the block, even when exceptions occur.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Comparación legado vs try with resources' : 'Legacy vs try with resources comparison'}>
+									<!-- Left: Legacy nightmare -->
+									<g transform="translate(20, 20)">
+										<rect x="0" y="0" width="240" height="200" rx="8" class="deck-panel" stroke="rgb(239, 68, 68)" stroke-width="1.5" stroke-dasharray="3 3" />
+										<text x="120" y="24" class="deck-svg-bold" fill="rgb(239, 68, 68)" text-anchor="middle">✕ Código Legado (Pre-Java 7)</text>
+										<line x1="15" y1="36" x2="225" y2="36" stroke="var(--color-divider)" />
+										<text x="20" y="60" class="deck-svg-mono-sm">Reader r = null;</text>
+										<text x="20" y="78" class="deck-svg-mono-sm">try &#123; r = new Reader(); &#125;</text>
+										<text x="20" y="96" class="deck-svg-mono-sm">finally &#123;</text>
+										<text x="35" y="114" class="deck-svg-mono-sm">if (r != null) &#123;</text>
+										<text x="50" y="132" class="deck-svg-mono-sm">try &#123; r.close(); &#125;</text>
+										<text x="50" y="150" class="deck-svg-mono-sm">catch (IOException e) &#123;&#125;</text>
+										<text x="35" y="168" class="deck-svg-mono-sm">&#125;</text>
+										<text x="20" y="186" class="deck-svg-mono-sm">&#125; // 25 líneas propensas a leaks</text>
+									</g>
+
+									<!-- Right: Modern try-with-resources -->
+									<g transform="translate(280, 20)">
+										<rect x="0" y="0" width="240" height="200" rx="8" class="deck-panel-accent" stroke="var(--color-accent-2-700)" stroke-width="2" />
+										<text x="120" y="24" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle">✓ try-with-resources (Moderno)</text>
+										<line x1="15" y1="36" x2="225" y2="36" stroke="var(--color-divider)" />
+										<text x="20" y="65" class="deck-svg-mono-sm">try (Reader r = new Reader()) &#123;</text>
+										<text x="35" y="85" class="deck-svg-mono-sm">r.read();</text>
+										<text x="20" y="105" class="deck-svg-mono-sm">&#125; // close() automático aquí</text>
+										
+										<rect x="15" y="130" width="210" height="55" rx="6" fill="color-mix(in srgb, var(--color-accent-2-700) 15%, var(--color-surface))" />
+										<text x="120" y="152" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle">AutoCloseable</text>
+										<text x="120" y="170" class="deck-svg-sub" text-anchor="middle">Limpio, seguro y sin fugas de socket/file</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Contrato AutoCloseable' : 'AutoCloseable Contract'}</span>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Cierre Implícito:' : 'Implicit Close:'}</span>
+										<span class="state-val" style="color: var(--color-accent-2-700);">r.close() antes de catch/finally</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Excepciones Suprimidas:' : 'Suppressed Exceptions:'}</span>
+										<span class="state-val">e.getSuppressed()</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-comment">// Varios recursos separados por punto y coma</span>
+<span class="tok-kw">try</span> (<span class="tok-kw">var</span> in = <span class="tok-kw">new</span> FileInputStream(f1);
+     <span class="tok-kw">var</span> out = <span class="tok-kw">new</span> FileOutputStream(f2)) &#123;
+  in.transferTo(out);
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 6: CHAINED CAUSES -->
+				<div class="deck-slide" data-slide="6">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">6. {isEs ? 'Excepciones Personalizadas y Causas Encadenadas' : 'Custom Exceptions and Chained Causes'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Traducí errores de infraestructura de bajo nivel a conceptos del dominio usando el constructor con cause: throw new PagoFallidoException("No se pudo cobrar", rootCause). Así se conserva el stack trace original sin exponer detalles crudos al usuario.'
+									: 'Translate low-level technical infrastructure faults into domain concepts using the cause constructor: throw new PaymentFailedException("Charge failed", rootCause). This retains the full trace without leaking raw internals.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Encadenamiento de excepciones con cause' : 'Exception chaining with cause'}>
+									<!-- High level domain exception -->
+									<g transform="translate(30, 30)">
+										<rect x="0" y="0" width="220" height="85" rx="8" class="deck-panel-accent" stroke="var(--color-accent-700)" stroke-width="2" />
+										<text x="110" y="24" class="deck-svg-bold" fill="var(--color-accent-700)" text-anchor="middle">PagoFallidoException (Dominio)</text>
+										<text x="20" y="46" class="deck-svg-mono-sm">"Error al cobrar orden ID 1042"</text>
+										<text x="20" y="66" class="deck-svg-sub">cause: SocketTimeoutException →</text>
+									</g>
+
+									<!-- Arrow cause link -->
+									<path d="M250 72 L290 72" stroke="var(--color-accent)" stroke-width="2" />
+
+									<!-- Low level infra exception -->
+									<g transform="translate(290, 30)">
+										<rect x="0" y="0" width="220" height="85" rx="8" class="deck-panel" stroke="var(--color-divider)" />
+										<text x="110" y="24" class="deck-svg-bold" text-anchor="middle">SocketTimeoutException (Infra)</text>
+										<text x="20" y="46" class="deck-svg-mono-sm">"Read timed out at port 443"</text>
+										<text x="20" y="66" class="deck-svg-sub">Causa física original</text>
+									</g>
+
+									<!-- Simulated Log Console -->
+									<g transform="translate(30, 135)">
+										<rect x="0" y="0" width="480" height="85" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="15" y="24" class="deck-svg-bold">Consola / Logs en Producción:</text>
+										<text x="15" y="44" class="deck-svg-mono-sm" fill="rgb(239, 68, 68)">com.tienda.PagoFallidoException: Error al cobrar orden ID 1042</text>
+										<text x="15" y="64" class="deck-svg-mono-sm" fill="var(--color-accent-700)">Caused by: java.net.SocketTimeoutException: Read timed out</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Buenas Prácticas de Dominio' : 'Domain Best Practices'}</span>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Constructor con Causa:' : 'Cause Constructor:'}</span>
+										<span class="state-val mono">super(mensaje, causa);</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Preservación de Trazas:' : 'Trace Preservation:'}</span>
+										<span class="state-val" style="color: var(--color-accent-2-700);">No se pierde el origen real</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-kw">public class</span> PagoException <span class="tok-kw">extends</span> Exception &#123;
+  <span class="tok-kw">public</span> PagoException(String msg, Throwable cause) &#123;
+    <span class="tok-kw">super</span>(msg, cause); <span class="tok-comment">// Encadenamiento</span>
+  &#125;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 7: 4 ANTI-PATTERNS -->
+				<div class="deck-slide" data-slide="7">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">7. {isEs ? 'Los 4 Antipatrones a Evitar' : '4 Anti-Patterns to Avoid'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Errores que destruyen la observabilidad y causan fallos silenciosos en producción. Identificalos y evitalos en tus proyectos.'
+									: 'Mistakes that ruin observability and cause silent disasters in production. Learn to detect and avoid them.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Los 4 antipatrones de excepciones' : 'The 4 exception anti-patterns'}>
+									<!-- Anti 1 -->
+									<g transform="translate(20, 25)">
+										<rect x="0" y="0" width="240" height="90" rx="8" class="deck-panel" stroke="rgb(239, 68, 68)" stroke-width="1.5" />
+										<text x="15" y="24" class="deck-svg-bold" fill="rgb(239, 68, 68)">1. El Tragador de Errores</text>
+										<text x="15" y="46" class="deck-svg-mono-sm">catch (Exception e) &#123; &#125;</text>
+										<text x="15" y="70" class="deck-svg-sub">Bomba de tiempo: silencia bugs</text>
+									</g>
+
+									<!-- Anti 2 -->
+									<g transform="translate(280, 25)">
+										<rect x="0" y="0" width="240" height="90" rx="8" class="deck-panel" stroke="rgb(239, 68, 68)" stroke-width="1.5" />
+										<text x="15" y="24" class="deck-svg-bold" fill="rgb(239, 68, 68)">2. Atrapador Indiscriminado</text>
+										<text x="15" y="46" class="deck-svg-mono-sm">catch (Throwable t)</text>
+										<text x="15" y="70" class="deck-svg-sub">Atrapa OutOfMemoryError sin querer</text>
+									</g>
+
+									<!-- Anti 3 -->
+									<g transform="translate(20, 130)">
+										<rect x="0" y="0" width="240" height="90" rx="8" class="deck-panel" stroke="rgb(217, 119, 6)" stroke-width="1.5" />
+										<text x="15" y="24" class="deck-svg-bold" fill="rgb(217, 119, 6)">3. Loguear y Relanzar</text>
+										<text x="15" y="46" class="deck-svg-mono-sm">log.error(e); throw e;</text>
+										<text x="15" y="70" class="deck-svg-sub">Duplica líneas y satura el log</text>
+									</g>
+
+									<!-- Anti 4 -->
+									<g transform="translate(280, 130)">
+										<rect x="0" y="0" width="240" height="90" rx="8" class="deck-panel" stroke="rgb(217, 119, 6)" stroke-width="1.5" />
+										<text x="15" y="24" class="deck-svg-bold" fill="rgb(217, 119, 6)">4. Control de Flujo con Exception</text>
+										<text x="15" y="46" class="deck-svg-mono-sm">while(true) &#123; try &#123; ... &#125; &#125;</text>
+										<text x="15" y="70" class="deck-svg-sub">Lento; romper pila es costoso</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Regla de Oro' : 'Golden Rule'}</span>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Responsabilidad:' : 'Responsibility:'}</span>
+										<span class="state-val">Atrapá solo si podés recuperarte</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Si no podés recuperarte:' : 'If cannot recover:'}</span>
+										<span class="state-val" style="color: var(--color-accent-700);">Dejá que suba o encapsulá</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-comment">// O lo manejás de verdad, o lo dejás subir</span>
+<span class="tok-kw">try</span> &#123;
+  debitar();
+&#125; <span class="tok-kw">catch</span> (SaldoInsuficienteException e) &#123;
+  notificarCliente(e.getMessage()); <span class="tok-comment">// Acción concreta</span>
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- FOOTER CONTROLS -->
+			<div class="deck-footer">
+				<button class="btn btn-secondary deck-nav-prev" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="deck-dots">
+					<button class="deck-dot active" data-target-slide="1" aria-label="Slide 1"></button>
+					<button class="deck-dot" data-target-slide="2" aria-label="Slide 2"></button>
+					<button class="deck-dot" data-target-slide="3" aria-label="Slide 3"></button>
+					<button class="deck-dot" data-target-slide="4" aria-label="Slide 4"></button>
+					<button class="deck-dot" data-target-slide="5" aria-label="Slide 5"></button>
+					<button class="deck-dot" data-target-slide="6" aria-label="Slide 6"></button>
+					<button class="deck-dot" data-target-slide="7" aria-label="Slide 7"></button>
+				</div>
+				<button class="btn btn-secondary deck-nav-next">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	function initPresentation() {
+		const screen = document.querySelector('.ex-screen');
+		if (!screen) return;
+
+		let currentSlide = 1;
+		const totalSlides = 7;
+
+		const slideLabel = document.getElementById('deck-slide-label');
+		const prevBtn = screen.querySelector('.deck-nav-prev') as HTMLButtonElement;
+		const nextBtn = screen.querySelector('.deck-nav-next') as HTMLButtonElement;
+		const pills = screen.querySelectorAll('.deck-pill-btn');
+		const dots = screen.querySelectorAll('.deck-dot');
+		const slides = screen.querySelectorAll('.deck-slide');
+
+		function goToSlide(target: number) {
+			if (target < 1 || target > totalSlides) return;
+			currentSlide = target;
+
+			if (slideLabel) {
+				slideLabel.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+			}
+
+			slides.forEach((sl) => {
+				const sNum = parseInt(sl.getAttribute('data-slide') || '0', 10);
+				sl.classList.toggle('active', sNum === currentSlide);
+			});
+
+			pills.forEach((p) => {
+				const tNum = parseInt(p.getAttribute('data-target-slide') || '0', 10);
+				p.classList.toggle('active', tNum === currentSlide);
+			});
+
+			dots.forEach((d) => {
+				const tNum = parseInt(d.getAttribute('data-target-slide') || '0', 10);
+				d.classList.toggle('active', tNum === currentSlide);
+			});
+
+			if (prevBtn) prevBtn.disabled = currentSlide === 1;
+			if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+		}
+
+		prevBtn?.addEventListener('click', () => goToSlide(currentSlide - 1));
+		nextBtn?.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+		pills.forEach((p) => {
+			p.addEventListener('click', () => {
+				const t = parseInt(p.getAttribute('data-target-slide') || '1', 10);
+				goToSlide(t);
+			});
+		});
+
+		dots.forEach((d) => {
+			d.addEventListener('click', () => {
+				const t = parseInt(d.getAttribute('data-target-slide') || '1', 10);
+				goToSlide(t);
+			});
+		});
+
+		window.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+			if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+		});
+
+		// --- SLIDE 1: Type button filter ---
+		const typeBtns = screen.querySelectorAll('.type-btn');
+		const catLabelTxt = document.getElementById('cat-label-txt');
+		const catReqTxt = document.getElementById('cat-req-txt');
+		const catCodeSnippet = document.getElementById('cat-code-snippet');
+		const boxChecked = document.getElementById('box-checked');
+		const boxUnchecked = document.getElementById('box-unchecked');
+		const boxError = document.getElementById('box-error-branch');
+
+		typeBtns.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				typeBtns.forEach((b) => b.classList.remove('active'));
+				btn.classList.add('active');
+				const t = btn.getAttribute('data-type');
+
+				if (t === 'checked') {
+					if (catLabelTxt) catLabelTxt.textContent = 'Checked Exceptions (IOException, etc.)';
+					if (catReqTxt) {
+						catReqTxt.textContent = 'El compilador obliga a throws o try-catch';
+						catReqTxt.style.color = 'var(--color-accent-700)';
+					}
+					if (catCodeSnippet) {
+						catCodeSnippet.textContent = '// Checked: el método DEBE avisar con throws\npublic void leer() throws IOException {\n  new FileInputStream("archivo.txt");\n}';
+					}
+					if (boxChecked) boxChecked.style.opacity = '1';
+					if (boxUnchecked) boxUnchecked.style.opacity = '0.3';
+					if (boxError) boxError.style.opacity = '0.3';
+				} else if (t === 'unchecked') {
+					if (catLabelTxt) catLabelTxt.textContent = 'Unchecked Exceptions (RuntimeException)';
+					if (catReqTxt) {
+						catReqTxt.textContent = 'No se declaran; son bugs lógicos';
+						catReqTxt.style.color = 'var(--color-accent-2-700)';
+					}
+					if (catCodeSnippet) {
+						catCodeSnippet.textContent = '// Unchecked: no exige throws ni try-catch\npublic int dividir(int a, int b) {\n  return a / b; // ArithmeticException si b == 0\n}';
+					}
+					if (boxChecked) boxChecked.style.opacity = '0.3';
+					if (boxUnchecked) boxUnchecked.style.opacity = '1';
+					if (boxError) boxError.style.opacity = '0.3';
+				} else {
+					if (catLabelTxt) catLabelTxt.textContent = 'Checked vs Unchecked';
+					if (catReqTxt) {
+						catReqTxt.textContent = 'Exige declarar o atrapar';
+						catReqTxt.style.color = 'var(--color-accent-700)';
+					}
+					if (catCodeSnippet) {
+						catCodeSnippet.textContent = '// Checked: Obligación sintáctica\npublic void leerArchivo() throws IOException {\n  new FileInputStream("datos.csv");\n}';
+					}
+					if (boxChecked) boxChecked.style.opacity = '1';
+					if (boxUnchecked) boxUnchecked.style.opacity = '1';
+					if (boxError) boxError.style.opacity = '1';
+				}
+			});
+		});
+
+		// --- SLIDE 3: Stack Unwinding Stepper ---
+		let unwindStep = 1;
+		const btnStepUnwind = document.getElementById('btn-step-unwind');
+		const btnResetUnwind = document.getElementById('btn-reset-unwind');
+		const unwindPhaseTitle = document.getElementById('unwind-phase-title');
+		const unwindPhaseDesc = document.getElementById('unwind-phase-desc');
+		const unwindPhaseSub = document.getElementById('unwind-phase-sub');
+		const unwindJvmAction = document.getElementById('unwind-jvm-action');
+		const unwindTargetFrame = document.getElementById('unwind-target-frame');
+		const unwindCurrFrame = document.getElementById('unwind-curr-frame');
+		const unwindHasCatch = document.getElementById('unwind-has-catch');
+
+		const frameBd = document.getElementById('frame-bd');
+		const frameStock = document.getElementById('frame-stock');
+		const frameOrden = document.getElementById('frame-orden');
+		const frameMain = document.getElementById('frame-main');
+
+		function updateUnwindView() {
+			if (unwindStep === 1) {
+				if (unwindPhaseTitle) unwindPhaseTitle.textContent = 'Paso 1: Error en consultarBD()';
+				if (unwindPhaseDesc) unwindPhaseDesc.textContent = 'SQLException detonada en el frame';
+				if (unwindPhaseSub) unwindPhaseSub.textContent = 'Sin bloque catch local';
+				if (unwindJvmAction) unwindJvmAction.textContent = 'Destruir frame consultarBD()';
+				if (unwindTargetFrame) unwindTargetFrame.textContent = 'Propaga a: validarStock()';
+				if (unwindCurrFrame) unwindCurrFrame.textContent = 'consultarBD()';
+				if (unwindHasCatch) {
+					unwindHasCatch.textContent = 'NO -> Frame destruido';
+					unwindHasCatch.style.color = 'rgb(239, 68, 68)';
+				}
+				if (frameBd) frameBd.style.opacity = '1';
+				if (frameStock) frameStock.style.opacity = '1';
+				if (frameOrden) frameOrden.style.opacity = '1';
+				if (frameMain) frameMain.style.opacity = '1';
+			} else if (unwindStep === 2) {
+				if (unwindPhaseTitle) unwindPhaseTitle.textContent = 'Paso 2: Subida a validarStock()';
+				if (unwindPhaseDesc) unwindPhaseDesc.textContent = 'La excepción llega a validarStock()';
+				if (unwindPhaseSub) unwindPhaseSub.textContent = 'Tampoco tiene catch para SQLException';
+				if (unwindJvmAction) unwindJvmAction.textContent = 'Destruir frame validarStock()';
+				if (unwindTargetFrame) unwindTargetFrame.textContent = 'Propaga a: procesarOrden()';
+				if (unwindCurrFrame) unwindCurrFrame.textContent = 'validarStock()';
+				if (unwindHasCatch) {
+					unwindHasCatch.textContent = 'NO -> Frame destruido';
+					unwindHasCatch.style.color = 'rgb(239, 68, 68)';
+				}
+				if (frameBd) frameBd.style.opacity = '0.2';
+			} else if (unwindStep === 3) {
+				if (unwindPhaseTitle) unwindPhaseTitle.textContent = 'Paso 3: Subida a procesarOrden()';
+				if (unwindPhaseDesc) unwindPhaseDesc.textContent = 'La excepción llega a procesarOrden()';
+				if (unwindPhaseSub) unwindPhaseSub.textContent = 'Tampoco tiene catch';
+				if (unwindJvmAction) unwindJvmAction.textContent = 'Destruir frame procesarOrden()';
+				if (unwindTargetFrame) unwindTargetFrame.textContent = 'Propaga a: main()';
+				if (unwindCurrFrame) unwindCurrFrame.textContent = 'procesarOrden()';
+				if (unwindHasCatch) {
+					unwindHasCatch.textContent = 'NO -> Frame destruido';
+					unwindHasCatch.style.color = 'rgb(239, 68, 68)';
+				}
+				if (frameStock) frameStock.style.opacity = '0.2';
+			} else {
+				if (unwindPhaseTitle) unwindPhaseTitle.textContent = 'Paso 4: ¡Capturada en main()!';
+				if (unwindPhaseDesc) unwindPhaseDesc.textContent = 'catch (SQLException e) coincide';
+				if (unwindPhaseSub) unwindPhaseSub.textContent = 'El hilo no muere; flujo recuperado';
+				if (unwindJvmAction) {
+					unwindJvmAction.textContent = '✓ Recuperación exitosa';
+					unwindJvmAction.style.color = 'var(--color-accent-2-700)';
+				}
+				if (unwindTargetFrame) unwindTargetFrame.textContent = 'Flujo continúa normalmente';
+				if (unwindCurrFrame) unwindCurrFrame.textContent = 'main()';
+				if (unwindHasCatch) {
+					unwindHasCatch.textContent = '✓ SÍ -> Atrapada y controlada';
+					unwindHasCatch.style.color = 'var(--color-accent-2-700)';
+				}
+				if (frameOrden) frameOrden.style.opacity = '0.2';
+			}
+		}
+
+		btnStepUnwind?.addEventListener('click', () => {
+			unwindStep = (unwindStep % 4) + 1;
+			updateUnwindView();
+		});
+
+		btnResetUnwind?.addEventListener('click', () => {
+			unwindStep = 1;
+			updateUnwindView();
+		});
+
+		// --- SLIDE 4: Try-catch-finally routes ---
+		const routeBtns = screen.querySelectorAll('.route-btn');
+		const flowRouteTitle = document.getElementById('flow-route-title');
+		const flowRouteSteps = document.getElementById('flow-route-steps');
+		const flowRouteNote = document.getElementById('flow-route-note');
+
+		routeBtns.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				routeBtns.forEach((b) => b.classList.remove('active'));
+				btn.classList.add('active');
+				const r = btn.getAttribute('data-route');
+
+				if (r === 'happy') {
+					if (flowRouteTitle) flowRouteTitle.textContent = 'Ruta Activa: Camino Feliz (Sin Excepción)';
+					if (flowRouteSteps) flowRouteSteps.textContent = '1. Ejecuta try -> 2. Saltea catch -> 3. Ejecuta finally -> 4. Sigue el programa';
+					if (flowRouteNote) flowRouteNote.textContent = 'El bloque finally liberó recursos de forma segura sin incidentes.';
+				} else if (r === 'caught') {
+					if (flowRouteTitle) flowRouteTitle.textContent = 'Ruta Activa: Error Atrapado Exitosamente';
+					if (flowRouteSteps) flowRouteSteps.textContent = '1. try falla en línea N -> 2. Salta a catch(Tipo) -> 3. Ejecuta finally -> 4. Sigue';
+					if (flowRouteNote) flowRouteNote.textContent = 'El bloque catch mitigó el error y finally garantizó la limpieza.';
+				} else {
+					if (flowRouteTitle) flowRouteTitle.textContent = 'Ruta Activa: Error NO Atrapado';
+					if (flowRouteSteps) flowRouteSteps.textContent = '1. try falla -> 2. Ningún catch coincide -> 3. Ejecuta finally -> 4. Sube la excepción';
+					if (flowRouteNote) flowRouteNote.textContent = '¡Incluso si la excepción no fue atrapada, finally se ejecutó antes de salir del método!';
+				}
+			});
+		});
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initPresentation);
+	} else {
+		initPresentation();
+	}
+</script>
+
+<style>
+	.ex-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		padding: var(--space-4) var(--space-6);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.ex-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.deck-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		box-shadow: var(--shadow-sm);
+		overflow: hidden;
+	}
+
+	.deck-nav-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: var(--color-surface-subtle);
+		gap: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.deck-slide-indicator {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		color: var(--color-accent-700);
+	}
+
+	.deck-step-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--color-accent);
+	}
+
+	.deck-pills {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-pill-btn {
+		font-family: var(--font-body);
+		font-size: var(--text-xs);
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-full);
+		border: 1px solid var(--color-divider);
+		background: var(--color-surface);
+		color: var(--color-text-muted);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.deck-pill-btn:hover {
+		background: var(--color-surface-subtle);
+		color: var(--color-text);
+	}
+
+	.deck-pill-btn.active {
+		background: var(--color-accent-subtle, color-mix(in srgb, var(--color-accent) 15%, transparent));
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	.ex-viewport {
+		padding: var(--space-6) var(--space-8);
+		min-height: 480px;
+		flex: 1;
+	}
+
+	.ex-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .ex-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .ex-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .ex-viewport { zoom: 1.25; } }
+
+	.deck-slide {
+		display: none;
+		animation: fadeIn 0.3s ease;
+	}
+
+	.deck-slide.active {
+		display: block;
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; transform: translateY(4px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.deck-slide-grid {
+		display: grid;
+		grid-template-columns: 1.15fr 0.85fr;
+		gap: var(--space-8);
+		align-items: start;
+	}
+
+	@media (max-width: 900px) {
+		.deck-slide-grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-6);
+		}
+	}
+
+	.deck-col {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.deck-slide-title {
+		font-family: var(--font-display);
+		font-size: var(--text-2xl);
+		color: var(--color-text);
+		margin: 0;
+		line-height: 1.25;
+	}
+
+	.deck-text {
+		font-size: var(--text-sm);
+		line-height: 1.6;
+		color: var(--color-text-muted);
+		margin: 0;
+	}
+
+	.deck-figure {
+		background: var(--color-surface-subtle);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		overflow: hidden;
+	}
+
+	.deck-interactive-card {
+		background: var(--color-surface-subtle);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-5);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.deck-card-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.deck-badge {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		padding: var(--space-1) var(--space-2);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	.deck-actions-row {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-actions-row .btn.active {
+		background: var(--color-accent);
+		color: rgb(255, 255, 255);
+		border-color: var(--color-accent);
+	}
+
+	.deck-info-box {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3) var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.state-row {
+		display: flex;
+		justify-content: space-between;
+		font-size: var(--text-xs);
+		gap: var(--space-2);
+	}
+
+	.state-label {
+		color: var(--color-text-muted);
+	}
+
+	.state-val {
+		color: var(--color-text);
+		font-weight: 600;
+		text-align: right;
+	}
+
+	.state-val.mono {
+		font-family: var(--font-mono);
+	}
+
+	.deck-code-snippet {
+		margin: 0;
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		line-height: 1.5;
+		overflow-x: auto;
+	}
+
+	.tok-kw { color: var(--color-accent-700); font-weight: 600; }
+	.tok-str { color: var(--color-accent-2-700); }
+	.tok-comment { color: var(--color-text-muted); font-style: italic; }
+
+	.deck-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-top: 1px solid var(--color-divider);
+		background: var(--color-surface-subtle);
+	}
+
+	.deck-dots {
+		display: flex;
+		gap: var(--space-2);
+	}
+
+	.deck-dot {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		border: 1px solid var(--color-divider);
+		background: var(--color-surface);
+		cursor: pointer;
+		padding: 0;
+		transition: all 0.2s ease;
+	}
+
+	.deck-dot.active {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		transform: scale(1.2);
+	}
+
+	/* SVG Internal Styles */
+	.deck-panel {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+		stroke-width: 1.5;
+	}
+
+	.deck-panel-accent {
+		fill: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+		stroke: var(--color-accent);
+		stroke-width: 1.5;
+	}
+
+	.deck-ground-card {
+		fill: var(--color-surface);
+	}
+
+	.deck-svg-title {
+		font-family: var(--font-display);
+		font-size: 11px;
+		fill: var(--color-text);
+		font-weight: 700;
+	}
+
+	.deck-svg-title-accent {
+		font-family: var(--font-display);
+		font-size: 11px;
+		fill: var(--color-accent-700);
+		font-weight: 700;
+	}
+
+	.deck-svg-bold {
+		font-family: var(--font-body);
+		font-size: 11px;
+		fill: var(--color-text);
+		font-weight: 700;
+	}
+
+	.deck-svg-mono {
+		font-family: var(--font-mono);
+		font-size: 10px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-mono-sm {
+		font-family: var(--font-mono);
+		font-size: 9px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-sub {
+		font-family: var(--font-body);
+		font-size: 8px;
+		fill: var(--color-text-muted);
+	}
+
+	.stack-frame {
+		transition: opacity 0.3s ease;
+	}
+</style>

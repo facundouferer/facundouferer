@@ -1,0 +1,1217 @@
+---
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="tl-screen" data-lang={lang}>
+	<div class="tl-shell">
+		<div class="deck-card">
+			<div class="deck-nav-bar">
+				<div class="deck-slide-indicator">
+					<span class="deck-step-dot"></span>
+					<span id="deck-slide-label">SLIDE 1 / 8</span>
+				</div>
+				<div class="deck-pills">
+					<button class="deck-pill-btn active" data-target-slide="1">1. {isEs ? '¿Qué es un TAD?' : 'What is an ADT?'}</button>
+					<button class="deck-pill-btn" data-target-slide="2">2. {isEs ? 'Contigua vs Dispersa' : 'Contiguous vs Dispersed'}</button>
+					<button class="deck-pill-btn" data-target-slide="3">3. {isEs ? 'Anatomía del Nodo' : 'Node Anatomy'}</button>
+					<button class="deck-pill-btn" data-target-slide="4">4. {isEs ? 'Inserción al Inicio O(1)' : 'Insert at Head O(1)'}</button>
+					<button class="deck-pill-btn" data-target-slide="5">5. {isEs ? 'Inserción al Final' : 'Insert at Tail'}</button>
+					<button class="deck-pill-btn" data-target-slide="6">6. {isEs ? 'Eliminar Intermedio' : 'Delete Middle'}</button>
+					<button class="deck-pill-btn" data-target-slide="7">7. {isEs ? 'Doble y Circular' : 'Doubly & Circular'}</button>
+					<button class="deck-pill-btn" data-target-slide="8">8. {isEs ? 'Complejidad Big-O' : 'Big-O Matrix'}</button>
+				</div>
+			</div>
+
+			<div class="tl-viewport">
+				<!-- SLIDE 1: WHAT IS AN ADT -->
+				<div class="deck-slide active" data-slide="1">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">1. {isEs ? '¿Qué es un TAD? La Interfaz Frente a la Memoria' : 'What is an ADT? The Contract vs Physical Memory'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Un Tipo Abstracto de Dato (TAD) define QUÉ operaciones se pueden hacer (contrato lógico), mientras que la estructura de datos define CÓMO se organizan los bytes en la RAM (implementación física).'
+									: 'An Abstract Data Type (ADT) specifies WHAT operations are allowed (logical contract), while a data structure determines HOW bytes are physically laid out in RAM (concrete storage).'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'TAD interfaz y dos implementaciones físicas' : 'ADT interface and two physical implementations'}>
+									<!-- Central Abstract Contract -->
+									<g transform="translate(160, 20)">
+										<rect x="0" y="0" width="220" height="70" rx="10" class="deck-panel-accent" stroke-width="2" />
+										<text x="110" y="24" class="deck-svg-title-accent" text-anchor="middle">TAD Lista&lt;T&gt; (Contrato)</text>
+										<text x="110" y="44" class="deck-svg-mono-sm" text-anchor="middle">agregar(T) | eliminar(idx)</text>
+										<text x="110" y="58" class="deck-svg-mono-sm" text-anchor="middle">obtener(idx) | tamano()</text>
+									</g>
+
+									<!-- Fork Arrows -->
+									<path d="M220 90 L130 130" stroke="var(--color-accent)" stroke-width="2" />
+									<path d="M320 90 L410 130" stroke="var(--color-accent-2-700)" stroke-width="2" />
+
+									<!-- Implementation 1: ArrayList -->
+									<g transform="translate(25, 130)">
+										<rect x="0" y="0" width="210" height="95" rx="8" class="deck-panel" />
+										<text x="105" y="24" class="deck-svg-bold" fill="var(--color-accent-700)" text-anchor="middle">Lista Secuencial (Array)</text>
+										<line x1="15" y1="34" x2="195" y2="34" stroke="var(--color-divider)" />
+										<text x="20" y="54" class="deck-svg-mono-sm">Memoria: Bloque contiguo</text>
+										<text x="20" y="70" class="deck-svg-mono-sm">Acceso por índice: O(1)</text>
+										<text x="20" y="86" class="deck-svg-sub">Inserción al frente: O(N)</text>
+									</g>
+
+									<!-- Implementation 2: LinkedList -->
+									<g transform="translate(305, 130)">
+										<rect x="0" y="0" width="210" height="95" rx="8" class="deck-panel" />
+										<text x="105" y="24" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle">Lista Enlazada (Nodos)</text>
+										<line x1="15" y1="34" x2="195" y2="34" stroke="var(--color-divider)" />
+										<text x="20" y="54" class="deck-svg-mono-sm">Memoria: Nodos dispersos</text>
+										<text x="20" y="70" class="deck-svg-mono-sm">Acceso por índice: O(N)</text>
+										<text x="20" y="86" class="deck-svg-sub">Inserción al frente: O(1)</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Concepto Arquitectónico' : 'Architectural Concept'}</span>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Contrato Lógico:' : 'Logical Contract:'}</span>
+										<span class="state-val">interface List&lt;T&gt;</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Regla de Oro:' : 'Golden Rule:'}</span>
+										<span class="state-val" style="color: var(--color-accent-700);">Programar contra la interfaz</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-comment">// El cliente declara la interfaz TAD</span>
+<span class="tok-kw">List</span>&lt;String&gt; lista = <span class="tok-kw">new</span> <span class="tok-kw">ArrayList</span>&lt;&gt;();
+<span class="tok-comment">// O cambia la implementación física sin romper nada:</span>
+<span class="tok-kw">List</span>&lt;String&gt; lista = <span class="tok-kw">new</span> <span class="tok-kw">LinkedList</span>&lt;&gt;();</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 2: CONTIGUOUS VS DISPERSED -->
+				<div class="deck-slide" data-slide="2">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">2. {isEs ? 'Memoria Contigua vs Nodos Dispersos en el Heap' : 'Contiguous Memory vs Dispersed Nodes'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'En un array, las casillas son adyacentes: saltar al índice 3 se calcula matemáticamente en O(1). En una lista enlazada, los nodos están desparramados en direcciones aleatorias del Heap: para llegar al índice 3 hay que caminar 3 punteros en O(N).'
+									: 'In an array, cells are adjacent: jumping to index 3 is an instant O(1) pointer arithmetic. In a linked list, nodes are scattered across random Heap addresses: reaching index 3 requires traversing 3 pointers in O(N).'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'Array contiguo frente a lista dispersa' : 'Contiguous array vs dispersed linked list'}>
+									<!-- Array Track -->
+									<g transform="translate(20, 25)">
+										<text x="0" y="16" class="deck-svg-title">1. Array: Memoria Contigua (Dirección base 0x1000 + i * 4)</text>
+										<g transform="translate(0, 25)">
+											<rect x="0" y="0" width="95" height="42" rx="4" class="deck-ground-card" stroke="var(--color-divider)" />
+											<text x="12" y="18" class="deck-svg-bold">[0]</text>
+											<text x="47" y="32" class="deck-svg-mono-sm" text-anchor="middle">"Ana"</text>
+
+											<rect x="100" y="0" width="95" height="42" rx="4" class="deck-ground-card" stroke="var(--color-divider)" />
+											<text x="112" y="18" class="deck-svg-bold">[1]</text>
+											<text x="147" y="32" class="deck-svg-mono-sm" text-anchor="middle">"Leo"</text>
+
+											<rect x="200" y="0" width="95" height="42" rx="4" class="deck-ground-card" stroke="var(--color-divider)" />
+											<text x="212" y="18" class="deck-svg-bold">[2]</text>
+											<text x="247" y="32" class="deck-svg-mono-sm" text-anchor="middle">"Dibu"</text>
+
+											<rect x="300" y="0" width="95" height="42" rx="4" class="deck-ground-card" stroke="var(--color-accent-700)" stroke-width="2" id="arr-target-cell" />
+											<text x="312" y="18" class="deck-svg-bold" fill="var(--color-accent-700)">[3]</text>
+											<text x="347" y="32" class="deck-svg-mono-sm" text-anchor="middle">"Lau"</text>
+										</g>
+									</g>
+
+									<!-- Linked List Track -->
+									<g transform="translate(20, 130)">
+										<text x="0" y="16" class="deck-svg-title">2. Lista Enlazada: Direcciones Aleatorias en el Heap</text>
+										<g transform="translate(0, 25)">
+											<!-- Node 0 -->
+											<rect x="0" y="0" width="85" height="46" rx="6" class="deck-panel" id="lnk-node-0" />
+											<text x="10" y="18" class="deck-svg-mono-sm">@0x3A20</text>
+											<text x="10" y="34" class="deck-svg-bold">"Ana" →</text>
+
+											<!-- Arrow 0 -> 1 -->
+											<path d="M85 23 L120 40" stroke="var(--color-accent)" stroke-width="1.5" />
+
+											<!-- Node 1 -->
+											<rect x="120" y="15" width="85" height="46" rx="6" class="deck-panel" id="lnk-node-1" />
+											<text x="130" y="33" class="deck-svg-mono-sm">@0x8F14</text>
+											<text x="130" y="49" class="deck-svg-bold">"Leo" →</text>
+
+											<!-- Arrow 1 -> 2 -->
+											<path d="M205 38 L240 5" stroke="var(--color-accent)" stroke-width="1.5" />
+
+											<!-- Node 2 -->
+											<rect x="240" y="0" width="85" height="46" rx="6" class="deck-panel" id="lnk-node-2" />
+											<text x="250" y="18" class="deck-svg-mono-sm">@0x10B8</text>
+											<text x="250" y="34" class="deck-svg-bold">"Dibu" →</text>
+
+											<!-- Arrow 2 -> 3 -->
+											<path d="M325 23 L360 23" stroke="var(--color-accent-700)" stroke-width="2" />
+
+											<!-- Node 3 -->
+											<rect x="360" y="0" width="85" height="46" rx="6" class="deck-panel-accent" stroke="var(--color-accent-700)" stroke-width="2" id="lnk-node-3" />
+											<text x="370" y="18" class="deck-svg-mono-sm">@0x9C44</text>
+											<text x="370" y="34" class="deck-svg-bold">"Lau"</text>
+										</g>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Simulador de Acceso' : 'Access Simulator'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary" id="btn-inspect-access">{isEs ? 'Buscar índice 3 (Lau)' : 'Find index 3 (Lau)'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Array (Acceso Directo):' : 'Array (Direct Access):'}</span>
+										<span class="state-val" style="color: var(--color-accent-2-700); font-weight: 700;">1 salto en O(1)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Lista (Caminata de Punteros):' : 'List (Pointer Walk):'}</span>
+										<span class="state-val" style="color: rgb(239, 68, 68); font-weight: 700;">3 saltos en O(N)</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-comment">// Array: Aritmética de memoria directa</span>
+array[<span class="tok-num">3</span>]; <span class="tok-comment">// base + 3 * sizeof(elem) -&gt; O(1)</span>
+
+<span class="tok-comment">// Lista Enlazada: Desreferenciar punteros</span>
+cabeza.siguiente.siguiente.siguiente; <span class="tok-comment">// O(N)</span></code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 3: NODE ANATOMY -->
+				<div class="deck-slide" data-slide="3">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">3. {isEs ? 'Anatomía de un Nodo en Memoria' : 'Node Anatomy in Memory'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Un nodo es una clase autorreferencial en el Heap con dos compartimentos: la carga útil (dato) y el puntero al próximo nodo (siguiente). El último nodo de la cadena tiene su puntero en null (tierra).'
+									: 'A node is a self-referential class in the Heap with two fields: the payload data and the reference to the next node. The chain tail points to null (ground termination).'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Anatomía interna de un nodo' : 'Internal node anatomy'}>
+									<!-- Node Box Detail -->
+									<g transform="translate(60, 45)">
+										<rect x="0" y="0" width="280" height="135" rx="10" class="deck-panel-accent" stroke-width="2" />
+										<text x="140" y="24" class="deck-svg-title-accent" text-anchor="middle">Nodo&lt;String&gt; @0x4B20</text>
+										<line x1="20" y1="36" x2="260" y2="36" stroke="var(--color-divider)" />
+
+										<!-- Compartment 1: dato -->
+										<g transform="translate(20, 48)">
+											<rect x="0" y="0" width="120" height="65" rx="6" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="1.5" />
+											<text x="60" y="22" class="deck-svg-bold" text-anchor="middle">T dato</text>
+											<text x="60" y="44" class="deck-svg-mono" text-anchor="middle">"Ana"</text>
+										</g>
+
+										<!-- Compartment 2: siguiente -->
+										<g transform="translate(150, 48)">
+											<rect x="0" y="0" width="105" height="65" rx="6" class="deck-ground-card" stroke="var(--color-accent-2-700)" stroke-width="1.5" />
+											<text x="52" y="22" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle">siguiente</text>
+											<circle cx="52" cy="45" r="7" fill="var(--color-accent-2-700)" />
+										</g>
+									</g>
+
+									<!-- Outgoing pointer -->
+									<path d="M340 120 L400 120" stroke="var(--color-accent-2-700)" stroke-width="2.5" />
+
+									<!-- Next Node or Ground -->
+									<g transform="translate(410, 80)">
+										<rect x="0" y="0" width="90" height="70" rx="6" class="deck-panel" stroke-dasharray="3 3" />
+										<text x="45" y="32" class="deck-svg-mono-sm" text-anchor="middle">Próximo</text>
+										<text x="45" y="50" class="deck-svg-mono-sm" text-anchor="middle">Nodo @0x5C00</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Estructura Autorreferencial' : 'Self-Referential Struct'}</span>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Tipo del Puntero:' : 'Pointer Type:'}</span>
+										<span class="state-val mono">Nodo&lt;T&gt; siguiente</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Terminación:' : 'Termination:'}</span>
+										<span class="state-val" style="color: var(--color-accent-700);">siguiente == null</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-kw">class</span> Nodo&lt;T&gt; &#123;
+  T dato;
+  Nodo&lt;T&gt; siguiente; <span class="tok-comment">// Puntero al mismo tipo</span>
+
+  <span class="tok-kw">public</span> Nodo(T dato) &#123;
+    <span class="tok-kw">this</span>.dato = dato;
+    <span class="tok-kw">this</span>.siguiente = <span class="tok-kw">null</span>;
+  &#125;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 4: INSERTION AT HEAD O(1) -->
+				<div class="deck-slide" data-slide="4">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">4. {isEs ? 'Inserción al Inicio: El Baile de Punteros en O(1)' : 'Insert at Head: O(1) Pointer Dance'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Insertar al frente es inmediato: 1. Crear nuevo nodo, 2. Enlazar nuevo.siguiente = cabeza, 3. Mover cabeza = nuevo. ¡Si invertís el orden de los pasos 2 y 3, perdés toda la lista existente!'
+									: 'Inserting at head is instant: 1. Create new node, 2. Link nuevo.siguiente = cabeza, 3. Advance cabeza = nuevo. Reversing steps 2 and 3 loses the entire existing list to garbage collection!'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Baile de punteros inserción al frente' : 'Insert at head pointer dance'}>
+									<!-- cabeza pointer -->
+									<g transform="translate(30, 45)">
+										<rect x="0" y="0" width="70" height="45" rx="6" class="deck-panel" stroke="var(--color-accent)" stroke-width="1.5" />
+										<text x="35" y="22" class="deck-svg-bold" text-anchor="middle">cabeza</text>
+										<text x="35" y="36" class="deck-svg-mono-sm" text-anchor="middle" id="head-addr-txt">@0x1000</text>
+									</g>
+
+									<!-- Arrow cabeza -> target -->
+									<path d="M100 68 L150 68" stroke="var(--color-accent)" stroke-width="2" id="arr-head-link" />
+
+									<!-- Existing Node A -->
+									<g transform="translate(160, 45)">
+										<rect x="0" y="0" width="100" height="50" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="35" y="30" class="deck-svg-bold">"A"</text>
+										<rect x="65" y="8" width="25" height="34" rx="3" fill="var(--color-surface-subtle)" />
+										<circle cx="77" cy="25" r="3.5" fill="var(--color-accent)" />
+									</g>
+
+									<!-- Arrow Node A -> Node B -->
+									<path d="M260 70 L300 70" stroke="var(--color-accent)" stroke-width="1.5" />
+
+									<!-- Existing Node B -->
+									<g transform="translate(310, 45)">
+										<rect x="0" y="0" width="100" height="50" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="35" y="30" class="deck-svg-bold">"B"</text>
+										<rect x="65" y="8" width="25" height="34" rx="3" fill="var(--color-surface-subtle)" />
+										<text x="77" y="28" class="deck-svg-mono-sm" text-anchor="middle">null</text>
+									</g>
+
+									<!-- New floating node X -->
+									<g id="svg-new-node" transform="translate(160, 140)">
+										<rect x="0" y="0" width="110" height="55" rx="8" class="deck-panel-accent" stroke="var(--color-accent-700)" stroke-width="2" />
+										<text x="35" y="32" class="deck-svg-bold" fill="var(--color-accent-700)">nuevo "X"</text>
+										<rect x="75" y="10" width="25" height="35" rx="3" fill="var(--color-surface)" />
+										<circle cx="87" cy="27" r="4" fill="var(--color-accent-2-700)" />
+									</g>
+
+									<!-- Dynamic Connector from New Node -->
+									<path id="arr-new-to-a" d="M210 140 L210 100" stroke="var(--color-accent-2-700)" stroke-width="2" stroke-dasharray="3 3" style="display: none;" />
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Secuencia de Pasos' : 'Step Sequence'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary" id="btn-step-head">{isEs ? 'Avanzar Paso' : 'Next Step'}</button>
+									<button class="btn btn-secondary" id="btn-reset-head">{isEs ? 'Reiniciar' : 'Reset'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Paso Actual:' : 'Current Step:'}</span>
+										<span class="state-val" id="head-step-title">{isEs ? '1. Nace nuevo = new Nodo("X")' : '1. Instantiate new Node("X")'}</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Sentencia Java:' : 'Java Statement:'}</span>
+										<span class="state-val mono" id="head-step-code">Nodo nuevo = new Nodo("X");</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-kw">public void</span> agregarAlInicio(T dato) &#123;
+  <span class="tok-kw">Nodo</span>&lt;T&gt; nuevo = <span class="tok-kw">new</span> <span class="tok-kw">Nodo</span>&lt;&gt;(dato);
+  nuevo.siguiente = cabeza; <span class="tok-comment">// PASO 1: Enlazar primero</span>
+  cabeza = nuevo;           <span class="tok-comment">// PASO 2: Mover cabeza</span>
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 5: INSERTION AT TAIL -->
+				<div class="deck-slide" data-slide="5">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">5. {isEs ? 'Inserción al Final y Recorrido en O(N)' : 'Insert at Tail and Traversal O(N)'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Para agregar al final sin puntero tail, es obligatorio recorrer toda la lista usando un cursor auxiliar mientras actual.siguiente != null. El costo es O(N) proporcional a la cantidad de elementos.'
+									: 'Adding at tail without a tail pointer mandates traversing the full chain with a cursor while actual.siguiente != null. Time complexity is O(N) proportional to element count.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Recorrido hasta el último nodo' : 'Traversal to the last node'}>
+									<!-- Nodes Row -->
+									<g transform="translate(30, 60)">
+										<!-- Node 0 -->
+										<g id="tail-n0">
+											<rect x="0" y="0" width="90" height="46" rx="6" class="deck-panel" />
+											<text x="30" y="28" class="deck-svg-bold">"A"</text>
+											<rect x="58" y="8" width="24" height="30" rx="3" fill="var(--color-surface)" />
+											<circle cx="70" cy="23" r="3" fill="var(--color-accent)" />
+										</g>
+
+										<path d="M90 23 L130 23" stroke="var(--color-accent)" stroke-width="1.5" />
+
+										<!-- Node 1 -->
+										<g id="tail-n1" transform="translate(130, 0)">
+											<rect x="0" y="0" width="90" height="46" rx="6" class="deck-panel" />
+											<text x="30" y="28" class="deck-svg-bold">"B"</text>
+											<rect x="58" y="8" width="24" height="30" rx="3" fill="var(--color-surface)" />
+											<circle cx="70" cy="23" r="3" fill="var(--color-accent)" />
+										</g>
+
+										<path d="M220 23 L260 23" stroke="var(--color-accent)" stroke-width="1.5" />
+
+										<!-- Node 2 (last) -->
+										<g id="tail-n2" transform="translate(260, 0)">
+											<rect x="0" y="0" width="90" height="46" rx="6" class="deck-panel-accent" stroke="var(--color-accent-700)" stroke-width="2" />
+											<text x="30" y="28" class="deck-svg-bold" fill="var(--color-accent-700)">"C"</text>
+											<rect x="58" y="8" width="24" height="30" rx="3" fill="var(--color-surface)" />
+											<text x="70" y="26" class="deck-svg-mono-sm" text-anchor="middle">null</text>
+										</g>
+									</g>
+
+									<!-- Cursor pointer -->
+									<g id="cursor-group" transform="translate(60, 120)">
+										<polygon points="10,0 0,16 20,16" fill="var(--color-accent)" />
+										<text x="10" y="32" class="deck-svg-bold" fill="var(--color-accent)" text-anchor="middle">actual</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Caminata del Cursor' : 'Cursor Stepper'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary" id="btn-step-tail">{isEs ? 'Avanzar Cursor' : 'Step Cursor'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Condición del bucle:' : 'Loop condition:'}</span>
+										<span class="state-val mono">while (actual.siguiente != null)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Posición Cursor:' : 'Cursor Position:'}</span>
+										<span class="state-val" id="tail-pos-txt">actual = Nodo "A"</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-kw">Nodo</span> actual = cabeza;
+<span class="tok-kw">while</span> (actual.siguiente != <span class="tok-kw">null</span>) &#123;
+  actual = actual.siguiente; <span class="tok-comment">// Avanza O(N)</span>
+&#125;
+actual.siguiente = nuevo;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 6: DELETE MIDDLE NODE -->
+				<div class="deck-slide" data-slide="6">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">6. {isEs ? 'Eliminación Intermedia: El Puente de Punteros' : 'Deleting a Middle Node: Pointer Bypass'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Para quitar un nodo intermedio, la flecha del nodo anterior se desvía y conecta directamente con el siguiente: anterior.siguiente = actual.siguiente. Al no tener referencias entrantes, el nodo eliminado es limpiado por el Garbage Collector.'
+									: 'To remove a middle node, the previous node bypasses it to link directly with the successor: anterior.siguiente = actual.siguiente. With no incoming references, the bypassed node is reclaimed by the Garbage Collector.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Eliminación de nodo intermedio con puente' : 'Middle node deletion with pointer bypass'}>
+									<!-- Node 10 -->
+									<g transform="translate(30, 70)">
+										<rect x="0" y="0" width="85" height="45" rx="6" class="deck-panel" />
+										<text x="30" y="28" class="deck-svg-bold">"10"</text>
+										<circle cx="68" cy="23" r="3" fill="var(--color-accent)" />
+									</g>
+
+									<!-- Bypass Bridge Arc -->
+									<path id="bridge-arc" d="M100 80 Q 200 15 300 80" stroke="var(--color-accent-2-700)" stroke-width="2.5" fill="none" stroke-dasharray="3 3" style="display: none;" />
+
+									<!-- Original Arrow 10 -> 20 -->
+									<path id="arr-orig-1" d="M115 92 L165 92" stroke="var(--color-divider)" stroke-width="1.5" />
+
+									<!-- Node 20 (Target) -->
+									<g id="del-target-node" transform="translate(165, 70)">
+										<rect x="0" y="0" width="85" height="45" rx="6" class="deck-ground-card" stroke="rgb(239, 68, 68)" stroke-width="2" />
+										<text x="30" y="28" class="deck-svg-bold" fill="rgb(239, 68, 68)">"20" ✕</text>
+										<circle cx="68" cy="23" r="3" fill="rgb(239, 68, 68)" />
+									</g>
+
+									<!-- Original Arrow 20 -> 30 -->
+									<path id="arr-orig-2" d="M250 92 L300 92" stroke="var(--color-divider)" stroke-width="1.5" />
+
+									<!-- Node 30 -->
+									<g transform="translate(300, 70)">
+										<rect x="0" y="0" width="85" height="45" rx="6" class="deck-panel" />
+										<text x="30" y="28" class="deck-svg-bold">"30"</text>
+										<text x="68" y="26" class="deck-svg-mono-sm" text-anchor="middle">null</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Acción de Puente' : 'Bridge Action'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary" id="btn-toggle-bypass">{isEs ? 'Puentear Nodo 20' : 'Bypass Node 20'}</button>
+									<button class="btn btn-secondary" id="btn-reset-bypass">{isEs ? 'Restaurar' : 'Restore'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Sentencia Clave:' : 'Key Statement:'}</span>
+										<span class="state-val mono">anterior.siguiente = actual.siguiente;</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Estado Nodo 20:' : 'Node 20 State:'}</span>
+										<span class="state-val" id="bypass-state-txt">Enlazado en la cadena</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code>anterior.siguiente = actual.siguiente;
+actual.siguiente = <span class="tok-kw">null</span>; <span class="tok-comment">// Limpieza defensiva</span>
+<span class="tok-comment">// El recolector de basura (GC) destruye el nodo huérfano</span></code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 7: DOUBLY & CIRCULAR -->
+				<div class="deck-slide" data-slide="7">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">7. {isEs ? 'Variantes: Doblemente Enlazada y Circular' : 'Variants: Doubly-Linked and Circular Lists'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'La lista doblemente enlazada agrega un puntero `anterior` en cada nodo permitiendo recorridos bidireccionales y eliminación en O(1) conociendo el nodo. La lista circular enlaza el último nodo de vuelta a la cabeza.'
+									: 'A doubly-linked list adds a `prev` pointer to each node for bidirectional traversal and O(1) node deletion. A circular list loops the last node back to head.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Variantes doblemente enlazada y circular' : 'Doubly linked and circular variants'}>
+									<!-- Node 1 -->
+									<g transform="translate(60, 80)">
+										<rect x="0" y="0" width="100" height="55" rx="6" class="deck-panel" />
+										<circle cx="15" cy="27" r="3.5" fill="var(--color-accent-700)" />
+										<text x="50" y="32" class="deck-svg-bold" text-anchor="middle">"A"</text>
+										<circle cx="85" cy="27" r="3.5" fill="var(--color-accent-2-700)" />
+									</g>
+
+									<!-- Forward Arrow A -> B -->
+									<path d="M160 95 L220 95" stroke="var(--color-accent-2-700)" stroke-width="2" />
+
+									<!-- Backward Arrow B -> A -->
+									<path d="M220 115 L160 115" stroke="var(--color-accent-700)" stroke-width="2" id="arr-back-ab" />
+
+									<!-- Node 2 -->
+									<g transform="translate(220, 80)">
+										<rect x="0" y="0" width="100" height="55" rx="6" class="deck-panel" />
+										<circle cx="15" cy="27" r="3.5" fill="var(--color-accent-700)" />
+										<text x="50" y="32" class="deck-svg-bold" text-anchor="middle">"B"</text>
+										<circle cx="85" cy="27" r="3.5" fill="var(--color-accent-2-700)" />
+									</g>
+
+									<!-- Circular loopback arc (hidden by default) -->
+									<path id="circ-arc" d="M320 105 Q 420 180 200 180 Q 20 180 60 110" stroke="var(--color-accent)" stroke-width="2" fill="none" stroke-dasharray="4 4" style="display: none;" />
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Modo de Lista' : 'List Mode'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary var-btn active" data-var="double">{isEs ? 'Doblemente Enlazada' : 'Doubly-Linked'}</button>
+									<button class="btn btn-secondary var-btn" data-var="circular">{isEs ? 'Circular' : 'Circular'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Punteros por Nodo:' : 'Pointers per Node:'}</span>
+										<span class="state-val" id="var-pnt-txt">anterior + siguiente (2 punteros)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Ventaja Clave:' : 'Key Advantage:'}</span>
+										<span class="state-val" id="var-adv-txt" style="color: var(--color-accent-2-700);">Recorrido bidireccional</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code id="var-code-snippet"><span class="tok-kw">class</span> NodoDoble&lt;T&gt; &#123;
+  T dato;
+  NodoDoble&lt;T&gt; anterior;
+  NodoDoble&lt;T&gt; siguiente;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 8: BIG-O COMPLEXITY MATRIX -->
+				<div class="deck-slide" data-slide="8">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">8. {isEs ? 'Tabla de Complejidad Big-O: Array vs Lista' : 'Big-O Matrix: Array vs Linked List'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Elegir la estructura correcta depende del patrón de uso. Si hacés muchas lecturas por índice aleatorio, el Array es el rey. Si hacés inserciones y eliminaciones continuas al frente, la Lista Enlazada no tiene rival.'
+									: 'Choosing the right structure depends on the access pattern. For random index lookups, Array is superior. For continuous head insertions and removals, Linked List has no rival.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Tabla comparativa de complejidad Big O' : 'Big O complexity comparison table'}>
+									<!-- Headers -->
+									<text x="20" y="25" class="deck-svg-bold">Operación</text>
+									<text x="190" y="25" class="deck-svg-bold" fill="var(--color-accent-700)">ArrayList (Array)</text>
+									<text x="360" y="25" class="deck-svg-bold" fill="var(--color-accent-2-700)">LinkedList (Nodos)</text>
+									<line x1="20" y1="35" x2="520" y2="35" stroke="var(--color-divider)" />
+
+									<!-- Row 1: Acceso -->
+									<text x="20" y="60" class="deck-svg-mono-sm">Acceso get(i)</text>
+									<rect x="190" y="46" width="60" height="20" rx="3" fill="color-mix(in srgb, var(--color-accent-2-700) 15%, var(--color-surface))" />
+									<text x="220" y="60" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle">O(1)</text>
+									<rect x="360" y="46" width="60" height="20" rx="3" fill="color-mix(in srgb, rgb(239, 68, 68) 15%, var(--color-surface))" />
+									<text x="390" y="60" class="deck-svg-bold" fill="rgb(239, 68, 68)" text-anchor="middle">O(N)</text>
+
+									<!-- Row 2: Inserción frente -->
+									<text x="20" y="95" class="deck-svg-mono-sm">Insertar al inicio</text>
+									<rect x="190" y="81" width="60" height="20" rx="3" fill="color-mix(in srgb, rgb(239, 68, 68) 15%, var(--color-surface))" />
+									<text x="220" y="95" class="deck-svg-bold" fill="rgb(239, 68, 68)" text-anchor="middle">O(N)</text>
+									<rect x="360" y="81" width="60" height="20" rx="3" fill="color-mix(in srgb, var(--color-accent-2-700) 15%, var(--color-surface))" />
+									<text x="390" y="95" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle">O(1)</text>
+
+									<!-- Row 3: Inserción final -->
+									<text x="20" y="130" class="deck-svg-mono-sm">Insertar al final</text>
+									<rect x="190" y="116" width="60" height="20" rx="3" fill="color-mix(in srgb, var(--color-accent-2-700) 15%, var(--color-surface))" />
+									<text x="220" y="130" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle">O(1)*</text>
+									<rect x="360" y="116" width="60" height="20" rx="3" fill="color-mix(in srgb, var(--color-accent-2-700) 15%, var(--color-surface))" />
+									<text x="390" y="130" class="deck-svg-bold" fill="var(--color-accent-2-700)" text-anchor="middle">O(1)**</text>
+
+									<!-- Row 4: Búsqueda -->
+									<text x="20" y="165" class="deck-svg-mono-sm">Búsqueda contains()</text>
+									<rect x="190" y="151" width="60" height="20" rx="3" fill="color-mix(in srgb, rgb(239, 68, 68) 15%, var(--color-surface))" />
+									<text x="220" y="165" class="deck-svg-bold" fill="rgb(239, 68, 68)" text-anchor="middle">O(N)</text>
+									<rect x="360" y="151" width="60" height="20" rx="3" fill="color-mix(in srgb, rgb(239, 68, 68) 15%, var(--color-surface))" />
+									<text x="390" y="165" class="deck-svg-bold" fill="rgb(239, 68, 68)" text-anchor="middle">O(N)</text>
+
+									<!-- Footnote -->
+									<text x="20" y="210" class="deck-svg-sub">* Amortizado en ArrayList al duplicar. ** Con puntero tail.</text>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Veredicto de Diseño' : 'Design Verdict'}</span>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Lecturas masivas:' : 'Heavy Reads:'}</span>
+										<span class="state-val" style="color: var(--color-accent-700); font-weight: 700;">Usar ArrayList</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Inserción frente masiva:' : 'Heavy Head Inserts:'}</span>
+										<span class="state-val" style="color: var(--color-accent-2-700); font-weight: 700;">Usar LinkedList / Deque</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-comment">// El 95% de los casos en Java se resuelven con ArrayList</span>
+<span class="tok-comment">// debido a la localidad espacial y caché L1/L2.</span></code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- FOOTER CONTROLS -->
+			<div class="deck-footer">
+				<button class="btn btn-secondary deck-nav-prev" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="deck-dots">
+					<button class="deck-dot active" data-target-slide="1" aria-label="Slide 1"></button>
+					<button class="deck-dot" data-target-slide="2" aria-label="Slide 2"></button>
+					<button class="deck-dot" data-target-slide="3" aria-label="Slide 3"></button>
+					<button class="deck-dot" data-target-slide="4" aria-label="Slide 4"></button>
+					<button class="deck-dot" data-target-slide="5" aria-label="Slide 5"></button>
+					<button class="deck-dot" data-target-slide="6" aria-label="Slide 6"></button>
+					<button class="deck-dot" data-target-slide="7" aria-label="Slide 7"></button>
+					<button class="deck-dot" data-target-slide="8" aria-label="Slide 8"></button>
+				</div>
+				<button class="btn btn-secondary deck-nav-next">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	function initPresentation() {
+		const screen = document.querySelector('.tl-screen');
+		if (!screen) return;
+
+		let currentSlide = 1;
+		const totalSlides = 8;
+
+		const slideLabel = document.getElementById('deck-slide-label');
+		const prevBtn = screen.querySelector('.deck-nav-prev') as HTMLButtonElement;
+		const nextBtn = screen.querySelector('.deck-nav-next') as HTMLButtonElement;
+		const pills = screen.querySelectorAll('.deck-pill-btn');
+		const dots = screen.querySelectorAll('.deck-dot');
+		const slides = screen.querySelectorAll('.deck-slide');
+
+		function goToSlide(target: number) {
+			if (target < 1 || target > totalSlides) return;
+			currentSlide = target;
+
+			if (slideLabel) {
+				slideLabel.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+			}
+
+			slides.forEach((sl) => {
+				const sNum = parseInt(sl.getAttribute('data-slide') || '0', 10);
+				sl.classList.toggle('active', sNum === currentSlide);
+			});
+
+			pills.forEach((p) => {
+				const tNum = parseInt(p.getAttribute('data-target-slide') || '0', 10);
+				p.classList.toggle('active', tNum === currentSlide);
+			});
+
+			dots.forEach((d) => {
+				const tNum = parseInt(d.getAttribute('data-target-slide') || '0', 10);
+				d.classList.toggle('active', tNum === currentSlide);
+			});
+
+			if (prevBtn) prevBtn.disabled = currentSlide === 1;
+			if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+		}
+
+		prevBtn?.addEventListener('click', () => goToSlide(currentSlide - 1));
+		nextBtn?.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+		pills.forEach((p) => {
+			p.addEventListener('click', () => {
+				const t = parseInt(p.getAttribute('data-target-slide') || '1', 10);
+				goToSlide(t);
+			});
+		});
+
+		dots.forEach((d) => {
+			d.addEventListener('click', () => {
+				const t = parseInt(d.getAttribute('data-target-slide') || '1', 10);
+				goToSlide(t);
+			});
+		});
+
+		window.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+			if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+		});
+
+		// --- SLIDE 2: Access simulation ---
+		const btnInspectAccess = document.getElementById('btn-inspect-access');
+
+		btnInspectAccess?.addEventListener('click', () => {
+			[0, 1, 2, 3].forEach((i) => {
+				setTimeout(() => {
+					const node = document.getElementById(`lnk-node-${i}`);
+					if (node) {
+						node.style.stroke = 'var(--color-accent)';
+						node.style.strokeWidth = '2';
+					}
+				}, i * 300);
+			});
+		});
+
+		// --- SLIDE 4: Head insertion stepper ---
+		let headStep = 1;
+		const btnStepHead = document.getElementById('btn-step-head');
+		const btnResetHead = document.getElementById('btn-reset-head');
+		const headStepTitle = document.getElementById('head-step-title');
+		const headStepCode = document.getElementById('head-step-code');
+		const arrNewToA = document.getElementById('arr-new-to-a');
+		const headAddrTxt = document.getElementById('head-addr-txt');
+		const arrHeadLink = document.getElementById('arr-head-link');
+
+		function updateHeadView() {
+			if (headStep === 1) {
+				if (headStepTitle) headStepTitle.textContent = '1. Nace nuevo = new Nodo("X")';
+				if (headStepCode) headStepCode.textContent = 'Nodo nuevo = new Nodo("X");';
+				if (arrNewToA) arrNewToA.style.display = 'none';
+				if (headAddrTxt) headAddrTxt.textContent = '@0x1000';
+				if (arrHeadLink) arrHeadLink.setAttribute('d', 'M100 68 L150 68');
+			} else if (headStep === 2) {
+				if (headStepTitle) headStepTitle.textContent = '2. nuevo.siguiente = cabeza';
+				if (headStepCode) headStepCode.textContent = 'nuevo.siguiente = cabeza; // Apunta a Nodo "A"';
+				if (arrNewToA) arrNewToA.style.display = 'block';
+			} else {
+				if (headStepTitle) headStepTitle.textContent = '3. cabeza = nuevo';
+				if (headStepCode) headStepCode.textContent = 'cabeza = nuevo; // cabeza apunta ahora a "X"';
+				if (headAddrTxt) headAddrTxt.textContent = '@0x5E20';
+				if (arrHeadLink) arrHeadLink.setAttribute('d', 'M70 90 L160 160');
+			}
+		}
+
+		btnStepHead?.addEventListener('click', () => {
+			headStep = (headStep % 3) + 1;
+			updateHeadView();
+		});
+
+		btnResetHead?.addEventListener('click', () => {
+			headStep = 1;
+			updateHeadView();
+		});
+
+		// --- SLIDE 5: Tail cursor stepper ---
+		let tailStep = 0;
+		const btnStepTail = document.getElementById('btn-step-tail');
+		const cursorGroup = document.getElementById('cursor-group');
+		const tailPosTxt = document.getElementById('tail-pos-txt');
+		const cursorPositions = [60, 190, 320];
+		const cursorNames = ['"A"', '"B"', '"C" (Último nodo, actual.siguiente == null)'];
+
+		btnStepTail?.addEventListener('click', () => {
+			tailStep = (tailStep + 1) % 3;
+			if (cursorGroup) {
+				cursorGroup.setAttribute('transform', `translate(${cursorPositions[tailStep]}, 120)`);
+			}
+			if (tailPosTxt) tailPosTxt.textContent = `actual = Nodo ${cursorNames[tailStep]}`;
+		});
+
+		// --- SLIDE 6: Middle bypass ---
+		const btnToggleBypass = document.getElementById('btn-toggle-bypass');
+		const btnResetBypass = document.getElementById('btn-reset-bypass');
+		const bridgeArc = document.getElementById('bridge-arc');
+		const delTargetNode = document.getElementById('del-target-node');
+		const bypassStateTxt = document.getElementById('bypass-state-txt');
+
+		btnToggleBypass?.addEventListener('click', () => {
+			if (bridgeArc) bridgeArc.style.display = 'block';
+			if (delTargetNode) delTargetNode.style.opacity = '0.25';
+			if (bypassStateTxt) {
+				bypassStateTxt.textContent = '⚡ Puentado: huérfano para el Garbage Collector';
+				bypassStateTxt.style.color = 'rgb(239, 68, 68)';
+			}
+		});
+
+		btnResetBypass?.addEventListener('click', () => {
+			if (bridgeArc) bridgeArc.style.display = 'none';
+			if (delTargetNode) delTargetNode.style.opacity = '1';
+			if (bypassStateTxt) {
+				bypassStateTxt.textContent = 'Enlazado en la cadena';
+				bypassStateTxt.style.color = 'var(--color-text)';
+			}
+		});
+
+		// --- SLIDE 7: Variants ---
+		const varBtns = screen.querySelectorAll('.var-btn');
+		const arrBackAb = document.getElementById('arr-back-ab');
+		const circArc = document.getElementById('circ-arc');
+		const varPntTxt = document.getElementById('var-pnt-txt');
+		const varAdvTxt = document.getElementById('var-adv-txt');
+		const varCodeSnippet = document.getElementById('var-code-snippet');
+
+		varBtns.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				varBtns.forEach((b) => b.classList.remove('active'));
+				btn.classList.add('active');
+				const v = btn.getAttribute('data-var');
+
+				if (v === 'double') {
+					if (arrBackAb) arrBackAb.style.display = 'block';
+					if (circArc) circArc.style.display = 'none';
+					if (varPntTxt) varPntTxt.textContent = 'anterior + siguiente (2 punteros)';
+					if (varAdvTxt) varAdvTxt.textContent = 'Recorrido bidireccional y borrado O(1)';
+					if (varCodeSnippet) {
+						varCodeSnippet.textContent = 'class NodoDoble<T> {\n  T dato;\n  NodoDoble<T> anterior;\n  NodoDoble<T> siguiente;\n}';
+					}
+				} else {
+					if (arrBackAb) arrBackAb.style.display = 'none';
+					if (circArc) circArc.style.display = 'block';
+					if (varPntTxt) varPntTxt.textContent = 'último.siguiente == cabeza';
+					if (varAdvTxt) varAdvTxt.textContent = 'Recorrido continuo cíclico sin nulls';
+					if (varCodeSnippet) {
+						varCodeSnippet.textContent = '// Lista Circular:\nultimo.siguiente = cabeza; // Enlace en anillo';
+					}
+				}
+			});
+		});
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initPresentation);
+	} else {
+		initPresentation();
+	}
+</script>
+
+<style>
+	.tl-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		padding: var(--space-4) var(--space-6);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.tl-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.deck-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		box-shadow: var(--shadow-sm);
+		overflow: hidden;
+	}
+
+	.deck-nav-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: var(--color-surface-subtle);
+		gap: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.deck-slide-indicator {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		color: var(--color-accent-700);
+	}
+
+	.deck-step-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--color-accent);
+	}
+
+	.deck-pills {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-pill-btn {
+		font-family: var(--font-body);
+		font-size: var(--text-xs);
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-full);
+		border: 1px solid var(--color-divider);
+		background: var(--color-surface);
+		color: var(--color-text-muted);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.deck-pill-btn:hover {
+		background: var(--color-surface-subtle);
+		color: var(--color-text);
+	}
+
+	.deck-pill-btn.active {
+		background: var(--color-accent-subtle, color-mix(in srgb, var(--color-accent) 15%, transparent));
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	.tl-viewport {
+		padding: var(--space-6) var(--space-8);
+		min-height: 480px;
+		flex: 1;
+	}
+
+	.tl-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .tl-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .tl-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .tl-viewport { zoom: 1.25; } }
+
+	.deck-slide {
+		display: none;
+		animation: fadeIn 0.3s ease;
+	}
+
+	.deck-slide.active {
+		display: block;
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; transform: translateY(4px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.deck-slide-grid {
+		display: grid;
+		grid-template-columns: 1.15fr 0.85fr;
+		gap: var(--space-8);
+		align-items: start;
+	}
+
+	@media (max-width: 900px) {
+		.deck-slide-grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-6);
+		}
+	}
+
+	.deck-col {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.deck-slide-title {
+		font-family: var(--font-display);
+		font-size: var(--text-2xl);
+		color: var(--color-text);
+		margin: 0;
+		line-height: 1.25;
+	}
+
+	.deck-text {
+		font-size: var(--text-sm);
+		line-height: 1.6;
+		color: var(--color-text-muted);
+		margin: 0;
+	}
+
+	.deck-figure {
+		background: var(--color-surface-subtle);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		overflow: hidden;
+	}
+
+	.deck-interactive-card {
+		background: var(--color-surface-subtle);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-5);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.deck-card-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.deck-badge {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		padding: var(--space-1) var(--space-2);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	.deck-actions-row {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-actions-row .btn.active {
+		background: var(--color-accent);
+		color: rgb(255, 255, 255);
+		border-color: var(--color-accent);
+	}
+
+	.deck-info-box {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3) var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.state-row {
+		display: flex;
+		justify-content: space-between;
+		font-size: var(--text-xs);
+		gap: var(--space-2);
+	}
+
+	.state-label {
+		color: var(--color-text-muted);
+	}
+
+	.state-val {
+		color: var(--color-text);
+		font-weight: 600;
+		text-align: right;
+	}
+
+	.state-val.mono {
+		font-family: var(--font-mono);
+	}
+
+	.deck-code-snippet {
+		margin: 0;
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		line-height: 1.5;
+		overflow-x: auto;
+	}
+
+	.tok-kw { color: var(--color-accent-700); font-weight: 600; }
+	.tok-str { color: var(--color-accent-2-700); }
+	.tok-num { color: rgb(217, 119, 6); }
+	.tok-comment { color: var(--color-text-muted); font-style: italic; }
+
+	.deck-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-top: 1px solid var(--color-divider);
+		background: var(--color-surface-subtle);
+	}
+
+	.deck-dots {
+		display: flex;
+		gap: var(--space-2);
+	}
+
+	.deck-dot {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		border: 1px solid var(--color-divider);
+		background: var(--color-surface);
+		cursor: pointer;
+		padding: 0;
+		transition: all 0.2s ease;
+	}
+
+	.deck-dot.active {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		transform: scale(1.2);
+	}
+
+	/* SVG Internal Styles */
+	.deck-panel {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+		stroke-width: 1.5;
+	}
+
+	.deck-panel-accent {
+		fill: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+		stroke: var(--color-accent);
+		stroke-width: 1.5;
+	}
+
+	.deck-ground-card {
+		fill: var(--color-surface);
+	}
+
+	.deck-svg-title {
+		font-family: var(--font-display);
+		font-size: 11px;
+		fill: var(--color-text);
+		font-weight: 700;
+	}
+
+	.deck-svg-title-accent {
+		font-family: var(--font-display);
+		font-size: 11px;
+		fill: var(--color-accent-700);
+		font-weight: 700;
+	}
+
+	.deck-svg-bold {
+		font-family: var(--font-body);
+		font-size: 11px;
+		fill: var(--color-text);
+		font-weight: 700;
+	}
+
+	.deck-svg-mono {
+		font-family: var(--font-mono);
+		font-size: 10px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-mono-sm {
+		font-family: var(--font-mono);
+		font-size: 9px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-sub {
+		font-family: var(--font-body);
+		font-size: 8px;
+		fill: var(--color-text-muted);
+	}
+</style>

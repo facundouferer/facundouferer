@@ -1,0 +1,1325 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="ap-screen" data-presentation="archivos-persistencia-jar-java">
+	<div class="ap-shell">
+		<nav class="ap-nav" aria-label="Controles de navegación">
+			<button class="ap-btn" id="apPrevBtn" aria-label="Diapositiva anterior" disabled>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{isEs ? 'Anterior' : 'Previous'}</span>
+			</button>
+			<span class="ap-counter" id="apSlideCounter" aria-live="polite">1 / 7</span>
+			<button class="ap-btn" id="apNextBtn" aria-label="Siguiente diapositiva">
+				<span>{isEs ? 'Siguiente' : 'Next'}</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="ap-viewport">
+			<!-- Slide 1: Bytes vs Caracteres -->
+			<section class="ap-slide is-active" data-slide="1">
+				<div class="ap-header">
+					<span class="ap-kicker">{isEs ? 'Fundamentos de Entrada/Salida' : 'I/O Foundations'}</span>
+					<h2 class="ap-title">{isEs ? 'El Universo de I/O: Bytes vs Caracteres' : 'The I/O Universe: Bytes vs Characters'}</h2>
+					<p class="ap-lead">
+						{isEs
+							? 'En disco todo son ceros y unos. La diferencia está en si la JVM los consume crudos (8 bits) o los decodifica a caracteres Unicode (16 bits) según un Charset.'
+							: 'On disk everything is binary. The distinction lies in whether the JVM reads raw 8-bit bytes or decodes them into 16-bit Unicode characters via a Charset.'}
+					</p>
+				</div>
+
+				<div class="ap-card">
+					<div class="ap-pipe-grid">
+						<!-- Byte Stream Pipe -->
+						<div class="ap-pipe-card">
+							<div class="ap-pipe-head">
+								<span class="ap-badge">{isEs ? 'Flujo Binario' : 'Binary Stream'}</span>
+								<strong>InputStream / OutputStream</strong>
+							</div>
+							<p class="ap-pipe-sub">{isEs ? 'Maneja bytes crudos (8-bit signed byte). Ideal para imágenes PNG, audio, PDFs y datos binarios.' : 'Handles raw 8-bit bytes. Best for PNG images, audio, PDFs, and binary blobs.'}</p>
+							<div class="ap-pipe-viz">
+								<svg viewBox="0 0 260 60" class="ap-svg-pipe">
+									<rect x="10" y="15" width="240" height="30" rx="6" class="ap-pipe-shell" />
+									<text x="35" y="34" class="ap-byte-chunk">01001011</text>
+									<text x="110" y="34" class="ap-byte-chunk">11100010</text>
+									<text x="185" y="34" class="ap-byte-chunk">00001111</text>
+								</svg>
+							</div>
+						</div>
+
+						<!-- Character Stream Pipe -->
+						<div class="ap-pipe-card">
+							<div class="ap-pipe-head">
+								<span class="ap-badge ap-badge-alt">{isEs ? 'Flujo de Texto' : 'Text Stream'}</span>
+								<strong>Reader / Writer</strong>
+							</div>
+							<p class="ap-pipe-sub">{isEs ? 'Decodifica bytes a texto Unicode (16-bit char) aplicando un Charset (UTF-8, ISO-8859-1).' : 'Decodes bytes into Unicode text (16-bit char) applying a Charset (UTF-8, ISO-8859-1).'}</p>
+							<div class="ap-pipe-viz">
+								<svg viewBox="0 0 260 60" class="ap-svg-pipe">
+									<rect x="10" y="15" width="240" height="30" rx="6" class="ap-pipe-shell" />
+									<text x="50" y="34" class="ap-char-chunk">'C'</text>
+									<text x="90" y="34" class="ap-char-chunk">'a'</text>
+									<text x="130" y="34" class="ap-char-chunk">'n'</text>
+									<text x="170" y="34" class="ap-char-chunk">'c'</text>
+									<text x="210" y="34" class="ap-char-chunk">'i'</text>
+								</svg>
+							</div>
+						</div>
+					</div>
+
+					<!-- Encoding trap interactive simulator -->
+					<div class="ap-sim-block">
+						<div class="ap-sim-label">
+							<strong>{isEs ? 'Simulador: La Trampa del Encoding' : 'Simulator: The Encoding Trap'}</strong>
+							<span class="ap-hint">{isEs ? 'Probá leer el texto "Canción" con diferentes encodings' : 'Try reading "Canción" with different encodings'}</span>
+						</div>
+						<div class="ap-charset-buttons">
+							<button class="ap-tab is-active" id="apUtf8Btn">UTF-8 (Estándar)</button>
+							<button class="ap-tab" id="apIsoBtn">ISO-8859-1 (Latin-1)</button>
+						</div>
+						<div class="ap-result-box" id="apEncodingResult">
+							<span class="ap-code-sample">Canción</span>
+							<span class="ap-tag-ok">{isEs ? '✓ Decodificación Correcta' : '✓ Correct Decoding'}</span>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 2: El Patrón Decorador -->
+			<section class="ap-slide" data-slide="2">
+				<div class="ap-header">
+					<span class="ap-kicker">{isEs ? 'Arquitectura de Diseño' : 'Design Architecture'}</span>
+					<h2 class="ap-title">{isEs ? 'El Patrón Decorador: La Cebolla de Streams' : 'The Decorator Pattern: The Stream Onion'}</h2>
+					<p class="ap-lead">
+						{isEs
+							? 'En lugar de cientos de subclases, java.io compone capas concéntricas sobre la conexión física: Buffer en RAM y formateo de tipos.'
+							: 'Instead of class explosion, java.io stacks concentric wrappers over physical sources: RAM buffering and typed parsing.'}
+					</p>
+				</div>
+
+				<div class="ap-card">
+					<div class="ap-decor-split">
+						<!-- Concentric Circles Diagram -->
+						<div class="ap-onion-viz">
+							<svg viewBox="0 0 320 220" class="ap-svg-onion">
+								<!-- Outer Layer: DataInputStream -->
+								<rect x="15" y="15" width="290" height="190" rx="14" class="ap-layer-outer" />
+								<text x="30" y="38" class="ap-layer-title">DataInputStream (Tipos: readDouble, readUTF)</text>
+
+								<!-- Middle Layer: BufferedInputStream -->
+								<rect id="apBufferLayer" x="40" y="55" width="240" height="135" rx="10" class="ap-layer-mid is-on" />
+								<text id="apBufferTitle" x="55" y="78" class="ap-layer-title-mid">BufferedInputStream (Caché 8 KB en RAM)</text>
+
+								<!-- Core Layer: FileInputStream -->
+								<rect x="65" y="95" width="190" height="80" rx="8" class="ap-layer-core" />
+								<text x="80" y="125" class="ap-layer-title-core">FileInputStream</text>
+								<text x="80" y="145" class="ap-core-sub">"datos.bin" (Disco SSD / HDD)</text>
+							</svg>
+						</div>
+
+						<!-- Interactive Controls & Speedometer -->
+						<div class="ap-decor-controls">
+							<div class="ap-toggle-wrap">
+								<label class="ap-toggle-label">
+									<input type="checkbox" id="apToggleBuffer" checked />
+									<span>{isEs ? 'Activar BufferedInputStream (8 KB en RAM)' : 'Enable BufferedInputStream (8 KB RAM buffer)'}</span>
+								</label>
+							</div>
+
+							<div class="ap-perf-panel">
+								<strong class="ap-perf-heading">{isEs ? 'Impacto en 10.000 Lecturas de Bytes:' : 'Impact on 10,000 Byte Reads:'}</strong>
+								<div class="ap-bar-track">
+									<div id="apPerfBar" class="ap-bar-fill ap-bar-fast" style="width: 95%;"></div>
+								</div>
+								<div class="ap-perf-stats" id="apPerfStats">
+									<span>{isEs ? 'Llamadas a Disco: 2 llamadas' : 'Disk I/O Calls: 2 calls'}</span>
+									<strong class="ap-text-accent">{isEs ? '1.8 ms (¡Ultra Rápido!)' : '1.8 ms (Ultra Fast!)'}</strong>
+								</div>
+								<p class="ap-subtext" id="apPerfExplanation">
+									{isEs
+										? 'El buffer acumula 8192 bytes en RAM en una sola llamada al kernel. Las siguientes 8191 lecturas se resuelven en memoria.'
+										: 'The buffer loads 8192 bytes into RAM in one OS kernel call. The next 8191 reads execute in memory.'}
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 3: Java NIO.2 Moderno -->
+			<section class="ap-slide" data-slide="3">
+				<div class="ap-header">
+					<span class="ap-kicker">{isEs ? 'Evolución de la Plataforma' : 'Platform Evolution'}</span>
+					<h2 class="ap-title">{isEs ? 'Java NIO.2 Moderno: java.nio.file' : 'Modern Java NIO.2: java.nio.file'}</h2>
+					<p class="ap-lead">
+						{isEs
+							? 'Java 7 reemplazó al frágil java.io.File por la inmutabilidad de Path, operaciones atómicas en Files y Lazy Streams con Files.walk().'
+							: 'Java 7 replaced the fragile java.io.File with immutable Path, atomic Files operations, and lazy streams via Files.walk().'}
+					</p>
+				</div>
+
+				<div class="ap-card">
+					<div class="ap-code-compare">
+						<!-- Old Way -->
+						<div class="ap-code-column">
+							<div class="ap-column-head">
+								<span class="ap-badge ap-badge-legacy">{isEs ? 'Antiguo java.io.File (Java 1.0)' : 'Legacy java.io.File (Java 1.0)'}</span>
+								<span>{isEs ? '12 líneas, gestión manual de streams' : '12 lines, manual stream handling'}</span>
+							</div>
+							<pre class="ap-pre"><code>BufferedReader br = null;
+try &#123;
+    br = new BufferedReader(new FileReader("file.txt"));
+    String linea;
+    while ((linea = br.readLine()) != null) &#123;
+        System.out.println(linea);
+    &#125;
+&#125; finally &#123;
+    if (br != null) br.close();
+&#125;</code></pre>
+						</div>
+
+						<!-- Modern NIO.2 Way -->
+						<div class="ap-code-column">
+							<div class="ap-column-head">
+								<span class="ap-badge ap-badge-alt">{isEs ? 'Moderno java.nio.file (NIO.2)' : 'Modern java.nio.file (NIO.2)'}</span>
+								<span>{isEs ? '1 línea, atómico, charset explícito' : '1 line, atomic, explicit charset'}</span>
+							</div>
+							<pre class="ap-pre ap-pre-accent"><code>Path path = Paths.get("file.txt");
+
+// Lectura directa en 1 línea
+List&lt;String&gt; lineas = Files.readAllLines(path, StandardCharsets.UTF_8);
+
+// O Lazy Stream para archivos gigantes (GBytes):
+try (Stream&lt;Path&gt; stream = Files.walk(path)) &#123;
+    stream.filter(Files::isRegularFile).forEach(System.out::println);
+&#125;</code></pre>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 4: Serialización -->
+			<section class="ap-slide" data-slide="4">
+				<div class="ap-header">
+					<span class="ap-kicker">{isEs ? 'Persistencia Binaria de Objetos' : 'Binary Object Persistence'}</span>
+					<h2 class="ap-title">{isEs ? 'Serialización: Aplanar el Heap a Disco' : 'Serialization: Flattening the Heap to Disk'}</h2>
+					<p class="ap-lead">
+						{isEs
+							? 'ObjectOutputStream convierte grafos de objetos vivos en una secuencia binaria que inicia con la firma 0xAC ED 00 05.'
+							: 'ObjectOutputStream converts live object graphs into a binary sequence prefixed with the signature 0xAC ED 00 05.'}
+					</p>
+				</div>
+
+				<div class="ap-card">
+					<div class="ap-serial-sim">
+						<!-- Object in Heap -->
+						<div class="ap-heap-box">
+							<div class="ap-heap-title">{isEs ? 'Objeto en Memoria RAM (Heap)' : 'Object in RAM (Heap)'}</div>
+							<div class="ap-object-card">
+								<div class="ap-obj-header">class Usuario implements Serializable</div>
+								<div class="ap-obj-field">id = 101</div>
+								<div class="ap-obj-field">nombre = "Facundo"</div>
+								<div class="ap-obj-field ap-field-transient">transient password = "secret_hash"</div>
+							</div>
+						</div>
+
+						<!-- Transformation Tunnel -->
+						<div class="ap-tunnel">
+							<div class="ap-tunnel-line">
+								<span>ObjectOutputStream</span>
+								<svg width="48" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M5 12h14m-7-7 7 7-7 7" />
+								</svg>
+							</div>
+						</div>
+
+						<!-- Disk Stream Output -->
+						<div class="ap-disk-box">
+							<div class="ap-heap-title">{isEs ? 'Archivo en Disco (usuario.ser)' : 'Disk File (usuario.ser)'}</div>
+							<div class="ap-binary-card">
+								<span class="ap-magic-bytes">0xAC ED 00 05 (Magic Header)</span>
+								<span class="ap-bin-line">0x73 0x72 0x00 0x07 Usuario</span>
+								<span class="ap-bin-line">id: 101 | nombre: "Facundo"</span>
+								<span class="ap-bin-transient">{isEs ? 'password: NULL (¡No persistido!)' : 'password: NULL (Not persisted!)'}</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="ap-info-callout">
+						<strong>{isEs ? 'Clave de Seguridad:' : 'Security Key:'}</strong> {isEs ? 'La palabra reservada transient le ordena a la JVM omitir campos sensibles (contraseñas, sockets, conexiones a BD) al escribir a disco.' : 'The transient keyword instructs the JVM to omit sensitive fields (passwords, sockets, DB connections) during serialization.'}
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 5: serialVersionUID -->
+			<section class="ap-slide" data-slide="5">
+				<div class="ap-header">
+					<span class="ap-kicker">{isEs ? 'Contrato de Compatibilidad' : 'Compatibility Contract'}</span>
+					<h2 class="ap-title">{isEs ? 'El Rol Crítico de serialVersionUID' : 'The Critical Role of serialVersionUID'}</h2>
+					<p class="ap-lead">
+						{isEs
+							? 'Si la clase cambia y no definiste serialVersionUID fijo, la JVM calcula un hash dinámico y la deserialización colapsa con InvalidClassException.'
+							: 'If a class changes without a declared serialVersionUID, JVM computes a dynamic hash and deserialization fails with InvalidClassException.'}
+					</p>
+				</div>
+
+				<div class="ap-card">
+					<div class="ap-ver-steps">
+						<!-- Step 1 -->
+						<div class="ap-step-card">
+							<div class="ap-step-badge">Paso 1</div>
+							<strong>Versión 1 en Disco</strong>
+							<p class="ap-subtext">Guardamos Factura(id, monto). Hash dinámico calculado: <code class="ap-code-hash">0x84A1</code></p>
+						</div>
+
+						<!-- Step 2 -->
+						<div class="ap-step-card">
+							<div class="ap-step-badge">Paso 2</div>
+							<strong>Evolución de Código</strong>
+							<p class="ap-subtext">Agregamos <code>emailCliente</code> al código fuente. Nuevo hash: <code class="ap-code-hash">0x32B9</code></p>
+						</div>
+
+						<!-- Step 3 -->
+						<div class="ap-step-card ap-step-error">
+							<div class="ap-step-badge ap-badge-err">Paso 3</div>
+							<strong>Lectura / Deserialización</strong>
+							<p class="ap-err-msg">❌ InvalidClassException: local class incompatible (stream: 0x84A1, local: 0x32B9)</p>
+						</div>
+					</div>
+
+					<div class="ap-solution-box">
+						<span class="ap-badge ap-badge-alt">{isEs ? 'Solución Obligatoria de Arquitectura' : 'Mandatory Architectural Solution'}</span>
+						<pre class="ap-pre ap-pre-accent"><code>// Declarar siempre un identificador de versión explícito:
+private static final long serialVersionUID = 1L;</code></pre>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 6: Anatomía de un JAR -->
+			<section class="ap-slide" data-slide="6">
+				<div class="ap-header">
+					<span class="ap-kicker">{isEs ? 'Empaquetado de Artefactos' : 'Artifact Packaging'}</span>
+					<h2 class="ap-title">{isEs ? 'Anatomía de un Archivo JAR (Java Archive)' : 'Anatomy of a JAR (Java Archive)'}</h2>
+					<p class="ap-lead">
+						{isEs
+							? 'Un archivo .jar no es magia: es un archivo comprimido en formato ZIP estándar con bytecode compilado y un archivo descriptor MANIFEST.MF.'
+							: 'A .jar file is not magic: it is a standard ZIP compressed archive holding compiled bytecode and a MANIFEST.MF descriptor.'}
+					</p>
+				</div>
+
+				<div class="ap-card">
+					<div class="ap-jar-split">
+						<!-- Opened ZIP file tree -->
+						<div class="ap-jar-tree">
+							<div class="ap-jar-tree-header">
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M21 8v13H3V8M1 3h22v5H1z" />
+								</svg>
+								<span>mi-aplicacion.jar (Estructura ZIP)</span>
+							</div>
+							<ul class="ap-tree-list">
+								<li>📁 <strong>META-INF/</strong>
+									<ul>
+										<li class="ap-tree-highlight">📄 <strong>MANIFEST.MF</strong></li>
+									</ul>
+								</li>
+								<li>📁 <strong>com/empresa/app/</strong>
+									<ul>
+										<li>📄 Main.class</li>
+										<li>📄 Servicio.class</li>
+										<li>📄 Modelo.class</li>
+									</ul>
+								</li>
+								<li>📁 <strong>resources/</strong>
+									<ul>
+										<li>🖼️ logo.png</li>
+									</ul>
+								</li>
+							</ul>
+						</div>
+
+						<!-- Manifest Content & Command -->
+						<div class="ap-manifest-view">
+							<div class="ap-manifest-card">
+								<div class="ap-manifest-title">META-INF/MANIFEST.MF</div>
+								<pre class="ap-pre"><code>Manifest-Version: 1.0
+Main-Class: com.empresa.app.Main
+Created-By: 21.0.2 (Eclipse Adoptium)</code></pre>
+							</div>
+
+							<div class="ap-cli-exec">
+								<div class="ap-cli-label">{isEs ? 'Comando de Ejecución:' : 'Execution Command:'}</div>
+								<code class="ap-cli-cmd">$ java -jar mi-aplicacion.jar</code>
+								<p class="ap-subtext">
+									{isEs
+										? 'La JVM abre el ZIP, lee la clave Main-Class del MANIFEST.MF y ejecuta inmediatamente el método public static void main(String[] args).'
+										: 'The JVM opens the ZIP, reads Main-Class from MANIFEST.MF, and launches public static void main(String[] args).'}
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 7: jpackage -->
+			<section class="ap-slide" data-slide="7">
+				<div class="ap-header">
+					<span class="ap-kicker">{isEs ? 'Distribución Moderna' : 'Modern Distribution'}</span>
+					<h2 class="ap-title">{isEs ? 'Distribución Nativa con jpackage' : 'Native Distribution with jpackage'}</h2>
+					<p class="ap-lead">
+						{isEs
+							? 'La era de pedirle al usuario "Instalá Java antes de abrir mi app" terminó. jpackage crea instaladores nativos (.exe, .dmg, .deb) con un JRE embebido.'
+							: 'The era of asking users to "Install Java first" is over. jpackage builds native installers (.exe, .dmg, .deb) bundled with a custom JRE.'}
+					</p>
+				</div>
+
+				<div class="ap-card">
+					<div class="ap-pipe-steps">
+						<!-- Stage 1 -->
+						<div class="ap-stage-box">
+							<div class="ap-stage-num">1</div>
+							<strong class="ap-stage-title">Compilación</strong>
+							<span class="ap-stage-code">javac *.java</span>
+							<p class="ap-subtext">Genera archivos de bytecode <code>.class</code>.</p>
+						</div>
+
+						<!-- Arrow -->
+						<div class="ap-stage-arrow">→</div>
+
+						<!-- Stage 2 -->
+						<div class="ap-stage-box">
+							<div class="ap-stage-num">2</div>
+							<strong class="ap-stage-title">Empaquetado</strong>
+							<span class="ap-stage-code">jar -cfe app.jar</span>
+							<p class="ap-subtext">Genera el archivo ejecutable <code>.jar</code> con su manifiesto.</p>
+						</div>
+
+						<!-- Arrow -->
+						<div class="ap-stage-arrow">→</div>
+
+						<!-- Stage 3 -->
+						<div class="ap-stage-box">
+							<div class="ap-stage-num">3</div>
+							<strong class="ap-stage-title">jlink (Tree-Shaking)</strong>
+							<span class="ap-stage-code">jlink --strip-debug</span>
+							<p class="ap-subtext">Corta un JRE mínimo (30 MB en vez de 300 MB del JDK).</p>
+						</div>
+
+						<!-- Arrow -->
+						<div class="ap-stage-arrow">→</div>
+
+						<!-- Stage 4 -->
+						<div class="ap-stage-box ap-stage-final">
+							<div class="ap-stage-num ap-num-accent">4</div>
+							<strong class="ap-stage-title">jpackage</strong>
+							<span class="ap-stage-code">jpackage --type exe</span>
+							<p class="ap-subtext">Produce instaladores <code>.exe</code>, <code>.dmg</code> o <code>.deb</code> 100% autónomos.</p>
+						</div>
+					</div>
+				</div>
+			</section>
+		</main>
+	</div>
+</div>
+
+<style>
+	.ap-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.ap-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.ap-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	.ap-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
+	.ap-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.ap-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent);
+	}
+
+	.ap-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.ap-counter {
+		font-size: var(--text-sm);
+		font-weight: 700;
+		color: var(--color-text-muted);
+	}
+
+	.ap-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 1100px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.ap-slide.is-active {
+		display: block;
+		animation: apFade 0.25s ease-out;
+	}
+
+	@keyframes apFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.ap-header {
+		margin-bottom: var(--space-5);
+	}
+
+	.ap-kicker {
+		font-size: var(--text-xs);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent);
+	}
+
+	.ap-title {
+		font-family: var(--font-display);
+		font-size: var(--text-2xl);
+		color: var(--color-text);
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.ap-lead {
+		font-size: var(--text-base);
+		color: var(--color-text-muted);
+		line-height: 1.5;
+		margin: 0;
+	}
+
+	.ap-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+		box-shadow: var(--shadow-sm);
+	}
+
+	/* Slide 1: Pipes */
+	.ap-pipe-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-4);
+		margin-bottom: var(--space-4);
+	}
+
+	@media (max-width: 768px) {
+		.ap-pipe-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.ap-pipe-card {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.ap-pipe-head {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		margin-bottom: var(--space-2);
+	}
+
+	.ap-badge {
+		background: var(--color-accent);
+		color: var(--color-surface);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		padding: 2px 8px;
+		border-radius: var(--radius-full);
+	}
+
+	.ap-badge-alt {
+		background: var(--color-accent-2, rgb(100, 140, 90));
+	}
+
+	.ap-badge-legacy {
+		background: var(--color-text-muted);
+	}
+
+	.ap-pipe-sub {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		margin: 0 0 var(--space-3);
+	}
+
+	.ap-svg-pipe {
+		width: 100%;
+		height: 60px;
+	}
+
+	.ap-pipe-shell {
+		fill: var(--color-surface);
+		stroke: var(--color-border);
+		stroke-width: 2;
+	}
+
+	.ap-byte-chunk {
+		font-family: monospace;
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--color-accent);
+	}
+
+	.ap-char-chunk {
+		font-family: var(--font-body);
+		font-size: 14px;
+		font-weight: 700;
+		fill: var(--color-accent-2, rgb(100, 140, 90));
+	}
+
+	.ap-sim-block {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.ap-sim-label {
+		display: flex;
+		justify-content: space-between;
+		font-size: var(--text-sm);
+		margin-bottom: var(--space-3);
+	}
+
+	.ap-hint {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+	}
+
+	.ap-charset-buttons {
+		display: flex;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+
+	.ap-tab {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-1) var(--space-3);
+		font-size: var(--text-xs);
+		font-weight: 600;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.ap-tab.is-active {
+		background: var(--color-accent);
+		color: var(--color-surface);
+		border-color: var(--color-accent);
+	}
+
+	.ap-result-box {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.ap-code-sample {
+		font-family: monospace;
+		font-size: var(--text-lg);
+		font-weight: 700;
+	}
+
+	.ap-tag-ok {
+		color: var(--color-accent-2, rgb(100, 140, 90));
+		font-weight: 700;
+		font-size: var(--text-xs);
+	}
+
+	.ap-tag-err {
+		color: var(--color-accent);
+		font-weight: 700;
+		font-size: var(--text-xs);
+	}
+
+	/* Slide 2: Decorator Onion */
+	.ap-decor-split {
+		display: grid;
+		grid-template-columns: 1.2fr 1fr;
+		gap: var(--space-5);
+	}
+
+	@media (max-width: 768px) {
+		.ap-decor-split {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.ap-onion-viz {
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		justify-content: center;
+	}
+
+	.ap-svg-onion {
+		width: 100%;
+		max-height: 220px;
+	}
+
+	.ap-layer-outer {
+		fill: color-mix(in srgb, var(--color-accent) 10%, transparent);
+		stroke: var(--color-accent);
+		stroke-width: 2;
+	}
+
+	.ap-layer-mid {
+		fill: color-mix(in srgb, var(--color-accent-2, rgb(100, 140, 90)) 15%, transparent);
+		stroke: var(--color-accent-2, rgb(100, 140, 90));
+		stroke-width: 2;
+		transition: all 0.3s;
+	}
+
+	.ap-layer-mid.is-off {
+		stroke-dasharray: 4,4;
+		opacity: 0.35;
+	}
+
+	.ap-layer-core {
+		fill: var(--color-surface);
+		stroke: var(--color-border);
+		stroke-width: 2;
+	}
+
+	.ap-layer-title {
+		font-family: var(--font-body);
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--color-accent);
+	}
+
+	.ap-layer-title-mid {
+		font-family: var(--font-body);
+		font-size: 10.5px;
+		font-weight: 700;
+		fill: var(--color-accent-2, rgb(100, 140, 90));
+	}
+
+	.ap-layer-title-core {
+		font-family: var(--font-body);
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--color-text);
+	}
+
+	.ap-core-sub {
+		font-family: monospace;
+		font-size: 9.5px;
+		fill: var(--color-text-muted);
+	}
+
+	.ap-decor-controls {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.ap-toggle-wrap {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.ap-toggle-label {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.ap-perf-panel {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.ap-perf-heading {
+		display: block;
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		margin-bottom: var(--space-2);
+	}
+
+	.ap-bar-track {
+		height: 12px;
+		background: var(--color-surface);
+		border-radius: var(--radius-full);
+		overflow: hidden;
+		margin-bottom: var(--space-2);
+		border: 1px solid var(--color-border);
+	}
+
+	.ap-bar-fill {
+		height: 100%;
+		border-radius: var(--radius-full);
+		transition: width 0.4s ease, background 0.4s ease;
+	}
+
+	.ap-bar-fast {
+		background: var(--color-accent-2, rgb(100, 140, 90));
+	}
+
+	.ap-bar-slow {
+		background: var(--color-accent);
+	}
+
+	.ap-perf-stats {
+		display: flex;
+		justify-content: space-between;
+		font-size: var(--text-xs);
+	}
+
+	.ap-text-accent {
+		color: var(--color-accent);
+	}
+
+	.ap-subtext {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		line-height: 1.4;
+		margin-top: var(--space-2);
+	}
+
+	/* Slide 3: NIO.2 Compare */
+	.ap-code-compare {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 768px) {
+		.ap-code-compare {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.ap-code-column {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.ap-column-head {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		margin-bottom: var(--space-3);
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+	}
+
+	.ap-pre {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		font-family: monospace;
+		font-size: 11px;
+		line-height: 1.5;
+		margin: 0;
+		overflow-x: auto;
+	}
+
+	.ap-pre-accent {
+		border-color: var(--color-accent-2, rgb(100, 140, 90));
+	}
+
+	/* Slide 4: Serialization */
+	.ap-serial-sim {
+		display: grid;
+		grid-template-columns: 1fr 0.4fr 1fr;
+		gap: var(--space-3);
+		align-items: center;
+		margin-bottom: var(--space-4);
+	}
+
+	@media (max-width: 768px) {
+		.ap-serial-sim {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.ap-heap-box, .ap-disk-box {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.ap-heap-title {
+		font-size: var(--text-xs);
+		font-weight: 700;
+		color: var(--color-text-muted);
+		margin-bottom: var(--space-2);
+	}
+
+	.ap-object-card {
+		background: var(--color-surface);
+		border: 2px solid var(--color-accent);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		font-family: monospace;
+		font-size: var(--text-xs);
+	}
+
+	.ap-obj-header {
+		font-weight: 700;
+		color: var(--color-accent);
+		border-bottom: 1px solid var(--color-border);
+		padding-bottom: var(--space-1);
+		margin-bottom: var(--space-2);
+	}
+
+	.ap-obj-field {
+		padding: 2px 0;
+	}
+
+	.ap-field-transient {
+		color: var(--color-accent);
+		font-weight: 700;
+		background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+		padding: 2px 4px;
+		border-radius: var(--radius-sm);
+	}
+
+	.ap-tunnel {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		text-align: center;
+	}
+
+	.ap-tunnel-line {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-1);
+		font-size: 11px;
+		font-weight: 700;
+		color: var(--color-accent);
+	}
+
+	.ap-binary-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		font-family: monospace;
+		font-size: var(--text-xs);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.ap-magic-bytes {
+		font-weight: 700;
+		color: var(--color-accent);
+	}
+
+	.ap-bin-line {
+		color: var(--color-text);
+	}
+
+	.ap-bin-transient {
+		color: var(--color-text-muted);
+		font-style: italic;
+	}
+
+	.ap-info-callout {
+		background: var(--color-bg);
+		border-left: 3px solid var(--color-accent);
+		padding: var(--space-3);
+		font-size: var(--text-xs);
+		color: var(--color-text);
+		border-radius: 0 var(--radius-md) var(--radius-md) 0;
+	}
+
+	/* Slide 5: serialVersionUID */
+	.ap-ver-steps {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1.2fr;
+		gap: var(--space-3);
+		margin-bottom: var(--space-4);
+	}
+
+	@media (max-width: 768px) {
+		.ap-ver-steps {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.ap-step-card {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.ap-step-error {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+	}
+
+	.ap-step-badge {
+		display: inline-block;
+		font-size: 10px;
+		font-weight: 700;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		padding: 2px 6px;
+		border-radius: var(--radius-full);
+		margin-bottom: var(--space-1);
+	}
+
+	.ap-badge-err {
+		background: var(--color-accent);
+		color: var(--color-surface);
+		border: none;
+	}
+
+	.ap-code-hash {
+		font-family: monospace;
+		font-weight: 700;
+		color: var(--color-accent);
+	}
+
+	.ap-err-msg {
+		font-size: 11px;
+		color: var(--color-accent);
+		font-weight: 600;
+		margin-top: var(--space-1);
+	}
+
+	.ap-solution-box {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	/* Slide 6: JAR Anatomy */
+	.ap-jar-split {
+		display: grid;
+		grid-template-columns: 1fr 1.2fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 768px) {
+		.ap-jar-split {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	.ap-jar-tree {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.ap-jar-tree-header {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		color: var(--color-accent);
+		margin-bottom: var(--space-3);
+	}
+
+	.ap-tree-list {
+		list-style: none;
+		padding-left: var(--space-2);
+		margin: 0;
+		font-size: var(--text-xs);
+		line-height: 1.8;
+	}
+
+	.ap-tree-list ul {
+		list-style: none;
+		padding-left: var(--space-4);
+	}
+
+	.ap-tree-highlight {
+		color: var(--color-accent);
+		font-weight: 700;
+	}
+
+	.ap-manifest-view {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.ap-manifest-card {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.ap-manifest-title {
+		font-size: var(--text-xs);
+		font-weight: 700;
+		color: var(--color-text-muted);
+		margin-bottom: var(--space-2);
+	}
+
+	.ap-cli-exec {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.ap-cli-label {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		margin-bottom: var(--space-1);
+	}
+
+	.ap-cli-cmd {
+		display: block;
+		background: var(--color-surface);
+		border: 1px solid var(--color-accent);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		font-family: monospace;
+		font-size: var(--text-sm);
+		font-weight: 700;
+		color: var(--color-accent);
+	}
+
+	/* Slide 7: jpackage */
+	.ap-pipe-steps {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		overflow-x: auto;
+		padding: var(--space-2) 0;
+	}
+
+	.ap-stage-box {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		flex: 1;
+		min-width: 140px;
+	}
+
+	.ap-stage-final {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+	}
+
+	.ap-stage-num {
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 10px;
+		font-weight: 700;
+		margin-bottom: var(--space-2);
+	}
+
+	.ap-num-accent {
+		background: var(--color-accent);
+		color: var(--color-surface);
+		border: none;
+	}
+
+	.ap-stage-title {
+		display: block;
+		font-size: var(--text-xs);
+		margin-bottom: var(--space-1);
+	}
+
+	.ap-stage-code {
+		display: inline-block;
+		font-family: monospace;
+		font-size: 10px;
+		color: var(--color-accent);
+		background: var(--color-surface);
+		padding: 1px 4px;
+		border-radius: var(--radius-sm);
+		margin-bottom: var(--space-1);
+	}
+
+	.ap-stage-arrow {
+		font-size: var(--text-lg);
+		color: var(--color-text-muted);
+		font-weight: 700;
+	}
+
+	@media (min-width: 1440px) { .ap-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .ap-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .ap-viewport { zoom: 1.25; } }
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 7;
+
+	const prevBtn = document.getElementById('apPrevBtn') as HTMLButtonElement;
+	const nextBtn = document.getElementById('apNextBtn') as HTMLButtonElement;
+	const counter = document.getElementById('apSlideCounter') as HTMLElement;
+	const slides = document.querySelectorAll<HTMLElement>('.ap-slide');
+
+	function updateSlide(target: number) {
+		if (target < 1 || target > totalSlides) return;
+		currentSlide = target;
+		slides.forEach((s) => s.classList.remove('is-active'));
+		document.querySelector(`.ap-slide[data-slide="${currentSlide}"]`)?.classList.add('is-active');
+
+		if (counter) counter.textContent = `${currentSlide} / ${totalSlides}`;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	}
+
+	prevBtn?.addEventListener('click', () => updateSlide(currentSlide - 1));
+	nextBtn?.addEventListener('click', () => updateSlide(currentSlide + 1));
+
+	// Slide 1: Charset toggler
+	const utf8Btn = document.getElementById('apUtf8Btn');
+	const isoBtn = document.getElementById('apIsoBtn');
+	const encodingResult = document.getElementById('apEncodingResult');
+
+	utf8Btn?.addEventListener('click', () => {
+		utf8Btn.classList.add('is-active');
+		isoBtn?.classList.remove('is-active');
+		if (encodingResult) {
+			encodingResult.innerHTML = `
+				<span class="ap-code-sample">Canción</span>
+				<span class="ap-tag-ok">✓ Decodificación Correcta (2 bytes para 'ó' interpretados como 1 char)</span>
+			`;
+		}
+	});
+
+	isoBtn?.addEventListener('click', () => {
+		isoBtn.classList.add('is-active');
+		utf8Btn?.classList.remove('is-active');
+		if (encodingResult) {
+			encodingResult.innerHTML = `
+				<span class="ap-code-sample" style="color: var(--color-accent);">CanciÃ³n</span>
+				<span class="ap-tag-err">⚠ Fallo de Encoding: Bytes de UTF-8 forzados en ISO-8859-1</span>
+			`;
+		}
+	});
+
+	// Slide 2: Buffer toggle
+	const toggleBuffer = document.getElementById('apToggleBuffer') as HTMLInputElement;
+	const bufferLayer = document.getElementById('apBufferLayer');
+	const bufferTitle = document.getElementById('apBufferTitle');
+	const perfBar = document.getElementById('apPerfBar');
+	const perfStats = document.getElementById('apPerfStats');
+	const perfExplanation = document.getElementById('apPerfExplanation');
+
+	toggleBuffer?.addEventListener('change', () => {
+		const isChecked = toggleBuffer.checked;
+		if (isChecked) {
+			bufferLayer?.classList.remove('is-off');
+			if (bufferTitle) bufferTitle.style.display = 'block';
+			if (perfBar) {
+				perfBar.className = 'ap-bar-fill ap-bar-fast';
+				perfBar.style.width = '95%';
+			}
+			if (perfStats) {
+				perfStats.innerHTML = `
+					<span>Llamadas a Disco: 2 llamadas</span>
+					<strong class="ap-text-accent">1.8 ms (¡Ultra Rápido!)</strong>
+				`;
+			}
+			if (perfExplanation) {
+				perfExplanation.textContent = 'El buffer acumula 8192 bytes en RAM en una sola llamada al kernel. Las siguientes 8191 lecturas se resuelven en memoria.';
+			}
+		} else {
+			bufferLayer?.classList.add('is-off');
+			if (bufferTitle) bufferTitle.style.display = 'none';
+			if (perfBar) {
+				perfBar.className = 'ap-bar-fill ap-bar-slow';
+				perfBar.style.width = '12%';
+			}
+			if (perfStats) {
+				perfStats.innerHTML = `
+					<span>Llamadas a Disco: 10.000 llamadas</span>
+					<strong class="ap-text-accent">450.0 ms (¡Extremadamente Lento!)</strong>
+				`;
+			}
+			if (perfExplanation) {
+				perfExplanation.textContent = 'Sin buffer: cada byte leído ejecuta una interrupción y syscall al kernel del sistema operativo para leer el disco físico.';
+			}
+		}
+	});
+</script>

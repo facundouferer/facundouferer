@@ -1,0 +1,1158 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="ju-screen" data-presentation="testing-junit-spring-boot-java">
+	<div class="ju-shell">
+		<nav class="ju-nav" aria-label="Controles de navegación">
+			<button class="ju-btn" id="juPrevBtn" aria-label="Diapositiva anterior" disabled>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{isEs ? 'Anterior' : 'Previous'}</span>
+			</button>
+			<span class="ju-counter" id="juSlideCounter" aria-live="polite">1 / 5</span>
+			<button class="ju-btn" id="juNextBtn" aria-label="Siguiente diapositiva">
+				<span>{isEs ? 'Siguiente' : 'Next'}</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="ju-viewport">
+			<!-- Slide 1: La Economía del Software y la Pirámide de Testing -->
+			<section class="ju-slide is-active" data-slide="1">
+				<div class="ju-header">
+					<span class="ju-kicker">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" /></svg>
+						{isEs ? 'Economía del Testing' : 'Testing Economics'}
+					</span>
+					<h2 class="ju-title">{isEs ? 'La Pirámide de Testing: Rápido, Confiable, Barato' : 'The Testing Pyramid: Fast, Reliable, Cheap'}</h2>
+					<p class="ju-lead">
+						{isEs
+							? 'Un bug detectado en desarrollo cuesta minutos de corrección. El mismo bug en producción cuesta reputación y miles de dólares. La pirámide define la proporción ideal de pruebas para detectar errores lo antes posible.'
+							: 'A bug caught during development costs minutes to fix. The same bug in production costs reputation and thousands of dollars. The pyramid defines the ideal test proportion to catch errors as early as possible.'}
+					</p>
+				</div>
+
+				<div class="ju-card">
+					<div class="ju-pyramid-wrap">
+						<svg viewBox="0 0 340 210" class="ju-svg-pyramid" role="img" aria-label={isEs ? 'Pirámide de testing con tres niveles' : 'Testing pyramid with three tiers'}>
+							<!-- Base: Unit tests -->
+							<rect x="10" y="140" width="320" height="48" rx="20" class="ju-tier-unit" />
+							<text x="170" y="160" class="ju-tier-title">{isEs ? 'Unitarios' : 'Unit'}</text>
+							<text x="170" y="177" class="ju-tier-sub">JUnit 5 + {isEs ? 'Mocks puros en RAM' : 'pure in-RAM mocks'} · {isEs ? 'milisegundos' : 'milliseconds'} · 75%</text>
+
+							<!-- Middle: Integration tests -->
+							<rect x="65" y="80" width="210" height="46" rx="18" class="ju-tier-integration" />
+							<text x="170" y="99" class="ju-tier-title">{isEs ? 'Integración' : 'Integration'}</text>
+							<text x="170" y="116" class="ju-tier-sub">{isEs ? 'Contexto Spring + BD en memoria' : 'Spring context + in-memory DB'} · {isEs ? 'segundos' : 'seconds'} · 20%</text>
+
+							<!-- Top: E2E tests -->
+							<rect x="115" y="22" width="110" height="44" rx="16" class="ju-tier-e2e" />
+							<text x="170" y="41" class="ju-tier-title">E2E</text>
+							<text x="170" y="58" class="ju-tier-sub">{isEs ? 'Navegador y red reales' : 'Real browser and network'} · {isEs ? 'minutos' : 'minutes'} · 5%</text>
+						</svg>
+
+						<div class="ju-cone-callout">
+							<strong>{isEs ? 'Antipatrón: Cono de Helado Invertido' : 'Antipattern: Inverted Ice Cream Cone'}</strong>
+							<p>
+								{isEs
+									? 'Muchos tests E2E frágiles que tardan horas en correr y suites de integración tan pesadas que nadie las ejecuta localmente. El feedback llega tarde y el equipo deja de confiar en los tests.'
+									: 'Too many brittle E2E tests that take hours to run, and integration suites so heavy nobody runs them locally. Feedback arrives late and the team stops trusting the tests.'}
+							</p>
+						</div>
+					</div>
+
+					<!-- Interactive simulator: feedback cost calculator -->
+					<div class="ju-sim-block">
+						<div class="ju-sim-label">
+							<strong>{isEs ? 'Calculadora: El Costo del Feedback' : 'Calculator: The Cost of Feedback'}</strong>
+							<span class="ju-hint">{isEs ? 'Elegí una suite de 500 tests y mirá cuánto tardás en saber si algo se rompió' : 'Pick a 500-test suite and see how long it takes to know if something broke'}</span>
+						</div>
+						<div class="ju-suite-buttons">
+							<button class="ju-tab is-active" id="juUnitSuiteBtn">{isEs ? '500 Tests Unitarios' : '500 Unit Tests'}</button>
+							<button class="ju-tab" id="juIntegrationSuiteBtn">{isEs ? '500 Tests de Integración Pesada' : '500 Heavy Integration Tests'}</button>
+						</div>
+						<div class="ju-result-box" id="juFeedbackResult">
+							<span class="ju-code-sample">500 × 5 ms</span>
+							<span class="ju-tag-ok">{isEs ? '✓ 2.5 segundos — feedback casi instantáneo' : '✓ 2.5 seconds — near-instant feedback'}</span>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 2: El Patrón AAA en Acción con JUnit 5 -->
+			<section class="ju-slide" data-slide="2">
+				<div class="ju-header">
+					<span class="ju-kicker">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+						{isEs ? 'Patrón AAA' : 'The AAA Pattern'}
+					</span>
+					<h2 class="ju-title">{isEs ? 'Arrange, Act, Assert: La Anatomía de un Test' : 'Arrange, Act, Assert: The Anatomy of a Test'}</h2>
+					<p class="ju-lead">
+						{isEs
+							? 'Cada test responde a una única pregunta y se estructura en 3 fases: preparar el escenario, ejecutar la acción exacta que se quiere probar, y verificar el resultado.'
+							: 'Every test answers a single question and follows 3 phases: prepare the scenario, run the exact action under test, and verify the outcome.'}
+					</p>
+				</div>
+
+				<div class="ju-card">
+					<div class="ju-aaa-grid">
+						<div class="ju-aaa-panel ju-aaa-arrange">
+							<span class="ju-aaa-badge">{isEs ? '1. Arrange' : '1. Arrange'}</span>
+							<p class="ju-aaa-desc">{isEs ? 'Se instancia la clase bajo prueba y se preparan los argumentos.' : 'Instantiate the class under test and prepare its arguments.'}</p>
+							<pre class="ju-aaa-code"><code>Calculadora calc = <span class="ju-c-k">new</span> Calculadora();
+<span class="ju-c-t">int</span> a = 5;
+<span class="ju-c-t">int</span> b = 10;</code></pre>
+						</div>
+
+						<div class="ju-aaa-panel ju-aaa-act">
+							<span class="ju-aaa-badge">{isEs ? '2. Act' : '2. Act'}</span>
+							<p class="ju-aaa-desc">{isEs ? 'Una única llamada: la acción exacta que el test verifica.' : 'A single call: the exact action the test verifies.'}</p>
+							<pre class="ju-aaa-code ju-aaa-code-frame"><code><span class="ju-c-t">int</span> resultado = calc.sumar(a, b);</code></pre>
+						</div>
+
+						<div class="ju-aaa-panel ju-aaa-assert">
+							<span class="ju-aaa-badge">{isEs ? '3. Assert' : '3. Assert'}</span>
+							<p class="ju-aaa-desc">{isEs ? 'Se compara el valor esperado contra el valor obtenido.' : 'The expected value is compared against the actual value.'}</p>
+							<pre class="ju-aaa-code"><code>assertEquals(15, resultado);</code></pre>
+							<div class="ju-assert-compare">
+								<span class="ju-assert-chip">{isEs ? 'esperado' : 'expected'}: <strong>15</strong></span>
+								<span class="ju-assert-chip">{isEs ? 'obtenido' : 'actual'}: <strong>15</strong></span>
+								<span class="ju-tag-ok">✓ pass</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- @BeforeEach isolation demo -->
+					<div class="ju-sim-block">
+						<div class="ju-sim-label">
+							<strong>@BeforeEach: {isEs ? 'Instancia Limpia por Test' : 'A Clean Instance per Test'}</strong>
+							<span class="ju-hint">{isEs ? 'Corré la suite y mirá cómo cada test arranca sin estado compartido' : 'Run the suite and see how every test starts with no shared state'}</span>
+						</div>
+						<button class="ju-run-btn" id="juBeforeEachBtn">{isEs ? '▶ Ejecutar suite (3 tests)' : '▶ Run suite (3 tests)'}</button>
+						<div class="ju-lifecycle-row" id="juLifecycleRow">
+							<div class="ju-lifecycle-step" data-test="1">
+								<span class="ju-lifecycle-num">testSumar()</span>
+								<span class="ju-lifecycle-tag">@BeforeEach → new Calculadora()</span>
+								<span class="ju-lifecycle-status" data-status>—</span>
+							</div>
+							<div class="ju-lifecycle-step" data-test="2">
+								<span class="ju-lifecycle-num">testRestar()</span>
+								<span class="ju-lifecycle-tag">@BeforeEach → new Calculadora()</span>
+								<span class="ju-lifecycle-status" data-status>—</span>
+							</div>
+							<div class="ju-lifecycle-step" data-test="3">
+								<span class="ju-lifecycle-num">testDividirPorCero()</span>
+								<span class="ju-lifecycle-tag">@BeforeEach → new Calculadora()</span>
+								<span class="ju-lifecycle-status" data-status>—</span>
+							</div>
+						</div>
+						<p class="ju-subtext" id="juLifecycleLog">
+							{isEs
+								? 'Cada instancia es nueva: un test no puede contaminar el estado del siguiente.'
+								: 'Every instance is fresh: one test cannot leak state into the next.'}
+						</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 3: Dobles de Prueba (Mocks) con Mockito -->
+			<section class="ju-slide" data-slide="3">
+				<div class="ju-header">
+					<span class="ju-kicker">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></svg>
+						{isEs ? 'Aislamiento con Test Doubles' : 'Isolation with Test Doubles'}
+					</span>
+					<h2 class="ju-title">{isEs ? 'Mocks con Mockito: Aislar sin Tocar el Mundo Real' : 'Mocks with Mockito: Isolate Without Touching the Real World'}</h2>
+					<p class="ju-lead">
+						{isEs
+							? 'Probar PedidoService no debería conectarse a la pasarela de pagos real ni cobrar dinero de verdad. Un mock es un doble controlado que responde exactamente como se le indique.'
+							: 'Testing PedidoService should never connect to the real payment gateway or charge real money. A mock is a controlled double that answers exactly as instructed.'}
+					</p>
+				</div>
+
+				<div class="ju-card">
+					<div class="ju-isolation-grid">
+						<div class="ju-mock-card">
+							<span class="ju-badge ju-badge-alt">{isEs ? 'Mock' : 'Mock'}</span>
+							<strong>PasarelaPago</strong>
+							<pre class="ju-mock-code"><code>when(pasarela.cobrar(pedido))
+  .thenReturn(<span class="ju-c-n">true</span>);</code></pre>
+						</div>
+
+						<div class="ju-sut-card">
+							<span class="ju-badge">{isEs ? 'Clase Real Bajo Prueba' : 'Real Class Under Test'}</span>
+							<strong>PedidoService</strong>
+							<p class="ju-sut-sub">{isEs ? 'Su lógica de negocio se ejecuta tal cual; solo sus colaboradores externos son dobles.' : 'Its business logic runs as-is; only its external collaborators are doubled.'}</p>
+							<pre class="ju-verify-line"><code>verify(pasarela, times(1)).cobrar(pedido);</code></pre>
+						</div>
+
+						<div class="ju-mock-card">
+							<span class="ju-badge ju-badge-alt">{isEs ? 'Mock' : 'Mock'}</span>
+							<strong>InventarioRepository</strong>
+							<pre class="ju-mock-code"><code>when(inventario.hayStock(sku))
+  .thenReturn(<span class="ju-c-n">true</span>);</code></pre>
+						</div>
+					</div>
+
+					<!-- Interactive: change mock behavior scenario -->
+					<div class="ju-sim-block">
+						<div class="ju-sim-label">
+							<strong>{isEs ? 'Simulador de Escenarios' : 'Scenario Simulator'}</strong>
+							<span class="ju-hint">{isEs ? 'Cambiá el comportamiento del mock y mirá cómo reacciona el servicio' : 'Change the mock behavior and see how the service reacts'}</span>
+						</div>
+						<div class="ju-suite-buttons ju-scenario-buttons">
+							<button class="ju-tab is-active" id="juScenarioOkBtn">{isEs ? 'Pago Exitoso' : 'Successful Payment'}</button>
+							<button class="ju-tab" id="juScenarioFundsBtn">{isEs ? 'Fondos Insuficientes' : 'Insufficient Funds'}</button>
+							<button class="ju-tab" id="juScenarioTimeoutBtn">{isEs ? 'Timeout de Red' : 'Network Timeout'}</button>
+						</div>
+						<div class="ju-result-box ju-scenario-result" id="juScenarioResult">
+							<span class="ju-code-sample">when(pasarela.cobrar(pedido)).thenReturn(true);</span>
+							<span class="ju-tag-ok">{isEs ? '✓ Pedido CONFIRMADO — verify(pasarela, times(1)).cobrar(...) pasa' : '✓ Order CONFIRMED — verify(pasarela, times(1)).cobrar(...) passes'}</span>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 4: Arquitectura en 3 Capas de Spring Boot e Inyección de Dependencias -->
+			<section class="ju-slide" data-slide="4">
+				<div class="ju-header">
+					<span class="ju-kicker">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" /><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" /><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" /></svg>
+						{isEs ? 'Arquitectura en Capas' : 'Layered Architecture'}
+					</span>
+					<h2 class="ju-title">{isEs ? 'Controller, Service, Repository: Separar Responsabilidades' : 'Controller, Service, Repository: Separating Responsibilities'}</h2>
+					<p class="ju-lead">
+						{isEs
+							? 'Un microservicio REST separa estrictamente la traducción HTTP/JSON, las reglas de negocio y la persistencia. La inyección de dependencias por constructor es lo que hace testeable cada capa por separado.'
+							: 'A REST microservice strictly separates HTTP/JSON translation, business rules, and persistence. Constructor-based dependency injection is what makes each layer testable in isolation.'}
+					</p>
+				</div>
+
+				<div class="ju-card">
+					<div class="ju-layers-wrap">
+						<div class="ju-layer-box ju-layer-controller">
+							<span class="ju-layer-annotation">@RestController</span>
+							<strong>ProductoController</strong>
+							<p class="ju-layer-desc">{isEs ? 'Recibe @RequestBody ProductoDTO, valida la entrada y devuelve un ResponseEntity.' : 'Receives @RequestBody ProductoDTO, validates input, and returns a ResponseEntity.'}</p>
+						</div>
+						<div class="ju-di-arrow" aria-hidden="true">
+							<svg width="20" height="36" viewBox="0 0 20 36" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v28m-7-7 7 7 7-7" /></svg>
+						</div>
+						<div class="ju-layer-box ju-layer-service">
+							<span class="ju-layer-annotation">@Service</span>
+							<strong>ProductoService</strong>
+							<p class="ju-layer-desc">{isEs ? 'Aplica reglas de precios, descuentos y validaciones de dominio puras.' : 'Applies pricing rules, discounts, and pure domain validations.'}</p>
+						</div>
+						<div class="ju-di-arrow" aria-hidden="true">
+							<svg width="20" height="36" viewBox="0 0 20 36" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v28m-7-7 7 7 7-7" /></svg>
+						</div>
+						<div class="ju-layer-box ju-layer-repository">
+							<span class="ju-layer-annotation">@Repository</span>
+							<strong>ProductoRepository</strong>
+							<p class="ju-layer-desc">{isEs ? 'Comunica con la base de datos vía SQL / Hibernate / JPA.' : 'Talks to the database via SQL / Hibernate / JPA.'}</p>
+						</div>
+					</div>
+
+					<div class="ju-code-compare">
+						<div class="ju-code-column">
+							<div class="ju-column-head">
+								<span class="ju-badge ju-badge-legacy">{isEs ? 'Sin Inyección de Dependencias' : 'Without Dependency Injection'}</span>
+								<span>{isEs ? 'Acoplado al Service real: imposible inyectar un mock' : 'Coupled to the real Service: impossible to inject a mock'}</span>
+							</div>
+							<pre class="ju-pre"><code><span class="ju-c-k">public class</span> <span class="ju-c-t">ProductoController</span> &#123;
+    <span class="ju-c-t">ProductoService</span> service =
+        <span class="ju-c-k">new</span> ProductoServiceImpl();
+&#125;</code></pre>
+						</div>
+						<div class="ju-code-column">
+							<div class="ju-column-head">
+								<span class="ju-badge ju-badge-alt">{isEs ? 'Con Inyección por Constructor' : 'With Constructor Injection'}</span>
+								<span>{isEs ? 'El test pasa un mock, sin levantar el contenedor Spring' : 'The test passes a mock, no need to boot the Spring container'}</span>
+							</div>
+							<pre class="ju-pre ju-pre-accent"><code><span class="ju-c-k">public class</span> <span class="ju-c-t">ProductoController</span> &#123;
+    <span class="ju-c-k">private final</span> <span class="ju-c-t">ProductoService</span> service;
+
+    <span class="ju-c-t">ProductoController</span>(<span class="ju-c-t">ProductoService</span> service) &#123;
+        <span class="ju-c-k">this</span>.service = service;
+    &#125;
+&#125;</code></pre>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 5: El Ciclo de Vida de una Petición REST Completa -->
+			<section class="ju-slide" data-slide="5">
+				<div class="ju-header">
+					<span class="ju-kicker">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7" /></svg>
+						{isEs ? 'De Extremo a Extremo' : 'End to End'}
+					</span>
+					<h2 class="ju-title">{isEs ? 'El Ciclo de Vida de una Petición REST' : 'The Lifecycle of a REST Request'}</h2>
+					<p class="ju-lead">
+						{isEs
+							? 'Traza completa de un POST /productos con payload JSON, desde el cliente hasta el disco y de vuelta.'
+							: 'A full trace of a POST /productos with a JSON payload, from the client to disk and back.'}
+					</p>
+				</div>
+
+				<div class="ju-card">
+					<div class="ju-seq-head">
+						<code class="ju-seq-json">POST /productos &#123; "nombre": "Café", "precio": 3.5 &#125;</code>
+						<button class="ju-run-btn" id="juPlaySequenceBtn">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3" /></svg>
+							{isEs ? 'Reproducir secuencia' : 'Play sequence'}
+						</button>
+					</div>
+
+					<ol class="ju-sequence-wrap" id="juSequenceWrap">
+						<li class="ju-seq-step" data-seq="1">
+							<span class="ju-seq-num">1</span>
+							<div>
+								<strong>{isEs ? 'Petición HTTP entrante' : 'Incoming HTTP request'}</strong>
+								<p class="ju-subtext">{isEs ? 'El cliente envía el JSON en el cuerpo de la petición POST.' : 'The client sends the JSON in the POST request body.'}</p>
+							</div>
+						</li>
+						<li class="ju-seq-step" data-seq="2">
+							<span class="ju-seq-num">2</span>
+							<div>
+								<strong>Jackson → ProductoDTO</strong>
+								<p class="ju-subtext">{isEs ? 'Jackson deserializa el JSON en un objeto Java ProductoDTO.' : 'Jackson deserializes the JSON into a Java ProductoDTO object.'}</p>
+							</div>
+						</li>
+						<li class="ju-seq-step" data-seq="3">
+							<span class="ju-seq-num">3</span>
+							<div>
+								<strong>Controller → Service</strong>
+								<p class="ju-subtext"><code>productoService.crear(dto)</code> {isEs ? ': el Controller delega en el Service.' : ': the Controller delegates to the Service.'}</p>
+							</div>
+						</li>
+						<li class="ju-seq-step" data-seq="4">
+							<span class="ju-seq-num">4</span>
+							<div>
+								<strong>{isEs ? 'Reglas de negocio' : 'Business rules'}</strong>
+								<p class="ju-subtext">{isEs ? 'El Service calcula impuestos y transforma el DTO en la entidad de dominio Producto.' : 'The Service computes taxes and maps the DTO into the Producto domain entity.'}</p>
+							</div>
+						</li>
+						<li class="ju-seq-step" data-seq="5">
+							<span class="ju-seq-num">5</span>
+							<div>
+								<strong>{isEs ? 'Persistencia' : 'Persistence'}</strong>
+								<p class="ju-subtext"><code>INSERT INTO productos ...</code> {isEs ? ': el Repository guarda la entidad en la base relacional.' : ': the Repository saves the entity to the relational database.'}</p>
+							</div>
+						</li>
+						<li class="ju-seq-step" data-seq="6">
+							<span class="ju-seq-num">6</span>
+							<div>
+								<strong>HTTP 201 Created</strong>
+								<p class="ju-subtext">{isEs ? 'El Controller empaqueta la respuesta con el header Location del nuevo recurso.' : 'The Controller packages the response with the Location header of the new resource.'}</p>
+							</div>
+						</li>
+					</ol>
+				</div>
+			</section>
+		</main>
+	</div>
+</div>
+
+<style>
+	.ju-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.ju-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.ju-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	.ju-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: var(--color-surface);
+	}
+
+	.ju-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.ju-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.ju-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.ju-counter {
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 65%, transparent);
+	}
+
+	.ju-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 1100px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.ju-slide.is-active {
+		display: block;
+		animation: juFade 0.25s ease-out;
+	}
+
+	@keyframes juFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.ju-header {
+		margin-bottom: var(--space-5);
+	}
+
+	.ju-kicker {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.ju-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 1.5rem;
+		color: var(--color-text);
+		margin: var(--space-2) 0 var(--space-2);
+	}
+
+	.ju-lead {
+		font-size: 0.95rem;
+		color: color-mix(in srgb, var(--color-text) 78%, transparent);
+		line-height: 1.55;
+		margin: 0;
+	}
+
+	.ju-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+		box-shadow: var(--shadow-sm);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.ju-subtext {
+		font-size: 0.78rem;
+		color: color-mix(in srgb, var(--color-text) 65%, transparent);
+		line-height: 1.45;
+		margin: var(--space-2) 0 0;
+	}
+
+	.ju-badge {
+		display: inline-block;
+		background: var(--color-accent);
+		color: var(--color-surface);
+		font-size: 0.72rem;
+		font-weight: 700;
+		padding: 2px 10px;
+		border-radius: 999px;
+	}
+
+	.ju-badge-alt { background: var(--color-accent-2); }
+	.ju-badge-legacy { background: color-mix(in srgb, var(--color-text) 55%, transparent); }
+
+	/* Slide 1: Pyramid */
+	.ju-pyramid-wrap {
+		display: grid;
+		grid-template-columns: 1.3fr 1fr;
+		gap: var(--space-5);
+		align-items: center;
+	}
+
+	@media (max-width: 768px) {
+		.ju-pyramid-wrap { grid-template-columns: 1fr; }
+	}
+
+	.ju-svg-pyramid {
+		width: 100%;
+		height: auto;
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		padding: var(--space-2);
+	}
+
+	.ju-tier-unit { fill: color-mix(in srgb, var(--color-accent-2) 22%, var(--color-bg)); stroke: var(--color-accent-2); stroke-width: 2.75; }
+	.ju-tier-integration { fill: color-mix(in srgb, var(--color-accent-700) 18%, var(--color-bg)); stroke: var(--color-accent-700); stroke-width: 2.75; }
+	.ju-tier-e2e { fill: color-mix(in srgb, var(--color-accent) 22%, var(--color-bg)); stroke: var(--color-accent); stroke-width: 2.75; }
+
+	.ju-tier-title { font-family: var(--font-heading); font-size: 13px; fill: var(--color-text); text-anchor: middle; }
+	.ju-tier-sub { font-family: var(--font-body); font-size: 9.5px; fill: color-mix(in srgb, var(--color-text) 70%, transparent); text-anchor: middle; }
+
+	.ju-cone-callout {
+		background: var(--color-bg);
+		border-left: 3px solid var(--color-accent);
+		border-radius: 0 var(--radius-md) var(--radius-md) 0;
+		padding: var(--space-3) var(--space-4);
+	}
+
+	.ju-cone-callout strong {
+		display: block;
+		font-size: 0.8rem;
+		color: var(--color-accent-700);
+		margin-bottom: var(--space-1);
+	}
+
+	.ju-cone-callout p {
+		font-size: 0.78rem;
+		color: color-mix(in srgb, var(--color-text) 75%, transparent);
+		line-height: 1.5;
+		margin: 0;
+	}
+
+	.ju-sim-block {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.ju-sim-label {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: var(--space-2);
+		font-size: 0.88rem;
+		margin-bottom: var(--space-3);
+	}
+
+	.ju-hint {
+		font-size: 0.75rem;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.ju-suite-buttons {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+
+	.ju-tab {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-1) var(--space-3);
+		font-size: 0.75rem;
+		font-weight: 600;
+		font-family: var(--font-body);
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.ju-tab.is-active {
+		background: var(--color-accent);
+		color: var(--color-surface);
+		border-color: var(--color-accent);
+	}
+
+	.ju-result-box {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.ju-code-sample {
+		font-family: monospace;
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.ju-tag-ok {
+		color: var(--color-accent-2);
+		font-weight: 700;
+		font-size: 0.75rem;
+	}
+
+	.ju-tag-warn {
+		color: var(--color-accent-700);
+		font-weight: 700;
+		font-size: 0.75rem;
+	}
+
+	/* Slide 2: AAA */
+	.ju-aaa-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 900px) {
+		.ju-aaa-grid { grid-template-columns: 1fr; }
+	}
+
+	.ju-aaa-panel {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.ju-aaa-arrange { border-top: 4px solid var(--color-accent-2); }
+	.ju-aaa-act { border-top: 4px solid var(--color-accent); }
+	.ju-aaa-assert { border-top: 4px solid var(--color-accent-2); }
+
+	.ju-aaa-badge {
+		font-family: var(--font-heading);
+		font-size: 0.95rem;
+		color: var(--color-text);
+	}
+
+	.ju-aaa-desc {
+		font-size: 0.78rem;
+		color: color-mix(in srgb, var(--color-text) 72%, transparent);
+		line-height: 1.5;
+		margin: 0;
+	}
+
+	.ju-aaa-code {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2) var(--space-3);
+		font-family: monospace;
+		font-size: 0.75rem;
+		line-height: 1.55;
+		margin: 0;
+		overflow-x: auto;
+	}
+
+	.ju-aaa-code-frame {
+		border: 2px solid var(--color-accent);
+	}
+
+	.ju-c-k { color: var(--color-accent-700); font-weight: 600; }
+	.ju-c-t { color: var(--color-accent-2-700); }
+	.ju-c-n { color: var(--color-accent-700); }
+
+	.ju-assert-compare {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-items: center;
+		font-size: 0.72rem;
+	}
+
+	.ju-assert-chip {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+		padding: 2px 10px;
+		color: color-mix(in srgb, var(--color-text) 75%, transparent);
+	}
+
+	.ju-run-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		background: var(--color-accent);
+		color: var(--color-surface);
+		border: none;
+		border-radius: 999px;
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 0.8rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition: background 0.2s ease;
+		margin-bottom: var(--space-3);
+	}
+
+	.ju-run-btn:hover { background: var(--color-accent-600); }
+	.ju-run-btn:active { background: var(--color-accent-700); }
+
+	.ju-lifecycle-row {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: var(--space-3);
+	}
+
+	@media (max-width: 900px) {
+		.ju-lifecycle-row { grid-template-columns: 1fr; }
+	}
+
+	.ju-lifecycle-step {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		transition: border-color 0.2s ease, transform 0.2s ease;
+	}
+
+	.ju-lifecycle-step.is-active {
+		border-color: var(--color-accent-2);
+		transform: translateY(-2px);
+	}
+
+	.ju-lifecycle-num {
+		font-family: monospace;
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.ju-lifecycle-tag {
+		font-family: monospace;
+		font-size: 0.68rem;
+		color: color-mix(in srgb, var(--color-text) 62%, transparent);
+	}
+
+	.ju-lifecycle-status {
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	.ju-lifecycle-step.is-active .ju-lifecycle-status {
+		color: var(--color-accent-2);
+	}
+
+	/* Slide 3: Mockito isolation */
+	.ju-isolation-grid {
+		display: grid;
+		grid-template-columns: 1fr 1.2fr 1fr;
+		gap: var(--space-4);
+		align-items: stretch;
+	}
+
+	@media (max-width: 900px) {
+		.ju-isolation-grid { grid-template-columns: 1fr; }
+	}
+
+	.ju-mock-card {
+		background: var(--color-bg);
+		border: 1px dashed var(--color-accent-2);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		justify-content: center;
+	}
+
+	.ju-mock-code {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		font-family: monospace;
+		font-size: 0.72rem;
+		line-height: 1.5;
+		margin: 0;
+		overflow-x: auto;
+	}
+
+	.ju-sut-card {
+		background: var(--color-bg);
+		border: 2px solid var(--color-accent);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		justify-content: center;
+	}
+
+	.ju-sut-card strong {
+		font-family: var(--font-heading);
+		font-size: 1.05rem;
+	}
+
+	.ju-sut-sub {
+		font-size: 0.78rem;
+		color: color-mix(in srgb, var(--color-text) 72%, transparent);
+		line-height: 1.5;
+		margin: 0;
+	}
+
+	.ju-verify-line {
+		background: var(--color-surface);
+		border: 1px solid var(--color-accent);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		font-family: monospace;
+		font-size: 0.72rem;
+		color: var(--color-accent-700);
+		margin: 0;
+		overflow-x: auto;
+	}
+
+	.ju-scenario-result { flex-direction: column; align-items: flex-start; }
+
+	/* Slide 4: Layers */
+	.ju-layers-wrap {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0;
+	}
+
+	.ju-layer-box {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.ju-layer-controller { border-left: 4px solid var(--color-accent); }
+	.ju-layer-service { border-left: 4px solid var(--color-accent-2); }
+	.ju-layer-repository { border-left: 4px solid var(--color-accent-700); }
+
+	.ju-layer-annotation {
+		font-family: monospace;
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	.ju-layer-box strong {
+		font-family: var(--font-heading);
+		font-size: 1rem;
+	}
+
+	.ju-layer-desc {
+		font-size: 0.8rem;
+		color: color-mix(in srgb, var(--color-text) 72%, transparent);
+		line-height: 1.5;
+		margin: 0;
+	}
+
+	.ju-di-arrow {
+		display: flex;
+		justify-content: center;
+		color: var(--color-accent-700);
+		padding: var(--space-1) 0;
+	}
+
+	.ju-code-compare {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 768px) {
+		.ju-code-compare { grid-template-columns: 1fr; }
+	}
+
+	.ju-code-column {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.ju-column-head {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		margin-bottom: var(--space-3);
+		font-size: 0.75rem;
+		color: color-mix(in srgb, var(--color-text) 65%, transparent);
+	}
+
+	.ju-pre {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		font-family: monospace;
+		font-size: 0.7rem;
+		line-height: 1.55;
+		margin: 0;
+		overflow-x: auto;
+	}
+
+	.ju-pre-accent { border-color: var(--color-accent-2); }
+
+	/* Slide 5: Sequence */
+	.ju-seq-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.ju-seq-json {
+		font-family: monospace;
+		font-size: 0.75rem;
+		color: var(--color-accent-700);
+		overflow-wrap: anywhere;
+	}
+
+	.ju-sequence-wrap {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.ju-seq-step {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--space-3);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		transition: border-color 0.3s ease, background 0.3s ease, transform 0.3s ease;
+	}
+
+	.ju-seq-step.is-active {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg));
+		transform: translateX(4px);
+	}
+
+	.ju-seq-num {
+		flex: none;
+		width: 26px;
+		height: 26px;
+		border-radius: 50%;
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		font-size: 0.8rem;
+	}
+
+	.ju-seq-step.is-active .ju-seq-num {
+		background: var(--color-accent);
+		color: var(--color-surface);
+		border-color: var(--color-accent);
+	}
+
+	.ju-seq-step strong {
+		font-size: 0.88rem;
+	}
+
+	.ju-seq-step code {
+		font-family: monospace;
+		background: var(--color-surface);
+		border-radius: var(--radius-sm);
+		padding: 1px 6px;
+	}
+
+	@media (min-width: 1440px) { .ju-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .ju-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .ju-viewport { zoom: 1.25; } }
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 5;
+
+	const prevBtn = document.getElementById('juPrevBtn') as HTMLButtonElement;
+	const nextBtn = document.getElementById('juNextBtn') as HTMLButtonElement;
+	const counter = document.getElementById('juSlideCounter') as HTMLElement;
+	const slides = document.querySelectorAll<HTMLElement>('.ju-slide');
+
+	function updateSlide(target: number) {
+		if (target < 1 || target > totalSlides) return;
+		currentSlide = target;
+		slides.forEach((s) => s.classList.remove('is-active'));
+		document.querySelector(`.ju-slide[data-slide="${currentSlide}"]`)?.classList.add('is-active');
+
+		if (counter) counter.textContent = `${currentSlide} / ${totalSlides}`;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	}
+
+	prevBtn?.addEventListener('click', () => updateSlide(currentSlide - 1));
+	nextBtn?.addEventListener('click', () => updateSlide(currentSlide + 1));
+
+	document.addEventListener('keydown', (e: KeyboardEvent) => {
+		const target = e.target as HTMLElement | null;
+		if (target && ['INPUT', 'TEXTAREA'].includes(target.tagName)) return;
+		if (e.key === 'ArrowRight') updateSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') updateSlide(currentSlide - 1);
+	});
+
+	// Slide 1: Feedback cost calculator
+	const unitSuiteBtn = document.getElementById('juUnitSuiteBtn');
+	const integrationSuiteBtn = document.getElementById('juIntegrationSuiteBtn');
+	const feedbackResult = document.getElementById('juFeedbackResult');
+
+	unitSuiteBtn?.addEventListener('click', () => {
+		unitSuiteBtn.classList.add('is-active');
+		integrationSuiteBtn?.classList.remove('is-active');
+		if (feedbackResult) {
+			feedbackResult.innerHTML = `
+				<span class="ju-code-sample">500 × 5 ms</span>
+				<span class="ju-tag-ok">✓ 2.5 segundos — feedback casi instantáneo</span>
+			`;
+		}
+	});
+
+	integrationSuiteBtn?.addEventListener('click', () => {
+		integrationSuiteBtn.classList.add('is-active');
+		unitSuiteBtn?.classList.remove('is-active');
+		if (feedbackResult) {
+			feedbackResult.innerHTML = `
+				<span class="ju-code-sample">500 × 4 s (contexto Spring + BD)</span>
+				<span class="ju-tag-warn">⚠ 33 minutos — nadie corre esto antes de cada commit</span>
+			`;
+		}
+	});
+
+	// Slide 2: @BeforeEach isolation demo
+	const beforeEachBtn = document.getElementById('juBeforeEachBtn');
+	const lifecycleSteps = document.querySelectorAll<HTMLElement>('.ju-lifecycle-step');
+	const lifecycleLog = document.getElementById('juLifecycleLog');
+
+	beforeEachBtn?.addEventListener('click', () => {
+		lifecycleSteps.forEach((step) => {
+			step.classList.remove('is-active');
+			const status = step.querySelector('[data-status]');
+			if (status) status.textContent = '—';
+		});
+		if (lifecycleLog) lifecycleLog.textContent = 'Ejecutando suite...';
+
+		lifecycleSteps.forEach((step, index) => {
+			setTimeout(() => {
+				lifecycleSteps.forEach((s) => s.classList.remove('is-active'));
+				step.classList.add('is-active');
+				const status = step.querySelector('[data-status]');
+				if (status) status.textContent = '✓ instancia nueva';
+				if (index === lifecycleSteps.length - 1 && lifecycleLog) {
+					lifecycleLog.textContent = 'Cada instancia fue nueva: sin estado compartido entre tests.';
+				}
+			}, 450 * (index + 1));
+		});
+	});
+
+	// Slide 3: Mockito scenario simulator
+	const scenarioOkBtn = document.getElementById('juScenarioOkBtn');
+	const scenarioFundsBtn = document.getElementById('juScenarioFundsBtn');
+	const scenarioTimeoutBtn = document.getElementById('juScenarioTimeoutBtn');
+	const scenarioResult = document.getElementById('juScenarioResult');
+	const scenarioButtons = [scenarioOkBtn, scenarioFundsBtn, scenarioTimeoutBtn];
+
+	function activateScenario(active: HTMLElement | null) {
+		scenarioButtons.forEach((btn) => btn?.classList.remove('is-active'));
+		active?.classList.add('is-active');
+	}
+
+	scenarioOkBtn?.addEventListener('click', () => {
+		activateScenario(scenarioOkBtn);
+		if (scenarioResult) {
+			scenarioResult.innerHTML = `
+				<span class="ju-code-sample">when(pasarela.cobrar(pedido)).thenReturn(true);</span>
+				<span class="ju-tag-ok">✓ Pedido CONFIRMADO — verify(pasarela, times(1)).cobrar(...) pasa</span>
+			`;
+		}
+	});
+
+	scenarioFundsBtn?.addEventListener('click', () => {
+		activateScenario(scenarioFundsBtn);
+		if (scenarioResult) {
+			scenarioResult.innerHTML = `
+				<span class="ju-code-sample">when(pasarela.cobrar(pedido)).thenReturn(false);</span>
+				<span class="ju-tag-warn">✗ Pedido RECHAZADO — el stock no se descuenta, la transacción no se confirma</span>
+			`;
+		}
+	});
+
+	scenarioTimeoutBtn?.addEventListener('click', () => {
+		activateScenario(scenarioTimeoutBtn);
+		if (scenarioResult) {
+			scenarioResult.innerHTML = `
+				<span class="ju-code-sample">when(pasarela.cobrar(pedido)).thenThrow(new TimeoutException());</span>
+				<span class="ju-tag-warn">⚠ Excepción controlada — PedidoService hace rollback y responde 503</span>
+			`;
+		}
+	});
+
+	// Slide 5: REST sequence playback
+	const playSequenceBtn = document.getElementById('juPlaySequenceBtn');
+	const seqSteps = document.querySelectorAll<HTMLElement>('.ju-seq-step');
+
+	playSequenceBtn?.addEventListener('click', () => {
+		seqSteps.forEach((step) => step.classList.remove('is-active'));
+
+		seqSteps.forEach((step, index) => {
+			setTimeout(() => {
+				seqSteps.forEach((s) => s.classList.remove('is-active'));
+				step.classList.add('is-active');
+			}, 350 * (index + 1));
+		});
+	});
+</script>

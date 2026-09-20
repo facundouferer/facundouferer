@@ -1,0 +1,1298 @@
+---
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="ao-screen" data-lang={lang}>
+	<div class="ao-shell">
+		<div class="deck-card">
+			<div class="deck-nav-bar">
+				<div class="deck-slide-indicator">
+					<span class="deck-step-dot"></span>
+					<span id="deck-slide-label">SLIDE 1 / 5</span>
+				</div>
+				<div class="deck-pills">
+					<button class="deck-pill-btn active" data-target-slide="1">1. {isEs ? 'Doble Nivel en Heap' : 'Heap Two Levels'}</button>
+					<button class="deck-pill-btn" data-target-slide="2">2. {isEs ? 'La Trampa del null' : 'The null Trap'}</button>
+					<button class="deck-pill-btn" data-target-slide="3">3. {isEs ? 'Recorrido Seguro' : 'Safe Traversal'}</button>
+					<button class="deck-pill-btn" data-target-slide="4">4. {isEs ? 'Capacidad vs Cantidad' : 'Capacity vs Size'}</button>
+					<button class="deck-pill-btn" data-target-slide="5">5. {isEs ? 'Comparable y Comparator' : 'Comparable & Comparator'}</button>
+				</div>
+			</div>
+
+			<div class="ao-viewport">
+				<!-- SLIDE 1: TWO LEVELS OF MEMORY IN HEAP -->
+				<div class="deck-slide active" data-slide="1">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">1. {isEs ? 'Los Dos Niveles de Memoria en el Heap' : 'Two Levels of Memory in the Heap'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'En Java, un array de objetos NO guarda los objetos adentro de sus casillas. El array es un objeto contenedor en el Heap cuyas celdas contienen únicamente PUNTEROS a otras instancias repartidas en la memoria.'
+									: 'In Java, an object array does NOT store objects inside its cells. The array is a container object in the Heap whose slots hold only POINTERS to independent instances in memory.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 260" width="100%" role="img" aria-label={isEs ? 'Diagrama de doble nivel de memoria en Heap' : 'Two levels memory diagram in Heap'}>
+									<!-- Stack Column -->
+									<g transform="translate(15, 30)">
+										<rect x="0" y="0" width="90" height="200" rx="8" class="deck-panel" />
+										<text x="45" y="24" class="deck-svg-title" text-anchor="middle">Stack</text>
+										<rect x="8" y="70" width="74" height="60" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="45" y="92" class="deck-svg-mono" text-anchor="middle">plantel</text>
+										<text x="45" y="112" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">@0x1000</text>
+									</g>
+
+									<!-- Arrow Stack -> Array -->
+									<path d="M108 130 L138 130" stroke="var(--color-accent)" stroke-width="2.5" stroke-dasharray="3 3" />
+
+									<!-- Heap Level 1: The Array Object -->
+									<g transform="translate(142, 25)">
+										<rect x="0" y="0" width="160" height="210" rx="10" class="deck-panel-accent" />
+										<text x="80" y="22" class="deck-svg-title-accent" text-anchor="middle">Heap: Array @0x1000</text>
+										<text x="80" y="36" class="deck-svg-sub" text-anchor="middle">new Persona[3]</text>
+
+										<!-- Slot 0 -->
+										<g id="svg-slot-0" class="deck-svg-slot active-slot" style="cursor: pointer;">
+											<rect x="12" y="48" width="136" height="44" rx="6" class="deck-slot-box" />
+											<text x="24" y="70" class="deck-svg-bold">[0]</text>
+											<text x="75" y="70" class="deck-svg-mono" id="slot-0-val">@0x5A00 →</text>
+											<text x="24" y="84" class="deck-svg-sub">puntero</text>
+										</g>
+
+										<!-- Slot 1 -->
+										<g id="svg-slot-1" class="deck-svg-slot" style="cursor: pointer;">
+											<rect x="12" y="100" width="136" height="44" rx="6" class="deck-slot-box" />
+											<text x="24" y="122" class="deck-svg-bold">[1]</text>
+											<text x="75" y="122" class="deck-svg-mono" id="slot-1-val">@0x5B00 →</text>
+											<text x="24" y="136" class="deck-svg-sub">puntero</text>
+										</g>
+
+										<!-- Slot 2 -->
+										<g id="svg-slot-2" class="deck-svg-slot" style="cursor: pointer;">
+											<rect x="12" y="152" width="136" height="44" rx="6" class="deck-slot-box" />
+											<text x="24" y="174" class="deck-svg-bold">[2]</text>
+											<text x="75" y="174" class="deck-svg-mono" id="slot-2-val">@0x5C00 →</text>
+											<text x="24" y="188" class="deck-svg-sub">puntero</text>
+										</g>
+									</g>
+
+									<!-- Dynamic Connectors -->
+									<path id="arr-to-inst-0" d="M304 95 L348 70" stroke="var(--color-accent-700)" stroke-width="2.5" />
+									<path id="arr-to-inst-1" d="M304 145 L348 140" stroke="var(--color-divider)" stroke-width="1.5" stroke-dasharray="2 2" />
+									<path id="arr-to-inst-2" d="M304 195 L348 200" stroke="var(--color-divider)" stroke-width="1.5" stroke-dasharray="2 2" />
+
+									<!-- Heap Level 2: Individual Instances -->
+									<g transform="translate(352, 20)">
+										<rect x="0" y="0" width="170" height="220" rx="10" class="deck-panel" />
+										<text x="85" y="20" class="deck-svg-title" text-anchor="middle">Heap: Instancias Reales</text>
+
+										<!-- Instance 0 -->
+										<g id="svg-inst-0" class="deck-inst-card active-inst">
+											<rect x="10" y="30" width="150" height="52" rx="6" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="2" />
+											<text x="20" y="48" class="deck-svg-bold" fill="var(--color-accent-700)">Persona @0x5A00</text>
+											<text x="20" y="65" class="deck-svg-mono-sm">"Messi", Camiseta 10</text>
+										</g>
+
+										<!-- Instance 1 -->
+										<g id="svg-inst-1" class="deck-inst-card">
+											<rect x="10" y="92" width="150" height="52" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+											<text x="20" y="110" class="deck-svg-bold">Persona @0x5B00</text>
+											<text x="20" y="127" class="deck-svg-mono-sm">"Di María", Camiseta 11</text>
+										</g>
+
+										<!-- Instance 2 -->
+										<g id="svg-inst-2" class="deck-inst-card">
+											<rect x="10" y="154" width="150" height="52" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+											<text x="20" y="172" class="deck-svg-bold">Persona @0x5C00</text>
+											<text x="20" y="189" class="deck-svg-mono-sm">"Dibu", Camiseta 23</text>
+										</g>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Explorador de Casillas' : 'Slot Inspector'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary slot-btn active" data-slot="0">plantel[0]</button>
+									<button class="btn btn-secondary slot-btn" data-slot="1">plantel[1]</button>
+									<button class="btn btn-secondary slot-btn" data-slot="2">plantel[2]</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Acceso Stack:' : 'Stack Access:'}</span>
+										<span class="state-val mono">plantel -&gt; Heap @0x1000</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Casilla Array:' : 'Array Cell:'}</span>
+										<span class="state-val mono" id="slot-inspect-addr">plantel[0] = @0x5A00</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Objeto Heap Destino:' : 'Target Heap Object:'}</span>
+										<span class="state-val" id="slot-inspect-name">Persona("Messi", 10)</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-kw">Persona</span>[] plantel = <span class="tok-kw">new</span> <span class="tok-kw">Persona</span>[<span class="tok-num">3</span>];
+plantel[<span class="tok-num">0</span>] = <span class="tok-kw">new</span> <span class="tok-kw">Persona</span>(<span class="tok-str">"Messi"</span>, <span class="tok-num">10</span>);
+plantel[<span class="tok-num">1</span>] = <span class="tok-kw">new</span> <span class="tok-kw">Persona</span>(<span class="tok-str">"Di María"</span>, <span class="tok-num">11</span>);
+plantel[<span class="tok-num">2</span>] = <span class="tok-kw">new</span> <span class="tok-kw">Persona</span>(<span class="tok-str">"Dibu"</span>, <span class="tok-num">23</span>);</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 2: TWO-STEP CREATION & NULL TRAP -->
+				<div class="deck-slide" data-slide="2">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">2. {isEs ? 'La Creación en Dos Pasos y la Trampa del null' : 'Two-Step Creation and the null Trap'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Hacer new Persona[3] NO crea 3 personas. Crea un mueble con 3 cajones vacíos inicializados en null. Invocar un método sobre una casilla antes de instanciarla produce el temido NullPointerException.'
+									: 'new Persona[3] does NOT instantiate 3 persons. It allocates an array with 3 empty slots set to null. Calling a method on a slot before populating it throws NullPointerException.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 250" width="100%" role="img" aria-label={isEs ? 'Creación en dos pasos y trampa del null' : 'Two step creation and null trap'}>
+									<!-- Step 1 Container -->
+									<g transform="translate(30, 20)">
+										<rect x="0" y="0" width="220" height="200" rx="10" class="deck-panel" />
+										<text x="110" y="24" class="deck-svg-title" text-anchor="middle">Paso 1: Contenedor Únicamente</text>
+										<text x="110" y="40" class="deck-svg-sub" text-anchor="middle">Persona[] lista = new Persona[3];</text>
+
+										<rect x="15" y="55" width="190" height="38" rx="6" class="deck-ground-card" stroke="rgb(239, 68, 68)" stroke-width="1.5" />
+										<text x="30" y="79" class="deck-svg-bold" fill="rgb(239, 68, 68)">[0]</text>
+										<text x="110" y="79" class="deck-svg-bold" fill="rgb(239, 68, 68)" text-anchor="middle" id="step-slot-0-val">null ✕</text>
+
+										<rect x="15" y="103" width="190" height="38" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="30" y="127" class="deck-svg-bold">[1]</text>
+										<text x="110" y="127" class="deck-svg-mono" text-anchor="middle" id="step-slot-1-val">null</text>
+
+										<rect x="15" y="150" width="190" height="38" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="30" y="174" class="deck-svg-bold">[2]</text>
+										<text x="110" y="174" class="deck-svg-mono" text-anchor="middle" id="step-slot-2-val">null</text>
+									</g>
+
+									<!-- Trap Alert Center / Action -->
+									<g id="svg-trap-box" transform="translate(280, 40)">
+										<rect x="0" y="0" width="230" height="170" rx="12" fill="color-mix(in srgb, rgb(239, 68, 68) 12%, var(--color-surface))" stroke="rgb(239, 68, 68)" stroke-width="2" />
+										<text x="115" y="32" class="deck-svg-title" fill="rgb(239, 68, 68)" text-anchor="middle" id="trap-banner-title">⚡ NullPointerException</text>
+										<line x1="20" y1="46" x2="210" y2="46" stroke="rgb(239, 68, 68)" stroke-width="1" stroke-opacity="0.4" />
+										<text x="115" y="76" class="deck-svg-mono-sm" text-anchor="middle" id="trap-code-txt">lista[0].getNombre();</text>
+										<rect x="30" y="98" width="170" height="46" rx="6" fill="var(--color-surface)" stroke="rgb(239, 68, 68)" />
+										<text x="115" y="118" class="deck-svg-bold" fill="rgb(239, 68, 68)" text-anchor="middle" id="trap-desc-line1">¡CRASH EN RUNTIME!</text>
+										<text x="115" y="134" class="deck-svg-sub" text-anchor="middle" id="trap-desc-line2">lista[0] no tiene ningún objeto</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Simulador de Inicialización' : 'Initialization Simulator'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary trap-btn active" data-step="uninit">{isEs ? '1. Intentar llamar sobre null' : '1. Call method on null'}</button>
+									<button class="btn btn-secondary trap-btn" data-step="init">{isEs ? '2. Ejecutar new Persona()' : '2. Execute new Persona()'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Estado en Casilla [0]:' : 'State at Slot [0]:'}</span>
+										<span class="state-val" id="trap-state-txt">{isEs ? 'null (Vacío)' : 'null (Empty)'}</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Resultado Invocación:' : 'Invocation Result:'}</span>
+										<span class="state-val" id="trap-result-txt" style="color: rgb(239, 68, 68); font-weight: 700;">NullPointerException</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-comment">// PASO 1: Contenedor (3 casillas en null)</span>
+<span class="tok-kw">Persona</span>[] lista = <span class="tok-kw">new</span> <span class="tok-kw">Persona</span>[<span class="tok-num">3</span>];
+
+<span class="tok-comment">// PASO 2: Instanciar cada elemento</span>
+lista[<span class="tok-num">0</span>] = <span class="tok-kw">new</span> <span class="tok-kw">Persona</span>(<span class="tok-str">"Lautaro"</span>, <span class="tok-num">22</span>);
+<span class="tok-kw">System</span>.out.println(lista[<span class="tok-num">0</span>].getNombre()); <span class="tok-comment">// OK!</span></code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 3: SAFE TRAVERSAL WITH NULL FILTER -->
+				<div class="deck-slide" data-slide="3">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">3. {isEs ? 'Recorrer con Seguridad: El Filtro Contra Nulos' : 'Safe Traversal: The Null Guard Filter'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'En la práctica real los arrays raramente están llenos al 100%. Todo bucle for o for-each debe incluir una compuerta de seguridad `if (elem != null)` para procesar únicamente elementos vivos y descartar casillas vacías.'
+									: 'Real-world arrays are seldom 100% full. Any for or for-each loop must guard calls with `if (elem != null)` to safely process only instantiated entries and skip blank slots.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Diagrama de recorrido seguro con compuerta' : 'Safe traversal diagram with guard gate'}>
+									<!-- Array Track -->
+									<rect x="20" y="50" width="500" height="70" rx="10" class="deck-panel" />
+
+									<!-- 5 Slots: [0: Ok, 1: Ok, 2: null, 3: Ok, 4: null] -->
+									<g id="track-slot-0" class="track-slot active-scan">
+										<rect x="35" y="60" width="85" height="50" rx="6" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="2" />
+										<text x="45" y="78" class="deck-svg-bold">[0]</text>
+										<text x="77" y="93" class="deck-svg-mono-sm" fill="var(--color-accent-2-700)">"Ana"</text>
+									</g>
+
+									<g id="track-slot-1" class="track-slot">
+										<rect x="135" y="60" width="85" height="50" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="145" y="78" class="deck-svg-bold">[1]</text>
+										<text x="177" y="93" class="deck-svg-mono-sm" fill="var(--color-accent-2-700)">"Leo"</text>
+									</g>
+
+									<g id="track-slot-2" class="track-slot">
+										<rect x="235" y="60" width="85" height="50" rx="6" class="deck-ground-card" stroke="rgb(239, 68, 68)" stroke-width="1.5" />
+										<text x="245" y="78" class="deck-svg-bold" fill="rgb(239, 68, 68)">[2]</text>
+										<text x="277" y="93" class="deck-svg-mono-sm" fill="rgb(239, 68, 68)">null</text>
+									</g>
+
+									<g id="track-slot-3" class="track-slot">
+										<rect x="335" y="60" width="85" height="50" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="345" y="78" class="deck-svg-bold">[3]</text>
+										<text x="377" y="93" class="deck-svg-mono-sm" fill="var(--color-accent-2-700)">"Dibu"</text>
+									</g>
+
+									<g id="track-slot-4" class="track-slot">
+										<rect x="435" y="60" width="75" height="50" rx="6" class="deck-ground-card" stroke="rgb(239, 68, 68)" stroke-width="1.5" />
+										<text x="445" y="78" class="deck-svg-bold" fill="rgb(239, 68, 68)">[4]</text>
+										<text x="472" y="93" class="deck-svg-mono-sm" fill="rgb(239, 68, 68)">null</text>
+									</g>
+
+									<!-- Loop Scanning Pointer -->
+									<g id="scan-pointer" transform="translate(67, 130)">
+										<polygon points="10,0 0,16 20,16" fill="var(--color-accent)" />
+										<text x="10" y="32" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent)">i = 0</text>
+									</g>
+
+									<!-- Guard Filter Gate Output -->
+									<g transform="translate(20, 175)">
+										<rect x="0" y="0" width="500" height="50" rx="8" class="deck-panel-accent" />
+										<text x="20" y="30" class="deck-svg-bold" id="gate-guard-eval">if (p != null) -&gt; true</text>
+										<text x="250" y="30" class="deck-svg-mono-sm" id="gate-guard-action">✓ p.presentarse() ejecutado correctamente</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Simulador de Bucle' : 'Loop Stepper'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary step-loop-btn" id="btn-step-loop">{isEs ? 'Avanzar Bucle (i++)' : 'Step Loop (i++)'}</button>
+									<button class="btn btn-secondary" id="btn-reset-loop">{isEs ? 'Reiniciar' : 'Reset'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Índice actual:' : 'Current index:'}</span>
+										<span class="state-val mono" id="loop-idx-txt">i = 0</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Valor en plantel[i]:' : 'Value at plantel[i]:'}</span>
+										<span class="state-val mono" id="loop-val-txt">Persona("Ana")</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Compuerta de Guarda:' : 'Guard Evaluation:'}</span>
+										<span class="state-val" id="loop-gate-txt" style="color: var(--color-accent-2-700); font-weight: 700;">true (Pasa)</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-kw">for</span> (<span class="tok-kw">Persona</span> p : plantel) &#123;
+  <span class="tok-kw">if</span> (p != <span class="tok-kw">null</span>) &#123; <span class="tok-comment">// &lt;-- Blindaje obligatorio</span>
+    p.presentarse();
+  &#125;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 4: CAPACITY VS LOGICAL SIZE -->
+				<div class="deck-slide" data-slide="4">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">4. {isEs ? 'Capacidad Física vs Cantidad Lógica' : 'Physical Capacity vs Logical Size'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Un array reservado de tamaño 6 puede tener solo 3 elementos activos. Una variable contadora `cantidad` rastrea el próximo índice libre. Cuando se llena (`cantidad == capacidad`), se redimensiona copiando a un nuevo array más grande.'
+									: 'An allocated array of size 6 may hold only 3 active items. A `size` integer tracks the next free slot. When full (`size == capacity`), it grows by copying into a larger array with Arrays.copyOf().'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Capacidad vs cantidad lógica' : 'Capacity vs logical size'}>
+									<!-- Meter Bar -->
+									<g transform="translate(30, 20)">
+										<text x="0" y="16" class="deck-svg-title">Memoria del Array (Capacidad = <tspan id="svg-cap-val">6</tspan>)</text>
+										<text x="350" y="16" class="deck-svg-bold" fill="var(--color-accent-700)">Activos: <tspan id="svg-size-val">3</tspan>/<tspan id="svg-cap-max">6</tspan></text>
+										
+										<!-- Slots Row -->
+										<g id="capacity-slots-group" transform="translate(0, 30)">
+											<!-- Slots 0..5 will be dynamically painted -->
+											<rect id="cap-cell-0" x="0" y="0" width="75" height="60" rx="6" class="deck-cell-filled" />
+											<text x="12" y="22" class="deck-svg-bold">[0]</text>
+											<text x="37" y="44" class="deck-svg-mono-sm" text-anchor="middle">Ana</text>
+
+											<rect id="cap-cell-1" x="80" y="0" width="75" height="60" rx="6" class="deck-cell-filled" />
+											<text x="92" y="22" class="deck-svg-bold">[1]</text>
+											<text x="117" y="44" class="deck-svg-mono-sm" text-anchor="middle">Leo</text>
+
+											<rect id="cap-cell-2" x="160" y="0" width="75" height="60" rx="6" class="deck-cell-filled" />
+											<text x="172" y="22" class="deck-svg-bold">[2]</text>
+											<text x="197" y="44" class="deck-svg-mono-sm" text-anchor="middle">Dibu</text>
+
+											<rect id="cap-cell-3" x="240" y="0" width="75" height="60" rx="6" class="deck-cell-empty" />
+											<text x="252" y="22" class="deck-svg-bold">[3]</text>
+											<text x="277" y="44" class="deck-svg-mono-sm" text-anchor="middle">null</text>
+
+											<rect id="cap-cell-4" x="320" y="0" width="75" height="60" rx="6" class="deck-cell-empty" />
+											<text x="332" y="22" class="deck-svg-bold">[4]</text>
+											<text x="357" y="44" class="deck-svg-mono-sm" text-anchor="middle">null</text>
+
+											<rect id="cap-cell-5" x="400" y="0" width="75" height="60" rx="6" class="deck-cell-empty" />
+											<text x="412" y="22" class="deck-svg-bold">[5]</text>
+											<text x="437" y="44" class="deck-svg-mono-sm" text-anchor="middle">null</text>
+										</g>
+									</g>
+
+									<!-- Status / Action Visual Feedback -->
+									<g transform="translate(30, 135)">
+										<rect x="0" y="0" width="480" height="85" rx="10" class="deck-panel-accent" id="cap-feedback-box" />
+										<text x="20" y="30" class="deck-svg-title-accent" id="cap-feedback-title">Insertar en posición libre: plantel[cantidad]</text>
+										<text x="20" y="52" class="deck-svg-mono-sm" id="cap-feedback-code">plantel[3] = nuevo; cantidad++; // cantidad pasa a 4</text>
+										<text x="20" y="72" class="deck-svg-sub" id="cap-feedback-note">No se recorre todo el arreglo; la inserción es O(1).</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Operaciones de Lista Parcial' : 'Dynamic List Operations'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary" id="btn-add-item">{isEs ? 'Agregar Alumno (cantidad++)' : 'Add Student (size++)'}</button>
+									<button class="btn btn-secondary" id="btn-grow-arr" style="display: none;">{isEs ? 'Arrays.copyOf() x2' : 'Arrays.copyOf() x2'}</button>
+									<button class="btn btn-secondary" id="btn-reset-cap">{isEs ? 'Reiniciar' : 'Reset'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Capacidad Física:' : 'Physical Capacity:'}</span>
+										<span class="state-val mono" id="cap-stat-len">plantel.length = 6</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Cantidad Lógica:' : 'Logical Count:'}</span>
+										<span class="state-val mono" id="cap-stat-size">cantidad = 3</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Espacio Disponible:' : 'Free Slots:'}</span>
+										<span class="state-val" id="cap-stat-free" style="color: var(--color-accent-2-700);">3 casillas libres</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-kw">public void</span> agregar(<span class="tok-kw">Persona</span> p) &#123;
+  <span class="tok-kw">if</span> (cantidad == plantel.length) &#123;
+    plantel = <span class="tok-kw">Arrays</span>.copyOf(plantel, plantel.length * <span class="tok-num">2</span>);
+  &#125;
+  plantel[cantidad] = p;
+  cantidad++;
+&#125;</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 5: COMPARABLE VS COMPARATOR -->
+				<div class="deck-slide" data-slide="5">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">5. {isEs ? 'Ordenar Arrays de Objetos: Comparable vs Comparator' : 'Sorting Object Arrays: Comparable vs Comparator'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Arrays.sort() necesita saber cómo comparar dos objetos. `Comparable` define el orden natural interno dentro de la clase (compareTo), mientras que `Comparator` permite órdenes alternativos externos (por nombre, nota, etc.). ¡El ordenamiento intercambia punteros en el array sin duplicar objetos en el Heap!'
+									: 'Arrays.sort() must know how to compare two objects. `Comparable` dictates the class internal natural order (compareTo), while `Comparator` provides external custom sort criteria. Sorting swaps pointers in the array without cloning objects in the Heap!'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Simulador de ordenamiento comparable y comparator' : 'Sorting simulation with comparable and comparator'}>
+									<!-- Array Container -->
+									<g transform="translate(30, 20)">
+										<rect x="0" y="0" width="480" height="95" rx="10" class="deck-panel" />
+										<text x="240" y="24" class="deck-svg-title" text-anchor="middle">Array plantel: Intercambio de Referencias</text>
+
+										<!-- Slot A -->
+										<g transform="translate(20, 35)">
+											<rect x="0" y="0" width="130" height="48" rx="6" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="1.5" />
+											<text x="12" y="22" class="deck-svg-bold">[0]</text>
+											<text x="50" y="22" class="deck-svg-mono-sm" id="sort-slot-0-name">"Di María"</text>
+											<text x="12" y="38" class="deck-svg-sub" id="sort-slot-0-num">Camiseta: #11</text>
+										</g>
+
+										<!-- Slot B -->
+										<g transform="translate(175, 35)">
+											<rect x="0" y="0" width="130" height="48" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+											<text x="12" y="22" class="deck-svg-bold">[1]</text>
+											<text x="50" y="22" class="deck-svg-mono-sm" id="sort-slot-1-name">"Dibu"</text>
+											<text x="12" y="38" class="deck-svg-sub" id="sort-slot-1-num">Camiseta: #23</text>
+										</g>
+
+										<!-- Slot C -->
+										<g transform="translate(330, 35)">
+											<rect x="0" y="0" width="130" height="48" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+											<text x="12" y="22" class="deck-svg-bold">[2]</text>
+											<text x="50" y="22" class="deck-svg-mono-sm" id="sort-slot-2-name">"Messi"</text>
+											<text x="12" y="38" class="deck-svg-sub" id="sort-slot-2-num">Camiseta: #10</text>
+										</g>
+									</g>
+
+									<!-- Explanation Card -->
+									<g transform="translate(30, 130)">
+										<rect x="0" y="0" width="480" height="90" rx="10" class="deck-panel-accent" />
+										<text x="20" y="28" class="deck-svg-title-accent" id="sort-expl-title">Estado Inicial: Desordenado por camiseta [11, 23, 10]</text>
+										<text x="20" y="50" class="deck-svg-mono-sm" id="sort-expl-code">// Arrays.sort(plantel) sin Comparable -&gt; ClassCastException!</text>
+										<text x="20" y="72" class="deck-svg-sub" id="sort-expl-desc">Los objetos en el Heap nunca se mueven ni se copian; solo cambian los punteros en las casillas.</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Estrategias de Orden' : 'Sort Strategies'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary sort-btn active" data-sort="raw">{isEs ? 'Desordenado' : 'Unsorted'}</button>
+									<button class="btn btn-secondary sort-btn" data-sort="number">{isEs ? 'Comparable (Camiseta)' : 'Comparable (Number)'}</button>
+									<button class="btn btn-secondary sort-btn" data-sort="name">{isEs ? 'Comparator (Nombre)' : 'Comparator (Name)'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Criterio Activo:' : 'Active Criterion:'}</span>
+										<span class="state-val" id="sort-active-crit">{isEs ? 'Orden de inserción original' : 'Original insertion order'}</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Firma de Llamada:' : 'Invocation Signature:'}</span>
+										<span class="state-val mono" id="sort-call-sig">plantel</span>
+									</div>
+								</div>
+								<pre class="deck-code-snippet"><code><span class="tok-comment">// Orden Natural (Comparable):</span>
+<span class="tok-kw">Arrays</span>.sort(plantel);
+
+<span class="tok-comment">// Orden Alternativo (Comparator):</span>
+<span class="tok-kw">Arrays</span>.sort(plantel, <span class="tok-kw">Comparator</span>.comparing(<span class="tok-kw">Persona</span>::getNombre));</code></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- FOOTER CONTROLS -->
+			<div class="deck-footer">
+				<button class="btn btn-secondary deck-nav-prev" disabled>← {isEs ? 'Anterior' : 'Previous'}</button>
+				<div class="deck-dots">
+					<button class="deck-dot active" data-target-slide="1" aria-label="Slide 1"></button>
+					<button class="deck-dot" data-target-slide="2" aria-label="Slide 2"></button>
+					<button class="deck-dot" data-target-slide="3" aria-label="Slide 3"></button>
+					<button class="deck-dot" data-target-slide="4" aria-label="Slide 4"></button>
+					<button class="deck-dot" data-target-slide="5" aria-label="Slide 5"></button>
+				</div>
+				<button class="btn btn-secondary deck-nav-next">{isEs ? 'Siguiente' : 'Next'} →</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	function initPresentation() {
+		const screen = document.querySelector('.ao-screen');
+		if (!screen) return;
+
+		let currentSlide = 1;
+		const totalSlides = 5;
+
+		const slideLabel = document.getElementById('deck-slide-label');
+		const prevBtn = screen.querySelector('.deck-nav-prev') as HTMLButtonElement;
+		const nextBtn = screen.querySelector('.deck-nav-next') as HTMLButtonElement;
+		const pills = screen.querySelectorAll('.deck-pill-btn');
+		const dots = screen.querySelectorAll('.deck-dot');
+		const slides = screen.querySelectorAll('.deck-slide');
+
+		function goToSlide(target: number) {
+			if (target < 1 || target > totalSlides) return;
+			currentSlide = target;
+
+			if (slideLabel) {
+				slideLabel.textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+			}
+
+			slides.forEach((sl) => {
+				const sNum = parseInt(sl.getAttribute('data-slide') || '0', 10);
+				sl.classList.toggle('active', sNum === currentSlide);
+			});
+
+			pills.forEach((p) => {
+				const tNum = parseInt(p.getAttribute('data-target-slide') || '0', 10);
+				p.classList.toggle('active', tNum === currentSlide);
+			});
+
+			dots.forEach((d) => {
+				const tNum = parseInt(d.getAttribute('data-target-slide') || '0', 10);
+				d.classList.toggle('active', tNum === currentSlide);
+			});
+
+			if (prevBtn) prevBtn.disabled = currentSlide === 1;
+			if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+		}
+
+		prevBtn?.addEventListener('click', () => goToSlide(currentSlide - 1));
+		nextBtn?.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+		pills.forEach((p) => {
+			p.addEventListener('click', () => {
+				const t = parseInt(p.getAttribute('data-target-slide') || '1', 10);
+				goToSlide(t);
+			});
+		});
+
+		dots.forEach((d) => {
+			d.addEventListener('click', () => {
+				const t = parseInt(d.getAttribute('data-target-slide') || '1', 10);
+				goToSlide(t);
+			});
+		});
+
+		window.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+			if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+		});
+
+		// --- SLIDE 1: Interactive Slot Inspector ---
+		const slotBtns = screen.querySelectorAll('.slot-btn');
+		const slotData = [
+			{ addr: 'plantel[0] = @0x5A00', name: 'Persona("Messi", 10)', pathId: 'arr-to-inst-0', instId: 'svg-inst-0' },
+			{ addr: 'plantel[1] = @0x5B00', name: 'Persona("Di María", 11)', pathId: 'arr-to-inst-1', instId: 'svg-inst-1' },
+			{ addr: 'plantel[2] = @0x5C00', name: 'Persona("Dibu", 23)', pathId: 'arr-to-inst-2', instId: 'svg-inst-2' },
+		];
+
+		slotBtns.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				slotBtns.forEach((b) => b.classList.remove('active'));
+				btn.classList.add('active');
+				const idx = parseInt(btn.getAttribute('data-slot') || '0', 10);
+				const data = slotData[idx];
+
+				const addrTxt = document.getElementById('slot-inspect-addr');
+				const nameTxt = document.getElementById('slot-inspect-name');
+				if (addrTxt) addrTxt.textContent = data.addr;
+				if (nameTxt) nameTxt.textContent = data.name;
+
+				// Update SVG Highlights
+				[0, 1, 2].forEach((i) => {
+					const sEl = document.getElementById(`svg-slot-${i}`);
+					const instEl = document.getElementById(`svg-inst-${i}`);
+					const pathEl = document.getElementById(`arr-to-inst-${i}`);
+
+					if (sEl) sEl.classList.toggle('active-slot', i === idx);
+					if (instEl) {
+						instEl.classList.toggle('active-inst', i === idx);
+						const rect = instEl.querySelector('rect');
+						if (rect) {
+							rect.setAttribute('stroke', i === idx ? 'var(--color-accent)' : 'var(--color-divider)');
+							rect.setAttribute('stroke-width', i === idx ? '2' : '1');
+						}
+					}
+					if (pathEl) {
+						pathEl.setAttribute('stroke', i === idx ? 'var(--color-accent-700)' : 'var(--color-divider)');
+						pathEl.setAttribute('stroke-width', i === idx ? '2.5' : '1.5');
+					}
+				});
+			});
+		});
+
+		// Also allow clicking directly on SVG slots
+		[0, 1, 2].forEach((idx) => {
+			const slotSvg = document.getElementById(`svg-slot-${idx}`);
+			slotSvg?.addEventListener('click', () => {
+				const btn = screen.querySelector(`.slot-btn[data-slot="${idx}"]`) as HTMLButtonElement;
+				btn?.click();
+			});
+		});
+
+		// --- SLIDE 2: Two-Step Creation & null Trap Simulator ---
+		const trapBtns = screen.querySelectorAll('.trap-btn');
+		const trapStateTxt = document.getElementById('trap-state-txt');
+		const trapResultTxt = document.getElementById('trap-result-txt');
+		const trapBannerTitle = document.getElementById('trap-banner-title');
+		const trapCodeTxt = document.getElementById('trap-code-txt');
+		const trapDescLine1 = document.getElementById('trap-desc-line1');
+		const trapDescLine2 = document.getElementById('trap-desc-line2');
+		const slot0Val = document.getElementById('step-slot-0-val');
+		const trapBox = document.getElementById('svg-trap-box');
+
+		trapBtns.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				trapBtns.forEach((b) => b.classList.remove('active'));
+				btn.classList.add('active');
+				const step = btn.getAttribute('data-step');
+
+				if (step === 'uninit') {
+					if (trapStateTxt) trapStateTxt.textContent = 'null (Vacío)';
+					if (trapResultTxt) {
+						trapResultTxt.textContent = 'NullPointerException';
+						trapResultTxt.style.color = 'rgb(239, 68, 68)';
+					}
+					if (trapBannerTitle) trapBannerTitle.textContent = '⚡ NullPointerException';
+					if (trapCodeTxt) trapCodeTxt.textContent = 'lista[0].getNombre();';
+					if (trapDescLine1) trapDescLine1.textContent = '¡CRASH EN RUNTIME!';
+					if (trapDescLine2) trapDescLine2.textContent = 'lista[0] no tiene ningún objeto';
+					if (slot0Val) {
+						slot0Val.textContent = 'null ✕';
+						slot0Val.setAttribute('fill', 'rgb(239, 68, 68)');
+					}
+					if (trapBox) {
+						const rect = trapBox.querySelector('rect');
+						if (rect) {
+							rect.setAttribute('stroke', 'rgb(239, 68, 68)');
+							rect.setAttribute('fill', 'color-mix(in srgb, rgb(239, 68, 68) 12%, var(--color-surface))');
+						}
+					}
+				} else {
+					if (trapStateTxt) trapStateTxt.textContent = 'Persona @0x7B00 ("Lautaro")';
+					if (trapResultTxt) {
+						trapResultTxt.textContent = 'Retorna "Lautaro" (Éxito)';
+						trapResultTxt.style.color = 'var(--color-accent-2-700)';
+					}
+					if (trapBannerTitle) {
+						trapBannerTitle.textContent = '✓ Llamada Exitosa';
+						trapBannerTitle.setAttribute('fill', 'var(--color-accent-2-700)');
+					}
+					if (trapCodeTxt) trapCodeTxt.textContent = 'lista[0].getNombre() -> "Lautaro"';
+					if (trapDescLine1) {
+						trapDescLine1.textContent = 'Objeto Instanciado';
+						trapDescLine1.setAttribute('fill', 'var(--color-accent-2-700)');
+					}
+					if (trapDescLine2) trapDescLine2.textContent = 'Puntero válido en el Heap';
+					if (slot0Val) {
+						slot0Val.textContent = '@0x7B00 →';
+						slot0Val.setAttribute('fill', 'var(--color-accent-2-700)');
+					}
+					if (trapBox) {
+						const rect = trapBox.querySelector('rect');
+						if (rect) {
+							rect.setAttribute('stroke', 'var(--color-accent-2-700)');
+							rect.setAttribute('fill', 'color-mix(in srgb, var(--color-accent-2-700) 12%, var(--color-surface))');
+						}
+					}
+				}
+			});
+		});
+
+		// --- SLIDE 3: Loop Stepper & Guard Filter ---
+		let loopIndex = 0;
+		const loopData = [
+			{ name: 'Persona("Ana")', isNull: false },
+			{ name: 'Persona("Leo")', isNull: false },
+			{ name: 'null', isNull: true },
+			{ name: 'Persona("Dibu")', isNull: false },
+			{ name: 'null', isNull: true },
+		];
+
+		const stepLoopBtn = document.getElementById('btn-step-loop');
+		const resetLoopBtn = document.getElementById('btn-reset-loop');
+		const loopIdxTxt = document.getElementById('loop-idx-txt');
+		const loopValTxt = document.getElementById('loop-val-txt');
+		const loopGateTxt = document.getElementById('loop-gate-txt');
+		const scanPointer = document.getElementById('scan-pointer');
+		const gateEvalTxt = document.getElementById('gate-guard-eval');
+		const gateActionTxt = document.getElementById('gate-guard-action');
+
+		function updateLoopView() {
+			const item = loopData[loopIndex];
+			if (loopIdxTxt) loopIdxTxt.textContent = `i = ${loopIndex}`;
+			if (loopValTxt) loopValTxt.textContent = item.name;
+
+			if (loopGateTxt) {
+				if (item.isNull) {
+					loopGateTxt.textContent = 'false (Salteado de forma segura)';
+					loopGateTxt.style.color = 'rgb(239, 68, 68)';
+				} else {
+					loopGateTxt.textContent = 'true (Pasa)';
+					loopGateTxt.style.color = 'var(--color-accent-2-700)';
+				}
+			}
+
+			if (gateEvalTxt) {
+				gateEvalTxt.textContent = `if (p != null) -> ${item.isNull ? 'false' : 'true'}`;
+				gateEvalTxt.setAttribute('fill', item.isNull ? 'rgb(239, 68, 68)' : 'var(--color-accent-2-700)');
+			}
+
+			if (gateActionTxt) {
+				gateActionTxt.textContent = item.isNull
+					? '⚡ Salteado: se previene NullPointerException'
+					: '✓ p.presentarse() ejecutado correctamente';
+			}
+
+			// Update pointer X position: base 67, step ~100
+			const xOffsets = [67, 167, 267, 367, 467];
+			if (scanPointer) {
+				scanPointer.setAttribute('transform', `translate(${xOffsets[loopIndex]}, 130)`);
+				const pTxt = scanPointer.querySelector('text');
+				if (pTxt) pTxt.textContent = `i = ${loopIndex}`;
+			}
+
+			// Highlight active slot
+			[0, 1, 2, 3, 4].forEach((i) => {
+				const slot = document.getElementById(`track-slot-${i}`);
+				if (slot) {
+					slot.classList.toggle('active-scan', i === loopIndex);
+				}
+			});
+		}
+
+		stepLoopBtn?.addEventListener('click', () => {
+			loopIndex = (loopIndex + 1) % loopData.length;
+			updateLoopView();
+		});
+
+		resetLoopBtn?.addEventListener('click', () => {
+			loopIndex = 0;
+			updateLoopView();
+		});
+
+		// --- SLIDE 4: Capacity vs Logical Size ---
+		let capacity = 6;
+		let size = 3;
+		const studentNames = ['Ana', 'Leo', 'Dibu', 'Lautaro', 'Julián', 'Alexis', 'Enzo', 'Rodrigo'];
+
+		const btnAddItem = document.getElementById('btn-add-item') as HTMLButtonElement;
+		const btnGrowArr = document.getElementById('btn-grow-arr') as HTMLButtonElement;
+		const btnResetCap = document.getElementById('btn-reset-cap') as HTMLButtonElement;
+
+		const capStatLen = document.getElementById('cap-stat-len');
+		const capStatSize = document.getElementById('cap-stat-size');
+		const capStatFree = document.getElementById('cap-stat-free');
+		const svgCapVal = document.getElementById('svg-cap-val');
+		const svgSizeVal = document.getElementById('svg-size-val');
+		const svgCapMax = document.getElementById('svg-cap-max');
+		const capFeedbackTitle = document.getElementById('cap-feedback-title');
+		const capFeedbackCode = document.getElementById('cap-feedback-code');
+		const capFeedbackNote = document.getElementById('cap-feedback-note');
+
+		function updateCapacityView() {
+			if (capStatLen) capStatLen.textContent = `plantel.length = ${capacity}`;
+			if (capStatSize) capStatSize.textContent = `cantidad = ${size}`;
+			const free = capacity - size;
+
+			if (capStatFree) {
+				if (free === 0) {
+					capStatFree.textContent = '¡ARRAY LLENO! (0 libres)';
+					capStatFree.style.color = 'rgb(239, 68, 68)';
+				} else {
+					capStatFree.textContent = `${free} casilla${free > 1 ? 's' : ''} libre${free > 1 ? 's' : ''}`;
+					capStatFree.style.color = 'var(--color-accent-2-700)';
+				}
+			}
+
+			if (svgCapVal) svgCapVal.textContent = `${capacity}`;
+			if (svgSizeVal) svgSizeVal.textContent = `${size}`;
+			if (svgCapMax) svgCapMax.textContent = `${capacity}`;
+
+			// Update cells in SVG
+			for (let i = 0; i < 6; i++) {
+				const cell = document.getElementById(`cap-cell-${i}`);
+
+				if (cell) {
+					if (i < size) {
+						cell.setAttribute('class', 'deck-cell-filled');
+					} else {
+						cell.setAttribute('class', 'deck-cell-empty');
+					}
+				}
+			}
+
+			if (size >= capacity) {
+				if (btnAddItem) btnAddItem.style.display = 'none';
+				if (btnGrowArr) btnGrowArr.style.display = 'inline-block';
+				if (capFeedbackTitle) capFeedbackTitle.textContent = '⚠️ Array Completo: Capacidad Máxima Alcanzada';
+				if (capFeedbackCode) capFeedbackCode.textContent = 'plantel = Arrays.copyOf(plantel, plantel.length * 2);';
+				if (capFeedbackNote) capFeedbackNote.textContent = 'Se crea un nuevo array en el Heap y se copian los punteros.';
+			} else {
+				if (btnAddItem) btnAddItem.style.display = 'inline-block';
+				if (btnGrowArr) btnGrowArr.style.display = 'none';
+				if (capFeedbackTitle) capFeedbackTitle.textContent = `Insertar en posición libre: plantel[${size}]`;
+				if (capFeedbackCode) capFeedbackCode.textContent = `plantel[${size}] = nuevo; cantidad++; // cantidad pasa a ${size + 1}`;
+				if (capFeedbackNote) capFeedbackNote.textContent = 'Inserción inmediata en O(1) usando el contador de cantidad.';
+			}
+		}
+
+		btnAddItem?.addEventListener('click', () => {
+			if (size < capacity) {
+				const cell = document.getElementById(`cap-cell-${size}`);
+				if (cell) {
+					const parent = cell.parentElement;
+					const nameEl = parent?.querySelectorAll('text')[size * 2 + 1];
+					if (nameEl) nameEl.textContent = studentNames[size] || 'Alumno';
+				}
+				size++;
+				updateCapacityView();
+			}
+		});
+
+		btnGrowArr?.addEventListener('click', () => {
+			capacity = 12;
+			if (capFeedbackTitle) capFeedbackTitle.textContent = '✓ Capacidad duplicada a 12 elementos con éxito';
+			if (capFeedbackCode) capFeedbackCode.textContent = '// Ahora hay 6 casillas adicionales libres en el nuevo array';
+			updateCapacityView();
+		});
+
+		btnResetCap?.addEventListener('click', () => {
+			capacity = 6;
+			size = 3;
+			const initialNames = ['Ana', 'Leo', 'Dibu'];
+			for (let i = 0; i < 6; i++) {
+				const cell = document.getElementById(`cap-cell-${i}`);
+				const parent = cell?.parentElement;
+				const nameEl = parent?.querySelectorAll('text')[i * 2 + 1];
+				if (nameEl) nameEl.textContent = i < 3 ? initialNames[i] : 'null';
+			}
+			updateCapacityView();
+		});
+
+		// --- SLIDE 5: Comparable vs Comparator ---
+		const sortBtns = screen.querySelectorAll('.sort-btn');
+		const sortActiveCrit = document.getElementById('sort-active-crit');
+		const sortCallSig = document.getElementById('sort-call-sig');
+		const sortExplTitle = document.getElementById('sort-expl-title');
+		const sortExplCode = document.getElementById('sort-expl-code');
+
+		const slot0Name = document.getElementById('sort-slot-0-name');
+		const slot0Num = document.getElementById('sort-slot-0-num');
+		const slot1Name = document.getElementById('sort-slot-1-name');
+		const slot1Num = document.getElementById('sort-slot-1-num');
+		const slot2Name = document.getElementById('sort-slot-2-name');
+		const slot2Num = document.getElementById('sort-slot-2-num');
+
+		sortBtns.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				sortBtns.forEach((b) => b.classList.remove('active'));
+				btn.classList.add('active');
+				const sortMode = btn.getAttribute('data-sort');
+
+				if (sortMode === 'raw') {
+					if (sortActiveCrit) sortActiveCrit.textContent = 'Orden de inserción original [11, 23, 10]';
+					if (sortCallSig) sortCallSig.textContent = 'plantel (sin ordenar)';
+					if (sortExplTitle) sortExplTitle.textContent = 'Estado Inicial: Desordenado por camiseta';
+					if (sortExplCode) sortExplCode.textContent = '// Arrays.sort(plantel) sin Comparable -> ClassCastException!';
+					if (slot0Name) slot0Name.textContent = '"Di María"';
+					if (slot0Num) slot0Num.textContent = 'Camiseta: #11';
+					if (slot1Name) slot1Name.textContent = '"Dibu"';
+					if (slot1Num) slot1Num.textContent = 'Camiseta: #23';
+					if (slot2Name) slot2Name.textContent = '"Messi"';
+					if (slot2Num) slot2Num.textContent = 'Camiseta: #10';
+				} else if (sortMode === 'number') {
+					if (sortActiveCrit) sortActiveCrit.textContent = 'Orden Natural por Camiseta [10, 11, 23]';
+					if (sortCallSig) sortCallSig.textContent = 'Arrays.sort(plantel)';
+					if (sortExplTitle) sortExplTitle.textContent = '✓ Ordenado con Comparable: compareTo()';
+					if (sortExplCode) sortExplCode.textContent = 'this.camiseta - otra.camiseta -> orden ascendente';
+					if (slot0Name) slot0Name.textContent = '"Messi"';
+					if (slot0Num) slot0Num.textContent = 'Camiseta: #10';
+					if (slot1Name) slot1Name.textContent = '"Di María"';
+					if (slot1Num) slot1Num.textContent = 'Camiseta: #11';
+					if (slot2Name) slot2Name.textContent = '"Dibu"';
+					if (slot2Num) slot2Num.textContent = 'Camiseta: #23';
+				} else if (sortMode === 'name') {
+					if (sortActiveCrit) sortActiveCrit.textContent = 'Orden Alfabético por Nombre [Dibu, Di María, Messi]';
+					if (sortCallSig) sortCallSig.textContent = 'Arrays.sort(plantel, Comparator.comparing(Persona::getNombre))';
+					if (sortExplTitle) sortExplTitle.textContent = '✓ Ordenado con Comparator externo';
+					if (sortExplCode) sortExplCode.textContent = 'Comparator.comparing(Persona::getNombre)';
+					if (slot0Name) slot0Name.textContent = '"Di María"';
+					if (slot0Num) slot0Num.textContent = 'Camiseta: #11';
+					if (slot1Name) slot1Name.textContent = '"Dibu"';
+					if (slot1Num) slot1Num.textContent = 'Camiseta: #23';
+					if (slot2Name) slot2Name.textContent = '"Messi"';
+					if (slot2Num) slot2Num.textContent = 'Camiseta: #10';
+				}
+			});
+		});
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initPresentation);
+	} else {
+		initPresentation();
+	}
+</script>
+
+<style>
+	.ao-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		padding: var(--space-4) var(--space-6);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.ao-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.deck-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		box-shadow: var(--shadow-sm);
+		overflow: hidden;
+	}
+
+	.deck-nav-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: var(--color-surface-subtle);
+		gap: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.deck-slide-indicator {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		color: var(--color-accent-700);
+	}
+
+	.deck-step-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--color-accent);
+	}
+
+	.deck-pills {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-pill-btn {
+		font-family: var(--font-body);
+		font-size: var(--text-xs);
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-full);
+		border: 1px solid var(--color-divider);
+		background: var(--color-surface);
+		color: var(--color-text-muted);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.deck-pill-btn:hover {
+		background: var(--color-surface-subtle);
+		color: var(--color-text);
+	}
+
+	.deck-pill-btn.active {
+		background: var(--color-accent-subtle, color-mix(in srgb, var(--color-accent) 15%, transparent));
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	.ao-viewport {
+		padding: var(--space-6) var(--space-8);
+		min-height: 480px;
+		flex: 1;
+	}
+
+	.ao-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .ao-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .ao-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .ao-viewport { zoom: 1.25; } }
+
+	.deck-slide {
+		display: none;
+		animation: fadeIn 0.3s ease;
+	}
+
+	.deck-slide.active {
+		display: block;
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; transform: translateY(4px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.deck-slide-grid {
+		display: grid;
+		grid-template-columns: 1.15fr 0.85fr;
+		gap: var(--space-8);
+		align-items: start;
+	}
+
+	@media (max-width: 900px) {
+		.deck-slide-grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-6);
+		}
+	}
+
+	.deck-col {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.deck-slide-title {
+		font-family: var(--font-display);
+		font-size: var(--text-2xl);
+		color: var(--color-text);
+		margin: 0;
+		line-height: 1.25;
+	}
+
+	.deck-text {
+		font-size: var(--text-sm);
+		line-height: 1.6;
+		color: var(--color-text-muted);
+		margin: 0;
+	}
+
+	.deck-figure {
+		background: var(--color-surface-subtle);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		overflow: hidden;
+	}
+
+	.deck-interactive-card {
+		background: var(--color-surface-subtle);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-5);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.deck-card-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.deck-badge {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		padding: var(--space-1) var(--space-2);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	.deck-actions-row {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-actions-row .btn.active {
+		background: var(--color-accent);
+		color: rgb(255, 255, 255);
+		border-color: var(--color-accent);
+	}
+
+	.deck-info-box {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3) var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.state-row {
+		display: flex;
+		justify-content: space-between;
+		font-size: var(--text-xs);
+		gap: var(--space-2);
+	}
+
+	.state-label {
+		color: var(--color-text-muted);
+	}
+
+	.state-val {
+		color: var(--color-text);
+		font-weight: 600;
+		text-align: right;
+	}
+
+	.state-val.mono {
+		font-family: var(--font-mono);
+	}
+
+	.deck-code-snippet {
+		margin: 0;
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		line-height: 1.5;
+		overflow-x: auto;
+	}
+
+	.tok-kw { color: var(--color-accent-700); font-weight: 600; }
+	.tok-str { color: var(--color-accent-2-700); }
+	.tok-num { color: rgb(217, 119, 6); }
+	.tok-comment { color: var(--color-text-muted); font-style: italic; }
+
+	.deck-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-top: 1px solid var(--color-divider);
+		background: var(--color-surface-subtle);
+	}
+
+	.deck-dots {
+		display: flex;
+		gap: var(--space-2);
+	}
+
+	.deck-dot {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		border: 1px solid var(--color-divider);
+		background: var(--color-surface);
+		cursor: pointer;
+		padding: 0;
+		transition: all 0.2s ease;
+	}
+
+	.deck-dot.active {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		transform: scale(1.2);
+	}
+
+	/* SVG Internal Styles */
+	.deck-panel {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+		stroke-width: 1.5;
+	}
+
+	.deck-panel-accent {
+		fill: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+		stroke: var(--color-accent);
+		stroke-width: 1.5;
+	}
+
+	.deck-ground-card {
+		fill: var(--color-surface);
+	}
+
+	.deck-svg-title {
+		font-family: var(--font-display);
+		font-size: 11px;
+		fill: var(--color-text);
+		font-weight: 700;
+	}
+
+	.deck-svg-title-accent {
+		font-family: var(--font-display);
+		font-size: 11px;
+		fill: var(--color-accent-700);
+		font-weight: 700;
+	}
+
+	.deck-svg-bold {
+		font-family: var(--font-body);
+		font-size: 11px;
+		fill: var(--color-text);
+		font-weight: 700;
+	}
+
+	.deck-svg-mono {
+		font-family: var(--font-mono);
+		font-size: 10px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-mono-sm {
+		font-family: var(--font-mono);
+		font-size: 9px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-sub {
+		font-family: var(--font-body);
+		font-size: 8px;
+		fill: var(--color-text-muted);
+	}
+
+	.deck-slot-box {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+		stroke-width: 1;
+		transition: all 0.2s ease;
+	}
+
+	.active-slot .deck-slot-box {
+		stroke: var(--color-accent);
+		stroke-width: 2;
+		fill: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+	}
+
+	.deck-cell-filled {
+		fill: color-mix(in srgb, var(--color-accent-2-700) 15%, var(--color-surface));
+		stroke: var(--color-accent-2-700);
+		stroke-width: 1.5;
+	}
+
+	.deck-cell-empty {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+		stroke-width: 1;
+		stroke-dasharray: 3 3;
+	}
+</style>

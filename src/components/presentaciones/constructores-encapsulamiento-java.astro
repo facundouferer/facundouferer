@@ -1,0 +1,957 @@
+---
+type Props = {
+	lang: 'es' | 'en';
+};
+
+const { lang } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="ce-screen" data-lang={lang}>
+	<div class="ce-shell">
+		<div class="deck-card">
+			<div class="deck-nav-bar">
+				<div class="deck-slide-indicator">
+					<span class="deck-step-dot"></span>
+					<span id="deck-slide-label">SLIDE 1 / 5</span>
+				</div>
+				<div class="deck-pills">
+					<button class="deck-pill-btn active" data-target-slide="1">1. {isEs ? 'Aduana de Invariantes' : 'Invariant Customs'}</button>
+					<button class="deck-pill-btn" data-target-slide="2">2. {isEs ? 'Delegación con this()' : 'Delegation with this()'}</button>
+					<button class="deck-pill-btn" data-target-slide="3">3. {isEs ? 'Matriz de 4 Modificadores' : '4 Modifiers Matrix'}</button>
+					<button class="deck-pill-btn" data-target-slide="4">4. {isEs ? 'Fuga de Referencia' : 'Reference Leak'}</button>
+					<button class="deck-pill-btn" data-target-slide="5">5. {isEs ? 'Inmutabilidad y Blindaje' : 'Immutability & Shielding'}</button>
+				</div>
+			</div>
+
+			<div class="ce-viewport">
+				<!-- SLIDE 1: CONSTRUCTOR AS INVARIANT CUSTOMS -->
+				<div class="deck-slide active" data-slide="1">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">1. {isEs ? 'El Constructor: La Aduana de los Invariantes' : 'The Constructor: Customs Gate of Invariants'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Un invariante es una regla de negocio que NUNCA debe violarse (ej. una nota entre 0 y 10, un saldo no negativo). El constructor es el guardián fronterizo: si los datos son inválidos, rechaza la creación lanzando una excepción y el objeto jamás nace en el Heap.'
+									: 'An invariant is a domain rule that must NEVER be broken (e.g. grade 0-10, non-negative balance). The constructor is the customs officer: invalid arguments throw an exception immediately and the object is never allocated.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Aduana de invariantes en el constructor' : 'Invariant customs in constructor'}>
+									<!-- Incoming Arguments Box -->
+									<rect x="20" y="35" width="150" height="170" rx="10" class="deck-panel" />
+									<text x="95" y="60" class="deck-svg-title">Parámetros</text>
+									
+									<rect x="30" y="80" width="130" height="40" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+									<text x="95" y="105" class="deck-svg-mono" text-anchor="middle" id="svg-arg-name">nombre: "Ana"</text>
+
+									<rect x="30" y="135" width="130" height="40" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+									<text x="95" y="160" class="deck-svg-bold" text-anchor="middle" id="svg-arg-grade">nota: 9</text>
+
+									<!-- Checkpoint Gate -->
+									<g id="svg-gate-group">
+										<rect x="210" y="30" width="120" height="180" rx="12" class="deck-panel-accent" id="svg-gate-box" />
+										<text x="270" y="55" class="deck-svg-title-accent" text-anchor="middle">Aduana</text>
+										
+										<rect x="220" y="70" width="100" height="60" rx="6" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="1.5" />
+										<text x="270" y="95" class="deck-svg-mono-sm" text-anchor="middle">nota &gt;= 0 &amp;&amp;</text>
+										<text x="270" y="112" class="deck-svg-mono-sm" text-anchor="middle">nota &lt;= 10</text>
+
+										<circle cx="270" cy="165" r="18" fill="var(--color-accent-2-700)" id="svg-gate-light" />
+										<text x="270" y="170" class="deck-svg-bold" text-anchor="middle" fill="rgb(255, 255, 255)" id="svg-gate-status">✓ OK</text>
+									</g>
+
+									<!-- Result: Heap Object or Explosion -->
+									<g id="svg-heap-res-group">
+										<rect x="370" y="45" width="150" height="150" rx="12" class="deck-panel-accent" id="svg-heap-res-box" />
+										<text x="445" y="75" class="deck-svg-title-accent" text-anchor="middle" id="svg-heap-res-title">Estudiante Vivo</text>
+										<line x1="380" y1="88" x2="510" y2="88" stroke="var(--color-divider)" stroke-width="1" />
+										<text x="390" y="115" class="deck-svg-mono-sm" id="svg-res-name">nombre: "Ana"</text>
+										<text x="390" y="140" class="deck-svg-mono-sm" id="svg-res-grade">nota: 9</text>
+										<text x="390" y="170" class="deck-svg-sub" id="svg-res-badge" fill="var(--color-accent-700)">Estado Válido</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Prueba de Argumentos' : 'Argument Inspection'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary arg-btn active" data-scenario="valid">{isEs ? 'Nota Válida (nota = 9)' : 'Valid Grade (grade = 9)'}</button>
+									<button class="btn btn-secondary arg-btn" data-scenario="invalid" style="border-color: rgb(255, 95, 86);">{isEs ? 'Nota Negativa (nota = -5)' : 'Negative Grade (grade = -5)'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Sentencia new:' : 'new invocation:'}</span>
+										<span class="state-val" id="gate-stmt-txt">new Estudiante("Ana", 9);</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Resultado del Constructor:' : 'Constructor Outcome:'}</span>
+										<span class="state-val" id="gate-res-txt" style="color: var(--color-accent-2-800); font-weight: 700;">Instancia Creada en Heap</span>
+									</div>
+									<p class="deck-caption" id="gate-desc-txt">
+										{isEs
+											? 'La nota cumple el invariante (0 a 10). El objeto nace con garantía absoluta de integridad.'
+											: 'Grade satisfies the invariant (0 to 10). The object is safely instantiated in the Heap.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 2: DELEGATION WITH this(...) -->
+				<div class="deck-slide" data-slide="2">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">2. {isEs ? 'Sobrecarga y Delegación de Constructores con this()' : 'Constructor Overloading and this() Delegation'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Tener múltiples constructores no significa duplicar las validaciones. Con this(...), los constructores secundarios delegan en cascada hacia el constructor canónico principal. Regla estricta de Java: this() debe ser la primera sentencia.'
+									: 'Multiple constructors shouldn’t duplicate validation logic. With this(...), auxiliary constructors delegate to a single canonical constructor. Crucial rule: this() must be the very first statement.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Delegación en cascada de constructores usando this' : 'Cascading constructor delegation using this'}>
+									<!-- Constructor 1: 1 arg -->
+									<rect x="25" y="25" width="200" height="50" rx="8" class="deck-panel-accent ctor-block" id="ctor-box-1" />
+									<text x="35" y="45" class="deck-svg-title-accent">Libro(String tit)</text>
+									<text x="35" y="62" class="deck-svg-mono-sm">this(tit, "Anónimo");</text>
+
+									<!-- Constructor 2: 2 args -->
+									<rect x="25" y="95" width="200" height="50" rx="8" class="deck-panel ctor-block" id="ctor-box-2" />
+									<text x="35" y="115" class="deck-svg-title">Libro(String tit, String aut)</text>
+									<text x="35" y="132" class="deck-svg-mono-sm">this(tit, aut, 0.0);</text>
+
+									<!-- Canonical Constructor: 3 args -->
+									<rect x="280" y="45" width="235" height="150" rx="12" class="deck-ground-card ctor-block" id="ctor-box-main" stroke="var(--color-accent)" stroke-width="2.5" />
+									<text x="295" y="70" class="deck-svg-bold" fill="var(--color-accent-700)">CONSTRUCTOR CANÓNICO</text>
+									<text x="295" y="90" class="deck-svg-title">Libro(tit, aut, precio)</text>
+									<line x1="290" y1="102" x2="505" y2="102" stroke="var(--color-divider)" stroke-width="1" />
+									<text x="295" y="122" class="deck-svg-mono-sm">if (precio &lt; 0) throw ...</text>
+									<text x="295" y="142" class="deck-svg-mono-sm">this.titulo = tit;</text>
+									<text x="295" y="162" class="deck-svg-mono-sm">this.autor = aut;</text>
+									<text x="295" y="182" class="deck-svg-mono-sm">this.precio = precio;</text>
+
+									<!-- Arrows -->
+									<path d="M225 50 Q250 50 280 80" stroke="var(--color-accent)" stroke-width="2.5" fill="none" id="arrow-c1" />
+									<path d="M225 120 H280" stroke="var(--color-divider)" stroke-width="2" fill="none" id="arrow-c2" stroke-dasharray="3 3" />
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Rastreador de Invocación' : 'Invocation Trace'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary ctor-btn active" data-ctor="1">new Libro("Quijote")</button>
+									<button class="btn btn-secondary ctor-btn" data-ctor="2">new Libro("Quijote", "Cervantes")</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Paso 1:' : 'Step 1:'}</span>
+										<span class="state-val" id="ctor-step-1">Libro("Quijote") invoca a this()</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Paso 2:' : 'Step 2:'}</span>
+										<span class="state-val" id="ctor-step-2">Libro("Quijote", "Anónimo")</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Llegada final:' : 'Final landing:'}</span>
+										<span class="state-val" style="color: var(--color-accent-700);">Constructor Canónico (3 args)</span>
+									</div>
+									<p class="deck-caption" id="ctor-desc-txt">
+										{isEs
+											? 'Las validaciones residen en UN solo lugar. Si cambian las reglas de precio, no tenés que retocar 3 constructores.'
+											: 'Rules live in ONE single method. If price invariants change, you only maintain one place.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 3: 4 ACCESS MODIFIERS MATRIX -->
+				<div class="deck-slide" data-slide="3">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">3. {isEs ? 'La Matriz de los 4 Modificadores de Acceso' : 'The 4 Access Modifiers Matrix'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Java ofrece 4 niveles concéntricos de visibilidad. La regla de oro del encapsulamiento es el Principio del Menor Privilegio: empezá siempre con private y abrí visibilidad solo si hay una razón de diseño estricta.'
+									: 'Java offers 4 concentric visibility scopes. The golden rule is Least Privilege: default to private, opening up only when strictly required by architecture.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Matriz visual de los modificadores de acceso en Java' : 'Java access modifiers visual matrix'}>
+									<!-- Matrix Table Headers -->
+									<rect x="20" y="20" width="500" height="35" rx="6" class="deck-panel-accent" />
+									<text x="80" y="42" class="deck-svg-title-accent">Modificador</text>
+									<text x="210" y="42" class="deck-svg-title-accent" text-anchor="middle">Misma Clase</text>
+									<text x="310" y="42" class="deck-svg-title-accent" text-anchor="middle">Mismo Paquete</text>
+									<text x="400" y="42" class="deck-svg-title-accent" text-anchor="middle">Subclase</text>
+									<text x="480" y="42" class="deck-svg-title-accent" text-anchor="middle">Mundo</text>
+
+									<!-- Row 1: private -->
+									<g id="row-private" class="matrix-row active-row">
+										<rect x="20" y="60" width="500" height="38" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="35" y="84" class="deck-svg-bold" fill="rgb(255, 95, 86)">private</text>
+										<text x="210" y="84" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">✓ SÍ</text>
+										<text x="310" y="84" class="deck-svg-bold" text-anchor="middle" fill="rgb(255, 95, 86)">✕ NO</text>
+										<text x="400" y="84" class="deck-svg-bold" text-anchor="middle" fill="rgb(255, 95, 86)">✕ NO</text>
+										<text x="480" y="84" class="deck-svg-bold" text-anchor="middle" fill="rgb(255, 95, 86)">✕ NO</text>
+									</g>
+
+									<!-- Row 2: package-private -->
+									<g id="row-package" class="matrix-row" opacity="0.45">
+										<rect x="20" y="102" width="500" height="38" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="35" y="126" class="deck-svg-bold" fill="var(--color-accent-700)">default</text>
+										<text x="210" y="126" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">✓ SÍ</text>
+										<text x="310" y="126" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">✓ SÍ</text>
+										<text x="400" y="126" class="deck-svg-bold" text-anchor="middle" fill="rgb(255, 95, 86)">✕ NO</text>
+										<text x="480" y="126" class="deck-svg-bold" text-anchor="middle" fill="rgb(255, 95, 86)">✕ NO</text>
+									</g>
+
+									<!-- Row 3: protected -->
+									<g id="row-protected" class="matrix-row" opacity="0.45">
+										<rect x="20" y="144" width="500" height="38" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="35" y="168" class="deck-svg-bold" fill="var(--color-accent-2-800)">protected</text>
+										<text x="210" y="168" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">✓ SÍ</text>
+										<text x="310" y="168" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">✓ SÍ</text>
+										<text x="400" y="168" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">✓ SÍ</text>
+										<text x="480" y="168" class="deck-svg-bold" text-anchor="middle" fill="rgb(255, 95, 86)">✕ NO</text>
+									</g>
+
+									<!-- Row 4: public -->
+									<g id="row-public" class="matrix-row" opacity="0.45">
+										<rect x="20" y="186" width="500" height="38" rx="6" class="deck-ground-card" stroke="var(--color-divider)" />
+										<text x="35" y="210" class="deck-svg-bold" fill="var(--color-accent-2-700)">public</text>
+										<text x="210" y="210" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">✓ SÍ</text>
+										<text x="310" y="210" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">✓ SÍ</text>
+										<text x="400" y="210" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">✓ SÍ</text>
+										<text x="480" y="210" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">✓ SÍ</text>
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Explorador de Alcance' : 'Scope Explorer'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary mod-btn active" data-mod="private">private</button>
+									<button class="btn btn-secondary mod-btn" data-mod="package">default</button>
+									<button class="btn btn-secondary mod-btn" data-mod="protected">protected</button>
+									<button class="btn btn-secondary mod-btn" data-mod="public">public</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Nivel seleccionado:' : 'Selected level:'}</span>
+										<span class="state-val" id="mod-name-val" style="color: rgb(255, 95, 86);">private (Máximo Blindaje)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Acceso externo:' : 'External access:'}</span>
+										<span class="state-val" id="mod-scope-val">Bloqueado para todo lo que no sea la clase</span>
+									</div>
+									<p class="deck-caption" id="mod-desc-val">
+										{isEs
+											? 'Ideal para los atributos de estado. Ninguna clase externa puede leer o escribir directamente.'
+											: 'Ideal for state fields. No external entity can read or write values directly.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 4: REFERENCE LEAKS & DEFENSIVE COPYING -->
+				<div class="deck-slide" data-slide="4">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">4. {isEs ? 'La Fuga de Referencia (Reference Leak)' : 'The Reference Leak Threat'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Marcar un atributo como private NO garantiza encapsulamiento si el getter devuelve la referencia directa a un objeto mutable (como una Lista o Date). El código cliente puede vaciar o corromper tu lista interna sin tocar ningún setter.'
+									: 'Marking a field private does NOT guarantee encapsulation if a getter exposes a direct reference to a mutable object (like a List or Date). Callers can mutate or clear your internal collection behind your back.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Fuga de referencia en colección mutable frente a copia defensiva' : 'Mutable collection reference leak vs defensive copy'}>
+									<!-- HistorialMedico object -->
+									<rect x="25" y="35" width="220" height="175" rx="12" class="deck-panel-accent" />
+									<text x="135" y="60" class="deck-svg-title-accent" text-anchor="middle">HistorialMedico</text>
+									<line x1="35" y1="72" x2="235" y2="72" stroke="var(--color-divider)" stroke-width="1" />
+									
+									<!-- Internal list inside Heap -->
+									<rect x="40" y="85" width="190" height="105" rx="8" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="2" />
+									<text x="50" y="108" class="deck-svg-sub">private List&lt;String&gt; consultas;</text>
+									<rect x="50" y="120" width="170" height="30" rx="4" class="deck-panel" />
+									<text x="135" y="140" class="deck-svg-mono" text-anchor="middle" id="leak-svg-list">["Gripe", "Control", "Rayos"]</text>
+									<text x="135" y="175" class="deck-svg-bold" text-anchor="middle" id="leak-svg-badge" fill="var(--color-accent-700)">3 Consultas Activas</text>
+
+									<!-- Outside Attacker -->
+									<rect x="300" y="60" width="215" height="120" rx="10" class="deck-panel" />
+									<text x="315" y="85" class="deck-svg-title">Código Externo</text>
+									<rect x="315" y="98" width="185" height="40" rx="6" class="deck-ground-card" stroke="rgb(255, 95, 86)" />
+									<text x="325" y="122" class="deck-svg-mono-sm" fill="rgb(255, 95, 86)">h.getConsultas().clear();</text>
+									<text x="315" y="160" class="deck-svg-sub" id="leak-svg-warn" fill="rgb(255, 95, 86)">¡Ataque exitoso sin setter!</text>
+
+									<!-- Wire connecting outside to internal list -->
+									<path d="M315 118 Q260 118 230 135" stroke="rgb(255, 95, 86)" stroke-width="2.5" fill="none" stroke-dasharray="4 3" id="leak-svg-wire" />
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Simulador de Blindaje' : 'Shielding Simulator'}</span>
+								</div>
+								<div class="deck-actions-row">
+									<button class="btn btn-secondary leak-btn active" data-mode="unsafe">{isEs ? 'Getter Inseguro (Fuga)' : 'Unsafe Getter (Leak)'}</button>
+									<button class="btn btn-secondary leak-btn" data-mode="defensive">{isEs ? 'Copia Defensiva / Unmodifiable' : 'Defensive Copy / Unmodifiable'}</button>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Código del Getter:' : 'Getter Implementation:'}</span>
+										<span class="state-val" id="leak-code-txt">return this.consultas;</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Resultado de .clear():' : 'Result of .clear():'}</span>
+										<span class="state-val" id="leak-res-txt" style="color: rgb(255, 95, 86);">Lista borrada a [] (0 elementos)</span>
+									</div>
+									<p class="deck-caption" id="leak-desc-txt">
+										{isEs
+											? 'Al devolver la referencia original, el encapsulamiento se destruyó. El cliente borró la historia clínica.'
+											: 'Exposing the internal reference completely broke encapsulation. The client erased the medical records.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- SLIDE 5: IMMUTABILITY AND SHIELDING -->
+				<div class="deck-slide" data-slide="5">
+					<div class="deck-slide-grid">
+						<div class="deck-col">
+							<h2 class="deck-slide-title">5. {isEs ? 'Inmutabilidad: El Encapsulamiento Perfecto' : 'Immutability: Flawless Encapsulation'}</h2>
+							<p class="deck-text">
+								{isEs
+									? 'Una clase inmutable (como String, LocalDate o un record de Java 16+) no expone setters y declara sus campos private final. Es inmune a condiciones de carrera en entornos multihilo porque su estado jamás muta tras salir del constructor.'
+									: 'An immutable class (like String, LocalDate, or Java 16+ records) defines private final fields with no setters. It is thread-safe by design since its internal state never mutates once created.'}
+							</p>
+
+							<div class="deck-figure">
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Objeto inmutable blindado con candados y acceso concurrente seguro' : 'Immutable object shielded with concurrent thread safety'}>
+									<!-- Shielded Vault Object -->
+									<rect x="35" y="30" width="240" height="180" rx="16" class="deck-panel-accent" stroke="var(--color-accent-700)" stroke-width="2.5" />
+									<text x="155" y="58" class="deck-svg-title-accent" text-anchor="middle">record Coordenada(x, y)</text>
+									<line x1="45" y1="70" x2="265" y2="70" stroke="var(--color-divider)" stroke-width="1" />
+									
+									<rect x="50" y="85" width="210" height="35" rx="6" class="deck-ground-card" stroke="var(--color-accent-2-700)" stroke-width="1.5" />
+									<text x="60" y="107" class="deck-svg-mono-sm">final double x = 12.5;</text>
+
+									<rect x="50" y="130" width="210" height="35" rx="6" class="deck-ground-card" stroke="var(--color-accent-2-700)" stroke-width="1.5" />
+									<text x="60" y="152" class="deck-svg-mono-sm">final double y = 48.2;</text>
+
+									<text x="155" y="195" class="deck-svg-bold" text-anchor="middle" fill="var(--color-accent-700)">🔒 SIN SETTERS (Thread-Safe)</text>
+
+									<!-- Concurrent Threads Reading Safely -->
+									<g transform="translate(320, 40)">
+										<rect x="0" y="0" width="180" height="40" rx="6" class="deck-panel" />
+										<text x="90" y="24" class="deck-svg-bold" text-anchor="middle">Hilo A: Lee x=12.5</text>
+										<path d="M0 20 L-45 40" stroke="var(--color-accent-2-700)" stroke-width="2" />
+
+										<rect x="0" y="55" width="180" height="40" rx="6" class="deck-panel" />
+										<text x="90" y="79" class="deck-svg-bold" text-anchor="middle">Hilo B: Lee y=48.2</text>
+										<path d="M0 75 L-45 80" stroke="var(--color-accent-2-700)" stroke-width="2" />
+
+										<rect x="0" y="110" width="180" height="40" rx="6" class="deck-panel" />
+										<text x="90" y="134" class="deck-svg-bold" text-anchor="middle">Hilo C: Lee x=12.5</text>
+										<path d="M0 130 L-45 120" stroke="var(--color-accent-2-700)" stroke-width="2" />
+									</g>
+								</svg>
+							</div>
+						</div>
+
+						<div class="deck-col">
+							<div class="deck-interactive-card">
+								<div class="deck-card-head">
+									<span class="deck-badge">{isEs ? 'Ventajas de la Inmutabilidad' : 'Immutability Benefits'}</span>
+								</div>
+								<div class="deck-info-box">
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Seguridad en Concurrencia:' : 'Concurrency Safety:'}</span>
+										<span class="state-val" style="color: var(--color-accent-2-800);">100% Thread-Safe</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Efectos Colaterales:' : 'Side Effects:'}</span>
+										<span class="state-val">Cero (Zero)</span>
+									</div>
+									<div class="state-row">
+										<span class="state-label">{isEs ? 'Uso como clave en Map:' : 'Map key usage:'}</span>
+										<span class="state-val" style="color: var(--color-accent-700);">Ideal e Inalterable</span>
+									</div>
+									<p class="deck-caption">
+										{isEs
+											? 'Al diseñar con inmutabilidad, eliminás de raíz clases enteras de bugs: carreras de datos, aliasing accidental y corrupción de estado.'
+											: 'Immutability eliminates entire classes of bugs at once: data races, accidental aliasing, and state corruption.'}
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	/* Slide Navigation */
+	const pills = document.querySelectorAll('.deck-pill-btn');
+	const slides = document.querySelectorAll('.deck-slide');
+	const slideLabel = document.getElementById('deck-slide-label');
+	const totalSlides = slides.length;
+
+	pills.forEach((pill) => {
+		pill.addEventListener('click', () => {
+			const target = pill.getAttribute('data-target-slide');
+			if (!target) return;
+
+			pills.forEach((p) => p.classList.remove('active'));
+			pill.classList.add('active');
+
+			slides.forEach((s) => {
+				s.classList.remove('active');
+				if (s.getAttribute('data-slide') === target) {
+					s.classList.add('active');
+				}
+			});
+
+			if (slideLabel) {
+				slideLabel.textContent = `SLIDE ${target} / ${totalSlides}`;
+			}
+		});
+	});
+
+	/* Slide 1: Invariant Customs */
+	const argBtns = document.querySelectorAll('.arg-btn');
+	const svgArgGrade = document.getElementById('svg-arg-grade');
+	const svgGateLight = document.getElementById('svg-gate-light');
+	const svgGateStatus = document.getElementById('svg-gate-status');
+	const svgHeapResBox = document.getElementById('svg-heap-res-box');
+	const svgHeapResTitle = document.getElementById('svg-heap-res-title');
+	const svgResGrade = document.getElementById('svg-res-grade');
+	const svgResBadge = document.getElementById('svg-res-badge');
+	const gateStmtTxt = document.getElementById('gate-stmt-txt');
+	const gateResTxt = document.getElementById('gate-res-txt');
+	const gateDescTxt = document.getElementById('gate-desc-txt');
+
+	argBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			argBtns.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+
+			const sc = btn.getAttribute('data-scenario');
+			if (sc === 'valid') {
+				if (svgArgGrade) svgArgGrade.textContent = 'nota: 9';
+				if (svgGateLight) svgGateLight.setAttribute('fill', 'var(--color-accent-2-700)');
+				if (svgGateStatus) svgGateStatus.textContent = '✓ OK';
+				if (svgHeapResBox) {
+					svgHeapResBox.setAttribute('stroke', 'var(--color-accent)');
+					svgHeapResBox.setAttribute('opacity', '1');
+				}
+				if (svgHeapResTitle) {
+					svgHeapResTitle.textContent = 'Estudiante Vivo';
+					svgHeapResTitle.setAttribute('fill', 'var(--color-accent-700)');
+				}
+				if (svgResGrade) svgResGrade.textContent = 'nota: 9';
+				if (svgResBadge) {
+					svgResBadge.textContent = 'Estado Válido';
+					svgResBadge.setAttribute('fill', 'var(--color-accent-700)');
+				}
+				if (gateStmtTxt) gateStmtTxt.textContent = 'new Estudiante("Ana", 9);';
+				if (gateResTxt) {
+					gateResTxt.textContent = 'Instancia Creada en Heap';
+					gateResTxt.style.color = 'var(--color-accent-2-800)';
+				}
+				if (gateDescTxt) {
+					gateDescTxt.textContent = 'La nota cumple el invariante (0 a 10). El objeto nace con garantía absoluta de integridad.';
+				}
+			} else {
+				if (svgArgGrade) svgArgGrade.textContent = 'nota: -5';
+				if (svgGateLight) svgGateLight.setAttribute('fill', 'rgb(255, 95, 86)');
+				if (svgGateStatus) svgGateStatus.textContent = '✕ ALERTA';
+				if (svgHeapResBox) {
+					svgHeapResBox.setAttribute('stroke', 'rgb(255, 95, 86)');
+					svgHeapResBox.setAttribute('opacity', '0.4');
+				}
+				if (svgHeapResTitle) {
+					svgHeapResTitle.textContent = '¡Creación Abortada!';
+					svgHeapResTitle.setAttribute('fill', 'rgb(255, 95, 86)');
+				}
+				if (svgResGrade) svgResGrade.textContent = 'IllegalArgumentException';
+				if (svgResBadge) {
+					svgResBadge.textContent = 'Objeto NO creado';
+					svgResBadge.setAttribute('fill', 'rgb(255, 95, 86)');
+				}
+				if (gateStmtTxt) gateStmtTxt.textContent = 'new Estudiante("Ana", -5);';
+				if (gateResTxt) {
+					gateResTxt.textContent = 'IllegalArgumentException disparada';
+					gateResTxt.style.color = 'rgb(255, 95, 86)';
+				}
+				if (gateDescTxt) {
+					gateDescTxt.textContent = 'El constructor frenó el intento antes de guardar datos corruptos. Jamás existirá un Estudiante con nota negativa.';
+				}
+			}
+		});
+	});
+
+	/* Slide 2: Constructor Delegation */
+	const ctorBtns = document.querySelectorAll('.ctor-btn');
+	const ctorBox1 = document.getElementById('ctor-box-1');
+	const ctorBox2 = document.getElementById('ctor-box-2');
+	const arrowC1 = document.getElementById('arrow-c1');
+	const arrowC2 = document.getElementById('arrow-c2');
+	const ctorStep1 = document.getElementById('ctor-step-1');
+	const ctorStep2 = document.getElementById('ctor-step-2');
+	const ctorDescTxt = document.getElementById('ctor-desc-txt');
+
+	ctorBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			ctorBtns.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+
+			const c = btn.getAttribute('data-ctor');
+			if (c === '1') {
+				if (ctorBox1) ctorBox1.setAttribute('class', 'deck-panel-accent ctor-block');
+				if (ctorBox2) ctorBox2.setAttribute('class', 'deck-panel ctor-block');
+				if (arrowC1) {
+					arrowC1.setAttribute('stroke', 'var(--color-accent)');
+					arrowC1.setAttribute('stroke-dasharray', 'none');
+				}
+				if (arrowC2) {
+					arrowC2.setAttribute('stroke', 'var(--color-divider)');
+					arrowC2.setAttribute('stroke-dasharray', '3 3');
+				}
+				if (ctorStep1) ctorStep1.textContent = 'Libro("Quijote") invoca a this()';
+				if (ctorStep2) ctorStep2.textContent = 'Libro("Quijote", "Anónimo")';
+				if (ctorDescTxt) {
+					ctorDescTxt.textContent = 'El constructor de 1 parámetro delega al de 2, y este a su vez delega en el canónico. Código 100% DRY.';
+				}
+			} else {
+				if (ctorBox1) ctorBox1.setAttribute('class', 'deck-panel ctor-block');
+				if (ctorBox2) ctorBox2.setAttribute('class', 'deck-panel-accent ctor-block');
+				if (arrowC1) {
+					arrowC1.setAttribute('stroke', 'var(--color-divider)');
+					arrowC1.setAttribute('stroke-dasharray', '3 3');
+				}
+				if (arrowC2) {
+					arrowC2.setAttribute('stroke', 'var(--color-accent)');
+					arrowC2.setAttribute('stroke-dasharray', 'none');
+				}
+				if (ctorStep1) ctorStep1.textContent = 'Libro("Quijote", "Cervantes")';
+				if (ctorStep2) ctorStep2.textContent = 'Delega directo con this(..., 0.0)';
+				if (ctorDescTxt) {
+					ctorDescTxt.textContent = 'El constructor de 2 parámetros delega directamente al canónico rellenando el precio por defecto.';
+				}
+			}
+		});
+	});
+
+	/* Slide 3: Access Modifiers */
+	const modBtns = document.querySelectorAll('.mod-btn');
+	const modRows = document.querySelectorAll('.matrix-row');
+	const modNameVal = document.getElementById('mod-name-val');
+	const modScopeVal = document.getElementById('mod-scope-val');
+	const modDescVal = document.getElementById('mod-desc-val');
+
+	const modInfo: Record<string, { title: string; scope: string; desc: string; row: string }> = {
+		private: {
+			title: 'private (Máximo Blindaje)',
+			scope: 'Solo la misma clase',
+			desc: 'Ideal para atributos. Protege el estado cerrando las puertas a cualquier acceso no controlado.',
+			row: 'row-private',
+		},
+		package: {
+			title: 'default / package-private',
+			scope: 'Misma clase + mismo paquete',
+			desc: 'Sin modificador explícito. Visible para las clases hermanas en el mismo package, oculto al exterior.',
+			row: 'row-package',
+		},
+		protected: {
+			title: 'protected (Herencia)',
+			scope: 'Mismo paquete + subclases en otros paquetes',
+			desc: 'Diseñado para frameworks y clases base. Permite que los hijos hereden y utilicen el miembro.',
+			row: 'row-protected',
+		},
+		public: {
+			title: 'public (API Abierta)',
+			scope: 'Todo el universo de clases',
+			desc: 'Punto de entrada de tu sistema. Debe usarse con cuidado para no acoplar detalles de implementación.',
+			row: 'row-public',
+		},
+	};
+
+	modBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			modBtns.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+
+			const m = btn.getAttribute('data-mod') ?? 'private';
+			const cur = modInfo[m];
+
+			modRows.forEach((r) => r.setAttribute('opacity', '0.45'));
+			const activeRow = document.getElementById(cur.row);
+			if (activeRow) activeRow.setAttribute('opacity', '1');
+
+			if (modNameVal) modNameVal.textContent = cur.title;
+			if (modScopeVal) modScopeVal.textContent = cur.scope;
+			if (modDescVal) modDescVal.textContent = cur.desc;
+		});
+	});
+
+	/* Slide 4: Reference Leak */
+	const leakBtns = document.querySelectorAll('.leak-btn');
+	const leakCodeTxt = document.getElementById('leak-code-txt');
+	const leakResTxt = document.getElementById('leak-res-txt');
+	const leakDescTxt = document.getElementById('leak-desc-txt');
+	const leakSvgList = document.getElementById('leak-svg-list');
+	const leakSvgBadge = document.getElementById('leak-svg-badge');
+	const leakSvgWarn = document.getElementById('leak-svg-warn');
+	const leakSvgWire = document.getElementById('leak-svg-wire');
+
+	leakBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			leakBtns.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+
+			const mode = btn.getAttribute('data-mode');
+			if (mode === 'unsafe') {
+				if (leakCodeTxt) leakCodeTxt.textContent = 'return this.consultas;';
+				if (leakResTxt) {
+					leakResTxt.textContent = 'Lista borrada a [] (0 elementos)';
+					leakResTxt.style.color = 'rgb(255, 95, 86)';
+				}
+				if (leakDescTxt) {
+					leakDescTxt.textContent = 'Al devolver la referencia original, el cliente pudo hacer .clear() destruyendo el estado interno.';
+				}
+				if (leakSvgList) leakSvgList.textContent = '[] (VACÍA)';
+				if (leakSvgBadge) {
+					leakSvgBadge.textContent = '0 Consultas (¡Destruido!)';
+					leakSvgBadge.setAttribute('fill', 'rgb(255, 95, 86)');
+				}
+				if (leakSvgWarn) {
+					leakSvgWarn.textContent = '¡Ataque exitoso sin setter!';
+					leakSvgWarn.setAttribute('fill', 'rgb(255, 95, 86)');
+				}
+				if (leakSvgWire) {
+					leakSvgWire.setAttribute('stroke', 'rgb(255, 95, 86)');
+					leakSvgWire.setAttribute('stroke-dasharray', '4 3');
+				}
+			} else {
+				if (leakCodeTxt) leakCodeTxt.textContent = 'return Collections.unmodifiableList(consultas);';
+				if (leakResTxt) {
+					leakResTxt.textContent = 'UnsupportedOperationException (Bloqueado)';
+					leakResTxt.style.color = 'var(--color-accent-2-800)';
+				}
+				if (leakDescTxt) {
+					leakDescTxt.textContent = 'La copia o envoltorio inmutable arroja excepción si alguien intenta .clear(). ¡Encapsulamiento invulnerable!';
+				}
+				if (leakSvgList) leakSvgList.textContent = '["Gripe", "Control", "Rayos"]';
+				if (leakSvgBadge) {
+					leakSvgBadge.textContent = '3 Consultas Blindadas';
+					leakSvgBadge.setAttribute('fill', 'var(--color-accent-700)');
+				}
+				if (leakSvgWarn) {
+					leakSvgWarn.textContent = '✓ Ataque bloqueado con excepción';
+					leakSvgWarn.setAttribute('fill', 'var(--color-accent-700)');
+				}
+				if (leakSvgWire) {
+					leakSvgWire.setAttribute('stroke', 'var(--color-accent-700)');
+					leakSvgWire.setAttribute('stroke-dasharray', 'none');
+				}
+			}
+		});
+	});
+</script>
+
+<style>
+	.ce-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		padding: var(--space-4) var(--space-6);
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.ce-shell { width: 100%; max-width: none; margin: 0; flex: 1; display: flex; flex-direction: column; }
+
+	.deck-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-xl);
+		box-shadow: var(--shadow-md);
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* Nav bar */
+	.deck-nav-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: color-mix(in srgb, var(--color-surface) 90%, var(--color-bg));
+		gap: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.deck-slide-indicator {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		letter-spacing: 0.05em;
+	}
+
+	.deck-step-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--color-accent);
+	}
+
+	.deck-pills {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.deck-pill-btn {
+		background: transparent;
+		border: 1px solid transparent;
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-full);
+		font-size: 0.85rem;
+		color: var(--color-text);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.deck-pill-btn:hover {
+		background: var(--color-neutral-200);
+	}
+
+	.deck-pill-btn.active {
+		background: var(--color-accent-200);
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+		font-weight: 600;
+	}
+
+	/* Viewport & slides */
+	.ce-viewport {
+		padding: var(--space-6) var(--space-8);
+		min-height: 480px;
+	}
+
+	.ce-viewport { display: flex; flex-direction: column; justify-content: center; }
+	@media (min-width: 1440px) { .ce-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .ce-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .ce-viewport { zoom: 1.25; } }
+
+	.deck-slide {
+		display: none;
+	}
+
+	.deck-slide.active {
+		display: block;
+		animation: deckFade 0.25s ease-out;
+	}
+
+	@keyframes deckFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	/* Grid & Columns */
+	.deck-slide-grid {
+		display: grid;
+		grid-template-columns: 1.15fr 0.85fr;
+		gap: var(--space-8);
+		align-items: center;
+	}
+
+	@media (max-width: 960px) {
+		.deck-slide-grid {
+			grid-template-columns: 1fr;
+			gap: var(--space-6);
+		}
+	}
+
+	.deck-slide-title {
+		font-family: var(--font-heading);
+		font-size: 1.45rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		margin-bottom: var(--space-3);
+		line-height: 1.25;
+	}
+
+	.deck-text {
+		font-size: 0.92rem;
+		line-height: 1.55;
+		color: var(--color-text);
+		margin-bottom: var(--space-4);
+	}
+
+	/* Figure SVG container */
+	.deck-figure {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-3);
+		box-shadow: inset var(--shadow-sm);
+	}
+
+	/* SVG styles */
+	.deck-panel {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+		stroke-width: 1.5;
+	}
+
+	.deck-panel-accent {
+		fill: var(--color-accent-200);
+		stroke: var(--color-accent);
+		stroke-width: 1.5;
+	}
+
+	.deck-svg-title {
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-title-accent {
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--color-accent-700);
+	}
+
+	.deck-svg-mono {
+		font-family: monospace;
+		font-size: 11px;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-mono-sm {
+		font-family: monospace;
+		font-size: 9.5px;
+		fill: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+
+	.deck-svg-bold {
+		font-size: 11.5px;
+		font-weight: 700;
+		fill: var(--color-text);
+	}
+
+	.deck-svg-sub {
+		font-size: 10px;
+		fill: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.deck-ground-card {
+		fill: var(--color-surface);
+	}
+
+	/* Interactive card styling */
+	.deck-interactive-card {
+		background: var(--color-neutral-100);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+	}
+
+	.deck-card-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--space-3);
+	}
+
+	.deck-badge {
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.deck-actions-row {
+		display: flex;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+		flex-wrap: wrap;
+	}
+
+	.deck-actions-row .btn.active {
+		background: var(--color-accent);
+		color: rgb(255, 255, 255);
+		border-color: var(--color-accent);
+	}
+
+	.deck-info-box {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.state-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		font-size: 0.85rem;
+		padding-bottom: var(--space-1);
+		border-bottom: 1px dashed var(--color-divider);
+	}
+
+	.state-label {
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+
+	.state-val {
+		font-family: monospace;
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	.deck-caption {
+		font-size: 0.82rem;
+		color: color-mix(in srgb, var(--color-text) 65%, transparent);
+		margin-top: var(--space-2);
+		margin-bottom: 0;
+		line-height: 1.4;
+	}
+</style>

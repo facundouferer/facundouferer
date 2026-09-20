@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="20" y="175" width="360" height="8" rx="4" fill="#dcd3c4"/>
+
+	<!-- Title -->
+	<text x="200" y="26" font-family="'Caprasimo', serif" font-size="13" fill="#8c491a" text-anchor="middle">Archivos, Serialización &amp; Empaquetado JAR</text>
+	<text x="200" y="40" font-family="'Figtree', sans-serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">I/O Streams, Decorator, NIO.2, serialVersionUID &amp; jpackage</text>
+
+	<!-- Visual Central Section -->
+	<g transform="translate(45, 60)">
+		<!-- RAM / Heap Object box -->
+		<rect x="0" y="15" width="85" height="70" rx="8" fill="#fdfbf7" stroke="#8c491a" stroke-width="2"/>
+		<rect x="0" y="15" width="85" height="18" rx="8" fill="#c67139"/>
+		<text x="42" y="28" font-family="'Figtree', sans-serif" font-weight="700" font-size="8.5" fill="#fdfbf7" text-anchor="middle">Heap Object</text>
+		<text x="10" y="48" font-family="monospace" font-size="8" fill="#2c2a29">id: 101</text>
+		<text x="10" y="60" font-family="monospace" font-size="8" fill="#2c2a29">nombre: "Doc"</text>
+		<text x="10" y="72" font-family="monospace" font-size="7.5" fill="#7a8a5e">transient pass</text>
+
+		<!-- Pipe (Streams) -->
+		<g transform="translate(95, 38)">
+			<!-- Pipe top/bottom borders -->
+			<path d="M 0,0 L 110,0" stroke="#7a8a5e" stroke-width="3" fill="none"/>
+			<path d="M 0,24 L 110,24" stroke="#7a8a5e" stroke-width="3" fill="none"/>
+			<!-- Stream Flow Inside -->
+			<rect x="0" y="2" width="110" height="20" fill="#dcd3c4" opacity="0.4"/>
+			<!-- Byte particles -->
+			<text x="18" y="15" font-family="monospace" font-size="8" font-weight="700" fill="#8c491a">0xAC</text>
+			<text x="50" y="15" font-family="monospace" font-size="8" font-weight="700" fill="#8c491a">0xED</text>
+			<text x="82" y="15" font-family="monospace" font-size="8" font-weight="700" fill="#c67139">DATA</text>
+		</g>
+
+		<!-- JAR / Package Box -->
+		<g transform="translate(225, 12)">
+			<rect x="0" y="0" width="85" height="76" rx="8" fill="#fdfbf7" stroke="#c67139" stroke-width="2"/>
+			<path d="M 0,18 L 85,18" stroke="#c67139" stroke-width="1.5"/>
+			<text x="42" y="13" font-family="'Caprasimo', serif" font-size="9" fill="#8c491a" text-anchor="middle">app.jar (ZIP)</text>
+
+			<rect x="8" y="25" width="69" height="14" rx="3" fill="#ebddc5"/>
+			<text x="42" y="35" font-family="monospace" font-size="7" fill="#2c2a29" text-anchor="middle">MANIFEST.MF</text>
+
+			<rect x="8" y="44" width="69" height="14" rx="3" fill="#ebddc5"/>
+			<text x="42" y="54" font-family="monospace" font-size="7" fill="#7a8a5e" text-anchor="middle">Main.class</text>
+
+			<rect x="8" y="61" width="69" height="10" rx="2" fill="#dcd3c4"/>
+		</g>
+	</g>
+
+	<!-- Labels below -->
+	<text x="88" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#8c491a" text-anchor="middle">Serializable &amp; UID</text>
+	<text x="200" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">Decorator Stream</text>
+	<text x="312" y="155" font-family="'Caprasimo', serif" font-size="8.5" fill="#c67139" text-anchor="middle">Executable Artifact</text>
+</svg>
