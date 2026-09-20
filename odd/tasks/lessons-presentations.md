@@ -71,7 +71,7 @@ sorting: 3) and 51 lessons have none.
 
 ## Tasks
 
-- [ ] **LP-01 — Data model and validated mapping**
+- [x] **LP-01 — Data model and validated mapping**
   - Route: delegated; writer trigger (data file, helper module, tests).
   - Add `lesson` to `Presentation`, map all 22 records, add
     `getPresentationsForLesson(course, slug)` and `getLessonForPresentation`.
@@ -107,7 +107,8 @@ npm run build
 
 | Task | Commit | Focused check | RDD outcome |
 |---|---|---|---|
+| LP-01 | `e7da256` | `node --test tests/presentations-lessons.test.mjs` — 12 passed | disabled/unmanaged |
 
 ## Next step
 
-Implement `LP-01`.
+Implement `LP-02`.
