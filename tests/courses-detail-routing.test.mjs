@@ -82,3 +82,87 @@ test('LessonsList component renders ordered list of lesson links', async () => {
 	assert.match(content, /locale/);
 	assert.match(content, /lesson\.slug/);
 });
+
+test('LessonsList Lesson type accepts an optional presentationCount', async () => {
+	const content = await readFile('src/components/LessonsList.astro', 'utf8');
+	assert.match(content, /presentationCount\?:\s*number/);
+});
+
+test('LessonsList renders a presentation count badge conditionally in both variants', async () => {
+	const content = await readFile('src/components/LessonsList.astro', 'utf8');
+	assert.match(content, /class="badge/);
+	const conditionOccurrences = content.match(/lesson\.presentationCount/g) ?? [];
+	assert.ok(
+		conditionOccurrences.length >= 2,
+		'expected the presentationCount condition to appear in both the cards and list variants',
+	);
+});
+
+test('course detail pages compute presentation counts and pass them into LessonsList', async () => {
+	for (const file of [
+		'src/pages/cursos/[course]/index.astro',
+		'src/pages/en/courses/[course]/index.astro',
+	]) {
+		const content = await readFile(file, 'utf8');
+		assert.match(
+			content,
+			/getPresentationCountsForCourse/,
+			`${file} should import getPresentationCountsForCourse`,
+		);
+		assert.match(content, /presentationCount/, `${file} should pass presentationCount into LessonsList`);
+	}
+});
+
+test('lesson detail pages pass presentationCount into the sidebar LessonsList', async () => {
+	for (const file of [
+		'src/pages/cursos/[course]/[lesson].astro',
+		'src/pages/en/courses/[course]/[lesson].astro',
+	]) {
+		const content = await readFile(file, 'utf8');
+		assert.match(
+			content,
+			/getPresentationCountsForCourse/,
+			`${file} should import getPresentationCountsForCourse`,
+		);
+		assert.match(
+			content,
+			/presentationCount/,
+			`${file} should pass presentationCount into the sidebar LessonsList`,
+		);
+	}
+});
+
+test('lesson detail pages render presentations for the current lesson via LessonPresentations', async () => {
+	for (const file of [
+		'src/pages/cursos/[course]/[lesson].astro',
+		'src/pages/en/courses/[course]/[lesson].astro',
+	]) {
+		const content = await readFile(file, 'utf8');
+		assert.match(content, /getPresentationsForLesson/, `${file} should import getPresentationsForLesson`);
+		assert.match(content, /LessonPresentations/, `${file} should render LessonPresentations`);
+	}
+});
+
+test('LessonPresentations component exists', () => {
+	assert.ok(existsSync('src/components/LessonPresentations.astro'));
+});
+
+test('LessonPresentations renders a card per presentation using system classes and the open i18n key', async () => {
+	const content = await readFile('src/components/LessonPresentations.astro', 'utf8');
+	assert.match(content, /presentations:\s*Presentation\[\]/);
+	assert.match(content, /locale/);
+	assert.match(content, /class="card /);
+	assert.match(content, /presentations\.card\.open/);
+});
+
+test('i18n dictionaries expose lesson-presentation badge and heading keys', async () => {
+	const es = JSON.parse(await readFile('src/i18n/es.json', 'utf8'));
+	const en = JSON.parse(await readFile('src/i18n/en.json', 'utf8'));
+	for (const dict of [es, en]) {
+		assert.ok(dict.courses?.lessonPresentations?.badge?.one, 'courses.lessonPresentations.badge.one present');
+		assert.ok(dict.courses?.lessonPresentations?.badge?.other, 'courses.lessonPresentations.badge.other present');
+		assert.ok(dict.courses?.lessonPresentations?.heading, 'courses.lessonPresentations.heading present');
+	}
+	assert.equal(es.courses.lessonPresentations.badge.one, '1 presentación');
+	assert.equal(en.courses.lessonPresentations.badge.one, '1 presentation');
+});

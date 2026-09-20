@@ -6,6 +6,7 @@ import { buildCourseBreadcrumbSchema } from '../../../../seo/schema';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import LessonsList from '../../../../components/LessonsList.astro';
 import { withBase } from '../../../../utils/withBase';
+import { getPresentationCountsForCourse } from '../../../../data/presentations';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -28,6 +29,7 @@ if (!course) {
 }
 
 const lessons = getLessonsForCourse(allLessons, courseSlug, 'en');
+const presentationCounts = getPresentationCountsForCourse(courseSlug);
 
 const schema = buildCourseBreadcrumbSchema({
 	locale: 'en',
@@ -64,7 +66,18 @@ const schema = buildCourseBreadcrumbSchema({
 
 		<section class="lessons-section">
 			<h2 class="lessons-heading">{t('courses.lessonsLabel')} ({lessons.length})</h2>
-			<LessonsList lessons={lessons.map((l) => l.data)} courseSlug={courseSlug} locale="en" variant="cards" />
+			<LessonsList
+				lessons={lessons.map((l) => ({
+					slug: l.data.slug,
+					title: l.data.title,
+					description: l.data.description,
+					order: l.data.order,
+					presentationCount: presentationCounts[l.data.slug],
+				}))}
+				courseSlug={courseSlug}
+				locale="en"
+				variant="cards"
+			/>
 		</section>
 	</div>
 </BaseLayout>

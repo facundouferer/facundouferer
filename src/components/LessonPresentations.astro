@@ -1,0 +1,107 @@
+---
+import type { Presentation } from '../data/presentations';
+import { useTranslations } from '../i18n/utils';
+import { withBase } from '../utils/withBase';
+
+type Props = {
+	presentations: Presentation[];
+	locale: 'es' | 'en';
+};
+
+const { presentations, locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+{
+	presentations.length > 0 && (
+		<section class="lesson-presentations">
+			<h2 class="lesson-presentations-heading">{t('courses.lessonPresentations.heading')}</h2>
+			<ul class="lesson-presentations-grid">
+				{presentations.map((presentation) => {
+					const href =
+						locale === 'es'
+							? `/presentaciones/${presentation.slug}`
+							: `/en/presentaciones/${presentation.slug}`;
+					const title = locale === 'es' ? presentation.title.es : presentation.title.en;
+					const description = locale === 'es' ? presentation.description.es : presentation.description.en;
+					const tag = locale === 'es' ? presentation.tag.es : presentation.tag.en;
+					return (
+						<li class="lesson-presentation-item">
+							<a class="card card-hover elev-sm lesson-presentation-card" href={withBase(href)}>
+								<div class="lesson-presentation-image">
+									<img src={withBase(presentation.image)} alt={title} loading="lazy" />
+								</div>
+								<span class="tag tag-accent">{tag}</span>
+								<h3 class="card-title">{title}</h3>
+								<p class="card-body">{description}</p>
+								<span class="card-meta lesson-presentation-open">
+									{t('presentations.card.open')} →
+								</span>
+							</a>
+						</li>
+					);
+				})}
+			</ul>
+		</section>
+	)
+}
+
+<style>
+	.lesson-presentations {
+		margin-top: var(--space-8);
+		padding-top: var(--space-6);
+		border-top: 1px dashed var(--color-divider);
+	}
+
+	.lesson-presentations-heading {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 1.3rem;
+		margin: 0 0 var(--space-4);
+	}
+
+	.lesson-presentations-grid {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (min-width: 640px) {
+		.lesson-presentations-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	.lesson-presentation-item {
+		margin: 0;
+		display: flex;
+	}
+
+	.lesson-presentation-card {
+		width: 100%;
+		text-decoration: none;
+		color: var(--color-text);
+		border: 1px solid var(--color-divider);
+	}
+
+	.lesson-presentation-image {
+		border-radius: var(--radius-md);
+		overflow: hidden;
+	}
+
+	.lesson-presentation-image img {
+		display: block;
+		width: 100%;
+		height: 140px;
+		object-fit: cover;
+	}
+
+	.lesson-presentation-open {
+		margin-top: auto;
+		font-weight: 600;
+		color: var(--color-accent-700);
+	}
+</style>

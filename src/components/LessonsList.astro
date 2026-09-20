@@ -1,11 +1,13 @@
 ---
 import { withBase } from '../utils/withBase';
+import { useTranslations } from '../i18n/utils';
 
 type Lesson = {
 	slug: string;
 	title: string;
 	description?: string;
 	order: number;
+	presentationCount?: number;
 };
 
 type Props = {
@@ -17,6 +19,13 @@ type Props = {
 };
 
 const { lessons, courseSlug, locale, currentSlug, variant = 'cards' } = Astro.props;
+const t = useTranslations(locale);
+
+/** Accessible label for the presentation-count badge, e.g. "3 presentaciones". */
+function presentationCountLabel(count: number): string {
+	const key = count === 1 ? 'courses.lessonPresentations.badge.one' : 'courses.lessonPresentations.badge.other';
+	return t(key).replace('{count}', String(count));
+}
 ---
 
 {
@@ -49,7 +58,34 @@ const { lessons, courseSlug, locale, currentSlug, variant = 'cards' } = Astro.pr
 							</div>
 							<h3 class="card-title">{lesson.title}</h3>
 							{lesson.description && <p class="card-body">{lesson.description}</p>}
-							<div class="card-meta lesson-card-footer">
+							<div
+								class:list={[
+									'card-meta',
+									'lesson-card-footer',
+									{ 'lesson-card-footer--split': !!lesson.presentationCount },
+								]}
+							>
+								{lesson.presentationCount ? (
+									<span class="badge lesson-presentation-badge" aria-label={presentationCountLabel(lesson.presentationCount)}>
+										<svg
+											aria-hidden="true"
+											xmlns="http://www.w3.org/2000/svg"
+											width="13"
+											height="13"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2.75"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										>
+											<path d="M2 3h20" />
+											<path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3" />
+											<path d="m7 21 5-5 5 5" />
+										</svg>
+										<span aria-hidden="true">{lesson.presentationCount}</span>
+									</span>
+								) : null}
 								<span class="read-link">
 									{locale === 'es' ? 'Ver lección' : 'View lesson'} →
 								</span>
@@ -76,7 +112,30 @@ const { lessons, courseSlug, locale, currentSlug, variant = 'cards' } = Astro.pr
 						>
 							<span class="lesson-order">{lesson.order}</span>
 							<span class="lesson-info">
-								<span class="lesson-title">{lesson.title}</span>
+								<span class="lesson-title-row">
+									<span class="lesson-title">{lesson.title}</span>
+									{lesson.presentationCount ? (
+										<span class="badge lesson-presentation-badge" aria-label={presentationCountLabel(lesson.presentationCount)}>
+											<svg
+												aria-hidden="true"
+												xmlns="http://www.w3.org/2000/svg"
+												width="11"
+												height="11"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="2.75"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+											>
+												<path d="M2 3h20" />
+												<path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3" />
+												<path d="m7 21 5-5 5 5" />
+											</svg>
+											<span aria-hidden="true">{lesson.presentationCount}</span>
+										</span>
+									) : null}
+								</span>
 								{lesson.description && <span class="lesson-desc">{lesson.description}</span>}
 							</span>
 						</a>
@@ -142,6 +201,14 @@ const { lessons, courseSlug, locale, currentSlug, variant = 'cards' } = Astro.pr
 		margin-top: auto;
 		padding-top: var(--space-2);
 		border-top: 1px dashed var(--color-divider);
+	}
+
+	.lesson-card-footer--split {
+		justify-content: space-between;
+	}
+
+	.lesson-presentation-badge svg {
+		flex-shrink: 0;
 	}
 
 	.read-link {
@@ -210,6 +277,13 @@ const { lessons, courseSlug, locale, currentSlug, variant = 'cards' } = Astro.pr
 	.lesson-info {
 		display: grid;
 		gap: 0.1rem;
+	}
+
+	.lesson-title-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		flex-wrap: wrap;
 	}
 
 	.lesson-title {

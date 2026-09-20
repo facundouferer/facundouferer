@@ -4,6 +4,8 @@ import { getLangFromUrl, useTranslations } from '../../../../i18n/utils';
 import { buildCourseBreadcrumbSchema } from '../../../../seo/schema';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import LessonsList from '../../../../components/LessonsList.astro';
+import LessonPresentations from '../../../../components/LessonPresentations.astro';
+import { getPresentationCountsForCourse, getPresentationsForLesson } from '../../../../data/presentations';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -54,6 +56,9 @@ const { Content } = await render(entry);
 const prevLesson = courseLessons.find((l) => l.data.order === entry.data.order - 1);
 const nextLesson = courseLessons.find((l) => l.data.order === entry.data.order + 1);
 
+const presentationCounts = getPresentationCountsForCourse(courseSlug);
+const lessonPresentations = getPresentationsForLesson(courseSlug, lessonSlug);
+
 const schema = buildCourseBreadcrumbSchema({
 	locale: 'en',
 	courseSlug,
@@ -86,6 +91,7 @@ const schema = buildCourseBreadcrumbSchema({
 							title: l.data.title,
 							description: l.data.description,
 							order: l.data.order,
+							presentationCount: presentationCounts[l.data.slug],
 						}))}
 						courseSlug={courseSlug}
 						locale="en"
@@ -110,6 +116,7 @@ const schema = buildCourseBreadcrumbSchema({
 					<div class="article-body">
 						<Content />
 					</div>
+					<LessonPresentations presentations={lessonPresentations} locale="en" />
 					<footer class="lesson-footer">
 						<nav class="pager" aria-label="Lesson navigation">
 							{prevLesson && (
