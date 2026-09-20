@@ -15,6 +15,7 @@ const NARY_TREES_LESSON = '26-arboles-n-arios-y-representacion-con-vectores';
 const GRAPHS_LESSON = '18-grafos-representacion-y-algoritmos';
 const PACKAGING_LESSON = '19-archivos-persistencia-y-empaquetado-jar';
 const CONCURRENCY_LESSON = '20-programacion-concurrente-hilos-y-pools';
+const DEBUGGING_LESSON = '27-depuracion-codigo-limpio-y-refactorizacion';
 
 async function readLesson(slug, lang) {
 	return readFile(path.join(JAVA_COURSE_DIR, `${slug}.${lang}.md`), 'utf8');
@@ -397,6 +398,73 @@ test('concurrency lesson teaches monitor coordination and deadlock diagnosis in 
 		assert.match(content, /newCondition\(\)/, `${locale}: Condition alternative`);
 		assert.match(content, /CountDownLatch/, `${locale}: CountDownLatch alternative`);
 		assert.match(content, /deadlock|interbloqueo/i, `${locale}: deadlock terminology`);
+	}
+});
+
+test('Debugging and refactoring lesson is bilingual and follows the testing/Spring lesson', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(DEBUGGING_LESSON, 'es'),
+		readLesson(DEBUGGING_LESSON, 'en'),
+	]);
+
+	assert.equal(frontmatterValue(spanish, 'slug'), DEBUGGING_LESSON);
+	assert.equal(frontmatterValue(english, 'slug'), DEBUGGING_LESSON);
+	assert.equal(frontmatterValue(spanish, 'lang'), 'es');
+	assert.equal(frontmatterValue(english, 'lang'), 'en');
+	assert.equal(Number(frontmatterValue(spanish, 'order')), 27);
+	assert.equal(Number(frontmatterValue(english, 'order')), 27);
+});
+
+test('Debugging and refactoring lesson teaches feedback loops, code smells, and behaviour-preserving refactors', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(DEBUGGING_LESSON, 'es'),
+		readLesson(DEBUGGING_LESSON, 'en'),
+	]);
+
+	for (const [locale, content] of [
+		['Spanish', spanish],
+		['English', english],
+	]) {
+		assert.match(content, /reproduce|reproducir/i, `${locale}: reproduce step`);
+		assert.match(content, /hypothes(?:is|ize)|hip[oó]tesis/i, `${locale}: hypothesize step`);
+		assert.match(content, /observe|observar/i, `${locale}: observe step`);
+		assert.match(content, /verify|verificar/i, `${locale}: verify step`);
+		assert.match(content, /stack trace|traza de pila/i, `${locale}: reading a stack trace`);
+		assert.match(content, /breakpoint/i, `${locale}: breakpoint`);
+		assert.match(content, /conditional breakpoint|breakpoint condicional/i, `${locale}: conditional breakpoint`);
+		assert.match(content, /watch/i, `${locale}: watch expression`);
+		assert.match(content, /step over/i, `${locale}: step over`);
+		assert.match(content, /step into/i, `${locale}: step into`);
+		assert.match(content, /step out/i, `${locale}: step out`);
+		assert.match(content, /call stack|pila de llamadas/i, `${locale}: call stack inspection`);
+		assert.match(content, /println/, `${locale}: println tradeoffs`);
+		assert.match(content, /IntelliJ/, `${locale}: IntelliJ IDEA`);
+		assert.match(content, /Visual Studio Code/, `${locale}: VS Code`);
+		assert.match(content, /Eclipse/, `${locale}: Eclipse`);
+		assert.match(content, /magic numbers?|n[uú]meros? m[aá]gicos?/i, `${locale}: magic numbers`);
+		assert.match(content, /single responsibility|responsabilidad [uú]nica/i, `${locale}: single responsibility`);
+		assert.match(content, /long method/i, `${locale}: long method smell`);
+		assert.match(content, /long parameter list/i, `${locale}: long parameter list smell`);
+		assert.match(content, /duplicated code/i, `${locale}: duplicated code smell`);
+		assert.match(content, /feature envy/i, `${locale}: feature envy smell`);
+		assert.match(content, /primitive obsession/i, `${locale}: primitive obsession smell`);
+		assert.match(content, /god class/i, `${locale}: god class smell`);
+		assert.match(content, /code smell/i, `${locale}: code smell terminology`);
+		assert.match(content, /extract method/i, `${locale}: extract method refactor`);
+		assert.match(content, /rename/i, `${locale}: rename refactor`);
+		assert.match(content, /introduce constant/i, `${locale}: introduce constant refactor`);
+		assert.match(content, /parameter object/i, `${locale}: parameter object refactor`);
+		assert.match(content, /replace conditional with polymorphism/i, `${locale}: replace conditional with polymorphism`);
+		assert.match(content, /guard clause/i, `${locale}: guard clause refactor`);
+		assert.match(content, /JUnit/, `${locale}: JUnit-backed safety net`);
+		assert.match(content, /@Test/, `${locale}: JUnit test annotation`);
+		assert.match(content, /OrderCalculator/, `${locale}: before/after example subject`);
+		assert.match(content, /Antes|Before/, `${locale}: before section`);
+		assert.match(content, /Despu[eé]s|After/, `${locale}: after section`);
+		assert.match(content, /observable behavior|comportamiento observable/i, `${locale}: behaviour-preserving definition`);
+		assert.match(content, /green|verde/i, `${locale}: tests kept green`);
+		assert.match(content, /mixing them in a single step|mezclarlas en un mismo paso/i, `${locale}: never mix debugging and refactoring`);
+		assert.match(content, /are not the same step|no son el mismo paso/i, `${locale}: debugging vs refactoring distinction`);
 	}
 });
 
