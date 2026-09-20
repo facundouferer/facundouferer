@@ -79,7 +79,7 @@ sorting: 3) and 51 lessons have none.
     file, every presentation has exactly one lesson, helpers return grouped
     results in catalog order.
 
-- [ ] **LP-02 — Lesson list badge and lesson detail section**
+- [x] **LP-02 — Lesson list badge and lesson detail section**
   - Route: delegated; writer trigger (component, 4 pages, i18n, tests).
   - `LessonsList` receives `presentationCount` per lesson and renders a badge
     (Lucide icon + count) in both variants; lesson detail pages render a
@@ -108,7 +108,8 @@ npm run build
 | Task | Commit | Focused check | RDD outcome |
 |---|---|---|---|
 | LP-01 | `e7da256` | `node --test tests/presentations-lessons.test.mjs` — 12 passed | disabled/unmanaged |
+| LP-02 | `4829a18` | `node --test tests/courses-detail-routing.test.mjs tests/courses-catalog.test.mjs tests/presentations-lessons.test.mjs` — 40 passed, 2 pre-existing CourseBreadcrumb failures; build 275 pages | disabled/unmanaged |
 
 ## Next step
 
-Implement `LP-02`.
+Implement `LP-03`.
