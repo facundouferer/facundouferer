@@ -640,6 +640,13 @@ PI = 3.0f; // Intentando reasignar...</div>
 		opacity: 0.45;
 		cursor: not-allowed;
 	}
+
+	/* Fill the viewport: center the active slide and scale it up on wide screens. */
+	.vc-viewport { display: flex; flex-direction: column; justify-content: center; }
+	.vc-slide.active { width: 100%; }
+	@media (min-width: 1440px) { .vc-viewport { zoom: 1.15; } }
+	@media (min-width: 1800px) { .vc-viewport { zoom: 1.35; } }
+	@media (min-width: 2300px) { .vc-viewport { zoom: 1.6; } }
 </style>
 
 <script>

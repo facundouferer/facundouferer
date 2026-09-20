@@ -110,3 +110,19 @@ test('presentation detail pages keep PresentationLessonLink in a full-width, com
 		);
 	}
 });
+
+test('every presentation viewport centers the active slide and scales it on wide screens', async () => {
+	const files = await getPresentationFiles();
+
+	for (const file of files) {
+		const content = await readFile(`${PRESENTATIONS_DIR}/${file}`, 'utf8');
+		const prefix = content.match(/class="([a-z]{2})-screen"/)?.[1];
+		assert.match(
+			content,
+			new RegExp(`\\.${prefix}-viewport \\{ display: flex; flex-direction: column; justify-content: center; \\}`),
+			`${file} should vertically center the active slide inside .${prefix}-viewport`,
+		);
+		const zoomSteps = content.match(new RegExp(`@media \\(min-width: \\d+px\\) \\{ \\.${prefix}-viewport \\{ zoom: [0-9.]+; \\} \\}`, 'g')) ?? [];
+		assert.equal(zoomSteps.length, 3, `${file} should define three wide-screen zoom steps for .${prefix}-viewport`);
+	}
+});

@@ -346,6 +346,13 @@ console.log(<span class="token-string">"5"</span> + <span class="token-number">2
 	.tj-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1.2rem; border-top: 1px solid var(--color-divider); background: color-mix(in srgb, var(--color-bg) 60%, transparent); }
 	.tj-footer-meta { font-size: 0.78rem; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
 	.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+	/* Fill the viewport: center the active slide and scale it up on wide screens. */
+	.tj-viewport { display: flex; flex-direction: column; justify-content: center; }
+	.tj-slide.active { width: 100%; }
+	@media (min-width: 1440px) { .tj-viewport { zoom: 1.15; } }
+	@media (min-width: 1800px) { .tj-viewport { zoom: 1.35; } }
+	@media (min-width: 2300px) { .tj-viewport { zoom: 1.6; } }
 </style>
 
 <script>
