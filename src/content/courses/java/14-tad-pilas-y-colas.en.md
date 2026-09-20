@@ -3,7 +3,7 @@ course: 'java'
 slug: '12-tad-pilas-y-colas'
 title: 'The Stack and Queue ADTs: Linear Structures'
 description: 'Master LIFO and FIFO structures, implement them from scratch over nodes and arrays, understand the circular queue, and solve the classic balanced-brackets problem.'
-order: 15
+order: 16
 lang: 'en'
 published: true
 ---

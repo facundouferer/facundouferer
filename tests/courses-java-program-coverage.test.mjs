@@ -8,6 +8,7 @@ const ALGORITHM_LESSON = '23-algoritmia-verificacion-y-complejidad';
 const BASIC_CONCEPTS_LESSON = '01-conceptos-basicos';
 const VARIABLES_LESSON = '02-variables-tipos-datos-y-operadores';
 const METHODS_LESSON = '05-metodos-y-funciones';
+const GIT_FOUNDATIONS_LESSON = '24-git-github-fundamentos-y-remotos';
 
 async function readLesson(slug, lang) {
 	return readFile(path.join(JAVA_COURSE_DIR, `${slug}.${lang}.md`), 'utf8');
@@ -139,6 +140,53 @@ test('methods lesson teaches recursion forms, stack costs, and bounded use', asy
 		assert.match(content, /O\(n\).*(?:stack|pila)|(?:stack|pila).*O\(n\)/is, `${locale}: linear stack cost`);
 		assert.match(content, /IllegalArgumentException/, `${locale}: input validation`);
 		assert.match(content, /MAX_RECURSIVE_DEPTH/, `${locale}: bounded recursive example`);
+	}
+});
+
+test('Git foundations lesson is bilingual and ordered before object-oriented programming', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(GIT_FOUNDATIONS_LESSON, 'es'),
+		readLesson(GIT_FOUNDATIONS_LESSON, 'en'),
+	]);
+
+	assert.equal(frontmatterValue(spanish, 'slug'), GIT_FOUNDATIONS_LESSON);
+	assert.equal(frontmatterValue(english, 'slug'), GIT_FOUNDATIONS_LESSON);
+	assert.equal(frontmatterValue(spanish, 'lang'), 'es');
+	assert.equal(frontmatterValue(english, 'lang'), 'en');
+	assert.equal(Number(frontmatterValue(spanish, 'order')), 7);
+	assert.equal(Number(frontmatterValue(english, 'order')), 7);
+});
+
+test('Git foundations lesson teaches a safe local and remote workflow in both locales', async () => {
+	const [spanish, english] = await Promise.all([
+		readLesson(GIT_FOUNDATIONS_LESSON, 'es'),
+		readLesson(GIT_FOUNDATIONS_LESSON, 'en'),
+	]);
+
+	for (const [locale, content] of [
+		['Spanish', spanish],
+		['English', english],
+	]) {
+		assert.match(content, /GitHub.*(?:hosting|alojamiento)|(?:hosting|alojamiento).*GitHub/is, `${locale}: Git versus GitHub`);
+		assert.match(content, /git --version/, `${locale}: installation verification`);
+		assert.match(content, /git config --global user\.name/, `${locale}: global identity`);
+		assert.match(content, /git config --local user\.email/, `${locale}: repository-local identity`);
+		assert.match(content, /git init/, `${locale}: init`);
+		assert.match(content, /git status/, `${locale}: status`);
+		assert.match(content, /git add/, `${locale}: staging`);
+		assert.match(content, /git commit/, `${locale}: commit`);
+		assert.match(content, /\.gitignore/, `${locale}: ignore rules`);
+		assert.match(content, /git remote add origin/, `${locale}: remote`);
+		assert.match(content, /git remote get-url origin/, `${locale}: remote URL validation`);
+		assert.match(content, /git branch --show-current/, `${locale}: current branch validation`);
+		assert.match(content, /git clone/, `${locale}: clone`);
+		assert.match(content, /git fetch/, `${locale}: fetch`);
+		assert.match(content, /git pull/, `${locale}: pull`);
+		assert.match(content, /git push -u origin/, `${locale}: push and upstream tracking`);
+		assert.match(content, /HTTPS/, `${locale}: HTTPS tradeoff`);
+		assert.match(content, /SSH/, `${locale}: SSH tradeoff`);
+		assert.match(content, /secret|secreto/i, `${locale}: secret warning`);
+		assert.match(content, /force[- ]push|push.*--force|--force.*push/i, `${locale}: force-push warning`);
 	}
 });
 

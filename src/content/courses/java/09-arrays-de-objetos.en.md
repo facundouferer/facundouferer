@@ -3,7 +3,7 @@ course: 'java'
 slug: '09-arrays-de-objetos'
 title: 'Arrays of Objects: Holding and Iterating Many Instances'
 description: 'Combine arrays with classes: create object arrays, avoid the NullPointerException from empty slots, iterate them, search, sort with Comparable and Comparator, and manage capacity versus actual count.'
-order: 10
+order: 11
 lang: 'en'
 published: true
 ---

@@ -3,7 +3,7 @@ course: 'java'
 slug: '07-constructores-y-encapsulamiento'
 title: 'Constructors, Access Modifiers, and Getters/Setters'
 description: 'Learn how to guarantee every object is born valid using constructors, overloading, and this(), then shield its internal state with encapsulation, access modifiers, and defensive copies.'
-order: 9
+order: 10
 lang: 'en'
 published: true
 ---
