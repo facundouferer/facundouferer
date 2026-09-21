@@ -91,4 +91,91 @@ const lessons = defineCollection({
 	}),
 });
 
-export const collections = { projects, articles, courses, lessons };
+// --- activities ---------------------------------------------------------
+// Practice activities for course lessons. Locale-split markdown files under
+// `src/content/activities/<course>/<lesson>/<slug>.<lang>.md`. `kind`
+// discriminates the collection schema so `project` and `quiz` activities
+// each carry only their own fields. Question kinds are their own nested
+// discriminated union (`single-choice` | `true-false`) so a new kind (e.g.
+// `multiple-select`) can be added later without touching existing questions.
+
+const singleChoiceOption = z.object({
+	id: z.string(),
+	text: z.string(),
+});
+
+const singleChoiceQuestion = z.object({
+	kind: z.literal('single-choice'),
+	id: z.string(),
+	prompt: z.string(),
+	options: z.array(singleChoiceOption).min(2),
+	correctOptionId: z.string(),
+	explanation: z.string(),
+});
+
+const trueFalseQuestion = z.object({
+	kind: z.literal('true-false'),
+	id: z.string(),
+	prompt: z.string(),
+	correctAnswer: z.boolean(),
+	explanation: z.string(),
+});
+
+const quizQuestion = z.discriminatedUnion('kind', [singleChoiceQuestion, trueFalseQuestion]);
+
+const activityBaseSchema = {
+	course: z.string(),
+	lesson: z.string(),
+	slug: z.string(),
+	title: z.string(),
+	description: z.string(),
+	order: z.number().int().nonnegative(),
+	lang: z.enum(['es', 'en']),
+	published: z.boolean().default(true),
+	estimatedMinutes: z.number().int().positive().optional(),
+};
+
+const projectActivity = z.object({
+	...activityBaseSchema,
+	kind: z.literal('project'),
+	objectives: z.array(z.string()).min(1),
+	requirements: z.array(z.string()).min(1),
+	exampleOutput: z.string().optional(),
+	extensionChallenges: z.array(z.string()).optional(),
+	deliveryTips: z.array(z.string()).optional(),
+});
+
+const quizActivity = z
+	.object({
+		...activityBaseSchema,
+		kind: z.literal('quiz'),
+		questions: z.array(quizQuestion).min(1),
+	})
+	.superRefine((data, ctx) => {
+		for (const [index, question] of data.questions.entries()) {
+			if (question.kind === 'single-choice' && !question.options.some((option) => option.id === question.correctOptionId)) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: `questions[${index}].correctOptionId "${question.correctOptionId}" does not match any option id`,
+					path: ['questions', index, 'correctOptionId'],
+				});
+			}
+		}
+	});
+
+const activities = defineCollection({
+	loader: glob({
+		pattern: '**/*.+(es|en).md',
+		base: './src/content/activities',
+		generateId: ({ data }) => {
+			const course = typeof data.course === 'string' ? data.course : 'unknown';
+			const lesson = typeof data.lesson === 'string' ? data.lesson : 'unknown';
+			const slug = typeof data.slug === 'string' ? data.slug : 'unknown';
+			const lang = typeof data.lang === 'string' ? data.lang : 'es';
+			return `${course}/${lesson}/${slug}__${lang}`;
+		},
+	}),
+	schema: z.discriminatedUnion('kind', [projectActivity, quizActivity]),
+});
+
+export const collections = { projects, articles, courses, lessons, activities };
