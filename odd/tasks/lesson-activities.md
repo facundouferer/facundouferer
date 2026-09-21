@@ -41,6 +41,7 @@ practice and self-assess.
 - [x] T5 — User feedback: render quiz code as a real code block, fix cramped inline options
 - [x] T6 — Activity count badge in lesson lists (course page + lesson sidebar, ES and EN)
 - [x] T7 — Full-width activities pages, matching article-page layout
+- [x] T8 — Activities for lesson `07-constructores-y-encapsulamiento` (project + quiz)
 
 ## Route per task
 
@@ -404,6 +405,74 @@ Delegated direct (writer trigger: 2+ non-trivial files).
     as an article page (`/articulos/alan-buscaglia`) at 1235px viewport —
     content starts/ends at essentially the same x-coordinates on both page
     types.
+
+### T8 — activities for lesson `07-constructores-y-encapsulamiento` (done)
+
+- Target lesson: `src/content/courses/java/08-constructores-y-encapsulamiento.es.md`
+  (filename starts with `08-`, but frontmatter `slug: '07-constructores-y-
+  encapsulamiento'`, `order: 9` — activity `lesson` frontmatter must equal the
+  slug, not the filename). Verified the surrounding lessons by `order` to scope
+  content correctly: `09-arrays-de-objetos.es.md` (slug `09-arrays-de-objetos`,
+  `order: 10`) and `10-herencia-polimorfismo-y-sobrecarga.es.md` (slug
+  `08-herencia-polimorfismo-y-sobrecarga`, `order: 11`) come right after, so
+  arrays-of-objects (raw `T[]`, `Arrays.sort`, `Comparable`/`Comparator`,
+  array aliasing) and inheritance/polymorphism (`extends`, `super`,
+  `@Override`, despacho dinámico) are out of scope for this activity pair.
+- `src/content/activities/java/07-constructores-y-encapsulamiento/gestion-catalogo-biblioteca.es.md`
+  (`kind: project`, order 1): "Sistema de Catálogo de una Biblioteca" — a
+  `Libro` class with `private final` attributes, a canonical constructor that
+  validates and throws `IllegalArgumentException`, a convenience constructor
+  delegating with `this(...)`, a validated `setPrecioReposicion`, domain
+  methods (`prestar`/`devolver`) instead of a raw setter for
+  `copiasDisponibles`, a requirement to comment why `new Libro()` doesn't
+  compile once custom constructors exist, and a `List<Libro>` (not an array)
+  recorrida con for-each — `List`/`ArrayList` is itself introduced in this
+  lesson's own reference-leak section, so it's in scope; raw object arrays are
+  not (that's the next lesson).
+- `.../autoevaluacion-constructores-y-encapsulamiento.es.md` (`kind: quiz`,
+  order 2): 10 questions (6 single-choice, 4 true-false) covering constructor
+  identity rules, the five stages of `new` (constructor body is stage 4), the
+  default constructor disappearing once a custom one is declared, `this(...)`
+  ordering and cyclic-delegation compile errors, encapsulation as
+  responsibility (not private+getter/setter ritual), when a getter/setter is
+  worth having, and the reference-leak example from the lesson's own `Curso`/
+  `alumnos` code. Two questions (constructor-cycle, reference-leak) carry a
+  real multi-line `code:` field instead of crammed-into-prompt code, per the
+  existing schema/rendering pattern. Every question has an `explanation`;
+  answers double-checked against actual Java semantics (e.g. default
+  constructor vanishes on any declared constructor; `this(...)` must be the
+  first statement; cyclic `this(...)` is a compile-time error, not a runtime
+  `StackOverflowError`).
+- Tests (TDD, RED confirmed before authoring — directory/files missing):
+  `tests/activities-constructors-content.test.mjs` (13 tests: file count,
+  frontmatter fields/order, project requires private attributes + `this(...)`
+  + `IllegalArgumentException`, project/quiz exclude inheritance and
+  arrays-of-objects vocabulary (`extends`, `super(`, `@Override`,
+  `Comparable`/`Comparator`/`Arrays.sort`, raw `T[]`), question-count/kind-mix,
+  explanation presence, code-field presence with line breaks, no crammed
+  `;`-joined prompts, backticked inline code).
+- Verification:
+  - `npm test`: 429 tests, 424 pass, 5 fail — the same 5 pre-existing
+    unrelated failures as every prior task (`CourseBreadcrumb` ×2,
+    `testimonials` ×2, `language strategy is documented for article
+    publication flow`); all 13 new tests pass.
+  - `npm run build`: succeeds, 364 pages, including
+    `dist/cursos/java/07-constructores-y-encapsulamiento/actividades/index.html`
+    plus both detail pages (`gestion-catalogo-biblioteca`,
+    `autoevaluacion-constructores-y-encapsulamiento`).
+  - Inspected built HTML: `dist/cursos/java/index.html` and the lesson's own
+    page both show `lesson-activity-badge` with `aria-label="2 actividades"`
+    for this lesson.
+  - Live-verified in Chrome (claude-in-chrome against `npm run preview`):
+    quiz renders with stacked radio options and syntax-highlighted code
+    blocks (questions 7 and 10); answered a deliberate mix of correct/
+    incorrect answers across all 10 questions, clicked "Calificar" — each
+    question showed Correcto/Incorrecto with the right answer and
+    explanation, and the page displayed `Puntaje: 7,0 / 10`; "Calificar" was
+    replaced by "Reintentar", which correctly cleared every radio back to
+    unanswered. Also opened the project detail page and confirmed the
+    statement, code blocks, and lists render correctly under the Organic
+    design system.
 
 ## Decisions / things a reviewer should know
 
