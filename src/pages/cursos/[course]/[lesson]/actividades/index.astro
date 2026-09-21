@@ -59,7 +59,7 @@ function kindLabel(kind: 'project' | 'quiz'): string {
 	esPath={`${lessonHref}/actividades`}
 	canonicalPath={`${lessonHref}/actividades`}
 >
-	<div class="container activities-page">
+	<div class="container article-shell activities-page">
 		<a href={withBase(lessonHref)} class="back-link">← {t('courses.activities.backToLesson')}</a>
 
 		<header class="activities-header">
@@ -96,6 +96,8 @@ function kindLabel(kind: 'project' | 'quiz'): string {
 </BaseLayout>
 
 <style>
+	@import '../../../../../styles/article-body.css';
+
 	.activities-page {
 		padding-block: var(--space-4);
 	}

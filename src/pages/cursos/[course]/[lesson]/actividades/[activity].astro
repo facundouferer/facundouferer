@@ -72,7 +72,7 @@ const quizGradingData =
 	esPath={listHref}
 	canonicalPath={`${listHref}/${entry.data.slug}`}
 >
-	<div class="container activity-page">
+	<div class="container article-shell activity-page">
 		<a href={withBase(listHref)} class="back-link">← {t('courses.activities.backToList')}</a>
 
 		<header class="activity-header">
@@ -309,8 +309,6 @@ const quizGradingData =
 
 	.activity-page {
 		padding-block: var(--space-4);
-		max-width: 72ch;
-		margin-inline: auto;
 	}
 
 	.back-link {

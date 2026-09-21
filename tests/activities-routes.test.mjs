@@ -234,6 +234,20 @@ test('course and lesson pages compute activity counts and pass them into Lessons
 	}
 });
 
+// --- Full-width activities pages, matching article pages (T7) --------------
+
+test('activities list and detail pages use the same .container.article-shell width as article pages', async () => {
+	for (const file of [LIST_PAGE, DETAIL_PAGE]) {
+		const content = await readFile(file, 'utf8');
+		assert.match(content, /class="container article-shell/, `${file} should use the article-shell width`);
+	}
+});
+
+test('activity detail page no longer applies a narrower max-width than articles', async () => {
+	const content = await readFile(DETAIL_PAGE, 'utf8');
+	assert.doesNotMatch(content, /max-width:\s*72ch/);
+});
+
 // --- documentation -----------------------------------------------------
 
 test('AGENTS.md documents the activities content model', async () => {

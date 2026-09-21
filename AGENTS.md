@@ -478,9 +478,11 @@ Where this renders:
 - `src/pages/cursos/[course]/[lesson]/actividades/index.astro` — the activity list
   for one lesson: lesson context, back link, and a card per activity (kind tag,
   title, description, estimated time). Only generated for lessons that have at
-  least one published activity.
+  least one published activity. Uses the same `.container.article-shell` width as
+  article pages (`ArticleLayout.astro`) — see `src/styles/article-body.css`.
 - `src/pages/cursos/[course]/[lesson]/actividades/[activity].astro` — the activity
-  detail page. `project` kind renders the markdown statement plus objectives/
+  detail page, also at the same `.container.article-shell` article width (no
+  page-specific max-width override). `project` kind renders the markdown statement plus objectives/
   requirements/example-output/extension-challenges/delivery-tips. `quiz` kind
   renders each question as an accessible `<fieldset>`/`<legend>` radio group
   (`.radio`, ported from `Organic/styles.css` — see §6.6), stacked vertically via

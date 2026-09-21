@@ -40,7 +40,7 @@ practice and self-assess.
 - [x] T4 — Build + tests green, docs (`AGENTS.md` content model) updated
 - [x] T5 — User feedback: render quiz code as a real code block, fix cramped inline options
 - [x] T6 — Activity count badge in lesson lists (course page + lesson sidebar, ES and EN)
-- [ ] T7 — Full-width activities pages, matching article-page layout
+- [x] T7 — Full-width activities pages, matching article-page layout
 
 ## Route per task
 
@@ -354,6 +354,56 @@ Delegated direct (writer trigger: 2+ non-trivial files).
     badge (list-checks icon, "2") side by side on lesson 8's card, same
     pill style; the lesson 07 detail page's sidebar shows the same pair of
     badges next to the lesson's title in the compact list variant.
+
+### T7 — full-width activities pages, matching article pages (done)
+
+- Inspected `src/pages/articulos/[slug].astro` → `ArticleLayout.astro`:
+  articles get their width from `<div class="container article-shell">` —
+  `.container` (global.css, `max-width: var(--container-max)` = 1180px) plus
+  the more specific, Astro-scoped `.article-shell { max-width: 1024px; }`
+  (defined once in `src/styles/article-body.css`, imported per-component via
+  `<style>@import '...article-body.css';</style>`, exactly as
+  `[lesson].astro` already does for its own `<article class="article-shell">`).
+  The scoped `.article-shell` selector (class + Astro's `data-astro-cid-*`
+  attribute) beats the plain `.container` class on specificity, so the
+  1024px cap wins.
+- `src/pages/cursos/[course]/[lesson]/actividades/[activity].astro`: removed
+  the page's own narrower `.activity-page { max-width: 72ch; margin-inline:
+  auto; }` (≈700px, narrower than articles) and added `article-shell` to the
+  container div's class list. The component already imported
+  `article-body.css` (for the markdown/code-block styling), so the
+  `.article-shell` rule was already compiled for this component — no new
+  import needed.
+- `src/pages/cursos/[course]/[lesson]/actividades/index.astro`: added the
+  same `@import '...article-body.css';` (wasn't previously imported here)
+  and added `article-shell` to the container div's class list. This page had
+  no narrower max-width bug (it inherited the full 1180px `.container`
+  width), but 1180px is *wider* than the article width, not the same — the
+  task asked for the *same* width as articles, so it's now capped at 1024px
+  too, for visual consistency between the list and detail activity pages
+  and articles.
+- Code blocks and the quiz (both regression-tested in T5) remain readable —
+  wider available space, not narrower, so nothing needed adjusting there.
+- Tests (TDD, RED confirmed before implementation, same RED run as T6):
+  added to `tests/activities-routes.test.mjs` — both `LIST_PAGE` and
+  `DETAIL_PAGE` contain `class="container article-shell`; `DETAIL_PAGE` no
+  longer contains `max-width: 72ch`.
+- Verification:
+  - `npm test`: included in the same 416/411/5 run as T6 above.
+  - `npm run build`: succeeds; inspected the compiled scoped CSS —
+    `dist/_astro/index@_@astro.*.css` (list page) and
+    `dist/_astro/_activity_@_@astro.*.css` (detail page) both contain
+    `.article-shell[data-astro-cid-*]{max-width:1024px}`; confirmed
+    `max-width: 72ch` is gone from the detail page's compiled CSS.
+  - `npx astro check`: same 2 pre-existing `baseVal` errors in
+    `grafos-algoritmos-java.astro`, 0 errors from any file this task
+    touched.
+  - Live-verified in Chrome against `npm run preview`: activities list page,
+    project detail page, and quiz detail page (including the Q8/Q10 code
+    blocks and stacked radio options from T5) all render at the same width
+    as an article page (`/articulos/alan-buscaglia`) at 1235px viewport —
+    content starts/ends at essentially the same x-coordinates on both page
+    types.
 
 ## Decisions / things a reviewer should know
 
