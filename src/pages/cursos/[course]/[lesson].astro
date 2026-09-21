@@ -6,7 +6,9 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import LessonsList from '../../../components/LessonsList.astro';
 import LessonPresentations from '../../../components/LessonPresentations.astro';
 import LessonPresentationsMenu from '../../../components/LessonPresentationsMenu.astro';
+import LessonActivitiesAccess from '../../../components/LessonActivitiesAccess.astro';
 import { getPresentationCountsForCourse, getPresentationsForLesson } from '../../../data/presentations';
+import { getActivitiesForLesson } from '../../../utils/activities';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -59,6 +61,9 @@ const nextLesson = courseLessons.find((l) => l.data.order === entry.data.order +
 
 const presentationCounts = getPresentationCountsForCourse(courseSlug);
 const lessonPresentations = getPresentationsForLesson(courseSlug, lessonSlug);
+
+const allActivities = await getCollection('activities');
+const lessonActivities = getActivitiesForLesson(allActivities, courseSlug, lessonSlug, 'es');
 
 const schema = buildCourseBreadcrumbSchema({
 	locale: 'es',
@@ -176,6 +181,14 @@ const schema = buildCourseBreadcrumbSchema({
 							<h1 class="section-title">{entry.data.title}</h1>
 							{lessonPresentations.length > 0 && (
 								<LessonPresentationsMenu presentations={lessonPresentations} locale="es" />
+							)}
+							{lessonActivities.length > 0 && (
+								<LessonActivitiesAccess
+									course={courseSlug}
+									lesson={lessonSlug}
+									count={lessonActivities.length}
+									locale="es"
+								/>
 							)}
 						</div>
 						<p class="meta">

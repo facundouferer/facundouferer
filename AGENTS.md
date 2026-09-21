@@ -411,6 +411,74 @@ Where this renders:
 
 Verification: `node --test tests/presentations-lessons.test.mjs`.
 
+#### Activities (`src/content/activities`)
+
+Practice activities are a **content collection** (unlike presentations), locale-split
+per activity, mirroring the lesson filename convention:
+
+- `src/content/activities/<course>/<lesson-slug>/<activity-slug>.<lang>.md`
+- `lesson-slug` must match a lesson's frontmatter `slug` (not the lesson filename).
+
+The `activities` collection schema (`src/content.config.ts`) is
+`z.discriminatedUnion('kind', [projectActivity, quizActivity])`, so `project` and
+`quiz` activities each carry only their own fields:
+
+- Shared base fields: `course`, `lesson`, `slug`, `title`, `description`, `order`,
+  `lang` (`'es' | 'en'`), `published` (default `true`), `estimatedMinutes` (optional).
+- `kind: 'project'` adds: `objectives: string[]`, `requirements: string[]`,
+  `exampleOutput?: string`, `extensionChallenges?: string[]`, `deliveryTips?: string[]`.
+  The markdown body is the project statement, rendered via `render(entry)`.
+- `kind: 'quiz'` adds: `questions: QuizQuestion[]`, where `QuizQuestion` is itself a
+  discriminated union on `kind` (`'single-choice' | 'true-false'`), so a new question
+  kind (e.g. `multiple-select`) can be added later without touching existing
+  questions. `single-choice` has `options: {id, text}[]` and `correctOptionId`;
+  `true-false` has `correctAnswer: boolean`; both have `explanation`.
+
+Helpers exported from `src/utils/activities.ts` (mirrors `presentations.ts` helper
+style, but operates on `CollectionEntry<'activities'>[]` since this is a real
+collection, not a static catalog):
+
+- `getActivitiesForLesson(entries, course, lesson, locale)` — published activities
+  for one lesson, sorted by `order`. Returns `[]` when none exist.
+- `getActivityCountsForCourse(entries, course, locale)` — a `Record<lessonSlug,
+  count>` map. Lessons without activities are absent from the map.
+- `resolveActivityEntry(entries, course, lesson, slug, locale)` — one published
+  activity by slug, or `undefined` (no throw).
+
+Quiz grading is a **pure, framework-agnostic module**: `src/data/activities/grading.ts`
+exports `isAnswerCorrect`, `gradeQuiz` (per-question `{questionId, answered,
+correct}` results, `correctCount`/`totalCount`, and `scoreOutOfTen` normalized to 10
+and rounded to one decimal), `formatScore` (Spanish decimal comma, e.g. `7,5 / 10`),
+and `getCorrectAnswerLabel`. It has no Astro/DOM dependency, is unit-tested directly
+(`tests/activities-grading.test.mjs`), and is imported both from the quiz detail
+page's client `<script>` (for interactive grading) and from its Astro frontmatter
+(to pre-render each question's correct-answer text server-side).
+
+Where this renders:
+
+- `LessonActivitiesAccess.astro` renders an "Actividades (N)" access next to the
+  lesson title (`src/pages/cursos/[course]/[lesson].astro`), next to
+  `LessonPresentationsMenu`. It renders nothing when the lesson has no activities.
+- `src/pages/cursos/[course]/[lesson]/actividades/index.astro` — the activity list
+  for one lesson: lesson context, back link, and a card per activity (kind tag,
+  title, description, estimated time). Only generated for lessons that have at
+  least one published activity.
+- `src/pages/cursos/[course]/[lesson]/actividades/[activity].astro` — the activity
+  detail page. `project` kind renders the markdown statement plus objectives/
+  requirements/example-output/extension-challenges/delivery-tips. `quiz` kind
+  renders each question as an accessible `<fieldset>`/`<legend>` radio group
+  (`.radio`, ported from `Organic/styles.css` — see §6.6); the learner answers,
+  presses "Calificar", and a client script (importing `grading.ts`) marks each
+  question correct/incorrect/unanswered via `data-result` attributes (all label
+  text is pre-rendered server-side and toggled with CSS, never written by the
+  script, per the i18n rule below) and shows the score via `formatScore`.
+  "Reintentar" resets all state. English (`/en/courses/...`) routes are out of
+  scope for the pilot; the schema's `lang` field keeps that path open.
+
+Verification: `node --test tests/activities-grading.test.mjs
+tests/activities-content-model.test.mjs tests/activities-routes.test.mjs
+tests/activities-pilot-content.test.mjs`.
+
 ### 6.10 i18n Runtime (`src/i18n/`)
 
 UI strings are centralized in `src/i18n/es.json` + `src/i18n/en.json` (Astro 6 native i18n config — `defaultLocale: 'es'`, `prefixDefaultLocale: false`). The deprecated `src/i18n/translations.ts`, `src/i18n/paths.ts`, and `src/seo/meta.ts` modules have been removed; do not reintroduce them.

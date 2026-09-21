@@ -154,6 +154,26 @@ table { width: 100%; border-collapse: collapse; margin-block: 1.5rem; }
 .input:hover { border-color: color-mix(in srgb, var(--color-text) 45%, transparent); }
 .input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
 
+/* — fields / radios (ported from Organic/styles.css — used by the quiz activity) — */
+.field > label {
+	display: block; font-size: 12px; margin-bottom: 5px;
+	color: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+.radio { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+.radio input {
+	position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;
+}
+.radio .dot {
+	width: 16px; height: 16px; flex: none; border-radius: 50%;
+	border: 1.5px solid var(--color-divider);
+}
+.radio:hover .dot { border-color: var(--color-accent); }
+.radio input:checked + .dot {
+	border-color: var(--color-accent); background: var(--color-accent);
+	box-shadow: inset 0 0 0 4px var(--color-bg);
+}
+.radio input:focus-visible + .dot { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
 /* — cards — */
 .card {
 	display: flex; flex-direction: column; gap: var(--space-2);

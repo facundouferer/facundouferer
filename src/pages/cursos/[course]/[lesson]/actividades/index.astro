@@ -1,0 +1,151 @@
+---
+import { getCollection } from 'astro:content';
+import { useTranslations } from '../../../../../i18n/utils';
+import BaseLayout from '../../../../../layouts/BaseLayout.astro';
+import { getActivitiesForLesson } from '../../../../../utils/activities';
+import { withBase } from '../../../../../utils/withBase';
+
+const t = useTranslations('es');
+
+export async function getStaticPaths() {
+	const [lessons, activities] = await Promise.all([getCollection('lessons'), getCollection('activities')]);
+	const paths = [];
+
+	for (const lesson of lessons) {
+		if (!lesson.data.published || lesson.data.lang !== 'es') continue;
+		const lessonActivities = getActivitiesForLesson(activities, lesson.data.course, lesson.data.slug, 'es');
+		if (lessonActivities.length === 0) continue;
+		paths.push({ params: { course: lesson.data.course, lesson: lesson.data.slug } });
+	}
+
+	return paths;
+}
+
+const { course: courseSlug, lesson: lessonSlug } = Astro.params;
+if (!courseSlug || !lessonSlug) {
+	throw new Error('Missing course or lesson slug');
+}
+
+const allCourses = await getCollection('courses');
+const allLessons = await getCollection('lessons');
+const allActivities = await getCollection('activities');
+
+const course = allCourses.find((c) => c.data.slug === courseSlug && c.data.published);
+const lesson = allLessons.find(
+	(l) => l.data.course === courseSlug && l.data.slug === lessonSlug && l.data.lang === 'es' && l.data.published,
+);
+
+if (!course || !lesson) {
+	return Astro.redirect('/cursos');
+}
+
+const lessonActivities = getActivitiesForLesson(allActivities, courseSlug, lessonSlug, 'es');
+
+if (lessonActivities.length === 0) {
+	return Astro.redirect(`/cursos/${courseSlug}/${lessonSlug}`);
+}
+
+const lessonHref = `/cursos/${courseSlug}/${lessonSlug}`;
+
+function kindLabel(kind: 'project' | 'quiz'): string {
+	return kind === 'project' ? t('courses.activities.kind.project') : t('courses.activities.kind.quiz');
+}
+---
+
+<BaseLayout
+	title={`${t('courses.activities.heading')} — ${lesson.data.title}`}
+	description={lesson.data.description ?? course.data.description}
+	locale="es"
+	esPath={`${lessonHref}/actividades`}
+	canonicalPath={`${lessonHref}/actividades`}
+>
+	<div class="container activities-page">
+		<a href={withBase(lessonHref)} class="back-link">← {t('courses.activities.backToLesson')}</a>
+
+		<header class="activities-header">
+			<p class="tag tag-accent">{course.data.technology}</p>
+			<h1 class="section-title">{t('courses.activities.heading')}</h1>
+			<p class="meta">{lesson.data.title}</p>
+		</header>
+
+		<ul class="activities-grid">
+			{
+				lessonActivities.map((activity) => {
+					const href = `${lessonHref}/actividades/${activity.data.slug}`;
+					return (
+						<li class="activity-item">
+							<a class="card card-hover elev-sm activity-card" href={withBase(href)}>
+								<span class="tag tag-accent">{kindLabel(activity.data.kind)}</span>
+								<h3 class="card-title">{activity.data.title}</h3>
+								<p class="card-body">{activity.data.description}</p>
+								{activity.data.estimatedMinutes && (
+									<span class="card-meta">
+										{t('courses.activities.estimatedMinutes').replace(
+											'{minutes}',
+											String(activity.data.estimatedMinutes),
+										)}
+									</span>
+								)}
+							</a>
+						</li>
+					);
+				})
+			}
+		</ul>
+	</div>
+</BaseLayout>
+
+<style>
+	.activities-page {
+		padding-block: var(--space-4);
+	}
+
+	.back-link {
+		display: inline-block;
+		color: var(--color-accent-700);
+		text-decoration: none;
+		font-size: 0.85rem;
+		margin-bottom: var(--space-4);
+	}
+
+	.back-link:hover {
+		text-decoration: underline;
+	}
+
+	.activities-header {
+		margin-bottom: var(--space-6);
+	}
+
+	.meta {
+		margin: 0;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+		font-size: 0.9rem;
+	}
+
+	.activities-grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (min-width: 640px) {
+		.activities-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	.activity-item {
+		margin: 0;
+		display: flex;
+	}
+
+	.activity-card {
+		width: 100%;
+		text-decoration: none;
+		color: var(--color-text);
+		border: 1px solid var(--color-divider);
+	}
+</style>

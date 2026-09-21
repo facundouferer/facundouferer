@@ -1,0 +1,415 @@
+---
+import { getCollection, render } from 'astro:content';
+import { useTranslations } from '../../../../../i18n/utils';
+import BaseLayout from '../../../../../layouts/BaseLayout.astro';
+import { resolveActivityEntry } from '../../../../../utils/activities';
+import { getCorrectAnswerLabel } from '../../../../../data/activities/grading';
+import { withBase } from '../../../../../utils/withBase';
+
+const t = useTranslations('es');
+
+export async function getStaticPaths() {
+	const activities = await getCollection('activities');
+
+	return activities
+		.filter((activity) => activity.data.published && activity.data.lang === 'es')
+		.map((activity) => ({
+			params: {
+				course: activity.data.course,
+				lesson: activity.data.lesson,
+				activity: activity.data.slug,
+			},
+		}));
+}
+
+const { course: courseSlug, lesson: lessonSlug, activity: activitySlug } = Astro.params;
+if (!courseSlug || !lessonSlug || !activitySlug) {
+	throw new Error('Missing course, lesson or activity slug');
+}
+
+const allCourses = await getCollection('courses');
+const allLessons = await getCollection('lessons');
+const allActivities = await getCollection('activities');
+
+const course = allCourses.find((c) => c.data.slug === courseSlug && c.data.published);
+const lesson = allLessons.find(
+	(l) => l.data.course === courseSlug && l.data.slug === lessonSlug && l.data.lang === 'es' && l.data.published,
+);
+const entry = resolveActivityEntry(allActivities, courseSlug, lessonSlug, activitySlug, 'es');
+
+const listHref = `/cursos/${courseSlug}/${lessonSlug}/actividades`;
+
+if (!course || !lesson || !entry) {
+	return Astro.redirect(listHref);
+}
+
+const { Content } = await render(entry);
+
+const kindLabel = entry.data.kind === 'project' ? t('courses.activities.kind.project') : t('courses.activities.kind.quiz');
+
+const trueLabel = t('courses.activities.quiz.trueLabel');
+const falseLabel = t('courses.activities.quiz.falseLabel');
+
+// Minimal grading-relevant question data embedded client-side. The full
+// question (prompt, options, explanation) is already rendered server-side
+// below, so this adds no additional information disclosure.
+const quizGradingData =
+	entry.data.kind === 'quiz'
+		? entry.data.questions.map((question) =>
+				question.kind === 'single-choice'
+					? { id: question.id, kind: question.kind, correctOptionId: question.correctOptionId }
+					: { id: question.id, kind: question.kind, correctAnswer: question.correctAnswer },
+			)
+		: [];
+---
+
+<BaseLayout
+	title={`${entry.data.title} — ${lesson.data.title}`}
+	description={entry.data.description}
+	locale="es"
+	esPath={listHref}
+	canonicalPath={`${listHref}/${entry.data.slug}`}
+>
+	<div class="container activity-page">
+		<a href={withBase(listHref)} class="back-link">← {t('courses.activities.backToList')}</a>
+
+		<header class="activity-header">
+			<span class="tag tag-accent">{kindLabel}</span>
+			<h1 class="section-title">{entry.data.title}</h1>
+			<p class="meta">
+				{lesson.data.title}
+				{entry.data.estimatedMinutes && (
+					<> · {t('courses.activities.estimatedMinutes').replace('{minutes}', String(entry.data.estimatedMinutes))}</>
+				)}
+			</p>
+		</header>
+
+		{
+			entry.data.kind === 'project' && (
+				<section class="activity-project">
+					<div class="article-body">
+						<Content />
+					</div>
+
+					<h2>{t('courses.activities.project.objectivesHeading')}</h2>
+					<ul class="detail-list">
+						{entry.data.objectives.map((objective) => (
+							<li>{objective}</li>
+						))}
+					</ul>
+
+					<h2>{t('courses.activities.project.requirementsHeading')}</h2>
+					<ul class="requirements-list">
+						{entry.data.requirements.map((requirement) => (
+							<li>{requirement}</li>
+						))}
+					</ul>
+
+					{entry.data.exampleOutput && (
+						<>
+							<h2>{t('courses.activities.project.expectedOutputHeading')}</h2>
+							<pre class="example-output"><code>{entry.data.exampleOutput}</code></pre>
+						</>
+					)}
+
+					{entry.data.extensionChallenges && entry.data.extensionChallenges.length > 0 && (
+						<>
+							<h2>{t('courses.activities.project.extensionChallengesHeading')}</h2>
+							<ul class="detail-list">
+								{entry.data.extensionChallenges.map((challenge) => (
+									<li>{challenge}</li>
+								))}
+							</ul>
+						</>
+					)}
+
+					{entry.data.deliveryTips && entry.data.deliveryTips.length > 0 && (
+						<>
+							<h2>{t('courses.activities.project.deliveryTipsHeading')}</h2>
+							<ul class="detail-list">
+								{entry.data.deliveryTips.map((tip) => (
+									<li>{tip}</li>
+								))}
+							</ul>
+						</>
+					)}
+				</section>
+			)
+		}
+
+		{
+			entry.data.kind === 'quiz' && (
+				<section class="activity-quiz" data-quiz>
+					<p class="quiz-instructions">{t('courses.activities.quiz.instructions')}</p>
+
+					<script type="application/json" data-quiz-questions is:inline set:html={JSON.stringify(quizGradingData)} />
+
+					{entry.data.questions.map((question, index) => (
+						<fieldset class="quiz-question" data-question-id={question.id}>
+							<legend>
+								{index + 1}. {question.prompt}
+							</legend>
+
+							{question.kind === 'single-choice' ? (
+								<div class="stack quiz-options" role="radiogroup" aria-label={question.prompt}>
+									{question.options.map((option) => (
+										<label class="radio">
+											<input type="radio" name={`question-${question.id}`} value={option.id} />
+											<span class="dot" />
+											{option.text}
+										</label>
+									))}
+								</div>
+							) : (
+								<div class="stack quiz-options" role="radiogroup" aria-label={question.prompt}>
+									<label class="radio">
+										<input type="radio" name={`question-${question.id}`} value="true" />
+										<span class="dot" />
+										{trueLabel}
+									</label>
+									<label class="radio">
+										<input type="radio" name={`question-${question.id}`} value="false" />
+										<span class="dot" />
+										{falseLabel}
+									</label>
+								</div>
+							)}
+
+							<div class="quiz-result">
+								<span class="tag tag-accent-2 quiz-result-correct">{t('courses.activities.quiz.correct')}</span>
+								<span class="tag tag-outline quiz-result-incorrect">{t('courses.activities.quiz.incorrect')}</span>
+								<span class="tag tag-neutral quiz-result-unanswered">{t('courses.activities.quiz.unanswered')}</span>
+								<p class="quiz-correct-answer">
+									<strong>{t('courses.activities.quiz.correctAnswerLabel')}:</strong>{' '}
+									{getCorrectAnswerLabel(question, { trueLabel, falseLabel })}
+								</p>
+								<p class="quiz-explanation">
+									<strong>{t('courses.activities.quiz.whyLabel')}</strong> {question.explanation}
+								</p>
+							</div>
+						</fieldset>
+					))}
+
+					<div class="quiz-actions">
+						<button type="button" class="btn btn-primary" data-quiz-grade>
+							{t('courses.activities.quiz.gradeButton')}
+						</button>
+						<button type="button" class="btn btn-secondary" data-quiz-retry hidden>
+							{t('courses.activities.quiz.retryButton')}
+						</button>
+					</div>
+
+					<p class="quiz-score" data-quiz-score hidden>
+						{t('courses.activities.quiz.scoreLabel')}: <span data-quiz-score-value />
+					</p>
+				</section>
+			)
+		}
+	</div>
+</BaseLayout>
+
+<script>
+	import { gradeQuiz, formatScore, type QuizAnswers, type QuizQuestion } from '../../../../../data/activities/grading';
+
+	function setupQuiz(): void {
+		const root = document.querySelector<HTMLElement>('[data-quiz]');
+		if (!root || root.dataset.bound === 'true') return;
+		root.dataset.bound = 'true';
+
+		const dataScript = root.querySelector<HTMLScriptElement>('[data-quiz-questions]');
+		if (!dataScript || !dataScript.textContent) return;
+		const questions = JSON.parse(dataScript.textContent) as QuizQuestion[];
+
+		const gradeBtn = root.querySelector<HTMLButtonElement>('[data-quiz-grade]');
+		const retryBtn = root.querySelector<HTMLButtonElement>('[data-quiz-retry]');
+		const scoreEl = root.querySelector<HTMLElement>('[data-quiz-score]');
+		const scoreValueEl = root.querySelector<HTMLElement>('[data-quiz-score-value]');
+
+		function questionFieldset(questionId: string): HTMLElement | null {
+			return root!.querySelector<HTMLElement>(`[data-question-id="${questionId}"]`);
+		}
+
+		function collectAnswers(): QuizAnswers {
+			const answers: QuizAnswers = {};
+			for (const question of questions) {
+				const checked = root!.querySelector<HTMLInputElement>(
+					`input[name="question-${question.id}"]:checked`,
+				);
+				if (!checked) continue;
+				answers[question.id] = question.kind === 'true-false' ? checked.value === 'true' : checked.value;
+			}
+			return answers;
+		}
+
+		function grade(): void {
+			const result = gradeQuiz(questions, collectAnswers());
+
+			for (const questionResult of result.results) {
+				const fieldset = questionFieldset(questionResult.questionId);
+				if (!fieldset) continue;
+				fieldset.dataset.graded = 'true';
+				fieldset.dataset.result = questionResult.correct
+					? 'correct'
+					: questionResult.answered
+						? 'incorrect'
+						: 'unanswered';
+			}
+
+			if (scoreValueEl) scoreValueEl.textContent = formatScore(result.scoreOutOfTen);
+			scoreEl?.removeAttribute('hidden');
+			gradeBtn?.setAttribute('hidden', '');
+			retryBtn?.removeAttribute('hidden');
+			root!.dataset.graded = 'true';
+			scoreEl?.setAttribute('tabindex', '-1');
+			scoreEl?.focus();
+		}
+
+		function retry(): void {
+			for (const question of questions) {
+				const fieldset = questionFieldset(question.id);
+				fieldset?.removeAttribute('data-graded');
+				fieldset?.removeAttribute('data-result');
+				fieldset
+					?.querySelectorAll<HTMLInputElement>('input[type="radio"]')
+					.forEach((input) => {
+						input.checked = false;
+					});
+			}
+			scoreEl?.setAttribute('hidden', '');
+			gradeBtn?.removeAttribute('hidden');
+			retryBtn?.setAttribute('hidden', '');
+			root!.removeAttribute('data-graded');
+		}
+
+		gradeBtn?.addEventListener('click', grade);
+		retryBtn?.addEventListener('click', retry);
+	}
+
+	setupQuiz();
+	document.addEventListener('astro:page-load', setupQuiz);
+</script>
+
+<style>
+	@import '../../../../../styles/article-body.css';
+
+	.activity-page {
+		padding-block: var(--space-4);
+		max-width: 72ch;
+		margin-inline: auto;
+	}
+
+	.back-link {
+		display: inline-block;
+		color: var(--color-accent-700);
+		text-decoration: none;
+		font-size: 0.85rem;
+		margin-bottom: var(--space-4);
+	}
+
+	.back-link:hover {
+		text-decoration: underline;
+	}
+
+	.activity-header {
+		margin-bottom: var(--space-4);
+	}
+
+	.meta {
+		margin: var(--space-1) 0 0;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+		font-size: 0.9rem;
+	}
+
+	.detail-list,
+	.requirements-list {
+		padding-left: 1.4rem;
+		margin: 0 0 var(--space-4);
+	}
+
+	.detail-list li,
+	.requirements-list li {
+		margin-bottom: var(--space-2);
+	}
+
+	.example-output {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		overflow-x: auto;
+		font-size: 0.85rem;
+		margin: 0 0 var(--space-4);
+	}
+
+	/* — quiz — */
+	.quiz-instructions {
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+
+	.quiz-question {
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		margin: 0 0 var(--space-4);
+	}
+
+	.quiz-question legend {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 1.05rem;
+		padding: 0 var(--space-2);
+	}
+
+	.quiz-options {
+		gap: var(--space-2);
+		margin: var(--space-2) 0;
+	}
+
+	.quiz-result {
+		display: none;
+		margin-top: var(--space-3);
+		padding-top: var(--space-3);
+		border-top: 1px dashed var(--color-divider);
+	}
+
+	.quiz-question[data-graded='true'] .quiz-result {
+		display: block;
+	}
+
+	.quiz-result-correct,
+	.quiz-result-incorrect,
+	.quiz-result-unanswered {
+		display: none;
+	}
+
+	.quiz-question[data-result='correct'] .quiz-result-correct {
+		display: inline-flex;
+	}
+
+	.quiz-question[data-result='incorrect'] .quiz-result-incorrect {
+		display: inline-flex;
+	}
+
+	.quiz-question[data-result='unanswered'] .quiz-result-unanswered {
+		display: inline-flex;
+	}
+
+	.quiz-correct-answer,
+	.quiz-explanation {
+		margin: var(--space-2) 0 0;
+		font-size: 0.9rem;
+	}
+
+	.quiz-actions {
+		display: flex;
+		gap: var(--space-2);
+		margin-top: var(--space-4);
+	}
+
+	.quiz-score {
+		margin-top: var(--space-4);
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 1.2rem;
+	}
+</style>
