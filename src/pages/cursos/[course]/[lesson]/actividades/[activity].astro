@@ -406,6 +406,12 @@ const quizGradingData =
 		margin-top: var(--space-4);
 	}
 
+	/* .btn sets display: inline-flex, which (as an author style) overrides the
+	   native [hidden] UA rule — same fix as LessonPresentationsMenu's panel. */
+	.quiz-actions [hidden] {
+		display: none !important;
+	}
+
 	.quiz-score {
 		margin-top: var(--space-4);
 		font-family: var(--font-heading);

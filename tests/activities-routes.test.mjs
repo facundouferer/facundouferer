@@ -132,6 +132,16 @@ test('activity detail page shows the score normalized to 10 via formatScore', as
 	assert.match(content, /formatScore\(/);
 });
 
+test('activity detail page forces display:none on hidden quiz action buttons (.btn overrides native [hidden] otherwise)', async () => {
+	// Regression: .btn sets display:inline-flex, an author style that (per CSS
+	// cascade rules) beats the browser's UA [hidden]{display:none} rule, so a
+	// hidden .btn still renders. LessonPresentationsMenu hit the same issue
+	// for its .card panel. Verified live in-browser: without this override,
+	// "Calificar" and "Reintentar" are both visible after grading.
+	const content = await readFile(DETAIL_PAGE, 'utf8');
+	assert.match(content, /\[hidden\]\s*\{[^}]*display:\s*none\s*!important/);
+});
+
 // --- i18n ------------------------------------------------------------------
 
 test('i18n dictionaries expose courses.activities strings for badge, headings, and quiz UI', async () => {

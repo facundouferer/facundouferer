@@ -120,8 +120,6 @@ Mostrá por consola el valor de `productoUno.stock` después de modificar `copia
 para dejar en evidencia que no se creó un objeto nuevo, solo una segunda
 variable apuntando al mismo lugar de memoria.
 
-## Salida esperada (aproximada)
-
-Ver `exampleOutput` — el formato exacto de tus mensajes puede variar, pero debe
-comunicar la misma información: qué se vendió, qué se repuso, el cambio de
-precio y el resultado del aliasing.
+El formato exacto de tus mensajes puede variar, pero debe comunicar la misma
+información que la salida esperada de más abajo: qué se vendió, qué se
+repuso, el cambio de precio y el resultado del aliasing.
