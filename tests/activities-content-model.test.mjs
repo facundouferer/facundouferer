@@ -46,6 +46,23 @@ test('quiz question schema is a discriminated union of single-choice and true-fa
 	assert.match(content, /explanation:\s*z\.string\(\)/);
 });
 
+test('quiz question schema supports an optional code snippet with a defaulted language, on both question kinds', async () => {
+	const content = await readFile('src/content.config.ts', 'utf8');
+	assert.match(content, /code:\s*z\.string\(\)\.optional\(\)/);
+	assert.match(content, /codeLanguage:\s*z\.string\(\)\.default\('java'\)/);
+
+	// Both single-choice and true-false must actually spread/include the
+	// shared code fields, not just declare them unused.
+	const singleChoiceSection = content.slice(
+		content.indexOf('const singleChoiceQuestion'),
+		content.indexOf('const trueFalseQuestion'),
+	);
+	const trueFalseSection = content.slice(content.indexOf('const trueFalseQuestion'), content.indexOf('const quizQuestion ='));
+	for (const section of [singleChoiceSection, trueFalseSection]) {
+		assert.match(section, /\.\.\.(quizQuestionCodeFields|quizQuestionBase|codeFields)\b/, 'expected the shared code fields spread in');
+	}
+});
+
 test('project activity schema has objectives and requirements checklists', async () => {
 	const content = await readFile('src/content.config.ts', 'utf8');
 	const projectSection = content.slice(content.indexOf('const projectActivity'), content.indexOf('const quizActivity'));

@@ -132,6 +132,36 @@ test('activity detail page shows the score normalized to 10 via formatScore', as
 	assert.match(content, /formatScore\(/);
 });
 
+// --- code snippets: question prompt on top, real code block below it -------
+
+test('activity detail page renders question code with the site-wide Code component, reusing article-body pre/code styling', async () => {
+	const content = await readFile(DETAIL_PAGE, 'utf8');
+	assert.match(content, /import\s*\{\s*Code\s*\}\s*from\s*'astro:components'/);
+	assert.match(content, /question\.code/);
+	assert.match(content, /<Code\s/);
+	assert.match(content, /lang=\{question\.codeLanguage/);
+	// The code block must sit inside an `.article-body` ancestor so it picks
+	// up the same pre/code styling already used for lesson/article content.
+	assert.match(content, /class="article-body quiz-code"[^>]*>[\s\S]{0,400}?<Code\s/);
+});
+
+test('activity detail page renders prompt/option/explanation text through the safe inline-code renderer', async () => {
+	const content = await readFile(DETAIL_PAGE, 'utf8');
+	assert.match(content, /import\s*\{\s*renderInlineCode\s*\}\s*from\s*'[^']*utils\/renderInlineCode'/);
+	assert.match(content, /renderInlineCode\(question\.prompt\)/);
+	assert.match(content, /renderInlineCode\(option\.text\)/);
+	assert.match(content, /renderInlineCode\(question\.explanation\)/);
+});
+
+// --- options layout: stacked, not cramped inline ----------------------------
+
+test('quiz options stack vertically instead of flowing inline (the reported "cramped" bug)', async () => {
+	const content = await readFile(DETAIL_PAGE, 'utf8');
+	const rule = content.match(/\.quiz-options\s*\{([^}]*)\}/);
+	assert.ok(rule, 'expected a .quiz-options rule');
+	assert.match(rule[1], /display:\s*grid/, '.quiz-options must lay out its .radio children as a vertical stack');
+});
+
 test('activity detail page forces display:none on hidden quiz action buttons (.btn overrides native [hidden] otherwise)', async () => {
 	// Regression: .btn sets display:inline-flex, an author style that (per CSS
 	// cascade rules) beats the browser's UA [hidden]{display:none} rule, so a

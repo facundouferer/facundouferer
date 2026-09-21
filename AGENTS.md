@@ -432,7 +432,13 @@ The `activities` collection schema (`src/content.config.ts`) is
   discriminated union on `kind` (`'single-choice' | 'true-false'`), so a new question
   kind (e.g. `multiple-select`) can be added later without touching existing
   questions. `single-choice` has `options: {id, text}[]` and `correctOptionId`;
-  `true-false` has `correctAnswer: boolean`; both have `explanation`.
+  `true-false` has `correctAnswer: boolean`; both have `explanation`. Both also share
+  an optional `code?: string` (a real multi-line snippet, YAML `|-` block scalar) and
+  `codeLanguage` (defaults to `'java'`) — set `code` when a question is actually about
+  a piece of code (renders as a real, syntax-highlighted code block below the
+  question); keep short in-sentence mentions (`` `this` ``, `` `new` ``) as backticks
+  in `prompt`/option `text`/`explanation` instead, never crammed `;`-joined
+  statements in the prompt itself.
 
 Helpers exported from `src/utils/activities.ts` (mirrors `presentations.ts` helper
 style, but operates on `CollectionEntry<'activities'>[]` since this is a real
@@ -467,13 +473,22 @@ Where this renders:
   detail page. `project` kind renders the markdown statement plus objectives/
   requirements/example-output/extension-challenges/delivery-tips. `quiz` kind
   renders each question as an accessible `<fieldset>`/`<legend>` radio group
-  (`.radio`, ported from `Organic/styles.css` — see §6.6); the learner answers,
-  presses "Calificar", and a client script (importing `grading.ts`) marks each
-  question correct/incorrect/unanswered via `data-result` attributes (all label
-  text is pre-rendered server-side and toggled with CSS, never written by the
-  script, per the i18n rule below) and shows the score via `formatScore`.
-  "Reintentar" resets all state. English (`/en/courses/...`) routes are out of
-  scope for the pilot; the schema's `lang` field keeps that path open.
+  (`.radio`, ported from `Organic/styles.css` — see §6.6), stacked vertically via
+  `.quiz-options { display: grid; }` (a `.radio` is `inline-flex`, so its container
+  must lay out its children as a block/grid stack, matching the `.stack` pattern in
+  `Organic/components/forms.html`'s radiogroup reference). When a question has
+  `code`, it renders below the prompt via Astro's `<Code>` (`astro:components`),
+  wrapped in an `.article-body` div so it reuses the same Shiki `pre`/`code` styling
+  as lesson/article content — not a one-off style. Prompt, option text, the correct-
+  answer label, and the explanation are all passed through
+  `src/utils/renderInlineCode.ts` (escapes HTML, then turns `` `x` `` into
+  `<code>x</code>`) via `set:html`, so short inline code mentions render properly
+  too. The learner answers, presses "Calificar", and a client script (importing
+  `grading.ts`) marks each question correct/incorrect/unanswered via `data-result`
+  attributes (all label text is pre-rendered server-side and toggled with CSS,
+  never written by the script, per the i18n rule below) and shows the score via
+  `formatScore`. "Reintentar" resets all state. English (`/en/courses/...`) routes
+  are out of scope for the pilot; the schema's `lang` field keeps that path open.
 
 Verification: `node --test tests/activities-grading.test.mjs
 tests/activities-content-model.test.mjs tests/activities-routes.test.mjs

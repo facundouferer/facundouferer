@@ -38,6 +38,7 @@ practice and self-assess.
 - [x] T2 — Routes: list + detail pages, lesson title access, quiz grading UI
 - [x] T3 — Pilot content for lesson 07 (project + quiz)
 - [x] T4 — Build + tests green, docs (`AGENTS.md` content model) updated
+- [x] T5 — User feedback: render quiz code as a real code block, fix cramped inline options
 
 ## Route per task
 
@@ -210,6 +211,95 @@ Delegated direct (writer trigger: 2+ non-trivial files).
   each question correct/incorrect/unanswered with the correct answer and
   explanation shown, and the score is exactly right (`X,Y / 10`);
   "Reintentar" fully resets the quiz.
+
+### T5 — user feedback: real code blocks + fixed options layout (done)
+
+- **Problem reported**: on the quiz page, questions with code (e.g. Q10 of
+  `autoevaluacion-clases-y-objetos.es.md`) had the code crammed into the
+  question heading as `;`-joined plain text, and the radio options rendered
+  inline and cramped ("Marta◯ Carlos◯ Laura◯ null") instead of stacked.
+- **Root cause of the options bug**: `[activity].astro` used
+  `class="stack quiz-options"`, following the `.stack` class used in
+  `Organic/components/forms.html`'s radiogroup reference markup — but
+  `.stack` only exists in that file's own demo-scaffolding `<style>` block
+  ("Demo scaffolding only — everything visual comes from ../styles.css"),
+  never in `Organic/styles.css` or `src/styles/global.css`. So `.stack` did
+  nothing, and `.radio` (`display: inline-flex`, correctly ported and left
+  untouched) flowed its labels inline inside a plain block `<div>`. Fixed by
+  adding `display: grid;` directly to the already-existing, component-local
+  `.quiz-options` rule (not a system class — safe to restyle per AGENTS.md
+  §6.6), replicating the `.stack { display: grid; gap: ... }` behavior the
+  reference relies on. Dropped the dead `stack` class token from the markup.
+- **Schema**: `src/content.config.ts` — added a shared `quizQuestionCodeFields`
+  object (`code: z.string().optional()`, `codeLanguage: z.string().default('java')`)
+  spread into both `singleChoiceQuestion` and `trueFalseQuestion`, so a
+  question can carry a real multi-line snippet plus its language.
+- **Rendering**: `[activity].astro` now imports `Code` from `astro:components`
+  and renders `question.code` (when present) below the legend, wrapped in
+  `<div class="article-body quiz-code">` so it reuses the exact same
+  Shiki `pre`/`code` styling already used for lesson/article markdown code
+  fences (`src/styles/article-body.css`) — same theme (`github-dark`,
+  Astro's default, matching what `astro.config.mjs` already implies with no
+  `shikiConfig` override), same `astro-code` class, same padding/radius. No
+  new styling invented.
+- **Inline code**: added `src/utils/renderInlineCode.ts` — a tiny, unit-tested,
+  dependency-free function that escapes HTML first, then converts
+  backtick-delimited spans (`` `x` ``) into `<code>x</code>`, safe to pass to
+  `set:html` since the only markup it can ever produce is `<code>` around
+  already-escaped text. Applied via `set:html` to the question legend
+  (prompt), each option's text, the correct-answer label, and the
+  explanation. `aria-label` on the radiogroup uses a backtick-stripped plain
+  copy of the prompt (screen readers shouldn't hear literal backticks).
+- **Content rewrite**: rewrote
+  `src/content/activities/java/07-fundamentos-poo-clases-y-objetos/autoevaluacion-clases-y-objetos.es.md`
+  — Q8 and Q10 (the two questions with real multi-statement code) now have a
+  `code: |-` YAML block scalar with real line breaks/indentation, and a short
+  plain-language prompt ("¿Qué valor tiene `p1.nombre` después de ejecutar
+  este código?", "¿Qué imprime este código?"). All 10 prompts/options/
+  explanations reviewed; short inline code mentions (`` `this` ``, `` `new` ``,
+  `` `this.precio` ``, type names, etc.) now use backticks instead of being
+  bare identifiers mixed into prose.
+- **Type note**: `<Code>`'s `lang` prop is Shiki's closed `CodeLanguage` union;
+  our `codeLanguage` field is intentionally a free-form string (so future
+  non-Java activities can pick any language). Bridged with one explicit,
+  commented `as any` at the single call site — `Code.astro` itself falls
+  back to `'plaintext'` for any string it doesn't recognize, so this is safe
+  at runtime. Deep-importing Astro's internal `CodeLanguage` type wasn't a
+  viable alternative: `astro`'s `package.json` `exports` map doesn't expose
+  that path, so it wouldn't resolve under strict module resolution.
+- **Tests (TDD, RED confirmed before implementation)**:
+  `tests/activities-inline-code.test.mjs` (new, 8 tests: HTML escaping,
+  backtick→`<code>` conversion, XSS-safety, unmatched-backtick edge case);
+  `tests/activities-content-model.test.mjs` (+1 test: schema field presence
+  on both question kinds); `tests/activities-pilot-content.test.mjs` (+4
+  tests: Q8/Q10 have real `code:` fields with line breaks, no prompt crams
+  multiple `;`-joined statements anymore, backticked inline code present);
+  `tests/activities-routes.test.mjs` (+3 tests: `Code`/`renderInlineCode`
+  imports and usage wired in, `.quiz-options` uses `display: grid`).
+- **Verification**:
+  - `npm test`: 410 tests, 405 pass, 5 fail — the same 5 pre-existing
+    unrelated failures as every prior task (`CourseBreadcrumb` ×2,
+    `testimonials` ×2, `language strategy is documented for article
+    publication flow`); confirmed unchanged before/after this change.
+  - `npm run build`: succeeds, 361 pages.
+  - `npx astro check`: 2 pre-existing errors in
+    `grafos-algoritmos-java.astro` (unrelated `baseVal` issue, present
+    before this change); 0 errors from any file this task touched (verified
+    the `<Code lang=...>` type mismatch introduced by this change was fixed
+    with the `as any` bridge above).
+  - Inspected the actual built HTML
+    (`dist/cursos/java/07-fundamentos-poo-clases-y-objetos/actividades/autoevaluacion-clases-y-objetos/index.html`):
+    Q8/Q10 render a real `<pre class="astro-code github-dark">` block with
+    one `<span class="line">` per source line (multi-line, syntax
+    highlighted); `.quiz-options{display:grid;...}` present in the compiled
+    CSS.
+  - Live-verified in Chrome against `npm run preview`: options render as a
+    clearly separated vertical list (not the reported inline/cramped
+    layout); Q8 and Q10 show the question on top and a proper dark
+    syntax-highlighted multi-line code block below it; inline backticked
+    terms (`this`, `new`, `int`, etc.) render as `<code>` throughout;
+    answered and graded Q10 correctly — "Correcto" tag, explanation with
+    inline code, "Reintentar" shown after grading.
 
 ## Decisions / things a reviewer should know
 

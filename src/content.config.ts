@@ -104,10 +104,20 @@ const singleChoiceOption = z.object({
 	text: z.string(),
 });
 
+// Optional code snippet shown below the prompt when a question involves real
+// Java code (e.g. multi-statement examples). `codeLanguage` defaults to
+// 'java' since every pilot activity so far is a Java lesson. Shared between
+// both question kinds so a future kind gets it for free too.
+const quizQuestionCodeFields = {
+	code: z.string().optional(),
+	codeLanguage: z.string().default('java'),
+};
+
 const singleChoiceQuestion = z.object({
 	kind: z.literal('single-choice'),
 	id: z.string(),
 	prompt: z.string(),
+	...quizQuestionCodeFields,
 	options: z.array(singleChoiceOption).min(2),
 	correctOptionId: z.string(),
 	explanation: z.string(),
@@ -117,6 +127,7 @@ const trueFalseQuestion = z.object({
 	kind: z.literal('true-false'),
 	id: z.string(),
 	prompt: z.string(),
+	...quizQuestionCodeFields,
 	correctAnswer: z.boolean(),
 	explanation: z.string(),
 });

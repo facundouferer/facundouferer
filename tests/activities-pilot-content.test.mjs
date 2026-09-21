@@ -106,3 +106,43 @@ test('quiz activity does not test constructors or encapsulation (lesson 08 scope
 	assert.doesNotMatch(content, /encapsulamiento/i);
 	assert.doesNotMatch(content, /modificador de acceso|private\b/i);
 });
+
+// --- code rendering feedback: real code goes in `code`, not crammed into prompt ---
+
+test('question q10 (multi-statement example) uses a real code field with line breaks, not inline prompt code', async () => {
+	const content = quiz.content;
+	const q10 = content.slice(content.indexOf(`id: 'q10'`), content.indexOf(`id: 'q10'`) + 900);
+	assert.match(q10, /code:\s*\|-?\n/, 'expected a YAML block-scalar `code:` field');
+	assert.match(q10, /System\.out\.println\(p2\.nombre\)/, 'the actual statements live in the code field');
+
+	const promptMatch = q10.match(/prompt:\s*'([^\n]*)'/);
+	assert.ok(promptMatch, 'q10 prompt is a plain single-line string');
+	assert.doesNotMatch(promptMatch[1], /;/, 'the prompt itself must no longer contain semicolon-joined code');
+});
+
+test('question q8 (aliasing example) also uses a real code field with line breaks', async () => {
+	const content = quiz.content;
+	const q8 = content.slice(content.indexOf(`id: 'q8'`), content.indexOf(`id: 'q8'`) + 900);
+	assert.match(q8, /code:\s*\|-?\n/, 'expected a YAML block-scalar `code:` field');
+	assert.match(q8, /Persona p2 = p1;/);
+
+	const promptMatch = q8.match(/prompt:\s*'([^\n]*)'/);
+	assert.ok(promptMatch, 'q8 prompt is a plain single-line string');
+	assert.doesNotMatch(promptMatch[1], /;/, 'the prompt itself must no longer contain semicolon-joined code');
+});
+
+test('no question prompt crams multiple ;-joined statements onto one line anymore', async () => {
+	const content = quiz.content;
+	const promptLines = [...content.matchAll(/^\s*prompt:\s*'([^\n]*)'\s*$/gm)].map((m) => m[1]);
+	assert.ok(promptLines.length >= 6, 'sanity: most prompts are simple single-line strings');
+	for (const prompt of promptLines) {
+		const statementCount = (prompt.match(/;/g) ?? []).length;
+		assert.ok(statementCount <= 1, `prompt should not cram multiple statements: "${prompt}"`);
+	}
+});
+
+test('inline code mentions in prompts/explanations use backticks (rendered as <code> on the page)', async () => {
+	const content = quiz.content;
+	assert.match(content, /`this`/);
+	assert.match(content, /`new /);
+});
