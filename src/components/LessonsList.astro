@@ -8,6 +8,7 @@ type Lesson = {
 	description?: string;
 	order: number;
 	presentationCount?: number;
+	activityCount?: number;
 };
 
 type Props = {
@@ -24,6 +25,12 @@ const t = useTranslations(locale);
 /** Accessible label for the presentation-count badge, e.g. "3 presentaciones". */
 function presentationCountLabel(count: number): string {
 	const key = count === 1 ? 'courses.lessonPresentations.badge.one' : 'courses.lessonPresentations.badge.other';
+	return t(key).replace('{count}', String(count));
+}
+
+/** Accessible label for the activity-count badge, e.g. "2 actividades". */
+function activityCountLabel(count: number): string {
+	const key = count === 1 ? 'courses.activities.badge.one' : 'courses.activities.badge.other';
 	return t(key).replace('{count}', String(count));
 }
 ---
@@ -62,28 +69,55 @@ function presentationCountLabel(count: number): string {
 								class:list={[
 									'card-meta',
 									'lesson-card-footer',
-									{ 'lesson-card-footer--split': !!lesson.presentationCount },
+									{ 'lesson-card-footer--split': !!(lesson.presentationCount || lesson.activityCount) },
 								]}
 							>
-								{lesson.presentationCount ? (
-									<span class="badge lesson-presentation-badge" aria-label={presentationCountLabel(lesson.presentationCount)}>
-										<svg
-											aria-hidden="true"
-											xmlns="http://www.w3.org/2000/svg"
-											width="13"
-											height="13"
-											viewBox="0 0 24 24"
-											fill="none"
-											stroke="currentColor"
-											stroke-width="2.75"
-											stroke-linecap="round"
-											stroke-linejoin="round"
-										>
-											<path d="M2 3h20" />
-											<path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3" />
-											<path d="m7 21 5-5 5 5" />
-										</svg>
-										<span aria-hidden="true">{lesson.presentationCount}</span>
+								{(lesson.presentationCount || lesson.activityCount) ? (
+									<span class="lesson-badges">
+										{lesson.presentationCount ? (
+											<span class="badge lesson-presentation-badge" aria-label={presentationCountLabel(lesson.presentationCount)}>
+												<svg
+													aria-hidden="true"
+													xmlns="http://www.w3.org/2000/svg"
+													width="13"
+													height="13"
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2.75"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+												>
+													<path d="M2 3h20" />
+													<path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3" />
+													<path d="m7 21 5-5 5 5" />
+												</svg>
+												<span aria-hidden="true">{lesson.presentationCount}</span>
+											</span>
+										) : null}
+										{lesson.activityCount ? (
+											<span class="badge lesson-activity-badge" aria-label={activityCountLabel(lesson.activityCount)}>
+												<svg
+													aria-hidden="true"
+													xmlns="http://www.w3.org/2000/svg"
+													width="13"
+													height="13"
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2.75"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+												>
+													<path d="m3 17 2 2 4-4" />
+													<path d="m3 7 2 2 4-4" />
+													<path d="M13 6h8" />
+													<path d="M13 12h8" />
+													<path d="M13 18h8" />
+												</svg>
+												<span aria-hidden="true">{lesson.activityCount}</span>
+											</span>
+										) : null}
 									</span>
 								) : null}
 								<span class="read-link">
@@ -133,6 +167,29 @@ function presentationCountLabel(count: number): string {
 												<path d="m7 21 5-5 5 5" />
 											</svg>
 											<span aria-hidden="true">{lesson.presentationCount}</span>
+										</span>
+									) : null}
+									{lesson.activityCount ? (
+										<span class="badge lesson-activity-badge" aria-label={activityCountLabel(lesson.activityCount)}>
+											<svg
+												aria-hidden="true"
+												xmlns="http://www.w3.org/2000/svg"
+												width="11"
+												height="11"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="2.75"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+											>
+												<path d="m3 17 2 2 4-4" />
+												<path d="m3 7 2 2 4-4" />
+												<path d="M13 6h8" />
+												<path d="M13 12h8" />
+												<path d="M13 18h8" />
+											</svg>
+											<span aria-hidden="true">{lesson.activityCount}</span>
 										</span>
 									) : null}
 								</span>
@@ -207,8 +264,15 @@ function presentationCountLabel(count: number): string {
 		justify-content: space-between;
 	}
 
-	.lesson-presentation-badge svg {
+	.lesson-presentation-badge svg,
+	.lesson-activity-badge svg {
 		flex-shrink: 0;
+	}
+
+	.lesson-badges {
+		display: flex;
+		align-items: center;
+		gap: 6px;
 	}
 
 	.read-link {

@@ -465,6 +465,16 @@ Where this renders:
 - `LessonActivitiesAccess.astro` renders an "Actividades (N)" access next to the
   lesson title (`src/pages/cursos/[course]/[lesson].astro`), next to
   `LessonPresentationsMenu`. It renders nothing when the lesson has no activities.
+- `LessonsList.astro` (course page `src/pages/cursos/[course]/index.astro` and the
+  lesson sidebar in `src/pages/cursos/[course]/[lesson].astro`, plus their English
+  counterparts under `src/pages/en/courses/`) renders an activity-count `.badge`
+  next to the existing presentation-count badge, using the same Lucide
+  `list-checks` icon as `LessonActivitiesAccess.astro` and the same
+  `courses.activities.badge.one`/`.other` i18n keys for its accessible label. Fed
+  by `getActivityCountsForCourse`; renders nothing when a lesson has no
+  activities. English pages compute counts too (for parity with the
+  `presentationCount` wiring and forward-compatibility) but always render no
+  badge today, since activities are Spanish-only.
 - `src/pages/cursos/[course]/[lesson]/actividades/index.astro` — the activity list
   for one lesson: lesson context, back link, and a card per activity (kind tag,
   title, description, estimated time). Only generated for lessons that have at

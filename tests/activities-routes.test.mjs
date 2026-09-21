@@ -195,6 +195,45 @@ test('i18n dictionaries expose courses.activities strings for badge, headings, a
 	}
 });
 
+// --- LessonsList activity count badge (T6) --------------------------------
+
+test('LessonsList Lesson type accepts an optional activityCount', async () => {
+	const content = await readFile('src/components/LessonsList.astro', 'utf8');
+	assert.match(content, /activityCount\?:\s*number/);
+});
+
+test('LessonsList renders an activity count badge with the list-checks icon, conditionally in both variants', async () => {
+	const content = await readFile('src/components/LessonsList.astro', 'utf8');
+	assert.match(content, /class="badge lesson-activity-badge"/);
+	const conditionOccurrences = content.match(/lesson\.activityCount/g) ?? [];
+	assert.ok(
+		conditionOccurrences.length >= 2,
+		'expected the activityCount condition to appear in both the cards and list variants',
+	);
+	// same list-checks icon paths as LessonActivitiesAccess.astro
+	assert.match(content, /d="m3 17 2 2 4-4"/);
+	assert.match(content, /d="m3 7 2 2 4-4"/);
+});
+
+test('LessonsList activity badge uses the courses.activities.badge i18n keys for its accessible label', async () => {
+	const content = await readFile('src/components/LessonsList.astro', 'utf8');
+	assert.match(content, /courses\.activities\.badge\.one/);
+	assert.match(content, /courses\.activities\.badge\.other/);
+});
+
+test('course and lesson pages compute activity counts and pass them into LessonsList', async () => {
+	for (const file of [
+		'src/pages/cursos/[course]/index.astro',
+		'src/pages/cursos/[course]/[lesson].astro',
+		'src/pages/en/courses/[course]/index.astro',
+		'src/pages/en/courses/[course]/[lesson].astro',
+	]) {
+		const content = await readFile(file, 'utf8');
+		assert.match(content, /getActivityCountsForCourse/, `${file} should import getActivityCountsForCourse`);
+		assert.match(content, /activityCount/, `${file} should pass activityCount into LessonsList`);
+	}
+});
+
 // --- documentation -----------------------------------------------------
 
 test('AGENTS.md documents the activities content model', async () => {

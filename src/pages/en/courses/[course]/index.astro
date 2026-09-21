@@ -7,6 +7,7 @@ import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import LessonsList from '../../../../components/LessonsList.astro';
 import { withBase } from '../../../../utils/withBase';
 import { getPresentationCountsForCourse } from '../../../../data/presentations';
+import { getActivityCountsForCourse } from '../../../../utils/activities';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -30,6 +31,8 @@ if (!course) {
 
 const lessons = getLessonsForCourse(allLessons, courseSlug, 'en');
 const presentationCounts = getPresentationCountsForCourse(courseSlug);
+const allActivities = await getCollection('activities');
+const activityCounts = getActivityCountsForCourse(allActivities, courseSlug, 'en');
 
 const schema = buildCourseBreadcrumbSchema({
 	locale: 'en',
@@ -73,6 +76,7 @@ const schema = buildCourseBreadcrumbSchema({
 					description: l.data.description,
 					order: l.data.order,
 					presentationCount: presentationCounts[l.data.slug],
+					activityCount: activityCounts[l.data.slug],
 				}))}
 				courseSlug={courseSlug}
 				locale="en"

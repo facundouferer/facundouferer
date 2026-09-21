@@ -39,6 +39,8 @@ practice and self-assess.
 - [x] T3 — Pilot content for lesson 07 (project + quiz)
 - [x] T4 — Build + tests green, docs (`AGENTS.md` content model) updated
 - [x] T5 — User feedback: render quiz code as a real code block, fix cramped inline options
+- [x] T6 — Activity count badge in lesson lists (course page + lesson sidebar, ES and EN)
+- [ ] T7 — Full-width activities pages, matching article-page layout
 
 ## Route per task
 
@@ -301,10 +303,60 @@ Delegated direct (writer trigger: 2+ non-trivial files).
     answered and graded Q10 correctly — "Correcto" tag, explanation with
     inline code, "Reintentar" shown after grading.
 
+### T6 — activity count badge in lesson lists (done)
+
+- `src/components/LessonsList.astro`: `Lesson` type gains `activityCount?:
+  number`; new `activityCountLabel(count)` helper (mirrors
+  `presentationCountLabel`) using the existing `courses.activities.badge.one`
+  / `.other` i18n keys (already present from T2 — no new i18n keys needed).
+  Renders a `class="badge lesson-activity-badge"` pill with the same Lucide
+  `list-checks` icon paths already used by `LessonActivitiesAccess.astro`
+  (`stroke-width="2.75"`), same visual style as the presentation badge, only
+  when `activityCount > 0`. In the `cards` variant, both badges (when
+  present) are grouped inside a new `.lesson-badges` flex wrapper so
+  `.lesson-card-footer--split`'s `justify-content: space-between` still
+  separates the badge group from "Ver lección" correctly instead of spacing
+  three flex children evenly. In the `list` (sidebar) variant, the badge is
+  a third child in `.lesson-title-row` (already `gap`-spaced, no wrapper
+  needed).
+- Wired `getActivityCountsForCourse` (from `src/utils/activities.ts`) into
+  all four render sites, matching the existing `presentationCount` wiring
+  pattern exactly: `src/pages/cursos/[course]/index.astro`,
+  `src/pages/cursos/[course]/[lesson].astro`,
+  `src/pages/en/courses/[course]/index.astro`,
+  `src/pages/en/courses/[course]/[lesson].astro` (the English lesson page
+  didn't fetch the `activities` collection before this task; added
+  `const allActivities = await getCollection('activities')`). English pages
+  compute counts for `locale: 'en'`; since no English activities exist yet,
+  this is always an empty map (no badge renders), consistent and forward-
+  compatible for when English activities are added — mirrors how
+  `courses-detail-routing.test.mjs` already asserts `presentationCount`
+  wiring on both locales, not just Spanish.
+- Tests (TDD, RED confirmed before implementation — 6 new tests failed:
+  `activityCount` type, badge render x2 variants, i18n keys, page wiring,
+  plus the 2 T7 tests below, all in one RED run): added to
+  `tests/activities-routes.test.mjs` — `activityCount?: number` on the
+  `Lesson` type, `class="badge lesson-activity-badge"` with the list-checks
+  path data present, condition appears in both variants, i18n keys used,
+  and all four pages import `getActivityCountsForCourse` and pass
+  `activityCount`.
+- Verification:
+  - `npm test`: 416 tests, 411 pass, 5 fail — same 5 pre-existing unrelated
+    failures as every prior task; all 6 new tests (T6+T7) pass.
+  - `npm run build`: succeeds, 361 pages (unchanged count — this task adds
+    no new routes).
+  - Inspected built HTML: `dist/cursos/java/index.html` and
+    `dist/cursos/java/07-fundamentos-poo-clases-y-objetos/index.html` both
+    contain `lesson-activity-badge` with `aria-label="2 actividades"` for
+    lesson 07/08.
+  - Live-verified in Chrome against `npm run preview`: `/cursos/java` course
+    page shows the presentation badge (monitor icon, "1") and activity
+    badge (list-checks icon, "2") side by side on lesson 8's card, same
+    pill style; the lesson 07 detail page's sidebar shows the same pair of
+    badges next to the lesson's title in the compact list variant.
+
 ## Decisions / things a reviewer should know
 
-- Skipped the optional sidebar activity-count badge (task allowed skipping
-  if non-trivial).
 - Activity pages pass only `esPath` (no English route); `BaseLayout`'s
   default `enPath` (`/en/`) is used for the hreflang alternate, acceptable
   since the pilot is explicitly Spanish-only.
