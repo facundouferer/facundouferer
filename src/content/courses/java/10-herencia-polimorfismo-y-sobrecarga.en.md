@@ -439,10 +439,12 @@ public class Employee {
 
     public Employee(String name, double baseSalary) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Name is required");
+            System.out.println("Invalid name, used \"No name\" by default.");
+            name = "No name";
         }
         if (baseSalary < 0) {
-            throw new IllegalArgumentException("Base salary cannot be negative");
+            System.out.println("Invalid base salary, used 0 by default.");
+            baseSalary = 0;
         }
         this.name = name;
         this.baseSalary = baseSalary;
@@ -467,7 +469,8 @@ public class Manager extends Employee {
     public Manager(String name, double baseSalary, double bonus) {
         super(name, baseSalary);            // first statement, mandatory
         if (bonus < 0) {
-            throw new IllegalArgumentException("Bonus cannot be negative");
+            System.out.println("Invalid bonus, used 0 by default.");
+            bonus = 0;
         }
         this.bonus = bonus;
     }
@@ -485,7 +488,8 @@ public class SalesRep extends Employee {
     public SalesRep(String name, double baseSalary, double monthlySales) {
         super(name, baseSalary);
         if (monthlySales < 0) {
-            throw new IllegalArgumentException("Sales cannot be negative");
+            System.out.println("Invalid sales, used 0 by default.");
+            monthlySales = 0;
         }
         this.monthlySales = monthlySales;
     }
@@ -534,4 +538,3 @@ Notice `super.computeSalary()` too: `Manager` and `SalesRep` do not repeat the b
 - The real benefit is writing code that works with subclasses that do not exist yet.
 - Frequent casting is a symptom that the hierarchy is asking for a method on the superclass.
 - Prefer composition over inheritance, and mark with `final` whatever must not be extended.
-</content>

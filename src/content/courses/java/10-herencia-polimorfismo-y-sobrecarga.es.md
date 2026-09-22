@@ -440,10 +440,12 @@ public class Empleado {
 
     public Empleado(String nombre, double sueldoBase) {
         if (nombre == null || nombre.isBlank()) {
-            throw new IllegalArgumentException("El nombre es obligatorio");
+            System.out.println("Nombre inválido, se usó \"Sin nombre\" por defecto.");
+            nombre = "Sin nombre";
         }
         if (sueldoBase < 0) {
-            throw new IllegalArgumentException("El sueldo base no puede ser negativo");
+            System.out.println("Sueldo base inválido, se usó 0 por defecto.");
+            sueldoBase = 0;
         }
         this.nombre = nombre;
         this.sueldoBase = sueldoBase;
@@ -468,7 +470,8 @@ public class Gerente extends Empleado {
     public Gerente(String nombre, double sueldoBase, double bono) {
         super(nombre, sueldoBase);          // primera sentencia, obligatorio
         if (bono < 0) {
-            throw new IllegalArgumentException("El bono no puede ser negativo");
+            System.out.println("Bono inválido, se usó 0 por defecto.");
+            bono = 0;
         }
         this.bono = bono;
     }
@@ -486,7 +489,8 @@ public class Vendedor extends Empleado {
     public Vendedor(String nombre, double sueldoBase, double ventasDelMes) {
         super(nombre, sueldoBase);
         if (ventasDelMes < 0) {
-            throw new IllegalArgumentException("Las ventas no pueden ser negativas");
+            System.out.println("Ventas inválidas, se usó 0 por defecto.");
+            ventasDelMes = 0;
         }
         this.ventasDelMes = ventasDelMes;
     }
@@ -535,4 +539,3 @@ Fijate también en `super.calcularSalario()`: `Gerente` y `Vendedor` no repiten 
 - El beneficio real es escribir código que funciona con subclases que todavía no existen.
 - Castear seguido es un síntoma de que el diseño de la jerarquía está pidiendo un método en la superclase.
 - Preferí composición antes que herencia, y marcá con `final` lo que no debe extenderse.
-</content>

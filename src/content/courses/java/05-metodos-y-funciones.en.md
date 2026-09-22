@@ -177,13 +177,13 @@ This introductory `factorial` version illustrates the structure, but it treats n
 
 ```java
 static boolean isEven(int n) {
-    if (n < 0) throw new IllegalArgumentException("n cannot be negative");
+    if (n < 0) return false; // invalid n: documented sentinel value
     if (n == 0) return true;
     return isOdd(n - 1); // Indirect recursion
 }
 
 static boolean isOdd(int n) {
-    if (n < 0) throw new IllegalArgumentException("n cannot be negative");
+    if (n < 0) return false; // invalid n: documented sentinel value
     if (n == 0) return false;
     return isEven(n - 1); // Mutual recursion
 }
@@ -206,12 +206,12 @@ public final class RecursiveSum {
 
     public static long sumTo(int n) {
         if (n < 0) {
-            throw new IllegalArgumentException("n cannot be negative");
+            System.out.println("n cannot be negative");
+            return -1; // documented sentinel value: no valid sum is negative
         }
         if (n > MAX_RECURSIVE_DEPTH) {
-            throw new IllegalArgumentException(
-                "n exceeds recursive limit: " + MAX_RECURSIVE_DEPTH
-            );
+            System.out.println("n exceeds recursive limit: " + MAX_RECURSIVE_DEPTH);
+            return -1;
         }
         if (n == 0) {
             return 0; // Base case

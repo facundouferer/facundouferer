@@ -177,13 +177,13 @@ Esta versión introductoria de `factorial` ilustra la estructura, pero acepta ne
 
 ```java
 static boolean esPar(int n) {
-    if (n < 0) throw new IllegalArgumentException("n no puede ser negativo");
+    if (n < 0) return false; // n inválido: valor centinela documentado
     if (n == 0) return true;
     return esImpar(n - 1); // Recursión indirecta
 }
 
 static boolean esImpar(int n) {
-    if (n < 0) throw new IllegalArgumentException("n no puede ser negativo");
+    if (n < 0) return false; // n inválido: valor centinela documentado
     if (n == 0) return false;
     return esPar(n - 1);   // Recursión mutua
 }
@@ -206,12 +206,12 @@ public final class SumaRecursiva {
 
     public static long sumarHasta(int n) {
         if (n < 0) {
-            throw new IllegalArgumentException("n no puede ser negativo");
+            System.out.println("n no puede ser negativo");
+            return -1; // valor centinela documentado: ninguna suma válida es negativa
         }
         if (n > MAX_RECURSIVE_DEPTH) {
-            throw new IllegalArgumentException(
-                "n supera el límite recursivo: " + MAX_RECURSIVE_DEPTH
-            );
+            System.out.println("n supera el límite recursivo: " + MAX_RECURSIVE_DEPTH);
+            return -1;
         }
         if (n == 0) {
             return 0; // Caso base

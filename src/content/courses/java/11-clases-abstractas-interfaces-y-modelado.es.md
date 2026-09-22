@@ -84,7 +84,10 @@ public class Circulo extends Figura {
 
     public Circulo(double radio) {
         super("Círculo");
-        if (radio <= 0) throw new IllegalArgumentException("El radio debe ser positivo");
+        if (radio <= 0) {
+            System.out.println("Radio inválido, se usó 1 por defecto.");
+            radio = 1;
+        }
         this.radio = radio;
     }
 
@@ -134,7 +137,7 @@ Una interfaz describe **qué se puede hacer**, nunca cómo:
 ```java
 public interface Pagable {
     // Todos los métodos son public abstract por defecto: no hace falta escribirlo
-    void pagar(double monto);
+    boolean pagar(double monto);
     boolean estaDisponible();
 }
 ```
@@ -151,13 +154,16 @@ public class TarjetaCredito implements Pagable {
         this.limiteDisponible = limiteDisponible;
     }
 
+    // true si el cobro se realizó, false si se rechazó por límite insuficiente
     @Override
-    public void pagar(double monto) {
+    public boolean pagar(double monto) {
         if (monto > limiteDisponible) {
-            throw new IllegalStateException("Límite insuficiente");
+            System.out.println("Límite insuficiente.");
+            return false;
         }
         limiteDisponible -= monto;
         System.out.println("Pagado con tarjeta " + numero);
+        return true;
     }
 
     @Override
@@ -173,7 +179,7 @@ Desde Java 8 una interfaz puede traer implementaciones:
 
 ```java
 public interface Pagable {
-    void pagar(double monto);
+    boolean pagar(double monto);
     boolean estaDisponible();
 
     // default: implementación heredable que las clases pueden sobrescribir o no
@@ -503,7 +509,7 @@ Fijate el patrón en el código: en la **composición**, el contenedor crea las 
 
 ### Desafío: medios de pago
 
-1. Definí la interfaz `Pagable` con `void pagar(double monto)`, `boolean estaDisponible()` y un método `default` `pagarSiPuede(double monto)` que solo cobre si el medio está disponible.
+1. Definí la interfaz `Pagable` con `boolean pagar(double monto)` (`true` si se cobra, `false` si se rechaza), `boolean estaDisponible()` y un método `default` `pagarSiPuede(double monto)` que solo cobre si el medio está disponible.
 2. Implementala en `TarjetaCredito` (con límite disponible) y en `MercadoPago` (con saldo en cuenta).
 3. Creá una clase abstracta `MedioDePagoDigital implements Pagable` que guarde el `email` del titular y resuelva `estaDisponible()` con un campo `activo`, dejando `pagar()` abstracto.
 4. Hacé que `MercadoPago` extienda esa clase abstracta.
@@ -516,18 +522,19 @@ Fijate el patrón en el código: en la **composición**, el contenedor crea las 
 import java.util.List;
 
 public interface Pagable {
-    void pagar(double monto);
+    boolean pagar(double monto);
     boolean estaDisponible();
 
-    default void pagarSiPuede(double monto) {
+    default boolean pagarSiPuede(double monto) {
         if (monto <= 0) {
-            throw new IllegalArgumentException("El monto debe ser positivo");
+            System.out.println("  ✗ Monto inválido, se omite el cobro.");
+            return false;
         }
         if (estaDisponible()) {
-            pagar(monto);
-        } else {
-            System.out.println("  ✗ Medio no disponible, se omite el cobro.");
+            return pagar(monto);
         }
+        System.out.println("  ✗ Medio no disponible, se omite el cobro.");
+        return false;
     }
 }
 
@@ -538,7 +545,8 @@ public abstract class MedioDePagoDigital implements Pagable {
 
     protected MedioDePagoDigital(String email) {
         if (email == null || !email.contains("@")) {
-            throw new IllegalArgumentException("Email inválido");
+            System.out.println("Email inválido, se usó \"sin-email@ejemplo.com\" por defecto.");
+            email = "sin-email@ejemplo.com";
         }
         this.email = email;
         this.activo = true;
@@ -568,10 +576,14 @@ public class MercadoPago extends MedioDePagoDigital {
     }
 
     @Override
-    public void pagar(double monto) {
-        if (monto > saldo) throw new IllegalStateException("Saldo insuficiente");
+    public boolean pagar(double monto) {
+        if (monto > saldo) {
+            System.out.printf("  ✗ MercadoPago (%s) — saldo insuficiente.%n", email);
+            return false;
+        }
         saldo -= monto;
         System.out.printf("  ✓ MercadoPago (%s) — saldo restante $%.2f%n", email, saldo);
+        return true;
     }
 }
 
@@ -589,11 +601,15 @@ public class TarjetaCredito implements Pagable {
     public boolean estaDisponible() { return limiteDisponible > 0; }
 
     @Override
-    public void pagar(double monto) {
-        if (monto > limiteDisponible) throw new IllegalStateException("Límite insuficiente");
+    public boolean pagar(double monto) {
+        if (monto > limiteDisponible) {
+            System.out.printf("  ✗ Tarjeta ****%s — límite insuficiente.%n", ultimosCuatro);
+            return false;
+        }
         limiteDisponible -= monto;
         System.out.printf("  ✓ Tarjeta ****%s — límite restante $%.2f%n",
             ultimosCuatro, limiteDisponible);
+        return true;
     }
 }
 
@@ -634,4 +650,3 @@ La segunda: `MercadoPago.estaDisponible()` llama a `super.estaDisponible()` y le
 - Una clase extiende una sola clase, pero implementa todas las interfaces que necesite. Esa es la salida de Java a la herencia múltiple.
 - El `package` es la implementación del concepto de **namespace** en Java: previene colisiones mediante el FQCN, debe coincidir con la jerarquía de carpetas y conviene organizarlo por **responsabilidad**, no por tipo de artefacto.
 - Asociación, agregación y composición se distinguen con una sola pregunta: si destruyo el todo, ¿la parte sigue existiendo?
-</content>

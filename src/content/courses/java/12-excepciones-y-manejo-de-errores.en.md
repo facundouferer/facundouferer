@@ -13,16 +13,26 @@ published: true
 Back in lesson 8 you wrote this:
 
 ```java
-if (price < 0) {
-    throw new IllegalArgumentException("Price cannot be negative");
+public boolean setPrice(double price) {
+    if (price < 0) {
+        return false;
+    }
+    this.price = price;
+    return true;
 }
 ```
 
-You used `throw` without anyone explaining what it means. This lesson closes that gap.
+It works, but it has a crack: `setPrice` returns a `boolean` to signal whether it accepted or rejected the value, but **nothing forces the caller to check that result**.
+
+```java
+product.setPrice(-500);   // compiles, runs, and the rejection goes completely unnoticed
+```
+
+The price stays as it was, there is no warning, and the program keeps running as if nothing happened. This lesson fixes exactly that crack: a way to fail that **cannot be ignored by accident**.
 
 A real program fails constantly, and not because of you: the file is missing, the network drops, the user types `"twenty-two"` where a number belongs, the database refuses the connection. **The question is not whether it will fail, but what your code does when it does.**
 
-Java has a very concrete answer: when something goes wrong, **an object is thrown** describing the problem, and normal execution stops until somebody **catches** it and decides what to do.
+Java has a very concrete answer: when something goes wrong, **an object is thrown** describing the problem, and normal execution stops until somebody **catches** it and decides what to do. Unlike a `boolean` you can let slide unchecked, an exception nobody catches stops the program: there is no way to pretend nothing happened.
 
 ---
 

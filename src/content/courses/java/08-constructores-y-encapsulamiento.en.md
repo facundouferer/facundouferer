@@ -402,9 +402,11 @@ This is where most "encapsulated" classes fall apart. Look:
 
 ```java
 public class Course {
-    private List<String> students = new ArrayList<>();
+    private static final int MAX_CAPACITY = 30;
+    private final String[] students = new String[MAX_CAPACITY];
+    private int count = 0;
 
-    public List<String> getStudents() {
+    public String[] getStudents() {
         return students;   // ⚠️ We are handing out the internal reference
     }
 }
@@ -414,40 +416,40 @@ Everything looks right: the field is `private`, there is a getter. But:
 
 ```java
 Course c = new Course();
-c.getStudents().add("Intruder");   // We mutate internal state from outside
-c.getStudents().clear();           // And wipe it entirely
+c.getStudents()[0] = "Intruder";               // We mutate internal state from outside
+java.util.Arrays.fill(c.getStudents(), null);  // And wipe it entirely
 ```
 
-The getter handed over the **memory address of the internal list**, not a copy. Whoever receives it has full control. The `private` bought you nothing, because `private` protects the *field*, not the *object it points to*.
+The getter handed over the **memory address of the internal array**, not a copy. Whoever receives it has full control. The `private` bought you nothing, because `private` protects the *field*, not the *object it points to*.
 
-There are three fixes, from least to most rigid:
+There are two fixes, from least to most rigid:
 
 ```java
-// 1. Read-only view: cheap, but still shares the underlying list.
-public List<String> getStudents() {
-    return Collections.unmodifiableList(students);
+// 1. Defensive copy: the caller gets its own independent array.
+public String[] getStudents() {
+    String[] copy = new String[count];
+    for (int i = 0; i < count; i++) {
+        copy[i] = students[i];
+    }
+    return copy;
 }
 
-// 2. Defensive copy: the caller gets its own independent list.
-public List<String> getStudents() {
-    return new ArrayList<>(students);
-}
-
-// 3. Do not expose the collection: expose only the operations that make sense.
+// 2. Do not expose the collection: expose only the operations that make sense.
 public boolean enroll(String student) {
-    if (student == null || student.isBlank()) {
+    if (student == null || student.isBlank() || count == students.length) {
         return false;
     }
-    students.add(student);
+    students[count] = student;
+    count++;
     return true;
 }
 
-public int enrolledCount() { return students.size(); }
+public int enrolledCount() { return count; }
 ```
 
-The third option is almost always the best one, and not for tidiness: it is the only one that later lets you add a rule like "maximum 30 students" without changing the class's public signature.
+The second option is almost always the best one, and not for tidiness: it is the only one that later lets you add an extra business rule (for example, rejecting duplicate names) without changing the class's public signature.
 
-> The same trap applies to constructors: if you receive a `List` as a parameter and assign it directly with `this.list = list`, whoever passed it keeps a live reference to your internal state. Copy it on the way in too.
+> The same trap applies to constructors: if you receive an array as a parameter and assign it directly with `this.data = data`, whoever passed it keeps a live reference to your internal state. Copy it on the way in too (for example, with `Arrays.copyOf`, which you already know from the arrays lesson).
 
 ---
 
@@ -615,6 +617,5 @@ public class Student {
 - `this(...)` concentrates validation in a canonical constructor and stops rules from being duplicated.
 - Encapsulation means making the object **responsible for its own consistency**, not mass-generating accessors.
 - `private` is the default for every field. Open only what the contract requires.
-- Returning an internal collection without copying **cancels encapsulation**, no matter how `private` the field is.
+- Returning an internal array or object without copying **cancels encapsulation**, no matter how `private` the field is.
 - What cannot change cannot break: prefer `final` and immutability whenever the domain allows it.
-</content>

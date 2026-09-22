@@ -160,34 +160,36 @@ questions:
     prompt: '¿Por qué este código rompe el encapsulamiento de `Curso`, a pesar de que `alumnos` es `private`?'
     code: |-
       public class Curso {
-          private List<String> alumnos = new ArrayList<>();
+          private String[] alumnos = new String[30];
 
-          public List<String> getAlumnos() {
+          public String[] getAlumnos() {
               return alumnos;
           }
       }
 
       Curso c = new Curso();
-      c.getAlumnos().add("Intruso");
-      c.getAlumnos().clear();
+      c.getAlumnos()[0] = "Intruso";
+      java.util.Arrays.fill(c.getAlumnos(), null);
     options:
       - id: 'a'
         text: '`getAlumnos()` debería ser `private` también.'
       - id: 'b'
-        text: 'El getter devuelve la referencia interna a la lista; quien la recibe puede modificarla directamente desde afuera.'
+        text: 'El getter devuelve la referencia interna al array; quien la recibe puede modificarlo directamente desde afuera.'
       - id: 'c'
-        text: 'El problema es que `alumnos` usa `ArrayList` en lugar de un array común.'
+        text: 'El problema es que `alumnos` debería declararse `final` para no poder reasignarse.'
       - id: 'd'
         text: 'El código no compila, así que la pregunta no aplica.'
     correctOptionId: 'b'
     explanation: >-
       El atributo es `private`, pero el getter entrega la dirección de
-      memoria de la lista interna, no una copia. Lo que protege el
+      memoria del array interno, no una copia. Lo que protege el
       `private` es el campo, no el objeto al que apunta: quien recibe esa
-      referencia puede agregar o borrar elementos como si la lista fuera
-      suya. La solución es devolver una copia defensiva, una vista de solo
-      lectura, o directamente no exponer la colección y ofrecer solo las
-      operaciones que tienen sentido (como `inscribir(alumno)`).
+      referencia puede sobrescribir elementos como si el array fuera
+      suyo (y `final` no lo evitaría: solo impide reasignar la
+      referencia, no modificar su contenido). La solución es devolver una
+      copia defensiva (con un `for` o `Arrays.copyOf`) o directamente no
+      exponer el array y ofrecer solo las operaciones que tienen sentido
+      (como `inscribir(alumno)`).
 ---
 
 Marcá una respuesta en cada pregunta y presioná **Calificar** para ver tu

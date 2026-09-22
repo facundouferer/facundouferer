@@ -27,7 +27,7 @@ requirements:
   - 'En MainBiblioteca, crear al menos tres objetos Libro combinando ambos constructores (canónico y de conveniencia), y dejar un comentario junto a la instanciación explicando por qué new Libro() (sin argumentos) no compilaría: al declarar constructores propios, el constructor sin parámetros que regalaba el compilador ya no existe.'
   - 'Demostrar al menos dos rechazos de datos inválidos usando los valores devueltos por los métodos: uno construyendo un Libro con un dato inválido (por ejemplo, título vacío) y comprobando con getTitulo() que se usó el valor por defecto; otro llamando a setPrecioReposicion con un valor inválido y comprobando que devuelve false y que getPrecioReposicion() conserva el precio anterior.'
   - 'Ejercitar prestar() hasta agotar las copias de un libro, comprobando el boolean que devuelve cada llamada, y verificar que un préstamo de más informa el error, devuelve false y no descuenta copias de más (no debe quedar un número negativo).'
-  - 'Guardar los libros creados en un List<Libro> (java.util.ArrayList) y recorrerla con un for-each para llamar a mostrarFicha() de cada uno.'
+  - 'Llamar a mostrarFicha() de cada uno de los libros creados, cada uno en su propia variable (guardar varios objetos en una sola estructura recorrible es el tema de una lección futura).'
 exampleOutput: |
   Título inválido, se usó "Sin título" por defecto.
   ¿Se aceptó el precio -100.0? false (se mantiene el precio anterior)
@@ -58,7 +58,7 @@ exampleOutput: |
   Devolución registrada: "Clean Code". Copias disponibles: 1
   Precio de reposición actualizado de "Clean Code": $15000.0 -> $18000.0
 extensionChallenges:
-  - 'Agregar un atributo private List<String> historialPrestamos que registre la fecha o un identificador de cada préstamo, exponiendo un getHistorialPrestamos() que devuelva una copia (new ArrayList<>(historialPrestamos)), nunca la referencia interna.'
+  - 'Agregar un atributo private int prestamosHistoricos que cuente cuántas veces se llamó a prestar() en total (se haya aceptado o no el préstamo), exponiendo un getPrestamosHistoricos().'
   - 'Marcar la clase Libro como final y dejar un comentario corto explicando por qué esta clase no está pensada para extenderse.'
   - 'Escribir, aparte, una versión mínima de un portador de datos inmutable equivalente (solo título, autor e isbn, sin las operaciones de préstamo) como record, siguiendo la idea de inmutabilidad de la lección.'
 deliveryTips:
@@ -189,9 +189,10 @@ En `MainBiblioteca`:
   comprobando el `boolean` que devuelve cada llamada, y verificá que un
   préstamo de más informa el error, devuelve `false` y no deja el contador en
   negativo.
-- Guardá los libros en un `List<Libro>` (`new ArrayList<>()`) y recorrela con
-  un `for` de tipo `for (Libro libro : libros)` para llamar a
-  `mostrarFicha()` de cada uno.
+- Llamá a `mostrarFicha()` de cada uno de los libros que creaste, cada uno
+  en su propia variable (`libro1`, `libro2`, `libro3`). Guardar varios
+  objetos en una sola estructura recorrible —un array de objetos o una
+  colección— es el tema de una lección futura.
 
 El formato exacto de tus mensajes puede variar, pero debe comunicar la misma
 información que la salida esperada de más abajo: qué se rechazó y por qué,

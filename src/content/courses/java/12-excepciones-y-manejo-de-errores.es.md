@@ -13,16 +13,26 @@ published: true
 En la lección 8 escribiste esto:
 
 ```java
-if (precio < 0) {
-    throw new IllegalArgumentException("El precio no puede ser negativo");
+public boolean setPrecio(double precio) {
+    if (precio < 0) {
+        return false;
+    }
+    this.precio = precio;
+    return true;
 }
 ```
 
-Usaste `throw` sin que nadie te explicara qué significa. Esta lección cierra ese hueco.
+Funciona, pero tiene una grieta: `setPrecio` devuelve `boolean` para avisar si aceptó o rechazó el valor, pero **nada obliga a quien lo llama a revisar ese resultado**.
+
+```java
+producto.setPrecio(-500);   // compila, corre, y el rechazo pasa completamente desapercibido
+```
+
+El precio queda como estaba, no hay ningún aviso, y el programa sigue corriendo como si nada. Esta lección resuelve exactamente esa grieta: una forma de fallar que **no se pueda ignorar por accidente**.
 
 Un programa real falla todo el tiempo, y no por culpa tuya: el archivo no está, la red se cae, el usuario escribe `"veintidós"` donde iba un número, la base de datos rechaza la conexión. **La pregunta no es si va a fallar, sino qué hace tu código cuando falla.**
 
-Java tiene una respuesta muy concreta: cuando algo sale mal, se **lanza un objeto** que describe el problema, y la ejecución normal se interrumpe hasta que alguien lo **atrape** y decida qué hacer.
+Java tiene una respuesta muy concreta: cuando algo sale mal, se **lanza un objeto** que describe el problema, y la ejecución normal se interrumpe hasta que alguien lo **atrape** y decida qué hacer. A diferencia de un `boolean` que se puede dejar pasar sin mirar, una excepción que nadie atrapa detiene el programa: no hay forma de fingir que no pasó nada.
 
 ---
 

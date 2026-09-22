@@ -61,7 +61,7 @@ test('algorithm foundations lesson teaches specification, verification, and anal
 		assert.match(content, /O\(n\)/, `${locale}: linear complexity`);
 		assert.match(content, /O\(n log n\)/, `${locale}: linearithmic complexity`);
 		assert.match(content, /O\(n²\)/, `${locale}: quadratic complexity`);
-		assert.match(content, /IllegalArgumentException/, `${locale}: invalid-input handling`);
+		assert.match(content, /documented sentinel value|valor centinela documentado/i, `${locale}: invalid-input handling`);
 	}
 });
 
@@ -144,7 +144,7 @@ test('methods lesson teaches recursion forms, stack costs, and bounded use', asy
 		assert.match(content, /does not guarantee tail-call optimization|no garantiza (?:la )?optimizaci[oó]n de llamadas? de cola/i, `${locale}: Java TCO limitation`);
 		assert.match(content, /StackOverflowError/, `${locale}: stack overflow risk`);
 		assert.match(content, /O\(n\).*(?:stack|pila)|(?:stack|pila).*O\(n\)/is, `${locale}: linear stack cost`);
-		assert.match(content, /IllegalArgumentException/, `${locale}: input validation`);
+		assert.match(content, /documented sentinel value|valor centinela documentado/i, `${locale}: input validation`);
 		assert.match(content, /MAX_RECURSIVE_DEPTH/, `${locale}: bounded recursive example`);
 	}
 });
