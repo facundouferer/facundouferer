@@ -553,4 +553,3 @@ And `register` is the single place where the range rule lives. `registerFromText
 - `try-with-resources` for anything that opens and closes. No exceptions.
 - When rethrowing, **always pass the cause**: without it you lose the line that actually failed.
 - An empty `catch` is worse than not catching at all.
-</content>

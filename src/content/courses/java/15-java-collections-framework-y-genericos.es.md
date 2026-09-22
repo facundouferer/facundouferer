@@ -465,4 +465,3 @@ Y `VACIAS` es un `Set`, no una `List`, porque lo único que hacemos con él es p
 - Un `hashCode()` mal hecho no lanza ninguna excepción: solo hace que no encuentres lo que guardaste.
 - `merge`, `computeIfAbsent`, `getOrDefault` y `putIfAbsent` eliminan la mayoría de los `if` alrededor de un mapa.
 - Elegir la colección correcta **es una decisión de rendimiento**: `contains` sobre un `Set` es O(1); sobre una `List`, O(n).
-</content>

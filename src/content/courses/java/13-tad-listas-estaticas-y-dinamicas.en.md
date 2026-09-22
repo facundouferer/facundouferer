@@ -503,4 +503,3 @@ And notice that "remove" never deletes anything: it merely stops pointing at it.
 - The four cases of every operation are: empty list, first element, middle element, element not present.
 - The doubly linked list walks backwards and deletes without searching for the predecessor; the circular one has no `null` and changes the stop condition.
 - In production, **`ArrayList` nearly always**. Contiguous memory beats the theory thanks to the processor cache.
-</content>

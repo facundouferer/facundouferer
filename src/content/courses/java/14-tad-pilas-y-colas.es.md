@@ -654,4 +654,3 @@ La cola FIFO modela **quién sigue**; la cola de prioridad modela **qué ocurre 
 - `pop`/`dequeue` sobre una estructura vacía es un error de uso: lanzá `NoSuchElementException`.
 - En Java real usá **`ArrayDeque`** como `Deque`, nunca la vieja clase `Stack`.
 - "Lo último que abrí es lo primero que tengo que cerrar" es LIFO expresado en palabras. Por eso la pila resuelve el balanceo.
-</content>

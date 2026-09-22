@@ -553,4 +553,3 @@ Y `registrar` es el único lugar donde vive la regla del rango. `registrarDesdeT
 - `try-with-resources` para todo lo que se abre y se cierra. Sin excepciones.
 - Al relanzar, **pasá siempre la causa**: sin ella perdés la línea donde realmente falló.
 - Un `catch` vacío es peor que no capturar nada.
-</content>

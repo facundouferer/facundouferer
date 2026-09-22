@@ -514,4 +514,3 @@ Y `buscarPorId` devuelve `Optional<Producto>`. "No existe" no es un error excepc
 - Una `Connection` **no es segura entre hilos**. Una por hilo, tomada del pool.
 - El valor que devuelve `executeUpdate()` es información: cero filas afectadas casi nunca es lo que esperabas.
 - El patrón **DAO** aísla el SQL en una clase por entidad, detrás de una interfaz.
-</content>

@@ -622,4 +622,3 @@ Terminás modelando dominios con objetos, eligiendo estructuras de datos con cri
 Lo que cambió no es la cantidad de sintaxis que sabés: es que ahora entendés **por qué** cada herramienta existe y **qué problema vino a resolver**. Un constructor no es ceremonia, es la garantía de que un objeto nazca válido. Una interfaz no es burocracia, es lo que te deja cambiar la base de datos sin tocar la lógica. Un test no es un trámite, es lo que te permite refactorizar sin miedo.
 
 Eso es lo que no se aprende en dos horas, y es exactamente lo que te va a servir cuando el lenguaje de moda ya no sea Java.
-</content>

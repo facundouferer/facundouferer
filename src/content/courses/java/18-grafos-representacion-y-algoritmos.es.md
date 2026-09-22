@@ -693,4 +693,3 @@ Repetir Dijkstra desde cada vértice suele costar `O(V · (E log V))` con lista 
 - Marcá los vértices como visitados **al encolar**, nunca al desencolar.
 - **BFS da el camino con menos aristas**; si las aristas tienen peso, hace falta Dijkstra.
 - Dijkstra visita siempre el pendiente más barato y **relaja** las aristas. No sirve con pesos negativos.
-</content>

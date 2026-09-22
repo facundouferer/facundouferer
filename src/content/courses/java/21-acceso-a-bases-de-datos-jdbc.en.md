@@ -514,4 +514,3 @@ And `findById` returns `Optional<Product>`. "Not found" is not an exceptional er
 - A `Connection` is **not thread-safe**. One per thread, taken from the pool.
 - What `executeUpdate()` returns is information: zero rows affected is almost never what you expected.
 - The **DAO** pattern isolates SQL in one class per entity, behind an interface.
-</content>

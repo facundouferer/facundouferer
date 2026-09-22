@@ -693,4 +693,3 @@ Running Dijkstra from every vertex usually costs `O(V · (E log V))` with adjace
 - Mark vertices visited **on enqueue**, never on dequeue.
 - **BFS gives the fewest-edges path**; when edges have weight, you need Dijkstra.
 - Dijkstra always visits the cheapest pending vertex and **relaxes** its edges. It is invalid with negative weights.
-</content>

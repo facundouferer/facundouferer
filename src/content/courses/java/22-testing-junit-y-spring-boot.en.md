@@ -622,4 +622,3 @@ You finish modeling domains with objects, choosing data structures with judgment
 What changed is not how much syntax you know: it is that you now understand **why** each tool exists and **what problem it came to solve**. A constructor is not ceremony, it is the guarantee that an object is born valid. An interface is not bureaucracy, it is what lets you swap the database without touching the logic. A test is not paperwork, it is what lets you refactor without fear.
 
 That is what nobody learns in two hours, and it is exactly what will still serve you when the language of the moment is no longer Java.
-</content>

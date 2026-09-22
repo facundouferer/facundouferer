@@ -503,4 +503,3 @@ Y fijate que "eliminar" nunca borra nada: solo deja de apuntarlo. Sin ninguna re
 - Los cuatro casos de toda operación son: lista vacía, primer elemento, elemento del medio, elemento inexistente.
 - La doble permite ir para atrás y borrar sin buscar al anterior; la circular no tiene `null` y cambia la condición de corte.
 - En producción, **`ArrayList` casi siempre**. La memoria contigua le gana a la teoría gracias a la caché del procesador.
-</content>

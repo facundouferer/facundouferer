@@ -465,4 +465,3 @@ And `STOP_WORDS` is a `Set`, not a `List`, because the only thing we do with it 
 - A bad `hashCode()` throws no exception: it just makes you unable to find what you stored.
 - `merge`, `computeIfAbsent`, `getOrDefault`, and `putIfAbsent` remove most of the `if` blocks around a map.
 - Picking the right collection **is a performance decision**: `contains` on a `Set` is O(1); on a `List`, O(n).
-</content>

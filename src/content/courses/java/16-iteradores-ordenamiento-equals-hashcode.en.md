@@ -474,4 +474,3 @@ Now `compareTo` returns `0` exactly when `equals` returns `true`, and both famil
 - The correct signature is `equals(Object o)`. With `Book o` you are overloading and collections will not use it.
 - `TreeSet` and `TreeMap` ignore `equals` and decide duplicates by `compareTo == 0`. Keep them consistent.
 - A `record` gives you correct `equals` and `hashCode` for free.
-</content>

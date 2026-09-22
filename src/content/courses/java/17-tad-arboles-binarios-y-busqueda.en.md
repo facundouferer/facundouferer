@@ -549,4 +549,3 @@ We use `long` for the range because a node may legitimately hold `Integer.MIN_VA
 - The BST property — smaller left, larger right, **across the whole tree** — is what turns a search into a decision.
 - Inserting already-sorted data **degenerates** a BST into a list and drops it from O(log n) to O(n).
 - In production use `TreeMap`/`TreeSet`: red-black trees that rebalance themselves.
-</content>

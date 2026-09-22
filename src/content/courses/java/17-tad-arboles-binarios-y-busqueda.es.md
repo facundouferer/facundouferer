@@ -549,4 +549,3 @@ Usamos `long` para el rango porque un nodo puede valer legítimamente `Integer.M
 - La propiedad del ABB —izquierda menor, derecha mayor, **en todo el árbol**— es lo que convierte una búsqueda en una decisión.
 - Insertar datos ya ordenados **degenera** el ABB en una lista y lo lleva de O(log n) a O(n).
 - En producción usá `TreeMap`/`TreeSet`: son árboles rojo-negro que se reequilibran solos.
-</content>

@@ -474,4 +474,3 @@ Ahora `compareTo` devuelve `0` exactamente cuando `equals` devuelve `true`, y la
 - La firma correcta es `equals(Object o)`. Con `Libro o` estás sobrecargando y las colecciones no lo usan.
 - `TreeSet` y `TreeMap` ignoran `equals` y deciden duplicados con `compareTo == 0`. Mantenelos consistentes.
 - Un `record` genera `equals` y `hashCode` correctos gratis.
-</content>

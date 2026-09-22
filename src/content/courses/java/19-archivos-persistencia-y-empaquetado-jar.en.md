@@ -577,4 +577,3 @@ Launch4j alone does not replace an installer, runtime strategy, or Windows testi
 - Declare `serialVersionUID` by hand or you will lose every saved file on the first class change.
 - Prefer **text formats** (CSV, JSON) over native serialization: portable, readable, and stable.
 - A JAR is a ZIP with a `MANIFEST.MF`; without `Main-Class` it is not executable.
-</content>

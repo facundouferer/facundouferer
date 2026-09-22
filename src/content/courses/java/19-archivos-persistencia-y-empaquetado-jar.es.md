@@ -577,4 +577,3 @@ Sin embargo, Launch4j no reemplaza por sí solo todo el instalador, el runtime n
 - Declará `serialVersionUID` a mano o vas a perder todos los archivos guardados al primer cambio de la clase.
 - Preferí **formatos de texto** (CSV, JSON) antes que la serialización nativa: son portables, legibles y estables.
 - Un JAR es un ZIP con un `MANIFEST.MF`; sin `Main-Class` no es ejecutable.
-</content>

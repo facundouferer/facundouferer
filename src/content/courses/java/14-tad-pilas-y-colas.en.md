@@ -654,4 +654,3 @@ The FIFO queue models **who is next**; the priority queue models **what happens 
 - `pop`/`dequeue` on an empty structure is a usage error: throw `NoSuchElementException`.
 - In real Java use **`ArrayDeque`** as a `Deque`, never the old `Stack` class.
 - "The last thing I opened is the first thing I must close" is LIFO stated in words. Which is why a stack solves balance checking.
-</content>
