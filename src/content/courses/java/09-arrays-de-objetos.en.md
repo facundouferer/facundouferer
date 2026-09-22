@@ -2,7 +2,7 @@
 course: 'java'
 slug: '09-arrays-de-objetos'
 title: 'Arrays of Objects: Holding and Iterating Many Instances'
-description: 'Combine arrays with classes: create object arrays, avoid the NullPointerException from empty slots, iterate them, search, sort with Comparable and Comparator, and manage capacity versus actual count.'
+description: 'Combine arrays with classes: create object arrays, avoid the NullPointerException from empty slots, iterate them, search, sort by hand with your own criterion, and manage capacity versus actual count.'
 order: 10
 lang: 'en'
 published: true
@@ -282,110 +282,58 @@ Three design decisions worth more than the code itself:
 
 - **`equalsIgnoreCase`, never `==`.** You are comparing the contents of two `String`s, and lesson 4 already showed why `==` betrays you the moment the text comes from outside.
 - **`p != null` first.** The order matters: evaluating `p.getName()` before the check blows up.
-- **Returning `null` when absent** is the traditional option, but it pushes the problem onto the caller. Modern Java prefers `Optional<Person>`, which forces the "not found" case to be handled:
+- **Returning `null` when absent.** That is this lesson's choice: the caller takes on the responsibility of checking the result before using it.
 
 ```java
-import java.util.Optional;
-
-public static Optional<Person> find(Person[] people, String name) {
-    for (Person p : people) {
-        if (p != null && p.getName().equalsIgnoreCase(name)) {
-            return Optional.of(p);
-        }
-    }
-    return Optional.empty();
+Person found = findByName(people, "Ana");
+if (found != null) {
+    System.out.println("Found: " + found);
+} else {
+    System.out.println("Not on the roster");
 }
-
-// The caller cannot ignore the empty case:
-find(people, "Ana")
-    .ifPresentOrElse(
-        p -> System.out.println("Found: " + p),
-        () -> System.out.println("Not on the roster")
-    );
 ```
+
+> Forgetting that `if (found != null)` is the most common way to turn a "not found" into a `NullPointerException` three lines later.
 
 ---
 
-## 6. Sorting: `Arrays.sort` needs you to supply the criterion
+## 6. Sorting: writing the criterion by hand
 
-With `int[]`, `Arrays.sort(numbers)` was enough, because numbers have an obvious order. With objects there is none: are two people ordered by name, by age, by hire date?
+With `int[]`, `Arrays.sort(numbers)` was enough, because numbers have an obvious order. With objects there is none: are two people ordered by name, by age, by hire date? Someone has to decide, and for now that someone is you: `Arrays.sort(people)` compiles, but blows up at runtime because `Person` does not know how to compare itself.
 
-```java
-Arrays.sort(people);   // ClassCastException: Person cannot be cast to Comparable
-```
+Java has a mechanism to declare that criterion once and reuse it in any `Arrays.sort` call —you will see it in lesson 16—. Until then, you sort by hand: walk the array and compare the chosen field with `<` and `>`, the same way you would sort an `int[]` if `Arrays.sort` did not exist.
 
-Java offers two mechanisms, and the difference between them is conceptual, not technical.
-
-<figure class="diagram">
-<svg viewBox="0 0 720 318" role="img" aria-labelledby="d-comp-t">
-<title id="d-comp-t">Comparable defines the natural order inside the class; Comparator defines alternative orders from outside</title>
-<rect x="0" y="30" width="340" height="150" rx="18" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
-<text x="20" y="56" font-size="13.5" font-weight="700" fill="var(--color-accent-700)">Comparable</text>
-<text x="20" y="76" font-size="12" font-weight="700" fill="var(--color-neutral-800)">The natural order, only one</text>
-<text x="20" y="99" font-size="12.5" fill="var(--color-text)">Lives INSIDE the Person class.</text>
-<text x="20" y="120" font-size="12.5" fill="var(--color-text)">You implement compareTo(other).</text>
-<text x="20" y="141" font-size="12.5" fill="var(--color-text)">Answers: "what is THE order of this class?"</text>
-<text x="20" y="166" font-size="12" font-weight="700" fill="var(--color-accent-700)">Arrays.sort(people);</text>
-<rect x="380" y="30" width="340" height="150" rx="18" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-600)"/>
-<text x="400" y="56" font-size="13.5" font-weight="700" fill="var(--color-accent-2-800)">Comparator</text>
-<text x="400" y="76" font-size="12" font-weight="700" fill="var(--color-neutral-800)">Alternative orders, as many as you like</text>
-<text x="400" y="99" font-size="12.5" fill="var(--color-text)">Lives OUTSIDE, it is a separate object.</text>
-<text x="400" y="120" font-size="12.5" fill="var(--color-text)">Built with Comparator.comparing(...).</text>
-<text x="400" y="141" font-size="12.5" fill="var(--color-text)">Answers: "how do I want to sort HERE?"</text>
-<text x="400" y="166" font-size="12" font-weight="700" fill="var(--color-accent-2-800)">Arrays.sort(people, byAge);</text>
-<rect x="0" y="204" width="720" height="72" rx="16" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
-<text x="22" y="230" font-size="13.5" font-weight="700" fill="var(--color-accent-700)">Both return an int, and only its sign matters</text>
-<rect x="22" y="240" width="200" height="26" rx="9" fill="var(--color-bg)" stroke="var(--color-neutral-600)"/>
-<text x="122" y="258" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-text)">negative: a comes first</text>
-<rect x="234" y="240" width="200" height="26" rx="9" fill="var(--color-bg)" stroke="var(--color-neutral-600)"/>
-<text x="334" y="258" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-text)">zero: order is irrelevant</text>
-<rect x="446" y="240" width="200" height="26" rx="9" fill="var(--color-bg)" stroke="var(--color-neutral-600)"/>
-<text x="546" y="258" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-text)">positive: a comes later</text>
-<text x="2" y="298" font-size="12.5" fill="var(--color-text)">A class has at most ONE Comparable, but it can have as many Comparators as you need criteria.</text>
-<text x="2" y="314" font-size="12" fill="var(--color-neutral-700)">Never subtract dates or large values to build that int: use Integer.compare(a, b) and avoid overflow.</text>
-</svg>
-<figcaption>If your class has an obvious, single order —an ID, an employee number— use <code>Comparable</code>. For everything else, one <code>Comparator</code> per criterion.</figcaption>
-</figure>
-
-### Natural order with `Comparable`
+Selection is the simplest algorithm to write by hand: on every pass you find the smallest-valued element in the rest of the array and move it to the front.
 
 ```java
-public class Person implements Comparable<Person> {
-    // ... fields and constructor ...
-
-    @Override
-    public int compareTo(Person other) {
-        return this.name.compareToIgnoreCase(other.name);
+public static void sortByAge(Person[] people) {
+    for (int i = 0; i < people.length - 1; i++) {
+        int smallestIndex = i;
+        for (int j = i + 1; j < people.length; j++) {
+            if (people[j].getAge() < people[smallestIndex].getAge()) {
+                smallestIndex = j;
+            }
+        }
+        if (smallestIndex != i) {
+            Person temp = people[i];
+            people[i] = people[smallestIndex];
+            people[smallestIndex] = temp;
+        }
     }
 }
 ```
 
 ```java
-Arrays.sort(people);
+sortByAge(people);
 System.out.println(Arrays.toString(people));
-// [Ana (41), Carlos (35), Laura (28)]
+// [Laura (28), Carlos (35), Ana (41)]
 ```
 
-### Alternative orders with `Comparator`
+Notice the swap moves **references**, not objects: `temp` holds an arrow, not a copy of `Person`. Sorting an array of objects never duplicates what the slots point at.
 
-```java
-import java.util.Comparator;
+To sort by another field —the name, for instance— you would repeat the same loop and change only the `if` condition. Repeating that loop once per criterion, with no guarantee about what happens to ties if you also need to break them by a second field, is exactly the problem lesson 16 (Iterators, Sorting, and the equals/hashCode Contract) solves: you will declare the ordering criterion once and hand it to `Arrays.sort`, without repeating the loop.
 
-// By age, ascending
-Arrays.sort(people, Comparator.comparingInt(Person::getAge));
-
-// By age, descending
-Arrays.sort(people, Comparator.comparingInt(Person::getAge).reversed());
-
-// By age and, on a tie, by name
-Arrays.sort(people, Comparator
-        .comparingInt(Person::getAge)
-        .thenComparing(Person::getName));
-```
-
-> `Arrays.sort` on objects uses TimSort, which is **stable**: tied elements keep the order they were already in. That is why `thenComparing` is the correct way to break ties, and why sorting twice with different criteria is not the same as one composite criterion.
-
-An object array with `null` inside **breaks any sort** with a `NullPointerException`, because the comparator ends up calling methods on the empty slot. One more reason not to leave holes.
+An object array with `null` inside **breaks any hand-written sort** with a `NullPointerException`, because `people[j].getAge()` blows up the moment `j` lands on an empty slot. One more reason not to leave holes.
 
 ---
 
@@ -494,7 +442,7 @@ Most of the time you do not know upfront how many objects you will store. The cl
 <text x="22" y="248" font-size="12.5" fill="var(--color-text)">for (int i = 0; i less than count; i++)  →  that way you never touch a null slot.</text>
 <text x="2" y="288" font-size="12.5" fill="var(--color-text)">A class wrapping this array and this counter, exposing add/remove/get, is exactly a List ADT: lesson 13.</text>
 </svg>
-<figcaption>Separating <em>capacity</em> from <em>count</em> is the conceptual step that turns a loose array into a data structure. <code>ArrayList</code> does exactly this internally.</figcaption>
+<figcaption>Separating <em>capacity</em> from <em>count</em> is the conceptual step that turns a loose array into a data structure. The List ADT from lesson 13 does exactly this internally.</figcaption>
 </figure>
 
 ```java
@@ -595,8 +543,8 @@ With an immutable `Person`, a shallow copy is enough: nobody can modify the obje
 - **Believing `new Person[3]` creates three people.** It creates three `null`s.
 - **Iterating up to `length` when you keep a counter.** Iterate up to `count`.
 - **Not overriding `toString()`.** You print hex hashes and debug blind.
-- **`Arrays.sort` with neither `Comparable` nor `Comparator`.** `ClassCastException` at runtime, not at compile time.
-- **Sorting an array with `null` inside.** `NullPointerException` inside the comparator.
+- **Treating an object array as if `Arrays.sort` could order it on its own.** With objects you need to decide the comparison field and write the loop yourself.
+- **Sorting an array with `null` inside.** `NullPointerException` the moment the comparison touches an empty slot.
 - **Comparing objects with `==`.** That compares identity. Content needs `equals()` — its full contract arrives in lesson 16.
 - **Writing `a[i] = a[j]` believing it copies.** It copies the reference; you end up with two arrows to one object.
 - **Exposing a class's internal array.** A `private` is worth nothing if the getter hands out the reference.
@@ -687,16 +635,15 @@ The three steps are the standard array-filtering pattern: **over-reserve, count,
 Note too that the resulting array shares its objects with the original (aliasing, section 7). For this case that is correct: filtering should not duplicate people.
 </details>
 
-### Exercise 3 — Sorting by two criteria
+### Exercise 3 — Sorting by age, descending
 
-Sort a `Person[]` by age descending and, on equal age, by name alphabetically.
+Sort a `Person[]` from oldest to youngest, without using `Arrays.sort`.
 
 <details>
 <summary>View suggested solution</summary>
 
 ```java
 import java.util.Arrays;
-import java.util.Comparator;
 
 public class SortPeople {
     public static void main(String[] args) {
@@ -707,27 +654,27 @@ public class SortPeople {
             new Person("Carlos", 28)
         };
 
-        Arrays.sort(people, Comparator
-                .comparingInt(Person::getAge).reversed()
-                .thenComparing(Person::getName));
+        for (int i = 0; i < people.length - 1; i++) {
+            int largestIndex = i;
+            for (int j = i + 1; j < people.length; j++) {
+                if (people[j].getAge() > people[largestIndex].getAge()) {
+                    largestIndex = j;
+                }
+            }
+            if (largestIndex != i) {
+                Person temp = people[i];
+                people[i] = people[largestIndex];
+                people[largestIndex] = temp;
+            }
+        }
 
         System.out.println(Arrays.toString(people));
-        // [Ana (41), Bruno (35), Laura (35), Carlos (28)]
+        // [Ana (41), Laura (35), Bruno (35), Carlos (28)]
     }
 }
 ```
 
-Method order matters: `.reversed()` inverts **only what has accumulated up to that point**, so it applies to age and not to the name tie-breaker. Writing `.thenComparing(...).reversed()` would invert both criteria at once.
-
-A hand-written alternative, to see what happens underneath:
-
-```java
-Arrays.sort(people, (a, b) -> {
-    int byAge = Integer.compare(b.getAge(), a.getAge());   // b before a = descending
-    if (byAge != 0) return byAge;
-    return a.getName().compareTo(b.getName());
-});
-```
+Laura and Bruno tie on age (35). This loop, written as it is, gives no guarantee about the relative order of ties —in this particular run Laura ends up before Bruno, but that is a consequence of the swaps, not a rule of the algorithm. Breaking ties predictably by a second criterion, such as name, without rewriting the whole loop every time, is exactly what you will learn to do in lesson 16.
 </details>
 
 ### Exercise 4 — An address book with dynamic capacity
@@ -739,7 +686,6 @@ Implement an `AddressBook` class that stores `Contact` objects in an internal ar
 
 ```java
 import java.util.Arrays;
-import java.util.Optional;
 
 public class AddressBook {
     private Contact[] contacts = new Contact[4];
@@ -757,13 +703,13 @@ public class AddressBook {
         return true;
     }
 
-    public Optional<Contact> find(String name) {
+    public Contact find(String name) {
         for (int i = 0; i < count; i++) {
             if (contacts[i].getName().equalsIgnoreCase(name)) {
-                return Optional.of(contacts[i]);
+                return contacts[i];
             }
         }
-        return Optional.empty();
+        return null;
     }
 
     public boolean remove(int index) {
@@ -789,7 +735,7 @@ public class AddressBook {
 }
 ```
 
-This class is already, conceptually, a miniature `ArrayList`: internal array, doubling capacity, logical size separated from physical size, and shifting on removal. In lesson 13 you will formalise it as a List ADT and compare it with the linked version.
+This class is already, conceptually, a miniature dynamic list: internal array, doubling capacity, logical size separated from physical size, and shifting on removal. In lesson 13 you will formalise it as a List ADT and compare it with the linked version.
 </details>
 
 ---
@@ -800,8 +746,8 @@ This class is already, conceptually, a miniature `ArrayList`: internal array, do
 - `new Person[3]` creates three `null`s. Creating the array and creating the objects are **two steps**.
 - An array with empty slots is the cause of Java's most frequent `NullPointerException`.
 - Override `toString()` on every class you store in an array: without it, printing tells you nothing.
-- Searching is always a hand-written linear scan; return `Optional` instead of `null` where you can.
-- `Arrays.sort` on objects demands a criterion: `Comparable` for the natural order, `Comparator` for the rest.
+- Searching is always a hand-written linear scan; if you return `null` when nothing matches, the caller must check `!= null` before using the result.
+- Sorting objects demands choosing a criterion and comparing it field by field in your own loop; lesson 16 shows how to declare that criterion once and reuse it.
 - Assigning one slot to another **does not copy the object**: you get two arrows to the same place.
 - A class's internal array is copied on the way in and on the way out, or `private` protects nothing.
 - Separating **capacity** from **count** is what turns an array into a data structure. That is the starting point of the List ADT.

@@ -20,7 +20,7 @@ const isEs = lang === 'es';
 					<button class="deck-pill-btn" data-target-slide="2">2. {isEs ? 'La Trampa del null' : 'The null Trap'}</button>
 					<button class="deck-pill-btn" data-target-slide="3">3. {isEs ? 'Recorrido Seguro' : 'Safe Traversal'}</button>
 					<button class="deck-pill-btn" data-target-slide="4">4. {isEs ? 'Capacidad vs Cantidad' : 'Capacity vs Size'}</button>
-					<button class="deck-pill-btn" data-target-slide="5">5. {isEs ? 'Comparable y Comparator' : 'Comparable & Comparator'}</button>
+					<button class="deck-pill-btn" data-target-slide="5">5. {isEs ? 'Ordenar a Mano' : 'Manual Sorting'}</button>
 				</div>
 			</div>
 
@@ -415,15 +415,15 @@ lista[<span class="tok-num">0</span>] = <span class="tok-kw">new</span> <span cl
 					</div>
 				</div>
 
-				<!-- SLIDE 5: COMPARABLE VS COMPARATOR -->
+				<!-- SLIDE 5: MANUAL SORTING -->
 				<div class="deck-slide" data-slide="5">
 					<div class="deck-slide-grid">
 						<div class="deck-col">
-							<h2 class="deck-slide-title">5. {isEs ? 'Ordenar Arrays de Objetos: Comparable vs Comparator' : 'Sorting Object Arrays: Comparable vs Comparator'}</h2>
+							<h2 class="deck-slide-title">5. {isEs ? 'Ordenar Arrays de Objetos: Escribir el Criterio a Mano' : 'Sorting Object Arrays: Writing the Criterion by Hand'}</h2>
 							<p class="deck-text">
 								{isEs
-									? 'Arrays.sort() necesita saber cómo comparar dos objetos. `Comparable` define el orden natural interno dentro de la clase (compareTo), mientras que `Comparator` permite órdenes alternativos externos (por nombre, nota, etc.). ¡El ordenamiento intercambia punteros en el array sin duplicar objetos en el Heap!'
-									: 'Arrays.sort() must know how to compare two objects. `Comparable` dictates the class internal natural order (compareTo), while `Comparator` provides external custom sort criteria. Sorting swaps pointers in the array without cloning objects in the Heap!'}
+									? 'Arrays.sort() ordena solo un array de primitivos. Con objetos no sabe qué comparar: hay que escribir el bucle de comparación a mano, campo por campo. El ordenamiento intercambia punteros en el array sin duplicar objetos en el Heap — vas a automatizar este criterio en la lección 16.'
+									: 'Arrays.sort() can sort a primitive array on its own. With objects it does not know what to compare: you write the comparison loop by hand, field by field. Sorting swaps pointers in the array without cloning objects in the Heap — you will automate this criterion in lesson 16.'}
 							</p>
 
 							<div class="deck-figure">
@@ -462,7 +462,7 @@ lista[<span class="tok-num">0</span>] = <span class="tok-kw">new</span> <span cl
 									<g transform="translate(30, 130)">
 										<rect x="0" y="0" width="480" height="90" rx="10" class="deck-panel-accent" />
 										<text x="20" y="28" class="deck-svg-title-accent" id="sort-expl-title">Estado Inicial: Desordenado por camiseta [11, 23, 10]</text>
-										<text x="20" y="50" class="deck-svg-mono-sm" id="sort-expl-code">// Arrays.sort(plantel) sin Comparable -&gt; ClassCastException!</text>
+										<text x="20" y="50" class="deck-svg-mono-sm" id="sort-expl-code">// Arrays.sort(plantel) revienta: ClassCastException</text>
 										<text x="20" y="72" class="deck-svg-sub" id="sort-expl-desc">Los objetos en el Heap nunca se mueven ni se copian; solo cambian los punteros en las casillas.</text>
 									</g>
 								</svg>
@@ -476,8 +476,8 @@ lista[<span class="tok-num">0</span>] = <span class="tok-kw">new</span> <span cl
 								</div>
 								<div class="deck-actions-row">
 									<button class="btn btn-secondary sort-btn active" data-sort="raw">{isEs ? 'Desordenado' : 'Unsorted'}</button>
-									<button class="btn btn-secondary sort-btn" data-sort="number">{isEs ? 'Comparable (Camiseta)' : 'Comparable (Number)'}</button>
-									<button class="btn btn-secondary sort-btn" data-sort="name">{isEs ? 'Comparator (Nombre)' : 'Comparator (Name)'}</button>
+									<button class="btn btn-secondary sort-btn" data-sort="asc">{isEs ? 'Camiseta Ascendente' : 'Number Ascending'}</button>
+									<button class="btn btn-secondary sort-btn" data-sort="desc">{isEs ? 'Camiseta Descendente' : 'Number Descending'}</button>
 								</div>
 								<div class="deck-info-box">
 									<div class="state-row">
@@ -485,15 +485,19 @@ lista[<span class="tok-num">0</span>] = <span class="tok-kw">new</span> <span cl
 										<span class="state-val" id="sort-active-crit">{isEs ? 'Orden de inserción original' : 'Original insertion order'}</span>
 									</div>
 									<div class="state-row">
-										<span class="state-label">{isEs ? 'Firma de Llamada:' : 'Invocation Signature:'}</span>
+										<span class="state-label">{isEs ? 'Comparación Activa:' : 'Active Comparison:'}</span>
 										<span class="state-val mono" id="sort-call-sig">plantel</span>
 									</div>
 								</div>
-								<pre class="deck-code-snippet"><code><span class="tok-comment">// Orden Natural (Comparable):</span>
-<span class="tok-kw">Arrays</span>.sort(plantel);
+								<pre class="deck-code-snippet"><code><span class="tok-comment">// Ascendente: buscás el menor y lo llevás al frente</span>
+<span class="tok-kw">if</span> (plantel[j].getCamiseta() &lt; plantel[menor].getCamiseta()) &#123;
+  menor = j;
+&#125;
 
-<span class="tok-comment">// Orden Alternativo (Comparator):</span>
-<span class="tok-kw">Arrays</span>.sort(plantel, <span class="tok-kw">Comparator</span>.comparing(<span class="tok-kw">Persona</span>::getNombre));</code></pre>
+<span class="tok-comment">// Descendente: mismo bucle, comparación invertida</span>
+<span class="tok-kw">if</span> (plantel[j].getCamiseta() &gt; plantel[mayor].getCamiseta()) &#123;
+  mayor = j;
+&#125;</code></pre>
 							</div>
 						</div>
 					</div>
@@ -872,7 +876,7 @@ lista[<span class="tok-num">0</span>] = <span class="tok-kw">new</span> <span cl
 			updateCapacityView();
 		});
 
-		// --- SLIDE 5: Comparable vs Comparator ---
+		// --- SLIDE 5: Manual sorting ---
 		const sortBtns = screen.querySelectorAll('.sort-btn');
 		const sortActiveCrit = document.getElementById('sort-active-crit');
 		const sortCallSig = document.getElementById('sort-call-sig');
@@ -896,33 +900,33 @@ lista[<span class="tok-num">0</span>] = <span class="tok-kw">new</span> <span cl
 					if (sortActiveCrit) sortActiveCrit.textContent = 'Orden de inserción original [11, 23, 10]';
 					if (sortCallSig) sortCallSig.textContent = 'plantel (sin ordenar)';
 					if (sortExplTitle) sortExplTitle.textContent = 'Estado Inicial: Desordenado por camiseta';
-					if (sortExplCode) sortExplCode.textContent = '// Arrays.sort(plantel) sin Comparable -> ClassCastException!';
+					if (sortExplCode) sortExplCode.textContent = '// Arrays.sort(plantel) revienta: ClassCastException';
 					if (slot0Name) slot0Name.textContent = '"Di María"';
 					if (slot0Num) slot0Num.textContent = 'Camiseta: #11';
 					if (slot1Name) slot1Name.textContent = '"Dibu"';
 					if (slot1Num) slot1Num.textContent = 'Camiseta: #23';
 					if (slot2Name) slot2Name.textContent = '"Messi"';
 					if (slot2Num) slot2Num.textContent = 'Camiseta: #10';
-				} else if (sortMode === 'number') {
-					if (sortActiveCrit) sortActiveCrit.textContent = 'Orden Natural por Camiseta [10, 11, 23]';
-					if (sortCallSig) sortCallSig.textContent = 'Arrays.sort(plantel)';
-					if (sortExplTitle) sortExplTitle.textContent = '✓ Ordenado con Comparable: compareTo()';
-					if (sortExplCode) sortExplCode.textContent = 'this.camiseta - otra.camiseta -> orden ascendente';
+				} else if (sortMode === 'asc') {
+					if (sortActiveCrit) sortActiveCrit.textContent = 'Bucle a mano, ascendente por camiseta [10, 11, 23]';
+					if (sortCallSig) sortCallSig.textContent = 'if (plantel[j].getCamiseta() < plantel[menor].getCamiseta())';
+					if (sortExplTitle) sortExplTitle.textContent = '✓ Ordenado a mano: selección del menor';
+					if (sortExplCode) sortExplCode.textContent = 'plantel[j].getCamiseta() < plantel[menor].getCamiseta()';
 					if (slot0Name) slot0Name.textContent = '"Messi"';
 					if (slot0Num) slot0Num.textContent = 'Camiseta: #10';
 					if (slot1Name) slot1Name.textContent = '"Di María"';
 					if (slot1Num) slot1Num.textContent = 'Camiseta: #11';
 					if (slot2Name) slot2Name.textContent = '"Dibu"';
 					if (slot2Num) slot2Num.textContent = 'Camiseta: #23';
-				} else if (sortMode === 'name') {
-					if (sortActiveCrit) sortActiveCrit.textContent = 'Orden Alfabético por Nombre [Dibu, Di María, Messi]';
-					if (sortCallSig) sortCallSig.textContent = 'Arrays.sort(plantel, Comparator.comparing(Persona::getNombre))';
-					if (sortExplTitle) sortExplTitle.textContent = '✓ Ordenado con Comparator externo';
-					if (sortExplCode) sortExplCode.textContent = 'Comparator.comparing(Persona::getNombre)';
-					if (slot0Name) slot0Name.textContent = '"Di María"';
-					if (slot0Num) slot0Num.textContent = 'Camiseta: #11';
-					if (slot1Name) slot1Name.textContent = '"Dibu"';
-					if (slot1Num) slot1Num.textContent = 'Camiseta: #23';
+				} else if (sortMode === 'desc') {
+					if (sortActiveCrit) sortActiveCrit.textContent = 'Bucle a mano, descendente por camiseta [23, 11, 10]';
+					if (sortCallSig) sortCallSig.textContent = 'if (plantel[j].getCamiseta() > plantel[mayor].getCamiseta())';
+					if (sortExplTitle) sortExplTitle.textContent = '✓ Ordenado a mano: selección del mayor';
+					if (sortExplCode) sortExplCode.textContent = 'plantel[j].getCamiseta() > plantel[mayor].getCamiseta()';
+					if (slot0Name) slot0Name.textContent = '"Dibu"';
+					if (slot0Num) slot0Num.textContent = 'Camiseta: #23';
+					if (slot1Name) slot1Name.textContent = '"Di María"';
+					if (slot1Num) slot1Num.textContent = 'Camiseta: #11';
 					if (slot2Name) slot2Name.textContent = '"Messi"';
 					if (slot2Num) slot2Num.textContent = 'Camiseta: #10';
 				}

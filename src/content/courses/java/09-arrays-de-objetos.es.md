@@ -2,7 +2,7 @@
 course: 'java'
 slug: '09-arrays-de-objetos'
 title: 'Arrays de Objetos: Guardar y Recorrer Muchas Instancias'
-description: 'Combiná arrays con clases: creá arrays de objetos, evitá el NullPointerException de las casillas vacías, recorrelos, buscá, ordená con Comparable y Comparator, y manejá capacidad contra cantidad real.'
+description: 'Combiná arrays con clases: creá arrays de objetos, evitá el NullPointerException de las casillas vacías, recorrelos, buscá, ordená a mano por un criterio, y manejá capacidad contra cantidad real.'
 order: 10
 lang: 'es'
 published: true
@@ -282,110 +282,58 @@ Tres decisiones de diseño que valen más que el código:
 
 - **`equalsIgnoreCase`, nunca `==`.** Comparás el contenido de dos `String`, y ya viste en la lección 4 por qué `==` te traiciona apenas el texto viene de afuera.
 - **`p != null` primero.** El orden importa: si evaluás `p.getNombre()` antes de la comprobación, explota.
-- **Devolver `null` cuando no está** es la opción tradicional, pero traslada el problema a quien llama. En Java moderno se prefiere `Optional<Persona>`, que obliga a contemplar el caso de "no encontrado":
+- **Devolver `null` cuando no está.** Es la opción de esta lección: quien llama recibe la responsabilidad de comprobar el resultado antes de usarlo.
 
 ```java
-import java.util.Optional;
-
-public static Optional<Persona> buscar(Persona[] personas, String nombre) {
-    for (Persona p : personas) {
-        if (p != null && p.getNombre().equalsIgnoreCase(nombre)) {
-            return Optional.of(p);
-        }
-    }
-    return Optional.empty();
+Persona encontrada = buscarPorNombre(personas, "Ana");
+if (encontrada != null) {
+    System.out.println("Encontrada: " + encontrada);
+} else {
+    System.out.println("No está en el plantel");
 }
-
-// Quien llama no puede ignorar el caso vacío:
-buscar(personas, "Ana")
-    .ifPresentOrElse(
-        p -> System.out.println("Encontrada: " + p),
-        () -> System.out.println("No está en el plantel")
-    );
 ```
+
+> Olvidarte de ese `if (encontrada != null)` es la forma más común de convertir un "no encontrado" en un `NullPointerException` tres líneas más abajo.
 
 ---
 
-## 6. Ordenar: `Arrays.sort` necesita que le expliques el criterio
+## 6. Ordenar: escribir el criterio a mano
 
-Con `int[]` alcanzaba con `Arrays.sort(numeros)`, porque los números tienen un orden obvio. Con objetos no lo hay: ¿dos personas se ordenan por nombre, por edad, por fecha de ingreso?
+Con `int[]` alcanzaba con `Arrays.sort(numeros)`, porque los números tienen un orden obvio. Con objetos no lo hay: ¿dos personas se ordenan por nombre, por edad, por fecha de ingreso? Alguien tiene que decidirlo, y por ahora ese alguien sos vos: `Arrays.sort(personas)` compila, pero revienta en tiempo de ejecución porque `Persona` no sabe compararse a sí misma.
 
-```java
-Arrays.sort(personas);   // ClassCastException: Persona cannot be cast to Comparable
-```
+Java tiene un mecanismo para declarar ese criterio una sola vez y reutilizarlo en cualquier `Arrays.sort` —lo vas a ver en la lección 16—. Hasta entonces, ordenás a mano: recorrés el array y comparás el campo elegido con `<` y `>`, igual que harías con un `int[]` si no existiera `Arrays.sort`.
 
-Java te ofrece dos mecanismos, y la diferencia entre ellos es conceptual, no técnica.
-
-<figure class="diagram">
-<svg viewBox="0 0 720 318" role="img" aria-labelledby="d-comp-t">
-<title id="d-comp-t">Comparable define el orden natural dentro de la clase; Comparator define órdenes alternativos desde afuera</title>
-<rect x="0" y="30" width="340" height="150" rx="18" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
-<text x="20" y="56" font-size="13.5" font-weight="700" fill="var(--color-accent-700)">Comparable</text>
-<text x="20" y="76" font-size="12" font-weight="700" fill="var(--color-neutral-800)">El orden natural, uno solo</text>
-<text x="20" y="99" font-size="12.5" fill="var(--color-text)">Vive DENTRO de la clase Persona.</text>
-<text x="20" y="120" font-size="12.5" fill="var(--color-text)">Se implementa compareTo(otra).</text>
-<text x="20" y="141" font-size="12.5" fill="var(--color-text)">Responde: "¿cuál es EL orden de esta clase?"</text>
-<text x="20" y="166" font-size="12" font-weight="700" fill="var(--color-accent-700)">Arrays.sort(personas);</text>
-<rect x="380" y="30" width="340" height="150" rx="18" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-600)"/>
-<text x="400" y="56" font-size="13.5" font-weight="700" fill="var(--color-accent-2-800)">Comparator</text>
-<text x="400" y="76" font-size="12" font-weight="700" fill="var(--color-neutral-800)">Órdenes alternativos, los que quieras</text>
-<text x="400" y="99" font-size="12.5" fill="var(--color-text)">Vive FUERA, es un objeto aparte.</text>
-<text x="400" y="120" font-size="12.5" fill="var(--color-text)">Se arma con Comparator.comparing(...).</text>
-<text x="400" y="141" font-size="12.5" fill="var(--color-text)">Responde: "¿cómo quiero ordenar ACÁ?"</text>
-<text x="400" y="166" font-size="12" font-weight="700" fill="var(--color-accent-2-800)">Arrays.sort(personas, porEdad);</text>
-<rect x="0" y="204" width="720" height="72" rx="16" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
-<text x="22" y="230" font-size="13.5" font-weight="700" fill="var(--color-accent-700)">Los dos devuelven un int, y solo importa su signo</text>
-<rect x="22" y="240" width="200" height="26" rx="9" fill="var(--color-bg)" stroke="var(--color-neutral-600)"/>
-<text x="122" y="258" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-text)">negativo: a va antes</text>
-<rect x="234" y="240" width="200" height="26" rx="9" fill="var(--color-bg)" stroke="var(--color-neutral-600)"/>
-<text x="334" y="258" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-text)">cero: da igual el orden</text>
-<rect x="446" y="240" width="200" height="26" rx="9" fill="var(--color-bg)" stroke="var(--color-neutral-600)"/>
-<text x="546" y="258" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-text)">positivo: a va después</text>
-<text x="2" y="298" font-size="12.5" fill="var(--color-text)">Una clase tiene como mucho UN Comparable, pero puede tener tantos Comparator como criterios necesites.</text>
-<text x="2" y="314" font-size="12" fill="var(--color-neutral-700)">Nunca restes fechas ni valores grandes para armar el int: usá Integer.compare(a, b) y evitás el desbordamiento.</text>
-</svg>
-<figcaption>Si tu clase tiene un orden evidente y único —un DNI, un número de legajo— usá <code>Comparable</code>. Para todo lo demás, un <code>Comparator</code> por criterio.</figcaption>
-</figure>
-
-### Orden natural con `Comparable`
+Selección es el algoritmo más simple para escribirlo a mano: en cada vuelta buscás el elemento con el valor más chico del resto del array y lo llevás al frente.
 
 ```java
-public class Persona implements Comparable<Persona> {
-    // ... atributos y constructor ...
-
-    @Override
-    public int compareTo(Persona otra) {
-        return this.nombre.compareToIgnoreCase(otra.nombre);
+public static void ordenarPorEdad(Persona[] personas) {
+    for (int i = 0; i < personas.length - 1; i++) {
+        int indiceMenor = i;
+        for (int j = i + 1; j < personas.length; j++) {
+            if (personas[j].getEdad() < personas[indiceMenor].getEdad()) {
+                indiceMenor = j;
+            }
+        }
+        if (indiceMenor != i) {
+            Persona temporal = personas[i];
+            personas[i] = personas[indiceMenor];
+            personas[indiceMenor] = temporal;
+        }
     }
 }
 ```
 
 ```java
-Arrays.sort(personas);
+ordenarPorEdad(personas);
 System.out.println(Arrays.toString(personas));
-// [Ana (41), Carlos (35), Laura (28)]
+// [Laura (28), Carlos (35), Ana (41)]
 ```
 
-### Órdenes alternativos con `Comparator`
+Fijate que el intercambio mueve **referencias**, no objetos: `temporal` guarda una flecha, no una copia de `Persona`. Ordenar un array de objetos nunca duplica lo que apuntan las casillas.
 
-```java
-import java.util.Comparator;
+Para ordenar por otro campo —el nombre, por ejemplo— repetirías el mismo bucle cambiando solo la condición del `if`. Repetir ese bucle una vez por criterio, y no tener ninguna garantía sobre qué pasa con los empates si además querés desempatar por un segundo campo, es exactamente el problema que la lección 16 (Iteradores, Ordenamiento y Contrato equals/hashCode) resuelve: vas a declarar el criterio de orden una sola vez y pasárselo a `Arrays.sort`, sin repetir el bucle.
 
-// Por edad, de menor a mayor
-Arrays.sort(personas, Comparator.comparingInt(Persona::getEdad));
-
-// Por edad descendente
-Arrays.sort(personas, Comparator.comparingInt(Persona::getEdad).reversed());
-
-// Por edad y, a igual edad, por nombre
-Arrays.sort(personas, Comparator
-        .comparingInt(Persona::getEdad)
-        .thenComparing(Persona::getNombre));
-```
-
-> `Arrays.sort` sobre objetos usa TimSort, que es **estable**: los elementos que empatan conservan el orden en que estaban. Por eso `thenComparing` es la forma correcta de desempatar, y por eso ordenar dos veces seguidas con criterios distintos no da lo mismo que un criterio compuesto.
-
-Un array de objetos con `null` adentro **rompe cualquier ordenamiento** con `NullPointerException`, porque el comparador termina invocando métodos sobre la casilla vacía. Otro motivo para no dejar huecos.
+Un array de objetos con `null` adentro **rompe cualquier ordenamiento a mano** con `NullPointerException`, porque `personas[j].getEdad()` explota apenas `j` cae en una casilla vacía. Otro motivo para no dejar huecos.
 
 ---
 
@@ -494,7 +442,7 @@ Casi siempre no sabés de antemano cuántos objetos vas a guardar. La solución 
 <text x="22" y="248" font-size="12.5" fill="var(--color-text)">for (int i = 0; i menor que cantidad; i++)  →  así jamás tocás una casilla null.</text>
 <text x="2" y="288" font-size="12.5" fill="var(--color-text)">Una clase que envuelva este array y este contador, con agregar/eliminar/obtener, es exactamente un TAD Lista: la lección 13.</text>
 </svg>
-<figcaption>Separar <em>capacidad</em> de <em>cantidad</em> es el paso conceptual que convierte un array suelto en una estructura de datos. <code>ArrayList</code> hace exactamente esto por dentro.</figcaption>
+<figcaption>Separar <em>capacidad</em> de <em>cantidad</em> es el paso conceptual que convierte un array suelto en una estructura de datos. El TAD Lista de la lección 13 hace exactamente esto por dentro.</figcaption>
 </figure>
 
 ```java
@@ -595,8 +543,8 @@ Con una `Persona` inmutable, la copia superficial alcanza: nadie puede modificar
 - **Creer que `new Persona[3]` crea tres personas.** Crea tres `null`.
 - **Recorrer hasta `length` teniendo un contador.** Recorré hasta `cantidad`.
 - **No sobrescribir `toString()`.** Imprimís hashes en hexadecimal y depurás a ciegas.
-- **`Arrays.sort` sin `Comparable` ni `Comparator`.** `ClassCastException` en ejecución, no en compilación.
-- **Ordenar un array con `null` adentro.** `NullPointerException` dentro del comparador.
+- **Tratar un array de objetos como si `Arrays.sort` supiera ordenarlo solo.** Con objetos necesitás decidir el campo de comparación y escribir el bucle vos mismo.
+- **Ordenar un array con `null` adentro.** `NullPointerException` apenas la comparación toca una casilla vacía.
 - **Comparar objetos con `==`.** Compara identidad. Para contenido hace falta `equals()` — su contrato completo llega en la lección 16.
 - **Asignar `a[i] = a[j]` creyendo que copia.** Copia la referencia; quedan dos flechas al mismo objeto.
 - **Exponer el array interno de una clase.** Un `private` no sirve de nada si el getter devuelve la referencia.
@@ -687,16 +635,15 @@ Los tres pasos son el patrón estándar de filtrado con arrays: **reservar de m�
 Notá también que el array resultante comparte los objetos con el original (aliasing, sección 7). Para este caso está bien: filtrar no debería duplicar personas.
 </details>
 
-### Ejercicio 3 — Ordenar por dos criterios
+### Ejercicio 3 — Ordenar por edad descendente
 
-Ordená un `Persona[]` por edad descendente y, a igual edad, por nombre alfabético.
+Ordená un `Persona[]` de mayor a menor edad, sin usar `Arrays.sort`.
 
 <details>
 <summary>Ver solución sugerida</summary>
 
 ```java
 import java.util.Arrays;
-import java.util.Comparator;
 
 public class OrdenarPersonas {
     public static void main(String[] args) {
@@ -707,27 +654,27 @@ public class OrdenarPersonas {
             new Persona("Carlos", 28)
         };
 
-        Arrays.sort(personas, Comparator
-                .comparingInt(Persona::getEdad).reversed()
-                .thenComparing(Persona::getNombre));
+        for (int i = 0; i < personas.length - 1; i++) {
+            int indiceMayor = i;
+            for (int j = i + 1; j < personas.length; j++) {
+                if (personas[j].getEdad() > personas[indiceMayor].getEdad()) {
+                    indiceMayor = j;
+                }
+            }
+            if (indiceMayor != i) {
+                Persona temporal = personas[i];
+                personas[i] = personas[indiceMayor];
+                personas[indiceMayor] = temporal;
+            }
+        }
 
         System.out.println(Arrays.toString(personas));
-        // [Ana (41), Bruno (35), Laura (35), Carlos (28)]
+        // [Ana (41), Laura (35), Bruno (35), Carlos (28)]
     }
 }
 ```
 
-El orden de los métodos importa: `.reversed()` invierte **solo lo acumulado hasta ese punto**, así que se aplica a la edad y no al desempate por nombre. Si escribieras `.thenComparing(...).reversed()`, invertirías los dos criterios a la vez.
-
-Una alternativa escrita a mano, para ver qué hace por dentro:
-
-```java
-Arrays.sort(personas, (a, b) -> {
-    int porEdad = Integer.compare(b.getEdad(), a.getEdad());   // b antes que a = descendente
-    if (porEdad != 0) return porEdad;
-    return a.getNombre().compareTo(b.getNombre());
-});
-```
+Laura y Bruno empatan en edad (35). Este bucle, tal como está escrito, no da ninguna garantía sobre el orden relativo de los empates —en esta corrida particular Laura queda antes que Bruno, pero eso es una consecuencia de los intercambios, no una regla del algoritmo—. Desempatar de forma predecible por un segundo criterio, como el nombre, sin reescribir el bucle entero cada vez, es exactamente lo que vas a aprender a hacer en la lección 16.
 </details>
 
 ### Ejercicio 4 — Agenda con capacidad dinámica
@@ -739,7 +686,6 @@ Implementá una clase `Agenda` que guarde `Contacto` en un array interno, crezca
 
 ```java
 import java.util.Arrays;
-import java.util.Optional;
 
 public class Agenda {
     private Contacto[] contactos = new Contacto[4];
@@ -757,13 +703,13 @@ public class Agenda {
         return true;
     }
 
-    public Optional<Contacto> buscar(String nombre) {
+    public Contacto buscar(String nombre) {
         for (int i = 0; i < cantidad; i++) {
             if (contactos[i].getNombre().equalsIgnoreCase(nombre)) {
-                return Optional.of(contactos[i]);
+                return contactos[i];
             }
         }
-        return Optional.empty();
+        return null;
     }
 
     public boolean eliminar(int indice) {
@@ -789,7 +735,7 @@ public class Agenda {
 }
 ```
 
-Esta clase ya es, conceptualmente, un `ArrayList` en miniatura: array interno, capacidad que se duplica, tamaño lógico separado del físico y desplazamiento al eliminar. En la lección 13 vas a formalizarla como TAD Lista y a compararla con la versión enlazada.
+Esta clase ya es, conceptualmente, una lista dinámica en miniatura: array interno, capacidad que se duplica, tamaño lógico separado del físico y desplazamiento al eliminar. En la lección 13 vas a formalizarla como TAD Lista y a compararla con la versión enlazada.
 </details>
 
 ---
@@ -800,8 +746,8 @@ Esta clase ya es, conceptualmente, un `ArrayList` en miniatura: array interno, c
 - `new Persona[3]` crea tres `null`. Crear el array y crear los objetos son **dos pasos**.
 - Un array con casillas vacías es la causa del `NullPointerException` más frecuente de Java.
 - Sobrescribí `toString()` en toda clase que vayas a guardar en un array: sin él, imprimir no informa nada.
-- Buscar es siempre un recorrido lineal escrito a mano; devolvé `Optional` en vez de `null` cuando puedas.
-- `Arrays.sort` sobre objetos exige un criterio: `Comparable` para el orden natural, `Comparator` para los demás.
+- Buscar es siempre un recorrido lineal escrito a mano; si devolvés `null` cuando no hay resultado, quien llama debe comprobarlo con `!= null` antes de usarlo.
+- Ordenar objetos exige elegir un criterio y compararlo campo a campo con tu propio bucle; la lección 16 muestra cómo declarar ese criterio una sola vez y reutilizarlo.
 - Asignar una casilla a otra **no copia el objeto**: quedan dos flechas al mismo lugar.
 - Un array interno de una clase se copia al entrar y al salir, o el `private` no protege nada.
 - Separar **capacidad** de **cantidad** es lo que convierte un array en una estructura de datos. Ese es el punto de partida del TAD Lista.

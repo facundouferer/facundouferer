@@ -34,7 +34,7 @@ test('presentation Astro component exists and contains 5 slides', async () => {
 	assert.match(content, /Doble Nivel|Two Levels/i);
 	assert.match(content, /NullPointerException/i);
 	assert.match(content, /Capacidad|Capacity/i);
-	assert.match(content, /Comparable|Comparator/i);
+	assert.match(content, /Ordenar a Mano|Manual Sorting/i);
 });
 
 test('both presentation detail pages import and map arrays-de-objetos-java', async () => {
