@@ -278,20 +278,20 @@ const isEs = lang === 'es';
 							<h2 class="deck-slide-title">4. {isEs ? 'La Fuga de Referencia (Reference Leak)' : 'The Reference Leak Threat'}</h2>
 							<p class="deck-text">
 								{isEs
-									? 'Marcar un atributo como private NO garantiza encapsulamiento si el getter devuelve la referencia directa a un objeto mutable (como una Lista o Date). El código cliente puede vaciar o corromper tu lista interna sin tocar ningún setter.'
-									: 'Marking a field private does NOT guarantee encapsulation if a getter exposes a direct reference to a mutable object (like a List or Date). Callers can mutate or clear your internal collection behind your back.'}
+									? 'Marcar un atributo como private NO garantiza encapsulamiento si el getter devuelve la referencia directa a un objeto mutable (como un array o Date). El código cliente puede corromper tu array interno sin tocar ningún setter.'
+									: 'Marking a field private does NOT guarantee encapsulation if a getter exposes a direct reference to a mutable object (like an array or Date). Callers can corrupt your internal array behind your back.'}
 							</p>
 
 							<div class="deck-figure">
-								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Fuga de referencia en colección mutable frente a copia defensiva' : 'Mutable collection reference leak vs defensive copy'}>
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Fuga de referencia en array mutable frente a copia defensiva' : 'Mutable array reference leak vs defensive copy'}>
 									<!-- HistorialMedico object -->
 									<rect x="25" y="35" width="220" height="175" rx="12" class="deck-panel-accent" />
 									<text x="135" y="60" class="deck-svg-title-accent" text-anchor="middle">HistorialMedico</text>
 									<line x1="35" y1="72" x2="235" y2="72" stroke="var(--color-divider)" stroke-width="1" />
-									
-									<!-- Internal list inside Heap -->
+
+									<!-- Internal array inside Heap -->
 									<rect x="40" y="85" width="190" height="105" rx="8" class="deck-ground-card" stroke="var(--color-accent)" stroke-width="2" />
-									<text x="50" y="108" class="deck-svg-sub">private List&lt;String&gt; consultas;</text>
+									<text x="50" y="108" class="deck-svg-sub">private String[] consultas;</text>
 									<rect x="50" y="120" width="170" height="30" rx="4" class="deck-panel" />
 									<text x="135" y="140" class="deck-svg-mono" text-anchor="middle" id="leak-svg-list">["Gripe", "Control", "Rayos"]</text>
 									<text x="135" y="175" class="deck-svg-bold" text-anchor="middle" id="leak-svg-badge" fill="var(--color-accent-700)">3 Consultas Activas</text>
@@ -300,10 +300,10 @@ const isEs = lang === 'es';
 									<rect x="300" y="60" width="215" height="120" rx="10" class="deck-panel" />
 									<text x="315" y="85" class="deck-svg-title">Código Externo</text>
 									<rect x="315" y="98" width="185" height="40" rx="6" class="deck-ground-card" stroke="rgb(255, 95, 86)" />
-									<text x="325" y="122" class="deck-svg-mono-sm" fill="rgb(255, 95, 86)">h.getConsultas().clear();</text>
+									<text x="325" y="122" class="deck-svg-mono-sm" fill="rgb(255, 95, 86)">h.getConsultas()[0] = null;</text>
 									<text x="315" y="160" class="deck-svg-sub" id="leak-svg-warn" fill="rgb(255, 95, 86)">¡Ataque exitoso sin setter!</text>
 
-									<!-- Wire connecting outside to internal list -->
+									<!-- Wire connecting outside to internal array -->
 									<path d="M315 118 Q260 118 230 135" stroke="rgb(255, 95, 86)" stroke-width="2.5" fill="none" stroke-dasharray="4 3" id="leak-svg-wire" />
 								</svg>
 							</div>
@@ -324,13 +324,15 @@ const isEs = lang === 'es';
 										<span class="state-val" id="leak-code-txt">return this.consultas;</span>
 									</div>
 									<div class="state-row">
-										<span class="state-label">{isEs ? 'Resultado de .clear():' : 'Result of .clear():'}</span>
-										<span class="state-val" id="leak-res-txt" style="color: rgb(255, 95, 86);">Lista borrada a [] (0 elementos)</span>
+										<span class="state-label">{isEs ? 'Resultado del ataque:' : 'Attack result:'}</span>
+										<span class="state-val" id="leak-res-txt" style="color: rgb(255, 95, 86);">
+											{isEs ? 'Posición 0 sobrescrita con null' : 'Position 0 overwritten with null'}
+										</span>
 									</div>
 									<p class="deck-caption" id="leak-desc-txt">
 										{isEs
-											? 'Al devolver la referencia original, el encapsulamiento se destruyó. El cliente borró la historia clínica.'
-											: 'Exposing the internal reference completely broke encapsulation. The client erased the medical records.'}
+											? 'Al devolver la referencia original, el encapsulamiento se destruyó. El cliente corrompió la historia clínica.'
+											: 'Exposing the internal reference completely broke encapsulation. The client corrupted the medical records.'}
 									</p>
 								</div>
 							</div>
@@ -639,15 +641,15 @@ const isEs = lang === 'es';
 			if (mode === 'unsafe') {
 				if (leakCodeTxt) leakCodeTxt.textContent = 'return this.consultas;';
 				if (leakResTxt) {
-					leakResTxt.textContent = 'Lista borrada a [] (0 elementos)';
+					leakResTxt.textContent = 'Posición 0 sobrescrita con null';
 					leakResTxt.style.color = 'rgb(255, 95, 86)';
 				}
 				if (leakDescTxt) {
-					leakDescTxt.textContent = 'Al devolver la referencia original, el cliente pudo hacer .clear() destruyendo el estado interno.';
+					leakDescTxt.textContent = 'Al devolver la referencia original, el cliente pudo sobrescribir un elemento interno directamente.';
 				}
-				if (leakSvgList) leakSvgList.textContent = '[] (VACÍA)';
+				if (leakSvgList) leakSvgList.textContent = '[null, "Control", "Rayos"]';
 				if (leakSvgBadge) {
-					leakSvgBadge.textContent = '0 Consultas (¡Destruido!)';
+					leakSvgBadge.textContent = 'Datos Corrompidos';
 					leakSvgBadge.setAttribute('fill', 'rgb(255, 95, 86)');
 				}
 				if (leakSvgWarn) {
@@ -659,13 +661,13 @@ const isEs = lang === 'es';
 					leakSvgWire.setAttribute('stroke-dasharray', '4 3');
 				}
 			} else {
-				if (leakCodeTxt) leakCodeTxt.textContent = 'return new ArrayList<>(consultas);';
+				if (leakCodeTxt) leakCodeTxt.textContent = 'return Arrays.copyOf(consultas, consultas.length);';
 				if (leakResTxt) {
-					leakResTxt.textContent = 'Se borró la copia, el original sigue intacto';
+					leakResTxt.textContent = 'Se corrompió la copia, el original sigue intacto';
 					leakResTxt.style.color = 'var(--color-accent-2-800)';
 				}
 				if (leakDescTxt) {
-					leakDescTxt.textContent = 'El getter devuelve una copia independiente. El .clear() del código externo borra esa copia, no la lista interna real.';
+					leakDescTxt.textContent = 'El getter devuelve una copia independiente. La escritura del código externo afecta esa copia, no el array interno real.';
 				}
 				if (leakSvgList) leakSvgList.textContent = '["Gripe", "Control", "Rayos"]';
 				if (leakSvgBadge) {

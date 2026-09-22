@@ -402,9 +402,11 @@ Este es el punto donde la mayoría de las clases "encapsuladas" se caen. Mirá:
 
 ```java
 public class Curso {
-    private List<String> alumnos = new ArrayList<>();
+    private static final int CAPACIDAD_MAXIMA = 30;
+    private final String[] alumnos = new String[CAPACIDAD_MAXIMA];
+    private int cantidad = 0;
 
-    public List<String> getAlumnos() {
+    public String[] getAlumnos() {
         return alumnos;   // ⚠️ Devolvemos la referencia interna
     }
 }
@@ -414,40 +416,40 @@ Todo parece correcto: el atributo es `private`, hay un getter. Pero:
 
 ```java
 Curso c = new Curso();
-c.getAlumnos().add("Intruso");   // Modificamos el estado interno desde afuera
-c.getAlumnos().clear();          // Y lo vaciamos entero
+c.getAlumnos()[0] = "Intruso";                 // Modificamos el estado interno desde afuera
+java.util.Arrays.fill(c.getAlumnos(), null);   // Y lo vaciamos entero
 ```
 
-El getter entregó la **dirección de memoria de la lista interna**, no una copia. Quien la recibe tiene control total. El `private` no sirvió de nada, porque lo que protege el `private` es el *campo*, no el *objeto al que apunta*.
+El getter entregó la **dirección de memoria del array interno**, no una copia. Quien la recibe tiene control total. El `private` no sirvió de nada, porque lo que protege el `private` es el *campo*, no el *objeto al que apunta*.
 
-Hay tres soluciones, de menor a mayor rigidez:
+Hay dos soluciones, de menor a mayor rigidez:
 
 ```java
-// 1. Vista de solo lectura: barata, pero comparte la lista subyacente.
-public List<String> getAlumnos() {
-    return Collections.unmodifiableList(alumnos);
+// 1. Copia defensiva: quien llama recibe un array propio e independiente.
+public String[] getAlumnos() {
+    String[] copia = new String[cantidad];
+    for (int i = 0; i < cantidad; i++) {
+        copia[i] = alumnos[i];
+    }
+    return copia;
 }
 
-// 2. Copia defensiva: el llamador recibe una lista propia e independiente.
-public List<String> getAlumnos() {
-    return new ArrayList<>(alumnos);
-}
-
-// 3. No exponer la colección: exponer solo las operaciones que tienen sentido.
+// 2. No exponer la colección: exponer solo las operaciones que tienen sentido.
 public boolean inscribir(String alumno) {
-    if (alumno == null || alumno.isBlank()) {
+    if (alumno == null || alumno.isBlank() || cantidad == alumnos.length) {
         return false;
     }
-    alumnos.add(alumno);
+    alumnos[cantidad] = alumno;
+    cantidad++;
     return true;
 }
 
-public int cantidadInscriptos() { return alumnos.size(); }
+public int cantidadInscriptos() { return cantidad; }
 ```
 
-La tercera opción es casi siempre la mejor, y no por prolijidad: es la única que te deja agregar después una regla como "máximo 30 inscriptos" sin cambiar la firma pública de la clase.
+La segunda opción es casi siempre la mejor, y no por prolijidad: es la única que te deja agregar después una regla de negocio adicional (por ejemplo, rechazar nombres duplicados) sin cambiar la firma pública de la clase.
 
-> La misma trampa aplica a los constructores: si recibís una `List` por parámetro y la asignás directo con `this.lista = lista`, quien te la pasó conserva una referencia viva a tu estado interno. Copiala al entrar también.
+> La misma trampa aplica a los constructores: si recibís un array por parámetro y lo asignás directo con `this.datos = datos`, quien te lo pasó conserva una referencia viva a tu estado interno. Copialo al entrar también (por ejemplo, con `Arrays.copyOf`, que ya conocés de la lección de arrays).
 
 ---
 
@@ -615,7 +617,5 @@ public class Estudiante {
 - `this(...)` concentra la validación en un constructor canónico y evita que las reglas se dupliquen.
 - Encapsular es hacer que el objeto sea **responsable de su propia consistencia**, no generar accesores en masa.
 - `private` es el valor por defecto de todo atributo. Abrí solo lo que el contrato necesita.
-- Devolver una colección interna sin copiar **anula el encapsulamiento** por más `private` que tenga el campo.
+- Devolver un array u objeto interno sin copiar **anula el encapsulamiento** por más `private` que tenga el campo.
 - Lo que no puede cambiar, no puede romperse: preferí `final` e inmutabilidad siempre que el dominio lo permita.
-</content>
-</invoke>
