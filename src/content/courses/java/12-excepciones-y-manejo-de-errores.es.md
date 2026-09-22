@@ -410,9 +410,13 @@ try {
     mostrarFormularioDeRegistro();
 }
 
-// Bien: el Optional expresa "puede no haber" sin ninguna excepción
-Optional<Usuario> u = buscarUsuario(email);
-u.ifPresentOrElse(this::mostrar, this::mostrarFormularioDeRegistro);
+// Bien: null expresa "puede no haber" sin ninguna excepción
+Usuario u = buscarUsuario(email);
+if (u != null) {
+    mostrar(u);
+} else {
+    mostrarFormularioDeRegistro();
+}
 ```
 
 Además de confundir al que lee, lanzar excepciones es caro: construirlas implica capturar el stack trace completo.
@@ -439,7 +443,7 @@ try {
 | Relanzar sin la causa: `throw new MiException(e.getMessage())` | Se pierde el stack trace original y con él la línea que falló de verdad. | `throw new MiException("contexto", e)`. |
 | Bloque `try` de cincuenta líneas | Imposible saber en qué punto quedó el estado cuando saltó la excepción. | `try` cortos, alrededor de la operación que puede fallar. |
 | Cerrar recursos en `finally` a mano | Anidamiento, `null` checks y un `close()` que también puede fallar. | `try-with-resources`. |
-| Usar excepciones para casos normales | Código confuso y lento: cada excepción captura el stack trace completo. | `Optional`, valores de retorno o validación previa. |
+| Usar excepciones para casos normales | Código confuso y lento: cada excepción captura el stack trace completo. | Un valor de retorno comprobable (`null`, un `boolean`) o validación previa. |
 
 ---
 

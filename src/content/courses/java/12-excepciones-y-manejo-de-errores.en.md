@@ -410,9 +410,13 @@ try {
     showSignupForm();
 }
 
-// Good: Optional expresses "may be absent" with no exception at all
-Optional<User> u = findUser(email);
-u.ifPresentOrElse(this::show, this::showSignupForm);
+// Good: null expresses "may be absent" with no exception at all
+User u = findUser(email);
+if (u != null) {
+    show(u);
+} else {
+    showSignupForm();
+}
 ```
 
 Beyond confusing the reader, throwing exceptions is expensive: constructing one captures the entire stack trace.
@@ -439,7 +443,7 @@ try {
 | Rethrowing without the cause: `throw new MyException(e.getMessage())` | The original stack trace is lost, and with it the line that actually failed. | `throw new MyException("context", e)`. |
 | A fifty-line `try` block | Impossible to know what state things were in when the exception fired. | Short `try` blocks, wrapped around the operation that can fail. |
 | Closing resources by hand in `finally` | Nesting, null checks, and a `close()` that can also fail. | `try-with-resources`. |
-| Using exceptions for ordinary cases | Confusing and slow code: every exception captures the whole stack trace. | `Optional`, return values, or validating up front. |
+| Using exceptions for ordinary cases | Confusing and slow code: every exception captures the whole stack trace. | A checkable return value (`null`, a `boolean`), or validating up front. |
 
 ---
 
