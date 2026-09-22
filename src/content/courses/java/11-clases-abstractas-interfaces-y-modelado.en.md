@@ -120,7 +120,7 @@ And now `new Shape(...)` does not even compile. **The compiler stopped allowing 
 ```java
 // Shape s = new Shape("something");   // ERROR: Shape is abstract; cannot be instantiated
 
-List<Shape> shapes = List.of(new Circle(3), new Rectangle(4, 5));
+Shape[] shapes = { new Circle(3), new Rectangle(4, 5) };
 for (Shape s : shapes) {
     s.describe();   // polymorphism, same as the previous lesson
 }
@@ -255,14 +255,14 @@ Swimmer s = duck;    // as something that swims
 Flyer f = duck;      // as something that flies
 
 // A method that only needs something to swim does not need to know it is a duck:
-public void swimmingContest(List<Swimmer> participants) {
+public void swimmingContest(Swimmer[] participants) {
     for (Swimmer participant : participants) {
         participant.swim();
     }
 }
 ```
 
-That list can hold a `Duck`, a `Fish`, and a `Submarine` — three classes that share absolutely no ancestor. **The interface is the only thing they have in common, and it is enough.**
+That array can hold a `Duck`, a `Fish`, and a `Submarine` — three classes that share absolutely no ancestor. **The interface is the only thing they have in common, and it is enough.**
 
 ---
 
@@ -284,20 +284,26 @@ The practical rule that holds in 90% of cases:
 And the two combine perfectly well — that is the most common pattern in serious libraries:
 
 ```java
-public interface Repository<T> {
-    void save(T entity);
-    Optional<T> findById(long id);
+public interface CourseRepository {
+    void save(Course course);
+    Course findById(long id);
 }
 
-// Abstract base that solves the repetitive part for any repository
-public abstract class InMemoryRepository<T> implements Repository<T> {
-    protected final Map<Long, T> store = new HashMap<>();
+// Abstract base that solves the repetitive part: searching the internal store
+public abstract class InMemoryCourseRepository implements CourseRepository {
+    protected final Course[] store = new Course[100];
+    protected int count = 0;
 
     @Override
-    public Optional<T> findById(long id) {
-        return Optional.ofNullable(store.get(id));
+    public Course findById(long id) {
+        for (int i = 0; i < count; i++) {
+            if (store[i].getId() == id) {
+                return store[i];
+            }
+        }
+        return null;   // not found
     }
-    // save() stays abstract: each entity knows how to obtain its own id
+    // save() stays abstract: each concrete subclass decides what to validate before saving
 }
 ```
 
@@ -457,32 +463,43 @@ Inheritance is not the only way to connect classes, nor the most common. In prac
 </figure>
 
 ```java
+import java.util.Arrays;
+
 // ASSOCIATION: they know each other, neither owns the other
 public class Teacher {
-    private List<Course> courses = new ArrayList<>();
-    public void assign(Course c) { courses.add(c); }
+    private Course[] courses = new Course[10];
+    private int courseCount = 0;
+
+    public void assign(Course c) {
+        if (courseCount == courses.length) {
+            courses = Arrays.copyOf(courses, courses.length * 2);
+        }
+        courses[courseCount] = c;
+        courseCount++;
+    }
 }
 
 // AGGREGATION: the team receives players that already existed and outlives them
 public class Team {
-    private final List<Player> players;
+    private final Player[] players;
 
-    public Team(List<Player> players) {
-        this.players = new ArrayList<>(players);   // defensive copy, lesson 8
+    public Team(Player[] players) {
+        this.players = Arrays.copyOf(players, players.length);   // defensive copy, lesson 9
     }
 }
 
 // COMPOSITION: the house CREATES its rooms and never lets them go
 public class House {
-    private final List<Room> rooms = new ArrayList<>();
+    private final Room[] rooms;
 
     public House(int roomCount) {
+        rooms = new Room[roomCount];
         for (int i = 0; i < roomCount; i++) {
-            rooms.add(new Room(i + 1));   // creates them right here
+            rooms[i] = new Room(i + 1);   // creates them right here
         }
     }
 
-    public int roomCount() { return rooms.size(); }
+    public int roomCount() { return rooms.length; }
     // There is no getRooms(): nobody outside touches the parts
 }
 ```
@@ -513,14 +530,12 @@ Notice the pattern in the code: in **composition**, the container creates the pa
 2. Implement it in `CreditCard` (with available credit) and in `DigitalWallet` (with an account balance).
 3. Create an abstract class `DigitalPaymentMethod implements Payable` that stores the holder's `email` and resolves `isAvailable()` using an `active` flag, leaving `pay()` abstract.
 4. Make `DigitalWallet` extend that abstract class.
-5. In `main`, build a `List<Payable>` and charge the same amount to every one of them in a single loop, with no `instanceof` and no casting.
+5. In `main`, build a `Payable[]` and charge the same amount to every one of them in a single loop, with no `instanceof` and no casting.
 
 <details>
 <summary>See suggested solution</summary>
 
 ```java
-import java.util.List;
-
 public interface Payable {
     boolean pay(double amount);
     boolean isAvailable();
@@ -617,11 +632,11 @@ public class MainCharges {
     public static void main(String[] args) {
         DigitalWallet emptyWallet = new DigitalWallet("empty@mail.com", 0);
 
-        List<Payable> methods = List.of(
+        Payable[] methods = {
             new CreditCard("4417", 50000),
             new DigitalWallet("facu@mail.com", 30000),
             emptyWallet                                // no balance: will be skipped
-        );
+        };
 
         System.out.println("Charging $12,500 to every method:");
         for (Payable method : methods) {
@@ -633,7 +648,7 @@ public class MainCharges {
 
 **Two things to look at here.**
 
-First: `CreditCard` and `DigitalWallet` share no ancestor whatsoever, and still live in the same `List<Payable>`. The interface was enough.
+First: `CreditCard` and `DigitalWallet` share no ancestor whatsoever, and still live in the same `Payable[]`. The interface was enough.
 
 Second: `DigitalWallet.isAvailable()` calls `super.isAvailable()` and adds its own condition on top. It reuses the abstract class's rule instead of repeating it — exactly the pattern you used with `super.computeSalary()` in the previous lesson.
 

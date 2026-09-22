@@ -120,7 +120,7 @@ Y ahora `new Figura(...)` ni siquiera compila. **El compilador dejó de permitir
 ```java
 // Figura f = new Figura("algo");   // ERROR: Figura is abstract; cannot be instantiated
 
-List<Figura> figuras = List.of(new Circulo(3), new Rectangulo(4, 5));
+Figura[] figuras = { new Circulo(3), new Rectangulo(4, 5) };
 for (Figura f : figuras) {
     f.describir();   // polimorfismo, igual que en la lección anterior
 }
@@ -255,14 +255,14 @@ Nadable n = pato;    // como algo que nada
 Volable v = pato;    // como algo que vuela
 
 // Un método que solo necesita que algo nade, no necesita saber que es un pato:
-public void competenciaDeNatacion(List<Nadable> participantes) {
+public void competenciaDeNatacion(Nadable[] participantes) {
     for (Nadable participante : participantes) {
         participante.nadar();
     }
 }
 ```
 
-En esa lista pueden convivir un `Pato`, un `Pez` y un `Submarino`, tres clases que no comparten absolutamente ningún ancestro. **La interfaz es lo único que tienen en común, y alcanza.**
+En ese array pueden convivir un `Pato`, un `Pez` y un `Submarino`, tres clases que no comparten absolutamente ningún ancestro. **La interfaz es lo único que tienen en común, y alcanza.**
 
 ---
 
@@ -284,20 +284,26 @@ La regla práctica que funciona en el 90 % de los casos:
 Y las dos se combinan sin problema, que es el patrón más habitual en las librerías serias:
 
 ```java
-public interface Repositorio<T> {
-    void guardar(T entidad);
-    Optional<T> buscarPorId(long id);
+public interface RepositorioCursos {
+    void guardar(Curso curso);
+    Curso buscarPorId(long id);
 }
 
-// Base abstracta que resuelve lo repetitivo para cualquier repositorio
-public abstract class RepositorioEnMemoria<T> implements Repositorio<T> {
-    protected final Map<Long, T> almacen = new HashMap<>();
+// Base abstracta que resuelve lo repetitivo: buscar en el almacén interno
+public abstract class RepositorioCursosEnMemoria implements RepositorioCursos {
+    protected final Curso[] almacen = new Curso[100];
+    protected int cantidad = 0;
 
     @Override
-    public Optional<T> buscarPorId(long id) {
-        return Optional.ofNullable(almacen.get(id));
+    public Curso buscarPorId(long id) {
+        for (int i = 0; i < cantidad; i++) {
+            if (almacen[i].getId() == id) {
+                return almacen[i];
+            }
+        }
+        return null;   // no encontrado
     }
-    // guardar() queda abstracto: cada entidad sabe cómo obtener su propio id
+    // guardar() queda abstracto: cada subclase concreta decide qué validar antes de guardar
 }
 ```
 
@@ -457,32 +463,43 @@ Heredar no es la única forma de conectar clases, ni la más frecuente. En la pr
 </figure>
 
 ```java
+import java.util.Arrays;
+
 // ASOCIACIÓN: se conocen, ninguno es dueño del otro
 public class Profesor {
-    private List<Curso> cursos = new ArrayList<>();
-    public void asignar(Curso c) { cursos.add(c); }
+    private Curso[] cursos = new Curso[10];
+    private int cantidadCursos = 0;
+
+    public void asignar(Curso c) {
+        if (cantidadCursos == cursos.length) {
+            cursos = Arrays.copyOf(cursos, cursos.length * 2);
+        }
+        cursos[cantidadCursos] = c;
+        cantidadCursos++;
+    }
 }
 
 // AGREGACIÓN: el equipo recibe jugadores que ya existían y les sobrevive
 public class Equipo {
-    private final List<Jugador> jugadores;
+    private final Jugador[] jugadores;
 
-    public Equipo(List<Jugador> jugadores) {
-        this.jugadores = new ArrayList<>(jugadores);   // copia defensiva, lección 8
+    public Equipo(Jugador[] jugadores) {
+        this.jugadores = Arrays.copyOf(jugadores, jugadores.length);   // copia defensiva, lección 9
     }
 }
 
 // COMPOSICIÓN: la casa CREA sus habitaciones y no las suelta nunca
 public class Casa {
-    private final List<Habitacion> habitaciones = new ArrayList<>();
+    private final Habitacion[] habitaciones;
 
     public Casa(int cantidadHabitaciones) {
+        habitaciones = new Habitacion[cantidadHabitaciones];
         for (int i = 0; i < cantidadHabitaciones; i++) {
-            habitaciones.add(new Habitacion(i + 1));   // las crea acá adentro
+            habitaciones[i] = new Habitacion(i + 1);   // las crea acá adentro
         }
     }
 
-    public int cantidadHabitaciones() { return habitaciones.size(); }
+    public int cantidadHabitaciones() { return habitaciones.length; }
     // No hay getHabitaciones(): nadie de afuera toca las partes
 }
 ```
@@ -513,14 +530,12 @@ Fijate el patrón en el código: en la **composición**, el contenedor crea las 
 2. Implementala en `TarjetaCredito` (con límite disponible) y en `MercadoPago` (con saldo en cuenta).
 3. Creá una clase abstracta `MedioDePagoDigital implements Pagable` que guarde el `email` del titular y resuelva `estaDisponible()` con un campo `activo`, dejando `pagar()` abstracto.
 4. Hacé que `MercadoPago` extienda esa clase abstracta.
-5. En el `main`, armá una `List<Pagable>` y cobrá el mismo monto a todos con un solo bucle, sin `instanceof` y sin castear.
+5. En el `main`, armá un `Pagable[]` y cobrá el mismo monto a todos con un solo bucle, sin `instanceof` y sin castear.
 
 <details>
 <summary>Ver solución sugerida</summary>
 
 ```java
-import java.util.List;
-
 public interface Pagable {
     boolean pagar(double monto);
     boolean estaDisponible();
@@ -617,11 +632,11 @@ public class MainCobros {
     public static void main(String[] args) {
         MercadoPago mpVacio = new MercadoPago("vacio@mail.com", 0);
 
-        List<Pagable> medios = List.of(
+        Pagable[] medios = {
             new TarjetaCredito("4417", 50000),
             new MercadoPago("facu@mail.com", 30000),
             mpVacio                                   // sin saldo: se va a omitir
-        );
+        };
 
         System.out.println("Cobrando $12.500 a cada medio:");
         for (Pagable medio : medios) {
@@ -633,7 +648,7 @@ public class MainCobros {
 
 **Dos cosas para mirar acá.**
 
-La primera: `TarjetaCredito` y `MercadoPago` no comparten ningún ancestro, y aun así conviven en la misma `List<Pagable>`. La interfaz fue suficiente.
+La primera: `TarjetaCredito` y `MercadoPago` no comparten ningún ancestro, y aun así conviven en el mismo `Pagable[]`. La interfaz fue suficiente.
 
 La segunda: `MercadoPago.estaDisponible()` llama a `super.estaDisponible()` y le suma su propia condición. Reutiliza la regla de la clase abstracta en lugar de repetirla, exactamente el mismo patrón que usaste con `super.calcularSalario()` en la lección anterior.
 
