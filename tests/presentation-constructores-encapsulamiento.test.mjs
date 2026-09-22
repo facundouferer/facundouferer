@@ -37,6 +37,15 @@ test('presentation Astro component exists and contains 5 slides', async () => {
 	assert.match(content, /Inmutabilidad/i);
 });
 
+test('presentation does not use exceptions (taught later, in the exceptions lesson)', async () => {
+	const content = await readFile('src/components/presentaciones/constructores-encapsulamiento-java.astro', 'utf8');
+	assert.doesNotMatch(content, /\bthrow\b/i);
+	assert.doesNotMatch(content, /\btry\s*[({]/i);
+	assert.doesNotMatch(content, /\bcatch\s*\(/i);
+	assert.doesNotMatch(content, /Exception/);
+	assert.doesNotMatch(content, /excepci[oó]n/i);
+});
+
 test('both presentation detail pages import and map constructores-encapsulamiento-java', async () => {
 	for (const file of [
 		'src/pages/presentaciones/[slug].astro',
