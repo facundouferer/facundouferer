@@ -295,7 +295,7 @@ The value of polymorphism is not in one isolated call — it is in being able to
 ```java
 public class Garage {
     // This method knows nothing about Car, Motorcycle, or Truck. It does not need to.
-    public void inspect(List<Vehicle> fleet) {
+    public void inspect(Vehicle[] fleet) {
         for (Vehicle v : fleet) {
             v.start();   // each object runs ITS own version
             v.brake();
@@ -303,11 +303,11 @@ public class Garage {
     }
 }
 
-List<Vehicle> fleet = List.of(
+Vehicle[] fleet = {
     new Car("Toyota"),
     new Motorcycle("Honda"),
     new Truck("Scania")
-);
+};
 new Garage().inspect(fleet);
 ```
 
@@ -425,14 +425,12 @@ Without overriding `toString()`, `System.out.println(c)` prints something like `
 2. Create `Manager extends Employee`, adding a `bonus` and overriding `computeSalary()` to add it.
 3. Create `SalesRep extends Employee`, with `monthlySales` and an 8% commission.
 4. Override `toString()` in all three.
-5. In `main`, build a `List<Employee>` holding objects of all three types, iterate it **once**, and print each salary. The loop must not use `instanceof` and must not cast.
+5. In `main`, build an `Employee[]` holding objects of all three types, iterate it **once**, and print each salary. The loop must not use `instanceof` and must not cast.
 
 <details>
 <summary>See suggested solution</summary>
 
 ```java
-import java.util.List;
-
 public class Employee {
     private final String name;
     private final double baseSalary;
@@ -502,11 +500,11 @@ public class SalesRep extends Employee {
 
 public class MainPayroll {
     public static void main(String[] args) {
-        List<Employee> payroll = List.of(
+        Employee[] payroll = {
             new Employee("Ana Torres", 800000),
             new Manager("Luis Paz", 1500000, 400000),
             new SalesRep("Sofia Rios", 700000, 2500000)
-        );
+        };
 
         double total = 0;
         // One loop, no instanceof and no casts:

@@ -296,7 +296,7 @@ El valor del polimorfismo no está en una llamada suelta, está en poder escribi
 ```java
 public class Taller {
     // Este método no conoce Auto, Moto ni Camión. Y no necesita conocerlos.
-    public void revisar(List<Vehiculo> flota) {
+    public void revisar(Vehiculo[] flota) {
         for (Vehiculo v : flota) {
             v.arrancar();   // cada objeto ejecuta SU propia versión
             v.frenar();
@@ -304,11 +304,11 @@ public class Taller {
     }
 }
 
-List<Vehiculo> flota = List.of(
+Vehiculo[] flota = {
     new Auto("Toyota"),
     new Moto("Honda"),
     new Camion("Scania")
-);
+};
 new Taller().revisar(flota);
 ```
 
@@ -426,14 +426,12 @@ Sin sobrescribir `toString()`, `System.out.println(a)` imprime algo como `Auto@1
 2. Creá `Gerente extends Empleado`, que agregue un `bono` y sobrescriba `calcularSalario()` para sumarlo.
 3. Creá `Vendedor extends Empleado`, con `ventasDelMes` y una comisión del 8 %.
 4. Sobrescribí `toString()` en las tres.
-5. En el `main`, armá una `List<Empleado>` con objetos de los tres tipos, recorrela **una sola vez** y mostrá el salario de cada uno. El bucle no debe usar `instanceof` ni castear.
+5. En el `main`, armá un `Empleado[]` con objetos de los tres tipos, recorrelo **una sola vez** y mostrá el salario de cada uno. El bucle no debe usar `instanceof` ni castear.
 
 <details>
 <summary>Ver solución sugerida</summary>
 
 ```java
-import java.util.List;
-
 public class Empleado {
     private final String nombre;
     private final double sueldoBase;
@@ -503,11 +501,11 @@ public class Vendedor extends Empleado {
 
 public class MainNomina {
     public static void main(String[] args) {
-        List<Empleado> nomina = List.of(
+        Empleado[] nomina = {
             new Empleado("Ana Torres", 800000),
             new Gerente("Luis Paz", 1500000, 400000),
             new Vendedor("Sofía Ríos", 700000, 2500000)
-        );
+        };
 
         double total = 0;
         // Un solo bucle, sin instanceof y sin casteos:

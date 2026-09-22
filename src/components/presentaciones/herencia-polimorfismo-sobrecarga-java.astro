@@ -406,18 +406,18 @@ v.arrancar(); <span class="tok-comment">// JVM consulta vtable -&gt; Auto.arranc
 				<div class="deck-slide" data-slide="5">
 					<div class="deck-slide-grid">
 						<div class="deck-col">
-							<h2 class="deck-slide-title">5. {isEs ? 'Colecciones Polimórficas y Pattern Matching' : 'Polymorphic Collections and Pattern Matching'}</h2>
+							<h2 class="deck-slide-title">5. {isEs ? 'Arrays Polimórficos y Pattern Matching' : 'Polymorphic Arrays and Pattern Matching'}</h2>
 							<p class="deck-text">
 								{isEs
-									? 'Una lista heterogénea `List<Vehiculo>` permite manipular distintos objetos de manera uniforme sin usar switch ni condicionales. Para acceder a métodos exclusivos de una subclase, Java 16+ ofrece Pattern Matching para instanceof.'
-									: 'A polymorphic `List<Vehiculo>` handles different vehicles uniformly without switch or if-chains. When accessing subclass-specific methods, modern Java 16+ provides Pattern Matching for instanceof.'}
+									? 'Un array heterogéneo `Vehiculo[]` permite manipular distintos objetos de manera uniforme sin usar switch ni condicionales. Para acceder a métodos exclusivos de una subclase, Java 16+ ofrece Pattern Matching para instanceof.'
+									: 'A polymorphic `Vehicle[]` array handles different vehicles uniformly without switch or if-chains. When accessing subclass-specific methods, modern Java 16+ provides Pattern Matching for instanceof.'}
 							</p>
 
 							<div class="deck-figure">
-								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Colección polimórfica y pattern matching' : 'Polymorphic collection and pattern matching'}>
-									<!-- Conveyor Track (List<Vehiculo>) -->
+								<svg viewBox="0 0 540 240" width="100%" role="img" aria-label={isEs ? 'Array polimórfico y pattern matching' : 'Polymorphic array and pattern matching'}>
+									<!-- Conveyor Track (Vehiculo[]) -->
 									<rect x="20" y="40" width="500" height="75" rx="10" class="deck-panel" />
-									<text x="270" y="30" class="deck-svg-title" text-anchor="middle">List&lt;Vehiculo&gt; flota = List.of(auto, moto, camion);</text>
+									<text x="270" y="30" class="deck-svg-title" text-anchor="middle">Vehiculo[] flota = &#123; auto, moto, camion &#125;;</text>
 
 									<!-- Vehicle 1: Auto -->
 									<g id="conv-veh-0" class="conv-item active-conv" transform="translate(40, 50)">
@@ -460,13 +460,13 @@ v.arrancar(); <span class="tok-comment">// JVM consulta vtable -&gt; Auto.arranc
 									<span class="deck-badge">{isEs ? 'Ejecución Polimórfica' : 'Polymorphic Runner'}</span>
 								</div>
 								<div class="deck-actions-row">
-									<button class="btn btn-secondary" id="btn-poly-next">{isEs ? 'Siguiente en Lista (v)' : 'Next in List (v)'}</button>
+									<button class="btn btn-secondary" id="btn-poly-next">{isEs ? 'Siguiente en Array (v)' : 'Next in Array (v)'}</button>
 									<button class="btn btn-secondary" id="btn-poly-all">{isEs ? 'Recorrer Todos' : 'Run All'}</button>
 								</div>
 								<div class="deck-info-box">
 									<div class="state-row">
 										<span class="state-label">{isEs ? 'Elemento Actual:' : 'Current Element:'}</span>
-										<span class="state-val mono" id="poly-curr-veh">flota.get(0) -&gt; Auto</span>
+										<span class="state-val mono" id="poly-curr-veh">flota[0] -&gt; Auto</span>
 									</div>
 									<div class="state-row">
 										<span class="state-label">{isEs ? 'Comportamiento Ejecutado:' : 'Executed Behavior:'}</span>
@@ -793,7 +793,7 @@ v.arrancar(); <span class="tok-comment">// JVM consulta vtable -&gt; Auto.arranc
 
 		function updatePolyView() {
 			const v = polyVehicles[polyIdx];
-			if (polyCurrVeh) polyCurrVeh.textContent = `flota.get(${polyIdx}) -> ${v.name}`;
+			if (polyCurrVeh) polyCurrVeh.textContent = `flota[${polyIdx}] -> ${v.name}`;
 			if (polyCurrAction) polyCurrAction.textContent = `${v.name}.arrancar()`;
 			if (polyLogSound) polyLogSound.textContent = v.sound;
 			if (polyMatchTxt) polyMatchTxt.textContent = v.pattern;
