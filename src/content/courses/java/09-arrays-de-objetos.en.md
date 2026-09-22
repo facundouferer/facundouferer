@@ -156,7 +156,7 @@ for (int i = 0; i < roster.length; i++) {
 }
 ```
 
-Notice what form C makes possible: **the validating constructor from lesson 8 runs once per object**. If any input datum is invalid, the object never comes into existence. Without constructors you would have to create three empty objects and fill them afterwards — precisely the window of broken objects that lesson 8 set out to close.
+Notice what form C makes possible: **the validating constructor from lesson 8 runs once per object**. If any input datum is invalid, the constructor replaces it with a safe default and logs a notice: the object is still born, just never with broken data. Without constructors you would have to create three empty objects and fill them afterwards — precisely the window of broken objects that lesson 8 set out to close.
 
 ---
 
@@ -233,10 +233,12 @@ public class Person {
 
     public Person(String name, int age) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Name cannot be empty");
+            System.out.println("Invalid name, used \"No name\" as default.");
+            name = "No name";
         }
         if (age < 0 || age > 130) {
-            throw new IllegalArgumentException("Age out of range: " + age);
+            System.out.println("Age out of range, used 0 as default.");
+            age = 0;
         }
         this.name = name;
         this.age = age;
@@ -509,9 +511,10 @@ public class Registry {
         count++;
     }
 
-    public void remove(int index) {
+    public boolean remove(int index) {
         if (index < 0 || index >= count) {
-            throw new IndexOutOfBoundsException("Invalid index: " + index);
+            System.out.println("Invalid index: " + index);
+            return false;
         }
         // shift everything to the right of it one position left
         for (int i = index; i < count - 1; i++) {
@@ -519,6 +522,7 @@ public class Registry {
         }
         data[count - 1] = null;   // release the leftover reference
         count--;
+        return true;
     }
 
     public int getCount() {
@@ -741,14 +745,16 @@ public class AddressBook {
     private Contact[] contacts = new Contact[4];
     private int count = 0;
 
-    public void add(Contact c) {
+    public boolean add(Contact c) {
         if (c == null) {
-            throw new IllegalArgumentException("The contact cannot be null");
+            System.out.println("The contact cannot be null, it was not added.");
+            return false;
         }
         if (count == contacts.length) {
             contacts = Arrays.copyOf(contacts, contacts.length * 2);
         }
         contacts[count++] = c;
+        return true;
     }
 
     public Optional<Contact> find(String name) {
@@ -760,15 +766,16 @@ public class AddressBook {
         return Optional.empty();
     }
 
-    public void remove(int index) {
+    public boolean remove(int index) {
         if (index < 0 || index >= count) {
-            throw new IndexOutOfBoundsException(
-                "Index " + index + " out of range [0, " + (count - 1) + "]");
+            System.out.println("Index " + index + " out of range [0, " + (count - 1) + "].");
+            return false;
         }
         for (int i = index; i < count - 1; i++) {
             contacts[i] = contacts[i + 1];
         }
         contacts[--count] = null;
+        return true;
     }
 
     public int getCount() {

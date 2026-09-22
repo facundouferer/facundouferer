@@ -156,7 +156,7 @@ for (int i = 0; i < plantel.length; i++) {
 }
 ```
 
-Fijate lo que hace posible la forma C: **el constructor validador de la lección 8 corre una vez por cada objeto**. Si alguno de los datos de entrada es inválido, el objeto ni siquiera llega a existir. Sin constructores tendrías que crear los tres objetos vacíos y llenarlos después a mano, que es exactamente la ventana de tiempo con objetos rotos que la lección 8 se ocupó de cerrar.
+Fijate lo que hace posible la forma C: **el constructor validador de la lección 8 corre una vez por cada objeto**. Si alguno de los datos de entrada es inválido, el constructor lo reemplaza por un valor por defecto seguro y avisa por consola: el objeto igual nace, pero nunca con datos rotos. Sin constructores tendrías que crear los tres objetos vacíos y llenarlos después a mano, que es exactamente la ventana de tiempo con objetos rotos que la lección 8 se ocupó de cerrar.
 
 ---
 
@@ -233,10 +233,12 @@ public class Persona {
 
     public Persona(String nombre, int edad) {
         if (nombre == null || nombre.isBlank()) {
-            throw new IllegalArgumentException("El nombre no puede estar vacío");
+            System.out.println("Nombre inválido, se usó \"Sin nombre\" por defecto.");
+            nombre = "Sin nombre";
         }
         if (edad < 0 || edad > 130) {
-            throw new IllegalArgumentException("Edad fuera de rango: " + edad);
+            System.out.println("Edad fuera de rango, se usó 0 por defecto.");
+            edad = 0;
         }
         this.nombre = nombre;
         this.edad = edad;
@@ -509,9 +511,10 @@ public class Registro {
         cantidad++;
     }
 
-    public void eliminar(int indice) {
+    public boolean eliminar(int indice) {
         if (indice < 0 || indice >= cantidad) {
-            throw new IndexOutOfBoundsException("Índice inválido: " + indice);
+            System.out.println("Índice inválido: " + indice);
+            return false;
         }
         // corremos todo lo que está a la derecha una posición a la izquierda
         for (int i = indice; i < cantidad - 1; i++) {
@@ -519,6 +522,7 @@ public class Registro {
         }
         datos[cantidad - 1] = null;   // liberamos la referencia sobrante
         cantidad--;
+        return true;
     }
 
     public int getCantidad() {
@@ -741,14 +745,16 @@ public class Agenda {
     private Contacto[] contactos = new Contacto[4];
     private int cantidad = 0;
 
-    public void agregar(Contacto c) {
+    public boolean agregar(Contacto c) {
         if (c == null) {
-            throw new IllegalArgumentException("El contacto no puede ser null");
+            System.out.println("El contacto no puede ser null, no se agregó.");
+            return false;
         }
         if (cantidad == contactos.length) {
             contactos = Arrays.copyOf(contactos, contactos.length * 2);
         }
         contactos[cantidad++] = c;
+        return true;
     }
 
     public Optional<Contacto> buscar(String nombre) {
@@ -760,15 +766,16 @@ public class Agenda {
         return Optional.empty();
     }
 
-    public void eliminar(int indice) {
+    public boolean eliminar(int indice) {
         if (indice < 0 || indice >= cantidad) {
-            throw new IndexOutOfBoundsException(
-                "Índice " + indice + " fuera de rango [0, " + (cantidad - 1) + "]");
+            System.out.println("Índice " + indice + " fuera de rango [0, " + (cantidad - 1) + "].");
+            return false;
         }
         for (int i = indice; i < cantidad - 1; i++) {
             contactos[i] = contactos[i + 1];
         }
         contactos[--cantidad] = null;
+        return true;
     }
 
     public int getCantidad() {
