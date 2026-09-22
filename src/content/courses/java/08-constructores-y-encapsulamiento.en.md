@@ -85,12 +85,14 @@ The constructor is not the first step of `new` — it is the fourth. Understandi
 <text x="34" y="434" font-size="15" font-weight="700" text-anchor="middle" fill="var(--color-neutral-100)">5</text>
 <text x="68" y="422" font-size="15" font-weight="700" fill="var(--color-accent-2-800)">Reference returned</text>
 <text x="68" y="445" font-size="13" fill="var(--color-text)">The variable p, living on the Stack, now points at the finished object on the Heap.</text>
-<text x="2" y="486" font-size="12" fill="var(--color-neutral-700)">If the constructor throws, everything dies at stage 4: the variable p never gets to point at the object.</text>
+<text x="2" y="486" font-size="12" fill="var(--color-neutral-700)">If the data is invalid, stage 4 replaces it with a safe default: the variable p always ends up pointing at a valid object.</text>
 </svg>
 <figcaption>The <code>new</code> operator runs five stages. The constructor is the fourth, not the first: the object already exists in memory by the time your code starts running.</figcaption>
 </figure>
 
-The practical consequence of stage 5 is huge: **if the constructor validates and throws, the invalid object never sees daylight**. No reference points at it, so the garbage collector takes it away. That is the difference between validating in the constructor and validating afterwards.
+The practical consequence of stage 5 is huge: **if the constructor detects invalid data, it fixes it up before finishing** — assigning a safe default and printing a notice. No object leaves stage 5 with broken data: it either holds the values you passed in, or the default values the constructor itself chose. That is the difference between validating in the constructor and validating afterwards.
+
+> Later on you will meet a more robust tool for rejecting invalid data — exceptions — in the lesson [exception handling and robustness](/en/courses/java/10-excepciones-y-manejo-de-errores). For now we work only with what you already know: `if`, return values, and default values.
 
 ---
 
@@ -147,7 +149,10 @@ public Product(String name) {
 }
 public Product(String name, double price) {
     this.name = name;
-    if (price < 0) throw new IllegalArgumentException("Negative price");
+    if (price < 0) {
+        System.out.println("Invalid price, defaulted to 0.");
+        price = 0;
+    }
     this.price = price;
 }
 ```
@@ -196,14 +201,31 @@ public class Product {
 
     // Canonical constructor: ALL validation lives here
     public Product(String name, double price) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Name cannot be blank");
+        if (!setName(name)) {
+            this.name = "Unnamed";
+            System.out.println("Invalid name, defaulted to \"Unnamed\".");
         }
-        if (price < 0) {
-            throw new IllegalArgumentException("Price cannot be negative");
+        if (!setPrice(price)) {
+            this.price = 0;
+            System.out.println("Invalid price, defaulted to 0.");
+        }
+    }
+
+    // Validating setter: true if it accepts the value, false if it rejects it (and leaves the field untouched)
+    public boolean setName(String name) {
+        if (name == null || name.isBlank()) {
+            return false;
         }
         this.name = name;
+        return true;
+    }
+
+    public boolean setPrice(double price) {
+        if (price < 0) {
+            return false;
+        }
         this.price = price;
+        return true;
     }
 }
 ```
@@ -253,19 +275,19 @@ As long as a field is `public`, any line in any file of the project can leave it
 <line x1="216" y1="332" x2="288" y2="332" stroke="var(--color-accent-2-700)" stroke-width="2" marker-end="url(#ar-good)"/>
 <rect x="296" y="298" width="176" height="64" rx="14" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
 <text x="384" y="322" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">setPrice()</text>
-<text x="384" y="343" font-size="11.5" text-anchor="middle" fill="var(--color-text)">if (price &lt; 0) throw ...</text>
+<text x="384" y="343" font-size="11.5" text-anchor="middle" fill="var(--color-text)">if (price &lt; 0) return false;</text>
 <line x1="474" y1="332" x2="546" y2="332" stroke="var(--color-accent-2-700)" stroke-width="2" marker-end="url(#ar-good)"/>
 <rect x="554" y="300" width="142" height="60" rx="14" fill="var(--color-neutral-100)" stroke="var(--color-accent-2-400)"/>
 <text x="625" y="326" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-700)">price untouched</text>
 <text x="625" y="345" font-size="11.5" text-anchor="middle" fill="var(--color-neutral-700)">rejected upfront</text>
-<text x="24" y="396" font-size="12.5" fill="var(--color-text)">The invalid assignment is rejected before it reaches the field. The error surfaces on the exact</text>
-<text x="24" y="418" font-size="12.5" fill="var(--color-text)">line that caused it, with a stack trace pointing straight at the culprit.</text>
+<text x="24" y="396" font-size="12.5" fill="var(--color-text)">The invalid assignment is rejected before it reaches the field. The error is detected on the exact</text>
+<text x="24" y="418" font-size="12.5" fill="var(--color-text)">line that caused it: the setter returns false right there, without touching the price.</text>
 <text x="24" y="450" font-size="13" font-weight="700" fill="var(--color-accent-2-700)">Possible culprits: one.</text>
 </svg>
 <figcaption>The real difference is not stylistic — it is <em>where the error is detected</em>. Encapsulation turns a diffuse bug into an exception with an exact address.</figcaption>
 </figure>
 
-Look closely at the last line of each panel, because that is the whole point. With public fields, when you find a negative price in production you have to audit the entire project. With a validating setter, the `IllegalArgumentException` is thrown on the exact line that caused it and the stack trace takes you straight to the culprit.
+Look closely at the last line of each panel, because that is the whole point. With public fields, when you find a negative price in production you have to audit the entire project. With a validating setter, the rejection happens on the exact line that caused it: `setPrice` returns `false`, the field stays untouched, and whoever called the method knows right away that something went wrong.
 
 ---
 
@@ -328,10 +350,12 @@ public class BankAccount {
 
     public BankAccount(String owner, double initialBalance) {
         if (owner == null || owner.isBlank()) {
-            throw new IllegalArgumentException("Owner is required");
+            System.out.println("Invalid owner, defaulted to \"Unknown owner\".");
+            owner = "Unknown owner";
         }
         if (initialBalance < 0) {
-            throw new IllegalArgumentException("Initial balance cannot be negative");
+            System.out.println("Invalid initial balance, defaulted to 0.");
+            initialBalance = 0;
         }
         this.owner = owner;
         this.balance = initialBalance;
@@ -341,22 +365,22 @@ public class BankAccount {
     public double getBalance() { return balance; }
 
     // Balance setter: NO. Nobody should be able to write the balance directly.
-    // Instead, domain operations that express intent:
-    public void deposit(double amount) {
+    // Instead, domain operations that express intent and return a boolean:
+    // true if applied, false if rejected.
+    public boolean deposit(double amount) {
         if (amount <= 0) {
-            throw new IllegalArgumentException("Deposit must be positive");
+            return false;
         }
         this.balance += amount;
+        return true;
     }
 
-    public void withdraw(double amount) {
-        if (amount <= 0) {
-            throw new IllegalArgumentException("Withdrawal must be positive");
-        }
-        if (amount > balance) {
-            throw new IllegalStateException("Insufficient funds");
+    public boolean withdraw(double amount) {
+        if (amount <= 0 || amount > balance) {
+            return false;
         }
         this.balance -= amount;
+        return true;
     }
 }
 ```
@@ -410,11 +434,12 @@ public List<String> getStudents() {
 }
 
 // 3. Do not expose the collection: expose only the operations that make sense.
-public void enroll(String student) {
+public boolean enroll(String student) {
     if (student == null || student.isBlank()) {
-        throw new IllegalArgumentException("Invalid student");
+        return false;
     }
     students.add(student);
+    return true;
 }
 
 public int enrolledCount() { return students.size(); }
@@ -437,10 +462,12 @@ public final class Coordinate {          // final: nobody can subclass and break
 
     public Coordinate(double latitude, double longitude) {
         if (latitude < -90 || latitude > 90) {
-            throw new IllegalArgumentException("Latitude out of range");
+            System.out.println("Latitude out of range, defaulted to 0.0.");
+            latitude = 0;
         }
         if (longitude < -180 || longitude > 180) {
-            throw new IllegalArgumentException("Longitude out of range");
+            System.out.println("Longitude out of range, defaulted to 0.0.");
+            longitude = 0;
         }
         this.latitude = latitude;
         this.longitude = longitude;
@@ -463,7 +490,8 @@ public record Coordinate(double latitude, double longitude) {
     // Compact constructor: you only write the validation
     public Coordinate {
         if (latitude < -90 || latitude > 90) {
-            throw new IllegalArgumentException("Latitude out of range");
+            System.out.println("Latitude out of range, defaulted to 0.0.");
+            latitude = 0;
         }
     }
 }
@@ -492,11 +520,11 @@ You will see this a lot in modern code. For now, keep the underlying idea: **the
 Write a `Student` class that satisfies **all** of these conditions:
 
 1. Fields `name` (String) and `gpa` (double), both `private`. `name` must never be changeable once the object is created.
-2. A canonical constructor taking name and gpa that validates the name is neither null nor blank, and that the gpa sits between `0.0` and `10.0`.
+2. A canonical constructor taking name and gpa: if the name is null or blank, it defaults to `"Unnamed"` and prints a notice; the gpa is validated by delegating to the setter and, if invalid, defaults to `0.0` and prints a notice.
 3. A convenience constructor taking only the name and starting with a gpa of `0.0`, **without duplicating the validation**.
-4. A setter for `gpa` that enforces the same range rule as the constructor.
+4. A `setGpa` method that enforces the same range rule as the constructor and returns `boolean`: `true` if it accepts the new value, `false` if it rejects it (in which case the previous gpa is kept).
 5. A `passed()` method returning `true` when the gpa is `6.0` or higher.
-6. A `main` proving the object rejects invalid values both at construction time and at modification time.
+6. A `main` proving, through the returned booleans and the printed notices, that the object never ends up with an out-of-range gpa, either at construction time or at modification time.
 
 <details>
 <summary>See suggested solution</summary>
@@ -514,10 +542,14 @@ public class Student {
     // Canonical constructor
     public Student(String name, double gpa) {
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Name cannot be blank");
+            System.out.println("Invalid name, defaulted to \"Unnamed\".");
+            name = "Unnamed";
         }
         this.name = name;
-        setGpa(gpa);   // reuses the range validation, kept in a single place
+        if (!setGpa(gpa)) {
+            this.gpa = 0.0;
+            System.out.println("Invalid gpa, defaulted to 0.0.");
+        }
     }
 
     public String getName() {
@@ -528,12 +560,13 @@ public class Student {
         return gpa;
     }
 
-    public void setGpa(double gpa) {
+    // true if it accepts the new gpa, false if it rejects it (and keeps the previous one)
+    public boolean setGpa(double gpa) {
         if (gpa < 0.0 || gpa > 10.0) {
-            throw new IllegalArgumentException(
-                "GPA must be between 0.0 and 10.0, received: " + gpa);
+            return false;
         }
         this.gpa = gpa;
+        return true;
     }
 
     public boolean passed() {
@@ -552,22 +585,19 @@ public class Student {
         Student s2 = new Student("Carlos Ruiz");
         System.out.println(s2);              // Carlos Ruiz — gpa 0.0 (failed)
 
-        s2.setGpa(7.2);
+        boolean accepted = s2.setGpa(7.2);
+        System.out.println("Was 7.2 accepted? " + accepted);
         System.out.println(s2);              // Carlos Ruiz — gpa 7.2 (passed)
 
-        // The object defends itself on modification
-        try {
-            s2.setGpa(15.0);
-        } catch (IllegalArgumentException ex) {
-            System.out.println("Rejected: " + ex.getMessage());
-        }
+        // The object defends itself on modification: the invalid value is
+        // rejected and the previous gpa is left untouched.
+        boolean rejected = s2.setGpa(15.0);
+        System.out.println("Was 15.0 accepted? " + rejected);
+        System.out.println(s2);              // still 7.2, unchanged
 
-        // And on construction: this object never comes into existence
-        try {
-            Student invalid = new Student("", 5.0);
-        } catch (IllegalArgumentException ex) {
-            System.out.println("Rejected: " + ex.getMessage());
-        }
+        // And on construction: it never ends up with an invalid gpa
+        Student invalid = new Student("", 5.0);
+        System.out.println(invalid);         // Unnamed — gpa 5.0 (failed)
     }
 }
 ```
@@ -580,7 +610,7 @@ public class Student {
 
 ## Key takeaways
 
-- The constructor is the **only guarantee** that an object is born valid; validating there prevents an invalid object from ever existing.
+- The constructor is the **only guarantee** that an object is born valid: if the data is invalid, it substitutes a safe default before finishing, so an object with broken data never comes to exist.
 - Writing a constructor removes the one the compiler used to give you. That is a feature, not a bug.
 - `this(...)` concentrates validation in a canonical constructor and stops rules from being duplicated.
 - Encapsulation means making the object **responsible for its own consistency**, not mass-generating accessors.

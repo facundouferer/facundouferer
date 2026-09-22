@@ -14,23 +14,23 @@ objectives:
   - 'Usar this(...) para delegar en un constructor de conveniencia sin duplicar ninguna validación.'
   - 'Encapsular el estado con atributos private y exponer solo lo que el contrato realmente necesita.'
   - 'Escribir un setter que valide, y preferir un método de dominio antes que un setter cuando la operación tiene una regla propia.'
-  - 'Comprobar que un dato inválido nunca llega a producir un objeto: el constructor lo rechaza antes de que exista.'
+  - 'Comprobar que un dato inválido nunca queda guardado en el objeto: el constructor lo reemplaza por un valor por defecto seguro y lo informa por consola.'
 requirements:
   - 'Crear la clase Libro.java con los atributos private titulo (String, final), autor (String, final), isbn (String, final), copiasDisponibles (int) y precioReposicion (double).'
-  - 'Escribir el constructor canónico Libro(String titulo, String autor, String isbn, int copiasDisponibles, double precioReposicion) que valide: ninguno de titulo/autor/isbn puede ser nulo ni estar en blanco; copiasDisponibles no puede ser negativo; precioReposicion tiene que ser mayor a 0. Si alguna condición falla, lanzar IllegalArgumentException con un mensaje que explique cuál.'
+  - 'Escribir el constructor canónico Libro(String titulo, String autor, String isbn, int copiasDisponibles, double precioReposicion) que valide: si titulo/autor/isbn es nulo o está en blanco, usar "Sin título"/"Autor desconocido"/"ISBN pendiente" por defecto e informarlo por consola; si copiasDisponibles es negativo, usar 0 por defecto e informarlo; si precioReposicion no es mayor a 0, delegar en setPrecioReposicion (que lo rechaza) y usar 15000.0 por defecto, informando el motivo. Ningún Libro debe terminar de construirse con datos inválidos: siempre gana un valor por defecto seguro.'
   - 'Escribir el constructor de conveniencia Libro(String titulo, String autor, String isbn), que delegue con this(...) en el constructor canónico arrancando con 1 copia disponible y precioReposicion en 15000.0, sin repetir ninguna validación.'
   - 'Implementar getters públicos para los cinco atributos (getTitulo, getAutor, getIsbn, getCopiasDisponibles, getPrecioReposicion).'
-  - 'Implementar setPrecioReposicion(double precio), aplicando exactamente la misma regla de validación (mayor a 0) que usa el constructor.'
-  - 'Implementar prestar(): si copiasDisponibles es mayor a 0, la descuenta en uno e informa el préstamo; si no hay copias, informar el error sin modificar el atributo. No exponer un setter directo para copiasDisponibles: esta es la única forma de cambiarlo hacia abajo.'
+  - 'Implementar setPrecioReposicion(double precio) como boolean, aplicando exactamente la misma regla de validación (mayor a 0) que usa el constructor: devuelve true si acepta el nuevo precio, false si lo rechaza dejando intacto el precio anterior.'
+  - 'Implementar prestar() como boolean: si copiasDisponibles es mayor a 0, la descuenta en uno, informa el préstamo y devuelve true; si no hay copias, informa el error, no modifica el atributo y devuelve false. No exponer un setter directo para copiasDisponibles: esta es la única forma de cambiarlo hacia abajo.'
   - 'Implementar devolver(): incrementa copiasDisponibles en uno e informa la devolución.'
   - 'Implementar mostrarFicha(), que imprima todos los datos del libro de forma prolija.'
   - 'En MainBiblioteca, crear al menos tres objetos Libro combinando ambos constructores (canónico y de conveniencia), y dejar un comentario junto a la instanciación explicando por qué new Libro() (sin argumentos) no compilaría: al declarar constructores propios, el constructor sin parámetros que regalaba el compilador ya no existe.'
-  - 'Demostrar con try/catch al menos dos rechazos de datos inválidos: uno atrapando la excepción del constructor canónico (por ejemplo, un título vacío) y otro atrapando la excepción de setPrecioReposicion (por ejemplo, un precio negativo o cero).'
-  - 'Ejercitar prestar() hasta agotar las copias de un libro y comprobar que un préstamo de más informa el error sin descontar copias de más (no debe quedar un número negativo).'
+  - 'Demostrar al menos dos rechazos de datos inválidos usando los valores devueltos por los métodos: uno construyendo un Libro con un dato inválido (por ejemplo, título vacío) y comprobando con getTitulo() que se usó el valor por defecto; otro llamando a setPrecioReposicion con un valor inválido y comprobando que devuelve false y que getPrecioReposicion() conserva el precio anterior.'
+  - 'Ejercitar prestar() hasta agotar las copias de un libro, comprobando el boolean que devuelve cada llamada, y verificar que un préstamo de más informa el error, devuelve false y no descuenta copias de más (no debe quedar un número negativo).'
   - 'Guardar los libros creados en un List<Libro> (java.util.ArrayList) y recorrerla con un for-each para llamar a mostrarFicha() de cada uno.'
 exampleOutput: |
-  Error al crear libro: El título no puede estar vacío
-  Error al actualizar precio: El precio de reposición debe ser mayor a 0
+  Título inválido, se usó "Sin título" por defecto.
+  ¿Se aceptó el precio -100.0? false (se mantiene el precio anterior)
 
   === Ficha de libro ===
   Título:  Clean Code
@@ -74,8 +74,9 @@ Una biblioteca necesita un catálogo mínimo para sus libros: título, autor, IS
 cuántas copias hay disponibles para prestar y cuánto cuesta reponer un
 ejemplar perdido. A diferencia del ejercicio de la lección anterior, acá un
 `Libro` **no puede nacer con datos basura**: un título vacío o un precio de
-reposición negativo tienen que quedar rechazados en el mismo instante en que
-alguien intenta crear el objeto, no descubiertos después en algún reporte.
+reposición negativo tienen que quedar reemplazados por un valor por defecto
+seguro en el mismo instante en que alguien intenta crear el objeto, no
+descubiertos después en algún reporte.
 
 ## Consigna
 
@@ -112,9 +113,9 @@ public class Libro {
         /* ... */
     }
 
-    public void prestar() { /* ... */ }
+    public boolean prestar() { /* ... */ }
     public void devolver() { /* ... */ }
-    public void setPrecioReposicion(double precio) { /* ... */ }
+    public boolean setPrecioReposicion(double precio) { /* ... */ }
     public void mostrarFicha() { /* ... */ }
 }
 ```
@@ -128,9 +129,12 @@ es el **único lugar** donde vive la validación completa:
 - `copiasDisponibles` no puede ser negativo.
 - `precioReposicion` tiene que ser mayor a `0`.
 
-Si alguna condición no se cumple, lanzá `IllegalArgumentException` con un
-mensaje claro. Ningún `Libro` inválido debe llegar a existir: la excepción
-tiene que cortar la construcción antes de asignar nada.
+Si alguna condición no se cumple, el constructor **no corta la construcción**:
+reemplaza el dato inválido por un valor por defecto seguro (`"Sin título"`,
+`"Autor desconocido"`, `"ISBN pendiente"`, `0` copias o `$15000.0`) e informa
+por consola qué se rechazó y por qué. Ningún `Libro` termina de construirse
+con datos inválidos, pero tampoco deja de construirse: siempre gana un valor
+por defecto seguro.
 
 ### 3. El constructor de conveniencia y `this(...)`
 
@@ -150,17 +154,20 @@ constructor sin argumentos que el compilador regalaba automáticamente
 
 Escribí un getter público para cada uno de los cinco atributos. Para el
 precio de reposición, además, escribí `setPrecioReposicion(double precio)`
-aplicando la **misma** regla que el constructor (mayor a `0`). Que la regla
-viva en un solo lugar y el constructor la reutilice, o que ambos deleguen en
-un validador privado común: lo importante es que no esté escrita dos veces.
+como `boolean`, aplicando la **misma** regla que el constructor (mayor a
+`0`): devuelve `true` si acepta el nuevo precio y `false` si lo rechaza, sin
+tocar el precio anterior. Que la regla viva en un solo lugar y el
+constructor la reutilice, o que ambos deleguen en un validador privado
+común: lo importante es que no esté escrita dos veces.
 
 ### 5. Operaciones de dominio en lugar de un setter de copias
 
 No escribas `setCopiasDisponibles(int)`. En su lugar, expresá la intención
 con dos métodos:
 
-- **`prestar()`**: si hay copias disponibles, descontá una e informá el
-  préstamo. Si no hay copias, informá el error y no modifiques el atributo.
+- **`prestar()`** (`boolean`): si hay copias disponibles, descontá una,
+  informá el préstamo y devolvé `true`. Si no hay copias, informá el error,
+  no modifiques el atributo y devolvé `false`.
 - **`devolver()`**: suma una copia disponible e informa la devolución.
 
 Un setter genérico de copias dejaría que cualquier código externo ponga el
@@ -173,11 +180,14 @@ En `MainBiblioteca`:
 
 - Creá al menos **tres** objetos `Libro`, combinando el constructor canónico
   y el de conveniencia.
-- Atrapá con `try/catch` al menos dos rechazos: uno al construir un libro con
-  un dato inválido (por ejemplo, título vacío) y otro al llamar a
-  `setPrecioReposicion` con un valor inválido.
-- Agotá las copias de algún libro con llamadas repetidas a `prestar()` y
-  comprobá que un préstamo de más informa el error sin dejar el contador en
+- Demostrá al menos dos rechazos usando los valores devueltos por los
+  métodos: construí un libro con un dato inválido (por ejemplo, título
+  vacío) y comprobá con `getTitulo()` que se usó el valor por defecto; y
+  llamá a `setPrecioReposicion` con un valor inválido, comprobando que
+  devuelve `false` y que `getPrecioReposicion()` no cambió.
+- Agotá las copias de algún libro con llamadas repetidas a `prestar()`,
+  comprobando el `boolean` que devuelve cada llamada, y verificá que un
+  préstamo de más informa el error, devuelve `false` y no deja el contador en
   negativo.
 - Guardá los libros en un `List<Libro>` (`new ArrayList<>()`) y recorrela con
   un `for` de tipo `for (Libro libro : libros)` para llamar a

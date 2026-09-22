@@ -85,12 +85,14 @@ El constructor no es el primer paso de `new`, es el cuarto. Entender el orden co
 <text x="34" y="434" font-size="15" font-weight="700" text-anchor="middle" fill="var(--color-neutral-100)">5</text>
 <text x="68" y="422" font-size="15" font-weight="700" fill="var(--color-accent-2-800)">Devuelve la referencia</text>
 <text x="68" y="445" font-size="13" fill="var(--color-text)">La variable p, que vive en el Stack, ya apunta al objeto terminado en el Heap.</text>
-<text x="2" y="486" font-size="12" fill="var(--color-neutral-700)">Si el constructor lanza una excepción, todo muere en la etapa 4: la variable p nunca llega a apuntar al objeto.</text>
+<text x="2" y="486" font-size="12" fill="var(--color-neutral-700)">Si los datos son inválidos, la etapa 4 los reemplaza por un valor por defecto seguro: la variable p siempre termina apuntando a un objeto válido.</text>
 </svg>
 <figcaption>El operador <code>new</code> ejecuta cinco etapas. El constructor es la cuarta, no la primera: el objeto ya existe en memoria cuando tu código empieza a correr.</figcaption>
 </figure>
 
-La consecuencia práctica de la etapa 5 es enorme: **si el constructor valida y lanza una excepción, el objeto inválido nunca sale a la luz**. No hay referencia que lo apunte, así que el recolector de basura se lo lleva. Esa es la diferencia entre validar en el constructor y validar después.
+La consecuencia práctica de la etapa 5 es enorme: **si el constructor detecta datos inválidos, los corrige antes de terminar**, asignando un valor por defecto seguro y avisando por consola. Ningún objeto sale de la etapa 5 con datos rotos: o tiene los valores que le pasaste, o tiene los valores por defecto que el propio constructor eligió. Esa es la diferencia entre validar en el constructor y validar después.
+
+> Más adelante vas a conocer una herramienta más robusta para rechazar datos inválidos —las excepciones—, en la lección [Manejo de Excepciones y Robustez](/cursos/java/10-excepciones-y-manejo-de-errores). Por ahora trabajamos solo con lo que ya sabés: `if`, valores de retorno y valores por defecto.
 
 ---
 
@@ -147,7 +149,10 @@ public Producto(String nombre) {
 }
 public Producto(String nombre, double precio) {
     this.nombre = nombre;
-    if (precio < 0) throw new IllegalArgumentException("Precio negativo");
+    if (precio < 0) {
+        System.out.println("Precio inválido, se usó 0 por defecto.");
+        precio = 0;
+    }
     this.precio = precio;
 }
 ```
@@ -196,14 +201,31 @@ public class Producto {
 
     // Constructor canónico: acá vive TODA la validación
     public Producto(String nombre, double precio) {
-        if (nombre == null || nombre.isBlank()) {
-            throw new IllegalArgumentException("El nombre no puede estar vacío");
+        if (!setNombre(nombre)) {
+            this.nombre = "Sin nombre";
+            System.out.println("Nombre inválido, se usó \"Sin nombre\" por defecto.");
         }
-        if (precio < 0) {
-            throw new IllegalArgumentException("El precio no puede ser negativo");
+        if (!setPrecio(precio)) {
+            this.precio = 0;
+            System.out.println("Precio inválido, se usó 0 por defecto.");
+        }
+    }
+
+    // Setter validado: true si acepta el valor, false si lo rechaza (y no toca el atributo)
+    public boolean setNombre(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            return false;
         }
         this.nombre = nombre;
+        return true;
+    }
+
+    public boolean setPrecio(double precio) {
+        if (precio < 0) {
+            return false;
+        }
         this.precio = precio;
+        return true;
     }
 }
 ```
@@ -253,19 +275,19 @@ Mientras un atributo sea `public`, cualquier línea de cualquier archivo del pro
 <line x1="216" y1="332" x2="288" y2="332" stroke="var(--color-accent-2-700)" stroke-width="2" marker-end="url(#ar-good)"/>
 <rect x="296" y="298" width="176" height="64" rx="14" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
 <text x="384" y="322" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">setPrecio()</text>
-<text x="384" y="343" font-size="11.5" text-anchor="middle" fill="var(--color-text)">if (precio &lt; 0) throw ...</text>
+<text x="384" y="343" font-size="11.5" text-anchor="middle" fill="var(--color-text)">if (precio &lt; 0) return false;</text>
 <line x1="474" y1="332" x2="546" y2="332" stroke="var(--color-accent-2-700)" stroke-width="2" marker-end="url(#ar-good)"/>
 <rect x="554" y="300" width="142" height="60" rx="14" fill="var(--color-neutral-100)" stroke="var(--color-accent-2-400)"/>
 <text x="625" y="326" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-700)">precio intacto</text>
 <text x="625" y="345" font-size="11.5" text-anchor="middle" fill="var(--color-neutral-700)">se rechaza antes</text>
-<text x="24" y="396" font-size="12.5" fill="var(--color-text)">La asignación inválida se rechaza antes de tocar el atributo. El error aparece exactamente en la</text>
-<text x="24" y="418" font-size="12.5" fill="var(--color-text)">línea que lo provocó, con el stack trace apuntando al culpable.</text>
+<text x="24" y="396" font-size="12.5" fill="var(--color-text)">La asignación inválida se rechaza antes de tocar el atributo. El error se detecta exactamente en</text>
+<text x="24" y="418" font-size="12.5" fill="var(--color-text)">la línea que lo provocó: el setter devuelve false ahí mismo, sin tocar el precio.</text>
 <text x="24" y="450" font-size="13" font-weight="700" fill="var(--color-accent-2-700)">Culpables posibles: uno.</text>
 </svg>
 <figcaption>La diferencia real no es estilística: es <em>dónde se detecta el error</em>. Encapsular convierte un bug difuso en una excepción con dirección exacta.</figcaption>
 </figure>
 
-Prestá atención a la última línea de cada panel, porque ahí está todo. Con campos públicos, cuando encontrás un precio negativo en producción tenés que auditar el proyecto entero. Con un setter que valida, el `IllegalArgumentException` se lanza en la línea exacta que lo causó y el stack trace te lleva directo al culpable.
+Prestá atención a la última línea de cada panel, porque ahí está todo. Con campos públicos, cuando encontrás un precio negativo en producción tenés que auditar el proyecto entero. Con un setter que valida, el rechazo ocurre en la línea exacta que lo causó: `setPrecio` devuelve `false`, el atributo queda intacto y quien llamó al método sabe inmediatamente que algo salió mal.
 
 ---
 
@@ -328,10 +350,12 @@ public class CuentaBancaria {
 
     public CuentaBancaria(String titular, double saldoInicial) {
         if (titular == null || titular.isBlank()) {
-            throw new IllegalArgumentException("El titular es obligatorio");
+            System.out.println("Titular inválido, se usó \"Cuenta sin titular\" por defecto.");
+            titular = "Cuenta sin titular";
         }
         if (saldoInicial < 0) {
-            throw new IllegalArgumentException("El saldo inicial no puede ser negativo");
+            System.out.println("Saldo inicial inválido, se usó 0 por defecto.");
+            saldoInicial = 0;
         }
         this.titular = titular;
         this.saldo = saldoInicial;
@@ -341,22 +365,22 @@ public class CuentaBancaria {
     public double getSaldo() { return saldo; }
 
     // Setter de saldo: NO. Nadie debería poder escribir el saldo directamente.
-    // En su lugar, operaciones del dominio que expresan la intención:
-    public void depositar(double monto) {
+    // En su lugar, operaciones del dominio que expresan la intención y devuelven
+    // un boolean: true si se aplicó, false si se rechazó.
+    public boolean depositar(double monto) {
         if (monto <= 0) {
-            throw new IllegalArgumentException("El depósito debe ser positivo");
+            return false;
         }
         this.saldo += monto;
+        return true;
     }
 
-    public void retirar(double monto) {
-        if (monto <= 0) {
-            throw new IllegalArgumentException("El retiro debe ser positivo");
-        }
-        if (monto > saldo) {
-            throw new IllegalStateException("Fondos insuficientes");
+    public boolean retirar(double monto) {
+        if (monto <= 0 || monto > saldo) {
+            return false;
         }
         this.saldo -= monto;
+        return true;
     }
 }
 ```
@@ -410,11 +434,12 @@ public List<String> getAlumnos() {
 }
 
 // 3. No exponer la colección: exponer solo las operaciones que tienen sentido.
-public void inscribir(String alumno) {
+public boolean inscribir(String alumno) {
     if (alumno == null || alumno.isBlank()) {
-        throw new IllegalArgumentException("Alumno inválido");
+        return false;
     }
     alumnos.add(alumno);
+    return true;
 }
 
 public int cantidadInscriptos() { return alumnos.size(); }
@@ -437,10 +462,12 @@ public final class Coordenada {          // final: nadie puede heredar y romper 
 
     public Coordenada(double latitud, double longitud) {
         if (latitud < -90 || latitud > 90) {
-            throw new IllegalArgumentException("Latitud fuera de rango");
+            System.out.println("Latitud fuera de rango, se usó 0.0 por defecto.");
+            latitud = 0;
         }
         if (longitud < -180 || longitud > 180) {
-            throw new IllegalArgumentException("Longitud fuera de rango");
+            System.out.println("Longitud fuera de rango, se usó 0.0 por defecto.");
+            longitud = 0;
         }
         this.latitud = latitud;
         this.longitud = longitud;
@@ -463,7 +490,8 @@ public record Coordenada(double latitud, double longitud) {
     // Constructor compacto: solo escribís la validación
     public Coordenada {
         if (latitud < -90 || latitud > 90) {
-            throw new IllegalArgumentException("Latitud fuera de rango");
+            System.out.println("Latitud fuera de rango, se usó 0.0 por defecto.");
+            latitud = 0;
         }
     }
 }
@@ -492,11 +520,11 @@ Lo vas a ver mucho en código moderno. Por ahora quedate con la idea de fondo: *
 Escribí una clase `Estudiante` que cumpla **todas** estas condiciones:
 
 1. Atributos `nombre` (String) y `promedio` (double), ambos `private`. El `nombre` no debe poder cambiar nunca una vez creado el objeto.
-2. Un constructor canónico que reciba nombre y promedio y valide que el nombre no sea nulo ni vacío, y que el promedio esté entre `0.0` y `10.0`.
+2. Un constructor canónico que reciba nombre y promedio: si el nombre es nulo o está en blanco, usa `"Sin nombre"` por defecto e informa por consola; el promedio se valida delegando en el setter y, si es inválido, usa `0.0` por defecto e informa por consola.
 3. Un constructor de conveniencia que reciba solo el nombre y arranque con promedio `0.0`, **sin duplicar la validación**.
-4. Un setter para `promedio` que aplique la misma regla de rango que el constructor.
+4. Un setter `setPromedio` que aplique la misma regla de rango que el constructor y devuelva `boolean`: `true` si acepta el nuevo valor, `false` si lo rechaza (y en ese caso conserva el promedio anterior).
 5. Un método `aprobo()` que devuelva `true` si el promedio es mayor o igual a `6.0`.
-6. Un `main` que demuestre que el objeto rechaza valores inválidos tanto al construirse como al modificarse.
+6. Un `main` que demuestre, usando los valores booleanos devueltos y los mensajes impresos, que el objeto nunca queda con un promedio fuera de rango, ni al construirse ni al modificarse.
 
 <details>
 <summary>Ver solución sugerida</summary>
@@ -514,10 +542,14 @@ public class Estudiante {
     // Constructor canónico
     public Estudiante(String nombre, double promedio) {
         if (nombre == null || nombre.isBlank()) {
-            throw new IllegalArgumentException("El nombre no puede estar vacío");
+            System.out.println("Nombre inválido, se usó \"Sin nombre\" por defecto.");
+            nombre = "Sin nombre";
         }
         this.nombre = nombre;
-        setPromedio(promedio);   // reutiliza la validación de rango en un solo lugar
+        if (!setPromedio(promedio)) {
+            this.promedio = 0.0;
+            System.out.println("Promedio inválido, se usó 0.0 por defecto.");
+        }
     }
 
     public String getNombre() {
@@ -528,12 +560,13 @@ public class Estudiante {
         return promedio;
     }
 
-    public void setPromedio(double promedio) {
+    // true si acepta el nuevo promedio, false si lo rechaza (y conserva el anterior)
+    public boolean setPromedio(double promedio) {
         if (promedio < 0.0 || promedio > 10.0) {
-            throw new IllegalArgumentException(
-                "El promedio debe estar entre 0.0 y 10.0, recibido: " + promedio);
+            return false;
         }
         this.promedio = promedio;
+        return true;
     }
 
     public boolean aprobo() {
@@ -552,22 +585,19 @@ public class Estudiante {
         Estudiante e2 = new Estudiante("Carlos Ruiz");
         System.out.println(e2);              // Carlos Ruiz — promedio 0.0 (desaprobado)
 
-        e2.setPromedio(7.2);
+        boolean aceptado = e2.setPromedio(7.2);
+        System.out.println("¿Se aceptó 7.2? " + aceptado);
         System.out.println(e2);              // Carlos Ruiz — promedio 7.2 (aprobado)
 
-        // El objeto se defiende al modificarse
-        try {
-            e2.setPromedio(15.0);
-        } catch (IllegalArgumentException ex) {
-            System.out.println("Rechazado: " + ex.getMessage());
-        }
+        // El objeto se defiende al modificarse: el valor inválido se rechaza
+        // y el promedio anterior queda intacto.
+        boolean rechazado = e2.setPromedio(15.0);
+        System.out.println("¿Se aceptó 15.0? " + rechazado);
+        System.out.println(e2);              // sigue en 7.2, no cambió
 
-        // Y también al construirse: este objeto nunca llega a existir
-        try {
-            Estudiante invalido = new Estudiante("", 5.0);
-        } catch (IllegalArgumentException ex) {
-            System.out.println("Rechazado: " + ex.getMessage());
-        }
+        // Y también al construirse: nunca llega a existir con un promedio inválido
+        Estudiante invalido = new Estudiante("", 5.0);
+        System.out.println(invalido);        // Sin nombre — promedio 5.0 (desaprobado)
     }
 }
 ```
@@ -580,7 +610,7 @@ public class Estudiante {
 
 ## Para llevarte
 
-- El constructor es la **única garantía** de que un objeto nazca válido; validar ahí impide que el objeto inválido llegue siquiera a existir.
+- El constructor es la **única garantía** de que un objeto nazca válido: si los datos son inválidos, sustituye un valor por defecto seguro antes de terminar, así que un objeto con datos rotos nunca llega a existir.
 - Escribir un constructor elimina el que el compilador te regalaba. Eso es una función, no un bug.
 - `this(...)` concentra la validación en un constructor canónico y evita que las reglas se dupliquen.
 - Encapsular es hacer que el objeto sea **responsable de su propia consistencia**, no generar accesores en masa.

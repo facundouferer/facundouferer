@@ -55,7 +55,8 @@ test('project activity requires a canonical constructor, this(...) delegation, a
 	assert.match(content, /private\s+(final\s+)?(String|int|double|boolean)/, 'attributes must be private (lesson 08 scope)');
 	assert.match(content, /public\s+\w+\(String[^)]*\)\s*\{/i, 'a parametrized public constructor is expected in the suggested structure');
 	assert.match(content, /this\(/, 'this(...) delegation between constructors is expected');
-	assert.match(content, /IllegalArgumentException/, 'constructor/setter validation should reject invalid data');
+	assert.match(content, /public\s+boolean\s+setPrecioReposicion/, 'validation is testable from main via a boolean-returning setter, not an exception');
+	assert.match(content, /public\s+boolean\s+prestar/, 'domain rejection is testable from main via a boolean return, not an exception');
 	assert.match(content, /requirements:/);
 	assert.match(content, /objectives:/);
 	assert.match(content, /exampleOutput:/);
