@@ -29,14 +29,15 @@ Una **especificación** describe el comportamiento esperado sin imponer todavía
 | Precondiciones | ¿Qué debe cumplirse antes? | El array no puede ser `null` ni estar vacío. |
 | Salida | ¿Qué devuelve? | Un entero presente en el array. |
 | Postcondición | ¿Qué debe ser cierto después? | Ningún elemento es mayor que el valor devuelto. |
-| Errores | ¿Cómo falla ante entradas inválidas? | Lanza `IllegalArgumentException`. |
+| Errores | ¿Cómo falla ante entradas inválidas? | Imprime un mensaje de error y devuelve un valor centinela documentado (`Integer.MIN_VALUE`). |
 
 Una frase como “buscar un número grande” no se puede verificar. En cambio, la postcondición anterior permite construir pruebas y revisar el algoritmo.
 
 ```java
 static int maximo(int[] valores) {
     if (valores == null || valores.length == 0) {
-        throw new IllegalArgumentException("valores debe contener al menos un elemento");
+        System.out.println("Error: valores debe contener al menos un elemento.");
+        return Integer.MIN_VALUE; // valor centinela documentado
     }
 
     int maximoActual = valores[0];
@@ -49,7 +50,7 @@ static int maximo(int[] valores) {
 }
 ```
 
-La validación es parte del contrato, no un detalle opcional. Usar `0` como respuesta predeterminada para un array vacío sería inseguro: `0` podría parecer un resultado válido aunque nunca estuviera en la entrada. Cuando no existe un valor neutral correcto, es mejor **fallar de forma explícita**.
+La validación es parte del contrato, no un detalle opcional. Usar `0` como respuesta predeterminada para un array vacío sería inseguro: `0` podría parecer un resultado válido aunque nunca estuviera en la entrada. Como tampoco existe acá ningún entero que sirva de valor neutral real, `maximo` deja constancia explícita del error por consola y devuelve `Integer.MIN_VALUE` como valor centinela documentado, en lugar de devolver un resultado silencioso. Más adelante, en la lección de [Manejo de Excepciones y Robustez](/cursos/java/10-excepciones-y-manejo-de-errores), vas a conocer una herramienta pensada exactamente para este caso, que no depende de elegir un centinela.
 
 ---
 
@@ -80,8 +81,8 @@ Para `maximo`, una estrategia mínima incluye:
 assertEquals(9, maximo(new int[] { 4, 9, 2 })); // caso normal
 assertEquals(-3, maximo(new int[] { -8, -3, -10 })); // evita el falso valor inicial 0
 assertEquals(7, maximo(new int[] { 7 })); // frontera mínima válida
-assertThrows(IllegalArgumentException.class, () -> maximo(new int[] {}));
-assertThrows(IllegalArgumentException.class, () -> maximo(null));
+assertEquals(Integer.MIN_VALUE, maximo(new int[] {})); // array vacío: valor centinela documentado
+assertEquals(Integer.MIN_VALUE, maximo(null)); // entrada null: valor centinela documentado
 ```
 
 Además de probar, podemos razonar con un **invariante de bucle**: antes de cada iteración, `maximoActual` es el máximo del segmento ya recorrido. La comparación incorpora el elemento siguiente sin romper esa propiedad. Al terminar, el segmento recorrido es todo el array; por lo tanto, la postcondición se cumple.
@@ -93,7 +94,8 @@ Un algoritmo puede ser correcto y aun así resultar demasiado lento. Este métod
 ```java
 static boolean tieneDuplicadosLento(int[] valores) {
     if (valores == null) {
-        throw new IllegalArgumentException("valores no puede ser null");
+        System.out.println("Error: valores no puede ser null.");
+        return false; // valor centinela documentado: sin datos no hay duplicados que reportar
     }
     for (int i = 0; i < valores.length; i++) {
         for (int j = i + 1; j < valores.length; j++) {
@@ -143,7 +145,8 @@ La búsqueda binaria descarta la mitad del espacio en cada iteración, por eso u
 ```java
 static int busquedaBinaria(int[] ordenados, int objetivo) {
     if (ordenados == null) {
-        throw new IllegalArgumentException("ordenados no puede ser null");
+        System.out.println("Error: ordenados no puede ser null.");
+        return -1; // reutiliza el mismo centinela documentado que "no encontrado"
     }
 
     int izquierda = 0;
@@ -174,7 +177,7 @@ El cálculo del punto medio evita el posible desbordamiento de `(izquierda + der
 - Objetivo al inicio, al final y en el medio.
 - Objetivo ausente.
 - Valores negativos y repetidos, declarando qué coincidencia se acepta.
-- Entrada `null`: falla explícitamente.
+- Entrada `null`: imprime un mensaje de error y devuelve `-1`.
 - Array desordenado: el llamador viola la precondición; en una API pública podría validarse con costo `O(n)` o exponerse un método que ordene una copia de forma segura.
 
 ---

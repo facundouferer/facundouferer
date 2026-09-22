@@ -29,14 +29,15 @@ A **specification** describes the expected behavior without imposing an implemen
 | Preconditions | What must be true before execution? | The array cannot be `null` or empty. |
 | Output | What does it return? | An integer present in the array. |
 | Postcondition | What must be true afterward? | No element is greater than the returned value. |
-| Errors | How does invalid input fail? | It throws `IllegalArgumentException`. |
+| Errors | How does invalid input fail? | It prints an error message and returns a documented sentinel value (`Integer.MIN_VALUE`). |
 
 A phrase such as “find a large number” cannot be verified. The postcondition above, however, lets us build tests and review the algorithm.
 
 ```java
 static int maximum(int[] values) {
     if (values == null || values.length == 0) {
-        throw new IllegalArgumentException("values must contain at least one element");
+        System.out.println("Error: values must contain at least one element.");
+        return Integer.MIN_VALUE; // documented sentinel value
     }
 
     int currentMaximum = values[0];
@@ -49,7 +50,7 @@ static int maximum(int[] values) {
 }
 ```
 
-Validation is part of the contract, not an optional detail. Using `0` as a default answer for an empty array would be unsafe: `0` could look like a valid result even though it never appeared in the input. When there is no correct neutral value, it is better to **fail explicitly**.
+Validation is part of the contract, not an optional detail. Using `0` as a default answer for an empty array would be unsafe: `0` could look like a valid result even though it never appeared in the input. Since no integer here works as a genuine neutral value either, `maximum` leaves an explicit trace of the error on the console and returns `Integer.MIN_VALUE` as a documented sentinel value, instead of returning a silent result. Later, in the [exception handling and robustness](/en/courses/java/10-excepciones-y-manejo-de-errores) lesson, you will meet a tool built exactly for this case, one that does not depend on picking a sentinel.
 
 ---
 
@@ -80,8 +81,8 @@ A minimal strategy for `maximum` includes:
 assertEquals(9, maximum(new int[] { 4, 9, 2 })); // normal case
 assertEquals(-3, maximum(new int[] { -8, -3, -10 })); // avoids a false initial value of 0
 assertEquals(7, maximum(new int[] { 7 })); // smallest valid boundary
-assertThrows(IllegalArgumentException.class, () -> maximum(new int[] {}));
-assertThrows(IllegalArgumentException.class, () -> maximum(null));
+assertEquals(Integer.MIN_VALUE, maximum(new int[] {})); // empty array: documented sentinel value
+assertEquals(Integer.MIN_VALUE, maximum(null)); // null input: documented sentinel value
 ```
 
 We can also reason with a **loop invariant**: before every iteration, `currentMaximum` is the maximum of the portion already visited. The comparison incorporates the next element without breaking that property. At termination, the visited portion is the whole array, so the postcondition holds.
@@ -93,7 +94,8 @@ An algorithm can be correct and still be too slow. This method correctly detects
 ```java
 static boolean hasDuplicatesSlow(int[] values) {
     if (values == null) {
-        throw new IllegalArgumentException("values cannot be null");
+        System.out.println("Error: values cannot be null.");
+        return false; // documented sentinel value: no data means nothing to report
     }
     for (int i = 0; i < values.length; i++) {
         for (int j = i + 1; j < values.length; j++) {
@@ -143,7 +145,8 @@ Binary search discards half of the search space at each iteration, so its iterat
 ```java
 static int binarySearch(int[] sorted, int target) {
     if (sorted == null) {
-        throw new IllegalArgumentException("sorted cannot be null");
+        System.out.println("Error: sorted cannot be null.");
+        return -1; // reuses the same documented sentinel as "not found"
     }
 
     int left = 0;
@@ -174,7 +177,7 @@ The midpoint calculation avoids the possible overflow of `(left + right) / 2`. R
 - Target at the beginning, end, and middle.
 - Missing target.
 - Negative and repeated values, stating which match is accepted.
-- `null` input: fails explicitly.
+- `null` input: prints an error message and returns `-1`.
 - Unsorted array: the caller violates the precondition; a public API could validate it at `O(n)` cost or expose a method that safely sorts a copy.
 
 ---
@@ -198,7 +201,7 @@ For one query, preparing another structure may cost more than scanning. For thou
 3. **Confusing “my tests passed” with a proof:** tests cover examples; reasoning covers properties.
 4. **Confusing correctness with efficiency:** a correct answer can arrive too late or exhaust memory.
 5. **Treating Big O as exact time:** `O(n)` does not mean `n` milliseconds.
-6. **Ignoring preconditions:** binary search over unsorted data can return an incorrect result without throwing an error.
+6. **Ignoring preconditions:** binary search over unsorted data can return an incorrect result instead of signaling a failure.
 7. **Optimizing too early:** code complexity increases without evidence of a real performance problem.
 
 ---

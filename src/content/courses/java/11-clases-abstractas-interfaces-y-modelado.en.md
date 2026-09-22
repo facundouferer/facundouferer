@@ -84,7 +84,10 @@ public class Circle extends Shape {
 
     public Circle(double radius) {
         super("Circle");
-        if (radius <= 0) throw new IllegalArgumentException("Radius must be positive");
+        if (radius <= 0) {
+            System.out.println("Invalid radius, used 1 by default.");
+            radius = 1;
+        }
         this.radius = radius;
     }
 
@@ -134,7 +137,7 @@ An interface describes **what can be done**, never how:
 ```java
 public interface Payable {
     // Every method is public abstract by default: no need to write it
-    void pay(double amount);
+    boolean pay(double amount);
     boolean isAvailable();
 }
 ```
@@ -151,13 +154,16 @@ public class CreditCard implements Payable {
         this.availableCredit = availableCredit;
     }
 
+    // true if the charge went through, false if it was rejected for insufficient credit
     @Override
-    public void pay(double amount) {
+    public boolean pay(double amount) {
         if (amount > availableCredit) {
-            throw new IllegalStateException("Insufficient credit");
+            System.out.println("Insufficient credit.");
+            return false;
         }
         availableCredit -= amount;
         System.out.println("Paid with card " + number);
+        return true;
     }
 
     @Override
@@ -173,7 +179,7 @@ Since Java 8, an interface can carry implementations:
 
 ```java
 public interface Payable {
-    void pay(double amount);
+    boolean pay(double amount);
     boolean isAvailable();
 
     // default: inheritable implementation that classes may override or not
@@ -503,7 +509,7 @@ Notice the pattern in the code: in **composition**, the container creates the pa
 
 ### Challenge: payment methods
 
-1. Define the `Payable` interface with `void pay(double amount)`, `boolean isAvailable()`, and a `default` method `payIfPossible(double amount)` that only charges when the method is available.
+1. Define the `Payable` interface with `boolean pay(double amount)` (`true` if the charge succeeds, `false` if it is rejected), `boolean isAvailable()`, and a `default` method `payIfPossible(double amount)` that only charges when the method is available.
 2. Implement it in `CreditCard` (with available credit) and in `DigitalWallet` (with an account balance).
 3. Create an abstract class `DigitalPaymentMethod implements Payable` that stores the holder's `email` and resolves `isAvailable()` using an `active` flag, leaving `pay()` abstract.
 4. Make `DigitalWallet` extend that abstract class.
@@ -516,18 +522,19 @@ Notice the pattern in the code: in **composition**, the container creates the pa
 import java.util.List;
 
 public interface Payable {
-    void pay(double amount);
+    boolean pay(double amount);
     boolean isAvailable();
 
-    default void payIfPossible(double amount) {
+    default boolean payIfPossible(double amount) {
         if (amount <= 0) {
-            throw new IllegalArgumentException("Amount must be positive");
+            System.out.println("  ✗ Invalid amount, charge skipped.");
+            return false;
         }
         if (isAvailable()) {
-            pay(amount);
-        } else {
-            System.out.println("  ✗ Method unavailable, charge skipped.");
+            return pay(amount);
         }
+        System.out.println("  ✗ Method unavailable, charge skipped.");
+        return false;
     }
 }
 
@@ -538,7 +545,8 @@ public abstract class DigitalPaymentMethod implements Payable {
 
     protected DigitalPaymentMethod(String email) {
         if (email == null || !email.contains("@")) {
-            throw new IllegalArgumentException("Invalid email");
+            System.out.println("Invalid email, used \"no-email@example.com\" by default.");
+            email = "no-email@example.com";
         }
         this.email = email;
         this.active = true;
@@ -568,10 +576,14 @@ public class DigitalWallet extends DigitalPaymentMethod {
     }
 
     @Override
-    public void pay(double amount) {
-        if (amount > balance) throw new IllegalStateException("Insufficient balance");
+    public boolean pay(double amount) {
+        if (amount > balance) {
+            System.out.printf("  ✗ Wallet (%s) — insufficient balance.%n", email);
+            return false;
+        }
         balance -= amount;
         System.out.printf("  ✓ Wallet (%s) — remaining balance $%.2f%n", email, balance);
+        return true;
     }
 }
 
@@ -589,11 +601,15 @@ public class CreditCard implements Payable {
     public boolean isAvailable() { return availableCredit > 0; }
 
     @Override
-    public void pay(double amount) {
-        if (amount > availableCredit) throw new IllegalStateException("Insufficient credit");
+    public boolean pay(double amount) {
+        if (amount > availableCredit) {
+            System.out.printf("  ✗ Card ****%s — insufficient credit.%n", lastFour);
+            return false;
+        }
         availableCredit -= amount;
         System.out.printf("  ✓ Card ****%s — remaining credit $%.2f%n",
             lastFour, availableCredit);
+        return true;
     }
 }
 
@@ -634,4 +650,3 @@ Second: `DigitalWallet.isAvailable()` calls `super.isAvailable()` and adds its o
 - A class extends one class but implements every interface it needs. That is Java's answer to multiple inheritance.
 - The `package` is Java's native implementation of the **namespace** concept: it prevents collisions via FQCNs, must strictly match the folder hierarchy, and should be grouped by **responsibility**, not by artifact type.
 - Association, aggregation, and composition are told apart by one question: if I destroy the whole, does the part still exist?
-</content>

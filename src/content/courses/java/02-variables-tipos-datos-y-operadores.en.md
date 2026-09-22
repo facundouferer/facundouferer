@@ -52,7 +52,8 @@ public final class Account {
 
     public Account(int balance) {        // Parameter
         if (balance < 0) {
-            throw new IllegalArgumentException("balance cannot be negative");
+            System.out.println("Invalid balance, used 0 by default.");
+            balance = 0;
         }
         this.balance = balance;          // this.balance selects the field
         accountCount++;
@@ -60,13 +61,15 @@ public final class Account {
 
     public void credit(int amount) {
         if (amount <= 0) {
-            throw new IllegalArgumentException("amount must be positive");
+            System.out.println("Invalid amount, nothing was credited.");
+            return;
         }
         int previousBalance = balance;   // Local variable
         balance += amount;
 
         if (balance < previousBalance) {
-            throw new ArithmeticException("balance overflow");
+            System.out.println("Overflow detected, the operation was discarded.");
+            balance = previousBalance;
         }
     }
 }
@@ -95,7 +98,7 @@ int result;
 int safeResult = 0; // Correct only when 0 is a valid domain value.
 ```
 
-Do not add an arbitrary default merely to silence the compiler. If required data is missing, validate it and throw an exception with context, as the `Account` constructor does. For optional data, choose and document a genuinely neutral value.
+Do not add an arbitrary default merely to silence the compiler without saying so. If required data is missing, validate it explicitly: print a notice and use a documented default value, as the `Account` constructor does. For optional data, choose and document a genuinely neutral value.
 
 ---
 

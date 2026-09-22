@@ -52,7 +52,8 @@ public final class Cuenta {
 
     public Cuenta(int saldo) {           // Parámetro
         if (saldo < 0) {
-            throw new IllegalArgumentException("saldo no puede ser negativo");
+            System.out.println("Saldo inválido, se usó 0 por defecto.");
+            saldo = 0;
         }
         this.saldo = saldo;              // this.saldo distingue el campo
         totalCuentas++;
@@ -60,13 +61,15 @@ public final class Cuenta {
 
     public void acreditar(int monto) {
         if (monto <= 0) {
-            throw new IllegalArgumentException("monto debe ser positivo");
+            System.out.println("Monto inválido, no se acreditó nada.");
+            return;
         }
         int saldoAnterior = saldo;       // Variable local
         saldo += monto;
 
         if (saldo < saldoAnterior) {
-            throw new ArithmeticException("desbordamiento de saldo");
+            System.out.println("Desbordamiento detectado, se descarta la operación.");
+            saldo = saldoAnterior;
         }
     }
 }
@@ -95,7 +98,7 @@ int resultado;
 int resultadoSeguro = 0; // Solo es correcto si 0 representa un valor válido.
 ```
 
-No agregues un valor predeterminado arbitrario solo para silenciar el compilador. Si falta un dato obligatorio, validalo y lanzá una excepción con contexto, como en el constructor de `Cuenta`. Para un dato opcional, elegí y documentá un valor neutral real.
+No agregues un valor predeterminado arbitrario solo para silenciar el compilador sin avisar. Si falta un dato obligatorio, validalo de forma explícita: avisá por consola y usá un valor por defecto documentado, como en el constructor de `Cuenta`. Para un dato opcional, elegí y documentá un valor neutral real.
 
 ---
 
