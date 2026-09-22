@@ -22,7 +22,32 @@ In procedural programming, data structures and functions are treated as separate
 
 In **OOP**, a program is designed as a **clean network of encapsulated objects** that shield their internal state and communicate via message passing (method calls).
 
-![Comparison: Procedural Programming vs Object-Oriented Programming Diagram](/img/courses/java/procedural-vs-oop.jpg)
+<figure class="diagram">
+<svg viewBox="0 0 720 340" role="img" aria-labelledby="comparison-title-en comparison-desc-en" xmlns="http://www.w3.org/2000/svg">
+  <title id="comparison-title-en">Procedural programming / Object-oriented programming</title>
+  <desc id="comparison-desc-en">From functions sharing data to objects that combine state and behavior under one responsibility.</desc>
+  <rect x="8" y="8" width="344" height="324" rx="28" fill="var(--color-accent-100)" />
+  <rect x="368" y="8" width="344" height="324" rx="28" fill="var(--color-accent-2-100)" />
+  <text x="28" y="45" font-family="var(--font-heading)" font-size="19" fill="var(--color-accent-900)">Procedural programming</text>
+  <text x="388" y="45" font-family="var(--font-heading)" font-size="17" fill="var(--color-accent-2-900)">Object-oriented programming</text>
+  <rect x="95" y="136" width="170" height="72" rx="18" fill="var(--color-surface)" stroke="var(--color-accent-700)" stroke-width="2" />
+  <text x="180" y="177" text-anchor="middle" font-size="17" font-weight="700" fill="var(--color-text)">Shared data</text>
+  <rect x="40" y="71" width="120" height="46" rx="23" fill="var(--color-accent-300)" />
+  <rect x="200" y="71" width="120" height="46" rx="23" fill="var(--color-accent-300)" />
+  <text x="100" y="99" text-anchor="middle" font-size="15" fill="var(--color-accent-900)">Function A</text>
+  <text x="260" y="99" text-anchor="middle" font-size="15" fill="var(--color-accent-900)">Function B</text>
+  <path d="M100 117 L145 136 M260 117 L215 136" stroke="var(--color-accent-700)" stroke-width="3" stroke-linecap="round" />
+  <text x="180" y="256" text-anchor="middle" font-size="13" fill="var(--color-accent-900)">Both functions change the same data</text>
+  <rect x="423" y="80" width="234" height="177" rx="28" fill="var(--color-surface)" stroke="var(--color-accent-2-700)" stroke-width="3" />
+  <text x="540" y="113" text-anchor="middle" font-family="var(--font-heading)" font-size="21" fill="var(--color-accent-2-900)">Object</text>
+  <rect x="447" y="130" width="186" height="40" rx="20" fill="var(--color-accent-2-200)" />
+  <rect x="447" y="180" width="186" height="40" rx="20" fill="var(--color-accent-2-200)" />
+  <text x="540" y="156" text-anchor="middle" font-size="15" fill="var(--color-accent-2-900)">Protected state</text>
+  <text x="540" y="206" text-anchor="middle" font-size="15" fill="var(--color-accent-2-900)">Behavior</text>
+  <text x="540" y="290" text-anchor="middle" font-size="14" fill="var(--color-accent-2-900)">Public interface</text>
+</svg>
+<figcaption>From functions sharing data to objects that combine state and behavior under one responsibility.</figcaption>
+</figure>
 
 ### Key Differences:
 
@@ -39,7 +64,37 @@ In **OOP**, a program is designed as a **clean network of encapsulated objects**
 
 Every solid object-oriented architecture in Java rests on four fundamental pillars:
 
-![The 4 Pillars of Object-Oriented Programming (OOP) in Java Diagram](/img/courses/java/java-oop-four-pillars.jpg)
+<figure class="diagram">
+<svg viewBox="0 0 720 340" role="img" aria-labelledby="pillars-title-en pillars-desc-en" xmlns="http://www.w3.org/2000/svg">
+  <title id="pillars-title-en">Four pillars, one idea: model responsibilities with clear boundaries.</title>
+  <desc id="pillars-desc-en">The four pillars describe how to model, protect, specialize and vary behavior.</desc>
+  <rect x="8" y="8" width="704" height="324" rx="28" fill="var(--color-neutral-100)" />
+  <path d="M360 51 V75 M185 75 H535 M185 75 V94 M535 75 V94" fill="none" stroke="var(--color-accent-700)" stroke-width="3" stroke-linecap="round" />
+  <circle cx="360" cy="41" r="21" fill="var(--color-accent-300)" />
+  <text x="360" y="47" text-anchor="middle" font-size="17" font-weight="700" fill="var(--color-accent-900)">POO</text>
+  <rect x="36" y="94" width="310" height="92" rx="24" fill="var(--color-accent-100)" />
+  <rect x="374" y="94" width="310" height="92" rx="24" fill="var(--color-accent-2-100)" />
+  <rect x="36" y="204" width="310" height="92" rx="24" fill="var(--color-accent-2-100)" />
+  <rect x="374" y="204" width="310" height="92" rx="24" fill="var(--color-accent-100)" />
+  <circle cx="76" cy="140" r="22" fill="var(--color-accent-300)" />
+  <circle cx="414" cy="140" r="22" fill="var(--color-accent-2-300)" />
+  <circle cx="76" cy="250" r="22" fill="var(--color-accent-2-300)" />
+  <circle cx="414" cy="250" r="22" fill="var(--color-accent-300)" />
+  <text x="76" y="146" text-anchor="middle" font-size="17" font-weight="700" fill="var(--color-text)">1</text>
+  <text x="414" y="146" text-anchor="middle" font-size="17" font-weight="700" fill="var(--color-text)">2</text>
+  <text x="76" y="256" text-anchor="middle" font-size="17" font-weight="700" fill="var(--color-text)">3</text>
+  <text x="414" y="256" text-anchor="middle" font-size="17" font-weight="700" fill="var(--color-text)">4</text>
+  <text x="111" y="134" font-family="var(--font-heading)" font-size="19" fill="var(--color-accent-900)">Abstraction</text>
+  <text x="449" y="134" font-family="var(--font-heading)" font-size="19" fill="var(--color-accent-2-900)">Encapsulation</text>
+  <text x="111" y="244" font-family="var(--font-heading)" font-size="19" fill="var(--color-accent-2-900)">Inheritance</text>
+  <text x="449" y="244" font-family="var(--font-heading)" font-size="19" fill="var(--color-accent-900)">Polymorphism</text>
+  <text x="111" y="162" font-size="14" fill="var(--color-text)">Select the essentials</text>
+  <text x="449" y="162" font-size="14" fill="var(--color-text)">Protect the state</text>
+  <text x="111" y="272" font-size="14" fill="var(--color-text)">Specialize a class</text>
+  <text x="449" y="272" font-size="14" fill="var(--color-text)">One interface, varied responses</text>
+</svg>
+<figcaption>The four pillars describe how to model, protect, specialize and vary behavior.</figcaption>
+</figure>
 
 ---
 
