@@ -1,0 +1,958 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="gb-screen" data-presentation="rebase-buenas-practicas-git" data-lang={lang}>
+	<div class="gb-shell">
+		<nav class="gb-nav" aria-label={isEs ? 'Controles de navegación' : 'Navigation controls'}>
+			<button class="gb-btn" id="gbPrevBtn" aria-label={isEs ? 'Diapositiva anterior' : 'Previous slide'} disabled>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{isEs ? 'Anterior' : 'Previous'}</span>
+			</button>
+			<span class="gb-counter" id="gbSlideCounter" aria-live="polite">1 / 6</span>
+			<button class="gb-btn" id="gbNextBtn" aria-label={isEs ? 'Siguiente diapositiva' : 'Next slide'}>
+				<span>{isEs ? 'Siguiente' : 'Next'}</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="gb-viewport">
+			<!-- Slide 1: Modelo Mental de git rebase -->
+			<section class="gb-slide is-active" data-slide="1">
+				<div class="gb-header">
+					<span class="gb-kicker">{isEs ? 'Replantear la base' : 'Rebasing history'}</span>
+					<h2 class="gb-title">{isEs ? 'Despegar commits y re-aplicarlos sobre la punta de main' : 'Detaching commits and replaying them on top of main'}</h2>
+					<p class="gb-lead">
+						{isEs
+							? 'git rebase ofrece un enfoque alternativo a git merge: en vez de crear un commit de unión, "despega" tus commits locales, mueve la base de tu rama hasta la punta de main y vuelve a aplicar (replay) tus cambios uno a uno con nuevos hashes.'
+							: 'git rebase offers an alternative to git merge: instead of creating a union commit, it "detaches" your local commits, advances your branch base to the tip of main, and replays your commits one by one with brand-new hashes.'}
+					</p>
+				</div>
+
+				<div class="gb-card">
+					<div class="gb-toolbar">
+						<button class="gb-action-btn" id="gbBtnReplay">{isEs ? 'Ejecutar git rebase main' : 'Run git rebase main'}</button>
+						<button class="gb-action-btn is-secondary" id="gbBtnResetReplay">{isEs ? 'Restablecer ramas' : 'Reset branches'}</button>
+						<span class="gb-hint">{isEs ? 'Observa cómo los commits D y E se despegan y se apilan sobre C.' : 'Watch commits D and E detach and stack cleanly on top of C.'}</span>
+					</div>
+
+					<div class="gb-rebase-stage">
+						<div class="gb-graph-box" id="gbGraphBefore">
+							<span class="gb-panel-label">{isEs ? 'Estado: Ramas divergentes (antes del rebase)' : 'State: Divergent branches (before rebase)'}</span>
+							<div class="gb-diverge-rows">
+								<div class="gb-row">
+									<span class="gb-tag is-main">main:</span>
+									<span class="gb-node">A</span> → <span class="gb-node">B</span> → <span class="gb-node is-main-tip">C (tip de main)</span>
+								</div>
+								<div class="gb-row">
+									<span class="gb-tag is-feat">feature:</span>
+									<span class="gb-node">A</span> → <span class="gb-node">B</span> ──┐ (fork)
+								</div>
+								<div class="gb-row is-sub-feat">
+									<span class="gb-indent"></span> └──→ <span class="gb-node is-feat-node">D</span> → <span class="gb-node is-feat-node">E</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="gb-graph-box is-rebased" id="gbGraphAfter" hidden>
+							<span class="gb-panel-label">{isEs ? 'Resultado: Historial 100% lineal (después del rebase)' : 'Result: 100% linear history (after rebase)'}</span>
+							<div class="gb-linear-row">
+								<span class="gb-node">A</span> →
+								<span class="gb-node">B</span> →
+								<span class="gb-node is-main-tip">C</span> →
+								<span class="gb-node is-replayed">D'</span> →
+								<span class="gb-node is-replayed">E' (HEAD)</span>
+							</div>
+							<p class="gb-status is-ok" style="margin-top: var(--space-3);">
+								<span>✓ {isEs ? 'Historial continuo sin bifurcaciones. D\' y E\' son nuevos commits con hashes actualizados.' : 'Continuous history without forks. D\' and E\' are new commits with updated hashes.'}</span>
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 2: Merge vs Rebase -->
+			<section class="gb-slide" data-slide="2">
+				<div class="gb-header">
+					<span class="gb-kicker">{isEs ? 'Decisiones arquitectónicas' : 'Architecture decisions'}</span>
+					<h2 class="gb-title">{isEs ? 'Merge vs Rebase: Criterio técnico y tradeoffs' : 'Merge vs Rebase: Technical criteria and tradeoffs'}</h2>
+					<p class="gb-lead">
+						{isEs
+							? 'Ninguna herramienta es superior en abstracto: ambas resuelven problemas distintos. Conoce los tradeoffs reales para elegir con madurez según las políticas de tu equipo.'
+							: 'Neither is universally better: they solve different engineering needs. Understand real tradeoffs to make informed choices based on team standards.'}
+					</p>
+				</div>
+
+				<div class="gb-card">
+					<div class="gb-compare-grid">
+						<!-- Columna Merge -->
+						<div class="gb-compare-col">
+							<div class="gb-col-header is-merge">
+								<span class="gb-col-badge">git merge</span>
+								<h3>{isEs ? 'Fusión Histórica' : 'Historical Union'}</h3>
+							</div>
+							<ul class="gb-pros-cons">
+								<li class="is-pro">✓ {isEs ? 'Preserva la cronología exacta y la verdad histórica' : 'Preserves exact chronological truth'}</li>
+								<li class="is-pro">✓ {isEs ? 'Nunca reescribe hashes SHA existentes (seguro)' : 'Never rewrites existing SHA hashes (safe)'}</li>
+								<li class="is-con">✕ {isEs ? 'Crea commits de fusión redundantes ("Merge branch...")' : 'Creates noisy merge commits ("Merge branch...")'}</li>
+								<li class="is-con">✕ {isEs ? 'El grafo de ramas se vuelve un laberinto en equipos grandes' : 'Branch graph becomes a tangled web in large teams'}</li>
+							</ul>
+							<div class="gb-when-to-use">
+								<strong>{isEs ? 'Cuándo usar:' : 'When to use:'}</strong>
+								<p>{isEs ? 'Para integrar Pull Requests completados en main y preservar contexto de equipo.' : 'To merge completed Pull Requests into main and preserve team context.'}</p>
+							</div>
+						</div>
+
+						<!-- Columna Rebase -->
+						<div class="gb-compare-col">
+							<div class="gb-col-header is-rebase">
+								<span class="gb-col-badge">git rebase</span>
+								<h3>{isEs ? 'Autopista Lineal' : 'Linear Highway'}</h3>
+							</div>
+							<ul class="gb-pros-cons">
+								<li class="is-pro">✓ {isEs ? 'Historial perfectamente lineal, legible y estético' : 'Clean, readable, 100% linear history'}</li>
+								<li class="is-pro">✓ {isEs ? 'Facilita enormemente git bisect para cazar bugs' : 'Makes git bisect effortless to find bug regressions'}</li>
+								<li class="is-con">✕ {isEs ? 'Reescribe los hashes SHA de los commits' : 'Rewrites commit SHA hashes'}</li>
+								<li class="is-con">✕ {isEs ? 'Peligroso si se aplica sobre ramas compartidas públicas' : 'Dangerous if applied to shared public branches'}</li>
+							</ul>
+							<div class="gb-when-to-use">
+								<strong>{isEs ? 'Cuándo usar:' : 'When to use:'}</strong>
+								<p>{isEs ? 'En ramas locales privadas antes de abrir PR para mantenerlas actualizadas con main.' : 'In private local branches before opening PR to stay aligned with main.'}</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 3: La Regla de Oro del Rebase -->
+			<section class="gb-slide" data-slide="3">
+				<div class="gb-header">
+					<span class="gb-kicker">{isEs ? 'Seguridad de equipo' : 'Team safety'}</span>
+					<h2 class="gb-title">{isEs ? 'La Regla de Oro: NUNCA hagas rebase en ramas públicas' : 'The Golden Rule: NEVER rebase public shared branches'}</h2>
+					<p class="gb-lead">
+						{isEs
+							? 'Reescribir la historia de una rama en la que otros desarrolladores están trabajando obliga a todo el equipo a descartar sus árboles y reconstruir sus ramas manualmente. Romper esta regla destruye la confianza técnica.'
+							: 'Rewriting history on a branch where teammates are basing their work forces the entire team to abandon their trees and reconstruct branches manually. Breaking this rule damages technical trust.'}
+					</p>
+				</div>
+
+				<div class="gb-card">
+					<div class="gb-rules-showcase">
+						<div class="gb-case-card is-safe">
+							<div class="gb-case-head">
+								<span class="gb-case-icon">🟢</span>
+								<h3>{isEs ? 'Caso Seguro: Tu rama privada local' : 'Safe Case: Your private local branch'}</h3>
+							</div>
+							<p class="gb-case-desc">
+								{isEs
+									? 'Estás trabajando en feat/mi-tarea en tu PC. Nadie más tiene esa rama. Hacer git rebase main es 100% seguro, profesional y recomendado.'
+									: 'You are working on feat/my-task on your machine. Nobody else shares it. Running git rebase main is 100% safe, clean, and encouraged.'}
+							</p>
+							<code>git switch feat/mi-tarea<br />git rebase main</code>
+						</div>
+
+						<div class="gb-case-card is-danger">
+							<div class="gb-case-head">
+								<span class="gb-case-icon">🛑</span>
+								<h3>{isEs ? 'Caso Prohibido: Ramas públicas (main / develop)' : 'Forbidden Case: Public shared branches (main / develop)'}</h3>
+							</div>
+							<p class="gb-case-desc">
+								{isEs
+									? 'Hacer rebase en main y forzar el push con git push --force sobreescribe el árbol del servidor. Los commits de tus compañeros quedan huérfanos y desincronizados.'
+									: 'Rebasing main and forcing push with git push --force overwrites the server tree. Teammates’ commits become orphaned and desynchronized.'}
+							</p>
+							<code class="is-forbidden">git push --force origin main  # ✕ ¡NUNCA HAGAS ESTO!</code>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 4: Conflictos en Rebase -->
+			<section class="gb-slide" data-slide="4">
+				<div class="gb-header">
+					<span class="gb-kicker">{isEs ? 'Resolución commit por commit' : 'Commit-by-commit resolution'}</span>
+					<h2 class="gb-title">{isEs ? 'Conflictos en Rebase: ¡Aquí NO se usa git commit!' : 'Conflicts in Rebase: Do NOT use git commit here!'}</h2>
+					<p class="gb-lead">
+						{isEs
+							? 'El error más frecuente de los juniors: al resolver un conflicto durante un rebase, ejecutan git commit y arruinan la secuencia. En un rebase, tras editar y hacer git add, se continúa con git rebase --continue.'
+							: 'The most common beginner trap: when fixing a conflict during rebase, they run git commit and break the sequence. In rebase, after staging with git add, you resume with git rebase --continue.'}
+					</p>
+				</div>
+
+				<div class="gb-card">
+					<div class="gb-rebase-conflict-flow">
+						<div class="gb-flow-card">
+							<span class="gb-flow-badge">1</span>
+							<div class="gb-flow-content">
+								<strong>{isEs ? 'Git frena en el commit en conflicto' : 'Git pauses on conflicting commit'}</strong>
+								<p>{isEs ? 'Aparece el aviso: "Resolve all conflicts manually, mark them as resolved with git add...".' : 'Notice appears: "Resolve all conflicts manually, mark them as resolved with git add...".'}</p>
+							</div>
+						</div>
+
+						<div class="gb-flow-card">
+							<span class="gb-flow-badge">2</span>
+							<div class="gb-flow-content">
+								<strong>{isEs ? 'Editar archivo y resolver marcadores' : 'Edit file and remove markers'}</strong>
+								<p>{isEs ? 'Borra <<<<<<<, =======, >>>>>>> y deja el código probado y funcional.' : 'Remove <<<<<<<, =======, >>>>>>> and test your code.'}</p>
+							</div>
+						</div>
+
+						<div class="gb-flow-card">
+							<span class="gb-flow-badge">3</span>
+							<div class="gb-flow-content">
+								<strong>git add &lt;archivo&gt;</strong>
+								<p>{isEs ? 'Indexa el archivo corregido en el Staging Area.' : 'Stages the resolved file into index.'}</p>
+							</div>
+						</div>
+
+						<div class="gb-flow-card is-highlight">
+							<span class="gb-flow-badge is-key">4</span>
+							<div class="gb-flow-content">
+								<strong class="gb-tc-bold">git rebase --continue</strong>
+								<p>{isEs ? '¡NO ejecutes git commit! Esta instrucción le indica a Git que aplique el commit actual y prosiga con el siguiente.' : 'DO NOT run git commit! This tells Git to apply the rebased commit and resume.'}</p>
+							</div>
+						</div>
+					</div>
+
+					<div class="gb-abort-note">
+						<span>🛟 {isEs ? '¿Algo salió mal? Vuelve al estado intacto anterior con:' : 'Something went wrong? Revert to pre-rebase state with:'} <code>git rebase --abort</code></span>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 5: Commits Atómicos y Conventional Commits -->
+			<section class="gb-slide" data-slide="5">
+				<div class="gb-header">
+					<span class="gb-kicker">{isEs ? 'Semántica de commits' : 'Commit semantics'}</span>
+					<h2 class="gb-title">{isEs ? 'Commits atómicos y la especificación Conventional Commits' : 'Atomic commits and the Conventional Commits standard'}</h2>
+					<p class="gb-lead">
+						{isEs
+							? 'Un repositorio profesional se distingue por la claridad de su historial. La especificación Conventional Commits estandariza prefijos semánticos para habilitar changelogs automáticos y versionado semántico.'
+							: 'A professional repository is defined by clear history. The Conventional Commits standard structures prefixes to enable automated changelogs and semantic versioning.'}
+					</p>
+				</div>
+
+				<div class="gb-card">
+					<div class="gb-commit-builder">
+						<div class="gb-builder-controls">
+							<span class="gb-panel-label">{isEs ? 'Construye tu mensaje estandarizado:' : 'Build your standardized message:'}</span>
+							<div class="gb-type-chips">
+								<button class="gb-type-btn is-active" data-type="feat">feat (nueva feature)</button>
+								<button class="gb-type-btn" data-type="fix">fix (corrección de bug)</button>
+								<button class="gb-type-btn" data-type="refactor">refactor (sin cambio funcional)</button>
+								<button class="gb-type-btn" data-type="test">test (añadir pruebas)</button>
+								<button class="gb-type-btn" data-type="docs">docs (documentación)</button>
+								<button class="gb-type-btn" data-type="chore">chore (mantenimiento/deps)</button>
+							</div>
+						</div>
+
+						<div class="gb-builder-preview">
+							<span class="gb-panel-label">{isEs ? 'Vista previa del commit:' : 'Commit preview:'}</span>
+							<pre class="gb-preview-box"><code id="gbCommitPreview">feat(auth): validate JWT bearer token expiration</code></pre>
+							<p class="gb-status is-ok" id="gbCommitFeedback">
+								<span>✓ {isEs ? 'feat dispara una versión MINOR en SemVer (0.1.0 -> 0.2.0)' : 'feat triggers a MINOR bump in SemVer (0.1.0 -> 0.2.0)'}</span>
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 6: Gestión profesional de .gitignore -->
+			<section class="gb-slide" data-slide="6">
+				<div class="gb-header">
+					<span class="gb-kicker">{isEs ? 'Higiene del repositorio' : 'Repository hygiene'}</span>
+					<h2 class="gb-title">{isEs ? 'Gestión rigurosa de .gitignore y git rm --cached' : 'Rigorous .gitignore hygiene and git rm --cached'}</h2>
+					<p class="gb-lead">
+						{isEs
+							? 'Nunca subas archivos de dependencias, artefactos compilados ni variables de entorno con secretos. Si ya cometiste el error de agregar un archivo sensible, git rm --cached te permite quitarlo del índice sin borrarlo de tu disco.'
+							: 'Never commit dependencies, compiled binaries, or secret environment variables. If you already accidentally committed a sensitive file, git rm --cached removes it from index without deleting it locally.'}
+					</p>
+				</div>
+
+				<div class="gb-card">
+					<div class="gb-ignore-grid">
+						<div class="gb-ignore-panel">
+							<span class="gb-panel-label">{isEs ? 'Estructura estándar de .gitignore' : 'Standard .gitignore layout'}</span>
+							<pre class="gb-ignore-code"><code># Dependencias
+node_modules/
+vendor/
+
+# Variables de entorno y secretos
+.env
+.env.local
+*.pem
+
+# Compilación y builds
+dist/
+build/
+*.class
+
+# Archivos del sistema y del editor
+.DS_Store
+.idea/
+.vscode/</code></pre>
+						</div>
+
+						<div class="gb-purge-panel">
+							<span class="gb-panel-label">{isEs ? 'El truco técnico: git rm --cached' : 'The technical fix: git rm --cached'}</span>
+							<p class="gb-purge-desc">
+								{isEs
+									? 'Si agregaste .env a .gitignore pero Git lo sigue rastreando, es porque ya estaba commiteado antes. Para dejar de rastrearlo sin borrar tu archivo local en disco:'
+									: 'If you added .env to .gitignore but Git still tracks it, it was committed before. To stop tracking without deleting your local copy on disk:'}
+							</p>
+							<div class="gb-command-card">
+								<code>git rm --cached .env<br />git commit -m "chore: stop tracking .env secret"</code>
+							</div>
+							<p class="gb-status is-info" style="margin-top: var(--space-3);">
+								<span>💡 {isEs ? 'El archivo permanecerá intacto en tu computadora pero desaparecerá del repositorio público.' : 'File stays intact on your computer but is purged from the public repo.'}</span>
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+		</main>
+	</div>
+</div>
+
+<style>
+	.gb-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gb-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.gb-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .gb-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .gb-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .gb-viewport { zoom: 1.25; } }
+
+	.gb-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: var(--color-surface);
+	}
+
+	.gb-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.gb-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.gb-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.gb-counter {
+		font-size: 13px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	.gb-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 1100px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.gb-slide.is-active {
+		display: block;
+		animation: gbFade 0.25s ease-out;
+	}
+
+	@keyframes gbFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.gb-header { margin-bottom: var(--space-5); }
+
+	.gb-kicker {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.gb-title {
+		font-size: 26px;
+		color: var(--color-text);
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.gb-lead {
+		font-size: 15px;
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+		line-height: 1.5;
+		margin: 0;
+		max-width: 72ch;
+	}
+
+	.gb-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.gb-toolbar {
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+		margin-bottom: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.gb-action-btn {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		border: none;
+		padding: var(--space-2) var(--space-4);
+		border-radius: var(--radius-md);
+		font-weight: 700;
+		font-size: 13px;
+		cursor: pointer;
+		transition: opacity 0.2s;
+	}
+
+	.gb-action-btn:hover { opacity: 0.9; }
+
+	.gb-action-btn.is-secondary {
+		background: var(--color-neutral-200);
+		color: var(--color-neutral-800);
+		border: 1px solid var(--color-divider);
+	}
+
+	.gb-hint {
+		font-size: 13px;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	/* Slide 1: Rebase animation stage */
+	.gb-rebase-stage {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.gb-graph-box {
+		padding: var(--space-3);
+	}
+
+	.gb-panel-label {
+		display: block;
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-neutral-600);
+		margin-bottom: var(--space-3);
+	}
+
+	.gb-diverge-rows {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		font-family: monospace;
+	}
+
+	.gb-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-size: 13px;
+	}
+
+	.gb-row.is-sub-feat {
+		padding-left: 20px;
+	}
+
+	.gb-tag {
+		font-size: 11px;
+		font-weight: 700;
+		padding: 2px 6px;
+		border-radius: var(--radius-sm);
+		width: 70px;
+	}
+
+	.gb-tag.is-main { background: var(--color-accent-200); color: var(--color-accent-800); }
+	.gb-tag.is-feat { background: var(--color-accent-2-200); color: var(--color-accent-2-800); }
+
+	.gb-node {
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		background: var(--color-surface);
+		border: 2px solid var(--color-divider);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		font-size: 11px;
+	}
+
+	.gb-node.is-main-tip {
+		border-color: var(--color-accent);
+		background: var(--color-accent-200);
+		color: var(--color-accent-800);
+	}
+
+	.gb-node.is-feat-node {
+		border-color: var(--color-accent-2-600);
+		background: var(--color-accent-2-200);
+		color: var(--color-accent-2-800);
+	}
+
+	.gb-node.is-replayed {
+		border-color: var(--color-accent);
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.gb-linear-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-family: monospace;
+		font-size: 14px;
+		padding: var(--space-3) 0;
+	}
+
+	.gb-status {
+		margin: 0;
+		font-size: 13px;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+	}
+
+	.gb-status.is-ok {
+		background: color-mix(in srgb, var(--color-accent-2) 15%, var(--color-surface));
+		color: var(--color-accent-2-800);
+	}
+
+	.gb-status.is-info {
+		background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+		color: var(--color-accent-700);
+	}
+
+	/* Slide 2: Compare Grid */
+	.gb-compare-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 640px) {
+		.gb-compare-grid { grid-template-columns: 1fr; }
+	}
+
+	.gb-compare-col {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gb-col-header {
+		margin-bottom: var(--space-3);
+		border-bottom: 1px solid var(--color-divider);
+		padding-bottom: var(--space-2);
+	}
+
+	.gb-col-badge {
+		font-family: monospace;
+		font-size: 11px;
+		font-weight: 800;
+		padding: 2px 6px;
+		border-radius: var(--radius-sm);
+		background: var(--color-neutral-200);
+	}
+
+	.gb-col-header.is-merge .gb-col-badge { background: var(--color-accent-2-200); color: var(--color-accent-2-800); }
+	.gb-col-header.is-rebase .gb-col-badge { background: var(--color-accent-200); color: var(--color-accent-800); }
+
+	.gb-col-header h3 {
+		margin: var(--space-1) 0 0;
+		font-size: 16px;
+		font-weight: 700;
+	}
+
+	.gb-pros-cons {
+		list-style: none;
+		padding: 0;
+		margin: 0 0 var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		font-size: 12.5px;
+		flex: 1;
+	}
+
+	.gb-pros-cons .is-pro { color: var(--color-accent-2-800); font-weight: 600; }
+	.gb-pros-cons .is-con { color: rgb(190, 18, 60); }
+
+	.gb-when-to-use {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2) var(--space-3);
+		font-size: 12px;
+	}
+
+	.gb-when-to-use strong { display: block; margin-bottom: 2px; }
+	.gb-when-to-use p { margin: 0; color: var(--color-neutral-700); }
+
+	/* Slide 3: Golden Rule */
+	.gb-rules-showcase {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 640px) {
+		.gb-rules-showcase { grid-template-columns: 1fr; }
+	}
+
+	.gb-case-card {
+		background: var(--color-bg);
+		border: 2px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gb-case-card.is-safe {
+		border-color: var(--color-accent-2-600);
+		background: color-mix(in srgb, var(--color-accent-2) 6%, var(--color-bg));
+	}
+
+	.gb-case-card.is-danger {
+		border-color: rgb(225, 29, 72);
+		background: color-mix(in srgb, rgb(225, 29, 72) 6%, var(--color-bg));
+	}
+
+	.gb-case-head {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		margin-bottom: var(--space-2);
+	}
+
+	.gb-case-head h3 {
+		margin: 0;
+		font-size: 14px;
+		font-weight: 700;
+	}
+
+	.gb-case-desc {
+		font-size: 12.5px;
+		color: var(--color-neutral-700);
+		line-height: 1.4;
+		margin: 0 0 var(--space-3);
+		flex: 1;
+	}
+
+	.gb-case-card code {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2) var(--space-3);
+		font-family: monospace;
+		font-size: 11px;
+	}
+
+	.gb-case-card code.is-forbidden {
+		color: rgb(190, 18, 60);
+		font-weight: 700;
+	}
+
+	/* Slide 4: Conflict in rebase flow */
+	.gb-rebase-conflict-flow {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: var(--space-3);
+		margin-bottom: var(--space-4);
+	}
+
+	.gb-flow-card {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		gap: var(--space-3);
+	}
+
+	.gb-flow-card.is-highlight {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg));
+	}
+
+	.gb-flow-badge {
+		width: 26px;
+		height: 26px;
+		border-radius: 50%;
+		background: var(--color-neutral-200);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 800;
+		font-size: 12px;
+		flex-shrink: 0;
+	}
+
+	.gb-flow-badge.is-key {
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.gb-flow-content strong { display: block; font-size: 12px; margin-bottom: 2px; font-family: monospace; }
+	.gb-flow-content p { margin: 0; font-size: 11.5px; color: var(--color-neutral-700); }
+
+	.gb-tc-bold { font-weight: 800; color: var(--color-accent-700); }
+
+	.gb-abort-note {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+		font-size: 12.5px;
+	}
+
+	.gb-abort-note code {
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	/* Slide 5: Conventional Commits */
+	.gb-commit-builder {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.gb-type-chips {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.gb-type-btn {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-md);
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.gb-type-btn.is-active {
+		border-color: var(--color-accent);
+		background: var(--color-accent);
+		color: var(--color-bg);
+		font-weight: 700;
+	}
+
+	.gb-preview-box {
+		background: var(--color-neutral-900);
+		color: rgb(52, 211, 153);
+		padding: var(--space-3) var(--space-4);
+		border-radius: var(--radius-md);
+		font-family: monospace;
+		font-size: 13px;
+		margin: 0 0 var(--space-2);
+	}
+
+	/* Slide 6: .gitignore */
+	.gb-ignore-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 640px) {
+		.gb-ignore-grid { grid-template-columns: 1fr; }
+	}
+
+	.gb-ignore-panel, .gb-purge-panel {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.gb-ignore-code {
+		background: var(--color-neutral-900);
+		color: var(--color-neutral-100);
+		padding: var(--space-3);
+		border-radius: var(--radius-sm);
+		font-family: monospace;
+		font-size: 11.5px;
+		margin: 0;
+		line-height: 1.4;
+	}
+
+	.gb-purge-desc {
+		font-size: 12.5px;
+		color: var(--color-neutral-700);
+		line-height: 1.4;
+		margin-bottom: var(--space-3);
+	}
+
+	.gb-command-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2) var(--space-3);
+		font-family: monospace;
+		font-size: 12px;
+		color: var(--color-accent-700);
+	}
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
+
+	const screenEl = document.querySelector('.gb-screen');
+	const pageLang = screenEl?.getAttribute('data-lang') === 'en' ? 'en' : 'es';
+
+	const prevBtn = document.getElementById('gbPrevBtn') as HTMLButtonElement;
+	const nextBtn = document.getElementById('gbNextBtn') as HTMLButtonElement;
+	const counter = document.getElementById('gbSlideCounter') as HTMLElement;
+	const slides = document.querySelectorAll<HTMLElement>('.gb-slide');
+
+	function updateSlide(target: number) {
+		if (target < 1 || target > totalSlides) return;
+		currentSlide = target;
+		slides.forEach((s) => s.classList.remove('is-active'));
+		document.querySelector(`.gb-slide[data-slide="${currentSlide}"]`)?.classList.add('is-active');
+
+		if (counter) counter.textContent = `${currentSlide} / ${totalSlides}`;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	}
+
+	prevBtn?.addEventListener('click', () => updateSlide(currentSlide - 1));
+	nextBtn?.addEventListener('click', () => updateSlide(currentSlide + 1));
+
+	window.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') updateSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') updateSlide(currentSlide - 1);
+	});
+
+	// Slide 1: Replay animation
+	const btnReplay = document.getElementById('gbBtnReplay');
+	const btnResetReplay = document.getElementById('gbBtnResetReplay');
+	const graphBefore = document.getElementById('gbGraphBefore');
+	const graphAfter = document.getElementById('gbGraphAfter');
+
+	btnReplay?.addEventListener('click', () => {
+		if (graphBefore) graphBefore.hidden = true;
+		if (graphAfter) graphAfter.hidden = false;
+	});
+
+	btnResetReplay?.addEventListener('click', () => {
+		if (graphBefore) graphBefore.hidden = false;
+		if (graphAfter) graphAfter.hidden = true;
+	});
+
+	// Slide 5: Conventional Commit Builder
+	const typeChips = document.querySelectorAll<HTMLButtonElement>('.gb-type-btn');
+	const commitPreview = document.getElementById('gbCommitPreview');
+	const commitFeedback = document.getElementById('gbCommitFeedback');
+
+	const messagesByType: Record<string, { msg: string; impact: string }> = {
+		feat: {
+			msg: 'feat(auth): validate JWT bearer token expiration',
+			impact: 'feat dispara una versión MINOR en SemVer (0.1.0 -> 0.2.0)',
+		},
+		fix: {
+			msg: 'fix(checkout): handle zero decimal currencies correctly',
+			impact: 'fix dispara una versión PATCH en SemVer (0.1.0 -> 0.1.1)',
+		},
+		refactor: {
+			msg: 'refactor(db): extract query builder into dedicated service',
+			impact: 'refactor no altera versión pública ni comportamiento externo',
+		},
+		test: {
+			msg: 'test(auth): add integration tests for expired tokens',
+			impact: 'test asegura cobertura sin impacto en el bundle de producción',
+		},
+		docs: {
+			msg: 'docs(api): document rate limiting headers and retry policy',
+			impact: 'docs mantiene la documentación técnica alineada con el código',
+		},
+		chore: {
+			msg: 'chore(deps): bump typescript from 5.4 to 5.5 in package.json',
+			impact: 'chore actualiza tooling o dependencias internas sin tocar lógica',
+		},
+	};
+
+	typeChips.forEach((chip) => {
+		chip.addEventListener('click', () => {
+			const type = chip.getAttribute('data-type') || 'feat';
+			typeChips.forEach((c) => c.classList.remove('is-active'));
+			chip.classList.add('is-active');
+
+			const item = messagesByType[type];
+			if (item) {
+				if (commitPreview) commitPreview.textContent = item.msg;
+				if (commitFeedback) {
+					commitFeedback.innerHTML = `<span>✓ ${item.impact}</span>`;
+				}
+			}
+		});
+	});
+</script>

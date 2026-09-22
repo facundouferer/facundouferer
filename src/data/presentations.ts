@@ -1,4 +1,4 @@
-export type PresentationTag = 'Algoritmos' | 'C' | 'Java';
+export type PresentationTag = 'Algoritmos' | 'C' | 'Java' | 'Git';
 
 export interface Presentation {
 	slug: string;
@@ -33,6 +33,7 @@ export const categories: CategoryFilter[] = [
 	{ label: { es: '~/algoritmos', en: '~/algorithms' }, filter: 'Algoritmos' },
 	{ label: { es: '~/c', en: '~/c' }, filter: 'C' },
 	{ label: { es: '~/java', en: '~/java' }, filter: 'Java' },
+	{ label: { es: '~/git', en: '~/git' }, filter: 'Git' },
 ];
 
 export const presentations: Presentation[] = [
@@ -718,6 +719,70 @@ export const presentations: Presentation[] = [
 		},
 		slug: 'paquetes-namespaces-java',
 		lesson: { course: 'java', slug: '09-clases-abstractas-interfaces-y-modelado' },
+	},
+	{
+		file: 'git_fundamentos.sh',
+		image: '/img/presentations/fundamentos-tres-estados-git.svg',
+		tag: { es: 'Git', en: 'Git' },
+		tagClass: 'text-orange-600 bg-orange-600/10 border-orange-600/20',
+		title: {
+			es: 'Fundamentos de Git y el Ciclo de Tres Estados',
+			en: 'Git Fundamentals and the Three-State Cycle',
+		},
+		description: {
+			es: 'De archivos sin seguimiento al commit: Working Directory, Staging Area, Repositorio local, puntero HEAD y la anatomía de un snapshot.',
+			en: 'From untracked files to commits: Working Directory, Staging Area, local Repository, HEAD pointer, and snapshot anatomy.',
+		},
+		slug: 'fundamentos-tres-estados-git',
+		lesson: { course: 'git', slug: 'el-principio-con-git' },
+	},
+	{
+		file: 'git_remoto.sh',
+		image: '/img/presentations/sincronizacion-remota-pull-push-git.svg',
+		tag: { es: 'Git', en: 'Git' },
+		tagClass: 'text-orange-600 bg-orange-600/10 border-orange-600/20',
+		title: {
+			es: 'Sincronización Remota: Fetch, Pull y Push en Git',
+			en: 'Remote Synchronization: Fetch, Pull, and Push in Git',
+		},
+		description: {
+			es: 'Arquitectura distribuida, alias origin, ramas de seguimiento remoto origin/main, upstream tracking (-u) y la diferencia entre fetch y pull.',
+			en: 'Distributed architecture, origin remote alias, remote-tracking branches origin/main, upstream tracking (-u), and fetch vs pull.',
+		},
+		slug: 'sincronizacion-remota-pull-push-git',
+		lesson: { course: 'git', slug: 'bajar-y-subir-cambios' },
+	},
+	{
+		file: 'git_merge.sh',
+		image: '/img/presentations/ramas-merge-conflictos-git.svg',
+		tag: { es: 'Git', en: 'Git' },
+		tagClass: 'text-orange-600 bg-orange-600/10 border-orange-600/20',
+		title: {
+			es: 'Ramas, Fast-Forward, 3-Way Merge y Conflictos en Git',
+			en: 'Branches, Fast-Forward, 3-Way Merge, and Conflicts in Git',
+		},
+		description: {
+			es: 'Aislamiento de features, integración con git merge, resolución paso a paso de marcadores de conflicto y abortos seguros.',
+			en: 'Feature branch isolation, integration with git merge, step-by-step resolution of conflict markers, and safe aborts.',
+		},
+		slug: 'ramas-merge-conflictos-git',
+		lesson: { course: 'git', slug: 'conflictos' },
+	},
+	{
+		file: 'git_rebase.sh',
+		image: '/img/presentations/rebase-buenas-practicas-git.svg',
+		tag: { es: 'Git', en: 'Git' },
+		tagClass: 'text-orange-600 bg-orange-600/10 border-orange-600/20',
+		title: {
+			es: 'Git Rebase, Historial Lineal y Buenas Prácticas',
+			en: 'Git Rebase, Linear History, and Best Practices',
+		},
+		description: {
+			es: 'Replay de commits sobre una nueva base, la Regla de Oro del Rebase, resolución commit por commit, commits atómicos y Conventional Commits.',
+			en: 'Replaying commits on a new base, the Golden Rule of Rebase, step-by-step conflict resolution, atomic commits, and Conventional Commits.',
+		},
+		slug: 'rebase-buenas-practicas-git',
+		lesson: { course: 'git', slug: 'rebase-y-buenas-practicas' },
 	},
 ];
 

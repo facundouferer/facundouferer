@@ -50,7 +50,7 @@ let dataModule;
 test('src/data/presentations.ts can be loaded and exports the presentations catalog', async () => {
 	dataModule = await import(DATA_MODULE_PATH);
 	assert.ok(Array.isArray(dataModule.presentations));
-	assert.equal(dataModule.presentations.length, 47);
+	assert.equal(dataModule.presentations.length, 51);
 });
 
 test('src/data/presentations.ts exports the required helper functions', async () => {
@@ -133,6 +133,14 @@ test('getPresentationCountsForCourse counts presentations per lesson slug for th
 	assert.equal(counts['sentencia-if-else'], 2);
 	assert.equal(counts['ordenacion-de-arreglos'], 3);
 	assert.equal(counts['variables-y-constantes'], 1);
+});
+
+test('getPresentationCountsForCourse counts presentations per lesson slug for the git course', () => {
+	const counts = dataModule.getPresentationCountsForCourse('git');
+	assert.equal(counts['el-principio-con-git'], 1);
+	assert.equal(counts['bajar-y-subir-cambios'], 1);
+	assert.equal(counts['conflictos'], 1);
+	assert.equal(counts['rebase-y-buenas-practicas'], 1);
 });
 
 test('getLessonForPresentation resolves the lesson reference for a known presentation', () => {

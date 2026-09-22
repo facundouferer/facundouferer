@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="20" y="175" width="360" height="8" rx="4" fill="#dcd3c4"/>
+
+	<!-- Title -->
+	<text x="200" y="24" font-family="'Caprasimo', serif" font-size="13" fill="#8c491a" text-anchor="middle">Sincronización Remota</text>
+	<text x="200" y="38" font-family="'Figtree', sans-serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">git push, git fetch &amp; git pull (origin)</text>
+
+	<!-- Local Repo Box -->
+	<g transform="translate(24, 48)">
+		<rect x="0" y="0" width="140" height="106" rx="12" fill="#fdfbf7" stroke="#dcd3c4" stroke-width="1.8"/>
+		<rect x="6" y="6" width="128" height="20" rx="6" fill="#e8decb"/>
+		<text x="70" y="19" font-family="'Figtree', sans-serif" font-weight="700" font-size="7.5" fill="#5c5346" text-anchor="middle">💻 Local (Tu PC)</text>
+		
+		<!-- Branch main and tracking -->
+		<g transform="translate(10, 34)">
+			<rect x="0" y="0" width="120" height="26" rx="6" fill="#ffe1d0" stroke="#f6a06b" stroke-width="1.2"/>
+			<text x="10" y="16" font-family="monospace" font-size="7" font-weight="700" fill="#c63f17">main</text>
+			<circle cx="95" cy="13" r="6" fill="#c63f17"/>
+			<text x="95" y="15" font-family="monospace" font-size="5" fill="#fdfbf7" font-weight="700" text-anchor="middle">C2</text>
+		</g>
+
+		<g transform="translate(10, 68)">
+			<rect x="0" y="0" width="120" height="26" rx="6" fill="#f0fae1" stroke="#7a8a5e" stroke-width="1.2"/>
+			<text x="10" y="16" font-family="monospace" font-size="6.5" font-weight="700" fill="#56633f">origin/main</text>
+			<circle cx="95" cy="13" r="6" fill="#7a8a5e"/>
+			<text x="95" y="15" font-family="monospace" font-size="5" fill="#fdfbf7" font-weight="700" text-anchor="middle">C1</text>
+		</g>
+	</g>
+
+	<!-- Middle Arrows -->
+	<!-- git push -->
+	<g transform="translate(172, 60)">
+		<path d="M 0,10 L 48,10" stroke="#c63f17" stroke-width="2" stroke-linecap="round"/>
+		<polygon points="54,10 47,6 47,14" fill="#c63f17"/>
+		<text x="27" y="4" font-family="monospace" font-size="6.5" font-weight="700" fill="#c63f17" text-anchor="middle">git push</text>
+	</g>
+
+	<!-- git fetch / pull -->
+	<g transform="translate(172, 102)">
+		<path d="M 54,10 L 6,10" stroke="#56633f" stroke-width="2" stroke-linecap="round"/>
+		<polygon points="0,10 7,6 7,14" fill="#56633f"/>
+		<text x="27" y="4" font-family="monospace" font-size="6.5" font-weight="700" fill="#56633f" text-anchor="middle">git pull</text>
+		<text x="27" y="19" font-family="'Figtree', sans-serif" font-size="5.5" fill="#7a8a5e" text-anchor="middle">(fetch + merge)</text>
+	</g>
+
+	<!-- Remote Repo Box -->
+	<g transform="translate(236, 48)">
+		<rect x="0" y="0" width="140" height="106" rx="12" fill="#fdfbf7" stroke="#7a8a5e" stroke-width="2"/>
+		<rect x="6" y="6" width="128" height="20" rx="6" fill="#f0fae1"/>
+		<text x="70" y="19" font-family="'Figtree', sans-serif" font-weight="700" font-size="7.5" fill="#56633f" text-anchor="middle">☁️ Remoto (GitHub - origin)</text>
+		
+		<g transform="translate(10, 42)">
+			<rect x="0" y="0" width="120" height="46" rx="8" fill="#e8decb"/>
+			<text x="60" y="18" font-family="monospace" font-size="7" font-weight="700" fill="#5c5346" text-anchor="middle">refs/heads/main</text>
+			
+			<circle cx="45" cy="32" r="7" fill="#7a8a5e"/>
+			<text x="45" y="34.5" font-family="monospace" font-size="5.5" fill="#fdfbf7" font-weight="700" text-anchor="middle">C1</text>
+			
+			<path d="M 54,32 L 72,32" stroke="#8c491a" stroke-width="1.5" stroke-dasharray="2,2"/>
+			
+			<circle cx="80" cy="32" r="7" fill="#c63f17"/>
+			<text x="80" y="34.5" font-family="monospace" font-size="5.5" fill="#fdfbf7" font-weight="700" text-anchor="middle">C2</text>
+		</g>
+	</g>
+
+	<!-- Caption -->
+	<text x="200" y="193" font-family="'Figtree', sans-serif" font-size="7" fill="#645c50" text-anchor="middle">Coordinar repositorios distribuidos mediante referencias upstream confiables</text>
+</svg>

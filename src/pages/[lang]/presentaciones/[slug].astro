@@ -51,6 +51,10 @@ import AlgoritmiaVerificacionComplejidadJava from '../../../components/presentac
 import ArbolesNAriosVectoresJava from '../../../components/presentaciones/arboles-n-arios-vectores-java.astro';
 import DepuracionCodigoLimpioJava from '../../../components/presentaciones/depuracion-codigo-limpio-java.astro';
 import PaquetesNamespacesJava from '../../../components/presentaciones/paquetes-namespaces-java.astro';
+import FundamentosTresEstadosGit from '../../../components/presentaciones/fundamentos-tres-estados-git.astro';
+import SincronizacionRemotaPullPushGit from '../../../components/presentaciones/sincronizacion-remota-pull-push-git.astro';
+import RamasMergeConflictosGit from '../../../components/presentaciones/ramas-merge-conflictos-git.astro';
+import RebaseBuenasPracticasGit from '../../../components/presentaciones/rebase-buenas-practicas-git.astro';
 
 export function getStaticPaths() {
 	const paths: Array<{ params: { lang: Locale; slug: string } }> = [];
@@ -118,6 +122,10 @@ const componentMap: Record<string, any> = {
 	'arboles-n-arios-vectores-java': ArbolesNAriosVectoresJava,
 	'depuracion-codigo-limpio-java': DepuracionCodigoLimpioJava,
 	'paquetes-namespaces-java': PaquetesNamespacesJava,
+	'fundamentos-tres-estados-git': FundamentosTresEstadosGit,
+	'sincronizacion-remota-pull-push-git': SincronizacionRemotaPullPushGit,
+	'ramas-merge-conflictos-git': RamasMergeConflictosGit,
+	'rebase-buenas-practicas-git': RebaseBuenasPracticasGit,
 };
 
 const PresentationComponent = componentMap[slug];

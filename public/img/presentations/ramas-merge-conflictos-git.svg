@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="20" y="175" width="360" height="8" rx="4" fill="#dcd3c4"/>
+
+	<!-- Title -->
+	<text x="200" y="24" font-family="'Caprasimo', serif" font-size="13" fill="#8c491a" text-anchor="middle">Ramas, Merge y Conflictos</text>
+	<text x="200" y="38" font-family="'Figtree', sans-serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">Bifurcación, 3-Way Merge &amp; Marcadores &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</text>
+
+	<!-- Branching DAG Graph -->
+	<g transform="translate(24, 46)">
+		<rect x="0" y="0" width="220" height="110" rx="12" fill="#fdfbf7" stroke="#dcd3c4" stroke-width="1.8"/>
+		
+		<!-- main line -->
+		<path d="M 30,40 L 190,40" stroke="#c63f17" stroke-width="2.5"/>
+		<text x="12" y="43" font-family="monospace" font-size="7" font-weight="700" fill="#c63f17">main</text>
+		
+		<!-- feature curve -->
+		<path d="M 70,40 C 90,40 95,80 120,80 L 160,80 C 175,80 180,40 190,40" stroke="#7a8a5e" stroke-width="2" stroke-dasharray="3,3" fill="none"/>
+		<text x="120" y="94" font-family="monospace" font-size="6.5" font-weight="700" fill="#56633f" text-anchor="middle">feature/login</text>
+		
+		<!-- Commits -->
+		<!-- C1 -->
+		<circle cx="30" cy="40" r="7" fill="#c63f17"/>
+		<text x="30" y="42.5" font-family="monospace" font-size="5.5" fill="#fdfbf7" font-weight="700" text-anchor="middle">A</text>
+		
+		<!-- C2 (fork) -->
+		<circle cx="70" cy="40" r="7" fill="#c63f17"/>
+		<text x="70" y="42.5" font-family="monospace" font-size="5.5" fill="#fdfbf7" font-weight="700" text-anchor="middle">B</text>
+		
+		<!-- C3 (main) -->
+		<circle cx="130" cy="40" r="7" fill="#c63f17"/>
+		<text x="130" y="42.5" font-family="monospace" font-size="5.5" fill="#fdfbf7" font-weight="700" text-anchor="middle">C</text>
+		
+		<!-- D (feature) -->
+		<circle cx="130" cy="80" r="7" fill="#7a8a5e"/>
+		<text x="130" y="82.5" font-family="monospace" font-size="5.5" fill="#fdfbf7" font-weight="700" text-anchor="middle">D</text>
+		
+		<!-- Merge commit M -->
+		<circle cx="190" cy="40" r="8.5" fill="#8c491a" stroke="#f6a06b" stroke-width="1.5"/>
+		<text x="190" y="43" font-family="monospace" font-size="6" fill="#fdfbf7" font-weight="700" text-anchor="middle">M</text>
+		<text x="190" y="24" font-family="'Figtree', sans-serif" font-size="5.5" font-weight="700" fill="#8c491a" text-anchor="middle">Merge Commit</text>
+	</g>
+
+	<!-- Conflict Box on the Right -->
+	<g transform="translate(254, 46)">
+		<rect x="0" y="0" width="122" height="110" rx="12" fill="#fdfbf7" stroke="#f6a06b" stroke-width="1.8"/>
+		<rect x="6" y="6" width="110" height="18" rx="5" fill="#ffe1d0"/>
+		<text x="61" y="18" font-family="'Figtree', sans-serif" font-weight="700" font-size="6.8" fill="#c63f17" text-anchor="middle">⚠️ Conflicto Detectado</text>
+		
+		<g transform="translate(10, 30)">
+			<text x="0" y="10" font-family="monospace" font-size="5.2" fill="#c63f17" font-weight="700">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</text>
+			<text x="0" y="21" font-family="monospace" font-size="5.2" fill="#5c5346">const tax = 0.15;</text>
+			<text x="0" y="32" font-family="monospace" font-size="5.2" fill="#8c8275">=======</text>
+			<text x="0" y="43" font-family="monospace" font-size="5.2" fill="#56633f">const tax = 0.20;</text>
+			<text x="0" y="54" font-family="monospace" font-size="5.2" fill="#56633f" font-weight="700">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature</text>
+		</g>
+
+		<rect x="10" y="90" width="102" height="14" rx="4" fill="#f0fae1" stroke="#7a8a5e" stroke-width="1"/>
+		<text x="61" y="100" font-family="'Figtree', sans-serif" font-weight="700" font-size="5.8" fill="#56633f" text-anchor="middle">Resolver &amp; git commit</text>
+	</g>
+
+	<!-- Caption -->
+	<text x="200" y="193" font-family="'Figtree', sans-serif" font-size="7" fill="#645c50" text-anchor="middle">Integración segura mediante 3-way merge y resolución manual transparente</text>
+</svg>

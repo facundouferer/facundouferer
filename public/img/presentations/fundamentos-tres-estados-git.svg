@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Ground -->
+	<rect x="20" y="175" width="360" height="8" rx="4" fill="#dcd3c4"/>
+
+	<!-- Title -->
+	<text x="200" y="24" font-family="'Caprasimo', serif" font-size="13" fill="#8c491a" text-anchor="middle">Git: Ciclo de Tres Estados</text>
+	<text x="200" y="38" font-family="'Figtree', sans-serif" font-size="8.5" fill="#7a8a5e" text-anchor="middle">Working Tree › Staging Area › Repositorio</text>
+
+	<!-- 3 Columns / Zones -->
+	<!-- 1. Working Directory -->
+	<g transform="translate(24, 48)">
+		<rect x="0" y="0" width="100" height="106" rx="12" fill="#fdfbf7" stroke="#dcd3c4" stroke-width="1.8"/>
+		<rect x="6" y="6" width="88" height="20" rx="6" fill="#e8decb"/>
+		<text x="50" y="19" font-family="'Figtree', sans-serif" font-weight="700" font-size="7.5" fill="#5c5346" text-anchor="middle">Working Tree</text>
+		
+		<!-- File modified -->
+		<rect x="12" y="36" width="76" height="24" rx="6" fill="#ffe1d0" stroke="#f6a06b" stroke-width="1.4"/>
+		<text x="50" y="51" font-family="monospace" font-size="7.2" font-weight="700" fill="#c63f17" text-anchor="middle">index.html</text>
+		
+		<text x="50" y="80" font-family="'Figtree', sans-serif" font-size="6.5" fill="#8c8275" text-anchor="middle">Modificado</text>
+		<text x="50" y="93" font-family="'Figtree', sans-serif" font-size="6" fill="#a89d8f" text-anchor="middle">en disco</text>
+	</g>
+
+	<!-- Arrow 1: git add -->
+	<g transform="translate(128, 88)">
+		<path d="M 0,10 L 22,10" stroke="#c63f17" stroke-width="2" stroke-linecap="round"/>
+		<polygon points="26,10 20,7 20,13" fill="#c63f17"/>
+		<text x="13" y="4" font-family="monospace" font-size="6.2" font-weight="700" fill="#c63f17" text-anchor="middle">git add</text>
+	</g>
+
+	<!-- 2. Staging Area -->
+	<g transform="translate(154, 48)">
+		<rect x="0" y="0" width="100" height="106" rx="12" fill="#fdfbf7" stroke="#f6a06b" stroke-width="2"/>
+		<rect x="6" y="6" width="88" height="20" rx="6" fill="#ffe1d0"/>
+		<text x="50" y="19" font-family="'Figtree', sans-serif" font-weight="700" font-size="7.5" fill="#c63f17" text-anchor="middle">Staging Area</text>
+		
+		<!-- File staged -->
+		<rect x="12" y="36" width="76" height="24" rx="6" fill="#f0fae1" stroke="#7a8a5e" stroke-width="1.4"/>
+		<text x="50" y="51" font-family="monospace" font-size="7.2" font-weight="700" fill="#56633f" text-anchor="middle">index.html</text>
+		
+		<text x="50" y="80" font-family="'Figtree', sans-serif" font-size="6.5" fill="#56633f" text-anchor="middle">Preparado</text>
+		<text x="50" y="93" font-family="'Figtree', sans-serif" font-size="6" fill="#7a8a5e" text-anchor="middle">para snapshot</text>
+	</g>
+
+	<!-- Arrow 2: git commit -->
+	<g transform="translate(258, 88)">
+		<path d="M 0,10 L 22,10" stroke="#7a8a5e" stroke-width="2" stroke-linecap="round"/>
+		<polygon points="26,10 20,7 20,13" fill="#7a8a5e"/>
+		<text x="13" y="4" font-family="monospace" font-size="6" font-weight="700" fill="#56633f" text-anchor="middle">git commit</text>
+	</g>
+
+	<!-- 3. Repository (.git) -->
+	<g transform="translate(284, 48)">
+		<rect x="0" y="0" width="100" height="106" rx="12" fill="#fdfbf7" stroke="#7a8a5e" stroke-width="2"/>
+		<rect x="6" y="6" width="88" height="20" rx="6" fill="#f0fae1"/>
+		<text x="50" y="19" font-family="'Figtree', sans-serif" font-weight="700" font-size="7.5" fill="#56633f" text-anchor="middle">Repositorio .git</text>
+		
+		<!-- Commit node -->
+		<circle cx="50" cy="52" r="14" fill="#8c491a"/>
+		<text x="50" y="55" font-family="monospace" font-size="7" font-weight="700" fill="#fdfbf7" text-anchor="middle">a1c49b</text>
+		
+		<text x="50" y="80" font-family="'Figtree', sans-serif" font-size="6.5" fill="#8c491a" text-anchor="middle">Snapshot inmutable</text>
+		<text x="50" y="93" font-family="'Figtree', sans-serif" font-size="6" fill="#5c5346" text-anchor="middle">HEAD › main</text>
+	</g>
+
+	<!-- Caption -->
+	<text x="200" y="193" font-family="'Figtree', sans-serif" font-size="7" fill="#645c50" text-anchor="middle">El ciclo fundamental de Git garantiza control granular antes de persistir cambios</text>
+</svg>

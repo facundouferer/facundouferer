@@ -1,0 +1,1446 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="gt-screen" data-presentation="fundamentos-tres-estados-git" data-lang={lang}>
+	<div class="gt-shell">
+		<nav class="gt-nav" aria-label={isEs ? 'Controles de navegación' : 'Navigation controls'}>
+			<button class="gt-btn" id="gtPrevBtn" aria-label={isEs ? 'Diapositiva anterior' : 'Previous slide'} disabled>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{isEs ? 'Anterior' : 'Previous'}</span>
+			</button>
+			<span class="gt-counter" id="gtSlideCounter" aria-live="polite">1 / 6</span>
+			<button class="gt-btn" id="gtNextBtn" aria-label={isEs ? 'Siguiente diapositiva' : 'Next slide'}>
+				<span>{isEs ? 'Siguiente' : 'Next'}</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="gt-viewport">
+			<!-- Slide 1: El problema del caos manual vs Git -->
+			<section class="gt-slide is-active" data-slide="1">
+				<div class="gt-header">
+					<span class="gt-kicker">{isEs ? 'Fundamentos' : 'Fundamentals'}</span>
+					<h2 class="gt-title">{isEs ? 'Del caos de carpetas "final_v2" a la inmutabilidad de Git' : 'From "final_v2" folder chaos to Git immutability'}</h2>
+					<p class="gt-lead">
+						{isEs
+							? 'Guardar copias manuales con nombres arbitrarios causa pérdida de código, sobreescrituras accidentales y cero trazabilidad. Git modela el proyecto como una secuencia dirigida de snapshots completos identificados criptográficamente.'
+							: 'Saving manual copies with arbitrary names causes lost code, accidental overwrites, and zero traceability. Git models the project as a directed sequence of complete, cryptographically identified snapshots.'}
+					</p>
+				</div>
+
+				<div class="gt-card">
+					<div class="gt-toolbar">
+						<button class="gt-action-btn" id="gtModelToggle">{isEs ? 'Ver modelo Git' : 'View Git model'}</button>
+						<span class="gt-hint">{isEs ? 'Compara el enfoque tradicional de copias con el Grafo Dirigido de Git.' : 'Compare traditional copy chaos with the Git Directed Acyclic Graph.'}</span>
+					</div>
+
+					<div class="gt-stage">
+						<!-- Manual Chaos View -->
+						<div class="gt-panel-box" id="gtManualChaos">
+							<span class="gt-panel-label">{isEs ? 'Gestión manual arcaica (Guardar como...)' : 'Archaic manual management (Save as...)'}</span>
+							<div class="gt-file-list">
+								<div class="gt-file-item is-warn">
+									<span class="gt-file-icon">📁</span>
+									<div class="gt-file-meta">
+										<span class="gt-file-name">proyecto_final/</span>
+										<span class="gt-file-sub">{isEs ? 'Versión original de ayer' : "Yesterday's version"}</span>
+									</div>
+								</div>
+								<div class="gt-file-item is-warn">
+									<span class="gt-file-icon">📁</span>
+									<div class="gt-file-meta">
+										<span class="gt-file-name">proyecto_final_FINAL/</span>
+										<span class="gt-file-sub">{isEs ? '¿Qué cambios tiene? Nadie sabe' : 'What changed? Nobody knows'}</span>
+									</div>
+								</div>
+								<div class="gt-file-item is-danger">
+									<span class="gt-file-icon">📁</span>
+									<div class="gt-file-meta">
+										<span class="gt-file-name">proyecto_final_FINAL_v2_este_si/</span>
+										<span class="gt-file-sub">{isEs ? 'Sobreescribió el trabajo del compañero' : "Overwrote teammate's work"}</span>
+									</div>
+								</div>
+							</div>
+							<p class="gt-status is-danger">
+								<span>⚠️ {isEs ? 'Cero trazabilidad, sin autores, sin hashes, imposible comparar diferencias con precisión.' : 'Zero traceability, no authors, no hashes, impossible to diff changes.'}</span>
+							</p>
+						</div>
+
+						<!-- Git Snapshot DAG View -->
+						<div class="gt-panel-box" id="gtGitModel" hidden>
+							<span class="gt-panel-label">{isEs ? 'Modelo Git (Grafo de Snapshots Inmutables)' : 'Git Model (Immutable Snapshot Graph)'}</span>
+							<div class="gt-dag-row">
+								<div class="gt-commit-node">
+									<span class="gt-commit-hash">c1a93b2</span>
+									<span class="gt-commit-title">feat: init</span>
+									<span class="gt-commit-author">Facundo</span>
+								</div>
+								<div class="gt-dag-arrow">→</div>
+								<div class="gt-commit-node">
+									<span class="gt-commit-hash">8e40f1a</span>
+									<span class="gt-commit-title">feat: navbar</span>
+									<span class="gt-commit-author">Facundo</span>
+								</div>
+								<div class="gt-dag-arrow">→</div>
+								<div class="gt-commit-node is-head">
+									<span class="gt-head-badge">HEAD › main</span>
+									<span class="gt-commit-hash">3d8b12c</span>
+									<span class="gt-commit-title">fix: responsive</span>
+									<span class="gt-commit-author">Facundo</span>
+								</div>
+							</div>
+							<p class="gt-status is-ok">
+								<span>✓ {isEs ? 'Cada commit apunta a su padre, con autor, fecha, mensaje y snapshot completo inmutable.' : 'Every commit points to its parent, with author, date, message, and immutable snapshot.'}</span>
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 2: El ciclo de los Tres Estados interactivo -->
+			<section class="gt-slide" data-slide="2">
+				<div class="gt-header">
+					<span class="gt-kicker">{isEs ? 'Ciclo de vida' : 'Lifecycle'}</span>
+					<h2 class="gt-title">{isEs ? 'El ciclo de tres estados: Working Tree, Staging e Historial' : 'The three-state cycle: Working Tree, Staging, and History'}</h2>
+					<p class="gt-lead">
+						{isEs
+							? 'Un archivo no pasa directo de tu editor al historial. Primero reside modificado en tu disco (Working Tree), luego se prepara quirúrgicamente con git add (Staging Area), y finalmente se sella con git commit.'
+							: 'A file does not jump directly from your editor to history. First it lives modified on disk (Working Tree), then it is surgically staged with git add (Staging Area), and finally it is sealed with git commit.'}
+					</p>
+				</div>
+
+				<div class="gt-card">
+					<div class="gt-controls-row">
+						<button class="gt-chip-btn" id="gtBtnModify">{isEs ? '1. Modificar index.html' : '1. Edit index.html'}</button>
+						<button class="gt-chip-btn" id="gtBtnAdd" disabled>{isEs ? '2. git add index.html' : '2. git add index.html'}</button>
+						<button class="gt-chip-btn" id="gtBtnCommit" disabled>{isEs ? '3. git commit -m "..."' : '3. git commit -m "..."'}</button>
+						<button class="gt-chip-btn is-secondary" id="gtBtnReset">{isEs ? 'Reiniciar simulador' : 'Reset simulator'}</button>
+					</div>
+
+					<div class="gt-three-columns">
+						<!-- Columna 1: Working Tree -->
+						<div class="gt-col" id="gtColWorking">
+							<div class="gt-col-head">
+								<span class="gt-col-title">1. Working Tree</span>
+								<span class="gt-col-sub">{isEs ? 'Archivos en disco' : 'Files on disk'}</span>
+							</div>
+							<div class="gt-col-body" id="gtWorkingBody">
+								<div class="gt-card-file" id="gtFileWorking">
+									<div class="gt-card-file-head">
+										<span class="gt-code-name">index.html</span>
+										<span class="gt-badge" id="gtBadgeWorking">{isEs ? 'Limpio' : 'Clean'}</span>
+									</div>
+									<p class="gt-card-file-desc" id="gtDescWorking">{isEs ? 'Sin cambios pendientes.' : 'No pending changes.'}</p>
+								</div>
+							</div>
+						</div>
+
+						<!-- Columna 2: Staging Area -->
+						<div class="gt-col" id="gtColStaging">
+							<div class="gt-col-head">
+								<span class="gt-col-title">2. Staging Area (Index)</span>
+								<span class="gt-col-sub">{isEs ? 'Preparación del snapshot' : 'Snapshot staging'}</span>
+							</div>
+							<div class="gt-col-body" id="gtStagingBody">
+								<div class="gt-placeholder" id="gtStagingPlaceholder">
+									<span>{isEs ? 'Staging vacío (usa git add)' : 'Staging empty (use git add)'}</span>
+								</div>
+								<div class="gt-card-file is-staged" id="gtFileStaging" hidden>
+									<div class="gt-card-file-head">
+										<span class="gt-code-name">index.html</span>
+										<span class="gt-badge is-success">{isEs ? 'Staged' : 'Staged'}</span>
+									</div>
+									<p class="gt-card-file-desc">{isEs ? 'Listo para ser confirmado en el siguiente commit.' : 'Ready to be committed in next snapshot.'}</p>
+								</div>
+							</div>
+						</div>
+
+						<!-- Columna 3: Repositorio (.git) -->
+						<div class="gt-col" id="gtColRepo">
+							<div class="gt-col-head">
+								<span class="gt-col-title">3. Repositorio (.git)</span>
+								<span class="gt-col-sub">{isEs ? 'Historial inmutable' : 'Immutable history'}</span>
+							</div>
+							<div class="gt-col-body" id="gtRepoBody">
+								<div class="gt-card-file is-committed" id="gtFileRepo">
+									<div class="gt-card-file-head">
+										<span class="gt-code-name" id="gtCommitHashDisplay">Commit a0f12c</span>
+										<span class="gt-badge is-info">HEAD › main</span>
+									</div>
+									<p class="gt-card-file-desc" id="gtRepoDesc">{isEs ? 'Historial actual sincronizado.' : 'Current history in sync.'}</p>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="gt-terminal-log" id="gtTerminalFeedback">
+						<span class="gt-prompt">$</span> <span id="gtFeedbackText">{isEs ? 'El repositorio está limpio. Haz clic en "1. Modificar index.html" para iniciar el ciclo.' : 'Repository is clean. Click "1. Edit index.html" to start the cycle.'}</span>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 3: Anatomía de un Commit -->
+			<section class="gt-slide" data-slide="3">
+				<div class="gt-header">
+					<span class="gt-kicker">{isEs ? 'Estructura interna' : 'Internal structure'}</span>
+					<h2 class="gt-title">{isEs ? 'Anatomía de un commit: objeto criptográfico de 4 partes' : 'Commit anatomy: a 4-part cryptographic object'}</h2>
+					<p class="gt-lead">
+						{isEs
+							? 'Un commit no almacena simples "líneas agregadas o borradas". Es un objeto íntegro que contiene un puntero a un árbol de archivos (Tree), la referencia al commit padre, datos de autoría y el mensaje explicativo.'
+							: 'A commit does not store simple diffs. It is an immutable object pointing to a file Tree, its parent commit, author metadata, and the descriptive message.'}
+					</p>
+				</div>
+
+				<div class="gt-card">
+					<div class="gt-commit-inspector-layout">
+						<div class="gt-inspector-nav">
+							<span class="gt-panel-label">{isEs ? 'Seleccionar Commit' : 'Select Commit'}</span>
+							<button class="gt-commit-btn is-active" data-inspect="c1">
+								<span class="gt-commit-bullet">C1</span>
+								<div class="gt-btn-text">
+									<strong>4b71e09</strong>
+									<small>feat: add header</small>
+								</div>
+							</button>
+							<button class="gt-commit-btn" data-inspect="c2">
+								<span class="gt-commit-bullet">C2</span>
+								<div class="gt-btn-text">
+									<strong>9a23f81</strong>
+									<small>fix: styles</small>
+								</div>
+							</button>
+						</div>
+
+						<div class="gt-inspector-view" id="gtInspectorContent">
+							<div class="gt-object-card">
+								<div class="gt-field-row">
+									<span class="gt-field-key">Object Type:</span>
+									<span class="gt-field-val">commit</span>
+								</div>
+								<div class="gt-field-row">
+									<span class="gt-field-key">SHA-1 Hash:</span>
+									<span class="gt-field-val is-highlight" id="gtInspectSha">4b71e09c12a78f3d4b6890123456789abcdef10</span>
+								</div>
+								<div class="gt-field-row">
+									<span class="gt-field-key">Tree (Snapshot):</span>
+									<span class="gt-field-val" id="gtInspectTree">tree 87e1a3b (src/, index.html, styles.css)</span>
+								</div>
+								<div class="gt-field-row">
+									<span class="gt-field-key">Parent:</span>
+									<span class="gt-field-val" id="gtInspectParent">parent 1c028ea (initial commit)</span>
+								</div>
+								<div class="gt-field-row">
+									<span class="gt-field-key">Author &amp; Committer:</span>
+									<span class="gt-field-val">Facundo Uferer &lt;dev@facundouferer.com&gt;</span>
+								</div>
+								<div class="gt-field-row is-message">
+									<span class="gt-field-key">Commit Message:</span>
+									<p class="gt-field-msg" id="gtInspectMsg">feat: add header navigation and semantic landmarks</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 4: El puntero HEAD y la rama activa -->
+			<section class="gt-slide" data-slide="4">
+				<div class="gt-header">
+					<span class="gt-kicker">{isEs ? 'Punteros y referencias' : 'Pointers and references'}</span>
+					<h2 class="gt-title">{isEs ? 'HEAD: la brújula que indica dónde estás parado' : 'HEAD: the compass pointing to your current position'}</h2>
+					<p class="gt-lead">
+						{isEs
+							? 'En Git, las ramas no son carpetas pesadas: son punteros móviles de texto plano. HEAD es una referencia especial que apunta a la rama activa, garantizando que el próximo commit se enganche en el lugar exacto.'
+							: 'In Git, branches are not heavy folders: they are lightweight text pointers. HEAD is a special reference pointing to the active branch, ensuring the next commit links right where you stand.'}
+					</p>
+				</div>
+
+				<div class="gt-card">
+					<div class="gt-toolbar">
+						<button class="gt-action-btn" id="gtBtnNewCommit">{isEs ? '+ Crear nuevo commit' : '+ Create new commit'}</button>
+						<button class="gt-action-btn is-secondary" id="gtBtnSwitchBranch">{isEs ? 'git switch -c feature' : 'git switch -c feature'}</button>
+						<span class="gt-hint" id="gtHeadHint">{isEs ? 'Observa cómo HEAD se mueve con cada commit o al cambiar de rama.' : 'Watch HEAD advance with each commit or branch switch.'}</span>
+					</div>
+
+					<div class="gt-head-stage">
+						<div class="gt-head-pointer-box">
+							<span class="gt-head-label">HEAD</span>
+							<span class="gt-head-arrow">↓</span>
+							<span class="gt-head-ref" id="gtHeadRefText">refs/heads/main</span>
+						</div>
+
+						<div class="gt-branches-track" id="gtBranchesTrack">
+							<div class="gt-branch-row">
+								<span class="gt-branch-tag is-main">main</span>
+								<div class="gt-track-nodes" id="gtTrackNodesMain">
+									<div class="gt-node-circle">C1</div>
+									<div class="gt-track-line"></div>
+									<div class="gt-node-circle is-active" id="gtNodeMainTip">C2</div>
+								</div>
+							</div>
+							<div class="gt-branch-row" id="gtFeatureRow" hidden>
+								<span class="gt-branch-tag is-feat">feature</span>
+								<div class="gt-track-nodes" id="gtTrackNodesFeat">
+									<div class="gt-track-line is-fork"></div>
+									<div class="gt-node-circle is-active" id="gtNodeFeatTip">C3</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<p class="gt-status is-info" id="gtHeadStatusText">
+						<span>{isEs ? 'HEAD apunta a main en el commit C2. Cada nuevo commit hará avanzar el puntero main automáticamente.' : 'HEAD points to main at commit C2. Every new commit will automatically advance the main pointer.'}</span>
+					</p>
+				</div>
+			</section>
+
+			<!-- Slide 5: Diagnóstico: git status y git log -->
+			<section class="gt-slide" data-slide="5">
+				<div class="gt-header">
+					<span class="gt-kicker">{isEs ? 'Inspección técnica' : 'Technical inspection'}</span>
+					<h2 class="gt-title">{isEs ? 'Diagnóstico y lectura de estado con git status y git log' : 'State diagnosis and history reading with status and log'}</h2>
+					<p class="gt-lead">
+						{isEs
+							? 'Interpretar correctamente la salida de git status previene desastres. Aprende a distinguir archivos sin seguimiento (Untracked), cambios preparados (Staged) y ramas adelantadas respecto al remoto.'
+							: 'Accurately interpreting git status output prevents disasters. Learn to identify Untracked files, Staged changes, and branches ahead of remote.'}
+					</p>
+				</div>
+
+				<div class="gt-card">
+					<div class="gt-terminal-shell">
+						<div class="gt-terminal-header">
+							<div class="gt-terminal-dots">
+								<span class="gt-dot is-red"></span>
+								<span class="gt-dot is-yellow"></span>
+								<span class="gt-dot is-green"></span>
+							</div>
+							<span class="gt-terminal-title">bash — git-course (zsh)</span>
+							<div class="gt-term-actions">
+								<button class="gt-term-btn is-active" data-cmd="status">git status</button>
+								<button class="gt-term-btn" data-cmd="log">git log --oneline --graph</button>
+							</div>
+						</div>
+
+						<pre class="gt-terminal-body" id="gtTerminalOutput"><code><span class="gt-tc-green">On branch main</span>
+Your branch is up to date with 'origin/main'.
+
+<span class="gt-tc-bold">Changes to be committed:</span>
+  (use "git restore --staged &lt;file&gt;..." to unstage)
+	<span class="gt-tc-green">new file:   src/components/Navbar.astro</span>
+
+<span class="gt-tc-bold">Changes not staged for commit:</span>
+  (use "git add &lt;file&gt;..." to update what will be committed)
+	<span class="gt-tc-red">modified:   src/pages/index.astro</span>
+
+<span class="gt-tc-bold">Untracked files:</span>
+  (use "git add &lt;file&gt;..." to include in what will be committed)
+	<span class="gt-tc-red">temp-notes.txt</span></code></pre>
+					</div>
+
+					<div class="gt-legend-grid">
+						<div class="gt-legend-item">
+							<span class="gt-legend-badge is-green">{isEs ? 'Verde (Staged)' : 'Green (Staged)'}</span>
+							<p>{isEs ? 'Archivos añadidos con git add. Entrarán en el próximo snapshot.' : 'Files added with git add. Will be included in the next snapshot.'}</p>
+						</div>
+						<div class="gt-legend-item">
+							<span class="gt-legend-badge is-red">{isEs ? 'Rojo (Not staged)' : 'Red (Not staged)'}</span>
+							<p>{isEs ? 'Archivos modificados en disco pero aún no indexados en el Staging Area.' : 'Files modified on disk but not yet indexed in Staging Area.'}</p>
+						</div>
+						<div class="gt-legend-item">
+							<span class="gt-legend-badge is-warn">{isEs ? 'Untracked' : 'Untracked'}</span>
+							<p>{isEs ? 'Archivos nuevos que Git nunca ha versionado en este proyecto.' : 'Brand-new files that Git has never tracked in this project.'}</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 6: Reglas de Oro y checklist -->
+			<section class="gt-slide" data-slide="6">
+				<div class="gt-header">
+					<span class="gt-kicker">{isEs ? 'Reglas profesionales' : 'Professional rules'}</span>
+					<h2 class="gt-title">{isEs ? 'Checklist de oro para no ensuciar tu repositorio' : 'Golden checklist to keep your repository pristine'}</h2>
+					<p class="gt-lead">
+						{isEs
+							? 'Dominar Git no es memorizar comandos, sino aplicar disciplina en cada paso. Revisa estas 4 directrices arquitectónicas indispensables antes de tu próximo commit.'
+							: 'Mastering Git is about discipline, not memorizing commands. Review these 4 essential architectural rules before your next commit.'}
+					</p>
+				</div>
+
+				<div class="gt-card">
+					<div class="gt-checklist">
+						<div class="gt-rule-card">
+							<div class="gt-rule-head">
+								<span class="gt-rule-num">01</span>
+								<h3 class="gt-rule-title">{isEs ? 'Configura tu identidad antes del primer commit' : 'Set your identity before your first commit'}</h3>
+							</div>
+							<p class="gt-rule-body">
+								{isEs
+									? 'Git estampa user.name y user.email de forma inmutable en cada hash SHA-1. Si cometeas con correos genéricos o incorrectos, corregirlo después requerirá reescribir la historia.'
+									: 'Git bakes user.name and user.email into each SHA-1 hash immutably. Committing with wrong emails requires rewriting history later.'}
+							</p>
+							<div class="gt-code-snippet">
+								<code>git config --global user.name "Tu Nombre"<br />git config --global user.email "tu@email.com"</code>
+							</div>
+						</div>
+
+						<div class="gt-rule-card">
+							<div class="gt-rule-head">
+								<span class="gt-rule-num">02</span>
+								<h3 class="gt-rule-title">{isEs ? 'Staging quirúrgico: evita el "git add ."' : 'Surgical staging: avoid blind "git add ."'}</h3>
+							</div>
+							<p class="gt-rule-body">
+								{isEs
+									? 'Usa el Staging Area como un banco de carpintero: coloca solo los archivos que forman parte del mismo cambio lógico. Considera usar git add -p para revisar fragmentos individuales.'
+									: 'Use Staging as a workbench: stage only files that belong to the exact same logical unit. Consider git add -p to inspect hunks.'}
+							</p>
+							<div class="gt-code-snippet">
+								<code>git add src/components/Header.astro<br />git status</code>
+							</div>
+						</div>
+
+						<div class="gt-rule-card">
+							<div class="gt-rule-head">
+								<span class="gt-rule-num">03</span>
+								<h3 class="gt-rule-title">{isEs ? 'Commits atómicos y testeables' : 'Atomic and testable commits'}</h3>
+							</div>
+							<p class="gt-rule-body">
+								{isEs
+									? 'Cada commit debe compilar, pasar pruebas y resolver un único objetivo. Si necesitas usar la palabra "y" para describir el commit (ej. "agrego login y cambio estilos del footer"), divídelo en dos.'
+									: 'Each commit should compile, pass tests, and serve one purpose. If you need "and" to describe it (e.g. "add login and restyle footer"), split it in two.'}
+							</p>
+						</div>
+
+						<div class="gt-rule-card">
+							<div class="gt-rule-head">
+								<span class="gt-rule-num">04</span>
+								<h3 class="gt-rule-title">{isEs ? 'Crea ramas para todo cambio no trivial' : 'Branch out for every non-trivial change'}</h3>
+							</div>
+							<p class="gt-rule-body">
+								{isEs
+									? 'Nunca programes directamente sobre main. Aislar tu trabajo en una rama feature te da total libertad para probar, descartar o pausar sin bloquear a otros desarrolladores.'
+									: 'Never code directly on main. Isolating features in dedicated branches lets you experiment, pivot, or discard cleanly.'}
+							</p>
+							<div class="gt-code-snippet">
+								<code>git switch -c feature/auth-login</code>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</main>
+	</div>
+</div>
+
+<style>
+	.gt-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gt-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.gt-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .gt-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .gt-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .gt-viewport { zoom: 1.25; } }
+
+	.gt-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: var(--color-surface);
+	}
+
+	.gt-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.gt-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.gt-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.gt-counter {
+		font-size: 13px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	.gt-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 1100px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.gt-slide.is-active {
+		display: block;
+		animation: gtFade 0.25s ease-out;
+	}
+
+	@keyframes gtFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.gt-header { margin-bottom: var(--space-5); }
+
+	.gt-kicker {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.gt-title {
+		font-size: 26px;
+		color: var(--color-text);
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.gt-lead {
+		font-size: 15px;
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+		line-height: 1.5;
+		margin: 0;
+		max-width: 72ch;
+	}
+
+	.gt-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.gt-toolbar {
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+		margin-bottom: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.gt-action-btn {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		border: none;
+		padding: var(--space-2) var(--space-4);
+		border-radius: var(--radius-md);
+		font-weight: 700;
+		font-size: 13px;
+		cursor: pointer;
+		transition: opacity 0.2s;
+	}
+
+	.gt-action-btn:hover { opacity: 0.9; }
+
+	.gt-action-btn.is-secondary {
+		background: var(--color-neutral-200);
+		color: var(--color-neutral-800);
+		border: 1px solid var(--color-divider);
+	}
+
+	.gt-hint {
+		font-size: 13px;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.gt-panel-box {
+		border: 1px dashed var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		background: var(--color-bg);
+	}
+
+	.gt-panel-label {
+		display: block;
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-neutral-600);
+		margin-bottom: var(--space-3);
+	}
+
+	.gt-file-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+
+	.gt-file-item {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+	}
+
+	.gt-file-name {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+	}
+
+	.gt-file-sub {
+		font-size: 12px;
+		color: var(--color-neutral-600);
+		margin-left: var(--space-2);
+	}
+
+	.gt-dag-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		flex-wrap: wrap;
+		margin-bottom: var(--space-4);
+		padding: var(--space-3) 0;
+	}
+
+	.gt-commit-node {
+		display: flex;
+		flex-direction: column;
+		background: var(--color-surface);
+		border: 2px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		min-width: 140px;
+		position: relative;
+	}
+
+	.gt-commit-node.is-head {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+	}
+
+	.gt-head-badge {
+		position: absolute;
+		top: -10px;
+		right: 10px;
+		background: var(--color-accent-700);
+		color: var(--color-bg);
+		font-size: 10px;
+		font-weight: 800;
+		padding: 2px 6px;
+		border-radius: var(--radius-sm);
+	}
+
+	.gt-commit-hash {
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	.gt-commit-title {
+		font-size: 13px;
+		font-weight: 600;
+		margin-top: 2px;
+	}
+
+	.gt-commit-author {
+		font-size: 11px;
+		color: var(--color-neutral-600);
+		margin-top: 2px;
+	}
+
+	.gt-dag-arrow {
+		font-size: 18px;
+		font-weight: 800;
+		color: var(--color-accent);
+	}
+
+	.gt-status {
+		margin: 0;
+		font-size: 13px;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+	}
+
+	.gt-status.is-ok {
+		background: color-mix(in srgb, var(--color-accent-2) 15%, var(--color-surface));
+		color: var(--color-accent-2-800);
+	}
+
+	.gt-status.is-danger {
+		background: color-mix(in srgb, rgb(225, 29, 72) 10%, var(--color-surface));
+		color: rgb(190, 18, 60);
+	}
+
+	.gt-status.is-info {
+		background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+		color: var(--color-accent-700);
+	}
+
+	/* Slide 2: Three Columns */
+	.gt-controls-row {
+		display: flex;
+		gap: var(--space-3);
+		margin-bottom: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.gt-chip-btn {
+		background: var(--color-surface);
+		border: 1px solid var(--color-accent);
+		color: var(--color-accent-700);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-md);
+		font-size: 12px;
+		font-weight: 700;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.gt-chip-btn:hover:not(:disabled) {
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.gt-chip-btn:disabled {
+		opacity: 0.4;
+		border-color: var(--color-divider);
+		color: var(--color-text);
+		cursor: not-allowed;
+	}
+
+	.gt-three-columns {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		gap: var(--space-4);
+		margin-bottom: var(--space-4);
+	}
+
+	.gt-col {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		min-height: 170px;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gt-col-head {
+		border-bottom: 1px solid var(--color-divider);
+		padding-bottom: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+
+	.gt-col-title {
+		display: block;
+		font-size: 13px;
+		font-weight: 700;
+	}
+
+	.gt-col-sub {
+		font-size: 11px;
+		color: var(--color-neutral-600);
+	}
+
+	.gt-col-body {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gt-card-file {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2) var(--space-3);
+	}
+
+	.gt-card-file.is-staged {
+		border-color: var(--color-accent-2);
+		background: color-mix(in srgb, var(--color-accent-2) 8%, var(--color-surface));
+	}
+
+	.gt-card-file.is-committed {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+	}
+
+	.gt-card-file-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 4px;
+	}
+
+	.gt-code-name {
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+	}
+
+	.gt-badge {
+		font-size: 10px;
+		font-weight: 700;
+		padding: 2px 6px;
+		border-radius: 4px;
+		background: var(--color-neutral-200);
+		color: var(--color-neutral-800);
+	}
+
+	.gt-badge.is-success {
+		background: var(--color-accent-2-600);
+		color: var(--color-bg);
+	}
+
+	.gt-badge.is-info {
+		background: var(--color-accent-700);
+		color: var(--color-bg);
+	}
+
+	.gt-card-file-desc {
+		font-size: 12px;
+		color: var(--color-neutral-700);
+		margin: 0;
+	}
+
+	.gt-placeholder {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px dashed var(--color-divider);
+		border-radius: var(--radius-sm);
+		font-size: 12px;
+		color: var(--color-neutral-600);
+		text-align: center;
+		padding: var(--space-3);
+	}
+
+	.gt-terminal-log {
+		background: var(--color-neutral-900);
+		color: var(--color-neutral-100);
+		font-family: monospace;
+		font-size: 13px;
+		padding: var(--space-3) var(--space-4);
+		border-radius: var(--radius-md);
+		display: flex;
+		gap: var(--space-2);
+	}
+
+	.gt-prompt { color: var(--color-accent); font-weight: 700; }
+
+	/* Slide 3: Commit Inspector */
+	.gt-commit-inspector-layout {
+		display: grid;
+		grid-template-columns: 220px 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 640px) {
+		.gt-commit-inspector-layout { grid-template-columns: 1fr; }
+	}
+
+	.gt-inspector-nav {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.gt-commit-btn {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-3);
+		border-radius: var(--radius-md);
+		border: 1px solid var(--color-divider);
+		background: var(--color-bg);
+		cursor: pointer;
+		text-align: left;
+		transition: all 0.2s;
+	}
+
+	.gt-commit-btn.is-active {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+	}
+
+	.gt-commit-bullet {
+		font-family: monospace;
+		font-weight: 800;
+		font-size: 11px;
+		background: var(--color-neutral-200);
+		padding: 4px 6px;
+		border-radius: var(--radius-sm);
+	}
+
+	.gt-btn-text strong {
+		display: block;
+		font-family: monospace;
+		font-size: 12px;
+		color: var(--color-accent-700);
+	}
+
+	.gt-btn-text small {
+		font-size: 11px;
+		color: var(--color-neutral-600);
+	}
+
+	.gt-object-card {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.gt-field-row {
+		display: flex;
+		padding: var(--space-2) 0;
+		border-bottom: 1px solid var(--color-divider);
+		font-size: 13px;
+	}
+
+	.gt-field-key {
+		width: 140px;
+		font-weight: 700;
+		color: var(--color-neutral-700);
+		font-size: 12px;
+	}
+
+	.gt-field-val {
+		flex: 1;
+		font-family: monospace;
+	}
+
+	.gt-field-val.is-highlight {
+		color: var(--color-accent-700);
+		font-weight: 700;
+	}
+
+	.gt-field-row.is-message {
+		flex-direction: column;
+		border-bottom: none;
+		margin-top: var(--space-2);
+	}
+
+	.gt-field-msg {
+		margin: var(--space-1) 0 0;
+		font-family: monospace;
+		background: var(--color-surface);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+		border: 1px solid var(--color-divider);
+	}
+
+	/* Slide 4: HEAD stage */
+	.gt-head-stage {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-5);
+		margin-bottom: var(--space-4);
+	}
+
+	.gt-head-pointer-box {
+		display: inline-flex;
+		flex-direction: column;
+		align-items: center;
+		margin-bottom: var(--space-3);
+		background: var(--color-surface);
+		border: 2px solid var(--color-accent);
+		border-radius: var(--radius-md);
+		padding: var(--space-2) var(--space-4);
+	}
+
+	.gt-head-label {
+		font-weight: 900;
+		font-size: 13px;
+		color: var(--color-accent-700);
+	}
+
+	.gt-head-arrow { font-size: 14px; font-weight: 800; }
+	.gt-head-ref { font-family: monospace; font-size: 11px; }
+
+	.gt-branches-track {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.gt-branch-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+	}
+
+	.gt-branch-tag {
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+		padding: 4px 8px;
+		border-radius: var(--radius-sm);
+		min-width: 80px;
+		text-align: center;
+	}
+
+	.gt-branch-tag.is-main {
+		background: var(--color-accent-200);
+		color: var(--color-accent-800);
+		border: 1px solid var(--color-accent);
+	}
+
+	.gt-branch-tag.is-feat {
+		background: var(--color-accent-2-200);
+		color: var(--color-accent-2-800);
+		border: 1px solid var(--color-accent-2-600);
+	}
+
+	.gt-track-nodes {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.gt-node-circle {
+		width: 34px;
+		height: 34px;
+		border-radius: 50%;
+		background: var(--color-surface);
+		border: 2px solid var(--color-divider);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		font-family: monospace;
+		font-size: 12px;
+	}
+
+	.gt-node-circle.is-active {
+		border-color: var(--color-accent);
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.gt-track-line {
+		width: 40px;
+		height: 3px;
+		background: var(--color-divider);
+	}
+
+	/* Slide 5: Terminal */
+	.gt-terminal-shell {
+		background: var(--color-neutral-900);
+		border-radius: var(--radius-md);
+		overflow: hidden;
+		margin-bottom: var(--space-4);
+	}
+
+	.gt-terminal-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--space-2) var(--space-4);
+		background: var(--color-neutral-800);
+		border-bottom: 1px solid var(--color-neutral-700);
+	}
+
+	.gt-terminal-dots { display: flex; gap: 6px; }
+	.gt-dot { width: 10px; height: 10px; border-radius: 50%; }
+	.gt-dot.is-red { background: rgb(239, 68, 68); }
+	.gt-dot.is-yellow { background: rgb(245, 158, 11); }
+	.gt-dot.is-green { background: rgb(16, 185, 129); }
+
+	.gt-terminal-title {
+		font-family: monospace;
+		font-size: 11px;
+		color: var(--color-neutral-400);
+	}
+
+	.gt-term-actions { display: flex; gap: var(--space-2); }
+
+	.gt-term-btn {
+		background: var(--color-neutral-700);
+		color: var(--color-neutral-200);
+		border: none;
+		border-radius: var(--radius-sm);
+		font-family: monospace;
+		font-size: 11px;
+		padding: 3px 8px;
+		cursor: pointer;
+	}
+
+	.gt-term-btn.is-active {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		font-weight: 700;
+	}
+
+	.gt-terminal-body {
+		padding: var(--space-4);
+		margin: 0;
+		font-family: monospace;
+		font-size: 12px;
+		line-height: 1.5;
+		color: var(--color-neutral-100);
+		overflow-x: auto;
+	}
+
+	.gt-tc-green { color: rgb(52, 211, 153); }
+	.gt-tc-red { color: rgb(248, 113, 113); }
+	.gt-tc-bold { font-weight: 700; color: var(--color-neutral-200); }
+
+	.gt-legend-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: var(--space-3);
+	}
+
+	.gt-legend-item {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.gt-legend-badge {
+		display: inline-block;
+		font-size: 11px;
+		font-weight: 700;
+		padding: 2px 8px;
+		border-radius: var(--radius-sm);
+		margin-bottom: var(--space-1);
+	}
+
+	.gt-legend-badge.is-green { background: rgb(16, 185, 129); color: rgb(255, 255, 255); }
+	.gt-legend-badge.is-red { background: rgb(239, 68, 68); color: rgb(255, 255, 255); }
+	.gt-legend-badge.is-warn { background: rgb(245, 158, 11); color: rgb(255, 255, 255); }
+
+	.gt-legend-item p {
+		margin: 0;
+		font-size: 12px;
+		color: var(--color-neutral-700);
+	}
+
+	/* Slide 6: Checklist */
+	.gt-checklist {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		gap: var(--space-4);
+	}
+
+	.gt-rule-card {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gt-rule-head {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		margin-bottom: var(--space-2);
+	}
+
+	.gt-rule-num {
+		font-size: 18px;
+		font-weight: 900;
+		color: var(--color-accent-700);
+		font-family: monospace;
+	}
+
+	.gt-rule-title {
+		font-size: 14px;
+		margin: 0;
+		font-weight: 700;
+	}
+
+	.gt-rule-body {
+		font-size: 12.5px;
+		color: var(--color-neutral-700);
+		line-height: 1.4;
+		margin: 0 0 var(--space-3);
+		flex: 1;
+	}
+
+	.gt-code-snippet {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2) var(--space-3);
+		font-family: monospace;
+		font-size: 11px;
+		color: var(--color-accent-700);
+	}
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
+
+	const screenEl = document.querySelector('.gt-screen');
+	const pageLang = screenEl?.getAttribute('data-lang') === 'en' ? 'en' : 'es';
+
+	const prevBtn = document.getElementById('gtPrevBtn') as HTMLButtonElement;
+	const nextBtn = document.getElementById('gtNextBtn') as HTMLButtonElement;
+	const counter = document.getElementById('gtSlideCounter') as HTMLElement;
+	const slides = document.querySelectorAll<HTMLElement>('.gt-slide');
+
+	function updateSlide(target: number) {
+		if (target < 1 || target > totalSlides) return;
+		currentSlide = target;
+		slides.forEach((s) => s.classList.remove('is-active'));
+		document.querySelector(`.gt-slide[data-slide="${currentSlide}"]`)?.classList.add('is-active');
+
+		if (counter) counter.textContent = `${currentSlide} / ${totalSlides}`;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	}
+
+	prevBtn?.addEventListener('click', () => updateSlide(currentSlide - 1));
+	nextBtn?.addEventListener('click', () => updateSlide(currentSlide + 1));
+
+	window.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') updateSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') updateSlide(currentSlide - 1);
+	});
+
+	// Slide 1: Model toggle
+	const modelToggle = document.getElementById('gtModelToggle');
+	const manualChaos = document.getElementById('gtManualChaos');
+	const gitModel = document.getElementById('gtGitModel');
+	let isGitView = false;
+
+	modelToggle?.addEventListener('click', () => {
+		isGitView = !isGitView;
+		if (manualChaos) manualChaos.hidden = isGitView;
+		if (gitModel) gitModel.hidden = !isGitView;
+		if (modelToggle) {
+			modelToggle.textContent = isGitView
+				? (pageLang === 'es' ? 'Ver copias arcaicas' : 'View manual copies')
+				: (pageLang === 'es' ? 'Ver modelo Git' : 'View Git model');
+		}
+	});
+
+	// Slide 2: Three-State simulator
+	const btnModify = document.getElementById('gtBtnModify') as HTMLButtonElement;
+	const btnAdd = document.getElementById('gtBtnAdd') as HTMLButtonElement;
+	const btnCommit = document.getElementById('gtBtnCommit') as HTMLButtonElement;
+	const btnReset = document.getElementById('gtBtnReset') as HTMLButtonElement;
+
+	const badgeWorking = document.getElementById('gtBadgeWorking');
+	const descWorking = document.getElementById('gtDescWorking');
+	const stagingPlaceholder = document.getElementById('gtStagingPlaceholder');
+	const fileStaging = document.getElementById('gtFileStaging');
+	const commitHashDisplay = document.getElementById('gtCommitHashDisplay');
+	const repoDesc = document.getElementById('gtRepoDesc');
+	const feedbackText = document.getElementById('gtFeedbackText');
+
+	let state = 'clean'; // 'clean' -> 'modified' -> 'staged' -> 'committed'
+
+	btnModify?.addEventListener('click', () => {
+		state = 'modified';
+		if (badgeWorking) {
+			badgeWorking.textContent = pageLang === 'es' ? 'Modificado' : 'Modified';
+			badgeWorking.className = 'gt-badge is-danger';
+		}
+		if (descWorking) {
+			descWorking.textContent = pageLang === 'es' ? 'Cambios sin indexar en disco.' : 'Unstaged changes on disk.';
+		}
+		btnModify.disabled = true;
+		if (btnAdd) btnAdd.disabled = false;
+		if (feedbackText) {
+			feedbackText.textContent = pageLang === 'es'
+				? 'Archivo modificado en el Working Tree. Ejecuta "git add index.html" para pasarlo al Staging Area.'
+				: 'File modified in Working Tree. Run "git add index.html" to stage it.';
+		}
+	});
+
+	btnAdd?.addEventListener('click', () => {
+		state = 'staged';
+		if (stagingPlaceholder) stagingPlaceholder.hidden = true;
+		if (fileStaging) fileStaging.hidden = false;
+		if (btnAdd) btnAdd.disabled = true;
+		if (btnCommit) btnCommit.disabled = false;
+		if (feedbackText) {
+			feedbackText.textContent = pageLang === 'es'
+				? 'Archivo indexado en Staging Area (preparado). Ejecuta "git commit" para sellar el snapshot.'
+				: 'File staged in index. Run "git commit" to seal the snapshot.';
+		}
+	});
+
+	btnCommit?.addEventListener('click', () => {
+		state = 'committed';
+		if (badgeWorking) {
+			badgeWorking.textContent = pageLang === 'es' ? 'Limpio' : 'Clean';
+			badgeWorking.className = 'gt-badge';
+		}
+		if (descWorking) {
+			descWorking.textContent = pageLang === 'es' ? 'Sin cambios pendientes.' : 'No pending changes.';
+		}
+		if (stagingPlaceholder) stagingPlaceholder.hidden = false;
+		if (fileStaging) fileStaging.hidden = true;
+		if (commitHashDisplay) commitHashDisplay.textContent = 'Commit e719b4';
+		if (repoDesc) {
+			repoDesc.textContent = pageLang === 'es'
+				? 'Snapshot inmutable registrado por Facundo.'
+				: 'Immutable snapshot recorded by Facundo.';
+		}
+		if (btnCommit) btnCommit.disabled = true;
+		if (btnModify) btnModify.disabled = false;
+		if (feedbackText) {
+			feedbackText.textContent = pageLang === 'es'
+				? '¡Snapshot completado! El archivo se guardó inmutablemente en el historial (.git).'
+				: 'Snapshot completed! File is permanently recorded in repository history (.git).';
+		}
+	});
+
+	btnReset?.addEventListener('click', () => {
+		state = 'clean';
+		if (badgeWorking) {
+			badgeWorking.textContent = pageLang === 'es' ? 'Limpio' : 'Clean';
+			badgeWorking.className = 'gt-badge';
+		}
+		if (descWorking) descWorking.textContent = pageLang === 'es' ? 'Sin cambios pendientes.' : 'No pending changes.';
+		if (stagingPlaceholder) stagingPlaceholder.hidden = false;
+		if (fileStaging) fileStaging.hidden = true;
+		if (btnModify) btnModify.disabled = false;
+		if (btnAdd) btnAdd.disabled = true;
+		if (btnCommit) btnCommit.disabled = true;
+		if (feedbackText) {
+			feedbackText.textContent = pageLang === 'es' ? 'Simulador reiniciado a estado limpio.' : 'Simulator reset to clean state.';
+		}
+	});
+
+	// Slide 3: Commit Inspector
+	const inspectBtns = document.querySelectorAll<HTMLButtonElement>('.gt-commit-btn');
+	const inspectSha = document.getElementById('gtInspectSha');
+	const inspectTree = document.getElementById('gtInspectTree');
+	const inspectParent = document.getElementById('gtInspectParent');
+	const inspectMsg = document.getElementById('gtInspectMsg');
+
+	const commitsData: Record<string, { sha: string; tree: string; parent: string; msg: string }> = {
+		c1: {
+			sha: '4b71e09c12a78f3d4b6890123456789abcdef10',
+			tree: 'tree 87e1a3b (src/, index.html, styles.css)',
+			parent: 'parent 1c028ea (initial commit)',
+			msg: 'feat: add header navigation and semantic landmarks',
+		},
+		c2: {
+			sha: '9a23f81e6b829c4d5e6f7a8b9c0d1e2f3a4b5c6d',
+			tree: 'tree f902c4e (src/styles/global.css)',
+			parent: 'parent 4b71e09 (feat: add header navigation)',
+			msg: 'fix: responsive layout spacing on mobile screens',
+		},
+	};
+
+	inspectBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const id = btn.getAttribute('data-inspect') || 'c1';
+			inspectBtns.forEach((b) => b.classList.remove('is-active'));
+			btn.classList.add('is-active');
+
+			const data = commitsData[id];
+			if (data) {
+				if (inspectSha) inspectSha.textContent = data.sha;
+				if (inspectTree) inspectTree.textContent = data.tree;
+				if (inspectParent) inspectParent.textContent = data.parent;
+				if (inspectMsg) inspectMsg.textContent = data.msg;
+			}
+		});
+	});
+
+	// Slide 4: HEAD and branches
+	const btnNewCommit = document.getElementById('gtBtnNewCommit');
+	const btnSwitchBranch = document.getElementById('gtBtnSwitchBranch');
+	const headRefText = document.getElementById('gtHeadRefText');
+	const featureRow = document.getElementById('gtFeatureRow');
+	const headStatusText = document.getElementById('gtHeadStatusText');
+	let branchActive = 'main';
+	let mainCommits = 2;
+
+	btnNewCommit?.addEventListener('click', () => {
+		mainCommits++;
+		if (headStatusText) {
+			headStatusText.textContent = pageLang === 'es'
+				? `Nuevo commit C${mainCommits} creado. La rama ${branchActive} y HEAD avanzaron juntos.`
+				: `New commit C${mainCommits} created. Branch ${branchActive} and HEAD advanced together.`;
+		}
+	});
+
+	btnSwitchBranch?.addEventListener('click', () => {
+		branchActive = branchActive === 'main' ? 'feature' : 'main';
+		if (featureRow) featureRow.hidden = false;
+		if (headRefText) headRefText.textContent = `refs/heads/${branchActive}`;
+		if (headStatusText) {
+			headStatusText.textContent = pageLang === 'es'
+				? `HEAD ahora apunta a la rama "${branchActive}". Los próximos commits pertenecerán a esta rama.`
+				: `HEAD now points to branch "${branchActive}". Next commits will belong to this branch.`;
+		}
+	});
+
+	// Slide 5: Terminal switch
+	const termBtns = document.querySelectorAll<HTMLButtonElement>('.gt-term-btn');
+	const terminalOutput = document.getElementById('gtTerminalOutput');
+
+	const termContent: Record<string, string> = {
+		status: `<span class="gt-tc-green">On branch main</span>\nYour branch is up to date with 'origin/main'.\n\n<span class="gt-tc-bold">Changes to be committed:</span>\n  (use "git restore --staged &lt;file&gt;..." to unstage)\n\t<span class="gt-tc-green">new file:   src/components/Navbar.astro</span>\n\n<span class="gt-tc-bold">Changes not staged for commit:</span>\n  (use "git add &lt;file&gt;..." to update what will be committed)\n\t<span class="gt-tc-red">modified:   src/pages/index.astro</span>\n\n<span class="gt-tc-bold">Untracked files:</span>\n  (use "git add &lt;file&gt;..." to include in what will be committed)\n\t<span class="gt-tc-red">temp-notes.txt</span>`,
+		log: `<span class="gt-tc-green">* 3d8b12c</span> (HEAD -> main, origin/main) fix: responsive layout spacing\n<span class="gt-tc-green">* 8e40f1a</span> feat: add navbar navigation\n<span class="gt-tc-green">* c1a93b2</span> feat: initial project scaffolding\n\n<span class="gt-tc-bold">3 commits in history · Directed DAG</span>`,
+	};
+
+	termBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const cmd = btn.getAttribute('data-cmd') || 'status';
+			termBtns.forEach((b) => b.classList.remove('is-active'));
+			btn.classList.add('is-active');
+			if (terminalOutput) {
+				terminalOutput.innerHTML = `<code>${termContent[cmd]}</code>`;
+			}
+		});
+	});
+</script>

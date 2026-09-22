@@ -1,0 +1,1188 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="gs-screen" data-presentation="sincronizacion-remota-pull-push-git" data-lang={lang}>
+	<div class="gs-shell">
+		<nav class="gs-nav" aria-label={isEs ? 'Controles de navegación' : 'Navigation controls'}>
+			<button class="gs-btn" id="gsPrevBtn" aria-label={isEs ? 'Diapositiva anterior' : 'Previous slide'} disabled>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{isEs ? 'Anterior' : 'Previous'}</span>
+			</button>
+			<span class="gs-counter" id="gsSlideCounter" aria-live="polite">1 / 6</span>
+			<button class="gs-btn" id="gsNextBtn" aria-label={isEs ? 'Siguiente diapositiva' : 'Next slide'}>
+				<span>{isEs ? 'Siguiente' : 'Next'}</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="gs-viewport">
+			<!-- Slide 1: Modelo Distribuido: Local vs Remoto -->
+			<section class="gs-slide is-active" data-slide="1">
+				<div class="gs-header">
+					<span class="gs-kicker">{isEs ? 'Arquitectura distribuida' : 'Distributed architecture'}</span>
+					<h2 class="gs-title">{isEs ? 'Tu PC no depende de la nube: el repositorio completo vive en tu disco' : 'Your PC does not rely on the cloud: the entire repository lives on disk'}</h2>
+					<p class="gs-lead">
+						{isEs
+							? 'A diferencia de los sistemas centralizados obsoletos (como SVN), Git es peer-to-peer. Tu clon local posee el grafo completo de commits, tags y ramas. Los servidores como GitHub son simplemente repositorios remotos con un alias convencional: origin.'
+							: 'Unlike obsolete centralized systems (like SVN), Git is peer-to-peer. Your local clone holds the complete graph of commits, tags, and branches. Platforms like GitHub are simply remote repositories with a conventional alias: origin.'}
+					</p>
+				</div>
+
+				<div class="gs-card">
+					<div class="gs-toolbar">
+						<button class="gs-action-btn" id="gsModeToggle">{isEs ? 'Simular desconexión (Modo Offline)' : 'Simulate disconnection (Offline mode)'}</button>
+						<span class="gs-hint">{isEs ? 'Observa qué operaciones son 100% locales sin internet y cuáles requieren red.' : 'See which operations are 100% local without network and which require internet.'}</span>
+					</div>
+
+					<div class="gs-stage-grid">
+						<div class="gs-panel">
+							<div class="gs-panel-head">
+								<span class="gs-panel-badge is-local">💻 {isEs ? 'Repositorio Local' : 'Local Repository'}</span>
+								<span class="gs-network-status" id="gsNetStatus">🟢 {isEs ? 'Conectado a Internet' : 'Connected to Internet'}</span>
+							</div>
+							<ul class="gs-feature-list">
+								<li>✓ <code>git commit</code> ({isEs ? 'inmediato, sin latencia de red' : 'instant, zero network latency'})</li>
+								<li>✓ <code>git branch</code> &amp; <code>git switch</code> ({isEs ? 'creación y cambio de ramas en milisegundos' : 'sub-millisecond branch operations'})</li>
+								<li>✓ <code>git log</code> &amp; <code>git diff</code> ({isEs ? 'consulta del historial histórico completo offline' : 'full offline history queries'})</li>
+								<li>✓ <code>git merge</code> &amp; <code>git rebase</code> ({isEs ? 'integración local autónoma' : 'autonomous local integration'})</li>
+							</ul>
+						</div>
+
+						<div class="gs-panel is-remote" id="gsRemotePanel">
+							<div class="gs-panel-head">
+								<span class="gs-panel-badge is-remote">☁️ {isEs ? 'Remoto (GitHub - origin)' : 'Remote (GitHub - origin)'}</span>
+								<span class="gs-remote-url">https://github.com/org/repo.git</span>
+							</div>
+							<p class="gs-panel-text">
+								{isEs
+									? 'Almacena la copia canónica de referencia para el equipo. Se sincroniza exclusivamente mediante protocolos de red (SSH o HTTPS).'
+									: 'Stores the authoritative canonical copy for the team. Synchronized strictly over network protocols (SSH or HTTPS).'}
+							</p>
+							<div class="gs-sync-pills">
+								<span class="gs-pill">git push (subir)</span>
+								<span class="gs-pill">git fetch (descargar)</span>
+								<span class="gs-pill">git pull (descargar + unir)</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 2: Publicación de cambios con git push -->
+			<section class="gs-slide" data-slide="2">
+				<div class="gs-header">
+					<span class="gs-kicker">{isEs ? 'Publicación de código' : 'Code publishing'}</span>
+					<h2 class="gs-title">{isEs ? 'git push: transfiriendo tus commits confirmados a la nube' : 'git push: transferring your confirmed commits to the cloud'}</h2>
+					<p class="gs-lead">
+						{isEs
+							? 'Hacer git commit guarda los cambios en tu PC. Para compartirlos con tu equipo o respaldarlos en GitHub, necesitas ejecutar git push. Esto envía los paquetes de objetos y avanza la referencia origin/main en el servidor.'
+							: 'Running git commit saves changes on your computer. To share them with your team or back them up to GitHub, you run git push. This sends object packs and advances origin/main on the server.'}
+					</p>
+				</div>
+
+				<div class="gs-card">
+					<div class="gs-controls-row">
+						<button class="gs-action-btn" id="gsBtnCommitLocal">{isEs ? '+ Hacer commit local (C3)' : '+ Make local commit (C3)'}</button>
+						<button class="gs-action-btn is-secondary" id="gsBtnPush" disabled>{isEs ? 'git push origin main' : 'git push origin main'}</button>
+						<button class="gs-action-btn is-secondary" id="gsBtnResetPush">{isEs ? 'Reiniciar' : 'Reset'}</button>
+					</div>
+
+					<div class="gs-sync-stage">
+						<!-- Local branch -->
+						<div class="gs-sync-box">
+							<div class="gs-box-header">
+								<span class="gs-box-title">💻 Local: main</span>
+								<span class="gs-box-status" id="gsLocalStatusText">{isEs ? 'Sincronizado' : 'In sync'}</span>
+							</div>
+							<div class="gs-nodes-track" id="gsLocalNodes">
+								<div class="gs-node">C1</div>
+								<div class="gs-line"></div>
+								<div class="gs-node">C2</div>
+								<div class="gs-line" id="gsLocalLine3" hidden></div>
+								<div class="gs-node is-new" id="gsLocalNode3" hidden>C3</div>
+							</div>
+						</div>
+
+						<!-- Sync Arrow -->
+						<div class="gs-arrow-indicator" id="gsPushArrow">
+							<span class="gs-arrow-label">git push</span>
+							<span class="gs-arrow-sym">→</span>
+						</div>
+
+						<!-- Remote branch -->
+						<div class="gs-sync-box">
+							<div class="gs-box-header">
+								<span class="gs-box-title">☁️ origin: refs/heads/main</span>
+								<span class="gs-box-status" id="gsRemoteStatusText">{isEs ? 'Sincronizado' : 'In sync'}</span>
+							</div>
+							<div class="gs-nodes-track" id="gsRemoteNodes">
+								<div class="gs-node">C1</div>
+								<div class="gs-line"></div>
+								<div class="gs-node">C2</div>
+								<div class="gs-line" id="gsRemoteLine3" hidden></div>
+								<div class="gs-node is-new" id="gsRemoteNode3" hidden>C3</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="gs-terminal-log" id="gsPushTerminal">
+						<span class="gs-prompt">$</span> <span id="gsPushLogText">{isEs ? 'Ambos repositorios están en el commit C2. Haz clic en "Hacer commit local" para avanzar.' : 'Both repositories are at commit C2. Click "Make local commit" to advance.'}</span>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 3: git fetch vs git pull -->
+			<section class="gs-slide" data-slide="3">
+				<div class="gs-header">
+					<span class="gs-kicker">{isEs ? 'Descarga segura' : 'Safe download'}</span>
+					<h2 class="gs-title">{isEs ? 'La gran diferencia: git fetch vs git pull' : 'The key difference: git fetch vs git pull'}</h2>
+					<p class="gs-lead">
+						{isEs
+							? 'Muchos principiantes confunden estos comandos: git fetch es pasivo y seguro (descarga objetos y actualiza origin/main sin tocar tus archivos de trabajo). git pull es agresivo: hace fetch y ejecuta un merge inmediato sobre tu rama actual.'
+							: 'Many developers confuse these commands: git fetch is safe and non-intrusive (downloads objects and updates origin/main without touching your working tree). git pull is aggressive: it fetches and immediately merges into your current branch.'}
+					</p>
+				</div>
+
+				<div class="gs-card">
+					<div class="gs-controls-row">
+						<button class="gs-action-btn" id="gsBtnFetch">{isEs ? 'Ejecutar git fetch' : 'Run git fetch'}</button>
+						<button class="gs-action-btn is-secondary" id="gsBtnPull">{isEs ? 'Ejecutar git pull (fetch + merge)' : 'Run git pull (fetch + merge)'}</button>
+						<button class="gs-action-btn is-secondary" id="gsBtnResetFetch">{isEs ? 'Restablecer' : 'Reset'}</button>
+					</div>
+
+					<div class="gs-fetch-diagram">
+						<div class="gs-fetch-col">
+							<span class="gs-col-badge is-remote">origin (GitHub)</span>
+							<div class="gs-fetch-card">
+								<p><strong>Commit C4</strong> {isEs ? 'subido por tu compañero en la nube.' : 'pushed by your teammate in cloud.'}</p>
+							</div>
+						</div>
+
+						<div class="gs-fetch-middle">
+							<div class="gs-fetch-track" id="gsFetchTrackRef">
+								<span class="gs-flow-label">1. git fetch</span>
+								<span class="gs-flow-sub">{isEs ? 'Solo actualiza puntero local' : 'Only updates local tracking pointer'}</span>
+								<div class="gs-flow-arrow">→</div>
+							</div>
+							<div class="gs-fetch-track is-merge" id="gsFetchTrackMerge">
+								<span class="gs-flow-label">2. git merge origin/main</span>
+								<span class="gs-flow-sub">{isEs ? 'Fusiona en tu Working Tree' : 'Merges into your Working Tree'}</span>
+								<div class="gs-flow-arrow">↓↓</div>
+							</div>
+						</div>
+
+						<div class="gs-fetch-col">
+							<span class="gs-col-badge is-local">Local PC</span>
+							<div class="gs-fetch-card" id="gsLocalRefCard">
+								<p><strong>origin/main (ref):</strong> <span id="gsRefStatus">{isEs ? 'Apunta a C2' : 'Points to C2'}</span></p>
+								<p><strong>Working Tree (archivos):</strong> <span id="gsWorkingStatus">{isEs ? 'Apunta a C2 (Limpio)' : 'Points to C2 (Clean)'}</span></p>
+							</div>
+						</div>
+					</div>
+
+					<p class="gs-status is-info" id="gsFetchExpl">
+						<span>💡 {isEs ? 'Usa git fetch cuando quieras revisar qué cambios hay antes de integrarlos a ciegas.' : 'Use git fetch when you want to review changes before blindly merging them.'}</span>
+					</p>
+				</div>
+			</section>
+
+			<!-- Slide 4: Upstream Tracking (-u) -->
+			<section class="gs-slide" data-slide="4">
+				<div class="gs-header">
+					<span class="gs-kicker">{isEs ? 'Ramas de seguimiento' : 'Tracking branches'}</span>
+					<h2 class="gs-title">{isEs ? 'Por qué usamos git push -u origin main y qué hace el upstream' : 'Why we use git push -u origin main and what upstream does'}</h2>
+					<p class="gs-lead">
+						{isEs
+							? 'La primera vez que subes una rama, Git no sabe a qué rama remota vincularla. La bandera -u (--set-upstream) crea un enlace permanente en tu configuración local. A partir de ese momento, basta con escribir git push o git pull a secas.'
+							: 'The first time you push a branch, Git does not know which remote branch to link it to. The -u (--set-upstream) flag creates a permanent link in your local config. From then on, simply typing git push or git pull suffices.'}
+					</p>
+				</div>
+
+				<div class="gs-card">
+					<div class="gs-toolbar">
+						<button class="gs-action-btn" id="gsToggleUpstream">{isEs ? 'Alternar enlace Upstream' : 'Toggle Upstream link'}</button>
+						<span class="gs-hint">{isEs ? 'Observa cómo cambia la respuesta de terminal según si configuraste -u o no.' : 'See how terminal output changes whether -u was configured or not.'}</span>
+					</div>
+
+					<div class="gs-upstream-grid">
+						<div class="gs-config-panel">
+							<span class="gs-panel-label">{isEs ? 'Configuración interna (.git/config)' : 'Internal configuration (.git/config)'}</span>
+							<pre class="gs-code-block" id="gsConfigCode"><code>[core]
+	repositoryformatversion = 0
+[remote "origin"]
+	url = git@github.com:facundo/proyecto.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+<span id="gsUpstreamSection" class="gs-tc-green">[branch "main"]
+	remote = origin
+	merge = refs/heads/main</span></code></pre>
+						</div>
+
+						<div class="gs-terminal-panel">
+							<span class="gs-panel-label">{isEs ? 'Comando sin argumentos: $ git push' : 'Bare command: $ git push'}</span>
+							<div class="gs-terminal-box" id="gsUpstreamTerminal">
+								<p class="gs-term-line" id="gsUpstreamTermResult">
+									<span class="gs-tc-green">Everything up-to-date</span><br />
+									<small>Branch 'main' set up to track remote branch 'main' from 'origin'.</small>
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 5: Rechazo de Push y Divergencia Remota -->
+			<section class="gs-slide" data-slide="5">
+				<div class="gs-header">
+					<span class="gs-kicker">{isEs ? 'Divergencia y conflictos' : 'Divergence and conflicts'}</span>
+					<h2 class="gs-title">{isEs ? 'Error: [rejected - non-fast-forward] y cómo resolverlo' : 'Error: [rejected - non-fast-forward] and how to recover'}</h2>
+					<p class="gs-lead">
+						{isEs
+							? 'Si tu compañero publicó cambios en GitHub mientras tú trabajabas en local, sus historias divergen. Git te bloquea el push para proteger el código ajeno. La solución obligatoria es descargar (pull), integrar y volver a empujar.'
+							: 'If a teammate pushed changes to GitHub while you worked locally, your histories diverge. Git blocks your push to protect their code. The mandatory remedy is to pull, integrate, and push again.'}
+					</p>
+				</div>
+
+				<div class="gs-card">
+					<div class="gs-divergence-sim">
+						<div class="gs-step-buttons">
+							<button class="gs-step-btn is-active" id="gsStep1Btn">1. {isEs ? 'Intentar push directo' : 'Attempt direct push'}</button>
+							<button class="gs-step-btn" id="gsStep2Btn" disabled>2. {isEs ? 'Ejecutar git pull' : 'Run git pull'}</button>
+							<button class="gs-step-btn" id="gsStep3Btn" disabled>3. {isEs ? 'Hacer git push final' : 'Run final git push'}</button>
+						</div>
+
+						<div class="gs-divergence-visual">
+							<div class="gs-diverge-graph">
+								<div class="gs-diverge-line">
+									<span class="gs-diverge-tag">origin:</span>
+									<span class="gs-node-pill">C1</span> → <span class="gs-node-pill">C2</span> → <span class="gs-node-pill is-remote">C3 (remoto)</span>
+								</div>
+								<div class="gs-diverge-line">
+									<span class="gs-diverge-tag">local:</span>
+									<span class="gs-node-pill">C1</span> → <span class="gs-node-pill">C2</span> → <span class="gs-node-pill is-local">C4 (local)</span>
+								</div>
+								<div class="gs-diverge-line is-merge-line" id="gsMergeLine" hidden>
+									<span class="gs-diverge-tag">integrado:</span>
+									<span class="gs-node-pill is-merge">M (Merge C3 + C4)</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="gs-terminal-shell">
+							<div class="gs-terminal-body" id="gsDivergeTerm">
+								<code><span class="gs-tc-red">! [rejected]        main -> main (non-fast-forward)</span>
+error: failed to push some refs to 'github.com:org/repo.git'
+<span class="gs-tc-bold">hint: Updates were rejected because the remote contains work that you do</span>
+<span class="gs-tc-bold">hint: not have locally. This is usually caused by another repository pushing</span>
+<span class="gs-tc-bold">hint: to the same ref. You may want to first integrate the remote changes</span>
+<span class="gs-tc-bold">hint: (e.g., 'git pull ...') before pushing again.</span></code>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 6: Protocolo diario de sincronización -->
+			<section class="gs-slide" data-slide="6">
+				<div class="gs-header">
+					<span class="gs-kicker">{isEs ? 'Protocolo profesional' : 'Professional protocol'}</span>
+					<h2 class="gs-title">{isEs ? 'El ritual diario de sincronización en 5 pasos' : 'The 5-step daily synchronization ritual'}</h2>
+					<p class="gs-lead">
+						{isEs
+							? 'Seguir esta rutina técnica al inicio y final de cada jornada de desarrollo evita el 95% de los conflictos y desincronizaciones en equipos de software.'
+							: 'Following this technical routine at the start and end of every development day prevents 95% of conflicts and divergence in software teams.'}
+					</p>
+				</div>
+
+				<div class="gs-card">
+					<div class="gs-protocol-grid">
+						<div class="gs-step-card">
+							<span class="gs-step-num">01</span>
+							<h3 class="gs-step-title">{isEs ? 'Bajar cambios antes de tocar nada' : 'Pull changes before touching code'}</h3>
+							<p class="gs-step-desc">{isEs ? 'Comienza tu día actualizando main con los cambios que tus compañeros integraron mientras descansabas.' : 'Start your day updating main with changes your team merged overnight.'}</p>
+							<code>git switch main<br />git pull</code>
+						</div>
+
+						<div class="gs-step-card">
+							<span class="gs-step-num">02</span>
+							<h3 class="gs-step-title">{isEs ? 'Crea una rama específica' : 'Branch out with purpose'}</h3>
+							<p class="gs-step-desc">{isEs ? 'Nunca desarrolles directamente sobre main. Aísla tu objetivo en una rama feature bien nombrada.' : 'Never code directly on main. Isolate your work in a well-named feature branch.'}</p>
+							<code>git switch -c feat/user-auth</code>
+						</div>
+
+						<div class="gs-step-card">
+							<span class="gs-step-num">03</span>
+							<h3 class="gs-step-title">{isEs ? 'Commits pequeños y frecuentes' : 'Small and frequent commits'}</h3>
+							<p class="gs-step-desc">{isEs ? 'No acumules 5 días de trabajo en un único commit gigante. Haz commits atómicos y testeables.' : 'Do not pile 5 days of work in one giant commit. Make atomic, testable commits.'}</p>
+							<code>git add -p<br />git commit -m "feat(auth): validate token"</code>
+						</div>
+
+						<div class="gs-step-card">
+							<span class="gs-step-num">04</span>
+							<h3 class="gs-step-title">{isEs ? 'Publica con upstream tracking' : 'Push with upstream tracking'}</h3>
+							<p class="gs-step-desc">{isEs ? 'Publica tu rama en el repositorio remoto configurando el seguimiento con la bandera -u.' : 'Publish your branch to the remote repository configuring tracking with -u.'}</p>
+							<code>git push -u origin feat/user-auth</code>
+						</div>
+
+						<div class="gs-step-card is-span-all">
+							<span class="gs-step-num">05</span>
+							<h3 class="gs-step-title">{isEs ? 'Abre el Pull Request para revisión del equipo' : 'Open Pull Request for peer review'}</h3>
+							<p class="gs-step-desc">{isEs ? 'En GitHub, crea el PR hacia main, describe el contexto, enlaza el ticket o issue correspondiente y espera la aprobación de CI/CD.' : 'On GitHub, open the PR against main, describe context, link the issue, and await CI/CD.'}</p>
+						</div>
+					</div>
+				</div>
+			</section>
+		</main>
+	</div>
+</div>
+
+<style>
+	.gs-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gs-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.gs-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .gs-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .gs-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .gs-viewport { zoom: 1.25; } }
+
+	.gs-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: var(--color-surface);
+	}
+
+	.gs-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.gs-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.gs-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.gs-counter {
+		font-size: 13px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	.gs-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 1100px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.gs-slide.is-active {
+		display: block;
+		animation: gsFade 0.25s ease-out;
+	}
+
+	@keyframes gsFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.gs-header { margin-bottom: var(--space-5); }
+
+	.gs-kicker {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.gs-title {
+		font-size: 26px;
+		color: var(--color-text);
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.gs-lead {
+		font-size: 15px;
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+		line-height: 1.5;
+		margin: 0;
+		max-width: 72ch;
+	}
+
+	.gs-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.gs-toolbar {
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+		margin-bottom: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.gs-action-btn {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		border: none;
+		padding: var(--space-2) var(--space-4);
+		border-radius: var(--radius-md);
+		font-weight: 700;
+		font-size: 13px;
+		cursor: pointer;
+		transition: opacity 0.2s;
+	}
+
+	.gs-action-btn:hover:not(:disabled) { opacity: 0.9; }
+
+	.gs-action-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.gs-action-btn.is-secondary {
+		background: var(--color-neutral-200);
+		color: var(--color-neutral-800);
+		border: 1px solid var(--color-divider);
+	}
+
+	.gs-hint {
+		font-size: 13px;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	/* Slide 1: Stage Grid */
+	.gs-stage-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: var(--space-4);
+	}
+
+	.gs-panel {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		transition: opacity 0.3s ease;
+	}
+
+	.gs-panel.is-offline {
+		opacity: 0.35;
+		filter: grayscale(1);
+	}
+
+	.gs-panel-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: var(--space-3);
+		border-bottom: 1px solid var(--color-divider);
+		padding-bottom: var(--space-2);
+	}
+
+	.gs-panel-badge {
+		font-size: 12px;
+		font-weight: 800;
+		padding: 2px 8px;
+		border-radius: var(--radius-sm);
+	}
+
+	.gs-panel-badge.is-local {
+		background: var(--color-accent-200);
+		color: var(--color-accent-800);
+	}
+
+	.gs-panel-badge.is-remote {
+		background: var(--color-accent-2-200);
+		color: var(--color-accent-2-800);
+	}
+
+	.gs-network-status {
+		font-size: 11px;
+		font-weight: 700;
+		color: var(--color-accent-2-700);
+	}
+
+	.gs-remote-url {
+		font-family: monospace;
+		font-size: 11px;
+		color: var(--color-neutral-600);
+	}
+
+	.gs-feature-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		font-size: 13px;
+	}
+
+	.gs-feature-list code {
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	.gs-panel-text {
+		font-size: 13px;
+		color: var(--color-neutral-700);
+		line-height: 1.4;
+		margin-bottom: var(--space-3);
+	}
+
+	.gs-sync-pills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+
+	.gs-pill {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: 3px 8px;
+		font-family: monospace;
+		font-size: 11px;
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	/* Slide 2: Sync Stage */
+	.gs-controls-row {
+		display: flex;
+		gap: var(--space-3);
+		margin-bottom: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.gs-sync-stage {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		gap: var(--space-4);
+		margin-bottom: var(--space-4);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	@media (max-width: 640px) {
+		.gs-sync-stage { grid-template-columns: 1fr; }
+	}
+
+	.gs-sync-box {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.gs-box-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: var(--space-3);
+	}
+
+	.gs-box-title { font-size: 12px; font-weight: 800; font-family: monospace; }
+	.gs-box-status { font-size: 11px; color: var(--color-neutral-600); }
+
+	.gs-nodes-track {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.gs-node {
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		background: var(--color-bg);
+		border: 2px solid var(--color-accent);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		font-family: monospace;
+		font-size: 11px;
+		color: var(--color-accent-700);
+	}
+
+	.gs-node.is-new {
+		background: var(--color-accent-2-600);
+		border-color: var(--color-accent-2-700);
+		color: rgb(255, 255, 255);
+	}
+
+	.gs-line {
+		width: 24px;
+		height: 2px;
+		background: var(--color-divider);
+	}
+
+	.gs-arrow-indicator {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+	}
+
+	.gs-arrow-label {
+		font-family: monospace;
+		font-size: 11px;
+		font-weight: 700;
+		color: var(--color-accent-700);
+	}
+
+	.gs-arrow-sym { font-size: 20px; font-weight: 900; color: var(--color-accent); }
+
+	.gs-terminal-log {
+		background: var(--color-neutral-900);
+		color: var(--color-neutral-100);
+		font-family: monospace;
+		font-size: 13px;
+		padding: var(--space-3) var(--space-4);
+		border-radius: var(--radius-md);
+		display: flex;
+		gap: var(--space-2);
+	}
+
+	.gs-prompt { color: var(--color-accent); font-weight: 700; }
+
+	/* Slide 3: Fetch vs Pull */
+	.gs-fetch-diagram {
+		display: grid;
+		grid-template-columns: 1fr 180px 1fr;
+		gap: var(--space-3);
+		align-items: center;
+		margin-bottom: var(--space-4);
+		background: var(--color-bg);
+		padding: var(--space-4);
+		border-radius: var(--radius-md);
+		border: 1px solid var(--color-divider);
+	}
+
+	@media (max-width: 768px) {
+		.gs-fetch-diagram { grid-template-columns: 1fr; }
+	}
+
+	.gs-fetch-col { display: flex; flex-direction: column; gap: var(--space-2); }
+
+	.gs-col-badge {
+		display: inline-block;
+		font-size: 11px;
+		font-weight: 800;
+		padding: 2px 6px;
+		border-radius: var(--radius-sm);
+		align-self: flex-start;
+	}
+
+	.gs-col-badge.is-remote { background: var(--color-accent-2-200); color: var(--color-accent-2-800); }
+	.gs-col-badge.is-local { background: var(--color-accent-200); color: var(--color-accent-800); }
+
+	.gs-fetch-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		font-size: 13px;
+	}
+
+	.gs-fetch-card p { margin: var(--space-1) 0; }
+
+	.gs-fetch-middle {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		align-items: center;
+	}
+
+	.gs-fetch-track {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2);
+		text-align: center;
+		width: 100%;
+	}
+
+	.gs-fetch-track.is-active {
+		border-color: var(--color-accent);
+		background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+	}
+
+	.gs-flow-label { display: block; font-family: monospace; font-size: 11px; font-weight: 700; color: var(--color-accent-700); }
+	.gs-flow-sub { display: block; font-size: 10px; color: var(--color-neutral-600); }
+	.gs-flow-arrow { font-size: 14px; font-weight: 800; }
+
+	.gs-status {
+		margin: 0;
+		font-size: 13px;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+	}
+
+	.gs-status.is-info {
+		background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+		color: var(--color-accent-700);
+	}
+
+	/* Slide 4: Upstream */
+	.gs-upstream-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 640px) {
+		.gs-upstream-grid { grid-template-columns: 1fr; }
+	}
+
+	.gs-config-panel, .gs-terminal-panel {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+	}
+
+	.gs-panel-label {
+		display: block;
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-neutral-600);
+		margin-bottom: var(--space-2);
+	}
+
+	.gs-code-block {
+		background: var(--color-neutral-900);
+		color: var(--color-neutral-100);
+		padding: var(--space-3);
+		border-radius: var(--radius-sm);
+		font-family: monospace;
+		font-size: 11.5px;
+		margin: 0;
+		line-height: 1.4;
+	}
+
+	.gs-terminal-box {
+		background: var(--color-neutral-900);
+		color: var(--color-neutral-100);
+		padding: var(--space-3);
+		border-radius: var(--radius-sm);
+		font-family: monospace;
+		font-size: 12px;
+		min-height: 100px;
+	}
+
+	.gs-tc-green { color: rgb(52, 211, 153); }
+	.gs-tc-red { color: rgb(248, 113, 113); }
+	.gs-tc-bold { font-weight: 700; color: var(--color-neutral-200); }
+
+	/* Slide 5: Divergence */
+	.gs-divergence-sim {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.gs-step-buttons {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.gs-step-btn {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		color: var(--color-text);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-md);
+		font-size: 12px;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.gs-step-btn.is-active {
+		border-color: var(--color-accent);
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.gs-step-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.gs-divergence-visual {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.gs-diverge-graph {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.gs-diverge-line {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-family: monospace;
+		font-size: 13px;
+	}
+
+	.gs-diverge-tag {
+		width: 90px;
+		font-weight: 700;
+		color: var(--color-neutral-700);
+	}
+
+	.gs-node-pill {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		padding: 2px 8px;
+		border-radius: var(--radius-sm);
+		font-size: 12px;
+	}
+
+	.gs-node-pill.is-remote {
+		border-color: var(--color-accent-2-600);
+		background: var(--color-accent-2-200);
+		color: var(--color-accent-2-800);
+		font-weight: 700;
+	}
+
+	.gs-node-pill.is-local {
+		border-color: var(--color-accent);
+		background: var(--color-accent-200);
+		color: var(--color-accent-800);
+		font-weight: 700;
+	}
+
+	.gs-node-pill.is-merge {
+		border-color: var(--color-accent-700);
+		background: var(--color-accent);
+		color: var(--color-bg);
+		font-weight: 800;
+	}
+
+	.gs-terminal-shell {
+		background: var(--color-neutral-900);
+		border-radius: var(--radius-md);
+		overflow: hidden;
+	}
+
+	.gs-terminal-body {
+		padding: var(--space-4);
+		margin: 0;
+		font-family: monospace;
+		font-size: 12px;
+		line-height: 1.5;
+		color: var(--color-neutral-100);
+		overflow-x: auto;
+	}
+
+	/* Slide 6: Protocol */
+	.gs-protocol-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: var(--space-4);
+	}
+
+	.gs-step-card {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gs-step-card.is-span-all {
+		grid-column: 1 / -1;
+		background: color-mix(in srgb, var(--color-accent-2) 8%, var(--color-surface));
+		border-color: var(--color-accent-2-600);
+	}
+
+	.gs-step-num {
+		font-size: 18px;
+		font-weight: 900;
+		color: var(--color-accent-700);
+		font-family: monospace;
+		margin-bottom: var(--space-1);
+	}
+
+	.gs-step-title {
+		font-size: 14px;
+		margin: 0 0 var(--space-2);
+		font-weight: 700;
+	}
+
+	.gs-step-desc {
+		font-size: 12px;
+		color: var(--color-neutral-700);
+		line-height: 1.4;
+		margin: 0 0 var(--space-3);
+		flex: 1;
+	}
+
+	.gs-step-card code {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2) var(--space-3);
+		font-family: monospace;
+		font-size: 11px;
+		color: var(--color-accent-700);
+	}
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
+
+	const screenEl = document.querySelector('.gs-screen');
+	const pageLang = screenEl?.getAttribute('data-lang') === 'en' ? 'en' : 'es';
+
+	const prevBtn = document.getElementById('gsPrevBtn') as HTMLButtonElement;
+	const nextBtn = document.getElementById('gsNextBtn') as HTMLButtonElement;
+	const counter = document.getElementById('gsSlideCounter') as HTMLElement;
+	const slides = document.querySelectorAll<HTMLElement>('.gs-slide');
+
+	function updateSlide(target: number) {
+		if (target < 1 || target > totalSlides) return;
+		currentSlide = target;
+		slides.forEach((s) => s.classList.remove('is-active'));
+		document.querySelector(`.gs-slide[data-slide="${currentSlide}"]`)?.classList.add('is-active');
+
+		if (counter) counter.textContent = `${currentSlide} / ${totalSlides}`;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	}
+
+	prevBtn?.addEventListener('click', () => updateSlide(currentSlide - 1));
+	nextBtn?.addEventListener('click', () => updateSlide(currentSlide + 1));
+
+	window.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') updateSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') updateSlide(currentSlide - 1);
+	});
+
+	// Slide 1: Offline mode toggle
+	const modeToggle = document.getElementById('gsModeToggle');
+	const netStatus = document.getElementById('gsNetStatus');
+	const remotePanel = document.getElementById('gsRemotePanel');
+	let isOffline = false;
+
+	modeToggle?.addEventListener('click', () => {
+		isOffline = !isOffline;
+		remotePanel?.classList.toggle('is-offline', isOffline);
+		if (netStatus) {
+			netStatus.textContent = isOffline
+				? (pageLang === 'es' ? '🔴 Sin conexión (Modo Avión)' : '🔴 Offline (Airplane Mode)')
+				: (pageLang === 'es' ? '🟢 Conectado a Internet' : '🟢 Connected to Internet');
+		}
+		if (modeToggle) {
+			modeToggle.textContent = isOffline
+				? (pageLang === 'es' ? 'Reconectar a Internet' : 'Reconnect to Internet')
+				: (pageLang === 'es' ? 'Simular desconexión (Modo Offline)' : 'Simulate disconnection (Offline mode)');
+		}
+	});
+
+	// Slide 2: Git push interactive
+	const btnCommitLocal = document.getElementById('gsBtnCommitLocal') as HTMLButtonElement;
+	const btnPush = document.getElementById('gsBtnPush') as HTMLButtonElement;
+	const btnResetPush = document.getElementById('gsBtnResetPush') as HTMLButtonElement;
+
+	const localLine3 = document.getElementById('gsLocalLine3');
+	const localNode3 = document.getElementById('gsLocalNode3');
+	const remoteLine3 = document.getElementById('gsRemoteLine3');
+	const remoteNode3 = document.getElementById('gsRemoteNode3');
+
+	const localStatusText = document.getElementById('gsLocalStatusText');
+	const remoteStatusText = document.getElementById('gsRemoteStatusText');
+	const pushLogText = document.getElementById('gsPushLogText');
+
+	btnCommitLocal?.addEventListener('click', () => {
+		if (localLine3) localLine3.hidden = false;
+		if (localNode3) localNode3.hidden = false;
+		if (localStatusText) {
+			localStatusText.textContent = pageLang === 'es' ? '1 commit por delante (ahead 1)' : '1 commit ahead';
+		}
+		btnCommitLocal.disabled = true;
+		if (btnPush) btnPush.disabled = false;
+		if (pushLogText) {
+			pushLogText.textContent = pageLang === 'es'
+				? 'Commit C3 creado localmente. Tu rama está adelantada. Ejecuta "git push origin main" para subirlo.'
+				: 'Commit C3 created locally. Your branch is ahead. Run "git push origin main" to publish.';
+		}
+	});
+
+	btnPush?.addEventListener('click', () => {
+		if (remoteLine3) remoteLine3.hidden = false;
+		if (remoteNode3) remoteNode3.hidden = false;
+		if (localStatusText) localStatusText.textContent = pageLang === 'es' ? 'Sincronizado' : 'In sync';
+		if (remoteStatusText) remoteStatusText.textContent = pageLang === 'es' ? 'Actualizado en C3' : 'Updated to C3';
+		if (btnPush) btnPush.disabled = true;
+		if (pushLogText) {
+			pushLogText.textContent = pageLang === 'es'
+				? 'git push completado con éxito: origin/main ahora apunta a C3 en GitHub.'
+				: 'git push succeeded: origin/main now points to C3 on GitHub.';
+		}
+	});
+
+	btnResetPush?.addEventListener('click', () => {
+		if (localLine3) localLine3.hidden = true;
+		if (localNode3) localNode3.hidden = true;
+		if (remoteLine3) remoteLine3.hidden = true;
+		if (remoteNode3) remoteNode3.hidden = true;
+		if (localStatusText) localStatusText.textContent = pageLang === 'es' ? 'Sincronizado' : 'In sync';
+		if (remoteStatusText) remoteStatusText.textContent = pageLang === 'es' ? 'Sincronizado' : 'In sync';
+		if (btnCommitLocal) btnCommitLocal.disabled = false;
+		if (btnPush) btnPush.disabled = true;
+		if (pushLogText) {
+			pushLogText.textContent = pageLang === 'es' ? 'Simulador reiniciado a C2.' : 'Simulator reset to C2.';
+		}
+	});
+
+	// Slide 3: Fetch vs Pull
+	const btnFetch = document.getElementById('gsBtnFetch') as HTMLButtonElement;
+	const btnPull = document.getElementById('gsBtnPull') as HTMLButtonElement;
+	const btnResetFetch = document.getElementById('gsBtnResetFetch') as HTMLButtonElement;
+	const refStatus = document.getElementById('gsRefStatus');
+	const workingStatus = document.getElementById('gsWorkingStatus');
+	const fetchExpl = document.getElementById('gsFetchExpl');
+
+	btnFetch?.addEventListener('click', () => {
+		if (refStatus) refStatus.textContent = pageLang === 'es' ? 'Apunta a C4 (¡Actualizado!)' : 'Points to C4 (Updated!)';
+		if (workingStatus) workingStatus.textContent = pageLang === 'es' ? 'Aún en C2 (Tus archivos NO cambiaron)' : 'Still at C2 (Files NOT changed)';
+		if (fetchExpl) {
+			fetchExpl.innerHTML = `<span>✓ ${pageLang === 'es' ? 'git fetch descargó los metadatos de C4. Ahora puedes hacer "git log origin/main" para revisarlos antes de fusionar.' : 'git fetch downloaded C4 metadata. You can now run "git log origin/main" to review before merging.'}</span>`;
+		}
+	});
+
+	btnPull?.addEventListener('click', () => {
+		if (refStatus) refStatus.textContent = pageLang === 'es' ? 'Apunta a C4 (Actualizado)' : 'Points to C4 (Updated)';
+		if (workingStatus) workingStatus.textContent = pageLang === 'es' ? 'Apunta a C4 (¡Archivos actualizados!)' : 'Points to C4 (Files updated!)';
+		if (fetchExpl) {
+			fetchExpl.innerHTML = `<span>✓ ${pageLang === 'es' ? 'git pull descargó C4 y fusionó directamente en tu Working Tree (Fast-Forward a C4).' : 'git pull fetched C4 and immediately merged into your Working Tree (Fast-Forward to C4).'}</span>`;
+		}
+	});
+
+	btnResetFetch?.addEventListener('click', () => {
+		if (refStatus) refStatus.textContent = pageLang === 'es' ? 'Apunta a C2' : 'Points to C2';
+		if (workingStatus) workingStatus.textContent = pageLang === 'es' ? 'Apunta a C2 (Limpio)' : 'Points to C2 (Clean)';
+		if (fetchExpl) {
+			fetchExpl.innerHTML = `<span>💡 ${pageLang === 'es' ? 'Usa git fetch cuando quieras revisar qué cambios hay antes de integrarlos a ciegas.' : 'Use git fetch when you want to review changes before blindly merging them.'}</span>`;
+		}
+	});
+
+	// Slide 4: Upstream Tracking
+	const toggleUpstream = document.getElementById('gsToggleUpstream');
+	const upstreamSection = document.getElementById('gsUpstreamSection');
+	const upstreamTermResult = document.getElementById('gsUpstreamTermResult');
+	let hasUpstream = true;
+
+	toggleUpstream?.addEventListener('click', () => {
+		hasUpstream = !hasUpstream;
+		if (upstreamSection) upstreamSection.hidden = !hasUpstream;
+		if (upstreamTermResult) {
+			upstreamTermResult.innerHTML = hasUpstream
+				? `<span class="gs-tc-green">Everything up-to-date</span><br /><small>Branch 'main' set up to track remote branch 'main' from 'origin'.</small>`
+				: `<span class="gs-tc-red">fatal: The current branch main has no upstream branch.</span><br /><small>To push the current branch and set the remote as upstream, use:<br />    git push --set-upstream origin main</small>`;
+		}
+	});
+
+	// Slide 5: Divergence simulation
+	const step1Btn = document.getElementById('gsStep1Btn') as HTMLButtonElement;
+	const step2Btn = document.getElementById('gsStep2Btn') as HTMLButtonElement;
+	const step3Btn = document.getElementById('gsStep3Btn') as HTMLButtonElement;
+	const mergeLine = document.getElementById('gsMergeLine');
+	const divergeTerm = document.getElementById('gsDivergeTerm');
+
+	step1Btn?.addEventListener('click', () => {
+		step1Btn.classList.add('is-active');
+		step2Btn.classList.remove('is-active');
+		step3Btn.classList.remove('is-active');
+		step2Btn.disabled = false;
+		if (mergeLine) mergeLine.hidden = true;
+		if (divergeTerm) {
+			divergeTerm.innerHTML = `<code><span class="gs-tc-red">! [rejected]        main -> main (non-fast-forward)</span>\nerror: failed to push some refs to 'github.com:org/repo.git'\n<span class="gs-tc-bold">hint: Updates were rejected because the remote contains work that you do</span>\n<span class="gs-tc-bold">hint: not have locally. First integrate with git pull.</span></code>`;
+		}
+	});
+
+	step2Btn?.addEventListener('click', () => {
+		step1Btn.classList.remove('is-active');
+		step2Btn.classList.add('is-active');
+		step3Btn.classList.remove('is-active');
+		step3Btn.disabled = false;
+		if (mergeLine) mergeLine.hidden = false;
+		if (divergeTerm) {
+			divergeTerm.innerHTML = `<code><span class="gs-tc-green">$ git pull origin main</span>\nAuto-merging src/index.ts\nMerge made by the 'ort' strategy.\n<span class="gs-tc-bold">✓ Creado commit de fusión M (integrando C3 y C4). Listo para empujar.</span></code>`;
+		}
+	});
+
+	step3Btn?.addEventListener('click', () => {
+		step1Btn.classList.remove('is-active');
+		step2Btn.classList.remove('is-active');
+		step3Btn.classList.add('is-active');
+		if (divergeTerm) {
+			divergeTerm.innerHTML = `<code><span class="gs-tc-green">$ git push origin main</span>\nEnumerating objects: 10, done.\nTo github.com:org/repo.git\n   c2a10..m781b  main -> main\n<span class="gs-tc-bold">✓ ¡Éxito! Ambos historiales quedaron integrados en el remoto.</span></code>`;
+		}
+	});
+</script>

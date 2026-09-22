@@ -1,0 +1,1067 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="gm-screen" data-presentation="ramas-merge-conflictos-git" data-lang={lang}>
+	<div class="gm-shell">
+		<nav class="gm-nav" aria-label={isEs ? 'Controles de navegación' : 'Navigation controls'}>
+			<button class="gm-btn" id="gmPrevBtn" aria-label={isEs ? 'Diapositiva anterior' : 'Previous slide'} disabled>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{isEs ? 'Anterior' : 'Previous'}</span>
+			</button>
+			<span class="gm-counter" id="gmSlideCounter" aria-live="polite">1 / 6</span>
+			<button class="gm-btn" id="gmNextBtn" aria-label={isEs ? 'Siguiente diapositiva' : 'Next slide'}>
+				<span>{isEs ? 'Siguiente' : 'Next'}</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="gm-viewport">
+			<!-- Slide 1: Ramas como punteros livianos -->
+			<section class="gm-slide is-active" data-slide="1">
+				<div class="gm-header">
+					<span class="gm-kicker">{isEs ? 'Aislamiento de trabajo' : 'Work isolation'}</span>
+					<h2 class="gm-title">{isEs ? 'Una rama no es una copia de archivos: es un puntero móvil de 41 bytes' : 'A branch is not a folder copy: it is a 41-byte movable pointer'}</h2>
+					<p class="gm-lead">
+						{isEs
+							? 'Crear una rama en Git no duplica tu código en disco. Una rama es simplemente un archivo de texto plano de 41 bytes en .git/refs/heads/ que guarda el hash de un commit. HEAD es un puntero simbólico que indica en qué rama estás parado.'
+							: 'Creating a branch in Git does not copy your project files on disk. A branch is simply a 41-byte text file in .git/refs/heads/ containing a commit SHA. HEAD is a symbolic pointer indicating where you stand.'}
+					</p>
+				</div>
+
+				<div class="gm-card">
+					<div class="gm-toolbar">
+						<span class="gm-hint">{isEs ? 'Selecciona una rama para ver cómo se mueven los punteros internos de Git:' : 'Select a branch to see how internal Git pointers update:'}</span>
+						<div class="gm-branch-selector">
+							<button class="gm-branch-btn is-active" data-branch="main">main</button>
+							<button class="gm-branch-btn" data-branch="login">feature/login</button>
+							<button class="gm-branch-btn" data-branch="nav">bugfix/nav</button>
+						</div>
+					</div>
+
+					<div class="gm-stage-layout">
+						<div class="gm-ref-card">
+							<span class="gm-panel-label">{isEs ? 'Archivo en disco: .git/HEAD' : 'File on disk: .git/HEAD'}</span>
+							<code class="gm-code-ref" id="gmHeadFileContent">ref: refs/heads/main</code>
+
+							<span class="gm-panel-label" style="margin-top: var(--space-3);">{isEs ? 'Puntero de rama activa: .git/refs/heads/...' : 'Active branch pointer: .git/refs/heads/...'}</span>
+							<code class="gm-code-ref is-sha" id="gmBranchFileContent">3a8f91c78490a1b2c3d4e5f6a7b8c9d0e1f2a3b4</code>
+						</div>
+
+						<div class="gm-graph-view">
+							<div class="gm-dag-track">
+								<div class="gm-node">C1</div>
+								<div class="gm-line"></div>
+								<div class="gm-node" id="gmNodeC2">C2</div>
+								<div class="gm-line" id="gmLineC3"></div>
+								<div class="gm-node is-active" id="gmNodeC3">C3</div>
+							</div>
+							<div class="gm-pointers-row">
+								<span class="gm-tag is-head" id="gmHeadTag">HEAD → main</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 2: Fast-Forward vs 3-Way Merge Commit -->
+			<section class="gm-slide" data-slide="2">
+				<div class="gm-header">
+					<span class="gm-kicker">{isEs ? 'Estrategias de unión' : 'Integration strategies'}</span>
+					<h2 class="gm-title">{isEs ? 'Fast-Forward vs 3-Way Merge: ¿cuándo se crea un merge commit?' : 'Fast-Forward vs 3-Way Merge: when is a merge commit born?'}</h2>
+					<p class="gm-lead">
+						{isEs
+							? 'Si la rama main no avanzó mientras trabajabas en feature, Git hace un Fast-Forward (solo desliza el puntero de main a la punta). Si main también avanzó, las historias divergieron y Git realiza un 3-Way Merge creando un commit de unión con dos padres.'
+							: 'If main has not advanced while you worked on feature, Git does a Fast-Forward (simply sliding the main pointer). If main also moved forward, histories diverged and Git performs a 3-Way Merge creating a union commit with two parents.'}
+					</p>
+				</div>
+
+				<div class="gm-card">
+					<div class="gm-toolbar">
+						<button class="gm-action-btn" id="gmToggleMergeMode">{isEs ? 'Ver 3-Way Merge (con divergencia)' : 'View 3-Way Merge (with divergence)'}</button>
+						<span class="gm-hint" id="gmMergeHint">{isEs ? 'Modo actual: Fast-Forward (historia lineal, sin commit extra).' : 'Current mode: Fast-Forward (linear history, zero extra commits).'}</span>
+					</div>
+
+					<div class="gm-merge-stage">
+						<!-- Fast-Forward View -->
+						<div class="gm-mode-view" id="gmViewFF">
+							<span class="gm-panel-label">{isEs ? 'Caso 1: Fast-Forward (main no avanzó)' : 'Case 1: Fast-Forward (main did not move)'}</span>
+							<div class="gm-ff-track">
+								<span class="gm-line-label">main:</span>
+								<div class="gm-node">C1</div>
+								<div class="gm-line"></div>
+								<div class="gm-node">C2 (base)</div>
+								<div class="gm-line is-dash"></div>
+								<div class="gm-node is-feat">C3 (login)</div>
+								<div class="gm-line is-dash"></div>
+								<div class="gm-node is-feat">C4 (login)</div>
+								<span class="gm-arrow-slide">═════► main se desliza a C4</span>
+							</div>
+							<p class="gm-status is-ok">
+								<span>✓ {isEs ? 'Sin commits adicionales. El historial permanece perfectamente lineal y limpio.' : 'No extra commits. History remains completely linear and clean.'}</span>
+							</p>
+						</div>
+
+						<!-- 3-Way Merge View -->
+						<div class="gm-mode-view" id="gmView3Way" hidden>
+							<span class="gm-panel-label">{isEs ? 'Caso 2: 3-Way Merge (ambas ramas divergieron)' : 'Case 2: 3-Way Merge (both branches diverged)'}</span>
+							<div class="gm-threeway-graph">
+								<div class="gm-branch-track">
+									<span class="gm-line-label">main:</span>
+									<span class="gm-node">C2 (ancestro)</span> → <span class="gm-node is-main">C3 (hotfix en main)</span> ──────┐
+								</div>
+								<div class="gm-branch-track">
+									<span class="gm-line-label">feature:</span>
+									<span class="gm-node">C2</span> ──────→ <span class="gm-node is-feat">C4 (nuevo login)</span> ─────────┴─► <span class="gm-node is-merge">M (Merge Commit)</span>
+								</div>
+							</div>
+							<p class="gm-status is-info">
+								<span>ℹ {isEs ? 'Git compara el ancestro común (C2) con C3 y C4. El commit M tiene 2 padres: C3 y C4.' : 'Git compares common ancestor (C2) with C3 and C4. Commit M has two parents: C3 and C4.'}</span>
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 3: Por qué ocurre un conflicto -->
+			<section class="gm-slide" data-slide="3">
+				<div class="gm-header">
+					<span class="gm-kicker">{isEs ? 'Anatomía del conflicto' : 'Conflict anatomy'}</span>
+					<h2 class="gm-title">{isEs ? '¿Por qué ocurre un conflicto? La máquina no puede adivinar' : 'Why does a conflict happen? The machine cannot guess intent'}</h2>
+					<p class="gm-lead">
+						{isEs
+							? 'Git es capaz de fusionar automáticamente cambios si están en archivos diferentes o en líneas separadas. Pero si dos personas modificaron exactamente la misma línea del mismo archivo, Git no tiene criterio de negocio para saber cuál es la correcta.'
+							: 'Git automatically merges changes across different files or separated lines. But when two developers modify the exact same lines of the same file, Git has no business criteria to know which is correct.'}
+					</p>
+				</div>
+
+				<div class="gm-card">
+					<div class="gm-three-versions-grid">
+						<div class="gm-version-card">
+							<div class="gm-ver-head">
+								<span class="gm-ver-badge">1. {isEs ? 'Ancestro común (C2)' : 'Common ancestor (C2)'}</span>
+							</div>
+							<pre class="gm-ver-code"><code>// config.ts
+export const discount = 0.10;
+export const currency = 'USD';</code></pre>
+							<p class="gm-ver-note">{isEs ? 'Valor original acordado la semana pasada.' : 'Original value agreed last week.'}</p>
+						</div>
+
+						<div class="gm-version-card is-head">
+							<div class="gm-ver-head">
+								<span class="gm-ver-badge is-head">2. Rama main (HEAD)</span>
+							</div>
+							<pre class="gm-ver-code"><code>// config.ts
+<mark class="gm-mark-main">export const discount = 0.15;</mark>
+export const currency = 'USD';</code></pre>
+							<p class="gm-ver-note">{isEs ? 'Marketing subió el descuento al 15% en main.' : 'Marketing raised discount to 15% in main.'}</p>
+						</div>
+
+						<div class="gm-version-card is-feat">
+							<div class="gm-ver-head">
+								<span class="gm-ver-badge is-feat">3. Rama feature</span>
+							</div>
+							<pre class="gm-ver-code"><code>// config.ts
+<mark class="gm-mark-feat">export const discount = 0.20;</mark>
+export const currency = 'USD';</code></pre>
+							<p class="gm-ver-note">{isEs ? 'Tu tarea de Black Friday puso 20% en feature.' : 'Black Friday task set 20% in feature.'}</p>
+						</div>
+					</div>
+
+					<p class="gm-status is-danger" style="margin-top: var(--space-4);">
+						<span>⚠️ {isEs ? '¿15% o 20%? Ningún algoritmo puede tomar esa decisión por ti. Git detiene el merge y te cede el control.' : '15% or 20%? No algorithm can make this decision for you. Git pauses the merge and hands you control.'}</span>
+					</p>
+				</div>
+			</section>
+
+			<!-- Slide 4: Marcadores y Resolución Interactiva -->
+			<section class="gm-slide" data-slide="4">
+				<div class="gm-header">
+					<span class="gm-kicker">{isEs ? 'Resolución interactiva' : 'Interactive resolution'}</span>
+					<h2 class="gm-title">{isEs ? 'Desarmando los marcadores de conflicto en tu editor' : 'Deconstructing conflict markers in your editor'}</h2>
+					<p class="gm-lead">
+						{isEs
+							? 'Cuando hay conflicto, Git edita tu archivo insertando 3 delimitadores: <<<<<<< HEAD (tu versión actual), ======= (separador divisorio) y >>>>>>> (versión entrante). Resuelve el conflicto eligiendo la opción correcta:'
+							: 'When a conflict occurs, Git edits your file inserting 3 delimiters: <<<<<<< HEAD (current version), ======= (separator), and >>>>>>> (incoming version). Resolve the conflict below:'}
+					</p>
+				</div>
+
+				<div class="gm-card">
+					<div class="gm-conflict-resolver">
+						<div class="gm-resolver-toolbar">
+							<span class="gm-panel-label">{isEs ? 'Opciones de resolución rápida:' : 'Quick resolution options:'}</span>
+							<div class="gm-resolver-actions">
+								<button class="gm-chip-action" id="gmBtnKeepHead">{isEs ? '1. Aceptar versión actual (HEAD - 15%)' : '1. Keep current (HEAD - 15%)'}</button>
+								<button class="gm-chip-action" id="gmBtnKeepIncoming">{isEs ? '2. Aceptar versión entrante (feature - 20%)' : '2. Accept incoming (feature - 20%)'}</button>
+								<button class="gm-chip-action" id="gmBtnCombine">{isEs ? '3. Combinar lógica con flag (ambas)' : '3. Combine with flag (both)'}</button>
+								<button class="gm-chip-action is-reset" id="gmBtnResetConflict">{isEs ? 'Reiniciar marcas' : 'Reset markers'}</button>
+							</div>
+						</div>
+
+						<div class="gm-editor-window">
+							<div class="gm-editor-topbar">
+								<span class="gm-file-tab">src/config.ts <span class="gm-tab-status" id="gmTabStatus">⚠️ {isEs ? 'CONFLICTO' : 'CONFLICT'}</span></span>
+							</div>
+							<pre class="gm-editor-content" id="gmEditorCode"><code><span class="gm-tc-dim">// src/config.ts</span>
+<span class="gm-tc-conflict-head">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+<span class="gm-tc-main-code">export const discount = 0.15; // Versión en main</span>
+<span class="gm-tc-conflict-sep">=======</span>
+<span class="gm-tc-feat-code">export const discount = 0.20; // Versión en feature</span>
+<span class="gm-tc-conflict-end">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/login</span>
+<span class="gm-tc-dim">export const currency = 'USD';</span></code></pre>
+						</div>
+
+						<p class="gm-status is-info" id="gmResolverFeedback">
+							<span>{isEs ? 'El archivo tiene marcadores activos. Haz clic en una de las 3 opciones para limpiarlo.' : 'File has active conflict markers. Click one of the 3 options to clean it up.'}</span>
+						</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 5: Procedimiento de comandos para cerrar el Merge -->
+			<section class="gm-slide" data-slide="5">
+				<div class="gm-header">
+					<span class="gm-kicker">{isEs ? 'Terminal y comandos' : 'Terminal and commands'}</span>
+					<h2 class="gm-title">{isEs ? 'git add para marcar resuelto, git commit para sellar' : 'git add to mark resolved, git commit to seal'}</h2>
+					<p class="gm-lead">
+						{isEs
+							? 'Una vez editado el archivo y eliminados todos los marcadores, debes notificarle a Git que la disputa terminó. El comando git add le indica que el archivo está resuelto en Staging, y git commit sella el merge commit final.'
+							: 'Once the file is cleaned and markers are deleted, you must inform Git. The git add command tells Git the file is resolved in Staging, and git commit seals the final merge commit.'}
+					</p>
+				</div>
+
+				<div class="gm-card">
+					<div class="gm-pipeline-steps">
+						<div class="gm-pipe-step">
+							<span class="gm-step-badge">1</span>
+							<div class="gm-step-info">
+								<strong>git status</strong>
+								<p>{isEs ? 'Verifica los archivos en conflicto listados como "both modified".' : 'Verify conflicting files listed as "both modified".'}</p>
+							</div>
+						</div>
+						<div class="gm-pipe-step">
+							<span class="gm-step-badge">2</span>
+							<div class="gm-step-info">
+								<strong>Editar y validar</strong>
+								<p>{isEs ? 'Abre el archivo, borra los marcadores, elige el código y corre los tests.' : 'Open file, delete markers, pick final code, and run tests.'}</p>
+							</div>
+						</div>
+						<div class="gm-pipe-step">
+							<span class="gm-step-badge">3</span>
+							<div class="gm-step-info">
+								<strong>git add src/config.ts</strong>
+								<p>{isEs ? 'Marca el conflicto como resuelto y traslada el archivo limpio al Staging Area.' : 'Marks conflict resolved and moves clean file into Staging Area.'}</p>
+							</div>
+						</div>
+						<div class="gm-pipe-step">
+							<span class="gm-step-badge">4</span>
+							<div class="gm-step-info">
+								<strong>git commit</strong>
+								<p>{isEs ? 'Genera el commit de unión automático. En versiones modernas: git merge --continue.' : 'Generates merge commit. In modern Git: git merge --continue.'}</p>
+							</div>
+						</div>
+					</div>
+
+					<div class="gm-abort-box">
+						<div class="gm-abort-head">
+							<span class="gm-abort-icon">🛟</span>
+							<strong>{isEs ? 'El botón de escape de emergencia: git merge --abort' : 'Emergency escape hatch: git merge --abort'}</strong>
+						</div>
+						<p class="gm-abort-desc">
+							{isEs
+								? 'Si te equivocaste al resolver, el conflicto es inmanejable o necesitas consultar con un compañero antes de proceder, ejecuta git merge --abort. Git cancelará la fusión y devolverá todo tu repositorio al estado exacto antes de intentar el merge.'
+								: 'If you made a mistake, the conflict is unmanageable, or you need to consult a peer, run git merge --abort. Git safely cancels the merge and restores your repository to the exact pre-merge state.'}
+						</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- Slide 6: Estrategias de equipo -->
+			<section class="gm-slide" data-slide="6">
+				<div class="gm-header">
+					<span class="gm-kicker">{isEs ? 'Buenas prácticas' : 'Best practices'}</span>
+					<h2 class="gm-title">{isEs ? 'Menos conflictos no es suerte: es disciplina arquitectónica' : 'Fewer conflicts is not luck: it is architectural discipline'}</h2>
+					<p class="gm-lead">
+						{isEs
+							? 'Los conflictos no se evitan rezando, sino diseñando el código y el flujo de trabajo para minimizar las zonas de colisión concurrente entre desarrolladores.'
+							: 'Conflicts are not avoided by luck, but by designing code and workflow to minimize concurrent collision zones between developers.'}
+					</p>
+				</div>
+
+				<div class="gm-card">
+					<div class="gm-best-grid">
+						<div class="gm-best-card">
+							<span class="gm-best-num">01</span>
+							<h3>{isEs ? 'Ramas de vida corta (Short-lived branches)' : 'Short-lived branches'}</h3>
+							<p>{isEs ? 'Una rama que vive 2 días tiene muy pocas probabilidades de conflicto. Una rama que vive 3 semanas acumula cientos de diferencias imposibles de digerir.' : 'A branch alive for 2 days rarely conflicts. A branch open for 3 weeks accumulates hundreds of changes.'}</p>
+						</div>
+
+						<div class="gm-best-card">
+							<span class="gm-best-num">02</span>
+							<h3>{isEs ? 'Modularidad y archivos pequeños' : 'Modularity and small files'}</h3>
+							<p>{isEs ? 'Si 5 programadores editan un archivo gigante de 3000 líneas (God File), chocarán a diario. Divide en componentes y módulos cohesivos de responsabilidad única.' : 'If 5 developers edit a 3000-line God File, they will clash daily. Split into cohesive, single-responsibility modules.'}</p>
+						</div>
+
+						<div class="gm-best-card">
+							<span class="gm-best-num">03</span>
+							<h3>{isEs ? 'Sincronizar frecuentemente con main' : 'Regularly sync with main'}</h3>
+							<p>{isEs ? 'Trae los cambios de main a tu rama varias veces al día. Resolver un conflicto de 2 líneas hoy es mil veces más fácil que resolver 40 archivos el viernes a la tarde.' : 'Bring main changes into your branch multiple times a day. Solving a 2-line conflict today beats 40 files on Friday.'}</p>
+						</div>
+
+						<div class="gm-best-card">
+							<span class="gm-best-num">04</span>
+							<h3>{isEs ? 'Comunicación antes de refactors masivos' : 'Communicate before massive refactors'}</h3>
+							<p>{isEs ? 'Si vas a cambiar el formateador (Prettier/ESLint) o renombrar carpetas clave, avísale al equipo y mergea en una ventana coordinada sin ramas abiertas.' : 'If you are reformatting or renaming key directories, notify the team and merge during a coordinated window.'}</p>
+						</div>
+					</div>
+				</div>
+			</section>
+		</main>
+	</div>
+</div>
+
+<style>
+	.gm-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gm-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.gm-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .gm-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .gm-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .gm-viewport { zoom: 1.25; } }
+
+	.gm-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: var(--color-surface);
+	}
+
+	.gm-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.gm-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.gm-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.gm-counter {
+		font-size: 13px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	.gm-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 1100px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.gm-slide.is-active {
+		display: block;
+		animation: gmFade 0.25s ease-out;
+	}
+
+	@keyframes gmFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.gm-header { margin-bottom: var(--space-5); }
+
+	.gm-kicker {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.gm-title {
+		font-size: 26px;
+		color: var(--color-text);
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.gm-lead {
+		font-size: 15px;
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+		line-height: 1.5;
+		margin: 0;
+		max-width: 72ch;
+	}
+
+	.gm-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		padding: var(--space-5);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.gm-toolbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-4);
+		margin-bottom: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.gm-branch-selector {
+		display: flex;
+		gap: var(--space-2);
+	}
+
+	.gm-branch-btn {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.gm-branch-btn.is-active {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		border-color: var(--color-accent);
+	}
+
+	.gm-hint {
+		font-size: 13px;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.gm-stage-layout {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-4);
+	}
+
+	@media (max-width: 640px) {
+		.gm-stage-layout { grid-template-columns: 1fr; }
+	}
+
+	.gm-ref-card {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gm-panel-label {
+		display: block;
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-neutral-600);
+		margin-bottom: var(--space-2);
+	}
+
+	.gm-code-ref {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+		font-family: monospace;
+		font-size: 12px;
+		color: var(--color-accent-700);
+	}
+
+	.gm-code-ref.is-sha {
+		font-size: 11px;
+		word-break: break-all;
+	}
+
+	.gm-graph-view {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	.gm-dag-track {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.gm-node {
+		width: 34px;
+		height: 34px;
+		border-radius: 50%;
+		background: var(--color-surface);
+		border: 2px solid var(--color-accent);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		font-family: monospace;
+		font-size: 11px;
+		color: var(--color-accent-700);
+	}
+
+	.gm-node.is-active {
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.gm-node.is-feat {
+		border-color: var(--color-accent-2-700);
+		background: var(--color-accent-2-200);
+		color: var(--color-accent-2-800);
+	}
+
+	.gm-node.is-main {
+		border-color: var(--color-accent);
+		background: var(--color-accent-200);
+		color: var(--color-accent-800);
+	}
+
+	.gm-node.is-merge {
+		border-color: var(--color-accent-700);
+		background: var(--color-accent);
+		color: var(--color-bg);
+		width: auto;
+		padding: 0 10px;
+		border-radius: var(--radius-sm);
+	}
+
+	.gm-line {
+		width: 24px;
+		height: 2px;
+		background: var(--color-divider);
+	}
+
+	.gm-line.is-dash {
+		border-top: 2px dashed var(--color-accent-2-600);
+		background: transparent;
+	}
+
+	.gm-tag {
+		font-family: monospace;
+		font-size: 11px;
+		font-weight: 700;
+		padding: 2px 8px;
+		border-radius: var(--radius-sm);
+	}
+
+	.gm-tag.is-head {
+		background: var(--color-accent-700);
+		color: var(--color-bg);
+	}
+
+	/* Slide 2: Fast-Forward vs 3-Way */
+	.gm-action-btn {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		border: none;
+		padding: var(--space-2) var(--space-4);
+		border-radius: var(--radius-md);
+		font-weight: 700;
+		font-size: 13px;
+		cursor: pointer;
+	}
+
+	.gm-mode-view {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.gm-ff-track {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		margin-bottom: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	.gm-line-label {
+		font-family: monospace;
+		font-weight: 700;
+		font-size: 12px;
+		width: 60px;
+	}
+
+	.gm-arrow-slide {
+		font-family: monospace;
+		font-size: 11px;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		margin-left: var(--space-2);
+	}
+
+	.gm-threeway-graph {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		margin-bottom: var(--space-4);
+	}
+
+	.gm-branch-track {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-family: monospace;
+		font-size: 12px;
+	}
+
+	.gm-status {
+		margin: 0;
+		font-size: 13px;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+	}
+
+	.gm-status.is-ok {
+		background: color-mix(in srgb, var(--color-accent-2) 15%, var(--color-surface));
+		color: var(--color-accent-2-800);
+	}
+
+	.gm-status.is-info {
+		background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+		color: var(--color-accent-700);
+	}
+
+	.gm-status.is-danger {
+		background: color-mix(in srgb, rgb(225, 29, 72) 10%, var(--color-surface));
+		color: rgb(190, 18, 60);
+	}
+
+	/* Slide 3: Three Versions */
+	.gm-three-versions-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: var(--space-3);
+	}
+
+	.gm-version-card {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gm-version-card.is-head { border-color: var(--color-accent); }
+	.gm-version-card.is-feat { border-color: var(--color-accent-2-600); }
+
+	.gm-ver-head { margin-bottom: var(--space-2); }
+
+	.gm-ver-badge {
+		font-size: 11px;
+		font-weight: 800;
+		padding: 2px 6px;
+		border-radius: var(--radius-sm);
+		background: var(--color-neutral-200);
+		color: var(--color-neutral-800);
+	}
+
+	.gm-ver-badge.is-head { background: var(--color-accent); color: var(--color-bg); }
+	.gm-ver-badge.is-feat { background: var(--color-accent-2-600); color: rgb(255, 255, 255); }
+
+	.gm-ver-code {
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-sm);
+		padding: var(--space-2) var(--space-3);
+		font-family: monospace;
+		font-size: 12px;
+		margin: 0 0 var(--space-2);
+		flex: 1;
+	}
+
+	.gm-mark-main { background: color-mix(in srgb, var(--color-accent) 25%, transparent); padding: 2px 4px; font-weight: 700; }
+	.gm-mark-feat { background: color-mix(in srgb, var(--color-accent-2) 30%, transparent); padding: 2px 4px; font-weight: 700; }
+
+	.gm-ver-note {
+		font-size: 11.5px;
+		color: var(--color-neutral-700);
+		margin: 0;
+	}
+
+	/* Slide 4: Conflict Resolver */
+	.gm-conflict-resolver {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.gm-resolver-actions {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+
+	.gm-chip-action {
+		background: var(--color-bg);
+		border: 1px solid var(--color-accent);
+		color: var(--color-accent-700);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-md);
+		font-size: 12px;
+		font-weight: 700;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.gm-chip-action:hover {
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.gm-chip-action.is-reset {
+		border-color: var(--color-divider);
+		color: var(--color-neutral-700);
+	}
+
+	.gm-editor-window {
+		background: var(--color-neutral-900);
+		border-radius: var(--radius-md);
+		overflow: hidden;
+	}
+
+	.gm-editor-topbar {
+		background: var(--color-neutral-800);
+		padding: var(--space-2) var(--space-4);
+		border-bottom: 1px solid var(--color-neutral-700);
+	}
+
+	.gm-file-tab {
+		font-family: monospace;
+		font-size: 12px;
+		color: var(--color-neutral-200);
+	}
+
+	.gm-tab-status {
+		font-size: 10px;
+		font-weight: 800;
+		background: rgb(225, 29, 72);
+		color: rgb(255, 255, 255);
+		padding: 2px 6px;
+		border-radius: 3px;
+		margin-left: var(--space-2);
+	}
+
+	.gm-editor-content {
+		padding: var(--space-4);
+		margin: 0;
+		font-family: monospace;
+		font-size: 13px;
+		line-height: 1.6;
+		color: var(--color-neutral-100);
+	}
+
+	.gm-tc-conflict-head { color: rgb(248, 113, 113); font-weight: 800; }
+	.gm-tc-main-code { background: color-mix(in srgb, rgb(239, 68, 68) 20%, transparent); display: block; }
+	.gm-tc-conflict-sep { color: rgb(156, 163, 175); font-weight: 800; display: block; }
+	.gm-tc-feat-code { background: color-mix(in srgb, rgb(52, 211, 153) 20%, transparent); display: block; }
+	.gm-tc-conflict-end { color: rgb(52, 211, 153); font-weight: 800; }
+	.gm-tc-dim { color: rgb(156, 163, 175); }
+
+	/* Slide 5: Pipeline & Abort */
+	.gm-pipeline-steps {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: var(--space-3);
+		margin-bottom: var(--space-4);
+	}
+
+	.gm-pipe-step {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-3);
+		display: flex;
+		gap: var(--space-3);
+	}
+
+	.gm-step-badge {
+		width: 26px;
+		height: 26px;
+		border-radius: 50%;
+		background: var(--color-accent);
+		color: var(--color-bg);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 800;
+		font-size: 12px;
+		flex-shrink: 0;
+	}
+
+	.gm-step-info strong { display: block; font-family: monospace; font-size: 12px; margin-bottom: 2px; }
+	.gm-step-info p { margin: 0; font-size: 11.5px; color: var(--color-neutral-700); }
+
+	.gm-abort-box {
+		background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+		border: 1px dashed var(--color-accent);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.gm-abort-head {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		margin-bottom: var(--space-2);
+		font-size: 14px;
+	}
+
+	.gm-abort-desc {
+		margin: 0;
+		font-size: 12.5px;
+		color: var(--color-neutral-700);
+		line-height: 1.4;
+	}
+
+	/* Slide 6: Best Practices */
+	.gm-best-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		gap: var(--space-4);
+	}
+
+	.gm-best-card {
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+	}
+
+	.gm-best-num {
+		font-size: 18px;
+		font-weight: 900;
+		color: var(--color-accent-700);
+		font-family: monospace;
+	}
+
+	.gm-best-card h3 {
+		font-size: 14px;
+		margin: var(--space-1) 0 var(--space-2);
+		font-weight: 700;
+	}
+
+	.gm-best-card p {
+		margin: 0;
+		font-size: 12.5px;
+		color: var(--color-neutral-700);
+		line-height: 1.4;
+	}
+</style>
+
+<script>
+	let currentSlide = 1;
+	const totalSlides = 6;
+
+	const screenEl = document.querySelector('.gm-screen');
+	const pageLang = screenEl?.getAttribute('data-lang') === 'en' ? 'en' : 'es';
+
+	const prevBtn = document.getElementById('gmPrevBtn') as HTMLButtonElement;
+	const nextBtn = document.getElementById('gmNextBtn') as HTMLButtonElement;
+	const counter = document.getElementById('gmSlideCounter') as HTMLElement;
+	const slides = document.querySelectorAll<HTMLElement>('.gm-slide');
+
+	function updateSlide(target: number) {
+		if (target < 1 || target > totalSlides) return;
+		currentSlide = target;
+		slides.forEach((s) => s.classList.remove('is-active'));
+		document.querySelector(`.gm-slide[data-slide="${currentSlide}"]`)?.classList.add('is-active');
+
+		if (counter) counter.textContent = `${currentSlide} / ${totalSlides}`;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	}
+
+	prevBtn?.addEventListener('click', () => updateSlide(currentSlide - 1));
+	nextBtn?.addEventListener('click', () => updateSlide(currentSlide + 1));
+
+	window.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowRight') updateSlide(currentSlide + 1);
+		if (e.key === 'ArrowLeft') updateSlide(currentSlide - 1);
+	});
+
+	// Slide 1: Branch pointers selector
+	const branchBtns = document.querySelectorAll<HTMLButtonElement>('.gm-branch-btn');
+	const headFileContent = document.getElementById('gmHeadFileContent');
+	const branchFileContent = document.getElementById('gmBranchFileContent');
+	const headTag = document.getElementById('gmHeadTag');
+
+	const branchData: Record<string, { ref: string; sha: string; label: string }> = {
+		main: {
+			ref: 'ref: refs/heads/main',
+			sha: '3a8f91c78490a1b2c3d4e5f6a7b8c9d0e1f2a3b4',
+			label: 'HEAD → main (C3)',
+		},
+		login: {
+			ref: 'ref: refs/heads/feature/login',
+			sha: '9f02e4d5c6b7a891011121314151617181920212',
+			label: 'HEAD → feature/login (C4)',
+		},
+		nav: {
+			ref: 'ref: refs/heads/bugfix/nav',
+			sha: '1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c',
+			label: 'HEAD → bugfix/nav (C2)',
+		},
+	};
+
+	branchBtns.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const branch = btn.getAttribute('data-branch') || 'main';
+			branchBtns.forEach((b) => b.classList.remove('is-active'));
+			btn.classList.add('is-active');
+
+			const data = branchData[branch];
+			if (data) {
+				if (headFileContent) headFileContent.textContent = data.ref;
+				if (branchFileContent) branchFileContent.textContent = data.sha;
+				if (headTag) headTag.textContent = data.label;
+			}
+		});
+	});
+
+	// Slide 2: Fast-Forward vs 3-Way Merge
+	const toggleMergeMode = document.getElementById('gmToggleMergeMode');
+	const viewFF = document.getElementById('gmViewFF');
+	const view3Way = document.getElementById('gmView3Way');
+	const mergeHint = document.getElementById('gmMergeHint');
+	let is3Way = false;
+
+	toggleMergeMode?.addEventListener('click', () => {
+		is3Way = !is3Way;
+		if (viewFF) viewFF.hidden = is3Way;
+		if (view3Way) view3Way.hidden = !is3Way;
+		if (toggleMergeMode) {
+			toggleMergeMode.textContent = is3Way
+				? (pageLang === 'es' ? 'Ver Fast-Forward (sin divergencia)' : 'View Fast-Forward (no divergence)')
+				: (pageLang === 'es' ? 'Ver 3-Way Merge (con divergencia)' : 'View 3-Way Merge (with divergence)');
+		}
+		if (mergeHint) {
+			mergeHint.textContent = is3Way
+				? (pageLang === 'es' ? 'Modo actual: 3-Way Merge (commit M con 2 padres).' : 'Current mode: 3-Way Merge (commit M with 2 parents).')
+				: (pageLang === 'es' ? 'Modo actual: Fast-Forward (historia lineal, sin commit extra).' : 'Current mode: Fast-Forward (linear history, zero extra commits).');
+		}
+	});
+
+	// Slide 4: Interactive Conflict Resolver
+	const btnKeepHead = document.getElementById('gmBtnKeepHead');
+	const btnKeepIncoming = document.getElementById('gmBtnKeepIncoming');
+	const btnCombine = document.getElementById('gmBtnCombine');
+	const btnResetConflict = document.getElementById('gmBtnResetConflict');
+
+	const tabStatus = document.getElementById('gmTabStatus');
+	const editorCode = document.getElementById('gmEditorCode');
+	const resolverFeedback = document.getElementById('gmResolverFeedback');
+
+	const ORIGINAL_CONFLICT = `<span class="gm-tc-dim">// src/config.ts</span>\n<span class="gm-tc-conflict-head">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>\n<span class="gm-tc-main-code">export const discount = 0.15; // Versión en main</span>\n<span class="gm-tc-conflict-sep">=======</span>\n<span class="gm-tc-feat-code">export const discount = 0.20; // Versión en feature</span>\n<span class="gm-tc-conflict-end">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/login</span>\n<span class="gm-tc-dim">export const currency = 'USD';</span>`;
+
+	btnKeepHead?.addEventListener('click', () => {
+		if (editorCode) {
+			editorCode.innerHTML = `<code><span class="gm-tc-dim">// src/config.ts</span>\n<span class="gm-tc-main-code">export const discount = 0.15; // Versión aceptada de main</span>\n<span class="gm-tc-dim">export const currency = 'USD';</span></code>`;
+		}
+		if (tabStatus) {
+			tabStatus.textContent = pageLang === 'es' ? '✓ RESUELTO' : '✓ RESOLVED';
+			tabStatus.style.background = 'rgb(16, 185, 129)';
+		}
+		if (resolverFeedback) {
+			resolverFeedback.innerHTML = `<span>✓ ${pageLang === 'es' ? 'Marcadores eliminados. Se conservó el 15% de HEAD. Ejecuta "git add src/config.ts" para indexar.' : 'Markers removed. Kept 15% from HEAD. Run "git add src/config.ts" to stage.'}</span>`;
+		}
+	});
+
+	btnKeepIncoming?.addEventListener('click', () => {
+		if (editorCode) {
+			editorCode.innerHTML = `<code><span class="gm-tc-dim">// src/config.ts</span>\n<span class="gm-tc-feat-code">export const discount = 0.20; // Versión aceptada de feature</span>\n<span class="gm-tc-dim">export const currency = 'USD';</span></code>`;
+		}
+		if (tabStatus) {
+			tabStatus.textContent = pageLang === 'es' ? '✓ RESUELTO' : '✓ RESOLVED';
+			tabStatus.style.background = 'rgb(16, 185, 129)';
+		}
+		if (resolverFeedback) {
+			resolverFeedback.innerHTML = `<span>✓ ${pageLang === 'es' ? 'Marcadores eliminados. Se aceptó el 20% entrante. Listo para git add.' : 'Markers removed. Accepted 20% incoming. Ready for git add.'}</span>`;
+		}
+	});
+
+	btnCombine?.addEventListener('click', () => {
+		if (editorCode) {
+			editorCode.innerHTML = `<code><span class="gm-tc-dim">// src/config.ts</span>\n// Lógica combinada por el desarrollador\nexport const discount = isBlackFriday ? 0.20 : 0.15;\n<span class="gm-tc-dim">export const currency = 'USD';</span></code>`;
+		}
+		if (tabStatus) {
+			tabStatus.textContent = pageLang === 'es' ? '✓ RESUELTO' : '✓ RESOLVED';
+			tabStatus.style.background = 'rgb(16, 185, 129)';
+		}
+		if (resolverFeedback) {
+			resolverFeedback.innerHTML = `<span>✓ ${pageLang === 'es' ? '¡Excelente decisión técnica! Se combinaron ambas necesidades en una regla de negocio limpia.' : 'Excellent technical decision! Both business requirements combined cleanly.'}</span>`;
+		}
+	});
+
+	btnResetConflict?.addEventListener('click', () => {
+		if (editorCode) editorCode.innerHTML = `<code>${ORIGINAL_CONFLICT}</code>`;
+		if (tabStatus) {
+			tabStatus.textContent = pageLang === 'es' ? '⚠️ CONFLICTO' : '⚠️ CONFLICT';
+			tabStatus.style.background = 'rgb(225, 29, 72)';
+		}
+		if (resolverFeedback) {
+			resolverFeedback.innerHTML = `<span>${pageLang === 'es' ? 'Marcadores restaurados a estado de colisión.' : 'Markers restored to collision state.'}</span>`;
+		}
+	});
+</script>
