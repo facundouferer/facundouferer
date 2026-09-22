@@ -278,6 +278,60 @@ table { width: 100%; border-collapse: collapse; margin-block: 1.5rem; }
 	width: 6px; height: 6px; border-radius: 50%; background: var(--color-accent-2-600);
 }
 
+/* — course roadmap tree (collapsible mindmap-style folders, CourseRoadmap.astro) — */
+.tree-root {
+	border: 1px solid var(--color-divider);
+}
+.tree-root-summary {
+	display: flex; align-items: flex-start; gap: var(--space-3);
+	cursor: pointer; list-style: none;
+}
+.tree-root-summary::-webkit-details-marker { display: none; }
+.tree-root-summary::marker { content: ''; }
+.tree-root-icon {
+	flex-shrink: 0; width: 20px; height: 20px; margin-top: 2px;
+	color: var(--color-accent-700);
+}
+.tree-root-copy { display: grid; gap: 2px; }
+.tree-root-hint {
+	font-size: 12.5px; color: color-mix(in srgb, var(--color-text) 60%, transparent);
+}
+.tree {
+	list-style: none; margin: var(--space-3) 0 0; padding: 0;
+	display: grid; gap: var(--space-2);
+}
+.tree-branch {
+	list-style: none; margin: var(--space-2) 0 0; padding: 0 0 0 var(--space-4);
+	border-left: 2px solid var(--color-divider);
+	display: grid; gap: var(--space-2);
+}
+.tree-node { margin: 0; }
+.tree-folder-summary {
+	display: flex; align-items: center; gap: var(--space-2);
+	cursor: pointer; list-style: none; padding: var(--space-1) 0;
+	font-size: 0.92rem; font-weight: 600;
+}
+.tree-folder-summary::-webkit-details-marker { display: none; }
+.tree-folder-summary::marker { content: ''; }
+.tree-folder-icon { width: 17px; height: 17px; flex-shrink: 0; color: var(--color-accent-700); }
+.tree-folder-icon--open { display: none; }
+.tree-folder[open] > .tree-folder-summary .tree-folder-icon--closed { display: none; }
+.tree-folder[open] > .tree-folder-summary .tree-folder-icon--open { display: block; }
+.tree-step { flex-shrink: 0; }
+.tree-folder-title { flex: 1; }
+.tree-folder-desc {
+	margin: var(--space-1) 0 0 calc(17px + var(--space-2));
+	font-size: 12.5px; color: color-mix(in srgb, var(--color-text) 60%, transparent);
+}
+.tree-item { margin: 0; }
+.tree-item-link {
+	display: flex; align-items: center; gap: var(--space-2);
+	padding: 4px 0; text-decoration: none; color: var(--color-text);
+}
+.tree-item-link:hover { color: var(--color-accent-700); }
+.tree-item-order { flex-shrink: 0; }
+.tree-item-title { font-size: 0.86rem; }
+
 /* Scroll — soft, pill-shaped scrollbar with edges that dissolve instead of
    cutting off. Fades are driven by scroll position where supported, and are
    simply absent where it is not. */

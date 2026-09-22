@@ -386,7 +386,44 @@ Curriculum sequencing (MANDATORY):
   `boolean` instead of throwing) and, at most, add a short forward reference with
   a link to the lesson where that topic is taught.
 
-Courses pages are at `src/pages/cursos/` (Spanish) and `src/pages/en/courses/` (English) mirroring the articles catalog pattern: catalog at `index.astro`, course detail at `[course]/index.astro`, lesson page at `[course]/[lesson].astro`. Components: `CourseCard.astro`, `CourseBreadcrumb.astro`, `LessonsList.astro` in `src/components/`. Navigation entries live in `src/config/site.ts` `NAVIGATION` (between Articles and About). All UI strings use `t('courses.*')` keys from `es.json`/`en.json`.
+Optional course roadmap (`roadmap` field, mindmap-style learning path):
+
+- A course's `index.md` MAY declare a `roadmap` field: an array of module
+  nodes rendered as a collapsible tree (`CourseRoadmap.astro`) at the top of
+  the course page, between `.course-header` and `.lessons-section`, in both
+  locales. A course with no `roadmap` field renders nothing there — no
+  heading, no empty block. Only the Java course has one today; other courses
+  are unaffected.
+- Each node is bilingual: `title` (Spanish) / `title_en` (English), plus
+  optional one-sentence `description` / `description_en`.
+- Each node declares EITHER `lessons` (a flat list of lesson frontmatter
+  `slug`s, not filenames — they can differ, see above) OR `children` (a
+  nested list of further module nodes), never both and never neither. The
+  schema (`roadmapNodeSchema` in `src/content.config.ts`, recursive via
+  `z.lazy`) rejects a node that breaks this rule at build time.
+- The flattened, depth-first sequence of every `lessons` slug across the
+  whole roadmap MUST exactly equal that course's lessons sorted by `order` —
+  the roadmap is required to follow the lesson order, not just reference
+  every lesson. `resolveRoadmap` (`src/utils/roadmap.ts`) resolves a course's
+  `roadmap` against `getLessonsForCourse`'s result for one locale and throws
+  a descriptive `Error` (failing the build) when: a `lessons` slug does not
+  match any published lesson, a slug is listed more than once, a published
+  lesson is missing from the roadmap, or the flattened order does not match
+  the lessons' `order` sequence.
+- Author `lessons` slugs as a YAML block list (`- 'slug'`) so they stay easy
+  to scan and diff; see `src/content/courses/java/index.md` for the full
+  worked example (5 top-level modules, 3 of which nest submodules).
+- `CourseRoadmap.astro` renders with native `<details>`/`<summary>`
+  (keyboard-accessible, no JS): one outer disclosure for the whole roadmap,
+  one per module/submodule folder (Lucide `folder`/`folder-open` icons,
+  `stroke-width: 2.75`, swapped via `[open]` state — no JS), and lesson
+  leaves as links showing the lesson's `order` badge plus title. Module
+  labels show the numbered step path (`1`, `3.2`, ...) computed by
+  `resolveRoadmap`. Shared tree classes (`.tree`, `.tree-root`,
+  `.tree-folder`, `.tree-item`, ...) live in `src/styles/global.css`, tokens
+  only — see DESIGN.md §4/§8 before adding to them.
+
+Courses pages are at `src/pages/cursos/` (Spanish) and `src/pages/en/courses/` (English) mirroring the articles catalog pattern: catalog at `index.astro`, course detail at `[course]/index.astro`, lesson page at `[course]/[lesson].astro`. Components: `CourseCard.astro`, `CourseBreadcrumb.astro`, `LessonsList.astro`, `CourseRoadmap.astro` in `src/components/`. Navigation entries live in `src/config/site.ts` `NAVIGATION` (between Articles and About). All UI strings use `t('courses.*')` keys from `es.json`/`en.json`.
 
 Useful courses/lessons verification commands:
 
@@ -396,6 +433,12 @@ Useful courses/lessons verification commands:
 - `npm test -- tests/courses-catalog.test.mjs`
 - `npm test -- tests/courses-detail-routing.test.mjs`
 - `npm test -- tests/site-nav-courses.test.mjs`
+- `npm test -- tests/course-roadmap-schema.test.mjs`
+- `npm test -- tests/course-roadmap-helper.test.mjs`
+- `npm test -- tests/course-roadmap-component.test.mjs`
+- `npm test -- tests/course-roadmap-pages.test.mjs`
+- `npm test -- tests/course-roadmap-i18n.test.mjs`
+- `npm test -- tests/courses-java-roadmap.test.mjs`
 - `npm run astro -- check`
 
 #### Presentations (`src/data/presentations.ts`)

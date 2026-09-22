@@ -1,5 +1,12 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
+// `z` from 'astro:content' is a value-only re-export (no namespace typing),
+// so it cannot be used in a type position (e.g. `z.ZodType<T>`). `ZodType`
+// is imported directly from `zod` (the same package astro re-exports as
+// `z`, already resolved transitively — not a new dependency) purely as a
+// type, for the recursive roadmap schema's explicit annotation below.
+import type { ZodType } from 'zod';
+import type { RoadmapNode } from './utils/roadmap';
 
 function generateArticleId({ data, entry }: { data: Record<string, unknown>; entry: string }): string {
 	const slug = typeof data.slug === 'string' ? data.slug : entry.replace(/\.md$/, '');
@@ -7,6 +14,41 @@ function generateArticleId({ data, entry }: { data: Record<string, unknown>; ent
 
 	return lang === 'both' ? slug : `${slug}__${lang}`;
 }
+
+// --- roadmap -------------------------------------------------------------
+// Optional mindmap-style learning path for a course: an array of modules,
+// each with a bilingual title/description and EITHER `lessons` (a flat list
+// of lesson frontmatter slugs, not filenames) OR `children` (nested
+// submodules), never both. Recursion is unbounded via `z.lazy`, but the
+// `CourseRoadmap.astro` UI renders cleanly for two levels of `children` plus
+// a final `lessons` level. See AGENTS.md "Courses and Lessons" for the
+// authoring rules and `src/utils/roadmap.ts` for how it is resolved and
+// validated against a course's actual lessons (order, referential integrity).
+// Declared here, ahead of every collection, because the courses collection
+// below references it and it must exist before that declaration (also kept
+// out of the articles..courses window that tests/issue-10-content-schema.test.mjs
+// slices, so it never collides with that unrelated assertion).
+const roadmapNodeSchema: ZodType<RoadmapNode> = z.lazy(() =>
+	z
+		.object({
+			title: z.string(),
+			title_en: z.string(),
+			description: z.string().optional(),
+			description_en: z.string().optional(),
+			lessons: z.array(z.string()).min(1).optional(),
+			children: z.array(roadmapNodeSchema).min(1).optional(),
+		})
+		.superRefine((data, ctx) => {
+			const hasLessons = Array.isArray(data.lessons);
+			const hasChildren = Array.isArray(data.children);
+			if (hasLessons === hasChildren) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: 'A course roadmap node must declare exactly one of "lessons" or "children".',
+				});
+			}
+		}),
+);
 
 const projects = defineCollection({
 	loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
@@ -66,6 +108,7 @@ const courses = defineCollection({
 		image: z.string().optional(),
 		published: z.boolean().default(true),
 		featured: z.boolean().default(false),
+		roadmap: z.array(roadmapNodeSchema).optional(),
 	}),
 });
 

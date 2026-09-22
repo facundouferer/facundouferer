@@ -2,9 +2,11 @@
 import { getCollection } from 'astro:content';
 import { getLangFromUrl, useTranslations } from '../../../../i18n/utils';
 import { getCourseSlugsForLocale, getCoursesForLocale, getLessonsForCourse } from '../../../../utils/courses';
+import { resolveRoadmap } from '../../../../utils/roadmap';
 import { buildCourseBreadcrumbSchema } from '../../../../seo/schema';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import LessonsList from '../../../../components/LessonsList.astro';
+import CourseRoadmap from '../../../../components/CourseRoadmap.astro';
 import { withBase } from '../../../../utils/withBase';
 import { getPresentationCountsForCourse } from '../../../../data/presentations';
 import { getActivityCountsForCourse } from '../../../../utils/activities';
@@ -30,6 +32,7 @@ if (!course) {
 }
 
 const lessons = getLessonsForCourse(allLessons, courseSlug, 'en');
+const roadmap = resolveRoadmap(course.data.roadmap, lessons, 'en', courseSlug);
 const presentationCounts = getPresentationCountsForCourse(courseSlug);
 const allActivities = await getCollection('activities');
 const activityCounts = getActivityCountsForCourse(allActivities, courseSlug, 'en');
@@ -66,6 +69,8 @@ const schema = buildCourseBreadcrumbSchema({
 				</div>
 			</div>
 		</div>
+
+		<CourseRoadmap roadmap={roadmap} locale="en" />
 
 		<section class="lessons-section">
 			<h2 class="lessons-heading">{t('courses.lessonsLabel')} ({lessons.length})</h2>

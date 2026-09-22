@@ -1,0 +1,167 @@
+---
+import { withBase } from '../utils/withBase';
+import { useTranslations } from '../i18n/utils';
+import type { ResolvedRoadmapNode } from '../utils/roadmap';
+
+type Locale = 'es' | 'en';
+
+// This component recurses over itself via `Astro.self` (see
+// https://docs.astro.build/en/reference/astro-syntax/#astroself): the root
+// call passes `roadmap` (the whole resolved tree, or undefined when the
+// course has none); every recursive call passes a single `node` instead.
+// `never` on the unused key of each branch keeps the two calls from being
+// mixed by mistake.
+type Props =
+	| { roadmap: ResolvedRoadmapNode[] | undefined; locale: Locale; node?: never }
+	| { node: ResolvedRoadmapNode; locale: Locale; roadmap?: never };
+
+const props = Astro.props;
+const { locale } = props;
+
+// Normalize the two call shapes (root vs. recursive) into two definite
+// locals up front: Astro's template compiler does not preserve the Props
+// union's `in`/discriminant narrowing across JSX branches, so every access
+// below reads `node`/`rootRoadmap` instead of re-narrowing `props`.
+const node: ResolvedRoadmapNode | undefined = 'node' in props ? props.node : undefined;
+const rootRoadmap: ResolvedRoadmapNode[] | undefined = 'roadmap' in props ? props.roadmap : undefined;
+
+// Root call, no roadmap authored for this course: render nothing — no
+// heading, no empty block.
+if (!node && (!rootRoadmap || rootRoadmap.length === 0)) {
+	return null;
+}
+
+const t = useTranslations(locale);
+
+function lessonAriaLabel(order: number, title: string): string {
+	return t('courses.roadmap.lessonAriaLabel').replace('{order}', String(order)).replace('{title}', title);
+}
+---
+
+{
+	node ? (
+		<li class="tree-node">
+			{node.kind === 'group' ? (
+				<details class="tree-folder">
+					<summary class="tree-folder-summary">
+						<svg
+							aria-hidden="true"
+							class="tree-folder-icon tree-folder-icon--closed"
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2.75"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+						</svg>
+						<svg
+							aria-hidden="true"
+							class="tree-folder-icon tree-folder-icon--open"
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2.75"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<path d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H18a2 2 0 0 1 2 2v2" />
+						</svg>
+						<span class="tree-step tag tag-accent-2">{node.step}</span>
+						<span class="tree-folder-title">{node.title}</span>
+					</summary>
+					{node.description && <p class="tree-folder-desc">{node.description}</p>}
+					<ol class="tree-branch">
+						{node.children.map((child) => (
+							<Astro.self node={child} locale={locale} />
+						))}
+					</ol>
+				</details>
+			) : (
+				<details class="tree-folder">
+					<summary class="tree-folder-summary">
+						<svg
+							aria-hidden="true"
+							class="tree-folder-icon tree-folder-icon--closed"
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2.75"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+						</svg>
+						<svg
+							aria-hidden="true"
+							class="tree-folder-icon tree-folder-icon--open"
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2.75"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<path d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H18a2 2 0 0 1 2 2v2" />
+						</svg>
+						<span class="tree-step tag tag-accent-2">{node.step}</span>
+						<span class="tree-folder-title">{node.title}</span>
+					</summary>
+					{node.description && <p class="tree-folder-desc">{node.description}</p>}
+					<ol class="tree-branch">
+						{node.lessons.map((lesson) => (
+							<li class="tree-item">
+								<a
+									href={withBase(lesson.href)}
+									class="tree-item-link"
+									aria-label={lessonAriaLabel(lesson.order, lesson.title)}
+								>
+									<span class="tree-item-order badge" aria-hidden="true">
+										{lesson.order}
+									</span>
+									<span class="tree-item-title" aria-hidden="true">
+										{lesson.title}
+									</span>
+								</a>
+							</li>
+						))}
+					</ol>
+				</details>
+			)}
+		</li>
+	) : (
+		<details class="tree-root card elev-sm">
+			<summary class="tree-root-summary">
+				<svg
+					aria-hidden="true"
+					class="tree-root-icon"
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2.75"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<circle cx="6" cy="19" r="3" />
+					<path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+					<circle cx="18" cy="5" r="3" />
+				</svg>
+				<span class="tree-root-copy">
+					<span class="card-title">{t('courses.roadmap.heading')}</span>
+					<span class="tree-root-hint">{t('courses.roadmap.hint')}</span>
+				</span>
+			</summary>
+			<ol class="tree">
+				{(rootRoadmap ?? []).map((childNode) => (
+					<Astro.self node={childNode} locale={locale} />
+				))}
+			</ol>
+		</details>
+	)
+}
