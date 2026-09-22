@@ -364,6 +364,28 @@ featured: true
 - When adding a course, create the directory, `index.md`, and at minimum the `.es.md` lessons. English lessons may follow later.
 - Update tests that hardcode course/lesson counts when adding or removing courses.
 
+Curriculum sequencing (MANDATORY):
+
+- A lesson may only use concepts taught in that lesson or in earlier lessons of
+  the same course. Sequencing is decided by the lesson frontmatter `order`, not by
+  the filename prefix or the `slug` prefix (they can differ, e.g.
+  `08-constructores-y-encapsulamiento.es.md` has slug
+  `07-constructores-y-encapsulamiento` and `order: 9`).
+- This applies to everything in the lesson: prose, code examples, exercises,
+  inline SVG diagrams and captions. Example code must not use syntax, APIs or
+  techniques from later lessons (e.g. no `throw`/`try`/`catch` before the
+  exceptions lesson, no `extends` before the inheritance lesson).
+- The same rule applies to a lesson's activities (projects and quizzes): content
+  must relate directly to that lesson and must not show, require or ask about
+  content from future lessons. Prior lessons may be assumed as known.
+- Before writing a lesson example or an activity, list the course lessons by
+  `order`, read the target lesson, and check the titles of the following lessons
+  to know what is still off-limits.
+- If a later topic is genuinely needed to explain something, do not use it: pick
+  an alternative built from known concepts (e.g. validate with `if` and return a
+  `boolean` instead of throwing) and, at most, add a short forward reference with
+  a link to the lesson where that topic is taught.
+
 Courses pages are at `src/pages/cursos/` (Spanish) and `src/pages/en/courses/` (English) mirroring the articles catalog pattern: catalog at `index.astro`, course detail at `[course]/index.astro`, lesson page at `[course]/[lesson].astro`. Components: `CourseCard.astro`, `CourseBreadcrumb.astro`, `LessonsList.astro` in `src/components/`. Navigation entries live in `src/config/site.ts` `NAVIGATION` (between Articles and About). All UI strings use `t('courses.*')` keys from `es.json`/`en.json`.
 
 Useful courses/lessons verification commands:
@@ -418,6 +440,8 @@ per activity, mirroring the lesson filename convention:
 
 - `src/content/activities/<course>/<lesson-slug>/<activity-slug>.<lang>.md`
 - `lesson-slug` must match a lesson's frontmatter `slug` (not the lesson filename).
+- Activity content follows the **curriculum sequencing** rule in "Courses and
+  Lessons": only the lesson's own topics plus earlier lessons, never future ones.
 
 The `activities` collection schema (`src/content.config.ts`) is
 `z.discriminatedUnion('kind', [projectActivity, quizActivity])`, so `project` and
