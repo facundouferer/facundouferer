@@ -414,7 +414,7 @@ public class AuditService {
 
 Namespaces in Java are more than organizational folders; they are **architectural trust boundaries**.
 
-As introduced in lesson 8, Java's default access level (*no modifier*, or `package-private`) restricts visibility strictly to types living in the **exact same package/namespace**. This allows you to expose a clean public API (`public`) while keeping implementation helpers and internal domain mechanics completely shielded from external code.
+As introduced in the [Constructors, Access Modifiers, and Getters/Setters](/en/courses/java/07-constructores-y-encapsulamiento) lesson, Java's default access level (*no modifier*, or `package-private`) restricts visibility strictly to types living in the **exact same package/namespace**. This allows you to expose a clean public API (`public`) while keeping implementation helpers and internal domain mechanics completely shielded from external code.
 
 ### Core rules for package and namespace design
 
@@ -484,7 +484,7 @@ public class Team {
     private final Player[] players;
 
     public Team(Player[] players) {
-        this.players = Arrays.copyOf(players, players.length);   // defensive copy, lesson 9
+        this.players = Arrays.copyOf(players, players.length);   // defensive copy, see Arrays of Objects
     }
 }
 

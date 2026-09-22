@@ -10,7 +10,7 @@ published: true
 
 # Exception Handling and Robustness
 
-Back in lesson 8 you wrote this:
+Back in the [Constructors, Access Modifiers, and Getters/Setters](/en/courses/java/07-constructores-y-encapsulamiento) lesson you wrote this:
 
 ```java
 public boolean setPrice(double price) {
@@ -173,16 +173,18 @@ a[5] = 1;                    // ArrayIndexOutOfBoundsException — the bug is th
 Integer.parseInt("hello");   // NumberFormatException — validate the input first
 ```
 
-**Checked** (an `Exception` that is not a `RuntimeException`): they represent **expected environmental conditions** your code does not control. The file may not exist; that is not your bug, that is reality. The compiler forces you to decide.
+**Checked** (an `Exception` that is not a `RuntimeException`): they represent **expected environmental conditions** your code does not control. An external service may not respond; that is not your bug, that is reality. The compiler forces you to decide.
+
+Imagine a `getConfiguration()` method that queries an external service, and therefore declares `throws ConfigurationUnavailableException` — a checked exception, because the service may not be available and whoever calls it has to decide what to do.
 
 And there are only two options. **Handle it:**
 
 ```java
 public void loadConfiguration() {
     try {
-        String content = Files.readString(Path.of("config.txt"));
-        System.out.println(content);
-    } catch (IOException e) {
+        String value = getConfiguration();
+        System.out.println(value);
+    } catch (ConfigurationUnavailableException e) {
         System.out.println("Could not read configuration, falling back to defaults.");
     }
 }
@@ -191,8 +193,8 @@ public void loadConfiguration() {
 **Or declare that you are not taking responsibility**, and let your caller deal with it:
 
 ```java
-public String loadConfiguration() throws IOException {
-    return Files.readString(Path.of("config.txt"));   // let the caller decide
+public String loadConfiguration() throws ConfigurationUnavailableException {
+    return getConfiguration();   // let the caller decide
 }
 ```
 
@@ -267,35 +269,62 @@ try {
 
 ## 6. `try-with-resources`: the close you cannot forget
 
-When you open a file, a connection, or a socket, you have to close it. Always. Including — especially — when something fails midway. Doing it by hand looks like this:
+When you open a file, a connection, or a socket, you have to close it. Always. Including — especially — when something fails midway.
+
+Files arrive later on, in the [Files, Serialization, and JAR Packaging](/en/courses/java/17-archivos-persistencia-y-empaquetado-jar) lesson. To see the closing mechanism without depending on them yet, we are going to simulate a resource with a class of our own that implements the `AutoCloseable` interface — the same notion of interface you saw in [Abstract Classes, Interfaces, and Code Organization](/en/courses/java/09-clases-abstractas-interfaces-y-modelado) — it prints a message when it opens and another when it closes, so you can see the exact order everything happens in.
 
 ```java
-BufferedReader reader = null;
+public class SimulatedConnection implements AutoCloseable {
+    private final String server;
+
+    public SimulatedConnection(String server) {
+        if (server == null || server.isBlank()) {
+            throw new IllegalArgumentException("The server cannot be blank");
+        }
+        this.server = server;
+        System.out.println("Connecting to " + server + "...");
+    }
+
+    public void send(String command) {
+        System.out.println("Sending: " + command);
+    }
+
+    @Override
+    public void close() {
+        System.out.println("Connection to " + server + " closed.");
+    }
+}
+```
+
+Doing it by hand looks like this:
+
+```java
+SimulatedConnection connection = null;
 try {
-    reader = new BufferedReader(new FileReader("data.txt"));
-    System.out.println(reader.readLine());
-} catch (IOException e) {
-    System.out.println("Read error.");
+    connection = new SimulatedConnection("data-server");
+    connection.send("SELECT * FROM products");
+} catch (IllegalArgumentException e) {
+    System.out.println("Could not connect.");
 } finally {
-    if (reader != null) {          // what if constructing it failed?
+    if (connection != null) {      // what if constructing it failed?
         try {
-            reader.close();        // closing can throw too
-        } catch (IOException e) {
+            connection.close();    // closing can throw too
+        } catch (Exception e) {
             // and here almost nobody knows what to write
         }
     }
 }
 ```
 
-Nine lines of ceremony, two edge cases most people forget, and we still have not read anything useful. That is why `try-with-resources` exists:
+Nine lines of ceremony, two edge cases most people forget, and we still have not done anything useful. That is why `try-with-resources` exists:
 
 ```java
-try (BufferedReader reader = new BufferedReader(new FileReader("data.txt"))) {
-    System.out.println(reader.readLine());
-} catch (IOException e) {
-    System.out.println("Read error.");
+try (SimulatedConnection connection = new SimulatedConnection("data-server")) {
+    connection.send("SELECT * FROM products");
+} catch (IllegalArgumentException e) {
+    System.out.println("Could not connect.");
 }
-// reader is already closed, whatever happened
+// connection is already closed, whatever happened
 ```
 
 <figure class="diagram">
@@ -303,7 +332,7 @@ try (BufferedReader reader = new BufferedReader(new FileReader("data.txt"))) {
 <title id="d-twr-t">All three exits from a try-with-resources block pass through the automatic close</title>
 <defs><marker id="ar-twr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent)"/></marker></defs>
 <rect x="150" y="6" width="420" height="52" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
-<text x="360" y="28" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">try (var reader = new BufferedReader(...)) {</text>
+<text x="360" y="28" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">try (var connection = new SimulatedConnection(...)) {</text>
 <text x="360" y="47" font-size="11.5" text-anchor="middle" fill="var(--color-neutral-800)">the resource is declared inside the parentheses</text>
 <path d="M300 60 L110 60 L110 100" fill="none" stroke="var(--color-accent)" stroke-width="1.8" marker-end="url(#ar-twr)"/>
 <path d="M360 60 L360 100" fill="none" stroke="var(--color-accent)" stroke-width="1.8" marker-end="url(#ar-twr)"/>
@@ -321,7 +350,7 @@ try (BufferedReader reader = new BufferedReader(new FileReader("data.txt"))) {
 <path d="M360 158 L360 190" fill="none" stroke="var(--color-accent)" stroke-width="1.8" marker-end="url(#ar-twr)"/>
 <path d="M610 158 L610 190 L390 190" fill="none" stroke="var(--color-accent)" stroke-width="1.8" marker-end="url(#ar-twr)"/>
 <rect x="150" y="196" width="420" height="52" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
-<text x="360" y="220" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">reader.close() — automatic</text>
+<text x="360" y="220" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">connection.close() — automatic</text>
 <text x="360" y="238" font-size="11.5" text-anchor="middle" fill="var(--color-neutral-800)">before the catch or the finally even runs</text>
 <text x="0" y="278" font-size="12" fill="var(--color-neutral-700)">Works with any class implementing AutoCloseable. You may declare several resources separated by semicolons.</text>
 </svg>
@@ -541,7 +570,7 @@ public class MainRegistry {
 
 `registerFromText` **translates** the technical `NumberFormatException` into a domain exception, but passes `e` as the cause. The full stack trace remains available; only the language the problem is told in changes.
 
-And `register` is the single place where the range rule lives. `registerFromText` parses and delegates. It is the same principle as the canonical constructor from lesson 8.
+And `register` is the single place where the range rule lives. `registerFromText` parses and delegates. It is the same principle as the canonical constructor from the [Constructors, Access Modifiers, and Getters/Setters](/en/courses/java/07-constructores-y-encapsulamiento) lesson.
 
 </details>
 

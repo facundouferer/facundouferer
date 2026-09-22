@@ -222,3 +222,15 @@ Each step — introducing the `TAX_RATE` constant, extracting `calculateTax`/`ca
 - **Refactoring** preserves behavior: it starts from a green suite and ends in the same green suite, with a different structure.
 
 Mixing them — "since I'm fixing this bug, let me also reorganize the class" — means a broken test can't say whether it failed because of the original bug, the fix, or the reorganization. The practical discipline is: if a bug shows up while refactoring, stop the refactor, go back to the last green state, fix the bug with its own test, and only then resume the refactor from a stable base.
+
+---
+
+## End of the course
+
+You started with `System.out.println("Hello world")`.
+
+You finish modeling domains with objects, choosing data structures with judgment, handling errors without swallowing them, persisting to files and databases, exposing a REST service backed by tests, and — what you closed out in this last lesson — knowing how to diagnose a bug by method instead of by guesswork, and how to leave code better than you found it without breaking anything along the way.
+
+What changed is not how much syntax you know: it is that you now understand **why** each tool exists and **what problem it came to solve**. A constructor is not ceremony, it is the guarantee that an object is born valid. An interface is not bureaucracy, it is what lets you swap the database without touching the logic. A test is not paperwork, it is what lets you refactor without fear. And debugging and refactoring with discipline is not perfectionism, it is what lets you keep touching old code without being afraid to break it.
+
+That is what nobody learns in two hours, and it is exactly what will still serve you when the language of the moment is no longer Java.

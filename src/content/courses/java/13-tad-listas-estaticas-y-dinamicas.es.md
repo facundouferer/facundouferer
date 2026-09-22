@@ -3,14 +3,14 @@ course: 'java'
 slug: '11-tad-listas-estaticas-y-dinamicas'
 title: 'TAD Lista: Estáticas, Dinámicas y Enlazadas'
 description: 'Comprendé qué es un Tipo Abstracto de Dato, por qué un arreglo y una lista enlazada resuelven lo mismo con costos opuestos, e implementá listas simples, dobles y circulares desde cero.'
-order: 14
+order: 16
 lang: 'es'
 published: true
 ---
 
 # TAD Lista: Estáticas, Dinámicas y Enlazadas
 
-Desde acá el curso cambia de tema. Ya sabés modelar objetos y, en la lección 9, ya guardaste muchos en un array con su contador de cantidad. Ahora vas a formalizar esa idea y —esto es lo importante— a elegir la organización correcta según lo que vayas a hacer con los datos.
+Desde acá el curso cambia de tema. Ya sabés modelar objetos y, en la lección [Arrays de Objetos: Guardar y Recorrer Muchas Instancias](/cursos/java/09-arrays-de-objetos), ya guardaste muchos en un array con su contador de cantidad. Ahora vas a formalizar esa idea y —esto es lo importante— a elegir la organización correcta según lo que vayas a hacer con los datos.
 
 Empecemos con una pregunta que parece tonta: si ya existe `ArrayList`, ¿para qué implementar una lista a mano?
 
@@ -59,7 +59,7 @@ Un **Tipo Abstracto de Dato** es la separación entre dos cosas que solemos mezc
 <figcaption>El TAD es el contrato; las tres cajas de abajo son formas distintas de cumplirlo, con costos completamente diferentes.</figcaption>
 </figure>
 
-En Java el TAD se escribe como una **interfaz** —justo lo que viste en la lección 10—:
+En Java el TAD se escribe como una **interfaz** —justo lo que viste en la lección [Clases Abstractas, Interfaces y Organización del Código](/cursos/java/09-clases-abstractas-interfaces-y-modelado)—:
 
 ```java
 public interface Lista<T> {
@@ -148,7 +148,7 @@ public class Nodo<T> {
 }
 ```
 
-Esa línea `Nodo<T> siguiente;` es la que suele trabar a todo el mundo: **una clase que se referencia a sí misma**. No hay ninguna recursión infinita ahí. Acordate de la lección 7: un atributo de tipo objeto no guarda el objeto, guarda **una referencia** (o `null`). Un nodo no contiene a otro nodo: sabe dónde encontrarlo.
+Esa línea `Nodo<T> siguiente;` es la que suele trabar a todo el mundo: **una clase que se referencia a sí misma**. No hay ninguna recursión infinita ahí. Acordate de la lección [Fundamentos de POO: Clases, Objetos y Atributos](/cursos/java/07-fundamentos-poo-clases-y-objetos): un atributo de tipo objeto no guarda el objeto, guarda **una referencia** (o `null`). Un nodo no contiene a otro nodo: sabe dónde encontrarlo.
 
 ---
 

@@ -13,16 +13,16 @@ import { readFile } from 'node:fs/promises';
 const LESSON_ES = 'src/content/courses/java/12-excepciones-y-manejo-de-errores.es.md';
 const LESSON_EN = 'src/content/courses/java/12-excepciones-y-manejo-de-errores.en.md';
 
-test('exceptions lesson (ES) hook references the boolean-returning setter from lesson 8, not the old throw example', async () => {
+test('exceptions lesson (ES) hook references the boolean-returning setter from the constructors lesson, not the old throw example', async () => {
 	const content = await readFile(LESSON_ES, 'utf8');
-	assert.match(content, /lección 8/);
+	assert.match(content, /\[Constructores, Modificadores de Acceso y Getters\/Setters\]\(\/cursos\/java\/07-constructores-y-encapsulamiento\)/);
 	assert.match(content, /public\s+boolean\s+setPrecio\(/);
 	assert.doesNotMatch(content, /if\s*\(precio\s*<\s*0\)\s*\{\s*\n\s*throw new IllegalArgumentException/);
 });
 
-test('exceptions lesson (EN) hook references the boolean-returning setter from lesson 8, not the old throw example', async () => {
+test('exceptions lesson (EN) hook references the boolean-returning setter from the constructors lesson, not the old throw example', async () => {
 	const content = await readFile(LESSON_EN, 'utf8');
-	assert.match(content, /lesson 8/);
+	assert.match(content, /\[Constructors, Access Modifiers, and Getters\/Setters\]\(\/en\/courses\/java\/07-constructores-y-encapsulamiento\)/);
 	assert.match(content, /public\s+boolean\s+setPrice\(/);
 	assert.doesNotMatch(content, /if\s*\(price\s*<\s*0\)\s*\{\s*\n\s*throw new IllegalArgumentException/);
 });

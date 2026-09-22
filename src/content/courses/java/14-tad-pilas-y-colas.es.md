@@ -3,7 +3,7 @@ course: 'java'
 slug: '12-tad-pilas-y-colas'
 title: 'TAD Pila y TAD Cola: Estructuras Lineales'
 description: 'Dominá las estructuras LIFO y FIFO, implementalas desde cero sobre nodos y sobre arreglos, entendé la cola circular y resolvé el clásico problema del balanceo de paréntesis.'
-order: 15
+order: 17
 lang: 'es'
 published: true
 ---
@@ -102,7 +102,7 @@ public class Pila<T> {
 
 Fijate que **no hay ningún bucle**. Ninguna operación recorre nada. Por eso todas son O(1).
 
-> Lanzar una excepción al hacer `pop()` sobre una pila vacía es la decisión correcta: sacar de una pila vacía es un error de uso del programador, no una condición esperable. Es `RuntimeException`, tal cual lo discutimos en la lección 11.
+> Lanzar una excepción al hacer `pop()` sobre una pila vacía es la decisión correcta: sacar de una pila vacía es un error de uso del programador, no una condición esperable. Es `RuntimeException`, tal cual lo discutimos en la lección [Manejo de Excepciones y Robustez](/cursos/java/10-excepciones-y-manejo-de-errores).
 
 ---
 
@@ -266,7 +266,7 @@ Este patrón —un arreglo de tamaño fijo con dos índices que dan la vuelta—
 
 **Pilas:**
 
-- **La pila de llamadas de la JVM.** Cada llamada a un método apila un *stack frame*; cada `return` lo desapila. El `StackOverflowError` de una recursión infinita es literalmente esta pila desbordándose. Y el stack trace de la lección 11 es esa pila, impresa.
+- **La pila de llamadas de la JVM.** Cada llamada a un método apila un *stack frame*; cada `return` lo desapila. El `StackOverflowError` de una recursión infinita es literalmente esta pila desbordándose. Y el stack trace de la lección [Manejo de Excepciones y Robustez](/cursos/java/10-excepciones-y-manejo-de-errores) es esa pila, impresa.
 - **Deshacer (Ctrl+Z).** Cada acción se apila; deshacer es un `pop`.
 - **El botón "atrás" del navegador.**
 - **Evaluación de expresiones y verificación de sintaxis**, que es el ejercicio de esta lección.
@@ -274,8 +274,8 @@ Este patrón —un arreglo de tamaño fijo con dos índices que dan la vuelta—
 **Colas:**
 
 - **Cola de impresión**, cola de tareas, cola de mensajes.
-- **Recorrido BFS de grafos y árboles**, que vas a ver en las lecciones 16 y 17.
-- **Productor-consumidor** entre hilos: un hilo encola trabajo, otro lo desencola. Es la base de los `ExecutorService` de la lección 19.
+- **Recorrido BFS de grafos y árboles**, que vas a ver en las lecciones [TAD Árbol: Recorridos y Árbol Binario de Búsqueda](/cursos/java/15-tad-arboles-binarios-y-busqueda) y [Grafos: Matriz, Lista de Adyacencia, BFS, DFS y Dijkstra](/cursos/java/16-grafos-representacion-y-algoritmos).
+- **Productor-consumidor** entre hilos: un hilo encola trabajo, otro lo desencola. Es la base de los `ExecutorService` de la lección [Programación Concurrente: Hilos, Sincronización y Pools](/cursos/java/19-programacion-concurrente-hilos-y-pools).
 - **Atención de pedidos** en cualquier sistema donde el orden de llegada sea la regla.
 
 ---

@@ -10,7 +10,7 @@ published: true
 
 # Manejo de Excepciones y Robustez
 
-En la lección 8 escribiste esto:
+En la lección [Constructores, Modificadores de Acceso y Getters/Setters](/cursos/java/07-constructores-y-encapsulamiento) escribiste esto:
 
 ```java
 public boolean setPrecio(double precio) {
@@ -173,16 +173,18 @@ a[5] = 1;                    // ArrayIndexOutOfBoundsException — el bug es el 
 Integer.parseInt("hola");    // NumberFormatException — validá la entrada antes
 ```
 
-**Checked** (`Exception` sin ser `RuntimeException`): representan **condiciones esperables del entorno** que tu código no controla. El archivo puede no existir; eso no es un bug tuyo, es la realidad. El compilador te obliga a decidir qué hacés.
+**Checked** (`Exception` sin ser `RuntimeException`): representan **condiciones esperables del entorno** que tu código no controla. Un servicio externo puede no responder; eso no es un bug tuyo, es la realidad. El compilador te obliga a decidir qué hacés.
+
+Imaginá un método `obtenerConfiguracion()` que consulta un servicio externo, y que por eso declara `throws ConfiguracionNoDisponibleException` —una excepción checked, porque el servicio puede no estar disponible y quien lo llama tiene que decidir qué hacer—.
 
 Y solo hay dos opciones. **Manejarla:**
 
 ```java
 public void leerConfiguracion() {
     try {
-        String contenido = Files.readString(Path.of("config.txt"));
-        System.out.println(contenido);
-    } catch (IOException e) {
+        String valor = obtenerConfiguracion();
+        System.out.println(valor);
+    } catch (ConfiguracionNoDisponibleException e) {
         System.out.println("No se pudo leer la configuración, uso los valores por defecto.");
     }
 }
@@ -191,8 +193,8 @@ public void leerConfiguracion() {
 **O declarar que no te hacés cargo**, y que se ocupe quien te llamó:
 
 ```java
-public String leerConfiguracion() throws IOException {
-    return Files.readString(Path.of("config.txt"));   // que decida el de arriba
+public String leerConfiguracion() throws ConfiguracionNoDisponibleException {
+    return obtenerConfiguracion();   // que decida el de arriba
 }
 ```
 
@@ -267,35 +269,62 @@ try {
 
 ## 6. `try-with-resources`: el cierre que no te podés olvidar
 
-Cuando abrís un archivo, una conexión o un socket, tenés que cerrarlo. Siempre. Incluso —sobre todo— si algo falla en el medio. Hacerlo a mano se ve así:
+Cuando abrís un archivo, una conexión o un socket, tenés que cerrarlo. Siempre. Incluso —sobre todo— si algo falla en el medio.
+
+Los archivos llegan más adelante, en la lección [Archivos, Serialización y Empaquetado JAR](/cursos/java/17-archivos-persistencia-y-empaquetado-jar). Para ver el mecanismo de cierre sin depender todavía de ellos, vamos a simular un recurso con una clase propia que implementa la interfaz `AutoCloseable` —la misma noción de interfaz que viste en [Clases Abstractas, Interfaces y Organización del Código](/cursos/java/09-clases-abstractas-interfaces-y-modelado)—: imprime un mensaje cuando se abre y otro cuando se cierra, así se ve el orden exacto en que ocurre todo.
 
 ```java
-BufferedReader lector = null;
+public class ConexionSimulada implements AutoCloseable {
+    private final String servidor;
+
+    public ConexionSimulada(String servidor) {
+        if (servidor == null || servidor.isBlank()) {
+            throw new IllegalArgumentException("El servidor no puede estar vacío");
+        }
+        this.servidor = servidor;
+        System.out.println("Conectando a " + servidor + "...");
+    }
+
+    public void enviar(String comando) {
+        System.out.println("Enviando: " + comando);
+    }
+
+    @Override
+    public void close() {
+        System.out.println("Conexión a " + servidor + " cerrada.");
+    }
+}
+```
+
+Hacerlo a mano se ve así:
+
+```java
+ConexionSimulada conexion = null;
 try {
-    lector = new BufferedReader(new FileReader("datos.txt"));
-    System.out.println(lector.readLine());
-} catch (IOException e) {
-    System.out.println("Error de lectura.");
+    conexion = new ConexionSimulada("servidor-datos");
+    conexion.enviar("SELECT * FROM productos");
+} catch (IllegalArgumentException e) {
+    System.out.println("No se pudo conectar.");
 } finally {
-    if (lector != null) {          // ¿y si falló al construirlo?
+    if (conexion != null) {        // ¿y si falló al construirla?
         try {
-            lector.close();        // cerrar también puede lanzar excepción
-        } catch (IOException e) {
+            conexion.close();      // cerrar también puede lanzar excepción
+        } catch (Exception e) {
             // y acá casi nadie sabe qué poner
         }
     }
 }
 ```
 
-Nueve líneas de ceremonia, dos casos borde que la mayoría olvida, y todavía no leímos nada útil. Por eso existe `try-with-resources`:
+Nueve líneas de ceremonia, dos casos borde que la mayoría olvida, y todavía no hicimos nada útil. Por eso existe `try-with-resources`:
 
 ```java
-try (BufferedReader lector = new BufferedReader(new FileReader("datos.txt"))) {
-    System.out.println(lector.readLine());
-} catch (IOException e) {
-    System.out.println("Error de lectura.");
+try (ConexionSimulada conexion = new ConexionSimulada("servidor-datos")) {
+    conexion.enviar("SELECT * FROM productos");
+} catch (IllegalArgumentException e) {
+    System.out.println("No se pudo conectar.");
 }
-// lector ya está cerrado, pase lo que pase
+// conexion ya está cerrada, pase lo que pase
 ```
 
 <figure class="diagram">
@@ -303,7 +332,7 @@ try (BufferedReader lector = new BufferedReader(new FileReader("datos.txt"))) {
 <title id="d-twr-t">Las tres salidas posibles de un bloque try-with-resources pasan siempre por el cierre automático</title>
 <defs><marker id="ar-twr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent)"/></marker></defs>
 <rect x="150" y="6" width="420" height="52" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
-<text x="360" y="28" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">try (var lector = new BufferedReader(...)) {</text>
+<text x="360" y="28" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">try (var conexion = new ConexionSimulada(...)) {</text>
 <text x="360" y="47" font-size="11.5" text-anchor="middle" fill="var(--color-neutral-800)">el recurso queda declarado en el paréntesis</text>
 <path d="M300 60 L110 60 L110 100" fill="none" stroke="var(--color-accent)" stroke-width="1.8" marker-end="url(#ar-twr)"/>
 <path d="M360 60 L360 100" fill="none" stroke="var(--color-accent)" stroke-width="1.8" marker-end="url(#ar-twr)"/>
@@ -321,7 +350,7 @@ try (BufferedReader lector = new BufferedReader(new FileReader("datos.txt"))) {
 <path d="M360 158 L360 190" fill="none" stroke="var(--color-accent)" stroke-width="1.8" marker-end="url(#ar-twr)"/>
 <path d="M610 158 L610 190 L390 190" fill="none" stroke="var(--color-accent)" stroke-width="1.8" marker-end="url(#ar-twr)"/>
 <rect x="150" y="196" width="420" height="52" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
-<text x="360" y="220" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">lector.close() — automático</text>
+<text x="360" y="220" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">conexion.close() — automático</text>
 <text x="360" y="238" font-size="11.5" text-anchor="middle" fill="var(--color-neutral-800)">antes de que se ejecute el catch o el finally</text>
 <text x="0" y="278" font-size="12" fill="var(--color-neutral-700)">Funciona con cualquier clase que implemente AutoCloseable. Podés declarar varios recursos separados por punto y coma.</text>
 </svg>
@@ -541,7 +570,7 @@ public class MainRegistro {
 
 `registrarDesdeTexto` **traduce** el `NumberFormatException` técnico a una excepción del dominio, pero pasa `e` como causa. El stack trace completo sigue disponible; solo cambia el idioma en que se cuenta el problema.
 
-Y `registrar` es el único lugar donde vive la regla del rango. `registrarDesdeTexto` convierte y delega. Es el mismo principio del constructor canónico de la lección 8.
+Y `registrar` es el único lugar donde vive la regla del rango. `registrarDesdeTexto` convierte y delega. Es el mismo principio del constructor canónico de la lección [Constructores, Modificadores de Acceso y Getters/Setters](/cursos/java/07-constructores-y-encapsulamiento).
 
 </details>
 

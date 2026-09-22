@@ -414,7 +414,7 @@ public class AuditoriaServicio {
 
 Los namespaces en Java no son simples carpetas cosméticas; también establecen **límites de visibilidad y confianza arquitectónica**.
 
-Como vimos en la lección 8, el modificador por defecto de Java (*sin palabra clave*, conocido como `package-private`) restringe el acceso exclusivamente a las clases dentro del **mismo paquete/namespace**. Esto permite crear subsistemas modulares con una interfaz pública (`public`) y un conjunto de clases colaboradoras internas protegidas del exterior.
+Como vimos en la lección [Constructores, Modificadores de Acceso y Getters/Setters](/cursos/java/07-constructores-y-encapsulamiento), el modificador por defecto de Java (*sin palabra clave*, conocido como `package-private`) restringe el acceso exclusivamente a las clases dentro del **mismo paquete/namespace**. Esto permite crear subsistemas modulares con una interfaz pública (`public`) y un conjunto de clases colaboradoras internas protegidas del exterior.
 
 ### Reglas para diseñar paquetes y namespaces
 
@@ -484,7 +484,7 @@ public class Equipo {
     private final Jugador[] jugadores;
 
     public Equipo(Jugador[] jugadores) {
-        this.jugadores = Arrays.copyOf(jugadores, jugadores.length);   // copia defensiva, lección 9
+        this.jugadores = Arrays.copyOf(jugadores, jugadores.length);   // copia defensiva, ver Arrays de Objetos
     }
 }
 

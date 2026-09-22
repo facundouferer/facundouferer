@@ -10,7 +10,7 @@ published: true
 
 # Arrays de Objetos: Guardar y Recorrer Muchas Instancias
 
-En la lección 4 aprendiste a guardar muchos valores del mismo tipo en un array. En las lecciones 7 y 8 aprendiste a diseñar una clase que garantiza que cada objeto nazca válido y se mantenga consistente.
+En la lección [Arrays y Manejo de Strings en Java](/cursos/java/04-arrays-y-strings) aprendiste a guardar muchos valores del mismo tipo en un array. En las lecciones [Fundamentos de POO: Clases, Objetos y Atributos](/cursos/java/07-fundamentos-poo-clases-y-objetos) y [Constructores, Modificadores de Acceso y Getters/Setters](/cursos/java/07-constructores-y-encapsulamiento) aprendiste a diseñar una clase que garantiza que cada objeto nazca válido y se mantenga consistente.
 
 Esta lección junta las dos cosas, y ese cruce es donde Java empieza a servir para algo real:
 
@@ -21,7 +21,7 @@ Persona p3 = new Persona("Ana", 41);
 // ¿y si son 500?
 ```
 
-Exactamente el mismo problema que te llevó al array en la lección 4, pero ahora con objetos. La solución es la misma —un array— salvo por un detalle que cambia todo: **un array de objetos no guarda objetos, guarda referencias a objetos**.
+Exactamente el mismo problema que te llevó al array en la lección [Arrays y Manejo de Strings en Java](/cursos/java/04-arrays-y-strings), pero ahora con objetos. La solución es la misma —un array— salvo por un detalle que cambia todo: **un array de objetos no guarda objetos, guarda referencias a objetos**.
 
 Ese detalle es responsable del `NullPointerException` más común de todo Java, de que dos casillas puedan modificar el mismo objeto sin que lo notes, y de que `Arrays.sort` no funcione hasta que le expliques cómo comparar. Vamos por partes.
 
@@ -156,7 +156,7 @@ for (int i = 0; i < plantel.length; i++) {
 }
 ```
 
-Fijate lo que hace posible la forma C: **el constructor validador de la lección 8 corre una vez por cada objeto**. Si alguno de los datos de entrada es inválido, el constructor lo reemplaza por un valor por defecto seguro y avisa por consola: el objeto igual nace, pero nunca con datos rotos. Sin constructores tendrías que crear los tres objetos vacíos y llenarlos después a mano, que es exactamente la ventana de tiempo con objetos rotos que la lección 8 se ocupó de cerrar.
+Fijate lo que hace posible la forma C: **el constructor validador de la lección [Constructores, Modificadores de Acceso y Getters/Setters](/cursos/java/07-constructores-y-encapsulamiento) corre una vez por cada objeto**. Si alguno de los datos de entrada es inválido, el constructor lo reemplaza por un valor por defecto seguro y avisa por consola: el objeto igual nace, pero nunca con datos rotos. Sin constructores tendrías que crear los tres objetos vacíos y llenarlos después a mano, que es exactamente la ventana de tiempo con objetos rotos que esa lección se ocupó de cerrar.
 
 ---
 
@@ -280,7 +280,7 @@ public static Persona buscarPorNombre(Persona[] personas, String nombre) {
 
 Tres decisiones de diseño que valen más que el código:
 
-- **`equalsIgnoreCase`, nunca `==`.** Comparás el contenido de dos `String`, y ya viste en la lección 4 por qué `==` te traiciona apenas el texto viene de afuera.
+- **`equalsIgnoreCase`, nunca `==`.** Comparás el contenido de dos `String`, y ya viste en la lección [Arrays y Manejo de Strings en Java](/cursos/java/04-arrays-y-strings) por qué `==` te traiciona apenas el texto viene de afuera.
 - **`p != null` primero.** El orden importa: si evaluás `p.getNombre()` antes de la comprobación, explota.
 - **Devolver `null` cuando no está.** Es la opción de esta lección: quien llama recibe la responsabilidad de comprobar el resultado antes de usarlo.
 
@@ -301,7 +301,7 @@ if (encontrada != null) {
 
 Con `int[]` alcanzaba con `Arrays.sort(numeros)`, porque los números tienen un orden obvio. Con objetos no lo hay: ¿dos personas se ordenan por nombre, por edad, por fecha de ingreso? Alguien tiene que decidirlo, y por ahora ese alguien sos vos: `Arrays.sort(personas)` compila, pero revienta en tiempo de ejecución porque `Persona` no sabe compararse a sí misma.
 
-Java tiene un mecanismo para declarar ese criterio una sola vez y reutilizarlo en cualquier `Arrays.sort` —lo vas a ver en la lección 16—. Hasta entonces, ordenás a mano: recorrés el array y comparás el campo elegido con `<` y `>`, igual que harías con un `int[]` si no existiera `Arrays.sort`.
+Java tiene un mecanismo para declarar ese criterio una sola vez y reutilizarlo en cualquier `Arrays.sort` —lo vas a ver en la lección [Iteradores, Ordenamiento y Contrato equals/hashCode](/cursos/java/14-iteradores-ordenamiento-equals-hashcode)—. Hasta entonces, ordenás a mano: recorrés el array y comparás el campo elegido con `<` y `>`, igual que harías con un `int[]` si no existiera `Arrays.sort`.
 
 Selección es el algoritmo más simple para escribirlo a mano: en cada vuelta buscás el elemento con el valor más chico del resto del array y lo llevás al frente.
 
@@ -331,7 +331,7 @@ System.out.println(Arrays.toString(personas));
 
 Fijate que el intercambio mueve **referencias**, no objetos: `temporal` guarda una flecha, no una copia de `Persona`. Ordenar un array de objetos nunca duplica lo que apuntan las casillas.
 
-Para ordenar por otro campo —el nombre, por ejemplo— repetirías el mismo bucle cambiando solo la condición del `if`. Repetir ese bucle una vez por criterio, y no tener ninguna garantía sobre qué pasa con los empates si además querés desempatar por un segundo campo, es exactamente el problema que la lección 16 (Iteradores, Ordenamiento y Contrato equals/hashCode) resuelve: vas a declarar el criterio de orden una sola vez y pasárselo a `Arrays.sort`, sin repetir el bucle.
+Para ordenar por otro campo —el nombre, por ejemplo— repetirías el mismo bucle cambiando solo la condición del `if`. Repetir ese bucle una vez por criterio, y no tener ninguna garantía sobre qué pasa con los empates si además querés desempatar por un segundo campo, es exactamente el problema que la lección [Iteradores, Ordenamiento y Contrato equals/hashCode](/cursos/java/14-iteradores-ordenamiento-equals-hashcode) resuelve: vas a declarar el criterio de orden una sola vez y pasárselo a `Arrays.sort`, sin repetir el bucle.
 
 Un array de objetos con `null` adentro **rompe cualquier ordenamiento a mano** con `NullPointerException`, porque `personas[j].getEdad()` explota apenas `j` cae en una casilla vacía. Otro motivo para no dejar huecos.
 
@@ -366,7 +366,7 @@ Esta es la consecuencia menos intuitiva de los dos niveles de memoria.
 <text x="2" y="278" font-size="12.5" fill="var(--color-text)">El objeto de la casilla [2] original quedó sin referencias y se lo lleva el recolector de basura.</text>
 <text x="2" y="296" font-size="12" fill="var(--color-neutral-700)">Para tener dos objetos independientes hay que construir uno nuevo, no copiar la referencia.</text>
 </svg>
-<figcaption>Esto es lo mismo que viste con la copia superficial en la lección 4, pero adentro de un solo array. Asignar una casilla a otra nunca duplica el objeto.</figcaption>
+<figcaption>Esto es lo mismo que viste con la copia superficial en la lección [Arrays y Manejo de Strings en Java](/cursos/java/04-arrays-y-strings), pero adentro de un solo array. Asignar una casilla a otra nunca duplica el objeto.</figcaption>
 </figure>
 
 ```java
@@ -440,9 +440,9 @@ Casi siempre no sabés de antemano cuántos objetos vas a guardar. La solución 
 <rect x="0" y="198" width="720" height="66" rx="16" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-600)"/>
 <text x="22" y="224" font-size="13" font-weight="700" fill="var(--color-accent-2-800)">Regla de oro: recorré hasta cantidad, nunca hasta datos.length</text>
 <text x="22" y="248" font-size="12.5" fill="var(--color-text)">for (int i = 0; i menor que cantidad; i++)  →  así jamás tocás una casilla null.</text>
-<text x="2" y="288" font-size="12.5" fill="var(--color-text)">Una clase que envuelva este array y este contador, con agregar/eliminar/obtener, es exactamente un TAD Lista: la lección 13.</text>
+<text x="2" y="288" font-size="12.5" fill="var(--color-text)">Una clase que envuelva este array y este contador, con agregar/eliminar/obtener, es exactamente un TAD Lista: Estáticas, Dinámicas y Enlazadas.</text>
 </svg>
-<figcaption>Separar <em>capacidad</em> de <em>cantidad</em> es el paso conceptual que convierte un array suelto en una estructura de datos. El TAD Lista de la lección 13 hace exactamente esto por dentro.</figcaption>
+<figcaption>Separar <em>capacidad</em> de <em>cantidad</em> es el paso conceptual que convierte un array suelto en una estructura de datos. El TAD Lista de la lección [TAD Lista: Estáticas, Dinámicas y Enlazadas](/cursos/java/11-tad-listas-estaticas-y-dinamicas) hace exactamente esto por dentro.</figcaption>
 </figure>
 
 ```java
@@ -452,7 +452,7 @@ public class Registro {
 
     public void agregar(Persona p) {
         if (cantidad == datos.length) {
-            // se llenó: duplicamos la capacidad (lección 4, sección 4)
+            // se llenó: duplicamos la capacidad (ver Arrays y Manejo de Strings en Java, sección 4)
             datos = Arrays.copyOf(datos, datos.length * 2);
         }
         datos[cantidad] = p;
@@ -509,7 +509,7 @@ public class Curso {
 }
 ```
 
-Las dos líneas marcadas anulan el encapsulamiento de la lección 8, por el mismo motivo de la sección 7: se está compartiendo la flecha.
+Las dos líneas marcadas anulan el encapsulamiento de la lección [Constructores, Modificadores de Acceso y Getters/Setters](/cursos/java/07-constructores-y-encapsulamiento), por el mismo motivo de la sección 7: se está compartiendo la flecha.
 
 ```java
 Persona[] lista = { new Persona("Laura", 28) };
@@ -545,7 +545,7 @@ Con una `Persona` inmutable, la copia superficial alcanza: nadie puede modificar
 - **No sobrescribir `toString()`.** Imprimís hashes en hexadecimal y depurás a ciegas.
 - **Tratar un array de objetos como si `Arrays.sort` supiera ordenarlo solo.** Con objetos necesitás decidir el campo de comparación y escribir el bucle vos mismo.
 - **Ordenar un array con `null` adentro.** `NullPointerException` apenas la comparación toca una casilla vacía.
-- **Comparar objetos con `==`.** Compara identidad. Para contenido hace falta `equals()` — su contrato completo llega en la lección 16.
+- **Comparar objetos con `==`.** Compara identidad. Para contenido hace falta `equals()` — su contrato completo llega en la lección [Iteradores, Ordenamiento y Contrato equals/hashCode](/cursos/java/14-iteradores-ordenamiento-equals-hashcode).
 - **Asignar `a[i] = a[j]` creyendo que copia.** Copia la referencia; quedan dos flechas al mismo objeto.
 - **Exponer el array interno de una clase.** Un `private` no sirve de nada si el getter devuelve la referencia.
 - **Olvidar `datos[cantidad - 1] = null` al eliminar.** Deja viva una referencia que el GC no puede liberar.
@@ -674,7 +674,7 @@ public class OrdenarPersonas {
 }
 ```
 
-Laura y Bruno empatan en edad (35). Este bucle, tal como está escrito, no da ninguna garantía sobre el orden relativo de los empates —en esta corrida particular Laura queda antes que Bruno, pero eso es una consecuencia de los intercambios, no una regla del algoritmo—. Desempatar de forma predecible por un segundo criterio, como el nombre, sin reescribir el bucle entero cada vez, es exactamente lo que vas a aprender a hacer en la lección 16.
+Laura y Bruno empatan en edad (35). Este bucle, tal como está escrito, no da ninguna garantía sobre el orden relativo de los empates —en esta corrida particular Laura queda antes que Bruno, pero eso es una consecuencia de los intercambios, no una regla del algoritmo—. Desempatar de forma predecible por un segundo criterio, como el nombre, sin reescribir el bucle entero cada vez, es exactamente lo que vas a aprender a hacer en la lección [Iteradores, Ordenamiento y Contrato equals/hashCode](/cursos/java/14-iteradores-ordenamiento-equals-hashcode).
 </details>
 
 ### Ejercicio 4 — Agenda con capacidad dinámica
@@ -735,7 +735,7 @@ public class Agenda {
 }
 ```
 
-Esta clase ya es, conceptualmente, una lista dinámica en miniatura: array interno, capacidad que se duplica, tamaño lógico separado del físico y desplazamiento al eliminar. En la lección 13 vas a formalizarla como TAD Lista y a compararla con la versión enlazada.
+Esta clase ya es, conceptualmente, una lista dinámica en miniatura: array interno, capacidad que se duplica, tamaño lógico separado del físico y desplazamiento al eliminar. En la lección [TAD Lista: Estáticas, Dinámicas y Enlazadas](/cursos/java/11-tad-listas-estaticas-y-dinamicas) vas a formalizarla como TAD Lista y a compararla con la versión enlazada.
 </details>
 
 ---
@@ -747,7 +747,7 @@ Esta clase ya es, conceptualmente, una lista dinámica en miniatura: array inter
 - Un array con casillas vacías es la causa del `NullPointerException` más frecuente de Java.
 - Sobrescribí `toString()` en toda clase que vayas a guardar en un array: sin él, imprimir no informa nada.
 - Buscar es siempre un recorrido lineal escrito a mano; si devolvés `null` cuando no hay resultado, quien llama debe comprobarlo con `!= null` antes de usarlo.
-- Ordenar objetos exige elegir un criterio y compararlo campo a campo con tu propio bucle; la lección 16 muestra cómo declarar ese criterio una sola vez y reutilizarlo.
+- Ordenar objetos exige elegir un criterio y compararlo campo a campo con tu propio bucle; la lección [Iteradores, Ordenamiento y Contrato equals/hashCode](/cursos/java/14-iteradores-ordenamiento-equals-hashcode) muestra cómo declarar ese criterio una sola vez y reutilizarlo.
 - Asignar una casilla a otra **no copia el objeto**: quedan dos flechas al mismo lugar.
 - Un array interno de una clase se copia al entrar y al salir, o el `private` no protege nada.
 - Separar **capacidad** de **cantidad** es lo que convierte un array en una estructura de datos. Ese es el punto de partida del TAD Lista.

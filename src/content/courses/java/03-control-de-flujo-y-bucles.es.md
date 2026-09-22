@@ -3,7 +3,7 @@ course: 'java'
 slug: '03-control-de-flujo-y-bucles'
 title: 'Control de Flujo y Estructuras Repetitivas'
 description: 'Aprendé a tomar decisiones con condicionales y a repetir tareas con bucles en Java.'
-order: 4
+order: 3
 lang: 'es'
 published: true
 ---

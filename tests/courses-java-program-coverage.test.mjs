@@ -26,7 +26,7 @@ function frontmatterValue(content, key) {
 	return (match[1] ?? match[2]).trim();
 }
 
-test('algorithm foundations lesson exists in Spanish and English at order 2', async () => {
+test('algorithm foundations lesson exists in Spanish and English at order 6', async () => {
 	const [spanish, english] = await Promise.all([
 		readLesson(ALGORITHM_LESSON, 'es'),
 		readLesson(ALGORITHM_LESSON, 'en'),
@@ -36,8 +36,8 @@ test('algorithm foundations lesson exists in Spanish and English at order 2', as
 	assert.equal(frontmatterValue(english, 'slug'), ALGORITHM_LESSON);
 	assert.equal(frontmatterValue(spanish, 'lang'), 'es');
 	assert.equal(frontmatterValue(english, 'lang'), 'en');
-	assert.equal(Number(frontmatterValue(spanish, 'order')), 2);
-	assert.equal(Number(frontmatterValue(english, 'order')), 2);
+	assert.equal(Number(frontmatterValue(spanish, 'order')), 6);
+	assert.equal(Number(frontmatterValue(english, 'order')), 6);
 });
 
 test('algorithm foundations lesson teaches specification, verification, and analysis in both locales', async () => {
@@ -428,5 +428,85 @@ test('Java lesson orders remain bilingual, unique, and contiguous', async () => 
 			spanishOrders.get(frontmatterValue(content, 'slug')),
 			`Expected ES/EN order parity for ${frontmatterValue(content, 'slug')}`,
 		);
+	}
+});
+
+const EXPECTED_LESSON_SEQUENCE = [
+	'01-conceptos-basicos',
+	'02-variables-tipos-datos-y-operadores',
+	'03-control-de-flujo-y-bucles',
+	'04-arrays-y-strings',
+	'05-metodos-y-funciones',
+	'23-algoritmia-verificacion-y-complejidad',
+	'06-introduccion-y-pilares-poo',
+	'07-fundamentos-poo-clases-y-objetos',
+	'08-constructores-y-encapsulamiento',
+	'09-arrays-de-objetos',
+	'10-herencia-polimorfismo-y-sobrecarga',
+	'11-clases-abstractas-interfaces-y-modelado',
+	'12-excepciones-y-manejo-de-errores',
+	'15-java-collections-framework-y-genericos',
+	'16-iteradores-ordenamiento-equals-hashcode',
+	'13-tad-listas-estaticas-y-dinamicas',
+	'14-tad-pilas-y-colas',
+	'17-tad-arboles-binarios-y-busqueda',
+	'26-arboles-n-arios-y-representacion-con-vectores',
+	'18-grafos-representacion-y-algoritmos',
+	'19-archivos-persistencia-y-empaquetado-jar',
+	'20-programacion-concurrente-hilos-y-pools',
+	'21-acceso-a-bases-de-datos-jdbc',
+	'22-testing-junit-y-spring-boot',
+	'27-depuracion-codigo-limpio-y-refactorizacion',
+];
+
+test('Java lesson filename sequence by order matches the target learning path (ES and EN)', async () => {
+	for (const lang of ['es', 'en']) {
+		const suffix = `.${lang}.md`;
+		const files = (await readdir(JAVA_COURSE_DIR)).filter((file) => file.endsWith(suffix));
+		const lessons = await Promise.all(
+			files.map(async (file) => ({
+				stem: file.slice(0, -suffix.length),
+				content: await readFile(path.join(JAVA_COURSE_DIR, file), 'utf8'),
+			})),
+		);
+		const bySequence = lessons
+			.sort((a, b) => Number(frontmatterValue(a.content, 'order')) - Number(frontmatterValue(b.content, 'order')))
+			.map(({ stem }) => stem);
+		assert.deepEqual(bySequence, EXPECTED_LESSON_SEQUENCE, `Expected lesson filename sequence for ${lang}`);
+	}
+});
+
+test('no Java lesson uses numeric "lección N" / "lesson N" cross-references', async () => {
+	const files = (await readdir(JAVA_COURSE_DIR)).filter((file) => /\.(es|en)\.md$/.test(file));
+	const pattern = /lecci[oó]n(es)?\s+\d+|lessons?\s+\d+/i;
+	for (const file of files) {
+		const content = await readFile(path.join(JAVA_COURSE_DIR, file), 'utf8');
+		assert.doesNotMatch(content, pattern, `${file} should not contain a numeric lesson cross-reference`);
+	}
+});
+
+test('"Fin del curso" / "End of the course" heading appears only in the last lesson', async () => {
+	const files = (await readdir(JAVA_COURSE_DIR)).filter((file) => /\.(es|en)\.md$/.test(file));
+	const pattern = /^## (Fin del curso|End of the [Cc]ourse)$/m;
+	const matches = [];
+	for (const file of files) {
+		const content = await readFile(path.join(JAVA_COURSE_DIR, file), 'utf8');
+		if (pattern.test(content)) {
+			matches.push(file);
+		}
+	}
+	assert.deepEqual(matches.sort(), [`${DEBUGGING_LESSON}.en.md`, `${DEBUGGING_LESSON}.es.md`].sort());
+});
+
+test('exceptions lesson does not use FileReader or BufferedReader', async () => {
+	const EXCEPTIONS_LESSON = '12-excepciones-y-manejo-de-errores';
+	const [spanish, english] = await Promise.all([readLesson(EXCEPTIONS_LESSON, 'es'), readLesson(EXCEPTIONS_LESSON, 'en')]);
+
+	for (const [locale, content] of [
+		['Spanish', spanish],
+		['English', english],
+	]) {
+		assert.doesNotMatch(content, /FileReader/, `${locale}: no FileReader`);
+		assert.doesNotMatch(content, /BufferedReader/, `${locale}: no BufferedReader`);
 	}
 });

@@ -3,14 +3,14 @@ course: 'java'
 slug: '11-tad-listas-estaticas-y-dinamicas'
 title: 'The List ADT: Static, Dynamic, and Linked'
 description: 'Understand what an Abstract Data Type is, why an array and a linked list solve the same problem with opposite costs, and build singly linked, doubly linked, and circular lists from scratch.'
-order: 14
+order: 16
 lang: 'en'
 published: true
 ---
 
 # The List ADT: Static, Dynamic, and Linked
 
-From here on the course changes subject. You already know how to model objects and, in lesson 9, you already stored many of them in an array with its own count. Now you will formalize that idea and — this is the important part — pick the right organization for what you plan to do with the data.
+From here on the course changes subject. You already know how to model objects and, in the [Arrays of Objects: Holding and Iterating Many Instances](/en/courses/java/09-arrays-de-objetos) lesson, you already stored many of them in an array with its own count. Now you will formalize that idea and — this is the important part — pick the right organization for what you plan to do with the data.
 
 Let us start with a question that sounds silly: if `ArrayList` already exists, why implement a list by hand?
 
@@ -59,7 +59,7 @@ An **Abstract Data Type** is the separation of two things we tend to blur togeth
 <figcaption>The ADT is the contract; the three boxes below are different ways of honoring it, with wildly different costs.</figcaption>
 </figure>
 
-In Java the ADT is written as an **interface** — exactly what you saw in lesson 10:
+In Java the ADT is written as an **interface** — exactly what you saw in the [Abstract Classes, Interfaces, and Code Organization](/en/courses/java/09-clases-abstractas-interfaces-y-modelado) lesson:
 
 ```java
 public interface List<T> {
@@ -148,7 +148,7 @@ public class Node<T> {
 }
 ```
 
-That `Node<T> next;` line is the one that trips everybody up: **a class referencing itself**. There is no infinite recursion there. Remember lesson 7: an object-typed field does not hold the object, it holds **a reference** (or `null`). A node does not contain another node: it knows where to find it.
+That `Node<T> next;` line is the one that trips everybody up: **a class referencing itself**. There is no infinite recursion there. Remember the [OOP Fundamentals: Classes, Objects, and Attributes](/en/courses/java/07-fundamentos-poo-clases-y-objetos) lesson: an object-typed field does not hold the object, it holds **a reference** (or `null`). A node does not contain another node: it knows where to find it.
 
 ---
 

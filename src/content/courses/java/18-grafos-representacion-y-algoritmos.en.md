@@ -171,7 +171,7 @@ A graph is not stored "as it looks". There are two standard representations, and
 <figcaption>A social network with a billion people and two hundred friends each: the matrix would demand a quintillion cells; the list, two hundred billion. That is why lists win in practice.</figcaption>
 </figure>
 
-In Java, the adjacency list is written with a `Map`, which you already know from lesson 14:
+In Java, the adjacency list is written with a `Map`, which you already know from the [Java Collections and Generics (JCF)](/en/courses/java/13-java-collections-framework-y-genericos) lesson:
 
 ```java
 public class Graph<V> {
@@ -193,7 +193,7 @@ public class Graph<V> {
 }
 ```
 
-Notice that `computeIfAbsent` and `getOrDefault` — the `Map` methods from lesson 14 — do all the heavy lifting. Without them you would need four extra `if` blocks.
+Notice that `computeIfAbsent` and `getOrDefault` — the `Map` methods from the [Java Collections and Generics (JCF)](/en/courses/java/13-java-collections-framework-y-genericos) lesson — do all the heavy lifting. Without them you would need four extra `if` blocks.
 
 ---
 
@@ -386,7 +386,7 @@ public Map<V, Integer> dijkstra(V source) {
     Map<V, Integer> distance = new HashMap<>();
     Set<V> visited = new HashSet<>();
 
-    // The priority queue from lesson 14: always pulls the cheapest
+    // The priority queue from Java Collections and Generics (JCF): always pulls the cheapest
     PriorityQueue<V> queue = new PriorityQueue<>(
         Comparator.comparingInt(v -> distance.getOrDefault(v, Integer.MAX_VALUE))
     );

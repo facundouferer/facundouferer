@@ -3,14 +3,14 @@ course: 'java'
 slug: '13-java-collections-framework-y-genericos'
 title: 'Colecciones en Java y Genéricos (JCF)'
 description: 'Recorré el Java Collections Framework completo, entendé por qué existen los genéricos, aprendé cómo funciona un HashMap por dentro y adquirí el criterio para elegir la colección correcta.'
-order: 16
+order: 14
 lang: 'es'
 published: true
 ---
 
 # Colecciones en Java y Genéricos (JCF)
 
-Durante dos lecciones implementaste listas, pilas y colas a mano. Ahora la buena noticia: **nada de eso hay que escribirlo en producción**. Java lo trae todo, optimizado durante treinta años y probado por millones de aplicaciones.
+En las próximas lecciones vas a implementar listas, pilas y colas a mano, para entender exactamente cómo funcionan por dentro. Antes de llegar ahí, la buena noticia: **en el día a día no hace falta escribir nada de esto**. Java lo trae todo, optimizado durante treinta años y probado por millones de aplicaciones.
 
 Pero fijate lo que ganaste: cuando alguien te diga "usá un `HashMap`", vas a saber que por dentro hay un arreglo y un mecanismo de colisiones. Cuando veas `LinkedList`, vas a saber por qué acceder al elemento 500 es lento. **Esa es la diferencia entre usar una herramienta y entenderla.**
 
@@ -67,7 +67,7 @@ Pero fijate lo que ganaste: cuando alguien te diga "usá un `HashMap`", vas a sa
 <text x="0" y="332" font-size="12" fill="var(--color-neutral-700)">Todo lo que cuelga de Collection guarda elementos sueltos y se puede recorrer con for-each. Map guarda</text>
 <text x="0" y="350" font-size="12" fill="var(--color-neutral-700)">asociaciones, así que su interfaz es distinta: por eso queda afuera de la jerarquía.</text>
 </svg>
-<figcaption>Las cajas de arriba son interfaces (el TAD); las de abajo, implementaciones. Programá siempre contra las de arriba.</figcaption>
+<figcaption>Las cajas de arriba son interfaces — el contrato que vas a formalizar más adelante como TAD (Tipo Abstracto de Dato); las de abajo, implementaciones. Programá siempre contra las de arriba.</figcaption>
 </figure>
 
 Esa última frase es una regla concreta, no un consejo:
@@ -81,7 +81,7 @@ Map<String, Integer> stock = new HashMap<>();
 ArrayList<String> nombres = new ArrayList<>();
 ```
 
-Con la primera forma, cambiar a `LinkedList` es tocar **una palabra**. Con la segunda, si alguien usó un método propio de `ArrayList`, es tocar todo. Es exactamente el principio del TAD de la lección 12, aplicado a la biblioteca estándar.
+Con la primera forma, cambiar a `LinkedList` es tocar **una palabra**. Con la segunda, si alguien usó un método propio de `ArrayList`, es tocar todo. Es el mismo principio que vas a formalizar más adelante como TAD (Tipo Abstracto de Dato) —programar contra la especificación, no contra la implementación— aplicado acá a la biblioteca estándar.
 
 ---
 
@@ -197,7 +197,7 @@ mapa.putIfAbsent(clave, valor);
 
 ### `Queue` / `Deque` — orden de procesamiento
 
-Ya los viste en la lección 13. `ArrayDeque` para pila y cola; `PriorityQueue` cuando el próximo a salir no es el que llegó primero, sino el de mayor prioridad.
+Los vas a implementar a mano más adelante, en TAD Pila y TAD Cola, pero ya podés usarlos hoy: `ArrayDeque` para pila y cola; `PriorityQueue` cuando el próximo a salir no es el que llegó primero, sino el de mayor prioridad.
 
 ---
 
@@ -357,8 +357,8 @@ System.out.println(a.getClass() == b.getClass());   // true — son la misma cla
 | Error | Qué pasa | Cómo se arregla |
 | --- | --- | --- |
 | Declarar `ArrayList<T> x = new ArrayList<>()` | Te atás a la implementación y cambiarla obliga a tocar todo el código que la usa. | Declarar con la interfaz: `List<T> x = new ArrayList<>()`. |
-| Usar objetos propios en `HashSet`/`HashMap` sin `equals`/`hashCode` | Se guardan duplicados y `get()` devuelve `null` con la clave correcta. | Implementar ambos métodos de forma coherente (lección 15). |
-| Modificar una colección mientras se la recorre con for-each | `ConcurrentModificationException`. | `Iterator.remove()` o `removeIf()` (lección 15). |
+| Usar objetos propios en `HashSet`/`HashMap` sin `equals`/`hashCode` | Se guardan duplicados y `get()` devuelve `null` con la clave correcta. | Implementar ambos métodos de forma coherente ([Iteradores, Ordenamiento y Contrato equals/hashCode](/cursos/java/14-iteradores-ordenamiento-equals-hashcode)). |
+| Modificar una colección mientras se la recorre con for-each | `ConcurrentModificationException`. | `Iterator.remove()` o `removeIf()` ([Iteradores, Ordenamiento y Contrato equals/hashCode](/cursos/java/14-iteradores-ordenamiento-equals-hashcode)). |
 | `mapa.get(k)` sin contemplar `null` | `NullPointerException` al desempaquetar un `Integer` que vino en `null`. | `getOrDefault(k, valorPorDefecto)`. |
 | Usar `LinkedList` "porque insertar es más rápido" | En la práctica es más lenta que `ArrayList` por los fallos de caché. | `ArrayList` salvo que midas y demuestres lo contrario. |
 | Usar clave mutable en un `HashMap` | Si el objeto cambia, su `hashCode` cambia y queda perdido en el bucket viejo. | Claves inmutables: `String`, `Integer`, o clases con campos `final`. |

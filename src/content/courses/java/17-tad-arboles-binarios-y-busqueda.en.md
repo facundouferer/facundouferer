@@ -57,7 +57,7 @@ On top of that, plenty of real things *are* trees: the file system, a page's DOM
 <figcaption>A binary tree caps each node at two children: left and right. That restriction is what makes fast searching possible.</figcaption>
 </figure>
 
-The class that models it is the sibling of the `Node` from lesson 12, with one more reference:
+The class that models it is the sibling of the `Node` from the [The List ADT: Static, Dynamic, and Linked](/en/courses/java/11-tad-listas-estaticas-y-dinamicas) lesson, with one more reference:
 
 ```java
 public class TreeNode {
@@ -152,7 +152,7 @@ public void postOrder(TreeNode node) {
 }
 ```
 
-The `if (node == null) return;` is the **base case**, and it is not a detail: without it the recursion never ends and you get a `StackOverflowError`. Which, as you saw in lesson 13, is literally the JVM call stack overflowing.
+The `if (node == null) return;` is the **base case**, and it is not a detail: without it the recursion never ends and you get a `StackOverflowError`. Which, as you saw in the [The Stack and Queue ADTs: Linear Structures](/en/courses/java/12-tad-pilas-y-colas) lesson, is literally the JVM call stack overflowing.
 
 > **In-order over a BST yields sorted data.** That property, which looks like a magic trick, is why a `TreeMap` can be iterated in key order without sorting anything: the order is already in the shape of the tree.
 
@@ -162,7 +162,7 @@ The `if (node == null) return;` is the **base case**, and it is not a detail: wi
 
 The three traversals above dive to the bottom before moving sideways. Sometimes you want the opposite: **visiting the tree level by level**.
 
-Recursion is no help here. What helps is a **queue**, exactly the one from lesson 13:
+Recursion is no help here. What helps is a **queue**, exactly the one from the [The Stack and Queue ADTs: Linear Structures](/en/courses/java/12-tad-pilas-y-colas) lesson:
 
 ```java
 public void levelOrder() {

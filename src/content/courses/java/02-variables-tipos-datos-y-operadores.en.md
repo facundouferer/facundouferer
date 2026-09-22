@@ -3,7 +3,7 @@ course: 'java'
 slug: '02-variables-tipos-datos-y-operadores'
 title: 'Variables, Data Types, and Operators'
 description: 'Master primitive types, reference types, type casting, and operators in Java.'
-order: 3
+order: 2
 lang: 'en'
 published: true
 ---

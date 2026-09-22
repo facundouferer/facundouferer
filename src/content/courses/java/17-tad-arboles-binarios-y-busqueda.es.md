@@ -57,7 +57,7 @@ Y además, muchísimas cosas del mundo real *son* árboles: el sistema de archiv
 <figcaption>Un árbol binario limita a dos los hijos de cada nodo: izquierdo y derecho. Esa restricción es la que permite las búsquedas rápidas.</figcaption>
 </figure>
 
-La clase que lo modela es la hermana de la `Nodo` de la lección 12, con una referencia más:
+La clase que lo modela es la hermana de la `Nodo` de la lección [TAD Lista: Estáticas, Dinámicas y Enlazadas](/cursos/java/11-tad-listas-estaticas-y-dinamicas), con una referencia más:
 
 ```java
 public class NodoArbol {
@@ -152,7 +152,7 @@ public void postOrden(NodoArbol nodo) {
 }
 ```
 
-El `if (nodo == null) return;` es el **caso base**, y no es un detalle: sin él la recursión no termina nunca y obtenés un `StackOverflowError`. Que, como viste en la lección 13, es literalmente la pila de llamadas de la JVM desbordándose.
+El `if (nodo == null) return;` es el **caso base**, y no es un detalle: sin él la recursión no termina nunca y obtenés un `StackOverflowError`. Que, como viste en la lección [TAD Pila y TAD Cola: Estructuras Lineales](/cursos/java/12-tad-pilas-y-colas), es literalmente la pila de llamadas de la JVM desbordándose.
 
 > **In-orden sobre un ABB devuelve los datos ordenados.** Esa propiedad, que parece un truco de magia, es la razón por la que un `TreeMap` puede recorrerse en orden de clave sin ordenar nada: el orden ya está en la forma del árbol.
 
@@ -162,7 +162,7 @@ El `if (nodo == null) return;` es el **caso base**, y no es un detalle: sin él 
 
 Los tres recorridos anteriores bajan hasta el fondo antes de moverse al lado. A veces querés lo contrario: **visitar el árbol nivel por nivel**.
 
-La recursión no sirve acá. Lo que sirve es una **cola**, exactamente la de la lección 13:
+La recursión no sirve acá. Lo que sirve es una **cola**, exactamente la de la lección [TAD Pila y TAD Cola: Estructuras Lineales](/cursos/java/12-tad-pilas-y-colas):
 
 ```java
 public void porNiveles() {

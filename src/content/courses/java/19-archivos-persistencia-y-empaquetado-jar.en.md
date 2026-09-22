@@ -51,7 +51,7 @@ Java has two parallel I/O hierarchies, and mixing them up is the first source of
 <text x="548" y="240" font-size="11.5" fill="var(--color-neutral-800)">to disk. With it, one</text>
 <text x="548" y="258" font-size="11.5" fill="var(--color-neutral-800)">trip every 8 KB.</text>
 <text x="0" y="298" font-size="12" fill="var(--color-neutral-800)">new BufferedReader(new FileReader("data.txt"))  —  read it inside out: FileReader touches the disk,</text>
-<text x="0" y="316" font-size="12" fill="var(--color-neutral-800)">BufferedReader cushions it. Same composition idea as lesson 10: wrap instead of inherit.</text>
+<text x="0" y="316" font-size="12" fill="var(--color-neutral-800)">BufferedReader cushions it. Same composition idea as Inheritance, Polymorphism, and Method Overloading: wrap instead of inherit.</text>
 <text x="0" y="336" font-size="12" font-weight="700" fill="var(--color-accent-700)">Reading a 10 MB file unbuffered can be a hundred times slower. This is not an optional optimization.</text>
 </svg>
 <figcaption>The <code>Buffered*</code> classes do not change what you do, they change how many times the disk is touched. That is why you always wrap.</figcaption>
@@ -117,7 +117,7 @@ try (Stream<String> lines = Files.lines(Path.of("app.log"))) {
 }
 ```
 
-Note the `try-with-resources` from lesson 11: `Files.lines` opens a file, so it must be closed. `readString` and `readAllLines` do not need it because they close themselves.
+Note the `try-with-resources` from the [Exception Handling and Robustness](/en/courses/java/10-excepciones-y-manejo-de-errores) lesson: `Files.lines` opens a file, so it must be closed. `readString` and `readAllLines` do not need it because they close themselves.
 
 ### The charset trap
 

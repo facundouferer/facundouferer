@@ -10,7 +10,7 @@ published: true
 
 # Arrays of Objects: Holding and Iterating Many Instances
 
-In lesson 4 you learned to store many values of the same type in an array. In lessons 7 and 8 you learned to design a class that guarantees every object is born valid and stays consistent.
+In the [Arrays and String Handling in Java](/en/courses/java/04-arrays-y-strings) lesson you learned to store many values of the same type in an array. In the [OOP Fundamentals: Classes, Objects, and Attributes](/en/courses/java/07-fundamentos-poo-clases-y-objetos) and [Constructors, Access Modifiers, and Getters/Setters](/en/courses/java/07-constructores-y-encapsulamiento) lessons you learned to design a class that guarantees every object is born valid and stays consistent.
 
 This lesson joins the two, and that intersection is where Java starts being useful for real work:
 
@@ -21,7 +21,7 @@ Person p3 = new Person("Ana", 41);
 // and if there are 500?
 ```
 
-Exactly the problem that led you to arrays in lesson 4, but now with objects. The solution is the same —an array— except for one detail that changes everything: **an array of objects does not hold objects, it holds references to objects**.
+Exactly the problem that led you to arrays in the [Arrays and String Handling in Java](/en/courses/java/04-arrays-y-strings) lesson, but now with objects. The solution is the same —an array— except for one detail that changes everything: **an array of objects does not hold objects, it holds references to objects**.
 
 That detail is responsible for the most common `NullPointerException` in all of Java, for two slots being able to modify the same object without you noticing, and for `Arrays.sort` refusing to work until you explain how to compare. Let's take it apart.
 
@@ -156,7 +156,7 @@ for (int i = 0; i < roster.length; i++) {
 }
 ```
 
-Notice what form C makes possible: **the validating constructor from lesson 8 runs once per object**. If any input datum is invalid, the constructor replaces it with a safe default and logs a notice: the object is still born, just never with broken data. Without constructors you would have to create three empty objects and fill them afterwards — precisely the window of broken objects that lesson 8 set out to close.
+Notice what form C makes possible: **the validating constructor from the [Constructors, Access Modifiers, and Getters/Setters](/en/courses/java/07-constructores-y-encapsulamiento) lesson runs once per object**. If any input datum is invalid, the constructor replaces it with a safe default and logs a notice: the object is still born, just never with broken data. Without constructors you would have to create three empty objects and fill them afterwards — precisely the window of broken objects that lesson set out to close.
 
 ---
 
@@ -280,7 +280,7 @@ public static Person findByName(Person[] people, String name) {
 
 Three design decisions worth more than the code itself:
 
-- **`equalsIgnoreCase`, never `==`.** You are comparing the contents of two `String`s, and lesson 4 already showed why `==` betrays you the moment the text comes from outside.
+- **`equalsIgnoreCase`, never `==`.** You are comparing the contents of two `String`s, and the [Arrays and String Handling in Java](/en/courses/java/04-arrays-y-strings) lesson already showed why `==` betrays you the moment the text comes from outside.
 - **`p != null` first.** The order matters: evaluating `p.getName()` before the check blows up.
 - **Returning `null` when absent.** That is this lesson's choice: the caller takes on the responsibility of checking the result before using it.
 
@@ -301,7 +301,7 @@ if (found != null) {
 
 With `int[]`, `Arrays.sort(numbers)` was enough, because numbers have an obvious order. With objects there is none: are two people ordered by name, by age, by hire date? Someone has to decide, and for now that someone is you: `Arrays.sort(people)` compiles, but blows up at runtime because `Person` does not know how to compare itself.
 
-Java has a mechanism to declare that criterion once and reuse it in any `Arrays.sort` call —you will see it in lesson 16—. Until then, you sort by hand: walk the array and compare the chosen field with `<` and `>`, the same way you would sort an `int[]` if `Arrays.sort` did not exist.
+Java has a mechanism to declare that criterion once and reuse it in any `Arrays.sort` call —you will see it in the [Iterators, Ordering, and the equals/hashCode Contract](/en/courses/java/14-iteradores-ordenamiento-equals-hashcode) lesson—. Until then, you sort by hand: walk the array and compare the chosen field with `<` and `>`, the same way you would sort an `int[]` if `Arrays.sort` did not exist.
 
 Selection is the simplest algorithm to write by hand: on every pass you find the smallest-valued element in the rest of the array and move it to the front.
 
@@ -331,7 +331,7 @@ System.out.println(Arrays.toString(people));
 
 Notice the swap moves **references**, not objects: `temp` holds an arrow, not a copy of `Person`. Sorting an array of objects never duplicates what the slots point at.
 
-To sort by another field —the name, for instance— you would repeat the same loop and change only the `if` condition. Repeating that loop once per criterion, with no guarantee about what happens to ties if you also need to break them by a second field, is exactly the problem lesson 16 (Iterators, Sorting, and the equals/hashCode Contract) solves: you will declare the ordering criterion once and hand it to `Arrays.sort`, without repeating the loop.
+To sort by another field —the name, for instance— you would repeat the same loop and change only the `if` condition. Repeating that loop once per criterion, with no guarantee about what happens to ties if you also need to break them by a second field, is exactly the problem the [Iterators, Ordering, and the equals/hashCode Contract](/en/courses/java/14-iteradores-ordenamiento-equals-hashcode) lesson solves: you will declare the ordering criterion once and hand it to `Arrays.sort`, without repeating the loop.
 
 An object array with `null` inside **breaks any hand-written sort** with a `NullPointerException`, because `people[j].getAge()` blows up the moment `j` lands on an empty slot. One more reason not to leave holes.
 
@@ -366,7 +366,7 @@ This is the least intuitive consequence of the two levels of memory.
 <text x="2" y="278" font-size="12.5" fill="var(--color-text)">The object originally in slot [2] is left unreferenced and the garbage collector takes it.</text>
 <text x="2" y="296" font-size="12" fill="var(--color-neutral-700)">To get two independent objects you must construct a new one, not copy the reference.</text>
 </svg>
-<figcaption>This is the same shallow copy you saw in lesson 4, but inside a single array. Assigning one slot to another never duplicates the object.</figcaption>
+<figcaption>This is the same shallow copy you saw in the [Arrays and String Handling in Java](/en/courses/java/04-arrays-y-strings) lesson, but inside a single array. Assigning one slot to another never duplicates the object.</figcaption>
 </figure>
 
 ```java
@@ -440,9 +440,9 @@ Most of the time you do not know upfront how many objects you will store. The cl
 <rect x="0" y="198" width="720" height="66" rx="16" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-600)"/>
 <text x="22" y="224" font-size="13" font-weight="700" fill="var(--color-accent-2-800)">Golden rule: iterate up to count, never up to data.length</text>
 <text x="22" y="248" font-size="12.5" fill="var(--color-text)">for (int i = 0; i less than count; i++)  →  that way you never touch a null slot.</text>
-<text x="2" y="288" font-size="12.5" fill="var(--color-text)">A class wrapping this array and this counter, exposing add/remove/get, is exactly a List ADT: lesson 13.</text>
+<text x="2" y="288" font-size="12.5" fill="var(--color-text)">A class wrapping this array and this counter, exposing add/remove/get, is exactly The List ADT: Static, Dynamic, and Linked.</text>
 </svg>
-<figcaption>Separating <em>capacity</em> from <em>count</em> is the conceptual step that turns a loose array into a data structure. The List ADT from lesson 13 does exactly this internally.</figcaption>
+<figcaption>Separating <em>capacity</em> from <em>count</em> is the conceptual step that turns a loose array into a data structure. The List ADT from the [The List ADT: Static, Dynamic, and Linked](/en/courses/java/11-tad-listas-estaticas-y-dinamicas) lesson does exactly this internally.</figcaption>
 </figure>
 
 ```java
@@ -452,7 +452,7 @@ public class Registry {
 
     public void add(Person p) {
         if (count == data.length) {
-            // full: double the capacity (lesson 4, section 4)
+            // full: double the capacity (see the Arrays and String Handling in Java lesson, section 4)
             data = Arrays.copyOf(data, data.length * 2);
         }
         data[count] = p;
@@ -509,7 +509,7 @@ public class Course {
 }
 ```
 
-Those two marked lines void the encapsulation from lesson 8, for the same reason as section 7: the arrow is being shared.
+Those two marked lines void the encapsulation from the [Constructors, Access Modifiers, and Getters/Setters](/en/courses/java/07-constructores-y-encapsulamiento) lesson, for the same reason as section 7: the arrow is being shared.
 
 ```java
 Person[] list = { new Person("Laura", 28) };
@@ -545,7 +545,7 @@ With an immutable `Person`, a shallow copy is enough: nobody can modify the obje
 - **Not overriding `toString()`.** You print hex hashes and debug blind.
 - **Treating an object array as if `Arrays.sort` could order it on its own.** With objects you need to decide the comparison field and write the loop yourself.
 - **Sorting an array with `null` inside.** `NullPointerException` the moment the comparison touches an empty slot.
-- **Comparing objects with `==`.** That compares identity. Content needs `equals()` — its full contract arrives in lesson 16.
+- **Comparing objects with `==`.** That compares identity. Content needs `equals()` — its full contract arrives in the [Iterators, Ordering, and the equals/hashCode Contract](/en/courses/java/14-iteradores-ordenamiento-equals-hashcode) lesson.
 - **Writing `a[i] = a[j]` believing it copies.** It copies the reference; you end up with two arrows to one object.
 - **Exposing a class's internal array.** A `private` is worth nothing if the getter hands out the reference.
 - **Forgetting `data[count - 1] = null` on removal.** It keeps alive a reference the GC cannot free.
@@ -674,7 +674,7 @@ public class SortPeople {
 }
 ```
 
-Laura and Bruno tie on age (35). This loop, written as it is, gives no guarantee about the relative order of ties —in this particular run Laura ends up before Bruno, but that is a consequence of the swaps, not a rule of the algorithm. Breaking ties predictably by a second criterion, such as name, without rewriting the whole loop every time, is exactly what you will learn to do in lesson 16.
+Laura and Bruno tie on age (35). This loop, written as it is, gives no guarantee about the relative order of ties —in this particular run Laura ends up before Bruno, but that is a consequence of the swaps, not a rule of the algorithm. Breaking ties predictably by a second criterion, such as name, without rewriting the whole loop every time, is exactly what you will learn to do in the [Iterators, Ordering, and the equals/hashCode Contract](/en/courses/java/14-iteradores-ordenamiento-equals-hashcode) lesson.
 </details>
 
 ### Exercise 4 — An address book with dynamic capacity
@@ -735,7 +735,7 @@ public class AddressBook {
 }
 ```
 
-This class is already, conceptually, a miniature dynamic list: internal array, doubling capacity, logical size separated from physical size, and shifting on removal. In lesson 13 you will formalise it as a List ADT and compare it with the linked version.
+This class is already, conceptually, a miniature dynamic list: internal array, doubling capacity, logical size separated from physical size, and shifting on removal. In the [The List ADT: Static, Dynamic, and Linked](/en/courses/java/11-tad-listas-estaticas-y-dinamicas) lesson you will formalise it as a List ADT and compare it with the linked version.
 </details>
 
 ---
@@ -747,7 +747,7 @@ This class is already, conceptually, a miniature dynamic list: internal array, d
 - An array with empty slots is the cause of Java's most frequent `NullPointerException`.
 - Override `toString()` on every class you store in an array: without it, printing tells you nothing.
 - Searching is always a hand-written linear scan; if you return `null` when nothing matches, the caller must check `!= null` before using the result.
-- Sorting objects demands choosing a criterion and comparing it field by field in your own loop; lesson 16 shows how to declare that criterion once and reuse it.
+- Sorting objects demands choosing a criterion and comparing it field by field in your own loop; the [Iterators, Ordering, and the equals/hashCode Contract](/en/courses/java/14-iteradores-ordenamiento-equals-hashcode) lesson shows how to declare that criterion once and reuse it.
 - Assigning one slot to another **does not copy the object**: you get two arrows to the same place.
 - A class's internal array is copied on the way in and on the way out, or `private` protects nothing.
 - Separating **capacity** from **count** is what turns an array into a data structure. That is the starting point of the List ADT.

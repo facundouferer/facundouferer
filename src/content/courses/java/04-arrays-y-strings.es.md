@@ -3,7 +3,7 @@ course: 'java'
 slug: '04-arrays-y-strings'
 title: 'Arrays y Manejo de Strings en Java'
 description: 'Dominá arreglos unidimensionales, matrices y arrays irregulares, la clase java.util.Arrays, el modelo de memoria de String, el String Constant Pool y StringBuilder.'
-order: 5
+order: 4
 lang: 'es'
 published: true
 ---

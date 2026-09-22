@@ -3,7 +3,7 @@ course: 'java'
 slug: '14-iteradores-ordenamiento-equals-hashcode'
 title: 'Iteradores, Ordenamiento y Contrato equals/hashCode'
 description: 'Entendé qué hay detrás del for-each, por qué salta ConcurrentModificationException, cómo ordenar con Comparable y Comparator, y por qué romper el contrato equals/hashCode hace que tus objetos desaparezcan.'
-order: 17
+order: 15
 lang: 'es'
 published: true
 ---
@@ -18,7 +18,7 @@ Las tres tienen la misma raíz: **las colecciones de Java hacen preguntas sobre 
 
 ## 1. Qué hay realmente detrás de un `for-each`
 
-Este bucle que venís usando desde la lección 4:
+Este bucle que venís usando desde la lección [Arrays y Manejo de Strings en Java](/cursos/java/04-arrays-y-strings):
 
 ```java
 for (String nombre : nombres) {
@@ -243,7 +243,7 @@ public boolean equals(Object o) {
 }
 ```
 
-> El parámetro es `Object o`, **no** `Libro o`. Si escribís `public boolean equals(Libro o)` estás **sobrecargando**, no sobrescribiendo, y las colecciones —que llaman a `equals(Object)`— van a seguir usando la versión heredada. Es exactamente el error que `@Override` detecta, tal cual lo vimos en la lección 9.
+> El parámetro es `Object o`, **no** `Libro o`. Si escribís `public boolean equals(Libro o)` estás **sobrecargando**, no sobrescribiendo, y las colecciones —que llaman a `equals(Object)`— van a seguir usando la versión heredada. Es exactamente el error que `@Override` detecta, tal cual lo vimos en la lección [Arrays de Objetos: Guardar y Recorrer Muchas Instancias](/cursos/java/09-arrays-de-objetos).
 
 ---
 
@@ -306,7 +306,7 @@ public record Libro(String titulo, String autor, int paginas) implements Compara
 }
 ```
 
-Tres líneas y el contrato está garantizado por el compilador. Es la razón por la que los `record` de la lección 8 aparecen tanto en código moderno.
+Tres líneas y el contrato está garantizado por el compilador. Es la razón por la que los `record` de la lección [Constructores, Modificadores de Acceso y Getters/Setters](/cursos/java/07-constructores-y-encapsulamiento) aparecen tanto en código moderno.
 
 ---
 

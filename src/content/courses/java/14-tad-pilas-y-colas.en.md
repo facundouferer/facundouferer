@@ -3,7 +3,7 @@ course: 'java'
 slug: '12-tad-pilas-y-colas'
 title: 'The Stack and Queue ADTs: Linear Structures'
 description: 'Master LIFO and FIFO structures, implement them from scratch over nodes and arrays, understand the circular queue, and solve the classic balanced-brackets problem.'
-order: 15
+order: 17
 lang: 'en'
 published: true
 ---
@@ -102,7 +102,7 @@ public class Stack<T> {
 
 Notice there is **not a single loop**. No operation walks anything. That is why they are all O(1).
 
-> Throwing an exception on `pop()` over an empty stack is the right call: popping an empty stack is a programmer usage error, not an expected condition. It is a `RuntimeException`, exactly as we discussed in lesson 11.
+> Throwing an exception on `pop()` over an empty stack is the right call: popping an empty stack is a programmer usage error, not an expected condition. It is a `RuntimeException`, exactly as we discussed in the [Exception Handling and Robustness](/en/courses/java/10-excepciones-y-manejo-de-errores) lesson.
 
 ---
 
@@ -266,7 +266,7 @@ This pattern — a fixed-size array with two wrapping indices — is called a **
 
 **Stacks:**
 
-- **The JVM call stack.** Every method call pushes a stack frame; every `return` pops it. The `StackOverflowError` from infinite recursion is literally this stack overflowing. And the stack trace from lesson 11 is that stack, printed.
+- **The JVM call stack.** Every method call pushes a stack frame; every `return` pops it. The `StackOverflowError` from infinite recursion is literally this stack overflowing. And the stack trace from the [Exception Handling and Robustness](/en/courses/java/10-excepciones-y-manejo-de-errores) lesson is that stack, printed.
 - **Undo (Ctrl+Z).** Every action is pushed; undoing is a `pop`.
 - **The browser back button.**
 - **Expression evaluation and syntax checking**, which is this lesson's exercise.
@@ -274,8 +274,8 @@ This pattern — a fixed-size array with two wrapping indices — is called a **
 **Queues:**
 
 - **Print queues**, task queues, message queues.
-- **BFS traversal of graphs and trees**, which you will see in lessons 16 and 17.
-- **Producer-consumer** between threads: one thread enqueues work, another dequeues it. That is the basis of the `ExecutorService` in lesson 19.
+- **BFS traversal of graphs and trees**, which you will see in the [The Tree ADT: Traversals and Binary Search Trees](/en/courses/java/15-tad-arboles-binarios-y-busqueda) and [Graphs: Matrix, Adjacency List, BFS, DFS, and Dijkstra](/en/courses/java/16-grafos-representacion-y-algoritmos) lessons.
+- **Producer-consumer** between threads: one thread enqueues work, another dequeues it. That is the basis of the `ExecutorService` in the [Concurrent Programming: Threads, Synchronization, and Pools](/en/courses/java/19-programacion-concurrente-hilos-y-pools) lesson.
 - **Order processing** in any system where arrival order is the rule.
 
 ---

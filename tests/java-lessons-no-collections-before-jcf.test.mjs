@@ -3,18 +3,20 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 // The Java Collections Framework and generics are taught in
-// 15-java-collections-framework-y-genericos.{es,en}.md (order 16). Iterators,
+// 15-java-collections-framework-y-genericos.{es,en}.md (order 14). Iterators,
 // sorting, Comparable/Comparator and the equals/hashCode contract are taught
-// in 16-iteradores-ordenamiento-equals-hashcode.{es,en}.md (order 17).
+// in 16-iteradores-ordenamiento-equals-hashcode.{es,en}.md (order 15).
 //
 // These four earlier lessons (orders 10, 11, 12, 13) and the presentations
 // that illustrate them must not use List/ArrayList/Map/Set/Optional,
 // generics syntax, or Comparable/Comparator/compareTo — those are all
 // future-topic APIs and syntax at this point in the course.
 //
-// 13-tad-listas-estaticas-y-dinamicas and 14-tad-pilas-y-colas are out of
-// scope: their `<T>` generic node structures are a known, separate
-// structural decision.
+// 13-tad-listas-estaticas-y-dinamicas (order 16) and 14-tad-pilas-y-colas
+// (order 17) are out of scope for a different reason now: they come AFTER
+// the JCF and iterators lessons, so their own generic `<T>` Nodo/Lista/Pila
+// structures and their use of Deque/PriorityQueue/Comparator are no longer a
+// forward dependency — they build on content the student already has.
 
 const LESSON_FILES = [
 	'src/content/courses/java/09-arrays-de-objetos.es.md',
@@ -53,7 +55,7 @@ function assertNoCollectionsOrGenerics(filePath, content) {
 		assert.doesNotMatch(
 			content,
 			pattern,
-			`${filePath} should not use "${name}" — the Collections Framework and generics are taught later, in lesson 15-java-collections-framework-y-genericos (order 16), and Comparable/Comparator in lesson 16-iteradores-ordenamiento-equals-hashcode (order 17)`,
+			`${filePath} should not use "${name}" — the Collections Framework and generics are taught later, in lesson 15-java-collections-framework-y-genericos (order 14), and Comparable/Comparator in lesson 16-iteradores-ordenamiento-equals-hashcode (order 15)`,
 		);
 	}
 }

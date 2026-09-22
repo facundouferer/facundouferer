@@ -10,7 +10,7 @@ published: true
 
 # Database Access with JDBC and Safe SQL
 
-In lesson 18 you saved data to files. It works — but try this with a file: find every product with stock below 10, sorted by price, while three other users are writing at the same time.
+In the [Files, Serialization, and JAR Packaging](/en/courses/java/17-archivos-persistencia-y-empaquetado-jar) lesson you saved data to files. It works — but try this with a file: find every product with stock below 10, sorted by price, while three other users are writing at the same time.
 
 That is exactly what a **relational database** does, and why it exists. **JDBC** is the bridge between your Java code and it.
 
@@ -28,7 +28,7 @@ That is exactly what a **relational database** does, and why it exists. **JDBC**
 <line x1="360" y1="74" x2="360" y2="94" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-jd)"/>
 <rect x="0" y="98" width="720" height="52" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
 <text x="20" y="120" font-size="12.5" font-weight="700" fill="var(--color-accent-700)">java.sql — the standard JDBC API</text>
-<text x="20" y="140" font-size="11" fill="var(--color-neutral-800)">Connection, PreparedStatement, ResultSet. They are INTERFACES: lesson 10 in its purest form.</text>
+<text x="20" y="140" font-size="11" fill="var(--color-neutral-800)">Connection, PreparedStatement, ResultSet. They are INTERFACES: Abstract Classes, Interfaces, and Code Organization in its purest form.</text>
 <line x1="360" y1="152" x2="360" y2="172" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-jd)"/>
 <rect x="0" y="176" width="232" height="46" rx="14" fill="var(--color-neutral-200)" stroke="var(--color-neutral-500)"/>
 <text x="116" y="196" font-size="11.5" font-weight="700" text-anchor="middle" fill="var(--color-text)">PostgreSQL driver</text>
@@ -42,7 +42,7 @@ That is exactly what a **relational database** does, and why it exists. **JDBC**
 <text x="0" y="248" font-size="12" font-weight="700" fill="var(--color-accent-700)">Moving from PostgreSQL to MySQL means swapping a dependency and a URL. Your code never notices.</text>
 <text x="0" y="266" font-size="11.5" fill="var(--color-neutral-700)">It is exactly the benefit of programming against interfaces, applied at industry scale.</text>
 </svg>
-<figcaption>JDBC is a contract; each vendor writes its implementation. Lesson 10 explained why that is worth it — here you see the payoff.</figcaption>
+<figcaption>JDBC is a contract; each vendor writes its implementation. The [Abstract Classes, Interfaces, and Code Organization](/en/courses/java/09-clases-abstractas-interfaces-y-modelado) lesson explained why that is worth it — here you see the payoff.</figcaption>
 </figure>
 
 ```java
@@ -54,7 +54,7 @@ try (Connection conn = DriverManager.getConnection(url, "user", "secret")) {
 }
 ```
 
-Note the `try-with-resources` from lesson 11. **An unclosed connection is a leaked resource**, and with enough of them the database refuses new connections and the whole application goes down.
+Note the `try-with-resources` from the [Exception Handling and Robustness](/en/courses/java/10-excepciones-y-manejo-de-errores) lesson. **An unclosed connection is a leaked resource**, and with enough of them the database refuses new connections and the whole application goes down.
 
 ---
 
@@ -222,7 +222,7 @@ try {
 
 } catch (SQLException e) {
     conn.rollback();                        // 3. something failed: undo everything
-    throw new TransferFailedException("Transfer could not be completed", e);  // lesson 11
+    throw new TransferFailedException("Transfer could not be completed", e);  // see Exception Handling and Robustness
 } finally {
     conn.setAutoCommit(true);               // 4. leave the connection as we found it
     conn.close();
@@ -257,7 +257,7 @@ try (Connection conn = dataSource.getConnection()) {
 
 With a pool, `close()` changes meaning: it **returns** the connection instead of destroying it. So you keep using `try-with-resources` exactly as before; it simply does something different underneath.
 
-> A `Connection` is **not thread-safe**. If your application is concurrent — and after lesson 19 you know what that entails — each thread takes its own from the pool and returns it when done. Never share a `Connection` across threads.
+> A `Connection` is **not thread-safe**. If your application is concurrent — and after the [Concurrent Programming: Threads, Synchronization, and Pools](/en/courses/java/19-programacion-concurrente-hilos-y-pools) lesson you know what that entails — each thread takes its own from the pool and returns it when done. Never share a `Connection` across threads.
 
 ---
 
@@ -275,7 +275,7 @@ public interface ProductDAO {                        // the interface: the contr
 }
 ```
 
-With that interface, the business service does not know whether PostgreSQL, a file, or an in-memory map for tests sits below. It is the same principle as lessons 10 and 12: **program against the contract**.
+With that interface, the business service does not know whether PostgreSQL, a file, or an in-memory map for tests sits below. It is the same principle as the [Abstract Classes, Interfaces, and Code Organization](/en/courses/java/09-clases-abstractas-interfaces-y-modelado) and [The List ADT: Static, Dynamic, and Linked](/en/courses/java/11-tad-listas-estaticas-y-dinamicas) lessons: **program against the contract**.
 
 ---
 
@@ -366,7 +366,7 @@ public class JdbcProductDAO {
 
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
-                // Optional instead of null: lesson 11 explained why
+                // Optional instead of null: see Exception Handling and Robustness
                 return rs.next() ? Optional.of(map(rs)) : Optional.empty();
             }
         }

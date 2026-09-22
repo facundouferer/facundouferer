@@ -171,7 +171,7 @@ Un grafo no se guarda "como se ve". Hay dos representaciones estándar, y elegir
 <figcaption>Una red social con mil millones de personas y doscientos amigos cada una: la matriz pediría un trillón de celdas; la lista, doscientos mil millones. Por eso en la práctica se usa lista.</figcaption>
 </figure>
 
-En Java, la lista de adyacencia se escribe con un `Map`, que ya conocés de la lección 14:
+En Java, la lista de adyacencia se escribe con un `Map`, que ya conocés de la lección [Colecciones en Java y Genéricos (JCF)](/cursos/java/13-java-collections-framework-y-genericos):
 
 ```java
 public class Grafo<V> {
@@ -193,7 +193,7 @@ public class Grafo<V> {
 }
 ```
 
-Fijate que `computeIfAbsent` y `getOrDefault` —los métodos de `Map` de la lección 14— hacen todo el trabajo pesado. Sin ellos harían falta cuatro `if` extra.
+Fijate que `computeIfAbsent` y `getOrDefault` —los métodos de `Map` de la lección [Colecciones en Java y Genéricos (JCF)](/cursos/java/13-java-collections-framework-y-genericos)— hacen todo el trabajo pesado. Sin ellos harían falta cuatro `if` extra.
 
 ---
 
@@ -386,7 +386,7 @@ public Map<V, Integer> dijkstra(V origen) {
     Map<V, Integer> distancia = new HashMap<>();
     Set<V> visitados = new HashSet<>();
 
-    // La cola de prioridad de la lección 14: siempre saca el más barato
+    // La cola de prioridad de Colecciones en Java y Genéricos (JCF): siempre saca el más barato
     PriorityQueue<V> cola = new PriorityQueue<>(
         Comparator.comparingInt(v -> distancia.getOrDefault(v, Integer.MAX_VALUE))
     );

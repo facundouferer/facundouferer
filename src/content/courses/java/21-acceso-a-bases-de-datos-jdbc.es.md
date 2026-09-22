@@ -10,7 +10,7 @@ published: true
 
 # Acceso a Bases de Datos con JDBC y SQL Seguro
 
-En la lección 18 guardaste datos en archivos. Funciona, pero probá lo siguiente con un archivo: buscar todos los productos con stock menor a 10, ordenados por precio, mientras otros tres usuarios están escribiendo al mismo tiempo.
+En la lección [Archivos, Serialización y Empaquetado JAR](/cursos/java/17-archivos-persistencia-y-empaquetado-jar) guardaste datos en archivos. Funciona, pero probá lo siguiente con un archivo: buscar todos los productos con stock menor a 10, ordenados por precio, mientras otros tres usuarios están escribiendo al mismo tiempo.
 
 Eso es exactamente lo que hace una **base de datos relacional**, y por eso existe. **JDBC** es el puente entre tu código Java y ella.
 
@@ -28,7 +28,7 @@ Eso es exactamente lo que hace una **base de datos relacional**, y por eso exist
 <line x1="360" y1="74" x2="360" y2="94" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-jd)"/>
 <rect x="0" y="98" width="720" height="52" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
 <text x="20" y="120" font-size="12.5" font-weight="700" fill="var(--color-accent-700)">java.sql — la API estándar de JDBC</text>
-<text x="20" y="140" font-size="11" fill="var(--color-neutral-800)">Connection, PreparedStatement, ResultSet. Son INTERFACES: la lección 10 en estado puro.</text>
+<text x="20" y="140" font-size="11" fill="var(--color-neutral-800)">Connection, PreparedStatement, ResultSet. Son INTERFACES: Clases Abstractas, Interfaces y Organización del Código en estado puro.</text>
 <line x1="360" y1="152" x2="360" y2="172" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-jd)"/>
 <rect x="0" y="176" width="232" height="46" rx="14" fill="var(--color-neutral-200)" stroke="var(--color-neutral-500)"/>
 <text x="116" y="196" font-size="11.5" font-weight="700" text-anchor="middle" fill="var(--color-text)">driver PostgreSQL</text>
@@ -42,7 +42,7 @@ Eso es exactamente lo que hace una **base de datos relacional**, y por eso exist
 <text x="0" y="248" font-size="12" font-weight="700" fill="var(--color-accent-700)">Cambiar de PostgreSQL a MySQL es cambiar una dependencia y una URL. Tu código no se entera.</text>
 <text x="0" y="266" font-size="11.5" fill="var(--color-neutral-700)">Es exactamente el beneficio de programar contra interfaces, aplicado a escala de industria.</text>
 </svg>
-<figcaption>JDBC es un contrato; cada fabricante escribe su implementación. La lección 10 explicaba por qué esto vale la pena — acá se ve el resultado.</figcaption>
+<figcaption>JDBC es un contrato; cada fabricante escribe su implementación. La lección [Clases Abstractas, Interfaces y Organización del Código](/cursos/java/09-clases-abstractas-interfaces-y-modelado) explicaba por qué esto vale la pena — acá se ve el resultado.</figcaption>
 </figure>
 
 ```java
@@ -54,7 +54,7 @@ try (Connection conn = DriverManager.getConnection(url, "usuario", "clave")) {
 }
 ```
 
-Fijate el `try-with-resources` de la lección 11. **Una conexión no cerrada es un recurso perdido**, y con suficientes de ellas la base rechaza conexiones nuevas y la aplicación entera se cae.
+Fijate el `try-with-resources` de la lección [Manejo de Excepciones y Robustez](/cursos/java/10-excepciones-y-manejo-de-errores). **Una conexión no cerrada es un recurso perdido**, y con suficientes de ellas la base rechaza conexiones nuevas y la aplicación entera se cae.
 
 ---
 
@@ -222,7 +222,7 @@ try {
 
 } catch (SQLException e) {
     conn.rollback();                        // 3. algo falló: deshacemos todo
-    throw new TransferenciaFallidaException("No se pudo transferir", e);  // lección 11
+    throw new TransferenciaFallidaException("No se pudo transferir", e);  // ver Manejo de Excepciones y Robustez
 } finally {
     conn.setAutoCommit(true);               // 4. dejamos la conexión como la encontramos
     conn.close();
@@ -257,7 +257,7 @@ try (Connection conn = dataSource.getConnection()) {
 
 Con el pool, `close()` cambia de significado: **devuelve** la conexión en lugar de destruirla. Por eso seguís usando `try-with-resources` igual que siempre; simplemente hace algo distinto por debajo.
 
-> Un `Connection` **no es seguro entre hilos**. Si tu aplicación es concurrente —y con la lección 19 ya sabés lo que eso implica—, cada hilo pide la suya al pool y la devuelve al terminar. Nunca compartas una `Connection` entre hilos.
+> Un `Connection` **no es seguro entre hilos**. Si tu aplicación es concurrente —y con la lección [Programación Concurrente: Hilos, Sincronización y Pools](/cursos/java/19-programacion-concurrente-hilos-y-pools) ya sabés lo que eso implica—, cada hilo pide la suya al pool y la devuelve al terminar. Nunca compartas una `Connection` entre hilos.
 
 ---
 
@@ -275,7 +275,7 @@ public interface ProductoDAO {                       // la interfaz: el contrato
 }
 ```
 
-Con esa interfaz, el servicio de negocio no sabe si abajo hay PostgreSQL, un archivo o un mapa en memoria para los tests. Es el mismo principio de las lecciones 10 y 12: **programar contra el contrato**.
+Con esa interfaz, el servicio de negocio no sabe si abajo hay PostgreSQL, un archivo o un mapa en memoria para los tests. Es el mismo principio de las lecciones [Clases Abstractas, Interfaces y Organización del Código](/cursos/java/09-clases-abstractas-interfaces-y-modelado) y [TAD Lista: Estáticas, Dinámicas y Enlazadas](/cursos/java/11-tad-listas-estaticas-y-dinamicas): **programar contra el contrato**.
 
 ---
 
@@ -366,7 +366,7 @@ public class ProductoDAOJdbc {
 
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
-                // Optional en lugar de null: la lección 11 lo explicaba
+                // Optional en lugar de null: ver Manejo de Excepciones y Robustez
                 return rs.next() ? Optional.of(mapear(rs)) : Optional.empty();
             }
         }

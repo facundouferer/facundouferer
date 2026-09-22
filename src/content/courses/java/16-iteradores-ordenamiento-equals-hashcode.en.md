@@ -3,7 +3,7 @@ course: 'java'
 slug: '14-iteradores-ordenamiento-equals-hashcode'
 title: 'Iterators, Ordering, and the equals/hashCode Contract'
 description: 'Understand what sits behind a for-each, why ConcurrentModificationException fires, how to sort with Comparable and Comparator, and why breaking the equals/hashCode contract makes your objects vanish.'
-order: 17
+order: 15
 lang: 'en'
 published: true
 ---
@@ -18,7 +18,7 @@ All three share one root: **Java's collections ask questions about your objects,
 
 ## 1. What is really behind a `for-each`
 
-This loop you have been using since lesson 4:
+This loop you have been using since the [Arrays and String Handling in Java](/en/courses/java/04-arrays-y-strings) lesson:
 
 ```java
 for (String name : names) {
@@ -243,7 +243,7 @@ public boolean equals(Object o) {
 }
 ```
 
-> The parameter is `Object o`, **not** `Book o`. Writing `public boolean equals(Book o)` is **overloading**, not overriding, and collections — which call `equals(Object)` — will keep using the inherited version. It is exactly the bug `@Override` catches, as we saw in lesson 9.
+> The parameter is `Object o`, **not** `Book o`. Writing `public boolean equals(Book o)` is **overloading**, not overriding, and collections — which call `equals(Object)` — will keep using the inherited version. It is exactly the bug `@Override` catches, as we saw in the [Arrays of Objects: Holding and Iterating Many Instances](/en/courses/java/09-arrays-de-objetos) lesson.
 
 ---
 
@@ -306,7 +306,7 @@ public record Book(String title, String author, int pages) implements Comparable
 }
 ```
 
-Three lines and the contract is guaranteed by the compiler. That is why the `record` from lesson 8 shows up so much in modern code.
+Three lines and the contract is guaranteed by the compiler. That is why the `record` from the [Constructors, Access Modifiers, and Getters/Setters](/en/courses/java/07-constructores-y-encapsulamiento) lesson shows up so much in modern code.
 
 ---
 

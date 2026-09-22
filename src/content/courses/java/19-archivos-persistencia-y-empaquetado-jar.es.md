@@ -51,7 +51,7 @@ Java tiene dos jerarquías paralelas para entrada/salida, y confundirlas es la p
 <text x="548" y="240" font-size="11.5" fill="var(--color-neutral-800)">al disco. Con él, una</text>
 <text x="548" y="258" font-size="11.5" fill="var(--color-neutral-800)">cada 8 KB.</text>
 <text x="0" y="298" font-size="12" fill="var(--color-neutral-800)">new BufferedReader(new FileReader("datos.txt"))  —  se lee de adentro hacia afuera: el FileReader toca el</text>
-<text x="0" y="316" font-size="12" fill="var(--color-neutral-800)">disco, el BufferedReader lo amortigua. Es la misma composición de la lección 10: envolver en lugar de heredar.</text>
+<text x="0" y="316" font-size="12" fill="var(--color-neutral-800)">disco, el BufferedReader lo amortigua. Es la misma composición de Herencia, Polimorfismo y Sobrecarga de Métodos: envolver en lugar de heredar.</text>
 <text x="0" y="336" font-size="12" font-weight="700" fill="var(--color-accent-700)">Leer sin buffer un archivo de 10 MB puede ser cien veces más lento. No es una optimización opcional.</text>
 </svg>
 <figcaption>Los <code>Buffered*</code> no cambian lo que hacés, cambian cuántas veces se toca el disco. Por eso se envuelve siempre.</figcaption>
@@ -117,7 +117,7 @@ try (Stream<String> lineas = Files.lines(Path.of("app.log"))) {
 }
 ```
 
-Fijate el `try-with-resources` de la lección 11: `Files.lines` abre un archivo, así que hay que cerrarlo. `readString` y `readAllLines` no lo necesitan porque cierran solos.
+Fijate el `try-with-resources` de la lección [Manejo de Excepciones y Robustez](/cursos/java/10-excepciones-y-manejo-de-errores): `Files.lines` abre un archivo, así que hay que cerrarlo. `readString` y `readAllLines` no lo necesitan porque cierran solos.
 
 ### La trampa de la codificación
 

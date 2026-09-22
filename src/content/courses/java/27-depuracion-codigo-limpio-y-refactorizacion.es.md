@@ -222,3 +222,15 @@ Cada paso —introducir la constante `TAX_RATE`, extraer `calculateTax`/`calcula
 - **Refactorizar** preserva el comportamiento: parte de una suite en verde y termina en la misma suite en verde, con estructura distinta.
 
 Mezclarlos —"ya que estoy arreglando este bug, aprovecho para reordenar la clase"— hace que un test roto no diga si falló por el bug original, por la corrección o por el reordenamiento. La disciplina práctica es: si aparece un bug mientras se refactoriza, se detiene la refactorización, se vuelve al último estado en verde, se corrige el bug con su propio test, y recién después se retoma la refactorización desde una base estable.
+
+---
+
+## Fin del curso
+
+Empezaste con `System.out.println("Hola mundo")`.
+
+Terminás modelando dominios con objetos, eligiendo estructuras de datos con criterio, manejando errores sin tragarlos, persistiendo en archivos y en bases, exponiendo un servicio REST con tests que lo respaldan, y —lo que cerraste en esta última lección— sabiendo diagnosticar un bug por método en lugar de por intuición, y dejando el código mejor de como lo encontraste sin romper nada en el camino.
+
+Lo que cambió no es la cantidad de sintaxis que sabés: es que ahora entendés **por qué** cada herramienta existe y **qué problema vino a resolver**. Un constructor no es ceremonia, es la garantía de que un objeto nazca válido. Una interfaz no es burocracia, es lo que te deja cambiar la base de datos sin tocar la lógica. Un test no es un trámite, es lo que te permite refactorizar sin miedo. Y depurar y refactorizar con disciplina no es perfeccionismo, es lo que te permite seguir tocando código viejo sin miedo a romperlo.
+
+Eso es lo que no se aprende en dos horas, y es exactamente lo que te va a servir cuando el lenguaje de moda ya no sea Java.

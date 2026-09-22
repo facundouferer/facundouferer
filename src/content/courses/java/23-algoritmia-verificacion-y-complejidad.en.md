@@ -3,7 +3,7 @@ course: 'java'
 slug: '23-algoritmia-verificacion-y-complejidad'
 title: 'Algorithms: Specification, Verification, and Complexity'
 description: 'Learn to design, verify, and compare algorithms through contracts, tests, and time and space complexity analysis.'
-order: 2
+order: 6
 lang: 'en'
 published: true
 ---

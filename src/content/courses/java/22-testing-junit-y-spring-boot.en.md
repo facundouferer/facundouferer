@@ -148,7 +148,7 @@ You want to test `ProductService`, but it depends on `ProductRepository`, which 
 <text x="560" y="260" font-size="11" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-700)">instant, no infrastructure</text>
 <text x="0" y="288" font-size="12" fill="var(--color-neutral-800)">This only works because the service depends on the INTERFACE and receives it via constructor.</text>
 </svg>
-<figcaption>Dependency inversion: the class does not create what it needs, it receives it. That is what makes a design testable — and it is lesson 10 bearing its most concrete fruit.</figcaption>
+<figcaption>Dependency inversion: the class does not create what it needs, it receives it. That is what makes a design testable — and it is the [Abstract Classes, Interfaces, and Code Organization](/en/courses/java/09-clases-abstractas-interfaces-y-modelado) lesson bearing its most concrete fruit.</figcaption>
 </figure>
 
 ```java
@@ -200,7 +200,7 @@ Spring Boot takes that injection idea and automates it across the whole applicat
 <line x1="446" y1="198" x2="446" y2="218" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-sp)"/>
 <rect x="172" y="222" width="548" height="80" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
 <text x="192" y="246" font-size="12.5" font-weight="700" fill="var(--color-accent-700)">@Repository — data layer</text>
-<text x="192" y="266" font-size="11" fill="var(--color-neutral-800)">Persistence only: the DAO from lesson 20, or Spring Data JPA.</text>
+<text x="192" y="266" font-size="11" fill="var(--color-neutral-800)">Persistence only: the DAO from Database Access with JDBC and Safe SQL, or Spring Data JPA.</text>
 <text x="192" y="286" font-size="11" font-weight="700" fill="var(--color-accent-700)">Knows nothing about business rules. Tested with @DataJpaTest.</text>
 <line x1="168" y1="262" x2="132" y2="262" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-sp)"/>
 <rect x="0" y="232" width="130" height="60" rx="14" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
@@ -281,7 +281,7 @@ public class ProductService {
 }
 ```
 
-That `Optional` turning into a 200 or a 404 connects straight back to lesson 11: **"not found" is not an exception, it is a possible result**, and here it maps onto an HTTP status code. `get` and `update` share the exact same pattern because they share the exact same case: the id might not be there.
+That `Optional` turning into a 200 or a 404 connects straight back to the [Exception Handling and Robustness](/en/courses/java/10-excepciones-y-manejo-de-errores) lesson: **"not found" is not an exception, it is a possible result**, and here it maps onto an HTTP status code. `get` and `update` share the exact same pattern because they share the exact same case: the id might not be there.
 
 ### PUT: an idempotent replacement, not a patch
 
@@ -604,7 +604,7 @@ And notice all of this runs in **milliseconds**, with no database, no server, an
 - The **pyramid**: a great many fast unit tests at the bottom, very few end-to-end on top. Upside down, the suite becomes useless.
 - **Arrange, Act, Assert.** One "Act" per test, and one reason to fail.
 - A good test is fast, independent, repeatable, and named so it explains what broke.
-- **Mocks** are only possible when a class **receives** its dependencies instead of creating them. That is lesson 10's interfaces paying off.
+- **Mocks** are only possible when a class **receives** its dependencies instead of creating them. That is the [Abstract Classes, Interfaces, and Code Organization](/en/courses/java/09-clases-abstractas-interfaces-y-modelado) lesson's interfaces paying off.
 - Spring Boot splits into **three layers**: web (`@RestController`), business (`@Service`), and data (`@Repository`).
 - Each layer is tested differently: `@WebMvcTest`, plain JUnit with mocks, `@DataJpaTest`. Use `@SpringBootTest` as little as possible.
 - An empty `Optional` in the service becomes a `404` in the controller. The same idea, in two different languages.
@@ -613,12 +613,6 @@ And notice all of this runs in **milliseconds**, with no database, no server, an
 
 ---
 
-## End of the course
+## What comes next
 
-You started with `System.out.println("Hello world")`.
-
-You finish modeling domains with objects, choosing data structures with judgment, handling errors without swallowing them, persisting to files and databases, and exposing a REST service backed by tests.
-
-What changed is not how much syntax you know: it is that you now understand **why** each tool exists and **what problem it came to solve**. A constructor is not ceremony, it is the guarantee that an object is born valid. An interface is not bureaucracy, it is what lets you swap the database without touching the logic. A test is not paperwork, it is what lets you refactor without fear.
-
-That is what nobody learns in two hours, and it is exactly what will still serve you when the language of the moment is no longer Java.
+With testing and Spring Boot you close the loop of building software that works and proving that it works. One skill is still missing, and it is not taught all at once: what to do when something breaks, and how to leave code better than you found it without breaking anything along the way. That is what the course's last lesson, [Debugging, clean code, and refactoring](/en/courses/java/27-depuracion-codigo-limpio-y-refactorizacion), is about.

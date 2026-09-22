@@ -3,14 +3,14 @@ course: 'java'
 slug: '13-java-collections-framework-y-genericos'
 title: 'Java Collections and Generics (JCF)'
 description: 'Walk through the whole Java Collections Framework, understand why generics exist, learn how a HashMap works internally, and build the judgment to pick the right collection.'
-order: 16
+order: 14
 lang: 'en'
 published: true
 ---
 
 # Java Collections and Generics (JCF)
 
-For two lessons you implemented lists, stacks, and queues by hand. Now the good news: **none of that should ever be written in production**. Java ships all of it, tuned over thirty years and battle-tested by millions of applications.
+In the next lessons you are going to implement lists, stacks, and queues by hand, to understand exactly how they work inside. Before you get there, here is the good news: **day to day, none of this needs to be written from scratch**. Java ships all of it, tuned over thirty years and battle-tested by millions of applications.
 
 But look at what you gained: when somebody says "use a `HashMap`", you now know there is an array and a collision mechanism inside. When you see `LinkedList`, you know why reaching element 500 is slow. **That is the difference between using a tool and understanding it.**
 
@@ -67,7 +67,7 @@ But look at what you gained: when somebody says "use a `HashMap`", you now know 
 <text x="0" y="332" font-size="12" fill="var(--color-neutral-700)">Everything under Collection holds standalone elements and can be walked with for-each. Map holds</text>
 <text x="0" y="350" font-size="12" fill="var(--color-neutral-700)">associations, so its interface is different: that is why it sits outside the hierarchy.</text>
 </svg>
-<figcaption>The boxes on top are interfaces (the ADT); the ones below are implementations. Always program against the ones on top.</figcaption>
+<figcaption>The boxes on top are interfaces — the contract you will formalize later as an ADT (Abstract Data Type); the ones below are implementations. Always program against the ones on top.</figcaption>
 </figure>
 
 That last sentence is a concrete rule, not advice:
@@ -81,7 +81,7 @@ Map<String, Integer> stock = new HashMap<>();
 ArrayList<String> names = new ArrayList<>();
 ```
 
-With the first form, switching to `LinkedList` means changing **one word**. With the second, if anyone used an `ArrayList`-specific method, it means changing everything. It is exactly the ADT principle from lesson 12, applied to the standard library.
+With the first form, switching to `LinkedList` means changing **one word**. With the second, if anyone used an `ArrayList`-specific method, it means changing everything. It is the same principle you will formalize later as an ADT (Abstract Data Type) — program against the specification, not the implementation — applied here to the standard library.
 
 ---
 
@@ -197,7 +197,7 @@ map.putIfAbsent(key, value);
 
 ### `Queue` / `Deque` — processing order
 
-You already met them in lesson 13. `ArrayDeque` for stacks and queues; `PriorityQueue` when the next item out is not the one that arrived first but the highest-priority one.
+You will implement them by hand later, in the Stack and Queue ADTs lesson, but you can already use them today: `ArrayDeque` for stacks and queues; `PriorityQueue` when the next item out is not the one that arrived first but the highest-priority one.
 
 ---
 
@@ -357,8 +357,8 @@ System.out.println(a.getClass() == b.getClass());   // true — the same class
 | Mistake | What happens | How to fix it |
 | --- | --- | --- |
 | Declaring `ArrayList<T> x = new ArrayList<>()` | You tie yourself to the implementation, and changing it forces edits everywhere it is used. | Declare with the interface: `List<T> x = new ArrayList<>()`. |
-| Using your own objects in `HashSet`/`HashMap` without `equals`/`hashCode` | Duplicates get stored and `get()` returns `null` with the correct key. | Implement both consistently (lesson 15). |
-| Modifying a collection while walking it with for-each | `ConcurrentModificationException`. | `Iterator.remove()` or `removeIf()` (lesson 15). |
+| Using your own objects in `HashSet`/`HashMap` without `equals`/`hashCode` | Duplicates get stored and `get()` returns `null` with the correct key. | Implement both consistently ([Iterators, Ordering, and the equals/hashCode Contract](/en/courses/java/14-iteradores-ordenamiento-equals-hashcode)). |
+| Modifying a collection while walking it with for-each | `ConcurrentModificationException`. | `Iterator.remove()` or `removeIf()` ([Iterators, Ordering, and the equals/hashCode Contract](/en/courses/java/14-iteradores-ordenamiento-equals-hashcode)). |
 | `map.get(k)` without handling `null` | `NullPointerException` unboxing an `Integer` that came back `null`. | `getOrDefault(k, defaultValue)`. |
 | Using `LinkedList` "because inserting is faster" | In practice it is slower than `ArrayList` because of cache misses. | `ArrayList` unless you measure and prove otherwise. |
 | Using a mutable key in a `HashMap` | If the object changes, its `hashCode` changes and it is lost in the old bucket. | Immutable keys: `String`, `Integer`, or classes with `final` fields. |
