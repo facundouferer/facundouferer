@@ -64,7 +64,7 @@
 	--shadow-md: 0 3px 10px color-mix(in srgb, #2e2b25 16%, transparent);
 	--shadow-lg: 0 12px 32px color-mix(in srgb, #2e2b25 22%, transparent);
 
-	--container-max: 1180px;
+	--container-max: 1280px;
 
 	/* Matches the sticky SiteHeader's rendered height (`.nav { min-height: 4.2rem }`
 	   in src/components/SiteHeader.astro), so full-height layouts (presentation
@@ -329,6 +329,14 @@ table { width: 100%; border-collapse: collapse; margin-block: 1.5rem; }
 	padding: 4px 0; text-decoration: none; color: var(--color-text);
 }
 .tree-item-link:hover { color: var(--color-accent-700); }
+.tree-item-link--active {
+	font-weight: 600;
+	color: var(--color-accent-700);
+}
+.tree-item-link--active .tree-item-order {
+	background: var(--color-accent-700);
+	color: var(--color-bg);
+}
 .tree-item-order { flex-shrink: 0; }
 .tree-item-title { font-size: 0.86rem; }
 

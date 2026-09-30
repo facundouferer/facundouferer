@@ -17,3 +17,9 @@ test('global styles expose design tokens from spec', async () => {
 	assert.match(content, /--font-heading: 'Caprasimo'/);
 	assert.match(content, /--font-body: 'Figtree'/);
 });
+
+test('global styles define container max width as 1280px', async () => {
+	const content = await readFile('src/styles/global.css', 'utf8');
+	assert.match(content, /--container-max:\s*1280px;/);
+});
+

@@ -114,7 +114,7 @@ ad-hoc `box-shadow`.
 ### 3.6 Site-layer token
 
 ```
---container-max  1180px
+--container-max  1280px
 ```
 
 Owned by `src/styles/global.css`, not by Organic. It backs `.container`.
