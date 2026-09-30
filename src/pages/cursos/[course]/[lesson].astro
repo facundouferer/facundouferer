@@ -9,6 +9,7 @@ import LessonPresentationsMenu from '../../../components/LessonPresentationsMenu
 import LessonActivitiesAccess from '../../../components/LessonActivitiesAccess.astro';
 import { getPresentationCountsForCourse, getPresentationsForLesson } from '../../../data/presentations';
 import { getActivitiesForLesson, getActivityCountsForCourse } from '../../../utils/activities';
+import { resolveRoadmap } from '../../../utils/roadmap';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -65,6 +66,7 @@ const lessonPresentations = getPresentationsForLesson(courseSlug, lessonSlug);
 const allActivities = await getCollection('activities');
 const lessonActivities = getActivitiesForLesson(allActivities, courseSlug, lessonSlug, 'es');
 const activityCounts = getActivityCountsForCourse(allActivities, courseSlug, 'es');
+const roadmap = resolveRoadmap(course.data.roadmap, courseLessons, 'es', courseSlug);
 
 const schema = buildCourseBreadcrumbSchema({
 	locale: 'es',
@@ -168,6 +170,7 @@ const schema = buildCourseBreadcrumbSchema({
 						locale="es"
 						currentSlug={lessonSlug}
 						variant="list"
+						roadmap={roadmap}
 					/>
 				</nav>
 				<a href={`/cursos/${courseSlug}`} class="sidebar-back">

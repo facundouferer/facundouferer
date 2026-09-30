@@ -1,6 +1,7 @@
 ---
 import { withBase } from '../utils/withBase';
 import { useTranslations } from '../i18n/utils';
+import type { ResolvedRoadmapNode } from '../utils/roadmap';
 
 type Lesson = {
 	slug: string;
@@ -17,9 +18,10 @@ type Props = {
 	locale: 'es' | 'en';
 	currentSlug?: string;
 	variant?: 'cards' | 'list';
+	roadmap?: ResolvedRoadmapNode[];
 };
 
-const { lessons, courseSlug, locale, currentSlug, variant = 'cards' } = Astro.props;
+const { lessons, courseSlug, locale, currentSlug, variant = 'cards', roadmap } = Astro.props;
 const t = useTranslations(locale);
 
 /** Accessible label for the presentation-count badge, e.g. "3 presentaciones". */
@@ -32,6 +34,18 @@ function presentationCountLabel(count: number): string {
 function activityCountLabel(count: number): string {
 	const key = count === 1 ? 'courses.activities.badge.one' : 'courses.activities.badge.other';
 	return t(key).replace('{count}', String(count));
+}
+
+function lessonAriaLabel(order: number, title: string): string {
+	return t('courses.roadmap.lessonAriaLabel').replace('{order}', String(order)).replace('{title}', title);
+}
+
+function nodeContainsSlug(node: ResolvedRoadmapNode, slug: string | undefined): boolean {
+	if (!slug) return false;
+	if (node.kind === 'lessons') {
+		return node.lessons.some((l) => l.slug === slug);
+	}
+	return node.children.some((child) => nodeContainsSlug(child, slug));
 }
 ---
 
@@ -128,6 +142,238 @@ function activityCountLabel(count: number): string {
 					</li>
 				);
 			})}
+		</ol>
+	) : roadmap && roadmap.length > 0 ? (
+		<ol class="tree sidebar-tree">
+			{roadmap.map((node) => (
+				<li class="tree-node">
+					{node.kind === 'group' ? (
+						<details class="tree-folder" open={nodeContainsSlug(node, currentSlug)}>
+							<summary class="tree-folder-summary">
+								<svg
+									aria-hidden="true"
+									class="tree-folder-icon tree-folder-icon--closed"
+									xmlns="http://www.w3.org/2000/svg"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2.75"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
+									<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+								</svg>
+								<svg
+									aria-hidden="true"
+									class="tree-folder-icon tree-folder-icon--open"
+									xmlns="http://www.w3.org/2000/svg"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2.75"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
+									<path d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H18a2 2 0 0 1 2 2v2" />
+								</svg>
+								<span class="tree-step tag tag-accent-2">{node.step}</span>
+								<span class="tree-folder-title">{node.title}</span>
+							</summary>
+							{node.description && <p class="tree-folder-desc">{node.description}</p>}
+							<ol class="tree-branch">
+								{node.children.map((child) => (
+									<li class="tree-node">
+										{child.kind === 'lessons' ? (
+											<details class="tree-folder" open={nodeContainsSlug(child, currentSlug)}>
+												<summary class="tree-folder-summary">
+													<svg
+														aria-hidden="true"
+														class="tree-folder-icon tree-folder-icon--closed"
+														xmlns="http://www.w3.org/2000/svg"
+														viewBox="0 0 24 24"
+														fill="none"
+														stroke="currentColor"
+														stroke-width="2.75"
+														stroke-linecap="round"
+														stroke-linejoin="round"
+													>
+														<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+													</svg>
+													<svg
+														aria-hidden="true"
+														class="tree-folder-icon tree-folder-icon--open"
+														xmlns="http://www.w3.org/2000/svg"
+														viewBox="0 0 24 24"
+														fill="none"
+														stroke="currentColor"
+														stroke-width="2.75"
+														stroke-linecap="round"
+														stroke-linejoin="round"
+													>
+														<path d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H18a2 2 0 0 1 2 2v2" />
+													</svg>
+													<span class="tree-step tag tag-accent-2">{child.step}</span>
+													<span class="tree-folder-title">{child.title}</span>
+												</summary>
+												{child.description && <p class="tree-folder-desc">{child.description}</p>}
+												<ol class="tree-branch">
+													{child.lessons.map((lesson) => {
+														const isActive = currentSlug === lesson.slug;
+														return (
+															<li class="tree-item">
+																<a
+																	href={withBase(lesson.href)}
+																	class:list={[
+																		'tree-item-link',
+																		'lesson-link',
+																		{ 'tree-item-link--active lesson-link--active': isActive },
+																	]}
+																	aria-current={isActive ? 'page' : undefined}
+																	aria-label={lessonAriaLabel(lesson.order, lesson.title)}
+																>
+																	<span class="tree-item-order badge" aria-hidden="true">
+																		{lesson.order}
+																	</span>
+																	<span class="tree-item-title" aria-hidden="true">
+																		{lesson.title}
+																	</span>
+																</a>
+															</li>
+														);
+													})}
+												</ol>
+											</details>
+										) : (
+											<details class="tree-folder" open={nodeContainsSlug(child, currentSlug)}>
+												<summary class="tree-folder-summary">
+													<svg
+														aria-hidden="true"
+														class="tree-folder-icon tree-folder-icon--closed"
+														xmlns="http://www.w3.org/2000/svg"
+														viewBox="0 0 24 24"
+														fill="none"
+														stroke="currentColor"
+														stroke-width="2.75"
+														stroke-linecap="round"
+														stroke-linejoin="round"
+													>
+														<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+													</svg>
+													<svg
+														aria-hidden="true"
+														class="tree-folder-icon tree-folder-icon--open"
+														xmlns="http://www.w3.org/2000/svg"
+														viewBox="0 0 24 24"
+														fill="none"
+														stroke="currentColor"
+														stroke-width="2.75"
+														stroke-linecap="round"
+														stroke-linejoin="round"
+													>
+														<path d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H18a2 2 0 0 1 2 2v2" />
+													</svg>
+													<span class="tree-step tag tag-accent-2">{child.step}</span>
+													<span class="tree-folder-title">{child.title}</span>
+												</summary>
+												{child.description && <p class="tree-folder-desc">{child.description}</p>}
+												<ol class="tree-branch">
+													{child.children.map((grandchild) => {
+														if (grandchild.kind !== 'lessons') return null;
+														return grandchild.lessons.map((lesson) => {
+															const isActive = currentSlug === lesson.slug;
+															return (
+																<li class="tree-item">
+																	<a
+																		href={withBase(lesson.href)}
+																		class:list={[
+																			'tree-item-link',
+																			'lesson-link',
+																			{ 'tree-item-link--active lesson-link--active': isActive },
+																		]}
+																		aria-current={isActive ? 'page' : undefined}
+																		aria-label={lessonAriaLabel(lesson.order, lesson.title)}
+																	>
+																		<span class="tree-item-order badge" aria-hidden="true">
+																			{lesson.order}
+																		</span>
+																		<span class="tree-item-title" aria-hidden="true">
+																			{lesson.title}
+																		</span>
+																	</a>
+																</li>
+															);
+														});
+													})}
+												</ol>
+											</details>
+										)}
+									</li>
+								))}
+							</ol>
+						</details>
+					) : (
+						<details class="tree-folder" open={nodeContainsSlug(node, currentSlug)}>
+							<summary class="tree-folder-summary">
+								<svg
+									aria-hidden="true"
+									class="tree-folder-icon tree-folder-icon--closed"
+									xmlns="http://www.w3.org/2000/svg"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2.75"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
+									<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+								</svg>
+								<svg
+									aria-hidden="true"
+									class="tree-folder-icon tree-folder-icon--open"
+									xmlns="http://www.w3.org/2000/svg"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2.75"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
+									<path d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H18a2 2 0 0 1 2 2v2" />
+								</svg>
+								<span class="tree-step tag tag-accent-2">{node.step}</span>
+								<span class="tree-folder-title">{node.title}</span>
+							</summary>
+							{node.description && <p class="tree-folder-desc">{node.description}</p>}
+							<ol class="tree-branch">
+								{node.lessons.map((lesson) => {
+									const isActive = currentSlug === lesson.slug;
+									return (
+										<li class="tree-item">
+											<a
+												href={withBase(lesson.href)}
+												class:list={[
+													'tree-item-link',
+													'lesson-link',
+													{ 'tree-item-link--active lesson-link--active': isActive },
+												]}
+												aria-current={isActive ? 'page' : undefined}
+												aria-label={lessonAriaLabel(lesson.order, lesson.title)}
+											>
+												<span class="tree-item-order badge" aria-hidden="true">
+													{lesson.order}
+												</span>
+												<span class="tree-item-title" aria-hidden="true">
+													{lesson.title}
+												</span>
+											</a>
+										</li>
+									);
+								})}
+							</ol>
+						</details>
+					)}
+				</li>
+			))}
 		</ol>
 	) : (
 		<ol class="lessons-list">
@@ -286,7 +532,7 @@ function activityCountLabel(count: number): string {
 		color: var(--color-accent-800);
 	}
 
-	/* Compact List Layout (Sidebar) */
+	/* Compact List Layout (Sidebar fallback) */
 	.lessons-list {
 		list-style: none;
 		padding: 0;
@@ -363,5 +609,43 @@ function activityCountLabel(count: number): string {
 		white-space: nowrap;
 		max-width: 220px;
 	}
-</style>
 
+	/* Sidebar Tree Roadmap Layout */
+	.sidebar-tree {
+		margin-top: 0;
+	}
+
+	.sidebar-tree .tree-folder-desc {
+		display: none;
+	}
+
+	.sidebar-tree .tree-item-link {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-1) var(--space-2);
+		border-radius: var(--radius-sm);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: background 160ms ease, color 160ms ease;
+		font-size: 0.86rem;
+		border-left: 3px solid transparent;
+	}
+
+	.sidebar-tree .tree-item-link:hover {
+		background: color-mix(in srgb, var(--color-accent-700) 8%, transparent);
+	}
+
+	.sidebar-tree .tree-item-link--active {
+		background: color-mix(in srgb, var(--color-accent-700) 12%, transparent);
+		border-left-color: var(--color-accent-700);
+	}
+
+	.sidebar-tree .tree-item-title {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+</style>

@@ -1383,7 +1383,7 @@ const isEs = lang === 'es';
 		for (let i = 0; i < 5; i++) {
 			const nodeElem = document.querySelector(`#grBfsNode${i} .gr-node-bfs`);
 			if (nodeElem) {
-				nodeElem.className.baseVal = 'gr-node-bfs';
+				nodeElem.setAttribute('class', 'gr-node-bfs');
 				if (s.visited.includes(i)) {
 					nodeElem.classList.add('is-visited');
 				}
@@ -1451,7 +1451,7 @@ const isEs = lang === 'es';
 		for (let i = 0; i < 5; i++) {
 			const nodeElem = document.querySelector(`#grDfsNode${i} .gr-node-dfs`);
 			if (nodeElem) {
-				nodeElem.className.baseVal = 'gr-node-dfs';
+				nodeElem.setAttribute('class', 'gr-node-dfs');
 				if (s.curr === i) {
 					nodeElem.classList.add('is-current');
 				} else if (dfsStep > 0) {
