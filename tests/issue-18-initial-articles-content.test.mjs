@@ -206,6 +206,8 @@ test('all localized article files include an article image reference', async () 
 		'src/content/articles/alan-buscaglia.en.md',
 		'src/content/articles/orca.es.md',
 		'src/content/articles/orca.en.md',
+		'src/content/articles/harness-opencode-ia-sin-costo.es.md',
+		'src/content/articles/harness-opencode-ia-sin-costo.en.md',
 	];
 
 	for (const filePath of files) {
@@ -213,3 +215,21 @@ test('all localized article files include an article image reference', async () 
 		assert.match(content, /!\[.*\]\(\/img\/articles\/.*\.png\)/);
 	}
 });
+
+test('harness-opencode-ia-sin-costo article is split into localized files and references the default image', async () => {
+	await access('src/content/articles/harness-opencode-ia-sin-costo.es.md');
+	await access('src/content/articles/harness-opencode-ia-sin-costo.en.md');
+
+	const esFile = await readFile('src/content/articles/harness-opencode-ia-sin-costo.es.md', 'utf8');
+	const enFile = await readFile('src/content/articles/harness-opencode-ia-sin-costo.en.md', 'utf8');
+
+	assert.match(esFile, /slug: harness-opencode-ia-sin-costo|slug: 'harness-opencode-ia-sin-costo'|slug: "harness-opencode-ia-sin-costo"/);
+	assert.match(enFile, /slug: harness-opencode-ia-sin-costo|slug: 'harness-opencode-ia-sin-costo'|slug: "harness-opencode-ia-sin-costo"/);
+	assert.match(esFile, /lang: es|lang: 'es'|lang: "es"/);
+	assert.match(enFile, /lang: en|lang: 'en'|lang: "en"/);
+	assert.match(esFile, /published: true/);
+	assert.match(enFile, /published: true/);
+	assert.match(esFile, /!\[Imagen por defecto del articulo\]\(\/img\/articles\/imagenotfound\.png\)/);
+	assert.match(enFile, /!\[Default article image\]\(\/img\/articles\/imagenotfound\.png\)/);
+});
+
