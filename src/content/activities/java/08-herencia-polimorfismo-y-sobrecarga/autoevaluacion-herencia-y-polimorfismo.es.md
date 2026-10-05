@@ -57,45 +57,6 @@ questions:
     explanation: >-
       Verdadero. Si cometemos un error en el nombre o en los tipos de parámetros sin usar `@Override`, el compilador tratará el método como uno nuevo sobrecargado, y la sobrescritura fallará silenciosamente.
   - kind: 'single-choice'
-    id: 'q5'
-    prompt: 'Dado el siguiente código, ¿qué método se ejecuta en la llamada `v.acelerar()`?'
-    code: |
-      Vehiculo v = new Auto("Toyota");
-      v.acelerar();
-    options:
-      - id: 'a'
-        text: 'Siempre el método de la clase Vehiculo, porque la variable de referencia es de tipo Vehiculo.'
-      - id: 'b'
-        text: 'El método sobrescrito en la clase Auto, gracias al despacho dinámico en tiempo de ejecución.'
-      - id: 'c'
-        text: 'No compila, porque no se puede asignar una subclase a una variable de superclase.'
-      - id: 'd'
-        text: 'Se ejecutan ambos métodos simultáneamente en dos hilos diferentes.'
-    correctOptionId: 'b'
-    explanation: >-
-      El tipo de la variable (`Vehiculo`) determina qué métodos son visibles para el compilador, pero el objeto real en el Heap (`Auto`) determina qué implementación se ejecuta en runtime mediante despacho dinámico (dynamic binding).
-  - kind: 'true-false'
-    id: 'q6'
-    prompt: 'La sobrecarga de métodos (overloading) se resuelve en tiempo de compilación según los tipos declarados de los argumentos, mientras que la sobrescritura (overriding) se resuelve en tiempo de ejecución según la instancia real en el Heap.'
-    correctAnswer: true
-    explanation: >-
-      Verdadero. La sobrecarga es un mecanismo estático en tiempo de compilación basado en la firma del método, mientras que la sobrescritura es polimorfismo dinámico en tiempo de ejecución.
-  - kind: 'single-choice'
-    id: 'q7'
-    prompt: '¿Por qué la relación entre un `Auto` y un `Motor` debe modelarse mediante composición ("tiene-un") y no mediante herencia ("es-un")?'
-    options:
-      - id: 'a'
-        text: 'Porque Java no permite que las clases mecánicas hereden de otras clases.'
-      - id: 'b'
-        text: 'Porque un Auto no es un Motor; un Auto posee un Motor como parte de sus componentes y colabora con él.'
-      - id: 'c'
-        text: 'Porque la composición consume menos memoria en el Stack que la herencia.'
-      - id: 'd'
-        text: 'Porque los motores solo pueden definirse dentro de interfaces.'
-    correctOptionId: 'b'
-    explanation: >-
-      La regla dorada de la herencia es la prueba del "es-un". Un auto no es una especialización de un motor, sino un contenedor que tiene un motor. Forzar la herencia en relaciones de pertenencia genera acoplamiento espurio y modelos conceptualmente erróneos.
-  - kind: 'single-choice'
     id: 'q8'
     prompt: 'Si tenemos la referencia `Vehiculo v = new Camion();`, y la clase `Camion` declara un método propio `descargarCarga()` que no existe en `Vehiculo`, ¿qué ocurre al escribir `v.descargarCarga();`?'
     options:
@@ -116,19 +77,5 @@ questions:
     correctAnswer: false
     explanation: >-
       Falso. El modificador `final` en un método prohíbe explícitamente su sobrescritura en cualquier subclase, garantizando que el comportamiento definido por la superclase permanezca inmutable.
-  - kind: 'single-choice'
-    id: 'q10'
-    prompt: '¿Cuál es la principal ventaja de utilizar colecciones o arreglos de supertipo polimórficos como `Vehiculo[]` en un sistema?'
-    options:
-      - id: 'a'
-        text: 'Que el arreglo puede almacenar cualquier tipo de datos primitivo sin necesidad de conversión.'
-      - id: 'b'
-        text: 'Permitir que el código cliente opere con distintas variantes de objetos de forma uniforme y extensible sin modificar su lógica cuando se agregan nuevas subclases.'
-      - id: 'c'
-        text: 'Eliminar por completo el uso de constructores en las clases hijas.'
-      - id: 'd'
-        text: 'Evitar que la JVM cree marcos en la pila de llamadas.'
-    correctOptionId: 'b'
-    explanation: >-
-      El polimorfismo cumple el principio Open/Closed: podemos agregar nuevas subclases (por ejemplo, `Barco extends Vehiculo`) y el código que recorre `Vehiculo[]` seguirá funcionando perfectamente sin cambiar una sola línea.
+
 ---
