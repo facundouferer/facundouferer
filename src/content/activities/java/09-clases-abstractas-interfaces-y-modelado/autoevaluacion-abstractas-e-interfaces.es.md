@@ -81,12 +81,6 @@ questions:
     correctOptionId: 'b'
     explanation: >-
       Los métodos `default` permiten añadir nuevos métodos a interfaces ya publicadas con una implementación por defecto, evitando romper compatibilidad binaria con las clases clientes existentes.
-  - kind: 'true-false'
-    id: 'q7'
-    prompt: 'En el patrón de diseño Template Method (Método Plantilla), un método concreto en la clase abstracta define el algoritmo general y delega pasos puntuales en métodos abstractos que resuelven las subclases.'
-    correctAnswer: true
-    explanation: >-
-      Verdadero. El método plantilla fija el esqueleto o flujo del proceso en la superclase abstracta, garantizando la consistencia del algoritmo y dejando la personalización de pasos específicos a las subclases concretas.
   - kind: 'single-choice'
     id: 'q8'
     prompt: '¿Cómo se distingue la relación de Composición de la de Agregación en el modelado orientado a objetos?'
