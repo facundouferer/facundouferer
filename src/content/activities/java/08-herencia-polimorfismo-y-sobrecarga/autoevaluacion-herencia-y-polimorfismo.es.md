@@ -26,15 +26,17 @@ questions:
       Java implementa herencia simple de implementación para clases: una clase solo puede extender directamente a una única superclase, evitando problemas de ambigüedad como el problema del diamante.
   - kind: 'true-false'
     id: 'q2'
-    prompt: 'La llamada al constructor de la superclase mediante `super(...)` dentro del constructor de una subclase debe ser obligatoriamente la primera instrucción ejecutable.'
+    prompt: 'En Java 21, el siguiente constructor de `Auto` (subclase de `Vehiculo`) compila correctamente.'
     code: |
       public Auto(String marca, int puertas) {
           this.puertas = puertas;
-          super(marca); // ¿Es válido aquí?
+          super(marca);
       }
     correctAnswer: false
     explanation: >-
-      Falso. En Java, la llamada a `super(...)` (o a otro constructor con `this(...)`) debe ser estrictamente la primera sentencia del constructor. Si se coloca después de cualquier otra instrucción, el compilador genera un error.
+      Falso. Hasta Java 21, la llamada a `super(...)` (o a `this(...)`) tiene que ser la primera sentencia del constructor. El motivo es que un objeto se construye de arriba hacia abajo: primero se inicializa la parte heredada de `Vehiculo` y recién después la parte propia de `Auto`. Como aquí hay una asignación antes de `super(marca)`, el compilador rechaza el código con el error "call to super must be first statement in constructor". La forma correcta es invertir el orden: primero `super(marca);` y después `this.puertas = puertas;`.
+
+      Nota: desde Java 25 (JEP 513, "Flexible Constructor Bodies") se permite escribir algunas sentencias antes de `super(...)`, como validar argumentos o asignar atributos propios, por lo que este ejemplo sí compilaría en esa versión.
   - kind: 'single-choice'
     id: 'q3'
     prompt: '¿Qué visibilidad otorga el modificador de acceso `protected` a un atributo o método en Java?'
