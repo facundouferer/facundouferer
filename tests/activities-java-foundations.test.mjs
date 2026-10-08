@@ -139,6 +139,9 @@ test('lesson 01 code-analysis quiz: 10+ single-choice questions over Java code, 
 		assert.ok(!siblingPrompts.has(prompt), `prompt repeated from ${CODE_ANALYSIS_QUIZ.siblingQuiz}: "${prompt}"`);
 	}
 	assert.equal(new Set(prompts).size, prompts.length, 'prompts must not repeat within the quiz');
+
+	// Students only see the questions: never point them to external source code.
+	assert.doesNotMatch(content, /repositorio|github\.com/i, 'quiz must not reference the course repository');
 });
 
 test('curriculum sequencing: activities do not test concepts from later lessons', async () => {
