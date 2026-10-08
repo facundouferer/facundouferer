@@ -38,6 +38,11 @@ const LESSONS = [
 
 const BASE_DIR = 'src/content/activities/java';
 
+// Lesson 09 adds a code-analysis quiz on top of the standard project + quiz
+// pair; its own rules live in activities-java-code-analysis-quizzes.test.mjs.
+const CODE_ANALYSIS_FILE = 'autoevaluacion-lectura-de-codigo.es.md';
+const LESSONS_WITH_CODE_ANALYSIS = new Set(['09-clases-abstractas-interfaces-y-modelado']);
+
 function frontmatterValue(content, key) {
 	const match = content.match(new RegExp(`^${key}:\\s*(?:'([^']*)'|(\\d+))$`, 'm'));
 	assert.ok(match, `Expected top-level "${key}" in frontmatter`);
@@ -51,18 +56,20 @@ test('all 5 requested Java lessons have their activities directories', () => {
 	}
 });
 
-test('each lesson has exactly one project and one quiz activity in Spanish with correct metadata', async () => {
+test('each lesson has exactly one project and one standard quiz activity in Spanish with correct metadata', async () => {
 	for (const lesson of LESSONS) {
 		const dir = `${BASE_DIR}/${lesson.slug}`;
 		assert.ok(existsSync(dir), `Directory missing: ${dir}`);
 		const files = await readdir(dir);
 		const esFiles = files.filter((f) => f.endsWith('.es.md'));
-		assert.equal(esFiles.length, 2, `Expected 2 activity files in ${dir}, found: ${esFiles.join(', ')}`);
+		const expectedFiles = LESSONS_WITH_CODE_ANALYSIS.has(lesson.slug) ? 3 : 2;
+		assert.equal(esFiles.length, expectedFiles, `Expected ${expectedFiles} activity files in ${dir}, found: ${esFiles.join(', ')}`);
 
 		let hasProject = false;
 		let hasQuiz = false;
 
 		for (const file of esFiles) {
+			if (file === CODE_ANALYSIS_FILE) continue;
 			const content = await readFile(`${dir}/${file}`, 'utf8');
 			assert.equal(frontmatterValue(content, 'course'), 'java');
 			assert.equal(frontmatterValue(content, 'lesson'), lesson.slug);
