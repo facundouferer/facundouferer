@@ -15,6 +15,7 @@ liveUrl: 'https://davidabt.ar/'
 featured: false
 published: true
 archived: false
+date: 2026-04-03
 ---
 
 Proyecto orientado a identidad visual y representacion digital de obra artistica fisica.

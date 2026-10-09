@@ -1,10 +1,11 @@
 import { getCollection } from 'astro:content';
 import { AUTHOR, SITE_URL } from '../config/site';
 import { getArticlesForLocale } from '../utils/articles';
+import { getPublishedProjects } from '../utils/projects';
 
 export async function GET() {
 	const articles = getArticlesForLocale(await getCollection('articles'), 'en', 'es');
-	const projects = (await getCollection('projects')).filter((item) => item.data.published);
+	const projects = await getPublishedProjects();
 
 	const body = [
 		'# Facundo Uferer',

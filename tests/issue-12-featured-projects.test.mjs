@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 test('featured projects component limits cards to two items', async () => {
 	const content = await readFile('src/components/FeaturedProjects.astro', 'utf8');
 	assert.match(content, /slice\(0, 2\)/);
-	assert.match(content, /getCollection\('projects'\)/);
+	assert.match(content, /getPublishedProjects\(\)/);
 });
 
 test('home pages render featured projects section', async () => {

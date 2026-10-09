@@ -18,6 +18,7 @@ liveUrl: https://autovement.somee.com/
 featured: false
 published: true
 archived: false
+date: 2026-04-22
 ---
 
 Plataforma web para gestión de leads de venta de autos, administración de catálogo vehicular y cálculo de precio de vehículos usados.

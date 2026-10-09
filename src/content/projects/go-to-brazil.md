@@ -15,6 +15,7 @@ liveUrl: 'https://facundouferer.github.io/gotobrazil'
 featured: true
 published: true
 archived: false
+date: 2026-04-03
 ---
 
 Proyecto de validacion sobre desarrollo asistido por IA con alcance completo y entrega real.

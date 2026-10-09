@@ -23,7 +23,7 @@ test('project exposes robots, sitemap, and llms discovery endpoints', async () =
 
 	assert.match(robots, /Sitemap: https:\/\/facundouferer\.ar\/sitemap\.xml/);
 	assert.match(sitemap, /getCollection\('articles'\)/);
-	assert.match(sitemap, /getCollection\('projects'\)/);
+	assert.match(sitemap, /getPublishedProjects\(\)/);
 	assert.match(llmsRoute, /buildLlmsDocument/);
 	assert.match(schema, /Facundo Uferer/);
 	assert.match(schema, /\/articulos/);

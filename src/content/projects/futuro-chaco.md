@@ -15,6 +15,7 @@ liveUrl: 'https://futuro.chaco.gob.ar/'
 featured: false
 published: true
 archived: false
+date: 2026-04-03
 ---
 
 Entregable dual para ecosistema educativo publico con enfoque en impacto operativo.

@@ -18,6 +18,7 @@ liveUrl: https://interactiv.ar/
 featured: false
 published: true
 archived: false
+date: 2026-10-09
 ---
 
 Sitio web de Interactiva Coworking & Hub, parte de Kiszka Consultora I+D+i+V, desarrollado con Astro. Reúne en un solo lugar el coworking, el gimnasio de innovación GII 5.0, la consultoría de Kiszka, las Sesiones de Proyecto, el canal de streaming, la productora audiovisual y la sección de noticias Radar, con contacto y reserva de reuniones.

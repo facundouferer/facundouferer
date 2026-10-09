@@ -21,6 +21,7 @@ liveUrl: https://facundouferer.github.io/designsystems/
 featured: false
 published: true
 archived: false
+date: 2026-04-23
 ---
 
 Catálogo de design systems construido con Astro. El desarrollo del proyecto se realizó utilizando la IA de Minimax, mientras que los design systems fueron generados con Stitch de Google y Claude.

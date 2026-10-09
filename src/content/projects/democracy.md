@@ -15,6 +15,7 @@ liveUrl: 'https://democracy-roan.vercel.app/'
 featured: false
 published: true
 archived: false
+date: 2026-04-03
 ---
 
 Proyecto civic tech orientado a transparencia institucional y acceso ciudadano a informacion publica.

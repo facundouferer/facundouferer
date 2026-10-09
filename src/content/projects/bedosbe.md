@@ -19,6 +19,7 @@ liveUrl: https://bedosbe.com.ar/
 featured: true
 published: true
 archived: false
+date: 2026-04-09
 ---
 
 Inteligencia artificial para consultar estrategias de mercado y proveedores-

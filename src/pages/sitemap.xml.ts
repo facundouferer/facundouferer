@@ -1,6 +1,7 @@
 import { getCollection } from 'astro:content';
 import { SITE_URL } from '../config/site';
 import { getArticlesForLocale } from '../utils/articles';
+import { getPublishedProjects } from '../utils/projects';
 
 type AlternateLink = {
 	hreflang: string;
@@ -41,7 +42,7 @@ function renderUrl(entry: UrlEntry): string {
 
 export async function GET() {
 	const articles = await getCollection('articles');
-	const projects = (await getCollection('projects')).filter((item) => item.data.published);
+	const projects = await getPublishedProjects();
 	const articleRoutesEs = getArticlesForLocale(articles, 'es', 'en');
 	const articleRoutesEn = getArticlesForLocale(articles, 'en', 'es');
 	const generatedAt = new Date().toISOString();

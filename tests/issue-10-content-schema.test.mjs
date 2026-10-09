@@ -16,7 +16,7 @@ test('content config defines projects, articles, courses, and lessons collection
 test('project and article seed files exist', async () => {
 	const projects = await readdir('src/content/projects');
 	const articles = await readdir('src/content/articles');
-	assert.equal(projects.length, 8);
+	assert.equal(projects.length, 9);
 	assert.equal(articles.length, 56);
 });
 

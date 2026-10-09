@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getPublishedProjects } from '../utils/projects';
 import { useTranslations } from '../i18n/utils';
 import ProjectCard from './ProjectCard.astro';
 
@@ -7,7 +7,7 @@ type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
 const t = useTranslations(locale);
 
-const projects = (await getCollection('projects')).filter((item) => item.data.published);
+const projects = await getPublishedProjects();
 const filters = ['All', 'Civic Tech', 'EdTech', 'Government', 'Tourism', 'Portfolio & Art'];
 
 const title = t('catalog.projects.title');

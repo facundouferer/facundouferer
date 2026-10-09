@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getPublishedProjects } from '../utils/projects';
 import { useTranslations } from '../i18n/utils';
 import ProjectCard from './ProjectCard.astro';
 import { withBase } from '../utils/withBase';
@@ -8,8 +8,8 @@ type Props = { locale: 'es' | 'en' };
 const { locale } = Astro.props;
 const t = useTranslations(locale);
 
-const projects = (await getCollection('projects'))
-	.filter((item) => item.data.published && item.data.featured)
+const projects = (await getPublishedProjects())
+	.filter((item) => item.data.featured)
 	.slice(0, 2);
 
 const title = t('featured.projects.title');

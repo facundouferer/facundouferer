@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getPublishedProjects } from '../utils/projects';
 import ProjectsCatalog from '../components/ProjectsCatalog.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getLangFromUrl, useTranslations } from '../i18n/utils';
@@ -7,7 +7,7 @@ import { buildCollectionPageSchemas } from '../seo/schema';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const projects = (await getCollection('projects')).filter((item) => item.data.published);
+const projects = await getPublishedProjects();
 const schema = buildCollectionPageSchemas({
 	locale: 'es',
 	path: '/proyectos',

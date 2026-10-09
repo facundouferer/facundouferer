@@ -15,6 +15,7 @@ liveUrl: 'https://facundouferer.github.io/programierds/'
 featured: true
 published: true
 archived: false
+date: 2026-04-03
 ---
 
 Proyecto educativo con narrativa tecnica enfocada en fundamentos y pensamiento critico.
