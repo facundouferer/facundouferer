@@ -19,7 +19,7 @@ featured: false
 ---
 ![Vitruviano digital con robots de IA](/img/articles/vitruviano-digital-robots-ia.png)
 
-La pregunta ya no es si un desarrollador sabe escribir código, sino si sabe definir qué debe hacer el sistema, verificar que lo haga y explicar por qué está construido así. La inteligencia artificial hizo que escribir código lleve apenas segundos, pero alguien tiene que saber si ese código hace lo correcto, y esa responsabilidad sigue siendo humana.
+La pregunta ya no es si un desarrollador sabe escribir código, sino si sabe definir qué debe hacer el sistema, verificar que lo haga y explicar por qué está construido así. La inteligencia artificial hizo que escribir código lleve apenas segundos, pero alguien tiene que saber si ese código hace lo correcto y esa responsabilidad sigue siendo humana.
 
 Para una gran empresa, comprar licencias de herramientas de IA es la parte fácil. Lo que define el resultado es si los equipos desarrollan las habilidades para usarlas sin perder el control de sus propios sistemas.
 
@@ -33,6 +33,10 @@ El rol del desarrollador cambia: de autor del código a **diseñador de la verif
 
 La revisión humana no desaparece, pero se vuelve puntual: se concentra en las decisiones de arquitectura y en las zonas críticas, como autorización, datos personales o pagos, donde los controles automáticos de seguridad son imprescindibles.
 
+![Seis agentes de IA envían código a un desarrollador agobiado que no da abasto con una pila de revisiones pendientes](/img/articles/lo_que_la_ia_no_puede/el-cuello-de-botella-01.png)
+
+![El desarrollador como diseñador de la verificación: especificaciones, pruebas y reglas alimentan una verificación automatizada, con revisión humana puntual en las zonas críticas](/img/articles/lo_que_la_ia_no_puede/el-cuello-de-botella-02.png)
+
 ## Deuda cognitiva
 
 Es la erosión, con el tiempo, de la comprensión compartida que un equipo tiene sobre su sistema. El término lo propuso en 2026 la investigadora Margaret-Anne Storey.
@@ -45,11 +49,7 @@ El efecto no es inmediato, y eso lo vuelve peligroso. El sistema sigue funcionan
 
 La habilidad que esto exige es poder **explicar el sistema propio**: cómo está organizado, por qué, y qué se rompería si se cambia una pieza. No se trata de conocer cada línea, sino el mapa del sistema. Si nadie del equipo puede hacerlo, la deuda ya está ahí.
 
-### Qué puede promover la empresa
-
-- **Herramientas que expliquen y diagramen el sistema**.
-- **Agentes de IA que cuenten cómo es el sistema**.
-- **Revisiones centradas en el diseño, no en las líneas**.
+![Un desarrollador mira desconcertado un sistema complejo construido por agentes de IA que ya no termina de entender](/img/articles/lo_que_la_ia_no_puede/deuda-cognitiva-01.png)
 
 ## Deuda de intención
 
@@ -67,12 +67,7 @@ Pagar esta deuda no requiere herramientas costosas, sino hábitos:
 - **Especificaciones y tests como expresión de la intención:** describen qué debe hacer el sistema, no solo cómo lo hace.
 - **Instrucciones para los agentes versionadas junto al código:** los archivos de contexto, reglas y políticas también son parte del proyecto.
 
-### Qué puede promover la empresa
-
-- **Capacitación en escritura técnica**.
-- **Capacitación en especificaciones**.
-- **Plantillas y repositorios estándar**.
-- **Mucha documentación obligatoria**.
+![Deuda de intención y cómo evitarla: registros de decisiones de arquitectura, especificaciones y tests, e instrucciones para los agentes versionadas junto al código](/img/articles/lo_que_la_ia_no_puede/deuda-de-intencion-01.png)
 
 ## Conocimiento del dominio
 
@@ -88,11 +83,7 @@ Solo quien conoce el dominio puede detectar ese error, porque solo esa persona s
 
 El conocimiento del dominio se conecta directamente con las dos deudas anteriores. Es lo que permite escribir buenas especificaciones (pagar deuda de intención) y lo que da sentido a la comprensión del sistema (evitar deuda cognitiva). Un desarrollador que entiende el problema real no solo programa mejor: le da a la IA el contexto que no tiene.
 
-### Qué puede promover la empresa
-
-- **Contacto directo con usuarios y áreas de negocio**.
-- **Inducción sobre el negocio, no solo sobre la tecnología**.
-- **Glosarios y reglas de negocio documentadas**.
+![Sin conocimiento del dominio el error de negocio pasa inadvertido; con él, alguien lo detecta y le da a la IA el contexto que le falta](/img/articles/lo_que_la_ia_no_puede/conocimiento-del-dominio-01.png)
 
 ## Leer bien
 
@@ -110,11 +101,7 @@ El riesgo es que la IA erosione justamente esta habilidad. En un ensayo controla
 
 No todo uso de la IA perjudica el aprendizaje, porque el problema no es usar IA, sino delegar el pensamiento.
 
-### Qué puede promover la empresa
-
-- **Talleres de lectura de especificaciones y planes de agentes**.
-- **Práctica de diagnóstico**.
-- **Uso de los modos de aprendizaje de las herramientas**.
+![Los agentes escriben el código y el desarrollador sigue leyendo: requerimientos, especificaciones, planes de los agentes, resultados de pruebas, arquitectura y la explicación de la IA](/img/articles/lo_que_la_ia_no_puede/leer-bien-01.png)
 
 ## Cómo se conectan
 
@@ -127,9 +114,11 @@ Los cuatro conceptos forman un mismo ciclo: dos deudas que crecen cuando delegam
 
 Leer bien es la herramienta para no acumular deuda cognitiva. El conocimiento del dominio es la materia prima para pagar la deuda de intención. Y ambas habilidades se alimentan mutuamente: quien conoce el dominio sabe qué buscar al leer, y quien lee bien aprende el dominio.
 
-## Plan de capacitación sugerido
+## Plan de capacitaciones
 
-Una empresa puede empezar con cinco capacitaciones que cubren los cuatro conceptos. Ninguna requiere herramientas costosas; requieren tiempo asignado y que sean parte de la evaluación del equipo.
+Este plan se sugiere para que lo lleven adelante las empresas que desarrollan software con IA. Reúne las capacitaciones y las prácticas que conviene promover frente a cada una de las cuatro problemáticas. Ninguna requiere herramientas costosas; requieren tiempo asignado y que formen parte de la evaluación del equipo.
+
+### Capacitaciones
 
 | Capacitación | Conceptos que atiende |
 | --- | --- |
@@ -139,9 +128,38 @@ Una empresa puede empezar con cinco capacitaciones que cubren los cuatro concept
 | Inmersión en el negocio | Conocimiento del dominio |
 | Uso responsable de asistentes de IA | Las cuatro |
 
+### Prácticas que conviene promover
+
+**Frente a la deuda cognitiva**
+
+- **Herramientas que expliquen y diagramen el sistema**.
+- **Agentes de IA que cuenten cómo es el sistema**.
+- **Revisiones centradas en el diseño, no en las líneas**.
+
+**Frente a la deuda de intención**
+
+- **Capacitación en escritura técnica**.
+- **Capacitación en especificaciones**.
+- **Plantillas y repositorios estándar**.
+- **Mucha documentación obligatoria**.
+
+**Para fortalecer el conocimiento del dominio**
+
+- **Contacto directo con usuarios y áreas de negocio**.
+- **Inducción sobre el negocio, no solo sobre la tecnología**.
+- **Glosarios y reglas de negocio documentadas**.
+
+**Para leer bien**
+
+- **Talleres de lectura de especificaciones y planes de agentes**.
+- **Práctica de diagnóstico**.
+- **Uso de los modos de aprendizaje de las herramientas**.
+
 La IA funciona como un amplificador. Potencia lo que ya existe, tanto las fortalezas como las debilidades. Un equipo que comprende su sistema, registra sus decisiones y conoce su dominio va a ganar con la IA. Uno que no lo hace va a producir más rápido algo que entiende cada vez menos.
 
 Para una empresa, la conclusión práctica es que la inversión en IA y la inversión en personas no compiten: la segunda es la condición para que la primera rinda. Capacitar en comprensión, verificación, registro de decisiones, conocimiento del negocio y lectura crítica es lo que convierte una herramienta potente en una ventaja real.
+
+Los cinco conceptos también están disponibles como [presentación](/presentaciones/lo-que-la-ia-no-puede-hacer-por-nosotros).
 
 ## Para saber más
 

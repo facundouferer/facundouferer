@@ -33,6 +33,10 @@ The developer's role changes: from author of the code to **designer of the verif
 
 Human review does not disappear, but it becomes targeted: it focuses on architectural decisions and critical areas, such as authorization, personal data, or payments, where automated security checks are essential.
 
+![Six AI agents send code to an overwhelmed developer who cannot keep up with a pile of pending reviews](/img/articles/lo_que_la_ia_no_puede/el-cuello-de-botella-01.png)
+
+![The developer as verification designer: specifications, tests, and rules feed automated verification, with targeted human review only in critical areas](/img/articles/lo_que_la_ia_no_puede/el-cuello-de-botella-02.png)
+
 ## Cognitive debt
 
 It is the erosion, over time, of the shared understanding a team has of its system. The term was proposed in 2026 by researcher Margaret-Anne Storey.
@@ -45,11 +49,7 @@ The effect is not immediate, and that is what makes it dangerous. The system kee
 
 The skill this demands is being able to **explain your own system**: how it is organized, why, and what would break if a piece changed. It is not about knowing every line, but the map of the system. If nobody on the team can do it, the debt is already there.
 
-### What the company can promote
-
-- **Tools that explain and diagram the system**.
-- **AI agents that describe how the system works**.
-- **Reviews focused on design, not on lines**.
+![A developer stares, puzzled, at a complex system built by AI agents that he no longer fully understands](/img/articles/lo_que_la_ia_no_puede/deuda-cognitiva-01.png)
 
 ## Intent debt
 
@@ -67,12 +67,7 @@ Paying down this debt does not require expensive tools, but habits:
 - **Specifications and tests as an expression of intent:** they describe what the system must do, not just how it does it.
 - **Agent instructions versioned alongside the code:** context files, rules, and policies are also part of the project.
 
-### What the company can promote
-
-- **Technical writing training**.
-- **Specification training**.
-- **Standard templates and repositories**.
-- **Plenty of mandatory documentation**.
+![Intent debt and how to avoid it: architecture decision records, specifications and tests, and agent instructions versioned alongside the code](/img/articles/lo_que_la_ia_no_puede/deuda-de-intencion-01.png)
 
 ## Domain knowledge
 
@@ -88,11 +83,7 @@ Only someone who knows the domain can detect that error, because only that perso
 
 Domain knowledge connects directly to the two debts above. It is what makes it possible to write good specifications (paying down intent debt) and what gives meaning to understanding the system (avoiding cognitive debt). A developer who understands the real problem does not just program better: they give AI the context it lacks.
 
-### What the company can promote
-
-- **Direct contact with users and business areas**.
-- **Onboarding about the business, not just the technology**.
-- **Glossaries and documented business rules**.
+![Without domain knowledge the business error goes unnoticed; with it, someone spots it and gives AI the context it lacks](/img/articles/lo_que_la_ia_no_puede/conocimiento-del-dominio-01.png)
 
 ## Reading well
 
@@ -110,11 +101,7 @@ The risk is that AI erodes precisely this skill. In a controlled trial by Anthro
 
 Not every use of AI harms learning, because the problem is not using AI, but delegating the thinking.
 
-### What the company can promote
-
-- **Workshops on reading specifications and agent plans**.
-- **Diagnostic practice**.
-- **Using the learning modes of the tools**.
+![Agents write the code and the developer keeps reading: requirements, specifications, agents' plans, test results, architecture, and the AI's explanation](/img/articles/lo_que_la_ia_no_puede/leer-bien-01.png)
 
 ## How they connect
 
@@ -127,9 +114,11 @@ The four concepts form a single cycle: two debts that grow when we delegate with
 
 Reading well is the tool for not accumulating cognitive debt. Domain knowledge is the raw material for paying down intent debt. And both skills feed each other: whoever knows the domain knows what to look for when reading, and whoever reads well learns the domain.
 
-## Suggested training plan
+## Training plan
 
-A company can start with five training programs that cover the four concepts. None require expensive tools; they require dedicated time and being part of the team's evaluation.
+This plan is a suggestion for companies that develop software with AI to put into practice. It brings together the training programs and the practices worth promoting to address each of the four problems. None require expensive tools; they require dedicated time and being part of the team's evaluation.
+
+### Training programs
 
 | Training | Concepts addressed |
 | --- | --- |
@@ -139,9 +128,38 @@ A company can start with five training programs that cover the four concepts. No
 | Business immersion | Domain knowledge |
 | Responsible use of AI assistants | All four |
 
+### Practices worth promoting
+
+**To address cognitive debt**
+
+- **Tools that explain and diagram the system**.
+- **AI agents that describe how the system works**.
+- **Reviews focused on design, not on lines**.
+
+**To address intent debt**
+
+- **Technical writing training**.
+- **Specification training**.
+- **Standard templates and repositories**.
+- **Plenty of mandatory documentation**.
+
+**To strengthen domain knowledge**
+
+- **Direct contact with users and business areas**.
+- **Onboarding about the business, not just the technology**.
+- **Glossaries and documented business rules**.
+
+**To read well**
+
+- **Workshops on reading specifications and agent plans**.
+- **Diagnostic practice**.
+- **Using the learning modes of the tools**.
+
 AI works as an amplifier. It boosts what already exists, both strengths and weaknesses. A team that understands its system, records its decisions, and knows its domain will win with AI. One that does not will produce, faster, something it understands less and less.
 
 For a company, the practical conclusion is that investing in AI and investing in people do not compete: the second is the condition for the first to pay off. Training in comprehension, verification, decision recording, business knowledge, and critical reading is what turns a powerful tool into a real advantage.
+
+The five concepts are also available as a [presentation](/en/presentaciones/lo-que-la-ia-no-puede-hacer-por-nosotros).
 
 ## Further reading
 
