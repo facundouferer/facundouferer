@@ -22,6 +22,14 @@ for (const lesson of lessons) {
 		lessonTitles.set(`${lesson.data.course}/${lesson.data.slug}`, lesson.data.title);
 	}
 }
+
+const articles = await getCollection('articles');
+const articleTitles = new Map<string, string>();
+for (const article of articles) {
+	if (article.data.lang === lang && article.data.published) {
+		articleTitles.set(article.data.slug, article.data.title);
+	}
+}
 ---
 
 <BaseLayout
@@ -68,7 +76,7 @@ for (const lesson of lessons) {
 					<a
 						class="presentation-card card card-hover elev-sm"
 						href={withBase(lang === 'en' ? `/en/presentaciones/${pres.slug}` : `/presentaciones/${pres.slug}`)}
-						data-tag={lang === 'en' ? pres.tag.en : pres.tag.es}
+						data-tag={pres.tag.es}
 					>
 						<div class="card-header-bar">
 							<div class="mac-dots">
@@ -88,9 +96,14 @@ for (const lesson of lessons) {
 							<h3 class="card-title">
 								{lang === 'en' ? pres.title.en : pres.title.es}
 							</h3>
-							{lessonTitles.get(`${pres.lesson.course}/${pres.lesson.slug}`) && (
+							{pres.lesson && lessonTitles.get(`${pres.lesson.course}/${pres.lesson.slug}`) && (
 								<p class="card-meta">
 									{t('presentations.lesson')}: {lessonTitles.get(`${pres.lesson.course}/${pres.lesson.slug}`)}
+								</p>
+							)}
+							{pres.article && articleTitles.get(pres.article.slug) && (
+								<p class="card-meta">
+									{t('presentations.article')}: {articleTitles.get(pres.article.slug)}
 								</p>
 							)}
 							<p class="card-body">

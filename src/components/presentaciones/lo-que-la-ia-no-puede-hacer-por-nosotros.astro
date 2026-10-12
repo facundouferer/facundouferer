@@ -1,0 +1,319 @@
+---
+import { withBase } from '../../utils/withBase';
+
+interface Props {
+	lang?: string;
+}
+
+interface LocalizedText {
+	es: string;
+	en: string;
+}
+
+interface ConceptSlide {
+	image: string;
+	title: LocalizedText;
+	alt: LocalizedText;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+const locale: keyof LocalizedText = isEs ? 'es' : 'en';
+
+const conceptSlides: ConceptSlide[] = [
+	{
+		image: '/img/articles/lo_que_la_ia_no_puede/presentacion-01-el-cuello-de-botella.png',
+		title: { es: 'El cuello de botella', en: 'The bottleneck' },
+		alt: {
+			es: 'Infografía comparativa. Antes: varios agentes de IA generan código que se acumula frente a un desarrollador agobiado por la revisión manual, el cuello de botella. Ahora: el código pasa por una verificación automatizada (pruebas, análisis de seguridad, requisitos, reglas del proyecto, checks de calidad, datos y privacidad) y el desarrollador diseña esa verificación y revisa solo arquitectura, decisiones clave y zonas críticas.',
+			en: 'Comparative infographic. Before: several AI agents generate code that piles up in front of a developer overwhelmed by manual review, the bottleneck. Now: code goes through automated verification (tests, security analysis, requirements, project rules, quality checks, data and privacy) and the developer designs that verification and only reviews architecture, key decisions, and critical areas.',
+		},
+	},
+	{
+		image: '/img/articles/lo_que_la_ia_no_puede/presentacion-02-deuda-cognitiva.png',
+		title: { es: 'Deuda cognitiva', en: 'Cognitive debt' },
+		alt: {
+			es: 'Infografía que contrasta la deuda técnica, que vive en el código, con la deuda cognitiva, que vive en las personas que ya no saben por qué el sistema es así. La IA puede reducir la deuda técnica mientras acelera la cognitiva; la clave es poder explicar qué hace el sistema, cómo está organizado, por qué y qué se rompería si se cambia una pieza.',
+			en: 'Infographic contrasting technical debt, which lives in the code, with cognitive debt, which lives in people who no longer know why the system is the way it is. AI can reduce technical debt while accelerating cognitive debt; the key is being able to explain what the system does, how it is organized, why, and what would break if a piece changed.',
+		},
+	},
+	{
+		image: '/img/articles/lo_que_la_ia_no_puede/presentacion-03-deuda-de-intencion.png',
+		title: { es: 'Deuda de intención', en: 'Intent debt' },
+		alt: {
+			es: 'Infografía sobre la deuda de intención, que vive en el conocimiento externalizado: objetivos del usuario, alternativas descartadas, supuestos y restricciones. Muestra el ejemplo de un adicional de sueldos que nadie documentó y que un recién llegado "corrige", y los hábitos para evitarlo: registros de decisiones de arquitectura (ADR), especificaciones y tests, e instrucciones para los agentes versionadas junto al código.',
+			en: 'Infographic on intent debt, which lives in externalized knowledge: user goals, discarded alternatives, assumptions, and constraints. It shows the example of an undocumented payroll bonus that a newcomer "fixes", and the habits that prevent it: architecture decision records (ADRs), specifications and tests, and agent instructions versioned alongside the code.',
+		},
+	},
+	{
+		image: '/img/articles/lo_que_la_ia_no_puede/presentacion-04-conocimiento-del-dominio.png',
+		title: { es: 'Conocimiento del dominio', en: 'Domain knowledge' },
+		alt: {
+			es: 'Infografía sobre el conocimiento del dominio. Sin él, el código de la IA parece correcto pero contiene un error de negocio; con él, quien conoce el dominio detecta el error porque sabe qué buscar. Ese conocimiento de clientes, productos, procesos y reglas permite mejores especificaciones, comprensión del sistema y dar contexto a la IA.',
+			en: 'Infographic on domain knowledge. Without it, the AI code looks correct but contains a business error; with it, someone who knows the domain spots the error because they know what to look for. That knowledge of customers, products, processes, and rules enables better specifications, system understanding, and giving AI context.',
+		},
+	},
+	{
+		image: '/img/articles/lo_que_la_ia_no_puede/presentacion-05-leer-bien.png',
+		title: { es: 'Leer bien', en: 'Reading well' },
+		alt: {
+			es: 'Infografía sobre leer bien: los agentes escriben el código y el desarrollador sigue leyendo, dedica el 58% de su tiempo a comprender programas. Con IA se leen requerimientos, especificaciones, planes de los agentes, resultados de las pruebas, la arquitectura del sistema y la explicación de la IA. Con ayuda de IA la comprensión puede caer un 17%: el riesgo no es usar IA, sino delegar el pensamiento.',
+			en: 'Infographic on reading well: agents write the code and the developer keeps reading, spending 58% of their time comprehending programs. With AI, people read requirements, specifications, agents\' plans, test results, the system architecture, and the AI\'s explanation. With AI assistance comprehension can drop 17%: the risk is not using AI, but delegating the thinking.',
+		},
+	},
+];
+
+const totalSlides = conceptSlides.length + 2;
+const articleHref = withBase(
+	isEs
+		? '/articulos/lo-que-la-ia-no-puede-hacer-por-nosotros'
+		: '/en/articles/lo-que-la-ia-no-puede-hacer-por-nosotros',
+);
+---
+
+<div class="ia-screen" data-presentation="lo-que-la-ia-no-puede-hacer-por-nosotros" data-lang={lang} data-total-slides={totalSlides}>
+	<div class="ia-shell">
+		<nav class="ia-nav" aria-label={isEs ? 'Controles de navegación' : 'Navigation controls'}>
+			<button class="btn btn-secondary" id="iaPrevBtn" aria-label={isEs ? 'Diapositiva anterior' : 'Previous slide'} disabled>
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{isEs ? 'Anterior' : 'Previous'}</span>
+			</button>
+			<span class="ia-counter" id="iaSlideCounter" aria-live="polite">1 / {totalSlides}</span>
+			<button class="btn btn-secondary" id="iaNextBtn" aria-label={isEs ? 'Siguiente diapositiva' : 'Next slide'}>
+				<span>{isEs ? 'Siguiente' : 'Next'}</span>
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="ia-viewport">
+			<!-- Slide 1: title -->
+			<section class="ia-slide ia-slide-cover is-active" data-slide="1">
+				<span class="kicker">{isEs ? 'Presentación' : 'Presentation'}</span>
+				<h1 class="ia-display">{isEs ? 'Lo que la IA no puede hacer por nosotros' : "What AI Can't Do for Us"}</h1>
+				<p class="ia-subtitle">
+					{isEs ? 'Cómo formar desarrolladores en la era de los agentes de IA' : 'How to train developers in the age of AI agents'}
+				</p>
+				<ul class="ia-concepts" aria-label={isEs ? 'Conceptos de la presentación' : 'Concepts in this presentation'}>
+					{conceptSlides.map((concept) => <li class="tag tag-accent">{concept.title[locale]}</li>)}
+				</ul>
+				<p class="ia-author">Facundo Uferer</p>
+				<p class="ia-hint text-muted">
+					{isEs ? 'Usá las flechas ← → del teclado o los botones para avanzar.' : 'Use the ← → arrow keys or the buttons to move forward.'}
+				</p>
+			</section>
+
+			<!-- Slides 2-6: one infographic per concept -->
+			{
+				conceptSlides.map((concept, index) => (
+					<section class="ia-slide" data-slide={String(index + 2)}>
+						<span class="kicker">
+							{isEs ? `Concepto ${index + 1} de ${conceptSlides.length}` : `Concept ${index + 1} of ${conceptSlides.length}`}
+						</span>
+						<h2 class="ia-title">{concept.title[locale]}</h2>
+						<figure class="ia-figure">
+							<img
+								src={withBase(concept.image)}
+								alt={concept.alt[locale]}
+								width="1536"
+								height="1024"
+								loading="lazy"
+								decoding="async"
+							/>
+						</figure>
+					</section>
+				))
+			}
+
+			<!-- Slide 7: closing takeaway -->
+			<section class="ia-slide ia-slide-closing" data-slide={String(totalSlides)}>
+				<span class="kicker">{isEs ? 'En síntesis' : 'In short'}</span>
+				<h2 class="ia-display">{isEs ? 'La IA funciona como un amplificador' : 'AI works as an amplifier'}</h2>
+				<p class="ia-subtitle">
+					{isEs
+						? 'Potencia lo que ya existe, tanto las fortalezas como las debilidades. Un equipo que comprende su sistema, registra sus decisiones y conoce su dominio va a ganar con la IA. Uno que no lo hace va a producir más rápido algo que entiende cada vez menos.'
+						: 'It boosts what already exists, both strengths and weaknesses. A team that understands its system, records its decisions, and knows its domain will win with AI. One that does not will produce, faster, something it understands less and less.'}
+				</p>
+				<a class="btn btn-primary ia-cta" href={articleHref}>
+					<span>{isEs ? 'Leer el artículo completo' : 'Read the full article'}</span>
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M5 12h14" />
+						<path d="m12 5 7 7-7 7" />
+					</svg>
+				</a>
+			</section>
+		</main>
+	</div>
+</div>
+
+<style>
+	.ia-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.ia-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.ia-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .ia-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .ia-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .ia-viewport { zoom: 1.25; } }
+
+	.ia-viewport {
+		flex: 1;
+	}
+
+	.ia-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-3) var(--space-6);
+		background: var(--color-surface);
+	}
+
+	.ia-counter {
+		font-size: 13px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	.ia-slide {
+		display: none;
+		width: 100%;
+		max-width: var(--container-max);
+		margin: 0 auto;
+		padding: var(--space-6) var(--space-8);
+	}
+
+	.ia-slide.is-active {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-2);
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.ia-slide.is-active { animation: iaFade 0.25s ease-out; }
+	}
+
+	@keyframes iaFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.ia-display {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: clamp(2rem, 5vw, 3.6rem);
+		line-height: 1.12;
+		letter-spacing: -0.015em;
+		margin: 0;
+		max-width: 20ch;
+	}
+
+	.ia-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: clamp(1.5rem, 3vw, 2.2rem);
+		line-height: 1.12;
+		letter-spacing: -0.015em;
+		margin: 0 0 var(--space-2);
+	}
+
+	.ia-subtitle {
+		font-size: clamp(1rem, 1.6vw, 1.25rem);
+		line-height: 1.5;
+		color: color-mix(in srgb, var(--color-text) 75%, transparent);
+		max-width: 60ch;
+		margin: var(--space-2) 0 0;
+	}
+
+	.ia-concepts {
+		list-style: none;
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin: var(--space-4) 0 0;
+		padding: 0;
+	}
+
+	.ia-author {
+		font-weight: 700;
+		margin: var(--space-6) 0 0;
+	}
+
+	.ia-hint {
+		font-size: 13px;
+		margin: 0;
+	}
+
+	.ia-figure {
+		width: 100%;
+		margin: 0;
+	}
+
+	.ia-figure img {
+		display: block;
+		width: 100%;
+		height: auto;
+		max-height: calc((100dvh - var(--site-header-height, 0px)) * 0.62);
+		object-fit: contain;
+		object-position: left center;
+		border-radius: var(--radius-lg);
+	}
+
+	.ia-cta {
+		margin-top: var(--space-6);
+	}
+
+	@media (max-width: 640px) {
+		.ia-nav { padding: var(--space-2) var(--space-3); }
+		.ia-slide { padding: var(--space-4) var(--space-3); }
+	}
+</style>
+
+<script>
+	const screenEl = document.querySelector<HTMLElement>('.ia-screen');
+	const totalSlides = Number(screenEl?.dataset.totalSlides ?? '0');
+	let currentSlide = 1;
+
+	const prevBtn = document.getElementById('iaPrevBtn') as HTMLButtonElement | null;
+	const nextBtn = document.getElementById('iaNextBtn') as HTMLButtonElement | null;
+	const counter = document.getElementById('iaSlideCounter');
+	const slides = document.querySelectorAll<HTMLElement>('.ia-slide');
+
+	function updateSlide(target: number) {
+		if (target < 1 || target > totalSlides) return;
+		currentSlide = target;
+		slides.forEach((slide) => slide.classList.remove('is-active'));
+		document.querySelector(`.ia-slide[data-slide="${currentSlide}"]`)?.classList.add('is-active');
+
+		if (counter) counter.textContent = `${currentSlide} / ${totalSlides}`;
+		if (prevBtn) prevBtn.disabled = currentSlide === 1;
+		if (nextBtn) nextBtn.disabled = currentSlide === totalSlides;
+	}
+
+	prevBtn?.addEventListener('click', () => updateSlide(currentSlide - 1));
+	nextBtn?.addEventListener('click', () => updateSlide(currentSlide + 1));
+
+	window.addEventListener('keydown', (event) => {
+		if (event.key === 'ArrowRight') updateSlide(currentSlide + 1);
+		if (event.key === 'ArrowLeft') updateSlide(currentSlide - 1);
+	});
+</script>

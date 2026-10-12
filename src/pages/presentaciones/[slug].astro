@@ -55,6 +55,7 @@ import FundamentosTresEstadosGit from '../../components/presentaciones/fundament
 import SincronizacionRemotaPullPushGit from '../../components/presentaciones/sincronizacion-remota-pull-push-git.astro';
 import RamasMergeConflictosGit from '../../components/presentaciones/ramas-merge-conflictos-git.astro';
 import RebaseBuenasPracticasGit from '../../components/presentaciones/rebase-buenas-practicas-git.astro';
+import LoQueLaIaNoPuedeHacerPorNosotros from '../../components/presentaciones/lo-que-la-ia-no-puede-hacer-por-nosotros.astro';
 
 export function getStaticPaths() {
 	return presentations.map((p) => ({
@@ -122,6 +123,7 @@ const componentMap: Record<string, any> = {
 	'sincronizacion-remota-pull-push-git': SincronizacionRemotaPullPushGit,
 	'ramas-merge-conflictos-git': RamasMergeConflictosGit,
 	'rebase-buenas-practicas-git': RebaseBuenasPracticasGit,
+	'lo-que-la-ia-no-puede-hacer-por-nosotros': LoQueLaIaNoPuedeHacerPorNosotros,
 };
 
 const PresentationComponent = componentMap[slug];

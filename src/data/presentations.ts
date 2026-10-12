@@ -1,5 +1,18 @@
-export type PresentationTag = 'Algoritmos' | 'C' | 'Java' | 'Git';
+export type PresentationTag = 'Algoritmos' | 'C' | 'Java' | 'Git' | 'IA';
 
+export interface LessonReference {
+	course: string;
+	slug: string;
+}
+
+export interface ArticleReference {
+	slug: string;
+}
+
+/**
+ * A presentation belongs to exactly one owner: a course lesson (`lesson`) or
+ * an article (`article`). Lesson-only UI must skip presentations without a lesson.
+ */
 export interface Presentation {
 	slug: string;
 	file: string;
@@ -17,7 +30,8 @@ export interface Presentation {
 		es: string;
 		en: string;
 	};
-	lesson: { course: string; slug: string };
+	lesson?: LessonReference;
+	article?: ArticleReference;
 }
 
 export interface CategoryFilter {
@@ -34,6 +48,7 @@ export const categories: CategoryFilter[] = [
 	{ label: { es: '~/c', en: '~/c' }, filter: 'C' },
 	{ label: { es: '~/java', en: '~/java' }, filter: 'Java' },
 	{ label: { es: '~/git', en: '~/git' }, filter: 'Git' },
+	{ label: { es: '~/ia', en: '~/ai' }, filter: 'IA' },
 ];
 
 export const presentations: Presentation[] = [
@@ -784,15 +799,32 @@ export const presentations: Presentation[] = [
 		slug: 'rebase-buenas-practicas-git',
 		lesson: { course: 'git', slug: 'rebase-y-buenas-practicas' },
 	},
+	{
+		file: 'lo-que-la-ia-no-puede.md',
+		image: '/img/articles/vitruviano-digital-robots-ia.png',
+		tag: { es: 'IA', en: 'AI' },
+		tagClass: 'text-orange-700 bg-orange-700/10 border-orange-700/20',
+		title: {
+			es: 'Lo que la IA no puede hacer por nosotros',
+			en: "What AI Can't Do for Us",
+		},
+		description: {
+			es: 'Cómo formar desarrolladores en la era de los agentes de IA: el cuello de botella, la deuda cognitiva, la deuda de intención, el conocimiento del dominio y leer bien.',
+			en: 'How to train developers in the age of AI agents: the bottleneck, cognitive debt, intent debt, domain knowledge, and reading well.',
+		},
+		slug: 'lo-que-la-ia-no-puede-hacer-por-nosotros',
+		article: { slug: 'lo-que-la-ia-no-puede-hacer-por-nosotros' },
+	},
 ];
 
 /**
  * Returns the presentations that belong to a given course lesson, in catalog order.
  * Returns [] when no presentation is mapped to that lesson.
+ * Article-bound presentations (no `lesson`) are never returned.
  */
 export function getPresentationsForLesson(course: string, lessonSlug: string): Presentation[] {
 	return presentations.filter(
-		(presentation) => presentation.lesson.course === course && presentation.lesson.slug === lessonSlug,
+		(presentation) => presentation.lesson?.course === course && presentation.lesson?.slug === lessonSlug,
 	);
 }
 
@@ -804,8 +836,9 @@ export function getPresentationCountsForCourse(course: string): Record<string, n
 	const counts: Record<string, number> = {};
 
 	for (const presentation of presentations) {
-		if (presentation.lesson.course !== course) continue;
-		counts[presentation.lesson.slug] = (counts[presentation.lesson.slug] ?? 0) + 1;
+		const lesson = presentation.lesson;
+		if (!lesson || lesson.course !== course) continue;
+		counts[lesson.slug] = (counts[lesson.slug] ?? 0) + 1;
 	}
 
 	return counts;
@@ -813,8 +846,18 @@ export function getPresentationCountsForCourse(course: string): Record<string, n
 
 /**
  * Returns the lesson reference for a given presentation slug.
- * Returns undefined when the slug does not match any presentation.
+ * Returns undefined when the slug does not match any presentation or the
+ * presentation belongs to an article instead of a lesson.
  */
-export function getLessonForPresentation(slug: string): { course: string; slug: string } | undefined {
+export function getLessonForPresentation(slug: string): LessonReference | undefined {
 	return presentations.find((presentation) => presentation.slug === slug)?.lesson;
+}
+
+/**
+ * Returns the article reference for a given presentation slug.
+ * Returns undefined when the slug does not match any presentation or the
+ * presentation belongs to a lesson instead of an article.
+ */
+export function getArticleForPresentation(slug: string): ArticleReference | undefined {
+	return presentations.find((presentation) => presentation.slug === slug)?.article;
 }

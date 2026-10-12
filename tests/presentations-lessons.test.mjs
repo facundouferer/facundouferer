@@ -50,7 +50,7 @@ let dataModule;
 test('src/data/presentations.ts can be loaded and exports the presentations catalog', async () => {
 	dataModule = await import(DATA_MODULE_PATH);
 	assert.ok(Array.isArray(dataModule.presentations));
-	assert.equal(dataModule.presentations.length, 51);
+	assert.equal(dataModule.presentations.length, 52);
 });
 
 test('src/data/presentations.ts exports the required helper functions', async () => {
@@ -60,8 +60,20 @@ test('src/data/presentations.ts exports the required helper functions', async ()
 	assert.match(content, /export function getLessonForPresentation/);
 });
 
-test('every presentation has a lesson reference with course and slug', () => {
+test('every presentation belongs to exactly one owner: a lesson or an article', () => {
 	for (const presentation of dataModule.presentations) {
+		const owners = [presentation.lesson, presentation.article].filter(Boolean);
+		assert.equal(
+			owners.length,
+			1,
+			`Presentation "${presentation.slug}" must reference exactly one lesson or one article`,
+		);
+	}
+});
+
+test('every lesson-bound presentation has a lesson reference with course and slug', () => {
+	for (const presentation of dataModule.presentations) {
+		if (presentation.article) continue;
 		assert.ok(presentation.lesson, `Presentation "${presentation.slug}" is missing a lesson reference`);
 		assert.equal(typeof presentation.lesson.course, 'string');
 		assert.ok(presentation.lesson.course.length > 0, `Presentation "${presentation.slug}" has an empty lesson.course`);
@@ -80,6 +92,7 @@ test('every lesson reference resolves to an existing bilingual lesson file with 
 	const checked = new Map();
 
 	for (const presentation of dataModule.presentations) {
+		if (!presentation.lesson) continue;
 		const { course, slug } = presentation.lesson;
 		const key = `${course}/${slug}`;
 		if (!checked.has(key)) {
@@ -95,6 +108,20 @@ test('every lesson reference resolves to an existing bilingual lesson file with 
 			files.en,
 			`Presentation "${presentation.slug}" references ${key}, but no *.en.md lesson with that frontmatter slug exists`,
 		);
+	}
+});
+
+test('every article reference resolves to existing es and en article files', () => {
+	for (const presentation of dataModule.presentations) {
+		if (!presentation.article) continue;
+		const { slug } = presentation.article;
+		assert.equal(typeof slug, 'string');
+		for (const lang of ['es', 'en']) {
+			assert.ok(
+				existsSync(`src/content/articles/${slug}.${lang}.md`),
+				`Presentation "${presentation.slug}" references article "${slug}", but no ${lang} article file exists`,
+			);
+		}
 	}
 });
 

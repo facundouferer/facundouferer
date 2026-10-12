@@ -444,11 +444,13 @@ Useful courses/lessons verification commands:
 #### Presentations (`src/data/presentations.ts`)
 
 Interactive presentations are a flat catalog in `src/data/presentations.ts`, not a
-content collection. Each `Presentation` record carries a `lesson: { course, slug }`
-reference to the course/lesson it illustrates (`course` and `slug` match a lesson's
-frontmatter, not a filename). A lesson may own zero, one, or several presentations
-(e.g. `c/cadenas-de-caracteres-y-operaciones` owns four); every presentation belongs
-to exactly one lesson.
+content collection. Each `Presentation` record has exactly one owner: either a
+`lesson: { course, slug }` reference to the course/lesson it illustrates (`course`
+and `slug` match a lesson's frontmatter, not a filename) or an `article: { slug }`
+reference to the article it accompanies (e.g. `lo-que-la-ia-no-puede-hacer-por-nosotros`).
+A lesson may own zero, one, or several presentations (e.g.
+`c/cadenas-de-caracteres-y-operaciones` owns four). Article-bound presentations are
+skipped by the lesson helpers.
 
 Helpers exported from `src/data/presentations.ts`:
 
@@ -458,6 +460,8 @@ Helpers exported from `src/data/presentations.ts`:
   one course. Lessons without presentations are absent from the map.
 - `getLessonForPresentation(slug)` — the `{ course, slug }` lesson reference for a
   presentation slug, or `undefined` for an unknown slug.
+- `getArticleForPresentation(slug)` — the `{ slug }` article reference for an
+  article-bound presentation, or `undefined` otherwise.
 
 Where this renders:
 
@@ -467,7 +471,8 @@ Where this renders:
   each lesson detail page (`src/pages/cursos/[course]/[lesson].astro` and its
   English counterpart), fed by `getPresentationsForLesson`.
 - `PresentationLessonLink.astro` renders the reverse "Part of: Course › Lesson"
-  link on each presentation detail page (`src/pages/presentaciones/[slug].astro`
+  link (or "Part of: <article title>" for article-bound presentations) on each
+  presentation detail page (`src/pages/presentaciones/[slug].astro`
   and `src/pages/[lang]/presentaciones/[slug].astro`), resolved from
   `getLessonForPresentation` plus the `courses`/`lessons` collections. The
   presentation catalog cards (`src/pages/presentaciones/index.astro` and

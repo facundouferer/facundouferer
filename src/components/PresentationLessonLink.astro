@@ -1,7 +1,8 @@
 ---
 import { getCollection } from 'astro:content';
-import { getLessonForPresentation } from '../data/presentations';
+import { getArticleForPresentation, getLessonForPresentation } from '../data/presentations';
 import { useTranslations, type Locale } from '../i18n/utils';
+import { resolveArticleEntry } from '../utils/articles';
 import { withBase } from '../utils/withBase';
 
 type Props = {
@@ -13,6 +14,7 @@ const { presentationSlug, locale } = Astro.props;
 const t = useTranslations(locale);
 
 const lessonRef = getLessonForPresentation(presentationSlug);
+const articleRef = lessonRef ? undefined : getArticleForPresentation(presentationSlug);
 
 const course = lessonRef
 	? (await getCollection('courses')).find(
@@ -30,8 +32,13 @@ const lesson = lessonRef
 		)
 	: undefined;
 
+const article = articleRef
+	? resolveArticleEntry(await getCollection('articles'), articleRef.slug, locale)
+	: undefined;
+
 const courseTitle = course ? (locale === 'en' ? course.data.title_en : course.data.title) : undefined;
 const lessonTitle = lesson?.data.title;
+const articleTitle = article?.data.title;
 
 const courseHref = lessonRef
 	? locale === 'en'
@@ -44,6 +51,12 @@ const lessonHref = lessonRef
 		? `/en/courses/${lessonRef.course}/${lessonRef.slug}`
 		: `/cursos/${lessonRef.course}/${lessonRef.slug}`
 	: undefined;
+
+const articleHref = articleRef
+	? locale === 'en'
+		? `/en/articles/${articleRef.slug}`
+		: `/articulos/${articleRef.slug}`
+	: undefined;
 ---
 
 {
@@ -51,6 +64,13 @@ const lessonHref = lessonRef
 		<p class="kicker">
 			{t('presentations.partOf')}: <a href={withBase(courseHref)}>{courseTitle}</a> ›{' '}
 			<a href={withBase(lessonHref)}>{lessonTitle}</a>
+		</p>
+	)
+}
+{
+	articleTitle && articleHref && (
+		<p class="kicker">
+			{t('presentations.partOf')}: <a href={withBase(articleHref)}>{articleTitle}</a>
 		</p>
 	)
 }
