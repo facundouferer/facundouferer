@@ -1,6 +1,6 @@
 ---
 title: 'What AI Can''t Do for Us'
-slug: 'lo-que-la-ia-no-escribe-por-nosotros'
+slug: 'lo-que-la-ia-no-puede-hacer-por-nosotros'
 date: 2026-10-10
 author: 'Facundo Uferer'
 category: 'AI Strategy'
