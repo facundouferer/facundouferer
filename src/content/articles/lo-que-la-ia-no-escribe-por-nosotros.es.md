@@ -1,5 +1,5 @@
 ---
-title: 'Lo que la IA no escribe por nosotros'
+title: 'Lo que la IA no puede hacer por nosotros'
 slug: 'lo-que-la-ia-no-escribe-por-nosotros'
 date: 2026-10-10
 author: 'Facundo Uferer'
