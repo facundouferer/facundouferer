@@ -417,22 +417,3 @@ Every few days it is worth running `/improve-codebase-architecture`, which looks
 | Implement the slice | `/implement` |
 | Reviewing agent | `/code-review` |
 | Several slices in parallel | `/implement-spec` |
-
-## Process summary
-
-The complete process with AI, end to end:
-
-1. Prepare the repository once: conventions, reference slice, issue template, and architecture tests.
-2. The AI drafts the stories and the orchestrator prioritizes them (or, in option B, the AI drafts the issues directly).
-3. The AI turns each story into vertical issues and the orchestrator validates the split.
-4. The agent implements each issue as a slice, tests first, copying the reference slice.
-5. CI and the orchestrator approve the PR, which touches a single folder.
-
-At every step, the AI produces and the orchestrator decides. VSA is what makes that division of labor possible: each unit of work is small, complete, and verifiable, both for the agent that writes it and for the orchestrator that reviews it.
-
-## Sources
-
-- [Vertical Slice Architecture — Architecting ASP.NET Core Applications (Packt)](https://www.packtpub.com/en-gb/product/architecting-asp-net-core-applications-third-edition-21-9781805123385/chapter/getting-started-with-vertical-slice-architecture/vertical-slice-architecture)
-- [Vertical Slice Architecture: Effective Guardrails for AI Development — Jimmy Bogard](https://sessionize.com/s/jimmy-bogard/vertical-slice-architecture-effective-guardrails-f/185766)
-- [What Is Vertical Slicing And Why It Is Important — Edworking](https://edworking.com/blog/productivity/what-is-vertical-slicing-and-why-it-is-important)
-- [Breaking the Horizontal Habit](https://thethunderislandnavigator.beehiiv.com/p/breaking-horizontal-habit)

@@ -417,22 +417,3 @@ Cada pocos días conviene correr `/improve-codebase-architecture`, que busca dó
 | Implementar la porción | `/implement` |
 | Agente revisor | `/code-review` |
 | Varias porciones en paralelo | `/implement-spec` |
-
-## Resumen del proceso
-
-El proceso completo con IA, de punta a punta:
-
-1. Preparar el repositorio una vez: convenciones, porción de referencia, plantilla de issue y tests de arquitectura.
-2. La IA redacta las historias y el orquestador las prioriza (o, en la opción B, la IA redacta las issues directamente).
-3. La IA convierte cada historia en issues verticales y el orquestador valida el corte.
-4. El agente implementa cada issue como una porción, tests primero, copiando la porción de referencia.
-5. CI y el orquestador aprueban el PR, que toca una sola carpeta.
-
-En cada paso la IA produce y el orquestador decide. VSA es lo que hace posible ese reparto: cada unidad de trabajo es chica, completa y verificable, tanto para el agente que la escribe como para el orquestador que la revisa.
-
-## Fuentes
-
-- [Vertical Slice Architecture — Architecting ASP.NET Core Applications (Packt)](https://www.packtpub.com/en-gb/product/architecting-asp-net-core-applications-third-edition-21-9781805123385/chapter/getting-started-with-vertical-slice-architecture/vertical-slice-architecture)
-- [Vertical Slice Architecture: Effective Guardrails for AI Development — Jimmy Bogard](https://sessionize.com/s/jimmy-bogard/vertical-slice-architecture-effective-guardrails-f/185766)
-- [What Is Vertical Slicing And Why It Is Important — Edworking](https://edworking.com/blog/productivity/what-is-vertical-slicing-and-why-it-is-important)
-- [Breaking the Horizontal Habit](https://thethunderislandnavigator.beehiiv.com/p/breaking-horizontal-habit)
