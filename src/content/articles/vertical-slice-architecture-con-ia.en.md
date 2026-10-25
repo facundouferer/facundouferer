@@ -31,32 +31,90 @@ VSA organizes code by use case. The agent receives a bounded task, works in a si
 
 Hence the name: if the system is a layer cake, a feature is not an entire layer but a vertical slice that carries a bit of each one.
 
+<figure class="diagram">
+<svg viewBox="0 0 720 350" role="img" aria-labelledby="d-vsa-grid-t">
+<title id="d-vsa-grid-t">Four technical layers by four features; the "enroll student" slice cuts through all four layers</title>
+<text x="220" y="30" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-neutral-700)">Create student</text>
+<text x="360" y="30" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">Enroll student</text>
+<text x="500" y="30" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-neutral-700)">List courses</text>
+<text x="640" y="30" font-size="12.5" font-weight="700" text-anchor="middle" fill="var(--color-neutral-700)">Edit course</text>
+<rect x="150" y="44" width="560" height="54" rx="12" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<rect x="150" y="102" width="560" height="54" rx="12" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<rect x="150" y="160" width="560" height="54" rx="12" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<rect x="150" y="218" width="560" height="54" rx="12" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<text x="138" y="77" font-size="13" font-weight="700" text-anchor="end" fill="var(--color-neutral-800)">Frontend</text>
+<text x="138" y="135" font-size="13" font-weight="700" text-anchor="end" fill="var(--color-neutral-800)">Backend / API</text>
+<text x="138" y="193" font-size="13" font-weight="700" text-anchor="end" fill="var(--color-neutral-800)">Controller</text>
+<text x="138" y="251" font-size="13" font-weight="700" text-anchor="end" fill="var(--color-neutral-800)">Database</text>
+<rect x="294" y="40" width="132" height="236" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2.5"/>
+<text x="360" y="77" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">form</text>
+<text x="360" y="135" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">endpoint</text>
+<text x="360" y="193" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">handler</text>
+<text x="360" y="251" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">table</text>
+<rect x="300" y="288" width="120" height="24" rx="9" fill="var(--color-accent)"/>
+<text x="360" y="304" font-size="11.5" font-weight="700" text-anchor="middle" fill="var(--color-neutral-100)">1 issue · 1 PR</text>
+<rect x="150" y="331" width="36" height="10" rx="5" fill="var(--color-neutral-400)"/>
+<text x="194" y="341" font-size="11.5" fill="var(--color-neutral-700)">Layer = horizontal cut</text>
+<rect x="430" y="327" width="10" height="18" rx="5" fill="var(--color-accent)"/>
+<text x="448" y="341" font-size="11.5" fill="var(--color-accent-700)">Slice = vertical cut, screen → database</text>
+</svg>
+<figcaption>Each row is a technical layer; each column, a feature. A slice takes a bit of every layer, but only what that feature needs.</figcaption>
+</figure>
+
 A vertical slice is a complete use case with everything it needs: endpoint, validation, business logic, data access, DTOs, and tests. Jimmy Bogard, who popularized the approach, sums it up in one principle: minimize coupling between slices and maximize coupling within each slice ([source](https://sessionize.com/s/jimmy-bogard/vertical-slice-architecture-effective-guardrails-f/185766)).
 
 The difference shows in the folder structure:
 
-```text
-By layers                          By slices (VSA)
-─────────                          ───────────────
-Controllers/                       Features/
-  StudentsController                 Students/CreateStudent/
-  EnrollmentsController     ◀          request · handler · test_create_student
-Services/                            Enrollments/EnrollStudent/   ◀
-  StudentService                       request
-  EnrollmentService         ◀          response
-Repositories/                          handler
-  StudentRepository                    test_enroll
-  EnrollmentRepository      ◀
-DTOs/
-  StudentDto
-  EnrollmentRequest         ◀
-
-Shared/                            Shared/
-  domain, authentication,            domain, authentication,
-  database connection                database connection
-```
-
-Everything marked with `◀` is the code for the "enroll student" use case: spread across four folders on the left, in a single one on the right. For an agent, the right side means reading one folder instead of four.
+<figure class="diagram">
+<svg viewBox="0 0 720 436" role="img" aria-labelledby="d-vsa-folders-t">
+<title id="d-vsa-folders-t">Layered structure versus sliced structure: the "enroll student" use case spread across four folders or gathered in one</title>
+<text x="0" y="22" font-size="15" font-weight="700" fill="var(--color-neutral-800)">By layers</text>
+<text x="340" y="22" font-size="12" font-weight="700" text-anchor="end" fill="var(--color-neutral-700)">4 folders to read</text>
+<text x="380" y="22" font-size="15" font-weight="700" fill="var(--color-accent-700)">By slices (VSA)</text>
+<text x="720" y="22" font-size="12" font-weight="700" text-anchor="end" fill="var(--color-accent-700)">1 folder to read</text>
+<rect x="0" y="40" width="340" height="74" rx="14" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<text x="14" y="62" font-size="13" font-weight="700" fill="var(--color-neutral-800)">Controllers/</text>
+<text x="14" y="82" font-size="12" fill="var(--color-neutral-700)">StudentsController</text>
+<rect x="14" y="90" width="190" height="20" rx="7" fill="var(--color-accent-200)" stroke="var(--color-accent)"/>
+<text x="22" y="104" font-size="12" font-weight="700" fill="var(--color-accent-700)">EnrollmentsController</text>
+<rect x="0" y="122" width="340" height="74" rx="14" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<text x="14" y="144" font-size="13" font-weight="700" fill="var(--color-neutral-800)">Services/</text>
+<text x="14" y="164" font-size="12" fill="var(--color-neutral-700)">StudentService</text>
+<rect x="14" y="172" width="190" height="20" rx="7" fill="var(--color-accent-200)" stroke="var(--color-accent)"/>
+<text x="22" y="186" font-size="12" font-weight="700" fill="var(--color-accent-700)">EnrollmentService</text>
+<rect x="0" y="204" width="340" height="74" rx="14" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<text x="14" y="226" font-size="13" font-weight="700" fill="var(--color-neutral-800)">Repositories/</text>
+<text x="14" y="246" font-size="12" fill="var(--color-neutral-700)">StudentRepository</text>
+<rect x="14" y="254" width="190" height="20" rx="7" fill="var(--color-accent-200)" stroke="var(--color-accent)"/>
+<text x="22" y="268" font-size="12" font-weight="700" fill="var(--color-accent-700)">EnrollmentRepository</text>
+<rect x="0" y="286" width="340" height="74" rx="14" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<text x="14" y="308" font-size="13" font-weight="700" fill="var(--color-neutral-800)">DTOs/</text>
+<text x="14" y="328" font-size="12" fill="var(--color-neutral-700)">StudentDto</text>
+<rect x="14" y="336" width="190" height="20" rx="7" fill="var(--color-accent-200)" stroke="var(--color-accent)"/>
+<text x="22" y="350" font-size="12" font-weight="700" fill="var(--color-accent-700)">EnrollmentRequest</text>
+<rect x="0" y="376" width="340" height="50" rx="14" fill="var(--color-neutral-300)" stroke="var(--color-divider)"/>
+<text x="14" y="397" font-size="13" font-weight="700" fill="var(--color-neutral-800)">Shared/</text>
+<text x="14" y="415" font-size="11.5" fill="var(--color-neutral-700)">domain · authentication · database connection</text>
+<rect x="380" y="40" width="340" height="320" rx="18" fill="var(--color-neutral-200)" stroke="var(--color-divider)"/>
+<text x="396" y="62" font-size="13" font-weight="700" fill="var(--color-neutral-800)">Features/</text>
+<rect x="396" y="78" width="308" height="66" rx="14" fill="var(--color-neutral-100)" stroke="var(--color-divider)"/>
+<text x="410" y="100" font-size="13" font-weight="700" fill="var(--color-neutral-800)">Students/CreateStudent/</text>
+<text x="410" y="122" font-size="11.5" fill="var(--color-neutral-700)">request · handler · test_create_student</text>
+<rect x="616" y="86" width="76" height="20" rx="7" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-600)"/>
+<text x="654" y="100" font-size="10.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">reference</text>
+<rect x="396" y="158" width="308" height="172" rx="14" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2.5"/>
+<text x="410" y="182" font-size="13" font-weight="700" fill="var(--color-accent-700)">Enrollments/EnrollStudent/</text>
+<text x="410" y="208" font-size="12.5" fill="var(--color-text)">request</text>
+<text x="410" y="230" font-size="12.5" fill="var(--color-text)">response</text>
+<text x="410" y="252" font-size="12.5" fill="var(--color-text)">handler</text>
+<text x="410" y="274" font-size="12.5" fill="var(--color-text)">test_enroll</text>
+<text x="410" y="310" font-size="11.5" font-weight="700" fill="var(--color-accent-700)">the whole use case in one folder</text>
+<rect x="380" y="376" width="340" height="50" rx="14" fill="var(--color-neutral-300)" stroke="var(--color-divider)"/>
+<text x="394" y="397" font-size="13" font-weight="700" fill="var(--color-neutral-800)">Shared/</text>
+<text x="394" y="415" font-size="11.5" fill="var(--color-neutral-700)">domain · authentication · database connection</text>
+</svg>
+<figcaption>Everything highlighted is the code for the "enroll student" use case: spread across four folders on the left, in a single one on the right. For an agent, the right side means reading one folder instead of four.</figcaption>
+</figure>
 
 Three rules the agent must follow, and that are worth writing down in the repository:
 
@@ -101,6 +159,62 @@ A good user story is already vertical: it describes an outcome the user gets, no
 | Tests | One test per acceptance criterion | Writes them before the code; a second agent checks they cover the criteria | Only what the reviewing agent flags |
 | Slice | `Features/Enrollments/EnrollStudent/` | Implements it by copying the reference slice | CI does it with architecture tests |
 | PR | `feature/42-enroll-student`, a single folder | Opens it and fixes it based on comments | The final review and the merge |
+
+<figure class="diagram">
+<svg viewBox="0 0 720 200" role="img" aria-labelledby="d-vsa-unit-t">
+<title id="d-vsa-unit-t">The same unit of work passes through story, issue, tests, slice, and PR; at each step the AI produces and the orchestrator validates</title>
+<defs><marker id="ar-vsa-unit" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--color-neutral-600)"/></marker></defs>
+<circle cx="6" cy="18" r="5" fill="var(--color-accent-2-600)"/>
+<text x="18" y="22" font-size="11" font-weight="700" fill="var(--color-accent-2-800)">THE AI PRODUCES</text>
+<text x="60" y="48" font-size="11.5" text-anchor="middle" fill="var(--color-text)">drafts it</text>
+<text x="210" y="48" font-size="11.5" text-anchor="middle" fill="var(--color-text)">derives it</text>
+<text x="360" y="48" font-size="11.5" text-anchor="middle" fill="var(--color-text)">writes them first</text>
+<text x="510" y="48" font-size="11.5" text-anchor="middle" fill="var(--color-text)">implements it</text>
+<text x="660" y="48" font-size="11.5" text-anchor="middle" fill="var(--color-text)">opens and fixes it</text>
+<line x1="60" y1="54" x2="60" y2="68" stroke="var(--color-accent-2-600)" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="210" y1="54" x2="210" y2="68" stroke="var(--color-accent-2-600)" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="360" y1="54" x2="360" y2="68" stroke="var(--color-accent-2-600)" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="510" y1="54" x2="510" y2="68" stroke="var(--color-accent-2-600)" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="660" y1="54" x2="660" y2="68" stroke="var(--color-accent-2-600)" stroke-width="2.5" stroke-linecap="round"/>
+<rect x="0" y="70" width="120" height="54" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2.5"/>
+<text x="60" y="92" font-size="14" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">Story</text>
+<text x="60" y="112" font-size="11" text-anchor="middle" fill="var(--color-neutral-700)">the user's need</text>
+<line x1="124" y1="97" x2="146" y2="97" stroke="var(--color-neutral-600)" stroke-width="2.5" marker-end="url(#ar-vsa-unit)"/>
+<rect x="150" y="70" width="120" height="54" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2.5"/>
+<text x="210" y="92" font-size="14" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">Issue</text>
+<text x="210" y="112" font-size="11" text-anchor="middle" fill="var(--color-neutral-700)">#42 Enroll student</text>
+<line x1="274" y1="97" x2="296" y2="97" stroke="var(--color-neutral-600)" stroke-width="2.5" marker-end="url(#ar-vsa-unit)"/>
+<rect x="300" y="70" width="120" height="54" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2.5"/>
+<text x="360" y="92" font-size="14" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">Tests</text>
+<text x="360" y="112" font-size="11" text-anchor="middle" fill="var(--color-neutral-700)">one per criterion</text>
+<line x1="424" y1="97" x2="446" y2="97" stroke="var(--color-neutral-600)" stroke-width="2.5" marker-end="url(#ar-vsa-unit)"/>
+<rect x="450" y="70" width="120" height="54" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2.5"/>
+<text x="510" y="92" font-size="14" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">Slice</text>
+<text x="510" y="112" font-size="11" text-anchor="middle" fill="var(--color-neutral-700)">a single folder</text>
+<line x1="574" y1="97" x2="596" y2="97" stroke="var(--color-neutral-600)" stroke-width="2.5" marker-end="url(#ar-vsa-unit)"/>
+<rect x="600" y="70" width="120" height="54" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2.5"/>
+<text x="660" y="92" font-size="14" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">PR</text>
+<text x="660" y="112" font-size="11" text-anchor="middle" fill="var(--color-neutral-700)">feature/42-…</text>
+<line x1="60" y1="126" x2="60" y2="140" stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="210" y1="126" x2="210" y2="140" stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="360" y1="126" x2="360" y2="140" stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="510" y1="126" x2="510" y2="140" stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="660" y1="126" x2="660" y2="140" stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round"/>
+<text x="60" y="158" font-size="11.5" text-anchor="middle" fill="var(--color-text)">reflects the need</text>
+<text x="60" y="174" font-size="11.5" text-anchor="middle" fill="var(--color-text)">and the priority</text>
+<text x="210" y="158" font-size="11.5" text-anchor="middle" fill="var(--color-text)">is it a vertical</text>
+<text x="210" y="174" font-size="11.5" text-anchor="middle" fill="var(--color-text)">slice?</text>
+<text x="360" y="158" font-size="11.5" text-anchor="middle" fill="var(--color-text)">only what the</text>
+<text x="360" y="174" font-size="11.5" text-anchor="middle" fill="var(--color-text)">reviewing agent flags</text>
+<text x="510" y="158" font-size="11.5" text-anchor="middle" fill="var(--color-text)">CI with</text>
+<text x="510" y="174" font-size="11.5" text-anchor="middle" fill="var(--color-text)">architecture tests</text>
+<text x="660" y="158" font-size="11.5" text-anchor="middle" fill="var(--color-text)">final review</text>
+<text x="660" y="174" font-size="11.5" text-anchor="middle" fill="var(--color-text)">and merge</text>
+<circle cx="6" cy="194" r="5" fill="var(--color-accent)"/>
+<text x="18" y="198" font-size="11" font-weight="700" fill="var(--color-accent-700)">THE ORCHESTRATOR VALIDATES</text>
+</svg>
+<figcaption>A single unit of work crosses all five levels. Above, what the AI produces at each one; below, what the orchestrator validates before letting it move to the next.</figcaption>
+</figure>
 
 The most common AI mistake when generating issues is slicing by layer: "create enrollments table", "create endpoint", "create screen". None of them delivers value on its own, and none can be tested end to end. When that happens, reject the split and ask it to redo it by use case: a closed issue has to be a working feature.
 
@@ -205,17 +319,42 @@ Once the issue is approved, the agent implements it. The issue is the prompt: it
 
 Because slices are independent, several issues can be assigned to several agents in parallel without merge conflicts.
 
-```text
-Approved issue → Criteria → tests → Agent implements → CI passes?
-                                         ▲      ▲          │
-                                         │      └─ fails ──┤
-                                         │                 │ passes
-                                         │                 ▼
-                                         └─ asks changes ─ Orchestrator reviews
-                                                           │ approves
-                                                           ▼
-                                                    Merge, closes #42
-```
+<figure class="diagram">
+<svg viewBox="0 0 720 310" role="img" aria-labelledby="d-vsa-flow-t">
+<title id="d-vsa-flow-t">Flow of one issue: criteria become tests, the agent implements, CI and the orchestrator's review send the work back to the agent until the merge is approved</title>
+<defs>
+<marker id="ar-vsa-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--color-neutral-600)"/></marker>
+<marker id="ar-vsa-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent)"/></marker>
+<marker id="ar-vsa-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent-2-600)"/></marker>
+</defs>
+<rect x="0" y="110" width="120" height="56" rx="16" fill="var(--color-neutral-200)" stroke="var(--color-neutral-600)"/>
+<text x="60" y="143" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-neutral-800)">Approved issue</text>
+<line x1="124" y1="138" x2="146" y2="138" stroke="var(--color-neutral-600)" stroke-width="2.5" marker-end="url(#ar-vsa-n)"/>
+<rect x="150" y="110" width="130" height="56" rx="16" fill="var(--color-neutral-200)" stroke="var(--color-neutral-600)"/>
+<text x="215" y="143" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-neutral-800)">Criteria → tests</text>
+<line x1="284" y1="138" x2="306" y2="138" stroke="var(--color-neutral-600)" stroke-width="2.5" marker-end="url(#ar-vsa-n)"/>
+<rect x="310" y="110" width="140" height="56" rx="16" fill="var(--color-neutral-200)" stroke="var(--color-neutral-600)"/>
+<text x="380" y="143" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-neutral-800)">Agent implements</text>
+<line x1="454" y1="138" x2="476" y2="138" stroke="var(--color-neutral-600)" stroke-width="2.5" marker-end="url(#ar-vsa-n)"/>
+<path d="M540 98 L600 138 L540 178 L480 138 Z" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="540" y="143" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">CI passes?</text>
+<path d="M540 96 L540 60 L380 60 L380 106" fill="none" stroke="var(--color-accent)" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#ar-vsa-a)"/>
+<text x="460" y="52" font-size="11.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">fails: back to the agent</text>
+<line x1="540" y1="180" x2="540" y2="216" stroke="var(--color-accent-2-600)" stroke-width="2.5" marker-end="url(#ar-vsa-s)"/>
+<text x="550" y="202" font-size="11.5" font-weight="700" fill="var(--color-accent-2-800)">passes</text>
+<rect x="460" y="220" width="160" height="56" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2.5"/>
+<text x="540" y="253" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">Orchestrator reviews</text>
+<path d="M458 236 L420 236 L420 170" fill="none" stroke="var(--color-accent)" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#ar-vsa-a)"/>
+<text x="412" y="200" font-size="11.5" font-weight="700" text-anchor="end" fill="var(--color-accent-700)">requests changes</text>
+<line x1="458" y1="262" x2="316" y2="262" stroke="var(--color-accent-2-600)" stroke-width="2.5" marker-end="url(#ar-vsa-s)"/>
+<text x="388" y="254" font-size="11.5" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">approves</text>
+<rect x="150" y="234" width="160" height="56" rx="16" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-600)" stroke-width="2.5"/>
+<text x="230" y="267" font-size="13" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">Merge, closes #42</text>
+<circle cx="6" cy="300" r="5" fill="var(--color-accent)"/>
+<text x="18" y="304" font-size="11" font-weight="700" fill="var(--color-accent-700)">correction loops: the work goes back to the agent</text>
+</svg>
+<figcaption>Two loops back to the agent: CI when the tests fail, and the orchestrator when it requests changes. The agent does not decide when it is done.</figcaption>
+</figure>
 
 The two loops back to the agent (CI and review) are what keep quality up: the agent does not decide when it is done.
 
