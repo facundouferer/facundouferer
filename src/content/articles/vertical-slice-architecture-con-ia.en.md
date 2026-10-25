@@ -11,7 +11,7 @@ tags:
   - User Stories
   - CQRS
 excerpt: 'How to use Vertical Slice Architecture so AI drafts user stories, turns them into issues, and implements each one as a slice of code, with the developer as the orchestrator.'
-readingTime: 9
+readingTime: 12
 image: '/img/articles/vertical-slice-architecture-torta.png'
 lang: 'en'
 published: true
@@ -357,6 +357,66 @@ Because slices are independent, several issues can be assigned to several agents
 </figure>
 
 The two loops back to the agent (CI and review) are what keep quality up: the agent does not decide when it is done.
+
+## How to implement it: mattpocock/skills
+
+To avoid building everything from scratch, the process can be set up on top of [mattpocock/skills](https://github.com/mattpocock/skills), an open collection (MIT license) that works with Claude Code, Codex, Copilot, Gemini CLI, Cursor, and other agents.
+
+### 1. Install
+
+One method per agent: installing both the plugin and the files duplicates the skills.
+
+| Agent | Command |
+| --- | --- |
+| Claude Code | `claude plugin install mattpocock-skills@claude-plugins-official` |
+| Codex | `codex plugin marketplace add mattpocock/skills`, then `codex plugin add mattpocock-skills@mattpocock` |
+| GitHub Copilot (CLI and VS Code) | `copilot plugin marketplace add mattpocock/skills`, then `copilot plugin install mattpocock-skills@mattpocock` |
+| Gemini CLI | `gemini skills install https://github.com/mattpocock/skills.git --path skills/engineering` |
+| Others (Cursor, OpenCode, Windsurf…) | `npx skills@latest add mattpocock/skills -a <agent>`, including `setup-matt-pocock-skills` when it asks which skills to install |
+
+### 2. Configure the repository (once)
+
+Run `/setup-matt-pocock-skills`. It asks which issue tracker to use (GitHub, GitLab, local files, or other), which labels are used to classify issues, and where to store documentation. Then add the `AGENTS.md` with the slice conventions from the [Preparing the repository](#preparing-the-repository-to-work-with-ai) section.
+
+### 3. Align with the AI: `/grill-with-docs`
+
+The AI interviews the orchestrator, one question at a time, until every decision is explicit. Along the way it maintains a domain glossary (`GLOSSARY.md`) and records architecture decisions (ADRs). This is the stage where the user stories are born.
+
+### 4. Write the specification: `/to-spec`
+
+Turns the conversation into a specification and publishes it to the issue tracker. It plays the role of the user story or the epic.
+
+### 5. Split into vertical issues: `/to-tickets`
+
+This is the central step. It runs on the specification, for example `/to-tickets #12`, and:
+
+1. Reads the specification and explores the code; if it helps, it proposes a preparatory refactor to make the work easier.
+2. Splits the work into *tracer bullet* tickets: each one cuts through every layer, can be verified on its own, and fits in a fresh context window.
+3. Marks the dependencies: which ticket blocks which.
+4. Shows the list to the orchestrator and asks whether the granularity is right, whether the dependencies are real, and whether tickets should be merged or split. It iterates until the orchestrator approves.
+5. Publishes one issue per ticket, with acceptance criteria and the `ready-for-agent` label (or one file per ticket under `.scratch/<feature>/issues/` if local files were chosen).
+
+Step 4 is the validation of the split. To reinforce it, before approving you can run the control prompt from [How to validate the split](#how-to-validate-the-split-the-ai-proposes) over the list. One detail: `/to-tickets` avoids putting file paths in issues because they go stale, so the folder for each slice is defined by the `AGENTS.md` convention, not by the issue.
+
+### 6. Implement: `/implement` or `/implement-spec`
+
+- `/implement` takes the tickets, works with `/tdd` (first a failing test, then the code that makes it pass), runs the tests, and closes with `/code-review`. That review uses parallel subagents that check two things separately: whether the code follows the repo's standards and whether it faithfully implements the issue. It is the reviewing agent this article describes.
+- `/implement-spec` works through a complete specification: it launches several subagents in parallel on the tickets that have no blockers.
+
+Every few days it is worth running `/improve-codebase-architecture`, which looks for where the structure is degrading and proposes improvements.
+
+### Mapping to the process
+
+| Stage in this article | Skill |
+| --- | --- |
+| Prepare the repository | `/setup-matt-pocock-skills` + your own `AGENTS.md` |
+| Draft stories | `/grill-with-docs` + `/to-spec` |
+| Turn stories into vertical issues | `/to-tickets` |
+| Validate the split | `/to-tickets` questions + control prompt |
+| Tests first | `/tdd` |
+| Implement the slice | `/implement` |
+| Reviewing agent | `/code-review` |
+| Several slices in parallel | `/implement-spec` |
 
 ## Process summary
 

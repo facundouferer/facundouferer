@@ -11,7 +11,7 @@ tags:
   - User Stories
   - CQRS
 excerpt: 'Cómo usar Vertical Slice Architecture para que la IA redacte historias, las convierta en issues e implemente cada una como una porción de código, con el desarrollador como orquestador.'
-readingTime: 9
+readingTime: 12
 image: '/img/articles/vertical-slice-architecture-torta.png'
 lang: 'es'
 published: true
@@ -357,6 +357,66 @@ Como las porciones son independientes, varias issues pueden asignarse a varios a
 </figure>
 
 Los dos ciclos de vuelta al agente (CI y revisión) son los que mantienen la calidad: el agente no decide cuándo terminó.
+
+## Cómo implementarlo: mattpocock/skills
+
+Para no armar todo desde cero, el proceso se puede montar sobre [mattpocock/skills](https://github.com/mattpocock/skills), una colección abierta (licencia MIT) que funciona con Claude Code, Codex, Copilot, Gemini CLI, Cursor y otros agentes.
+
+### 1. Instalar
+
+Un solo método por agente: instalar el plugin y además los archivos duplica los skills.
+
+| Agente | Comando |
+| --- | --- |
+| Claude Code | `claude plugin install mattpocock-skills@claude-plugins-official` |
+| Codex | `codex plugin marketplace add mattpocock/skills` y luego `codex plugin add mattpocock-skills@mattpocock` |
+| GitHub Copilot (CLI y VS Code) | `copilot plugin marketplace add mattpocock/skills` y luego `copilot plugin install mattpocock-skills@mattpocock` |
+| Gemini CLI | `gemini skills install https://github.com/mattpocock/skills.git --path skills/engineering` |
+| Otros (Cursor, OpenCode, Windsurf…) | `npx skills@latest add mattpocock/skills -a <agente>`, incluyendo `setup-matt-pocock-skills` cuando pregunte qué skills instalar |
+
+### 2. Configurar el repositorio (una vez)
+
+Ejecutar `/setup-matt-pocock-skills`. Pregunta qué gestor de issues usar (GitHub, GitLab, archivos locales u otro), qué etiquetas se usan para clasificar issues y dónde guardar la documentación. Después se agrega el `AGENTS.md` con las convenciones de porciones de la sección [Preparar el repositorio](#preparar-el-repositorio-para-trabajar-con-ia).
+
+### 3. Alinear con la IA: `/grill-with-docs`
+
+La IA entrevista al orquestador, una pregunta por vez, hasta que todas las decisiones quedan explícitas. Mientras tanto mantiene un glosario del dominio (`GLOSSARY.md`) y registra decisiones de arquitectura (ADR). Es la etapa donde nacen las historias de usuario.
+
+### 4. Escribir la especificación: `/to-spec`
+
+Convierte lo conversado en una especificación y la publica en el gestor de issues. Cumple el rol de la historia de usuario o la épica.
+
+### 5. Dividir en issues verticales: `/to-tickets`
+
+Es el paso central. Se ejecuta sobre la especificación, por ejemplo `/to-tickets #12`, y:
+
+1. Lee la especificación y explora el código; si conviene, propone un refactor previo para facilitar el trabajo.
+2. Divide el trabajo en tickets tipo *tracer bullet*: cada uno atraviesa todas las capas, se puede verificar por sí solo y entra en una ventana de contexto nueva.
+3. Marca las dependencias: qué ticket bloquea a cuál.
+4. Muestra la lista al orquestador y pregunta si la granularidad es correcta, si las dependencias son reales y si hay que unir o dividir tickets. Itera hasta que el orquestador aprueba.
+5. Publica una issue por ticket, con criterios de aceptación y la etiqueta `ready-for-agent` (o un archivo por ticket en `.scratch/<funcionalidad>/issues/` si se eligieron archivos locales).
+
+El paso 4 es la validación del corte. Para reforzarla, antes de aprobar se puede correr sobre la lista el prompt de control de [Cómo validar el corte](#cómo-validar-el-corte-que-propone-la-ia). Un detalle: `/to-tickets` evita poner rutas de archivos en las issues porque se vuelven obsoletas, así que la carpeta de cada porción la define la convención de `AGENTS.md`, no la issue.
+
+### 6. Implementar: `/implement` o `/implement-spec`
+
+- `/implement` toma los tickets, trabaja con `/tdd` (primero un test que falla, después el código que lo hace pasar), corre los tests y cierra con `/code-review`. Ese review usa subagentes en paralelo que revisan dos cosas por separado: si el código respeta los estándares del repo y si implementa fielmente la issue. Es el agente revisor que describe este artículo.
+- `/implement-spec` trabaja una especificación completa: lanza varios subagentes en paralelo sobre los tickets que no tienen bloqueos.
+
+Cada pocos días conviene correr `/improve-codebase-architecture`, que busca dónde se está degradando la estructura y propone mejoras.
+
+### Correspondencia con el proceso
+
+| Etapa del artículo | Skill |
+| --- | --- |
+| Preparar el repositorio | `/setup-matt-pocock-skills` + `AGENTS.md` propio |
+| Redactar historias | `/grill-with-docs` + `/to-spec` |
+| Convertir historias en issues verticales | `/to-tickets` |
+| Validar el corte | Preguntas de `/to-tickets` + prompt de control |
+| Tests primero | `/tdd` |
+| Implementar la porción | `/implement` |
+| Agente revisor | `/code-review` |
+| Varias porciones en paralelo | `/implement-spec` |
 
 ## Resumen del proceso
 
