@@ -67,6 +67,18 @@ switch (dia) {
 > };
 > ```
 
+> **Java Moderno (Switch con flechas para ejecutar acciones):**
+> La sintaxis `->` también sirve cuando no queremos devolver un valor, sino ejecutar una acción por cada caso. No hace falta `break`: cada caso ejecuta solo su instrucción, sin "caer" en el siguiente. Es muy común en los menús de consola:
+> ```java
+> switch (opcion) {
+>     case 1 -> cargarPersona(leer, personas);
+>     case 2 -> listarPersonas(personas);
+>     case 0 -> System.out.println("Fin del programa");
+>     default -> System.out.println("Opción inválida. Elegí 0, 1 o 2.");
+> }
+> ```
+> Si un caso necesita más de una instrucción, se usa un bloque: `case 1 -> { ... }`.
+
 ## 3. Bucles e Iteración
 
 ### Bucle `for`

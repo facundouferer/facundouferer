@@ -67,6 +67,18 @@ switch (day) {
 > };
 > ```
 
+> **Modern Java (Arrow switch to run actions):**
+> The `->` syntax also works when you don't want to return a value but run an action for each case. No `break` is needed: each case runs only its own statement, without falling through to the next one. It's very common in console menus:
+> ```java
+> switch (option) {
+>     case 1 -> loadPerson(scanner, people);
+>     case 2 -> listPeople(people);
+>     case 0 -> System.out.println("End of program");
+>     default -> System.out.println("Invalid option. Choose 0, 1 or 2.");
+> }
+> ```
+> If a case needs more than one statement, use a block: `case 1 -> { ... }`.
+
 ## 3. Loops and Iteration
 
 ### `for` Loop
