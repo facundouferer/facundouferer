@@ -202,6 +202,27 @@ Los `default` existen por una razón muy concreta: **permiten agregar un método
 
 Úsalos con moderación. Una interfaz llena de `default` deja de ser un contrato y empieza a ser una clase abstracta mal disfrazada.
 
+Una regla fácil de pasar por alto: los métodos `static` de una interfaz **no se heredan**. Las clases que la implementan no los ven como propios; se invocan siempre con el nombre de la interfaz (`Pagable.esMontoValido(500)`), nunca desde una instancia ni desde la clase implementadora.
+
+### Clases adaptadoras
+
+Cuando una interfaz es larga y solo te interesa reaccionar a uno de sus métodos, implementarla completa te obliga a escribir muchos métodos vacíos. Una **clase adaptadora** resuelve eso: es una clase (normalmente abstracta) que implementa la interfaz entera con cuerpos vacíos, para que vos extiendas la clase y sobrescribas **solo lo que necesitás**.
+
+El ejemplo clásico está en Java Swing. `WindowListener` declara siete métodos (`windowOpened`, `windowClosing`, `windowClosed`, `windowIconified`, `windowDeiconified`, `windowActivated`, `windowDeactivated`), y la clase `WindowAdapter` los implementa todos vacíos:
+
+```java
+class EventosDeVentana extends WindowAdapter {
+    @Override
+    public void windowActivated(WindowEvent e) {
+        System.out.println("VENTANA ACTIVA");
+    }
+}
+
+miMarco.addWindowListener(new EventosDeVentana());   // acepta un WindowListener: un WindowAdapter lo es
+```
+
+Como `WindowAdapter` implementa `WindowListener`, una subclase suya es también un `WindowListener` y puede pasarse a `addWindowListener`. La contrapartida: al ser una clase, ocupa tu única herencia posible.
+
 ---
 
 ## 3. Implementar varias interfaces a la vez

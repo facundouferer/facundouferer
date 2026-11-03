@@ -202,6 +202,27 @@ public interface Payable {
 
 Use them sparingly. An interface full of `default` methods stops being a contract and starts being a badly disguised abstract class.
 
+An easy rule to miss: `static` methods of an interface are **not inherited**. Implementing classes do not see them as their own; they are always called through the interface name (`Payable.isValidAmount(500)`), never from an instance or from the implementing class.
+
+### Adapter classes
+
+When an interface is long and you only care about reacting to one of its methods, implementing it fully forces you to write many empty methods. An **adapter class** solves this: it is a class (usually abstract) that implements the whole interface with empty bodies, so you extend the class and override **only what you need**.
+
+The classic example is in Java Swing. `WindowListener` declares seven methods (`windowOpened`, `windowClosing`, `windowClosed`, `windowIconified`, `windowDeiconified`, `windowActivated`, `windowDeactivated`), and the `WindowAdapter` class implements all of them as empty:
+
+```java
+class WindowEvents extends WindowAdapter {
+    @Override
+    public void windowActivated(WindowEvent e) {
+        System.out.println("WINDOW ACTIVE");
+    }
+}
+
+myFrame.addWindowListener(new WindowEvents());   // expects a WindowListener: a WindowAdapter is one
+```
+
+Since `WindowAdapter` implements `WindowListener`, any subclass is also a `WindowListener` and can be passed to `addWindowListener`. The trade-off: being a class, it uses up your only possible inheritance.
+
 ---
 
 ## 3. Implementing several interfaces at once
