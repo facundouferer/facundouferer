@@ -129,4 +129,167 @@ questions:
     correctOptionId: 'b'
     explanation: >-
       Java evalúa los bloques `catch` de arriba hacia abajo. Si se coloca un `catch (Exception e)` al principio, este atrapará todas las excepciones hijas antes de que puedan llegar a bloques más específicos como `catch (IOException e)`, provocando un error de código inalcanzable al compilar.
+  - kind: 'single-choice'
+    id: 'q11'
+    prompt: 'Un programa pide un número con `Scanner` y el usuario escribe `abc`. ¿Qué excepción lanza `leer.nextInt()` y de qué tipo es?'
+    code: |
+      Scanner leer = new Scanner(System.in);
+      int nroUno = leer.nextInt();   // el usuario escribe: abc
+    options:
+      - id: 'a'
+        text: '`NumberFormatException`, una excepción checked.'
+      - id: 'b'
+        text: '`IOException`, una excepción checked que el compilador obliga a capturar.'
+      - id: 'c'
+        text: '`InputMismatchException`, una excepción unchecked (hereda de `RuntimeException`), por lo que el compilador no obliga a capturarla.'
+      - id: 'd'
+        text: '`ArithmeticException`, porque `abc` no se puede convertir en número.'
+    correctOptionId: 'c'
+    explanation: >-
+      `Scanner.nextInt()` lanza `InputMismatchException` cuando el siguiente texto no tiene formato de entero. Es unchecked: el compilador no te obliga a manejarla, pero un programa robusto debe prever que el usuario puede escribir cualquier cosa. `NumberFormatException` es la que lanza `Integer.parseInt`, no `Scanner`.
+  - kind: 'true-false'
+    id: 'q12'
+    prompt: 'En este código, el `catch (ArithmeticException e)` nunca se ejecuta aunque el usuario ingrese `0` como segundo número, porque la división es entre un `int` y un `double` y el resultado es `Infinity`.'
+    code: |
+      try {
+          int nroUno = leer.nextInt();
+          double nroDos = leer.nextInt();
+          double resultado = nroUno / nroDos;
+          System.out.println("El resultado es: " + resultado);
+      } catch (ArithmeticException e) {
+          System.out.println("No se puede dividir por ZERO!");
+      }
+    correctAnswer: true
+    explanation: >-
+      Verdadero. `ArithmeticException` solo se lanza en la división entera por cero (`int / int`). Cuando algún operando es `double`, la división sigue la aritmética de punto flotante y devuelve `Infinity` (o `NaN` en `0.0 / 0.0`) sin lanzar nada. Moraleja: un `catch` solo sirve si el código del `try` realmente puede lanzar esa excepción.
+  - kind: 'single-choice'
+    id: 'q13'
+    prompt: 'En este código con `try` anidados, el usuario escribe `hola` como primer número. ¿Qué se imprime?'
+    code: |
+      int nroUno = 0;
+      int nroDos = 0;
+      try {
+          try {
+              nroUno = leer.nextInt();
+              nroDos = leer.nextInt();
+          } catch (Exception e) {
+              System.out.println("Solo se admiten números");
+          }
+          System.out.println(nroUno / nroDos);
+      } catch (ArithmeticException e) {
+          System.out.println("No pudimos dividir: " + e.getMessage());
+      }
+      System.out.println("Fin del programa");
+    options:
+      - id: 'a'
+        text: 'Solo se admiten números / No pudimos dividir: / by zero / Fin del programa'
+      - id: 'b'
+        text: 'Solo se admiten números / Fin del programa'
+      - id: 'c'
+        text: 'La excepción escapa de ambos `try` y el programa termina con un stack trace.'
+      - id: 'd'
+        text: 'Solo se admiten números / 0 / Fin del programa'
+    correctOptionId: 'a'
+    explanation: >-
+      El `catch (Exception e)` interno atrapa la `InputMismatchException` y el flujo continúa después del `try` interno. Pero como `nroUno` y `nroDos` quedaron en `0`, la división `0 / 0` lanza `ArithmeticException` con mensaje `/ by zero`, que atrapa el `catch` externo. Atrapar una excepción no "arregla" el estado: acá los datos quedaron inválidos y el error reaparece más abajo.
+  - kind: 'true-false'
+    id: 'q14'
+    prompt: 'Es válido escribir `catch (InputMismatchException e)`, luego `catch (ArithmeticException e)` y al final `catch (Exception e)`: el último actúa como red de seguridad para cualquier excepción que no se haya previsto.'
+    correctAnswer: true
+    explanation: >-
+      Verdadero. Los `catch` se evalúan en orden, y mientras las clases específicas (que no se heredan entre sí) estén antes que la general `Exception`, el código compila. El `catch (Exception e)` final atrapa lo imprevisto. Eso sí: úsalo para informar o registrar el error, nunca vacío.
+  - kind: 'single-choice'
+    id: 'q15'
+    prompt: 'Se define una excepción propia y un método que la declara. ¿Qué ocurre al compilar `main`?'
+    code: |
+      class LongitudDelNumero extends Exception {
+          public LongitudDelNumero(String mensaje) { super(mensaje); }
+      }
+
+      static void evaluarNumero(int n) throws LongitudDelNumero {
+          if (n < 100) throw new LongitudDelNumero("Número inferior a 100");
+      }
+
+      public static void main(String[] args) {
+          evaluarNumero(50);
+      }
+    options:
+      - id: 'a'
+        text: 'Compila y, al ejecutar, imprime el stack trace de `LongitudDelNumero`.'
+      - id: 'b'
+        text: 'Error de compilación: la excepción es checked y `main` debe capturarla con `try-catch` o declararla con `throws`.'
+      - id: 'c'
+        text: 'Compila, pero la JVM ignora la excepción porque es personalizada.'
+      - id: 'd'
+        text: 'Error de compilación: `throw` solo puede usarse con excepciones de la biblioteca estándar de Java.'
+    correctOptionId: 'b'
+    explanation: >-
+      Al extender `Exception` (sin ser `RuntimeException`), `LongitudDelNumero` es checked. El compilador exige que quien llama a `evaluarNumero` la maneje o la propague. Si hubiera extendido `RuntimeException`, el código compilaría sin ese requisito.
+  - kind: 'true-false'
+    id: 'q16'
+    prompt: 'Una excepción propia que declara `class NumeroPequenio extends IOException` es unchecked, porque la creó el programador y no pertenece a la biblioteca estándar.'
+    correctAnswer: false
+    explanation: >-
+      Falso. Que una excepción sea checked o unchecked depende de su herencia, no de quién la escribió: `IOException` es checked, así que todas sus subclases también lo son. Además, extender `IOException` para un error que no tiene que ver con entrada/salida confunde el diseño; conviene extender `Exception` (checked) o `RuntimeException` (unchecked) según corresponda.
+  - kind: 'single-choice'
+    id: 'q17'
+    prompt: 'Este código intenta dividir por cero pero el único `catch` es de otro tipo. ¿Qué pasa?'
+    code: |
+      try {
+          int resultado = 10 / 0;
+      } catch (InputMismatchException e) {
+          System.out.println("Texto inválido");
+      } finally {
+          System.out.println("Limpieza");
+      }
+      System.out.println("Fin del programa");
+    options:
+      - id: 'a'
+        text: 'Imprime `Texto inválido`, `Limpieza` y `Fin del programa`.'
+      - id: 'b'
+        text: 'Imprime `Limpieza` y `Fin del programa`; el `finally` absorbe la excepción.'
+      - id: 'c'
+        text: 'Imprime solo `Fin del programa`; el `finally` no corre si ningún `catch` coincide.'
+      - id: 'd'
+        text: 'Imprime `Limpieza`, y luego la `ArithmeticException` sigue propagándose: el programa termina con un stack trace y nunca llega a `Fin del programa`.'
+    correctOptionId: 'd'
+    explanation: >-
+      Ningún `catch` coincide con `ArithmeticException`, así que la excepción no queda atrapada. Aun así, `finally` se ejecuta siempre antes de abandonar el bloque, e imprime `Limpieza`. Después la excepción sigue subiendo por la pila, y como nadie la captura el hilo termina con el stack trace. `finally` limpia, pero no atrapa.
+  - kind: 'true-false'
+    id: 'q18'
+    prompt: 'Cuando se escribe `try (FileWriter writer = new FileWriter(ruta)) { ... }`, el `FileWriter` se cierra automáticamente al terminar el bloque, haya ocurrido una excepción o no, sin necesidad de llamar a `writer.close()` ni de usar un `finally`.'
+    correctAnswer: true
+    explanation: >-
+      Verdadero. Es `try-with-resources`: todo recurso que implemente `AutoCloseable` y se declare entre los paréntesis del `try` se cierra solo. Además, `FileWriter` lanza `IOException` (checked) si la ruta no es válida, por ejemplo si el directorio no existe, así que igualmente hace falta un `catch (IOException e)` o un `throws`.
+  - kind: 'single-choice'
+    id: 'q19'
+    prompt: 'Un programa repite la lectura de un número dentro de un `while` y, ante una `InputMismatchException`, ejecuta `leer.nextLine()` dentro del `catch`. ¿Para qué sirve esa llamada?'
+    code: |
+      while (seguir) {
+          try {
+              int nroUno = leer.nextInt();
+              seguir = false;
+          } catch (InputMismatchException e) {
+              System.out.println("Error al ingresar los datos");
+              leer.nextLine();
+          }
+      }
+    options:
+      - id: 'a'
+        text: 'Para volver a lanzar la excepción hacia el método llamador.'
+      - id: 'b'
+        text: 'Para descartar el texto inválido que quedó en el buffer del `Scanner`; sin eso, el siguiente `nextInt()` lo vuelve a leer, falla otra vez y el bucle no termina nunca.'
+      - id: 'c'
+        text: 'Para cerrar el `Scanner` y liberar el recurso.'
+      - id: 'd'
+        text: 'Para convertir el texto inválido en un número por defecto.'
+    correctOptionId: 'b'
+    explanation: >-
+      Cuando `nextInt()` falla, el token inválido no se consume: sigue en el buffer. Si no se descarta con `nextLine()`, cada reintento lee lo mismo y lanza la misma excepción, generando un bucle infinito. Es el patrón clásico para validar entrada con reintento.
+  - kind: 'true-false'
+    id: 'q20'
+    prompt: 'Un método que ejecuta `throw new IllegalArgumentException("El DNI debe ser positivo")` está obligado a declarar `throws IllegalArgumentException` en su firma; de lo contrario no compila.'
+    correctAnswer: false
+    explanation: >-
+      Falso. `IllegalArgumentException` es unchecked (hereda de `RuntimeException`), por lo que el compilador no exige `throws` ni `try-catch`. En cambio, un método que lance una excepción propia que extiende `Exception` (como `MenorDeEdadException`) sí debe declararla con `throws` o capturarla dentro.
 ---

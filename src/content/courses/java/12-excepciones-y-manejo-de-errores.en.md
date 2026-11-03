@@ -171,7 +171,10 @@ s.length();                  // NullPointerException — the bug is the null, no
 int[] a = new int[3];
 a[5] = 1;                    // ArrayIndexOutOfBoundsException — the bug is the 5
 Integer.parseInt("hello");   // NumberFormatException — validate the input first
+new Scanner(System.in).nextInt();  // InputMismatchException — if the user types "abc"
 ```
+
+`InputMismatchException` (package `java.util`) is what `Scanner` throws when you ask for a number with `nextInt()` and the user types something else. It is unchecked: it extends `NoSuchElementException`, which in turn is a `RuntimeException`. One key detail: when it fails, **the invalid text stays in the `Scanner` buffer**, so if you retry without discarding it (`reader.nextLine()`) the loop fails again and again.
 
 **Checked** (an `Exception` that is not a `RuntimeException`): they represent **expected environmental conditions** your code does not control. An external service may not respond; that is not your bug, that is reality. The compiler forces you to decide.
 

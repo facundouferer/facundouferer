@@ -171,7 +171,10 @@ s.length();                  // NullPointerException — el bug es el null, no l
 int[] a = new int[3];
 a[5] = 1;                    // ArrayIndexOutOfBoundsException — el bug es el 5
 Integer.parseInt("hola");    // NumberFormatException — validá la entrada antes
+new Scanner(System.in).nextInt();  // InputMismatchException — si el usuario escribe "abc"
 ```
+
+`InputMismatchException` (paquete `java.util`) es la que lanza `Scanner` cuando le pedís un número con `nextInt()` y el usuario escribe otra cosa. Es unchecked: hereda de `NoSuchElementException`, que a su vez es una `RuntimeException`. Un detalle clave: cuando falla, **el texto inválido sigue en el buffer** del `Scanner`, así que si reintentás sin descartarlo (`leer.nextLine()`) el bucle falla una y otra vez.
 
 **Checked** (`Exception` sin ser `RuntimeException`): representan **condiciones esperables del entorno** que tu código no controla. Un servicio externo puede no responder; eso no es un bug tuyo, es la realidad. El compilador te obliga a decidir qué hacés.
 
