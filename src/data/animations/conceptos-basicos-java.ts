@@ -1,12 +1,14 @@
-import type { AnimationScript, CodePanel } from './types';
+import type { AnimationScript, CodePanel, Subtitle } from './types';
 
 // Step-by-step animation for the Java lesson 01 "Conceptos básicos y tu primer
 // programa". Every step names the scene it shows (`data-scene` in
 // `src/components/animaciones/conceptos-basicos-java.astro`), the elements it
-// reveals and the ones it emphasizes, plus the narration and any terminal panel.
-// Narration follows the lesson text closely so learners can read both side by side.
+// reveals and the ones it emphasizes, plus its narration and any terminal panel.
+// Narration plays as short captions, one idea each: the lesson page keeps the
+// long-form explanation.
 
-const holaMundo: CodePanel = {
+/** Shared with the pipeline canvas, which types it into its editor. */
+export const holaMundo: CodePanel = {
 	title: 'HolaMundo.java',
 	language: 'java',
 	source: {
@@ -151,6 +153,9 @@ const perfilDesarrollador: CodePanel = {
 
 const same = (text: string) => ({ es: text, en: text });
 
+/** One caption of a step, timed after the previous one by its reading time. */
+const say = (es: string, en: string): Subtitle => ({ text: { es, en } });
+
 export const script: AnimationScript = {
 	chapters: [
 		{ id: 'intro', label: { es: 'Introducción', en: 'Introduction' } },
@@ -173,10 +178,10 @@ export const script: AnimationScript = {
 			scene: 'intro',
 			show: ['core', 'use-bank', 'use-backend', 'use-android', 'use-micro'],
 			title: { es: '¡Bienvenido al curso de Java!', en: 'Welcome to the Java course!' },
-			text: {
-				es: 'Java es uno de los lenguajes más populares, robustos y demandados de la industria. Lo vas a encontrar en plataformas bancarias de alta disponibilidad, en sistemas backend empresariales masivos, en aplicaciones Android y en microservicios modernos. Es una piedra angular de la ingeniería de software actual.',
-				en: 'Java is one of the most popular, robust and in-demand languages in the industry. You will find it in high-availability banking platforms, massive enterprise backends, Android applications and modern microservices. It is a cornerstone of today’s software engineering.',
-			},
+			subtitles: [
+				say('Java es uno de los lenguajes más populares, robustos y demandados de la industria.', 'Java is one of the most popular, robust and in-demand languages in the industry.'),
+				say('Lo vas a encontrar en bancos, backends empresariales, apps Android y microservicios.', 'You will find it in banks, enterprise backends, Android apps and microservices.'),
+			],
 		},
 		{
 			id: 'intro-map',
@@ -184,10 +189,10 @@ export const script: AnimationScript = {
 			scene: 'closing',
 			show: ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10'],
 			title: { es: 'Qué vamos a recorrer', en: 'What we will cover' },
-			text: {
-				es: 'En esta primera lección vas a entender los pilares que hacen a Java tan potente: su arquitectura interna de compilación y ejecución, la anatomía detallada de una clase ejecutable, cómo compilar y correr desde la consola, cómo recibir argumentos, las convenciones de estilo, cómo elegir un entorno, cómo leer el Javadoc y los errores típicos de quien empieza. Usá los controles para avanzar a tu ritmo.',
-				en: 'In this first lesson you will understand the pillars that make Java so powerful: its internal compilation and execution architecture, the detailed anatomy of an executable class, how to compile and run from the terminal, how to receive arguments, style conventions, how to pick an environment, how to read Javadoc and the typical beginner mistakes. Use the controls to move at your own pace.',
-			},
+			subtitles: [
+				say('En esta lección: la plataforma Java, la compilación, tu primer programa y la consola.', 'In this lesson: the Java platform, compilation, your first program and the terminal.'),
+				say('También argumentos, convenciones, entornos, Javadoc y errores comunes. Avanzá a tu ritmo.', 'Also arguments, conventions, environments, Javadoc and common mistakes. Go at your own pace.'),
+			],
 		},
 
 		// ─── 1. WORA ────────────────────────────────────────────────────────
@@ -198,10 +203,10 @@ export const script: AnimationScript = {
 			show: ['c-title', 'c-src', 'c-bin-win', 'c-bin-linux', 'c-bin-mac'],
 			focus: ['c-bin-win', 'c-bin-linux', 'c-bin-mac'],
 			title: { es: 'El problema histórico: un binario por plataforma', en: 'The historical problem: one binary per platform' },
-			text: {
-				es: 'Históricamente, un programa escrito en C o C++ debía compilarse específicamente para cada sistema operativo y cada arquitectura de procesador: Windows x86, Linux ARM, macOS Apple Silicon. El mismo código fuente producía tres ejecutables distintos, y cada uno solo funcionaba en su plataforma.',
-				en: 'Historically, a program written in C or C++ had to be compiled specifically for each operating system and processor architecture: Windows x86, Linux ARM, macOS Apple Silicon. The same source code produced three different executables, and each one only ran on its own platform.',
-			},
+			subtitles: [
+				say('En C o C++, el mismo código se compilaba una vez por cada sistema y procesador.', 'In C or C++, the same code was compiled once for every system and processor.'),
+				say('Resultado: un ejecutable distinto para Windows, Linux y macOS.', 'The result: a different executable for Windows, Linux and macOS.'),
+			],
 		},
 		{
 			id: 'wora-solution',
@@ -210,10 +215,10 @@ export const script: AnimationScript = {
 			show: '*',
 			focus: ['java-class', 'java-jvm-win', 'java-jvm-linux', 'java-jvm-mac', 'wora-banner'],
 			title: { es: 'WORA: Write Once, Run Anywhere', en: 'WORA: Write Once, Run Anywhere' },
-			text: {
-				es: 'Java revolucionó la industria con la filosofía WORA: escribir una vez, ejecutar en cualquier lugar. El código fuente se compila a un único archivo .class con bytecode, y ese mismo archivo corre sin cambios en Windows, Linux o macOS porque cada sistema tiene su propia máquina virtual de Java que lo interpreta.',
-				en: 'Java revolutionized the industry with the WORA philosophy: write once, run anywhere. Source code compiles into a single .class file of bytecode, and that same file runs unchanged on Windows, Linux or macOS because each system has its own Java Virtual Machine that interprets it.',
-			},
+			subtitles: [
+				say('Java compila a un único `.class` con bytecode.', 'Java compiles to a single `.class` file of bytecode.'),
+				say('Ese archivo corre en cualquier sistema con una JVM: escribir una vez, ejecutar en cualquier lugar.', 'That file runs on any system with a JVM: write once, run anywhere.'),
+			],
 		},
 		{
 			id: 'platform-overview',
@@ -221,10 +226,10 @@ export const script: AnimationScript = {
 			scene: 'platform',
 			show: ['jdk', 'jre', 'jvm'],
 			title: { es: 'Tres componentes anidados: JDK, JRE y JVM', en: 'Three nested components: JDK, JRE and JVM' },
-			text: {
-				es: 'Para lograr WORA, la plataforma Java se divide en tres componentes esenciales que se anidan uno dentro del otro. El JDK contiene al JRE, y el JRE contiene a la JVM. Vamos a abrirlos de afuera hacia adentro.',
-				en: 'To achieve WORA, the Java platform is split into three essential components nested inside one another. The JDK contains the JRE, and the JRE contains the JVM. Let’s open them from the outside in.',
-			},
+			subtitles: [
+				say('La plataforma Java son tres capas anidadas: el JDK contiene al JRE y el JRE a la JVM.', 'The Java platform is three nested layers: the JDK holds the JRE and the JRE holds the JVM.'),
+				say('Vamos a abrirlas de afuera hacia adentro.', 'Let us open them from the outside in.'),
+			],
 		},
 		{
 			id: 'platform-jdk',
@@ -233,10 +238,10 @@ export const script: AnimationScript = {
 			show: ['jdk', 'jre', 'jvm', 'tools'],
 			focus: ['jdk', 'tools'],
 			title: { es: 'JDK: el kit del desarrollador', en: 'JDK: the developer kit' },
-			text: {
-				es: 'El JDK (Java Development Kit) es el paquete completo para desarrolladores. Incluye el compilador javac, la utilidad de empaquetado jar, el generador de documentación javadoc, el depurador jdb y todas las herramientas necesarias para escribir código. Si vas a programar en Java, instalás el JDK.',
-				en: 'The JDK (Java Development Kit) is the complete bundle for developers. It includes the javac compiler, the jar packaging utility, the javadoc documentation generator, the jdb debugger and every tool needed to write code. If you are going to program in Java, you install the JDK.',
-			},
+			subtitles: [
+				say('El JDK es el kit del desarrollador: `javac`, `jar`, `javadoc`, `jdb` y más.', 'The JDK is the developer kit: `javac`, `jar`, `javadoc`, `jdb` and more.'),
+				say('Si vas a programar en Java, instalás el JDK.', 'If you are going to write Java, you install the JDK.'),
+			],
 		},
 		{
 			id: 'platform-jre',
@@ -245,10 +250,10 @@ export const script: AnimationScript = {
 			show: ['jdk', 'jre', 'jvm', 'tools', 'libs'],
 			focus: ['jre', 'libs'],
 			title: { es: 'JRE: lo necesario para ejecutar', en: 'JRE: what you need to run' },
-			text: {
-				es: 'El JRE (Java Runtime Environment) es el paquete necesario para ejecutar aplicaciones Java. Contiene la JVM junto con las librerías estándar del lenguaje: java.lang, java.util, java.io, java.net y muchas más. Quien solo usa un programa Java necesita el JRE, no el compilador.',
-				en: 'The JRE (Java Runtime Environment) is the package needed to run Java applications. It contains the JVM together with the language’s standard libraries: java.lang, java.util, java.io, java.net and many more. Someone who only uses a Java program needs the JRE, not the compiler.',
-			},
+			subtitles: [
+				say('El JRE es lo necesario para ejecutar: la JVM más librerías estándar como `java.lang` y `java.util`.', 'The JRE is what you need to run: the JVM plus standard libraries such as `java.lang` and `java.util`.'),
+				say('Quien solo usa un programa Java no necesita el compilador.', 'Someone who only uses a Java program does not need the compiler.'),
+			],
 		},
 		{
 			id: 'platform-jvm',
@@ -257,10 +262,10 @@ export const script: AnimationScript = {
 			show: ['jdk', 'jre', 'jvm', 'tools', 'libs', 'classloader', 'verifier', 'jit', 'gc'],
 			focus: ['jvm'],
 			title: { es: 'JVM: el corazón operativo', en: 'JVM: the operating heart' },
-			text: {
-				es: 'La JVM (Java Virtual Machine) es una máquina simulada por software que interpreta y ejecuta el bytecode. Es el corazón de Java: gracias a ella el mismo .class corre en cualquier sistema. Dentro tiene cuatro componentes clave que vamos a ver uno por uno.',
-				en: 'The JVM (Java Virtual Machine) is a software-simulated machine that interprets and executes bytecode. It is the heart of Java: thanks to it the same .class runs on any system. Inside it has four key components that we will look at one by one.',
-			},
+			subtitles: [
+				say('La JVM es una máquina simulada por software que ejecuta el bytecode.', 'The JVM is a software-simulated machine that runs bytecode.'),
+				say('Gracias a ella, el mismo `.class` corre en cualquier sistema.', 'Thanks to it, the same `.class` runs on any system.'),
+			],
 		},
 		{
 			id: 'platform-jvm-load',
@@ -269,10 +274,10 @@ export const script: AnimationScript = {
 			show: ['jdk', 'jre', 'jvm', 'tools', 'libs', 'classloader', 'verifier', 'jit', 'gc'],
 			focus: ['classloader', 'verifier'],
 			title: { es: 'Class Loader y Bytecode Verifier', en: 'Class Loader and Bytecode Verifier' },
-			text: {
-				es: 'El Class Loader carga los archivos .class en memoria cuando el programa los necesita. Antes de ejecutar nada, el Bytecode Verifier comprueba la seguridad e integridad de ese código: que las instrucciones sean válidas y no violen las reglas del lenguaje. Primero cargar, después verificar.',
-				en: 'The Class Loader loads .class files into memory when the program needs them. Before anything runs, the Bytecode Verifier checks the safety and integrity of that code: that the instructions are valid and do not break the language rules. First load, then verify.',
-			},
+			subtitles: [
+				say('El Class Loader carga los `.class` en memoria cuando el programa los necesita.', 'The Class Loader loads `.class` files into memory when the program needs them.'),
+				say('El Bytecode Verifier comprueba que ese código sea válido y seguro antes de ejecutarlo.', 'The Bytecode Verifier checks that the code is valid and safe before it runs.'),
+			],
 		},
 		{
 			id: 'platform-jvm-run',
@@ -281,35 +286,184 @@ export const script: AnimationScript = {
 			show: ['jdk', 'jre', 'jvm', 'tools', 'libs', 'classloader', 'verifier', 'jit', 'gc'],
 			focus: ['jit', 'gc'],
 			title: { es: 'Compilador JIT y Garbage Collector', en: 'JIT compiler and Garbage Collector' },
-			text: {
-				es: 'El compilador JIT (Just-In-Time) traduce los fragmentos de bytecode que se ejecutan con frecuencia directamente a código máquina nativo, para maximizar el rendimiento. El Garbage Collector (recolector de basura) gestiona la memoria automáticamente: libera los objetos que ya no están en uso sin que vos tengas que hacerlo a mano.',
-				en: 'The JIT (Just-In-Time) compiler translates frequently executed bytecode fragments directly into native machine code to maximize performance. The Garbage Collector manages memory automatically: it frees objects that are no longer in use without you doing it by hand.',
-			},
+			subtitles: [
+				say('El compilador JIT convierte el bytecode más usado en código nativo para ganar velocidad.', 'The JIT compiler turns the most used bytecode into native code for speed.'),
+				say('El Garbage Collector libera la memoria de los objetos que ya no usás.', 'The Garbage Collector frees the memory of objects you no longer use.'),
+			],
 		},
 
-		// ─── 2. Pipeline ────────────────────────────────────────────────────
+		// ─── 2. Pipeline (motion) ───────────────────────────────────────────
+		// A persistent canvas: the camera follows HolaMundo.java from the editor
+		// through javac, the .class travels to three JVMs and runs on their CPUs.
+		{
+			id: 'pipeline-source',
+			chapter: 'pipeline',
+			scene: 'pipeline',
+			title: { es: 'Fase 1: todo empieza en el código fuente', en: 'Phase 1: it all starts with source code' },
+			subtitles: [
+				{
+					at: 0,
+					text: {
+						es: 'Java no es interpretado puro como JavaScript o Python, ni compilado nativo como C++: usa una compilación en dos fases.',
+						en: 'Java is neither purely interpreted like JavaScript or Python nor natively compiled like C++: it compiles in two phases.',
+					},
+				},
+				{
+					at: 7800,
+					text: {
+						es: 'Todo empieza en tu editor o IDE: el código fuente `.java` es texto pensado para que lo lea una persona.',
+						en: 'It all starts in your editor or IDE: the `.java` source code is text meant to be read by a person.',
+					},
+				},
+			],
+			motion: {
+				cues: [
+					{ at: 0, do: 'camera', to: ['editor'], dur: 1, pad: 50 },
+					{ at: 150, do: 'enter', el: 'phase-1' },
+					{ at: 300, do: 'enter', el: 'editor' },
+					{ at: 1000, do: 'type', el: 'code-1', dur: 900 },
+					{ at: 2000, do: 'type', el: 'code-2', dur: 1500 },
+					{ at: 3600, do: 'type', el: 'code-3', dur: 2000 },
+					{ at: 5700, do: 'type', el: 'code-4', dur: 300 },
+					{ at: 6100, do: 'type', el: 'code-5', dur: 250 },
+					{ at: 7800, do: 'camera', to: ['editor', 'javac'], dur: 1800 },
+					{ at: 8600, do: 'enter', el: 'javac' },
+					{ at: 9200, do: 'draw', el: 'arrow-edit', dur: 700 },
+					{ at: 10400, do: 'enter', el: 'java-file' },
+				],
+			},
+		},
 		{
 			id: 'pipeline-compile',
 			chapter: 'pipeline',
 			scene: 'pipeline',
-			show: ['src', 'javac', 'bytecode'],
-			focus: ['javac', 'bytecode'],
-			title: { es: 'Fase 1: de código fuente a bytecode', en: 'Phase 1: from source code to bytecode' },
-			text: {
-				es: 'A diferencia de lenguajes interpretados puros (JavaScript, Python) o compilados nativos (C++), Java usa una compilación en dos fases. Primero, el código fuente .java que escribís en tu editor pasa por el compilador javac, que lo traduce a bytecode: un conjunto de instrucciones compactas e independientes de la plataforma, guardadas en un archivo .class.',
-				en: 'Unlike purely interpreted languages (JavaScript, Python) or natively compiled ones (C++), Java uses a two-phase compilation. First, the .java source code you write in your editor goes through the javac compiler, which translates it into bytecode: a compact, platform-independent instruction set stored in a .class file.',
+			title: { es: 'javac traduce el código a bytecode', en: 'javac translates the code into bytecode' },
+			subtitles: [
+				{
+					at: 0,
+					text: {
+						es: 'El compilador `javac` lee ese archivo y lo traduce a un formato intermedio llamado bytecode.',
+						en: 'The `javac` compiler reads that file and translates it into an intermediate format called bytecode.',
+					},
+				},
+				{
+					at: 6700,
+					text: {
+						es: 'El resultado es `HolaMundo.class`: instrucciones compactas, independientes de la plataforma y diseñadas para la JVM.',
+						en: 'The result is `HolaMundo.class`: compact, platform-independent instructions designed for the JVM.',
+					},
+				},
+			],
+			motion: {
+				cues: [
+					{ at: 0, do: 'camera', to: ['editor', 'javac', 'bytecode', 'terminal'], dur: 1600 },
+					{ at: 500, do: 'enter', el: 'terminal' },
+					{ at: 1100, do: 'type', el: 'term-javac', dur: 1200 },
+					{ at: 2500, do: 'move', el: 'java-file', to: 'javac', dur: 1300 },
+					{ at: 3700, do: 'spin', el: 'javac', dur: 1800 },
+					{ at: 3800, do: 'exit', el: 'java-file', dur: 350 },
+					{ at: 3800, do: 'pulse', el: 'javac' },
+					{ at: 5600, do: 'enter', el: 'class-file' },
+					{ at: 5900, do: 'move', el: 'class-file', to: 'class-slot', dur: 900 },
+					{ at: 6700, do: 'draw', el: 'arrow-compile', dur: 700 },
+					{ at: 7300, do: 'enter', el: 'bytecode' },
+					{ at: 7900, do: 'type', el: 'bc-1', dur: 700 },
+					{ at: 8700, do: 'type', el: 'bc-2', dur: 1100 },
+					{ at: 9900, do: 'type', el: 'bc-3', dur: 800 },
+					{ at: 10800, do: 'type', el: 'bc-4', dur: 300 },
+					{ at: 11600, do: 'pulse', el: 'class-file' },
+				],
+			},
+		},
+		{
+			id: 'pipeline-jvm',
+			chapter: 'pipeline',
+			scene: 'pipeline',
+			title: { es: 'Fase 2: la JVM de cada sistema lee el bytecode', en: 'Phase 2: each system’s JVM reads the bytecode' },
+			subtitles: [
+				{
+					at: 0,
+					text: {
+						es: 'Fase 2: ese mismo `.class` viaja sin cambios a la JVM instalada en cada sistema operativo.',
+						en: 'Phase 2: that same `.class` travels unchanged to the JVM installed on each operating system.',
+					},
+				},
+				{
+					at: 6300,
+					text: {
+						es: 'Cada JVM lo interpreta y, con el compilador JIT, convierte en caliente las partes más usadas en código nativo.',
+						en: 'Each JVM interprets it and, with the JIT compiler, turns the most used parts into native code on the fly.',
+					},
+				},
+			],
+			motion: {
+				cues: [
+					{ at: 0, do: 'camera', to: ['javac', 'jvm-win', 'jvm-linux', 'cpu-win'], dur: 1800 },
+					{ at: 400, do: 'enter', el: 'phase-2' },
+					{ at: 800, do: 'enter', el: 'jvm-win' },
+					{ at: 950, do: 'enter', el: 'jvm-mac' },
+					{ at: 1100, do: 'enter', el: 'jvm-linux' },
+					{ at: 1700, do: 'enter', el: 'class-mac' },
+					{ at: 1850, do: 'enter', el: 'class-linux' },
+					{ at: 2300, do: 'draw', el: 'arrow-class-win' },
+					{ at: 2400, do: 'draw', el: 'arrow-class-mac' },
+					{ at: 2500, do: 'draw', el: 'arrow-class-linux' },
+					{ at: 3100, do: 'move', el: 'class-file', to: 'jvm-win', dur: 1300 },
+					{ at: 3250, do: 'move', el: 'class-mac', to: 'jvm-mac', dur: 1300 },
+					{ at: 3400, do: 'move', el: 'class-linux', to: 'jvm-linux', dur: 1300 },
+					{ at: 4400, do: 'exit', el: 'class-file' },
+					{ at: 4400, do: 'pulse', el: 'jvm-win' },
+					{ at: 4550, do: 'exit', el: 'class-mac' },
+					{ at: 4550, do: 'pulse', el: 'jvm-mac' },
+					{ at: 4700, do: 'exit', el: 'class-linux' },
+					{ at: 4700, do: 'pulse', el: 'jvm-linux' },
+					{ at: 6300, do: 'pulse', el: 'jit-win', dur: 900 },
+					{ at: 6450, do: 'pulse', el: 'jit-mac', dur: 900 },
+					{ at: 6600, do: 'pulse', el: 'jit-linux', dur: 900 },
+					{ at: 7600, do: 'enter', el: 'cpu-win' },
+					{ at: 7750, do: 'enter', el: 'cpu-mac' },
+					{ at: 7900, do: 'enter', el: 'cpu-linux' },
+					{ at: 8400, do: 'draw', el: 'arrow-run-win', dur: 600 },
+					{ at: 8500, do: 'draw', el: 'arrow-run-mac', dur: 600 },
+					{ at: 8600, do: 'draw', el: 'arrow-run-linux', dur: 600 },
+				],
 			},
 		},
 		{
 			id: 'pipeline-run',
 			chapter: 'pipeline',
 			scene: 'pipeline',
-			show: '*',
-			focus: ['jvm', 'cpu'],
-			title: { es: 'Fase 2: la JVM ejecuta sobre el procesador real', en: 'Phase 2: the JVM runs on the real processor' },
-			text: {
-				es: 'Segundo, la JVM instalada en el sistema operativo destino (Windows, macOS o Linux) lee el bytecode y lo ejecuta sobre el procesador real. Combina interpretación con compilación JIT: las partes más usadas se vuelven código nativo en caliente. El bytecode nunca cambia; cambia la JVM que lo ejecuta.',
-				en: 'Second, the JVM installed on the target operating system (Windows, macOS or Linux) reads the bytecode and executes it on the real processor. It combines interpretation with JIT compilation: the most used parts become native code on the fly. The bytecode never changes; the JVM running it does.',
+			title: { es: 'La JVM ejecuta sobre el procesador real', en: 'The JVM runs on the real processor' },
+			subtitles: [
+				{
+					at: 0,
+					text: {
+						es: 'Con `java HolaMundo`, la JVM ejecuta el programa sobre el procesador real de cada equipo.',
+						en: 'With `java HolaMundo`, the JVM runs the program on each machine’s real processor.',
+					},
+				},
+				{
+					at: 6200,
+					text: {
+						es: 'El bytecode nunca cambia: lo que cambia es la JVM que lo ejecuta. Escribís una vez y corre en cualquier lugar.',
+						en: 'The bytecode never changes: the JVM running it does. You write once and it runs anywhere.',
+					},
+				},
+			],
+			motion: {
+				cues: [
+					{ at: 0, do: 'camera', to: 'all', dur: 1800 },
+					{ at: 1200, do: 'type', el: 'term-java', dur: 900 },
+					{ at: 2300, do: 'flow', el: 'arrow-run-win' },
+					{ at: 2300, do: 'flow', el: 'arrow-run-mac' },
+					{ at: 2300, do: 'flow', el: 'arrow-run-linux' },
+					{ at: 2300, do: 'pulse', el: 'cpu-win' },
+					{ at: 2450, do: 'pulse', el: 'cpu-mac' },
+					{ at: 2600, do: 'pulse', el: 'cpu-linux' },
+					{ at: 3000, do: 'type', el: 'term-out', dur: 1000 },
+					{ at: 6200, do: 'enter', el: 'banner' },
+					{ at: 6700, do: 'pulse', el: 'bytecode', dur: 900 },
+				],
 			},
 		},
 
@@ -322,10 +476,10 @@ export const script: AnimationScript = {
 			focus: ['kw-class', 'name', 'brace-open', 'brace-close'],
 			code: { ...holaMundo, focusLines: [1, 5] },
 			title: { es: 'Todo el código vive dentro de una clase', en: 'All code lives inside a class' },
-			text: {
-				es: 'En Java no existen funciones sueltas ni código global: todo vive obligatoriamente dentro de una clase. Este es el clásico HolaMundo.java. La palabra class declara la clase y las llaves { } delimitan su cuerpo. Vamos a desglosarlo palabra por palabra.',
-				en: 'In Java there are no loose functions or global code: everything must live inside a class. This is the classic HolaMundo.java. The word class declares the class and the braces { } delimit its body. Let’s break it down word by word.',
-			},
+			subtitles: [
+				say('En Java no hay funciones sueltas: todo vive dentro de una clase.', 'Java has no loose functions: everything lives inside a class.'),
+				say('`class` declara la clase y las llaves `{ }` delimitan su cuerpo.', '`class` declares the class and the braces `{ }` delimit its body.'),
+			],
 		},
 		{
 			id: 'anatomy-public-class',
@@ -335,10 +489,10 @@ export const script: AnimationScript = {
 			focus: ['kw-public', 'kw-class'],
 			code: { ...holaMundo, focusLines: [1] },
 			title: { es: 'public y class', en: 'public and class' },
-			text: {
-				es: 'public es un modificador de acceso: significa que la clase es accesible desde cualquier parte del proyecto. class declara una clase, el bloque constructivo fundamental de la Programación Orientada a Objetos. Juntas abren la definición de nuestro programa.',
-				en: 'public is an access modifier: it means the class is accessible from anywhere in the project. class declares a class, the fundamental building block of Object-Oriented Programming. Together they open our program’s definition.',
-			},
+			subtitles: [
+				say('`public` hace que la clase sea accesible desde cualquier parte del proyecto.', '`public` makes the class reachable from anywhere in the project.'),
+				say('`class` declara una clase, la pieza base de la programación orientada a objetos.', '`class` declares a class, the basic building block of object-oriented programming.'),
+			],
 		},
 		{
 			id: 'anatomy-name',
@@ -348,10 +502,11 @@ export const script: AnimationScript = {
 			focus: ['name', 'file-tab'],
 			code: { ...holaMundo, focusLines: [1] },
 			title: { es: 'HolaMundo y la regla de oro del archivo', en: 'HolaMundo and the golden rule of the file' },
-			text: {
-				es: 'HolaMundo es el nombre de la clase. Regla de oro: el archivo .java debe llamarse exactamente igual que la clase pública, respetando mayúsculas y minúsculas. La clase HolaMundo vive en HolaMundo.java; si el archivo se llama holamundo.java, el compilador se queja.',
-				en: 'HolaMundo is the class name. Golden rule: the .java file must be named exactly like the public class, respecting upper and lower case. The HolaMundo class lives in HolaMundo.java; if the file is called holamundo.java, the compiler complains.',
-			},
+			subtitles: [
+				say('`HolaMundo` es el nombre de la clase.', '`HolaMundo` is the name of the class.'),
+				say('Regla de oro: el archivo se llama igual que la clase pública, con las mismas mayúsculas.', 'Golden rule: the file is named exactly like the public class, same capitals included.'),
+				say('`HolaMundo.java` compila; `holamundo.java` no.', '`HolaMundo.java` compiles; `holamundo.java` does not.'),
+			],
 		},
 		{
 			id: 'anatomy-main',
@@ -361,10 +516,10 @@ export const script: AnimationScript = {
 			focus: ['kw-public-2', 'kw-static', 'kw-void', 'name-main'],
 			code: { ...holaMundo, focusLines: [2] },
 			title: { es: 'public static void main: el punto de entrada', en: 'public static void main: the entry point' },
-			text: {
-				es: 'main es el punto de entrada: la JVM busca exactamente un método llamado main para iniciar la ejecución. static indica que el método pertenece a la clase en sí y no a un objeto concreto, por eso la JVM puede llamarlo sin instanciar nada. void indica que realiza una acción pero no devuelve ningún valor.',
-				en: 'main is the entry point: the JVM looks for exactly one method named main to start execution. static means the method belongs to the class itself rather than to a specific object, which is why the JVM can call it without instantiating anything. void means it performs an action but returns no value.',
-			},
+			subtitles: [
+				say('`main` es el punto de entrada: la JVM lo busca para arrancar el programa.', '`main` is the entry point: the JVM looks for it to start the program.'),
+				say('`static`: pertenece a la clase, no a un objeto. `void`: no devuelve nada.', '`static`: it belongs to the class, not to an object. `void`: it returns nothing.'),
+			],
 		},
 		{
 			id: 'anatomy-args',
@@ -374,10 +529,10 @@ export const script: AnimationScript = {
 			focus: ['args'],
 			code: { ...holaMundo, focusLines: [2] },
 			title: { es: 'String[] args: lo que llega desde la consola', en: 'String[] args: what arrives from the terminal' },
-			text: {
-				es: 'String[] args es un array de cadenas de texto. Recibe los argumentos que le pasás al programa desde la línea de comandos cuando lo ejecutás. En HolaMundo no lo usamos todavía, pero en unos pasos vamos a sacarle provecho.',
-				en: 'String[] args is an array of text strings. It receives the arguments you pass to the program from the command line when you run it. We do not use it in HolaMundo yet, but in a few steps we will put it to work.',
-			},
+			subtitles: [
+				say('`String[] args` es un array de textos con los argumentos que llegan desde la consola.', '`String[] args` is an array of strings with the arguments that come from the terminal.'),
+				say('HolaMundo todavía no lo usa; en unos pasos lo aprovechamos.', 'HolaMundo does not use it yet; we will put it to work in a few steps.'),
+			],
 		},
 		{
 			id: 'anatomy-println',
@@ -387,10 +542,10 @@ export const script: AnimationScript = {
 			focus: ['println', 'string', 'semicolon'],
 			code: { ...holaMundo, focusLines: [3] },
 			title: { es: 'System.out.println y el punto y coma', en: 'System.out.println and the semicolon' },
-			text: {
-				es: 'System.out.println() imprime una línea en la consola estándar (out) seguida de un salto de línea. Entre paréntesis va el texto a mostrar, una cadena entre comillas dobles. Y al final, el punto y coma: cada instrucción en Java finaliza obligatoriamente con ;.',
-				en: 'System.out.println() prints a line to the standard console (out) followed by a line break. Between the parentheses goes the text to show, a string in double quotes. And at the end, the semicolon: every statement in Java must end with ;.',
-			},
+			subtitles: [
+				say('`System.out.println()` imprime una línea en la consola.', '`System.out.println()` prints a line to the console.'),
+				say('Toda instrucción termina con punto y coma: `;`.', 'Every statement ends with a semicolon: `;`.'),
+			],
 		},
 
 		// ─── 4. Terminal ────────────────────────────────────────────────────
@@ -402,10 +557,10 @@ export const script: AnimationScript = {
 			focus: ['f-java'],
 			code: holaMundo,
 			title: { es: 'Paso 1: crear el archivo', en: 'Step 1: create the file' },
-			text: {
-				es: 'Sigamos el flujo real desde la terminal. Primero guardá el código anterior en un archivo llamado HolaMundo.java, en una carpeta de trabajo. Recordá la regla de oro: el nombre del archivo coincide con el de la clase pública.',
-				en: 'Let’s follow the real flow from the terminal. First save the previous code in a file named HolaMundo.java, inside a working folder. Remember the golden rule: the file name matches the public class name.',
-			},
+			subtitles: [
+				say('Ahora, el flujo real desde la terminal.', 'Now, the real flow from the terminal.'),
+				say('Paso 1: guardá el código en `HolaMundo.java`, con el mismo nombre que la clase.', 'Step 1: save the code as `HolaMundo.java`, named after the class.'),
+			],
 		},
 		{
 			id: 'terminal-compile',
@@ -422,10 +577,10 @@ export const script: AnimationScript = {
 				],
 			},
 			title: { es: 'Paso 2: compilar con javac', en: 'Step 2: compile with javac' },
-			text: {
-				es: 'Ejecutá el compilador javac pasándole el archivo fuente. Si no hay errores de sintaxis, javac no imprime nada y crea el archivo binario HolaMundo.class en el mismo directorio. Ese .class es el bytecode que la JVM sabe ejecutar.',
-				en: 'Run the javac compiler passing it the source file. If there are no syntax errors, javac prints nothing and creates the binary file HolaMundo.class in the same directory. That .class is the bytecode the JVM knows how to run.',
-			},
+			subtitles: [
+				say('Paso 2: `javac HolaMundo.java` compila el archivo.', 'Step 2: `javac HolaMundo.java` compiles the file.'),
+				say('Si no hay errores, no imprime nada y aparece `HolaMundo.class`: el bytecode.', 'If there are no errors it prints nothing and `HolaMundo.class` appears: the bytecode.'),
+			],
 		},
 		{
 			id: 'terminal-run',
@@ -440,10 +595,10 @@ export const script: AnimationScript = {
 				],
 			},
 			title: { es: 'Paso 3: ejecutar con java', en: 'Step 3: run with java' },
-			text: {
-				es: 'Ejecutá la máquina virtual con el comando java indicando únicamente el nombre de la clase, sin la extensión .class. La JVM carga HolaMundo.class, verifica el bytecode, busca el método main y lo ejecuta. En la consola aparece el saludo.',
-				en: 'Run the virtual machine with the java command, giving only the class name, without the .class extension. The JVM loads HolaMundo.class, verifies the bytecode, finds the main method and runs it. The greeting appears in the console.',
-			},
+			subtitles: [
+				say('Paso 3: `java HolaMundo` ejecuta la clase, sin la extensión `.class`.', 'Step 3: `java HolaMundo` runs the class, without the `.class` extension.'),
+				say('La JVM carga, verifica y ejecuta `main`: aparece el saludo.', 'The JVM loads, verifies and runs `main`: the greeting appears.'),
+			],
 		},
 
 		// ─── 5. Args ────────────────────────────────────────────────────────
@@ -455,10 +610,10 @@ export const script: AnimationScript = {
 			focus: ['branch-if'],
 			code: { ...saludoPersonalizado, focusLines: [3] },
 			title: { es: 'Recibir parámetros con String[] args', en: 'Receiving parameters with String[] args' },
-			text: {
-				es: 'El parámetro String[] args de la firma de main nos permite recibir datos cuando ejecutamos el programa. SaludoPersonalizado pregunta si args.length es mayor que cero: si llegó al menos un argumento, saluda por nombre; si no, muestra un mensaje genérico. Siempre verificá la longitud antes de leer una posición.',
-				en: 'The String[] args parameter in main’s signature lets us receive data when we run the program. SaludoPersonalizado asks whether args.length is greater than zero: if at least one argument arrived, it greets by name; otherwise it shows a generic message. Always check the length before reading a position.',
-			},
+			subtitles: [
+				say('`String[] args` recibe los datos que escribís al ejecutar el programa.', '`String[] args` receives the data you type when running the program.'),
+				say('Antes de leerlos, preguntá por `args.length`: con datos saluda por nombre; sin datos, en genérico.', 'Check `args.length` before reading: with data it greets by name; without data, generically.'),
+			],
 		},
 		{
 			id: 'args-none',
@@ -475,10 +630,10 @@ export const script: AnimationScript = {
 				],
 			},
 			title: { es: 'Sin argumentos: el array llega vacío', en: 'Without arguments: the array arrives empty' },
-			text: {
-				es: 'Compilamos y ejecutamos sin pasar nada después del nombre de la clase. La JVM igual crea el array args, pero vacío: args.length vale 0. La condición args.length > 0 es falsa, así que se ejecuta la rama else y vemos el saludo anónimo.',
-				en: 'We compile and run without passing anything after the class name. The JVM still creates the args array, but empty: args.length is 0. The condition args.length > 0 is false, so the else branch runs and we see the anonymous greeting.',
-			},
+			subtitles: [
+				say('Sin argumentos, el array llega vacío: `args.length` vale 0.', 'Without arguments the array arrives empty: `args.length` is 0.'),
+				say('La condición es falsa y se ejecuta la rama `else`.', 'The condition is false and the `else` branch runs.'),
+			],
 		},
 		{
 			id: 'args-one',
@@ -494,10 +649,10 @@ export const script: AnimationScript = {
 				],
 			},
 			title: { es: 'Con un argumento: args[0] guarda el valor', en: 'With one argument: args[0] holds the value' },
-			text: {
-				es: 'Ahora escribimos Facundo después del nombre de la clase. La JVM lo guarda en args[0] y args.length pasa a valer 1. La condición es verdadera, entra la rama if y el programa concatena el nombre dentro del saludo. Cada palabra extra en la consola sería otra posición del array.',
-				en: 'Now we type Facundo after the class name. The JVM stores it in args[0] and args.length becomes 1. The condition is true, the if branch runs and the program concatenates the name into the greeting. Each extra word on the command line would be another array position.',
-			},
+			subtitles: [
+				say('Con `Facundo`, la JVM lo guarda en `args[0]` y `args.length` vale 1.', 'With `Facundo`, the JVM stores it in `args[0]` and `args.length` becomes 1.'),
+				say('La condición es verdadera y el saludo usa el nombre.', 'The condition is true and the greeting uses the name.'),
+			],
 		},
 
 		// ─── 6. Conventions ─────────────────────────────────────────────────
@@ -507,10 +662,11 @@ export const script: AnimationScript = {
 			scene: 'conventions',
 			show: ['pascal', 'camel', 'upper'],
 			title: { es: 'Nombrar bien: PascalCase, camelCase y UPPER_SNAKE_CASE', en: 'Naming well: PascalCase, camelCase and UPPER_SNAKE_CASE' },
-			text: {
-				es: 'Para escribir Java profesional y legible, seguí las convenciones estándar. Clases e interfaces usan PascalCase: HolaMundo, CuentaBancaria, UsuarioService. Métodos y variables usan camelCase: calcularTotal(), nombreUsuario, saldoInicial. Las constantes usan UPPER_SNAKE_CASE: MAX_RETRY_COUNT, PI.',
-				en: 'To write professional, readable Java, follow the standard conventions. Classes and interfaces use PascalCase: HolaMundo, CuentaBancaria, UsuarioService. Methods and variables use camelCase: calculateTotal(), userName, initialBalance. Constants use UPPER_SNAKE_CASE: MAX_RETRY_COUNT, PI.',
-			},
+			subtitles: [
+				say('Clases en PascalCase: `HolaMundo`, `CuentaBancaria`.', 'Classes in PascalCase: `HolaMundo`, `CuentaBancaria`.'),
+				say('Métodos y variables en camelCase: `calcularTotal()`, `nombreUsuario`.', 'Methods and variables in camelCase: `calcularTotal()`, `nombreUsuario`.'),
+				say('Constantes en UPPER_SNAKE_CASE: `MAX_RETRY_COUNT`.', 'Constants in UPPER_SNAKE_CASE: `MAX_RETRY_COUNT`.'),
+			],
 		},
 		{
 			id: 'conventions-comments',
@@ -520,10 +676,10 @@ export const script: AnimationScript = {
 			focus: ['semi', 'cmt-line', 'cmt-block', 'cmt-doc'],
 			code: { ...comentarios, focusLines: [1, 3, 4, 5, 6, 8, 9, 10] },
 			title: { es: 'Punto y coma y tres tipos de comentario', en: 'Semicolon and three kinds of comment' },
-			text: {
-				es: 'Cada instrucción finaliza obligatoriamente con ;. Para explicar el código tenés tres tipos de comentario: // para una sola línea, /* ... */ para bloques multilínea con explicaciones extensas, y /** ... */ para Javadoc, que la herramienta javadoc transforma en documentación navegable de tu API.',
-				en: 'Every statement must end with ;. To explain your code you have three kinds of comment: // for a single line, /* ... */ for multi-line blocks with longer explanations, and /** ... */ for Javadoc, which the javadoc tool turns into browsable documentation of your API.',
-			},
+			subtitles: [
+				say('Cada instrucción termina con `;`.', 'Every statement ends with `;`.'),
+				say('Comentarios: `//` una línea, `/* */` un bloque y `/** */` Javadoc para documentar tu API.', 'Comments: `//` one line, `/* */` a block and `/** */` Javadoc to document your API.'),
+			],
 		},
 
 		// ─── 7. IDE ─────────────────────────────────────────────────────────
@@ -533,10 +689,10 @@ export const script: AnimationScript = {
 			scene: 'ide',
 			show: ['ide-local', 'ide-online', 'ide-term'],
 			title: { es: 'Tres formas de escribir Java', en: 'Three ways to write Java' },
-			text: {
-				es: 'Podés escribir Java en un editor simple, pero un IDE (entorno de desarrollo integrado) reúne edición, compilación, ejecución, navegación y depuración. Hay tres caminos: un IDE local como IntelliJ IDEA, Eclipse o VS Code con extensiones; un IDE online en el navegador; o la terminal con javac y java. La elección depende de la tarea, no de cuál tiene más funciones.',
-				en: 'You can write Java in a simple editor, but an IDE (integrated development environment) combines editing, compilation, execution, navigation and debugging. There are three paths: a local IDE such as IntelliJ IDEA, Eclipse or VS Code with extensions; an online IDE in the browser; or the terminal with javac and java. The choice depends on the task, not on which tool has the most features.',
-			},
+			subtitles: [
+				say('Un IDE reúne edición, compilación, ejecución y depuración.', 'An IDE brings editing, compiling, running and debugging together.'),
+				say('Tres caminos: un IDE local, uno online o la terminal con `javac` y `java`.', 'Three paths: a local IDE, an online one, or the terminal with `javac` and `java`.'),
+			],
 		},
 		{
 			id: 'ide-tradeoffs',
@@ -545,10 +701,11 @@ export const script: AnimationScript = {
 			show: ['ide-local', 'ide-online', 'ide-term', 'lts'],
 			focus: ['ide-local', 'lts'],
 			title: { es: 'Ventajas, límites y la opción segura', en: 'Advantages, limits and the safe default' },
-			text: {
-				es: 'El IDE local trabaja sin conexión e integra el JDK, pero exige instalación y mantener alineadas sus versiones. El IDE online empieza rápido, pero puede limitar CPU, memoria o versión de Java y guarda tu código en un tercero. La terminal hace visible el flujo real, sin autocompletado. Para este curso, la opción segura es un JDK LTS local con la terminal como referencia. Si ves UnsupportedClassVersionError, no cambies código al azar: verificá la versión requerida.',
-				en: 'The local IDE works offline and integrates the JDK, but requires installation and keeping versions aligned. The online IDE starts quickly, but may limit CPU, memory or Java version and stores your code with a third party. The terminal exposes the real flow, without completion. For this course the safe default is a local LTS JDK with the terminal as the reference. If you see UnsupportedClassVersionError, do not change code at random: verify the required version.',
-			},
+			subtitles: [
+				say('Local: funciona sin conexión. Online: arranca rápido pero limita. Terminal: muestra el flujo real.', 'Local: works offline. Online: quick to start but limited. Terminal: shows the real flow.'),
+				say('Para el curso, un JDK LTS local.', 'For this course, a local LTS JDK.'),
+				say('Si ves UnsupportedClassVersionError, revisá la versión antes de tocar el código.', 'If you see UnsupportedClassVersionError, check the version before touching the code.'),
+			],
 		},
 		{
 			id: 'ide-checklist',
@@ -565,10 +722,11 @@ export const script: AnimationScript = {
 				],
 			},
 			title: { es: 'Lista de comprobación antes de empezar', en: 'Checklist before you start' },
-			text: {
-				es: 'Antes de escribir tu primer proyecto: 1) ejecutá java --version y javac --version, ambas herramientas deben existir y ser compatibles; 2) configurá el proyecto para usar esa versión del JDK, no la que el IDE eligió por defecto; 3) compilá y ejecutá una vez desde la terminal para distinguir un error del código de uno del IDE; 4) guardá el proyecto localmente y bajo control de versiones; 5) no pegues contraseñas ni datos personales en servicios online.',
-				en: 'Before writing your first project: 1) run java --version and javac --version, both tools must exist and be compatible; 2) configure the project to use that JDK version, not the one the IDE picked by default; 3) compile and run once from the terminal to tell a code error from an IDE one; 4) keep the project locally and under version control; 5) never paste passwords or personal data into online services.',
-			},
+			subtitles: [
+				say('Antes de empezar: `java --version` y `javac --version` deben responder con versiones compatibles.', 'Before you start: `java --version` and `javac --version` must answer with compatible versions.'),
+				say('Usá ese JDK en el proyecto, probalo una vez desde la terminal y guardalo bajo control de versiones.', 'Use that JDK in the project, try it once from the terminal and keep it under version control.'),
+				say('Y nunca pegues contraseñas ni datos personales en servicios online.', 'And never paste passwords or personal data into online services.'),
+			],
 		},
 
 		// ─── 8. Javadoc ─────────────────────────────────────────────────────
@@ -579,10 +737,10 @@ export const script: AnimationScript = {
 			show: ['version', 'module', 'package', 'class'],
 			focus: ['version', 'module', 'package', 'class'],
 			title: { es: 'La API es el contrato; el Javadoc, cómo leerlo', en: 'The API is the contract; Javadoc is how you read it' },
-			text: {
-				es: 'La API de Java es el contrato de las clases disponibles y el Javadoc es la documentación navegable que lo presenta. Leerlo evita adivinar nombres, parámetros o errores. Primero confirmá la versión: abrí la documentación del mismo JDK que usa tu proyecto. Después localizá la clase por su nombre calificado: para String, la página indica el módulo java.base, el paquete java.lang y la clase String.',
-				en: 'The Java API is the contract of the available classes and Javadoc is the browsable documentation that presents it. Reading it avoids guessing names, parameters or errors. First confirm the version: open the documentation of the same JDK your project uses. Then locate the class by its qualified name: for String, the page shows module java.base, package java.lang and class String.',
-			},
+			subtitles: [
+				say('La API es el contrato de las clases; el Javadoc, cómo leerlo.', 'The API is the contract of the classes; Javadoc is how you read it.'),
+				say('Abrí la documentación de tu JDK: `String` está en el módulo `java.base`, paquete `java.lang`.', 'Open the docs for your JDK: `String` lives in module `java.base`, package `java.lang`.'),
+			],
 		},
 		{
 			id: 'javadoc-signature',
@@ -591,10 +749,10 @@ export const script: AnimationScript = {
 			show: ['version', 'module', 'package', 'class', 'summary', 'signature', 'params', 'returns'],
 			focus: ['signature', 'params', 'returns'],
 			title: { es: 'Firma exacta, parámetros y valor devuelto', en: 'Exact signature, parameters and return value' },
-			text: {
-				es: 'Leé el resumen de la clase antes de elegir un método y buscá la firma exacta: las sobrecargas comparten nombre. substring(int beginIndex, int endIndex) requiere dos índices enteros. Revisá cada parámetro: beginIndex es inclusivo y endIndex es exclusivo, no supongas el significado por el nombre. Y revisá el retorno: devuelve un nuevo String, no modifica el original.',
-				en: 'Read the class summary before choosing a method and find the exact signature: overloads share a name. substring(int beginIndex, int endIndex) requires two integer indices. Review every parameter: beginIndex is inclusive and endIndex is exclusive, do not assume the meaning from the name. And review the return: it returns a new String, it does not modify the original.',
-			},
+			subtitles: [
+				say('Buscá la firma exacta: `substring(int beginIndex, int endIndex)`.', 'Find the exact signature: `substring(int beginIndex, int endIndex)`.'),
+				say('`beginIndex` es inclusivo, `endIndex` es exclusivo y devuelve un `String` nuevo.', '`beginIndex` is inclusive, `endIndex` is exclusive, and it returns a new `String`.'),
+			],
 		},
 		{
 			id: 'javadoc-throws',
@@ -603,10 +761,10 @@ export const script: AnimationScript = {
 			show: '*',
 			focus: ['throws', 'meta', 'links'],
 			title: { es: 'Throws, Deprecated, Since y tipos enlazados', en: 'Throws, Deprecated, Since and linked types' },
-			text: {
-				es: 'La sección Throws declara IndexOutOfBoundsException cuando los índices quedan fuera de rango o invertidos: es parte del contrato. Una marca Deprecated explica qué alternativa usar y Since indica desde qué versión existe el método. Si un parámetro o retorno es un tipo desconocido, seguí su enlace y repetí el proceso: los tipos enlazados también son parte del contrato.',
-				en: 'The Throws section declares IndexOutOfBoundsException when the indices fall out of range or are reversed: it is part of the contract. A Deprecated label explains which alternative to use and Since tells you from which version the method exists. If a parameter or return is an unknown type, follow its link and repeat the process: linked types are part of the contract too.',
-			},
+			subtitles: [
+				say('Throws declara `IndexOutOfBoundsException` si los índices no son válidos: también es contrato.', 'Throws declares `IndexOutOfBoundsException` for invalid indexes: that is contract too.'),
+				say('Deprecated propone una alternativa y Since dice desde qué versión existe el método.', 'Deprecated points to an alternative and Since tells which version added the method.'),
+			],
 		},
 		{
 			id: 'javadoc-example',
@@ -625,10 +783,10 @@ export const script: AnimationScript = {
 				],
 			},
 			title: { es: 'Aplicar el contrato de String.substring', en: 'Applying the String.substring contract' },
-			text: {
-				es: 'Queremos mostrar como máximo los primeros diez caracteres de un argumento. Math.min(10, texto.length()) da un límite seguro para textos cortos y respeta la precondición documentada. La entrada ausente o vacía produce un mensaje explícito por System.err y termina sin una excepción accidental. No conviene capturar IndexOutOfBoundsException y seguir con datos incorrectos: primero validá las condiciones que controlás.',
-				en: 'We want to show at most the first ten characters of an argument. Math.min(10, text.length()) gives a safe boundary for short texts and respects the documented precondition. Missing or blank input produces an explicit message through System.err and exits without an accidental exception. Do not catch IndexOutOfBoundsException and continue with bad data: first validate the conditions you control.',
-			},
+			subtitles: [
+				say('`Math.min(10, texto.length())` evita pedir más caracteres de los que hay.', '`Math.min(10, text.length())` avoids asking for more characters than there are.'),
+				say('Si falta el texto, avisamos por `System.err` en vez de dejar que salte una excepción.', 'If the text is missing we report it on `System.err` instead of letting an exception fly.'),
+			],
 		},
 		{
 			id: 'javadoc-mismatch',
@@ -637,10 +795,10 @@ export const script: AnimationScript = {
 			show: '*',
 			focus: ['version', 'meta'],
 			title: { es: 'Cuando la documentación y el compilador no coinciden', en: 'When documentation and compiler disagree' },
-			text: {
-				es: 'Confirmá java --version, javac --version y la versión seleccionada por el proyecto. Verificá el encabezado de versión de la página Javadoc y la sección Since. Consultá la firma completa: quizás elegiste otra sobrecarga o importaste una clase con el mismo nombre. Tratá Deprecated como una señal de migración, no como un error que ocultar. Si el método es de una versión más nueva, usá la alternativa documentada o actualizá el JDK de forma deliberada. La documentación es la fuente del contrato; el autocompletado del IDE es solo una ayuda.',
-				en: 'Confirm java --version, javac --version and the version selected by the project. Check the Javadoc page’s version heading and its Since section. Inspect the full signature: you may have picked another overload or imported a class with the same name. Treat Deprecated as a migration signal, not as an error to hide. If the method belongs to a newer version, use the documented alternative or upgrade the JDK deliberately. Documentation is the source of the contract; IDE completion is only an aid.',
-			},
+			subtitles: [
+				say('¿El compilador no coincide con la documentación? Compará `java --version`, `javac --version` y el Javadoc.', 'Compiler and docs disagree? Compare `java --version`, `javac --version` and the Javadoc.'),
+				say('Revisá la firma completa y Since. La documentación manda; el autocompletado solo ayuda.', 'Check the full signature and Since. The docs rule; autocomplete only helps.'),
+			],
 		},
 
 		// ─── 9. Errors ──────────────────────────────────────────────────────
@@ -657,10 +815,10 @@ export const script: AnimationScript = {
 				],
 			},
 			title: { es: 'Error 1: el archivo no se llama como la clase', en: 'Mistake 1: the file is not named like the class' },
-			text: {
-				es: 'El mensaje "class HolaMundo is public, should be declared in a file named HolaMundo.java" aparece cuando el nombre del archivo no coincide exactamente con el de la clase public. Atención a las mayúsculas: holamundo.java y HolaMundo.java son archivos distintos para javac.',
-				en: 'The message "class HolaMundo is public, should be declared in a file named HolaMundo.java" appears when the file name does not exactly match the public class name. Mind the capitalization: holamundo.java and HolaMundo.java are different files for javac.',
-			},
+			subtitles: [
+				say('Error 1: `class HolaMundo is public, should be declared in a file named HolaMundo.java`.', 'Error 1: `class HolaMundo is public, should be declared in a file named HolaMundo.java`.'),
+				say('El archivo debe llamarse como la clase pública, con las mismas mayúsculas.', 'The file must be named like the public class, with the same capitals.'),
+			],
 		},
 		{
 			id: 'errors-main-class',
@@ -678,10 +836,10 @@ export const script: AnimationScript = {
 				],
 			},
 			title: { es: 'Error 2: Could not find or load main class', en: 'Mistake 2: Could not find or load main class' },
-			text: {
-				es: '"Error: Could not find or load main class HolaMundo" significa que la JVM no encontró la clase. Las causas típicas: ejecutaste java HolaMundo.class con la extensión, en lugar de java HolaMundo, o no estás en el directorio donde quedó el archivo .class.',
-				en: '"Error: Could not find or load main class HolaMundo" means the JVM could not find the class. The typical causes: you ran java HolaMundo.class with the extension instead of java HolaMundo, or you are not in the directory where the .class file ended up.',
-			},
+			subtitles: [
+				say('Error 2: `Could not find or load main class`: la JVM no encuentra la clase.', 'Error 2: `Could not find or load main class`: the JVM cannot find the class.'),
+				say('Ejecutá `java HolaMundo` sin `.class` y desde la carpeta donde está el archivo.', 'Run `java HolaMundo` without `.class`, from the folder that holds the file.'),
+			],
 		},
 		{
 			id: 'errors-index',
@@ -697,10 +855,10 @@ export const script: AnimationScript = {
 				],
 			},
 			title: { es: 'Error 3: ArrayIndexOutOfBoundsException', en: 'Mistake 3: ArrayIndexOutOfBoundsException' },
-			text: {
-				es: 'java.lang.ArrayIndexOutOfBoundsException salta cuando intentás acceder a args[0] sin verificar primero que args.length > 0 y no enviaste argumentos en la terminal. El array está vacío, la posición 0 no existe y la JVM detiene el programa. La solución ya la viste en SaludoPersonalizado: preguntar por la longitud antes de leer.',
-				en: 'java.lang.ArrayIndexOutOfBoundsException fires when you try to access args[0] without first checking that args.length > 0 and you passed no arguments on the terminal. The array is empty, position 0 does not exist and the JVM stops the program. You already saw the fix in SaludoPersonalizado: check the length before reading.',
-			},
+			subtitles: [
+				say('Error 3: leer `args[0]` sin argumentos lanza `ArrayIndexOutOfBoundsException`.', 'Error 3: reading `args[0]` without arguments throws `ArrayIndexOutOfBoundsException`.'),
+				say('La solución: preguntar por `args.length` antes de leer.', 'The fix: check `args.length` before reading.'),
+			],
 		},
 
 		// ─── 10. Exercise ───────────────────────────────────────────────────
@@ -711,10 +869,10 @@ export const script: AnimationScript = {
 			show: ['check', 'yes', 'no'],
 			focus: ['check'],
 			title: { es: 'Desafío: PerfilDesarrollador.java', en: 'Challenge: PerfilDesarrollador.java' },
-			text: {
-				es: 'Escribí un programa llamado PerfilDesarrollador.java que verifique si se le pasaron 2 argumentos desde la consola (nombre y lenguaje favorito). Si llegaron, debe imprimir un mensaje formateado del estilo "Desarrollador: [Nombre] | Especialidad: [Lenguaje]". Si no, debe mostrar un mensaje de uso explicativo. Intentá resolverlo antes de ver la solución.',
-				en: 'Write a program named PerfilDesarrollador.java that checks whether 2 arguments were passed from the console (name and favorite language). If they arrived, it must print a formatted message like "Developer: [Name] | Specialty: [Language]". Otherwise it must show an explanatory usage message. Try to solve it before looking at the solution.',
-			},
+			subtitles: [
+				say('Desafío: `PerfilDesarrollador.java` recibe un nombre y un lenguaje favorito.', 'Challenge: `PerfilDesarrollador.java` receives a name and a favorite language.'),
+				say('Con 2 argumentos imprime el perfil; si no, explica cómo usarlo. Intentalo antes de ver la solución.', 'With 2 arguments it prints the profile; otherwise it explains how to use it. Try it first.'),
+			],
 		},
 		{
 			id: 'exercise-solution',
@@ -734,10 +892,10 @@ export const script: AnimationScript = {
 				],
 			},
 			title: { es: 'Solución sugerida', en: 'Suggested solution' },
-			text: {
-				es: 'La solución reúne todo lo visto: una clase pública con el mismo nombre que el archivo, el método main como punto de entrada, la verificación args.length >= 2 antes de leer, dos variables en camelCase que guardan args[0] y args[1], y System.out.println para imprimir el perfil formateado. Con menos argumentos, la rama else explica el uso correcto.',
-				en: 'The solution brings together everything we saw: a public class with the same name as the file, the main method as the entry point, the args.length >= 2 check before reading, two camelCase variables holding args[0] and args[1], and System.out.println to print the formatted profile. With fewer arguments, the else branch explains the correct usage.',
-			},
+			subtitles: [
+				say('La solución valida `args.length >= 2` antes de leer.', 'The solution checks `args.length >= 2` before reading.'),
+				say('Guarda `args[0]` y `args[1]` en variables camelCase e imprime el perfil con `System.out.println`.', 'It stores `args[0]` and `args[1]` in camelCase variables and prints the profile with `System.out.println`.'),
+			],
 		},
 		{
 			id: 'exercise-usage',
@@ -753,10 +911,10 @@ export const script: AnimationScript = {
 				],
 			},
 			title: { es: 'Un solo argumento: el programa explica cómo usarlo', en: 'One argument: the program explains how to use it' },
-			text: {
-				es: 'Con un solo argumento, args.length vale 1, la condición >= 2 es falsa y entra la rama else. En lugar de fallar con una excepción, el programa imprime un mensaje de uso que le dice al usuario exactamente qué esperaba. Ese es el comportamiento de un programa bien hecho: validar primero y explicar después.',
-				en: 'With a single argument, args.length is 1, the >= 2 condition is false and the else branch runs. Instead of failing with an exception, the program prints a usage message telling the user exactly what it expected. That is how a well-made program behaves: validate first, explain afterwards.',
-			},
+			subtitles: [
+				say('Con un solo argumento, la condición es falsa y entra el `else`.', 'With a single argument the condition is false and `else` runs.'),
+				say('En lugar de fallar, explica qué esperaba: validar primero, explicar después.', 'Instead of crashing it explains what it expected: validate first, explain after.'),
+			],
 		},
 		{
 			id: 'closing-summary',
@@ -765,10 +923,10 @@ export const script: AnimationScript = {
 			show: '*',
 			focus: ['repo'],
 			title: { es: 'Resumen y código real para profundizar', en: 'Recap and real code to go deeper' },
-			text: {
-				es: 'Recorriste la plataforma Java (JDK, JRE, JVM), el flujo de compilación en dos fases, la anatomía de HolaMundo, la consola, los argumentos, las convenciones, los entornos, el Javadoc, los errores comunes y el ejercicio final. Podés reforzar todo con programas completos en el repositorio del curso: Ej01HolaMundo, Ej02SalidaEstandar con print, println y printf, y Ej03ConstantesYConvenciones. Clonalo, abrí la carpeta l01_conceptos_basicos y ejecutá cada programa mientras releés la lección.',
-				en: 'You went through the Java platform (JDK, JRE, JVM), the two-phase compilation flow, the anatomy of HolaMundo, the terminal, arguments, conventions, environments, Javadoc, common mistakes and the final exercise. You can reinforce everything with complete programs in the course repository: Ej01HolaMundo, Ej02SalidaEstandar with print, println and printf, and Ej03ConstantesYConvenciones. Clone it, open the l01_conceptos_basicos folder and run each program while you re-read the lesson.',
-			},
+			subtitles: [
+				say('Recorriste la plataforma, la compilación, HolaMundo, la consola, los argumentos y el Javadoc.', 'You covered the platform, compilation, HolaMundo, the terminal, arguments and Javadoc.'),
+				say('Para practicar, cloná el repositorio del curso y ejecutá los programas de `l01_conceptos_basicos`.', 'To practice, clone the course repository and run the programs in `l01_conceptos_basicos`.'),
+			],
 		},
 	],
 };

@@ -2,7 +2,6 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { type Locale } from '../../../i18n/utils';
 import { animations } from '../../../data/animations';
-import AnimationLessonLink from '../../../components/AnimationLessonLink.astro';
 
 import ConceptosBasicosJava from '../../../components/animaciones/conceptos-basicos-java.astro';
 
@@ -39,14 +38,19 @@ const AnimationComponent = componentMap[slug];
 	enPath={`/en/animaciones/${slug}`}
 	canonicalPath={lang === 'en' ? `/en/animaciones/${slug}` : `/animaciones/${slug}`}
 >
-	<div class="container animation-page">
-		<AnimationLessonLink animationSlug={animation.slug} locale={lang} />
+	<div class="animation-page">
 		<AnimationComponent lang={lang} animation={animation} />
 	</div>
 </BaseLayout>
 
 <style>
+	/* Full-bleed column that fills the viewport below the sticky site header, like the
+	   presentation decks, so the player can grow and pin its controls to the bottom. */
 	.animation-page {
+		display: flex;
+		flex-direction: column;
+		min-height: calc(100dvh - var(--site-header-height, 0px));
 		padding-top: var(--space-4);
+		padding-inline: clamp(16px, 3vw, 40px);
 	}
 </style>

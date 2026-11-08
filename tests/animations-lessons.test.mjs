@@ -102,7 +102,7 @@ test('both animation detail pages import and map every animation component', asy
 	for (const file of ['src/pages/animaciones/[slug].astro', 'src/pages/[lang]/animaciones/[slug].astro']) {
 		assert.ok(existsSync(file), `${file} is missing`);
 		const content = await readFile(file, 'utf8');
-		assert.match(content, /AnimationLessonLink/);
+		assert.doesNotMatch(content, /AnimationLessonLink/, `${file} leaves the lesson link to the player controls`);
 		for (const animation of dataModule.animations) {
 			const name = componentNameFor(animation.slug);
 			assert.ok(
@@ -113,6 +113,16 @@ test('both animation detail pages import and map every animation component', asy
 			assert.match(content, new RegExp(`'${animation.slug}':\\s*${name}`), `${file} should map '${animation.slug}'`);
 		}
 	}
+});
+
+test('the player links back to the owning lesson from its controls', async () => {
+	assert.equal(existsSync('src/components/AnimationLessonLink.astro'), false, 'the "Part of" kicker is gone');
+	const player = await readFile('src/components/animations/AnimationPlayer.astro', 'utf8');
+	assert.match(player, /getLessonForAnimation\(slug\)/);
+	assert.match(player, /`\/cursos\/\$\{lessonRef\.course\}\/\$\{lessonRef\.slug\}`/);
+	assert.match(player, /`\/en\/courses\/\$\{lessonRef\.course\}\/\$\{lessonRef\.slug\}`/);
+	assert.match(player, /<a class="btn btn-ghost anim-back" href=\{lessonHref\}/);
+	assert.match(player, /t\('animations\.controls\.backToLesson'\)/);
 });
 
 test('lesson pages (es + en) wire the animations menu, section and sidebar count', async () => {
@@ -141,6 +151,17 @@ test('course index pages (es + en) feed the animation-count badge to LessonsList
 	}
 });
 
+test('animation detail pages render the player full-bleed in a viewport-filling column', async () => {
+	for (const file of ['src/pages/animaciones/[slug].astro', 'src/pages/[lang]/animaciones/[slug].astro']) {
+		const content = await readFile(file, 'utf8');
+		assert.match(content, /<div class="animation-page">/, `${file} drops the width-capped .container`);
+		assert.match(content, /min-height: calc\(100dvh - var\(--site-header-height, 0px\)\)/, `${file} fills the viewport`);
+		assert.match(content, /flex-direction: column/, `${file} lets the player grow`);
+	}
+	const player = await readFile('src/components/animations/AnimationPlayer.astro', 'utf8');
+	assert.match(player, /\.anim-player \{\n\t\tflex: 1;\n\t\tdisplay: grid;\n\t\tgrid-template-rows: 1fr auto;/, 'controls take the last row');
+});
+
 test('LessonsList renders an animation-count badge with the Lucide clapperboard icon', async () => {
 	const content = await readFile('src/components/LessonsList.astro', 'utf8');
 	assert.match(content, /animationCount\?: number/);
@@ -158,8 +179,11 @@ test('i18n dictionaries carry the animation keys in both locales', async () => {
 		assert.ok(dict.courses?.lessonAnimations?.heading);
 		assert.ok(dict.courses?.lessonAnimations?.menuButtonLabel);
 		assert.ok(dict.courses?.lessonAnimations?.menuHeading);
-		assert.ok(dict.animations?.kicker);
-		assert.ok(dict.animations?.partOf);
+		assert.ok(dict.animations?.stage);
+		assert.ok(dict.animations?.controls?.backToLesson);
+		for (const removed of ['kicker', 'chapters', 'keyboardHint', 'partOf']) {
+			assert.equal(dict.animations?.[removed], undefined, `animations.${removed} is no longer rendered`);
+		}
 		assert.ok(dict.animations?.card?.open);
 		assert.ok(dict.animations?.card?.minutes);
 		for (const key of ['prev', 'next', 'play', 'pause', 'restart']) {
@@ -175,7 +199,6 @@ test('new animation components contain no raw hex colors (tokens only)', async (
 		'src/components/animations/AnimationPlayer.astro',
 		'src/components/LessonAnimations.astro',
 		'src/components/LessonAnimationsMenu.astro',
-		'src/components/AnimationLessonLink.astro',
 		'src/styles/animation-scene.css',
 		...(await readdir('src/components/animaciones')).map((file) => `src/components/animaciones/${file}`),
 	];

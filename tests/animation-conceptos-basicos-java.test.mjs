@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { animations, getAnimationsForLesson, getLessonForAnimation } from '../src/data/animations.ts';
 import { script } from '../src/data/animations/conceptos-basicos-java.ts';
-import { resolveScript, validateScript, estimateStepDuration } from '../src/utils/animations.ts';
+import { resolveScript, validateScript, estimateStepDuration, cueEnd } from '../src/utils/animations.ts';
 
 const SLUG = 'conceptos-basicos-java';
 const COMPONENT = `src/components/animaciones/${SLUG}.astro`;
@@ -38,11 +38,16 @@ test('script is referentially valid and covers the ten lesson sections plus intr
 	assert.ok(script.steps.length >= 36, `expected a detailed script, got ${script.steps.length} steps`);
 });
 
-test('every step has bilingual title and text, and localized code/shell content', () => {
+test('every step has a bilingual title and short captions, and localized code/shell content', () => {
 	for (const step of script.steps) {
+		assert.ok(step.subtitles.length >= 1 && step.subtitles.length <= 3, `${step.id} narrates in one to three captions`);
 		for (const lang of ['es', 'en']) {
 			assert.ok(step.title[lang]?.length > 0, `${step.id} title.${lang}`);
-			assert.ok(step.text[lang]?.length > 40, `${step.id} text.${lang} should explain, not label`);
+			for (const sub of step.subtitles) {
+				const length = sub.text[lang]?.length ?? 0;
+				assert.ok(length >= 15, `${step.id} caption.${lang} should say something: "${sub.text[lang]}"`);
+				assert.ok(length <= 120, `${step.id} caption.${lang} should be synthetic (${length} chars): "${sub.text[lang]}"`);
+			}
 			if (step.code) assert.ok(step.code.source[lang]?.length > 0, `${step.id} code.${lang}`);
 			for (const line of step.shell?.lines ?? []) assert.ok(line.text[lang]?.length > 0, `${step.id} shell.${lang}`);
 		}
@@ -68,7 +73,9 @@ test('code panels cover every program of the lesson and shell panels show javac/
 });
 
 test('narration mentions the key concepts of each lesson section', () => {
-	const all = script.steps.map((step) => `${step.title.es} ${step.text.es}`).join('\n');
+	const all = resolveScript(script, 'es')
+		.steps.map((step) => `${step.title} ${step.text}`)
+		.join('\n');
 	for (const concept of [
 		'WORA',
 		'JDK',
@@ -121,9 +128,54 @@ test('every scene, shown element and focused element referenced by the script ex
 	for (const step of script.steps) {
 		const block = sceneBlocks.get(step.scene);
 		assert.ok(block, `step ${step.id} references unknown scene "${step.scene}"`);
-		const ids = step.show === '*' ? [] : step.show;
+		const ids = !step.show || step.show === '*' ? [] : step.show;
 		for (const id of [...ids, ...(step.focus ?? [])]) {
 			assert.match(block, new RegExp(`data-el="${id}"`), `scene ${step.scene} lacks data-el="${id}" (step ${step.id})`);
+		}
+		for (const cue of step.motion?.cues ?? []) {
+			const targets = [cue.el, ...(cue.to === 'all' ? [] : [cue.to].flat())].filter(Boolean);
+			for (const id of targets) {
+				// Ids built in a loop (`jvm-${platform.id}`) appear as their prefix plus the loop data.
+				const [prefix, suffix] = id.split(/-(?=win$|mac$|linux$)/);
+				const literal = new RegExp(`data-(el|anchor)="${id}"`);
+				const templated = suffix ? new RegExp(`data-el=\\{\`${prefix}-\\$\\{platform\\.id\\}\`\\}`) : null;
+				const known = literal.test(block) || (templated?.test(block) ?? false) || (id.startsWith('code-') && /data-el=\{`code-\$\{line\.number\}`\}/.test(block)) || (/^class-(file|mac|linux)$/.test(id) && component.includes(`id: '${id}'`));
+				assert.ok(known, `scene ${step.scene} lacks element "${id}" (cue ${cue.do} of ${step.id})`);
+			}
+		}
+	}
+});
+
+test('the compilation chapter is a motion prototype: four timed steps on one canvas', async () => {
+	const pipeline = script.steps.filter((step) => step.chapter === 'pipeline');
+	assert.deepEqual(
+		pipeline.map((step) => step.id),
+		['pipeline-source', 'pipeline-compile', 'pipeline-jvm', 'pipeline-run'],
+	);
+	for (const step of pipeline) {
+		assert.ok(step.motion, `${step.id} is a motion step`);
+		assert.equal(step.scene, 'pipeline');
+		assert.ok(step.subtitles.length >= 2, `${step.id} narrates with captions`);
+		assert.ok(step.subtitles.every((sub) => typeof sub.at === 'number'), `${step.id} pins captions to its cues`);
+	}
+	const kinds = new Set(pipeline.flatMap((step) => step.motion.cues.map((cue) => cue.do)));
+	for (const kind of ['camera', 'enter', 'type', 'move', 'draw', 'flow', 'spin', 'pulse', 'exit']) {
+		assert.ok(kinds.has(kind), `the prototype exercises the ${kind} cue`);
+	}
+
+	const component = await readFile(COMPONENT, 'utf8');
+	assert.match(component, /data-scene="pipeline" data-motion/);
+	assert.match(component, /<svg class="mg-canvas" viewBox="0 0 1600 660"/);
+	assert.match(component, /<g class="mg-camera" data-camera>/);
+	assert.match(component, /highlightCode\(holaMundo\.source\[lang\], 'java'\)/, 'the editor types the real HolaMundo source');
+
+	for (const lang of ['es', 'en']) {
+		const resolved = resolveScript(script, lang).steps.filter((step) => step.chapter === 'pipeline');
+		for (const step of resolved) {
+			const lastCue = Math.max(...step.motion.cues.map(cueEnd));
+			assert.ok(step.duration > lastCue, `${step.id} (${lang}) lasts until its last cue ends`);
+			const sorted = [...step.motion.cues].sort((a, b) => a.at - b.at);
+			assert.deepEqual(step.motion.cues, sorted, 'cues are resolved in time order');
 		}
 	}
 });
@@ -161,10 +213,52 @@ test('player provides controls, keyboard support, live step announcements and re
 	assert.match(player, /t\('animations\.controls\.play'\)/);
 });
 
+test('player plays motion steps: cues, camera, captions and a pausable clock', async () => {
+	const player = await readFile(PLAYER, 'utf8');
+	assert.match(player, /data-cues=\{step\.motion \? JSON\.stringify\(step\.motion\.cues\) : undefined\}/);
+	assert.match(player, /class="anim-subtitle" data-sub-at=\{sub\.at\}/);
+	assert.match(player, /import \{ MOTION_CUE_DEFAULT_MS \} from '\.\.\/\.\.\/utils\/animations'/, 'client and server share cue lengths');
+	assert.match(player, /getBBox\(\)/, 'camera and moves measure the canvas');
+	assert.match(player, /clock = root\.animate\(null, \{ duration: durationMs \}\)/, 'autoplay runs on a pausable clock');
+	assert.match(player, /animation\.playState === 'running'\) animation\.pause\(\)/, 'pause freezes every running cue');
+	assert.match(player, /root\.dataset\.mode = 'motion'/);
+	assert.match(player, /const duration = reduced \? 1 :/, 'reduced motion turns cues into instant state changes');
+});
+
+test('wide screens put terminal panels in a column beside the stage', async () => {
+	const player = await readFile(PLAYER, 'utf8');
+	assert.match(player, /root\.dataset\.panels = step\.querySelector\('\.anim-panels'\) \? 'true' : 'false'/);
+	assert.match(player, /\.anim-player\[data-panels='true'\] \.anim-board \{\n\t\t\tgrid-template-columns: minmax\(0, 1fr\) minmax\(24rem, 0\.9fr\);/);
+	assert.match(player, /grid-template-areas: 'stage panels';/);
+	assert.match(player, /\.anim-player\[data-panels='true'\] \.anim-panels \{[^}]*overflow-y: auto;/, 'a long session scrolls inside its column');
+	assert.match(player, /\.anim-player\[data-panels='true'\] \.anim-code \{\n\t\t\twhite-space: pre-wrap;/, 'long lines wrap instead of scrolling sideways');
+	assert.match(player, /style=\{`--i:\$\{index\};--indent:\$\{indent\}ch`\}><span class="anim-code"/, 'wrapped code continues under its own indentation');
+});
+
+test('every step narrates with captions instead of a narration card', async () => {
+	const player = await readFile(PLAYER, 'utf8');
+	assert.match(player, /\{step\.subtitles\.map\(\(sub\) =>/, 'captions render for slide and motion steps alike');
+	assert.match(player, /<div class="anim-subtitles" aria-hidden="true">\s*<div class="anim-subtitle-track">/, 'the caption band holds only the captions');
+	assert.doesNotMatch(player, /anim-caption-kicker|chapterLabel/, 'no chapter tag over the captions');
+	assert.doesNotMatch(player, /anim-narration card|anim-step-kicker|anim-step-number/, 'no visible narration card');
+	assert.match(player, /\.anim-narration \{\n\t\tposition: absolute;/, 'the full narration stays for assistive tech');
+	assert.match(player, /applyScene\(step\);\n\t\t\t\}\n(?:.*\n)?\t\t\trunSubtitles\(step\);/, 'captions play in every step');
+});
+
+test('player keeps the visible chrome to the animation: no header, chapter nav or keyboard hint', async () => {
+	const player = await readFile(PLAYER, 'utf8');
+	assert.doesNotMatch(player, /anim-header|section-subtitle|animations\.kicker/, 'no visible header');
+	assert.doesNotMatch(player, /anim-chapters|data-anim-chapter|animations\.chapters/, 'no chapter navigation');
+	assert.doesNotMatch(player, /anim-hint|animations\.keyboardHint/, 'no keyboard hint');
+	assert.match(player, /<h1 class="anim-visually-hidden">\{title\}<\/h1>/, 'title stays for assistive tech');
+	const component = await readFile(COMPONENT, 'utf8');
+	assert.doesNotMatch(component, /\n\ttag=|\n\tdescription=/, 'component no longer passes header-only props');
+});
+
 test('animation component mounts the player with the script and every scene lives in the scene slot', async () => {
 	const component = await readFile(COMPONENT, 'utf8');
 	assert.match(component, /import AnimationPlayer from '\.\.\/animations\/AnimationPlayer\.astro'/);
-	assert.match(component, /import { script } from '\.\.\/\.\.\/data\/animations\/conceptos-basicos-java'/);
+	assert.match(component, /import { holaMundo, script } from '\.\.\/\.\.\/data\/animations\/conceptos-basicos-java'/);
 	assert.match(component, /slot="scene"/);
 	assert.match(component, /@import '\.\.\/\.\.\/styles\/animation-scene\.css'/);
 	for (const scene of ['platform', 'pipeline', 'anatomy', 'terminal-flow', 'args', 'conventions', 'ide', 'javadoc', 'errors', 'exercise']) {

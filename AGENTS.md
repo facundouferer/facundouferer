@@ -593,30 +593,61 @@ An animation is made of three parts:
   (types in `src/data/animations/types.ts`): `chapters` (one per lesson section) and
   `steps`. Every step names the `scene` it shows, the `show` list of `data-el` ids it
   reveals (`'*'` for all), the optional `focus` list it emphasizes, a bilingual
-  `title`/`text` narration, and optionally a `code` panel (file name, language,
-  localized source, `focusLines`) and/or a `shell` panel (`cmd`/`out`/`err`/`cmt`
-  lines). Narration follows the lesson text; code string literals are localized the
-  same way the lesson does. `src/utils/animations.ts` resolves a script for one locale
+  `title`, its narration as `subtitles` (one to three short captions, one idea each,
+  written with the `say(es, en)` helper; the long-form explanation stays in the
+  lesson), and optionally a `code` panel (file name, language, localized source,
+  `focusLines`) and/or a `shell` panel (`cmd`/`out`/`err`/`cmt` lines). Captions
+  without `at` follow each other by reading time per locale (`resolveSubtitles`);
+  code string literals are localized the same way the lesson does. `src/utils/animations.ts` resolves a script for one locale
   (`resolveScript`), estimates autoplay dwell times and validates references.
+- **Motion steps** — a step with `motion: { cues }` instead of `show`/`focus` plays
+  like a short film: its scene is one SVG canvas (`[data-scene][data-motion]`
+  holding `svg.mg-canvas` and a `[data-camera]` group) that keeps its state across
+  consecutive motion steps, its captions pin `at` to stay in sync, and `cues` choreograph
+  the canvas in ms from the step start: `camera` (pan/zoom to frame ids, or `'all'`),
+  `enter`/`exit`, `draw` (`.mg-stroke` paths with `pathLength="1"`, then `.mg-head`),
+  `type` (left-to-right reveal, one character per step), `move` (soft arc to another
+  `data-el`/`data-anchor`), `flow` (marching dashes), `pulse` and `spin`
+  (`.mg-spin`). Elements start hidden unless `data-base="shown"` and travel from
+  `data-x`/`data-y`. `validateScript` rejects captions that leave the screen before
+  they can be read (`subtitleReadingTime`) and motion steps that also use slide
+  fields; `MOTION_CUE_DEFAULT_MS` is shared by the dwell-time estimate and the
+  player. Canvas primitives (`.mg-card`, `.mg-chip`, `.mg-mono`, `.mg-arrow`, …) live
+  in `src/styles/animation-scene.css`. The Java 01 compilation chapter
+  (`pipeline-*` steps) is the reference motion chapter.
 - **Scenes** — `src/components/animaciones/<slug>.astro` draws the diagrams as plain
   HTML (`[data-scene="<id>"]` blocks with `[data-el="<id>"]` elements) using the
   primitives in `src/styles/animation-scene.css` (`.dg-box`, `.dg-chip`, `.dg-nest`,
   `.dg-board`/`.dg-token`, `.dg-array`, …), imported from the component `<style>`. It
   passes the resolved script and the scenes (`slot="scene"`) to the player.
 - **Player** — `src/components/animations/AnimationPlayer.astro` is the shared engine:
-  chapter pills, scene stage, narration card, terminal-styled code/shell panels with
+  scene stage, a caption band with the step's timed captions, terminal-styled code/shell panels with
   syntax colors from `src/utils/highlightCode.ts` (a dependency-free Java/bash
   tokenizer whose `tok-*` classes map to Organic ramps on the ink ground), and the
   controls (previous/next, play/pause autoplay, restart, ← → and space keys, live step
-  counter). Every string is server-rendered through `t()`; the client script only
-  toggles classes. `prefers-reduced-motion` disables reveal, typing and progress
-  animations.
+  counter, and a "back to the lesson" link resolved from the catalog). The visible
+  chrome is limited to the animation: no header, breadcrumb, chapter nav or keyboard
+  hint, only a visually hidden `<h1>` for assistive tech. The detail pages render it
+  full-bleed in a column that fills `100dvh - var(--site-header-height)` (the
+  presentation-deck pattern), so the stage grows and the controls hug the bottom
+  edge. Every string is server-rendered through `t()`; the client script only toggles
+  classes, writes inline styles and runs Web Animations. Each step runs on a pausable
+  clock (`root.animate(null, …)`): pause freezes the clock, the progress bar and every
+  running cue and caption; play resumes them. There is no narration card: on wide
+  screens the stage spans the board and the captions sit in its reserved bottom
+  band, and steps with code/shell panels (`data-panels="true"`) move the panels to a
+  column beside the stage, where long lines wrap with a hanging indent and the
+  column scrolls on its own; on narrow screens captions and panels follow the stage; the title and the joined captions stay in a
+  visually hidden `.anim-narration` for assistive tech. Motion steps also set
+  `data-mode="motion"` on the player. `prefers-reduced-motion` disables reveal, typing and
+  progress animations and turns motion cues into instant state changes at their
+  scheduled time.
 
 Where this renders:
 
 - `src/pages/animaciones/[slug].astro` and `src/pages/[lang]/animaciones/[slug].astro`
-  (component map keyed by slug, like presentations) with `AnimationLessonLink.astro`
-  rendering the "Part of: Course › Lesson" kicker.
+  (component map keyed by slug, like presentations). There is no "Part of" kicker:
+  the player's controls link back to the lesson.
 - `LessonAnimationsMenu.astro` (title-row access, next to the presentations menu) and
   `LessonAnimations.astro` (card section after the lesson presentations) on both lesson
   pages; `LessonsList.astro` shows an `animationCount` badge (Lucide `clapperboard`).
@@ -627,10 +658,12 @@ Where this renders:
 Adding an animation: register it in the catalog, write its script and scenes, import
 and map the component in both detail pages, add the thumbnail, and cover it with a
 test like `tests/animation-conceptos-basicos-java.test.mjs` (which also checks that
-every `scene`/`show`/`focus` reference exists in the component).
+every `scene`/`show`/`focus` reference and every cue target exists in the component).
 
 Verification: `node --test tests/animations-lessons.test.mjs
-tests/animation-conceptos-basicos-java.test.mjs tests/highlight-code.test.mjs`.
+tests/animation-conceptos-basicos-java.test.mjs tests/animation-motion.test.mjs
+tests/highlight-code.test.mjs`, plus `npx astro check` (the build does not type-check
+the client script).
 
 ### 6.10 i18n Runtime (`src/i18n/`)
 

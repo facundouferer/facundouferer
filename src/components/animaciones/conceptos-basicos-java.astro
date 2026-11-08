@@ -8,8 +8,9 @@
  */
 import AnimationPlayer from '../animations/AnimationPlayer.astro';
 import type { Animation } from '../../data/animations';
-import { script } from '../../data/animations/conceptos-basicos-java';
+import { holaMundo, script } from '../../data/animations/conceptos-basicos-java';
 import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
 
 type Props = {
 	lang: 'es' | 'en';
@@ -19,15 +20,39 @@ type Props = {
 const { lang, animation } = Astro.props;
 const isEs = lang === 'es';
 const resolved = resolveScript(script, lang);
+
+// Pipeline canvas: SVG text needs <tspan> where the highlighter emits <span>, and
+// explicit x offsets for indentation (half width, so the longest line fits).
+const CODE_ADVANCE = 9.6; // monospace advance at 16px, in canvas units
+const toTspans = (html: string) => html.replaceAll('<span class="', '<tspan class="').replaceAll('</span>', '</tspan>');
+const editorLines = highlightCode(holaMundo.source[lang], 'java').map((html, index) => {
+	const indent = html.match(/^ */)?.[0].length ?? 0;
+	return {
+		number: index + 1,
+		x: 100 + (indent / 2) * CODE_ADVANCE,
+		y: 172 + index * 34,
+		html: toTspans(html.slice(indent)),
+	};
+});
+const javacCommand = toTspans(highlightCode('javac HolaMundo.java', 'bash')[0]);
+const javaCommand = toTspans(highlightCode('java HolaMundo', 'bash')[0]);
+const greeting = isEs ? '¡Hola, Mundo desde Java!' : 'Hello, World from Java!';
+const platforms = [
+	{ id: 'win', os: 'Windows', cpu: 'x86', y: 90 },
+	{ id: 'mac', os: 'macOS', cpu: 'Apple Silicon', y: 260 },
+	{ id: 'linux', os: 'Linux', cpu: 'ARM', y: 430 },
+].map((platform) => ({ ...platform, cy: platform.y + 65 }));
+const classFiles = [
+	{ id: 'class-linux', x: 955 },
+	{ id: 'class-mac', x: 955 },
+	{ id: 'class-file', x: 770 },
+];
 ---
 
 <AnimationPlayer
 	lang={lang}
 	slug={animation.slug}
-	tag={animation.tag[lang]}
 	title={animation.title[lang]}
-	description={animation.description[lang]}
-	chapters={resolved.chapters}
 	steps={resolved.steps}
 >
 	<!-- INTRO: where Java lives -->
@@ -184,55 +209,152 @@ const resolved = resolveScript(script, lang);
 		</div>
 	</div>
 
-	<!-- 2. Pipeline -->
-	<div slot="scene" data-scene="pipeline" class="scene-pipeline">
-		<div class="dg-row dg-row--center scene-pipeline-flow">
-			<div class="dg-box dg-box--center scene-pipeline-node" data-el="src">
-				<svg class="dg-icon dg-icon--lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="m10 13-2 2 2 2" /><path d="m14 17 2-2-2-2" />
-				</svg>
-				<code class="dg-code">HolaMundo.java</code>
-				<p class="dg-sub">{isEs ? 'Código fuente' : 'Source code'}</p>
-			</div>
-			<div class="dg-arrow dg-arrow-label" data-el="javac">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
-				<span>javac</span>
-			</div>
-			<div class="dg-box dg-box--accent dg-box--center scene-pipeline-node" data-el="bytecode">
-				<svg class="dg-icon dg-icon--lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<rect x="4" y="4" width="16" height="16" rx="3" /><path d="M8 10h2" /><path d="M14 10h2" /><path d="M8 14h8" />
-				</svg>
-				<code class="dg-code">HolaMundo.class</code>
-				<p class="dg-sub">Bytecode</p>
-			</div>
-			<div class="dg-arrow dg-arrow-label" data-el="jvm-arrow">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
-				<span>java</span>
-			</div>
-			<div class="dg-box dg-box--sage scene-pipeline-node" data-el="jvm">
-				<p class="dg-title">JVM</p>
-				<div class="dg-chips">
-					<span class="dg-chip">Windows</span>
-					<span class="dg-chip">macOS</span>
-					<span class="dg-chip">Linux</span>
-				</div>
-				<p class="dg-sub">{isEs ? 'Interpreta + compila JIT' : 'Interprets + JIT compiles'}</p>
-			</div>
-			<div class="dg-arrow" data-el="cpu-arrow">
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
-			</div>
-			<div class="dg-box dg-box--ink dg-box--center scene-pipeline-node" data-el="cpu">
-				<svg class="dg-icon dg-icon--lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--color-accent-300)">
-					<rect x="4" y="4" width="16" height="16" rx="2" /><rect x="9" y="9" width="6" height="6" rx="1" /><path d="M15 2v2" /><path d="M15 20v2" /><path d="M2 15h2" /><path d="M2 9h2" /><path d="M20 15h2" /><path d="M20 9h2" /><path d="M9 2v2" /><path d="M9 20v2" />
-				</svg>
-				<p class="dg-title">CPU</p>
-				<p class="dg-sub">{isEs ? 'Procesador real' : 'Real processor'}</p>
-			</div>
-		</div>
-		<div class="dg-row dg-row--center scene-pipeline-phases">
-			<span class="dg-chip dg-chip--accent" data-el="phase-1">{isEs ? 'Fase 1 · compilar' : 'Phase 1 · compile'}</span>
-			<span class="dg-chip dg-chip--sage" data-el="phase-2">{isEs ? 'Fase 2 · ejecutar' : 'Phase 2 · run'}</span>
-		</div>
+	<!-- 2. Compilation pipeline (motion): one canvas the camera travels across.
+	     Geometry is in canvas units (viewBox 1600 x 660); cues in the script move it. -->
+	<div slot="scene" data-scene="pipeline" data-motion class="scene-pipeline">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="phase-1">
+					<rect class="mg-chip" x="40" y="30" width="230" height="40" rx="20" />
+					<text class="mg-chip-text" x="155" y="56" text-anchor="middle">{isEs ? 'Fase 1 · compilar' : 'Phase 1 · compile'}</text>
+				</g>
+				<g data-el="phase-2">
+					<rect class="mg-chip mg-chip--sage" x="1110" y="30" width="230" height="40" rx="20" />
+					<text class="mg-chip-text mg-chip-text--sage" x="1225" y="56" text-anchor="middle">{isEs ? 'Fase 2 · ejecutar' : 'Phase 2 · run'}</text>
+				</g>
+
+				<!-- Editor: HolaMundo.java, typed line by line -->
+				<g data-el="editor">
+					<rect class="mg-card mg-card--ink" x="40" y="90" width="580" height="260" rx="18" />
+					<path class="mg-bar" d="M58 90H602A18 18 0 0 1 620 108V128H40V108A18 18 0 0 1 58 90Z" />
+					<circle class="mg-dot" cx="64" cy="109" r="6" />
+					<circle class="mg-dot mg-dot--2" cx="84" cy="109" r="6" />
+					<circle class="mg-dot mg-dot--3" cx="104" cy="109" r="6" />
+					<text class="mg-text mg-text--bar" x="126" y="114">HolaMundo.java</text>
+					{
+						editorLines.map((line) => (
+							<>
+								<text class="mg-mono mg-gutter" x="76" y={line.y} text-anchor="end">
+									{line.number}
+								</text>
+								<text class="mg-mono" x={line.x} y={line.y} data-el={`code-${line.number}`} set:html={line.html} />
+							</>
+						))
+					}
+				</g>
+
+				<g data-el="arrow-edit" class="mg-arrow">
+					<path class="mg-stroke" d="M630 220H680" pathLength="1" />
+					<path class="mg-head" d="M670 210L682 220L670 230" />
+				</g>
+
+				<!-- javac -->
+				<g data-el="javac">
+					<rect class="mg-card mg-card--accent" x="690" y="150" width="160" height="140" rx="22" />
+					<g class="mg-spin">
+						<svg class="mg-icon" x="738" y="164" width="64" height="64" viewBox="0 0 24 24">
+							<path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z" /><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" /><path d="M12 2v2" /><path d="M12 22v-2" /><path d="m17 20.66-1-1.73" /><path d="M11 10.27 7 3.34" /><path d="m20.66 17-1.73-1" /><path d="m3.34 7 1.73 1" /><path d="M14 12h8" /><path d="M2 12h2" /><path d="m20.66 7-1.73 1" /><path d="m3.34 17 1.73-1" /><path d="m17 3.34-1 1.73" /><path d="m11 13.73-4 6.93" />
+						</svg>
+					</g>
+					<text class="mg-mono mg-mono--dark" x="770" y="268" text-anchor="middle">javac</text>
+				</g>
+				<rect data-anchor="class-slot" x="855" y="192" width="200" height="56" fill="none" />
+
+				<g data-el="arrow-compile" class="mg-arrow">
+					<path class="mg-stroke" d="M770 298C770 330 840 322 840 348" pathLength="1" />
+					<path class="mg-head" d="M831 340L840 351L849 340" />
+				</g>
+
+				<!-- Bytecode: what javac wrote into HolaMundo.class (javap -c, abridged) -->
+				<g data-el="bytecode">
+					<rect class="mg-card mg-card--ink" x="650" y="356" width="380" height="170" rx="18" />
+					<path class="mg-bar" d="M668 356H1012A18 18 0 0 1 1030 374V394H650V374A18 18 0 0 1 668 356Z" />
+					<text class="mg-text mg-text--bar" x="672" y="380">HolaMundo.class · bytecode</text>
+					<text class="mg-mono mg-mono--sm" x="674" y="426" data-el="bc-1"><tspan class="tok-kw">getstatic</tspan> System.out</text>
+					<text class="mg-mono mg-mono--sm" x="674" y="454" data-el="bc-2"><tspan class="tok-kw">ldc</tspan> <tspan class="tok-str">"{greeting}"</tspan></text>
+					<text class="mg-mono mg-mono--sm" x="674" y="482" data-el="bc-3"><tspan class="tok-kw">invokevirtual</tspan> println</text>
+					<text class="mg-mono mg-mono--sm" x="674" y="510" data-el="bc-4"><tspan class="tok-kw">return</tspan></text>
+				</g>
+
+				<!-- Terminal: javac, then java, then the program's output -->
+				<g data-el="terminal">
+					<rect class="mg-card mg-card--ink" x="40" y="380" width="580" height="250" rx="18" />
+					<path class="mg-bar" d="M58 380H602A18 18 0 0 1 620 398V418H40V398A18 18 0 0 1 58 380Z" />
+					<circle class="mg-dot" cx="64" cy="399" r="6" />
+					<circle class="mg-dot mg-dot--2" cx="84" cy="399" r="6" />
+					<circle class="mg-dot mg-dot--3" cx="104" cy="399" r="6" />
+					<text class="mg-text mg-text--bar" x="126" y="404">Terminal</text>
+					<text class="mg-mono" x="66" y="462" data-el="term-javac"><tspan class="mg-prompt">$ </tspan><tspan set:html={javacCommand} /></text>
+					<text class="mg-mono" x="66" y="502" data-el="term-java"><tspan class="mg-prompt">$ </tspan><tspan set:html={javaCommand} /></text>
+					<text class="mg-mono mg-out" x="66" y="542" data-el="term-out">{greeting}</text>
+				</g>
+
+				<!-- Phase 2: one JVM per operating system, each on its own processor -->
+				{
+					platforms.map((platform) => (
+						<>
+							<g data-el={`arrow-class-${platform.id}`} class="mg-arrow mg-arrow--sage">
+								<path class="mg-stroke" d={`M1062 220C1086 220 1078 ${platform.cy} 1100 ${platform.cy}`} pathLength="1" />
+								<path class="mg-head" d={`M1090 ${platform.cy - 9}L1101 ${platform.cy}L1090 ${platform.cy + 9}`} />
+							</g>
+							<g data-el={`jvm-${platform.id}`}>
+								<rect class="mg-card mg-card--sage" x="1110" y={platform.y} width="260" height="130" rx="20" />
+								<text class="mg-heading" x="1132" y={platform.y + 44}>JVM</text>
+								<text class="mg-text mg-text--muted" x="1192" y={platform.y + 42}>{platform.os}</text>
+								<rect class="mg-chip mg-chip--light" x="1132" y={platform.y + 66} width="120" height="36" rx="18" />
+								<text class="mg-chip-text mg-chip-text--sage" x="1192" y={platform.y + 90} text-anchor="middle">
+									{isEs ? 'Intérprete' : 'Interpreter'}
+								</text>
+								<g data-el={`jit-${platform.id}`} data-base="shown">
+									<rect class="mg-chip" x="1262" y={platform.y + 66} width="86" height="36" rx="18" />
+									<text class="mg-chip-text" x="1305" y={platform.y + 90} text-anchor="middle">JIT</text>
+								</g>
+							</g>
+							<g data-el={`arrow-run-${platform.id}`} class="mg-arrow">
+								<path class="mg-stroke" d={`M1378 ${platform.cy}H1410`} pathLength="1" />
+								<path class="mg-head" d={`M1401 ${platform.cy - 9}L1412 ${platform.cy}L1401 ${platform.cy + 9}`} />
+							</g>
+							<g data-el={`cpu-${platform.id}`}>
+								<rect class="mg-card mg-card--ink" x="1420" y={platform.y} width="150" height="130" rx="20" />
+								<svg class="mg-icon mg-icon--light" x="1475" y={platform.y + 16} width="40" height="40" viewBox="0 0 24 24">
+									<rect x="4" y="4" width="16" height="16" rx="2" /><rect x="9" y="9" width="6" height="6" rx="1" /><path d="M15 2v2" /><path d="M15 20v2" /><path d="M2 15h2" /><path d="M2 9h2" /><path d="M20 15h2" /><path d="M20 9h2" /><path d="M9 2v2" /><path d="M9 20v2" />
+								</svg>
+								<text class="mg-text mg-text--light mg-text--strong" x="1495" y={platform.y + 84} text-anchor="middle">CPU</text>
+								<text class="mg-text mg-text--dim" x="1495" y={platform.y + 108} text-anchor="middle">{platform.cpu}</text>
+							</g>
+						</>
+					))
+				}
+
+				<g data-el="banner">
+					<rect class="mg-chip mg-chip--sage" x="1110" y="584" width="460" height="52" rx="26" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1340" y="616" text-anchor="middle">
+						{isEs ? 'El bytecode nunca cambia; cambia la JVM' : 'The bytecode never changes; the JVM does'}
+					</text>
+				</g>
+
+				<!-- Travelling files, last so they pass over everything else. The copies sit
+				     under the original so they peel off from behind it. -->
+				{
+					classFiles.map((file) => (
+						<g data-el={file.id} data-x={file.x} data-y="220">
+							<rect class="mg-card mg-card--ink" x="-105" y="-28" width="210" height="56" rx="16" />
+							<svg class="mg-icon mg-icon--sage-light" x="-91" y="-13" width="26" height="26" viewBox="0 0 24 24">
+								<rect x="14" y="14" width="4" height="6" rx="2" /><rect x="6" y="4" width="4" height="6" rx="2" /><path d="M6 20h4" /><path d="M14 10h4" /><path d="M6 14h2v6" /><path d="M14 4h2v6" />
+							</svg>
+							<text class="mg-mono mg-out" x="-57" y="6">HolaMundo.class</text>
+						</g>
+					))
+				}
+				<g data-el="java-file" data-x="330" data-y="352">
+					<rect class="mg-card mg-card--accent" x="-100" y="-28" width="200" height="56" rx="16" />
+					<svg class="mg-icon" x="-86" y="-13" width="26" height="26" viewBox="0 0 24 24">
+						<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="m10 13-2 2 2 2" /><path d="m14 17 2-2-2-2" />
+					</svg>
+					<text class="mg-mono mg-mono--dark" x="-52" y="6">HolaMundo.java</text>
+				</g>
+			</g>
+		</svg>
 	</div>
 
 	<!-- 3. Anatomy of HolaMundo -->
@@ -602,14 +724,6 @@ const resolved = resolveScript(script, lang);
 		padding: var(--space-2) var(--space-3);
 	}
 
-	.scene-pipeline-flow {
-		justify-content: center;
-	}
-
-	.scene-pipeline-node {
-		min-width: 9rem;
-	}
-
 	.scene-anatomy {
 		align-content: center;
 		gap: 0;
@@ -684,7 +798,6 @@ const resolved = resolveScript(script, lang);
 			grid-template-columns: 1fr;
 		}
 
-		.scene-pipeline-node,
 		.scene-terminal-node,
 		.scene-terminal-out {
 			min-width: 0;

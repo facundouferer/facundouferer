@@ -8,50 +8,49 @@
  * UI string is ever written by the client script; the script only toggles
  * classes, moves between steps and drives autoplay.
  */
+import { getCollection } from 'astro:content';
+import { getLessonForAnimation } from '../../data/animations';
 import { useTranslations, type Locale } from '../../i18n/utils';
 import { highlightCode } from '../../utils/highlightCode';
 import { renderInlineCode } from '../../utils/renderInlineCode';
-import type { ResolvedChapter, ResolvedStep } from '../../utils/animations';
+import { withBase } from '../../utils/withBase';
+import type { ResolvedStep } from '../../utils/animations';
 
 type Props = {
 	lang: Locale;
 	slug: string;
-	tag: string;
 	title: string;
-	description: string;
-	chapters: ResolvedChapter[];
 	steps: ResolvedStep[];
 };
 
-const { lang, slug, tag, title, description, chapters, steps } = Astro.props;
+const { lang, slug, title, steps } = Astro.props;
 const t = useTranslations(lang);
 
-const chapterLabel = new Map(chapters.map((chapter) => [chapter.id, chapter.label]));
 const total = steps.length;
+
+// The lesson that owns the animation: the controls link back to it.
+const lessonRef = getLessonForAnimation(slug);
+const lesson = lessonRef
+	? (await getCollection('lessons')).find(
+			(entry) =>
+				entry.data.course === lessonRef.course &&
+				entry.data.slug === lessonRef.slug &&
+				entry.data.lang === lang &&
+				entry.data.published,
+		)
+	: undefined;
+const lessonHref = lessonRef
+	? withBase(
+			lang === 'en'
+				? `/en/courses/${lessonRef.course}/${lessonRef.slug}`
+				: `/cursos/${lessonRef.course}/${lessonRef.slug}`,
+		)
+	: undefined;
 ---
 
 <section class="anim-player" data-anim-player data-slug={slug} data-total={total}>
-	<header class="anim-header">
-		<span class="kicker">{t('animations.kicker')} · {tag}</span>
-		<h1 class="section-title anim-title">{title}</h1>
-		<p class="section-subtitle">{description}</p>
-	</header>
-
-	<nav class="anim-chapters" aria-label={t('animations.chapters')}>
-		{
-			chapters.map((chapter) => (
-				<button
-					type="button"
-					class="tag tag-outline anim-chapter"
-					data-anim-chapter={chapter.id}
-					data-anim-goto={chapter.firstStepIndex}
-					aria-pressed="false"
-				>
-					{chapter.label}
-				</button>
-			))
-		}
-	</nav>
+	<!-- The visible chrome is kept to the animation itself; the title stays for assistive tech and the outline. -->
+	<h1 class="anim-visually-hidden">{title}</h1>
 
 	<div class="anim-board">
 		<div class="anim-stage card elev-sm" data-anim-stage role="group" aria-label={t('animations.stage')}>
@@ -72,14 +71,18 @@ const total = steps.length;
 						data-step-scene={step.scene}
 						data-show={show}
 						data-focus={focus}
+						data-cues={step.motion ? JSON.stringify(step.motion.cues) : undefined}
 						data-duration={step.duration}
 						aria-hidden="true"
 					>
-						<article class="anim-narration card elev-sm">
-							<p class="anim-step-kicker">
-								<span class="tag tag-accent">{chapterLabel.get(step.chapter)}</span>
-								<span class="anim-step-number text-muted">{step.index + 1}</span>
-							</p>
+						<div class="anim-subtitles" aria-hidden="true">
+							<div class="anim-subtitle-track">
+								{step.subtitles.map((sub) => (
+									<p class="anim-subtitle" data-sub-at={sub.at} set:html={renderInlineCode(sub.text)} />
+								))}
+							</div>
+						</div>
+						<article class="anim-narration">
 							<h2 class="anim-step-title">{step.title}</h2>
 							<p class="anim-step-text" set:html={renderInlineCode(step.text)} />
 						</article>
@@ -97,9 +100,12 @@ const total = steps.length;
 											<span class="anim-terminal-title">{step.code.title}</span>
 											<span class="anim-terminal-lang">{step.code.language}</span>
 										</div>
-										<pre class="anim-terminal-body" data-has-focus={focusLines.size > 0 ? 'true' : undefined}><code class="anim-lines">{codeLines.map((html, index) => (
-											<span class:list={['anim-line', { 'is-focus': focusLines.has(index + 1) }]} style={`--i:${index}`} set:html={html || ' '} />
-										))}</code></pre>
+										<pre class="anim-terminal-body" data-has-focus={focusLines.size > 0 ? 'true' : undefined}><code class="anim-lines">{codeLines.map((html, index) => {
+											const indent = html.match(/^ */)?.[0].length ?? 0;
+											return (
+												<span class:list={['anim-line', { 'is-focus': focusLines.has(index + 1) }]} style={`--i:${index};--indent:${indent}ch`}><span class="anim-code" set:html={html.slice(indent) || ' '} /></span>
+											);
+										})}</code></pre>
 									</div>
 								)}
 								{step.shell && (
@@ -114,7 +120,7 @@ const total = steps.length;
 											<span class="anim-terminal-lang">bash</span>
 										</div>
 										<pre class="anim-terminal-body"><code class="anim-lines">{step.shell.lines.map((line, index) => (
-											<span class={`anim-line anim-line--${line.kind}`} style={`--i:${index}`} set:html={highlightCode(line.text, line.kind === 'cmd' ? 'bash' : 'text')[0] || ' '} />
+											<span class={`anim-line anim-line--${line.kind}`} style={`--i:${index}`}><span class="anim-code" set:html={highlightCode(line.text, line.kind === 'cmd' ? 'bash' : 'text')[0] || ' '} /></span>
 										))}<span class="anim-line anim-line--cursor" style={`--i:${step.shell.lines.length}`} aria-hidden="true" /></code></pre>
 									</div>
 								)}
@@ -220,26 +226,93 @@ const total = steps.length;
 			</button>
 		</div>
 
-		<p class="anim-counter text-muted" aria-live="polite" aria-atomic="true">
-			{t('animations.stepCounter.label')} <span data-anim-current>1</span> {t('animations.stepCounter.of')} {total}
-		</p>
-		<p class="anim-announcer" aria-live="polite" aria-atomic="true" data-anim-announce></p>
+		<div class="anim-meta">
+			<p class="anim-counter text-muted" aria-live="polite" aria-atomic="true">
+				{t('animations.stepCounter.label')} <span data-anim-current>1</span> {t('animations.stepCounter.of')} {total}
+			</p>
+			{
+				lessonHref && (
+					<a class="btn btn-ghost anim-back" href={lessonHref} title={lesson?.data.title} data-anim-back>
+						<svg
+							aria-hidden="true"
+							xmlns="http://www.w3.org/2000/svg"
+							width="18"
+							height="18"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2.75"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<path d="M12 7v14" />
+							<path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+						</svg>
+						<span class="anim-btn-label">{t('animations.controls.backToLesson')}</span>
+					</a>
+				)
+			}
+		</div>
+		<p class="anim-visually-hidden" aria-live="polite" aria-atomic="true" data-anim-announce></p>
 
 		<div class="anim-progress" aria-hidden="true">
 			<span class="anim-progress-fill" data-anim-progress></span>
 		</div>
-		<p class="anim-hint text-muted">{t('animations.keyboardHint')}</p>
 	</div>
 </section>
 
 <script>
+	import { MOTION_CUE_DEFAULT_MS } from '../../utils/animations';
+	import type { MotionCue } from '../../data/animations/types';
+
+	type Point = { x: number; y: number };
+	type ElementState = { opacity: number; x: number; y: number; scale: number; flow: boolean };
+	type Camera = { x: number; y: number; s: number };
+
+	/** Live state of a motion scene: what every element and the camera look like right now. */
+	interface MotionModel {
+		sceneId: string;
+		stepIndex: number;
+		svg: SVGSVGElement;
+		camera: SVGGElement | null;
+		els: Map<string, SVGGraphicsElement>;
+		state: Map<string, ElementState>;
+		cam: Camera;
+	}
+
+	const EASE_OUT = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+	const EASE_IN_OUT = 'cubic-bezier(0.65, 0, 0.35, 1)';
+	const EASE_POP = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+	const IDENTITY: Camera = { x: 0, y: 0, s: 1 };
+
+	const cameraTransform = (cam: Camera) => `translate(${cam.x}px, ${cam.y}px) scale(${cam.s})`;
+	const translateOf = (point: Point) => `${point.x}px ${point.y}px`;
+	const percent = (value: number) => `${Math.max(0, Math.min(1, value)) * 100}%`;
+
+	/** Keyframes along a soft upward arc, so travelling objects glide instead of sliding. */
+	function arcFrames(from: Point, to: Point): Keyframe[] {
+		const lift = Math.min(90, Math.hypot(to.x - from.x, to.y - from.y) * 0.22);
+		const control = { x: (from.x + to.x) / 2, y: Math.min(from.y, to.y) - lift };
+		const frames: Keyframe[] = [];
+		for (let i = 0; i <= 12; i += 1) {
+			const t = i / 12;
+			const u = 1 - t;
+			frames.push({
+				translate: translateOf({
+					x: u * u * from.x + 2 * u * t * control.x + t * t * to.x,
+					y: u * u * from.y + 2 * u * t * control.y + t * t * to.y,
+				}),
+			});
+		}
+		return frames;
+	}
+
 	function setupAnimationPlayer(root: HTMLElement) {
 		if (root.dataset.ready === 'true') return;
 		root.dataset.ready = 'true';
 
 		const steps = Array.from(root.querySelectorAll<HTMLElement>('[data-anim-step]'));
 		const scenes = Array.from(root.querySelectorAll<HTMLElement>('[data-anim-stage] [data-scene]'));
-		const chapterButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-anim-chapter]'));
 		const prevBtn = root.querySelector<HTMLButtonElement>('[data-anim-prev]');
 		const nextBtn = root.querySelector<HTMLButtonElement>('[data-anim-next]');
 		const playBtn = root.querySelector<HTMLButtonElement>('[data-anim-play]');
@@ -253,8 +326,13 @@ const total = steps.length;
 		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 		let current = -1;
 		let playing = false;
-		let timer: number | undefined;
+		// One clock per step: it drives autoplay and freezes with everything else on pause.
+		let clock: Animation | null = null;
+		let progressRun: Animation | null = null;
+		let motion: MotionModel | null = null;
+		let running: Animation[] = [];
 
+		// ── Slide steps: reveal and emphasize elements of a static diagram ──────
 		function applyScene(step: HTMLElement) {
 			const sceneId = step.dataset.stepScene;
 			const show = step.dataset.show ?? '';
@@ -282,38 +360,280 @@ const total = steps.length;
 			}
 		}
 
-		function setProgress(fraction: number, durationMs: number) {
-			if (!progress) return;
-			progress.style.transitionDuration = reducedMotion.matches ? '0ms' : `${durationMs}ms`;
-			progress.style.width = `${Math.max(0, Math.min(1, fraction)) * 100}%`;
-		}
-
-		function clearTimer() {
-			if (timer !== undefined) {
-				window.clearTimeout(timer);
-				timer = undefined;
+		// ── Motion steps: a persistent canvas choreographed by timed cues ───────
+		function cuesOf(step: HTMLElement): MotionCue[] {
+			if (!step.dataset.cues) return [];
+			try {
+				return JSON.parse(step.dataset.cues) as MotionCue[];
+			} catch {
+				return [];
 			}
 		}
 
-		function scheduleAdvance() {
-			clearTimer();
-			if (!playing || current < 0) return;
-			const step = steps[current];
-			const duration = Number(step.dataset.duration ?? '6000');
-			setProgress((current + 1) / total, duration);
-			timer = window.setTimeout(() => {
-				if (current >= total - 1) {
-					stop();
-					return;
-				}
-				goTo(current + 1);
-			}, duration);
+		function buildMotion(sceneId: string): MotionModel | null {
+			const scene = scenes.find((candidate) => candidate.dataset.scene === sceneId);
+			const svg = scene?.querySelector<SVGSVGElement>('svg.mg-canvas');
+			if (!svg) return null;
+			const els = new Map<string, SVGGraphicsElement>();
+			const state = new Map<string, ElementState>();
+			for (const el of Array.from(svg.querySelectorAll<SVGGraphicsElement>('[data-el]'))) {
+				const id = el.dataset.el ?? '';
+				els.set(id, el);
+				state.set(id, {
+					opacity: el.dataset.base === 'shown' ? 1 : 0,
+					x: Number(el.dataset.x ?? 0),
+					y: Number(el.dataset.y ?? 0),
+					scale: 1,
+					flow: false,
+				});
+			}
+			return {
+				sceneId,
+				stepIndex: -1,
+				svg,
+				camera: svg.querySelector<SVGGElement>('[data-camera]'),
+				els,
+				state,
+				cam: { ...IDENTITY },
+			};
 		}
 
-		function goTo(index: number) {
+		/** Writes the model as inline styles: the resting state between animations. */
+		function commit(m: MotionModel) {
+			for (const [id, el] of m.els) {
+				const s = m.state.get(id);
+				if (!s) continue;
+				el.style.opacity = String(s.opacity);
+				el.style.setProperty('translate', s.x || s.y ? translateOf(s) : '');
+				el.style.setProperty('scale', s.scale === 1 ? '' : String(s.scale));
+				el.classList.toggle('is-flowing', s.flow);
+			}
+			if (m.camera) m.camera.style.transform = cameraTransform(m.cam);
+		}
+
+		function lookup(m: MotionModel, id: string): SVGGraphicsElement | null {
+			return m.els.get(id) ?? m.svg.querySelector<SVGGraphicsElement>(`[data-anchor="${id}"]`);
+		}
+
+		function centerOf(m: MotionModel, id: string): Point | null {
+			const el = lookup(m, id);
+			if (!el) return null;
+			const box = el.getBBox();
+			return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+		}
+
+		/** Camera that centers the given elements and zooms until they fill the canvas. */
+		function frame(m: MotionModel, ids: string[] | 'all', pad: number): Camera {
+			if (ids === 'all') return { ...IDENTITY };
+			const view = m.svg.viewBox.baseVal;
+			let minX = Infinity;
+			let minY = Infinity;
+			let maxX = -Infinity;
+			let maxY = -Infinity;
+			for (const id of ids) {
+				const el = lookup(m, id);
+				if (!el) continue;
+				const box = el.getBBox();
+				minX = Math.min(minX, box.x);
+				minY = Math.min(minY, box.y);
+				maxX = Math.max(maxX, box.x + box.width);
+				maxY = Math.max(maxY, box.y + box.height);
+			}
+			if (!Number.isFinite(minX)) return { ...m.cam };
+			const fit = Math.min(view.width / (maxX - minX + pad * 2), view.height / (maxY - minY + pad * 2));
+			const s = Math.min(3, Math.max(0.5, fit));
+			return {
+				x: view.x + view.width / 2 - s * ((minX + maxX) / 2),
+				y: view.y + view.height / 2 - s * ((minY + maxY) / 2),
+				s,
+			};
+		}
+
+		/**
+		 * Applies one cue to the model and, when `animate` is set, schedules the Web
+		 * Animations that play it. Without `animate` it only fast-forwards the model,
+		 * which is how earlier steps are replayed when jumping into a scene.
+		 */
+		function runCue(m: MotionModel, cue: MotionCue, animate: boolean) {
+			const reduced = reducedMotion.matches;
+			const duration = reduced ? 1 : (cue.dur ?? MOTION_CUE_DEFAULT_MS[cue.do]);
+			const schedule = (target: Element, frames: Keyframe[], options: KeyframeAnimationOptions = {}) => {
+				if (!animate) return;
+				running.push(target.animate(frames, { duration, delay: cue.at, fill: 'forwards', easing: EASE_OUT, ...options }));
+			};
+			const transient = (target: Element, frames: Keyframe[], options: KeyframeAnimationOptions = {}) => {
+				if (!animate || reduced) return;
+				running.push(target.animate(frames, { duration, delay: cue.at, easing: EASE_IN_OUT, ...options }));
+			};
+
+			if (cue.do === 'camera') {
+				const from = m.cam;
+				m.cam = frame(m, cue.to, cue.pad ?? 40);
+				if (m.camera) {
+					schedule(m.camera, [{ transform: cameraTransform(from) }, { transform: cameraTransform(m.cam) }], { easing: EASE_IN_OUT });
+				}
+				return;
+			}
+
+			const el = m.els.get(cue.el);
+			const s = m.state.get(cue.el);
+			if (!el || !s) return;
+
+			switch (cue.do) {
+				case 'enter': {
+					const from = s.opacity;
+					s.opacity = 1;
+					s.scale = 1;
+					schedule(el, [{ opacity: from, scale: from < 1 ? 0.8 : 1 }, { opacity: 1, scale: 1 }], { easing: EASE_POP });
+					break;
+				}
+				case 'exit': {
+					s.opacity = 0;
+					schedule(el, [{ opacity: 1, scale: 1 }, { opacity: 0, scale: 0.8 }]);
+					break;
+				}
+				case 'draw': {
+					s.opacity = 1;
+					schedule(el, [{ opacity: 1 }, { opacity: 1 }]);
+					for (const path of Array.from(el.querySelectorAll('.mg-stroke'))) {
+						schedule(path, [{ strokeDasharray: '1 1', strokeDashoffset: '1' }, { strokeDasharray: '1 1', strokeDashoffset: '0' }], { easing: EASE_IN_OUT });
+					}
+					for (const head of Array.from(el.querySelectorAll('.mg-head'))) {
+						schedule(head, [{ opacity: 0 }, { opacity: 0, offset: 0.7 }, { opacity: 1 }]);
+					}
+					break;
+				}
+				case 'type': {
+					s.opacity = 1;
+					const characters = Math.max(1, (el.textContent ?? '').trim().length);
+					schedule(el, [{ opacity: 1, clipPath: 'inset(0 100% 0 0)' }, { opacity: 1, clipPath: 'inset(0 0% 0 0)' }], {
+						easing: `steps(${characters}, end)`,
+					});
+					break;
+				}
+				case 'flow': {
+					s.flow = true;
+					if (!animate || reduced) break;
+					for (const path of Array.from(el.querySelectorAll('.mg-stroke'))) {
+						running.push(
+							path.animate(
+								[{ strokeDasharray: '0.03 0.025', strokeDashoffset: '0' }, { strokeDasharray: '0.03 0.025', strokeDashoffset: '-0.055' }],
+								{ duration: 1100, delay: cue.at, iterations: Infinity, easing: 'linear' },
+							),
+						);
+					}
+					break;
+				}
+				case 'pulse': {
+					transient(el, [{ scale: 1 }, { scale: 1.08, offset: 0.4 }, { scale: 1 }]);
+					break;
+				}
+				case 'spin': {
+					for (const part of Array.from(el.querySelectorAll('.mg-spin'))) {
+						transient(part, [{ rotate: '0deg' }, { rotate: '720deg' }]);
+					}
+					break;
+				}
+				case 'move': {
+					const target = centerOf(m, cue.to);
+					if (!target) break;
+					const from = { x: s.x, y: s.y };
+					s.x = target.x + (cue.dx ?? 0);
+					s.y = target.y + (cue.dy ?? 0);
+					schedule(el, reduced ? [{ translate: translateOf(from) }, { translate: translateOf(s) }] : arcFrames(from, s), {
+						easing: EASE_IN_OUT,
+					});
+					break;
+				}
+			}
+		}
+
+		/** Captions take turns in the same spot, each one until the next starts. */
+		function runSubtitles(step: HTMLElement) {
+			const subs = Array.from(step.querySelectorAll<HTMLElement>('[data-sub-at]'));
+			const fade = reducedMotion.matches ? 1 : 320;
+			const rise = reducedMotion.matches ? '0 0' : '0 10px';
+			subs.forEach((sub, index) => {
+				const at = Number(sub.dataset.subAt ?? 0);
+				const next = subs[index + 1];
+				if (!next) {
+					running.push(
+						sub.animate([{ opacity: 0, translate: rise }, { opacity: 1, translate: '0 0' }], {
+							duration: fade,
+							delay: at,
+							fill: 'forwards',
+							easing: EASE_OUT,
+						}),
+					);
+					return;
+				}
+				const span = Math.max(Number(next.dataset.subAt ?? 0) - at, fade * 2 + 1);
+				running.push(
+					sub.animate(
+						[
+							{ opacity: 0, translate: rise },
+							{ opacity: 1, translate: '0 0', offset: fade / span },
+							{ opacity: 1, translate: '0 0', offset: 1 - fade / span },
+							{ opacity: 0, translate: '0 0' },
+						],
+						{ duration: span, delay: at, fill: 'forwards' },
+					),
+				);
+			});
+		}
+
+		/** Jumps the running step to its end state and drops its animations. */
+		function settle() {
+			for (const animation of running) animation.cancel();
+			running = [];
+			if (motion) commit(motion);
+		}
+
+		function enterMotionStep(index: number) {
+			const step = steps[index];
+			const sceneId = step.dataset.stepScene ?? '';
+			for (const scene of scenes) scene.classList.toggle('is-active', scene.dataset.scene === sceneId);
+
+			let m = motion;
+			if (!m || m.sceneId !== sceneId || m.stepIndex !== index - 1) {
+				// Arriving out of order: rebuild the scene and fast-forward the earlier
+				// motion steps that share it, so the canvas looks as if they had played.
+				m = buildMotion(sceneId);
+				if (!m) return;
+				let first = index;
+				while (first > 0 && steps[first - 1].dataset.cues && steps[first - 1].dataset.stepScene === sceneId) first -= 1;
+				for (let j = first; j < index; j += 1) {
+					for (const cue of cuesOf(steps[j])) runCue(m, cue, false);
+				}
+				commit(m);
+				motion = m;
+			}
+
+			m.stepIndex = index;
+			for (const cue of cuesOf(step)) runCue(m, cue, true);
+		}
+
+		// ── Playback ─────────────────────────────────────────────────────────────
+		function startClock(durationMs: number) {
+			clock?.cancel();
+			progressRun?.cancel();
+			clock = root.animate(null, { duration: durationMs });
+			clock.onfinish = () => {
+				if (playing) advance();
+			};
+			if (progress) {
+				progressRun = progress.animate([{ width: percent(current / total) }, { width: percent((current + 1) / total) }], {
+					duration: reducedMotion.matches ? 1 : durationMs,
+					fill: 'forwards',
+				});
+			}
+		}
+
+		function goTo(index: number, force = false) {
 			const next = Math.max(0, Math.min(total - 1, index));
-			if (next === current) return;
+			if (next === current && !force) return;
 			current = next;
+			settle();
 
 			steps.forEach((step, i) => {
 				const active = i === current;
@@ -322,23 +642,38 @@ const total = steps.length;
 			});
 
 			const step = steps[current];
-			applyScene(step);
-
-			const chapter = step.dataset.stepChapter;
-			for (const button of chapterButtons) {
-				button.setAttribute('aria-pressed', button.dataset.animChapter === chapter ? 'true' : 'false');
+			if (step.dataset.cues) {
+				root.dataset.mode = 'motion';
+				enterMotionStep(current);
+			} else {
+				root.dataset.mode = 'slides';
+				applyScene(step);
 			}
+			root.dataset.panels = step.querySelector('.anim-panels') ? 'true' : 'false';
+			runSubtitles(step);
 
 			if (prevBtn) prevBtn.disabled = current === 0;
 			if (nextBtn) nextBtn.disabled = current === total - 1;
 			if (counter) counter.textContent = String(current + 1);
 			if (announcer) announcer.textContent = step.querySelector('.anim-step-title')?.textContent ?? '';
 
-			if (playing) {
-				setProgress(current / total, 0);
-				window.requestAnimationFrame(() => scheduleAdvance());
-			} else {
-				setProgress(current / total, 240);
+			startClock(Number(step.dataset.duration ?? '6000'));
+		}
+
+		function advance() {
+			if (current >= total - 1) {
+				stop();
+				return;
+			}
+			goTo(current + 1);
+		}
+
+		/** Pauses or resumes the step clock, the progress bar and every running cue. */
+		function freeze(frozen: boolean) {
+			for (const animation of [clock, progressRun, ...running]) {
+				if (!animation) continue;
+				if (frozen && animation.playState === 'running') animation.pause();
+				if (!frozen && animation.playState === 'paused') animation.play();
 			}
 		}
 
@@ -350,28 +685,27 @@ const total = steps.length;
 
 		function play() {
 			if (playing) return;
-			if (current >= total - 1) goTo(0);
 			setPlaying(true);
-			setProgress(current / total, 0);
-			window.requestAnimationFrame(() => scheduleAdvance());
+			if (clock?.playState === 'finished') {
+				if (current >= total - 1) goTo(0);
+				else advance();
+				return;
+			}
+			freeze(false);
 		}
 
 		function stop() {
-			clearTimer();
 			setPlaying(false);
-			setProgress(current / total, 240);
+			freeze(true);
 		}
 
 		prevBtn?.addEventListener('click', () => goTo(current - 1));
 		nextBtn?.addEventListener('click', () => goTo(current + 1));
 		restartBtn?.addEventListener('click', () => {
 			stop();
-			goTo(0);
+			goTo(0, true);
 		});
 		playBtn?.addEventListener('click', () => (playing ? stop() : play()));
-		for (const button of chapterButtons) {
-			button.addEventListener('click', () => goTo(Number(button.dataset.animGoto ?? '0')));
-		}
 
 		window.addEventListener('keydown', (event) => {
 			const target = event.target as HTMLElement | null;
@@ -405,50 +739,38 @@ const total = steps.length;
 </script>
 
 <style>
+	/* The player takes whatever height the page column leaves it: the board fills the
+	   first row and the controls sit in the last one, hugging the bottom edge. */
 	.anim-player {
+		flex: 1;
 		display: grid;
+		grid-template-rows: 1fr auto;
 		gap: var(--space-4);
-		padding-block: var(--space-4) var(--space-8);
+		padding-block: var(--space-3) var(--space-3);
 	}
 
-	.anim-header {
-		display: grid;
-		gap: var(--space-1);
+	/* Off-screen text for assistive tech: the page title and the live announcer. */
+	.anim-visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
 	}
 
-	.anim-title {
-		max-width: 26ch;
-	}
-
-	/* Chapter navigation ───────────────────────────────────────────────── */
-	.anim-chapters {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-1) var(--space-2);
-	}
-
-	.anim-chapter {
-		cursor: pointer;
-		font-family: var(--font-body);
-		font-size: 12px;
-		line-height: 1.2;
-		padding: 5px 12px;
-	}
-
-	.anim-chapter:hover {
-		background: color-mix(in srgb, var(--color-accent) 10%, transparent);
-		border-color: var(--color-accent);
-	}
-
-	/* Board: scene + narration side by side, panels below ─────────────── */
+	/* Board: the scene, its captions and any terminal panels. Narrow screens
+	   stack them; wide ones overlay the captions on the stage (see below). ─── */
 	.anim-board {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
 		grid-template-areas:
 			'stage'
-			'narration'
+			'subs'
 			'panels';
-		gap: var(--space-4);
+		align-content: start;
+		gap: var(--space-2) var(--space-4);
 	}
 
 	.anim-stage.card {
@@ -470,44 +792,18 @@ const total = steps.length;
 		display: contents;
 	}
 
+	/* The narration plays as captions; the full text (title plus captions joined)
+	   stays in the DOM, visually hidden, for assistive tech. */
 	.anim-narration {
-		grid-area: narration;
-		align-self: start;
-		background: var(--color-bg);
-		border: 1px solid var(--color-divider);
-		animation: anim-rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-	}
-
-	.anim-step-kicker {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-2);
-		margin: 0;
-	}
-
-	.anim-step-number {
-		font-family: var(--font-heading);
-		font-size: 1.6rem;
-		line-height: 1;
-	}
-
-	.anim-step-title {
-		font-size: clamp(1.25rem, 2.2vw, 1.7rem);
-		margin: 0;
-	}
-
-	.anim-step-text {
-		margin: 0;
-		font-size: 1rem;
-		line-height: 1.7;
-	}
-
-	.anim-step-text :global(code) {
-		padding: 1px 6px;
-		border-radius: var(--radius-sm);
-		background: var(--color-neutral-200);
-		font-size: 0.9em;
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		padding: 0;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+		border: 0;
 	}
 
 	/* Terminal panels ──────────────────────────────────────────────────── */
@@ -590,8 +886,10 @@ const total = steps.length;
 		counter-reset: line;
 	}
 
+	/* Each line is a row: the line number or prompt, then the code at its own
+	   indentation, so a wrapped line continues under its code, not under the gutter. */
 	.anim-line {
-		display: block;
+		display: flex;
 		min-height: 1.65em;
 		padding-inline: var(--space-2);
 		border-radius: var(--radius-sm);
@@ -600,10 +898,19 @@ const total = steps.length;
 		animation-delay: calc(var(--i, 0) * 110ms);
 	}
 
+	.anim-line::before {
+		flex: none;
+	}
+
+	.anim-code {
+		flex: 1;
+		min-width: 0;
+		padding-left: var(--indent, 0ch);
+	}
+
 	.anim-terminal--code .anim-line::before {
 		counter-increment: line;
 		content: counter(line);
-		display: inline-block;
 		width: 2ch;
 		margin-right: var(--space-3);
 		text-align: right;
@@ -742,21 +1049,20 @@ const total = steps.length;
 		display: block;
 	}
 
+	.anim-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+	}
+
 	.anim-counter {
 		margin: 0;
 		font-size: 0.85rem;
 		font-weight: 600;
 	}
 
-	.anim-announcer {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0 0 0 0);
-		white-space: nowrap;
-	}
 
 	.anim-progress {
 		height: 6px;
@@ -771,12 +1077,53 @@ const total = steps.length;
 		width: 0;
 		border-radius: 999px;
 		background: var(--color-accent);
-		transition: width 240ms linear;
 	}
 
-	.anim-hint {
+	/* Captions ──────────────────────────────────────────────────────────────
+	   Short timed sentences replace the narration card in every step. */
+
+	/* A motion canvas keeps its own aspect ratio on narrow screens. */
+	.anim-player[data-mode='motion'] .anim-stage.card {
+		min-height: 0;
+	}
+
+	.anim-subtitles {
+		grid-area: subs;
+		display: grid;
+		justify-items: center;
+		align-content: center;
+		min-height: 4.5rem;
+		padding: var(--space-3) var(--space-4);
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+	}
+
+	/* Captions share one cell and take turns, so the band never jumps in height. */
+	.anim-subtitle-track {
+		display: grid;
+		width: 100%;
+	}
+
+	.anim-subtitle {
+		grid-area: 1 / 1;
+		justify-self: center;
+		max-width: 64ch;
 		margin: 0;
-		font-size: 0.75rem;
+		opacity: 0;
+		font-size: 1.05rem;
+		font-weight: 500;
+		line-height: 1.5;
+		text-align: center;
+		text-wrap: balance;
+		color: var(--color-text);
+	}
+
+	.anim-subtitle :global(code) {
+		font-size: 0.9em;
+		padding: 1px 6px;
+		border-radius: var(--radius-sm);
+		background: var(--color-neutral-200);
 	}
 
 	@keyframes anim-rise {
@@ -808,27 +1155,58 @@ const total = steps.length;
 	}
 
 	@media (width >= 900px) {
+		/* The stage is the hero: it takes the full width and the free height, the
+		   captions sit in its bottom band like a video, and terminal panels keep
+		   their content size below it. */
 		.anim-board {
-			grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+			grid-template-rows: 1fr auto;
 			grid-template-areas:
-				'stage narration'
-				'panels panels';
+				'stage'
+				'panels';
+			align-content: stretch;
+			gap: var(--space-4);
 		}
 
-		.anim-stage {
-			min-height: 26rem;
+		.anim-stage.card {
+			min-height: 20rem;
+			padding-bottom: 6.5rem;
 		}
 
 		.anim-panels--two {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 
+		/* Steps with terminal panels: the panels take a column beside the stage, so
+		   the scene keeps the full height. The column scrolls on its own if a long
+		   session does not fit, and long lines wrap under their own indentation
+		   instead of hiding behind a horizontal scroll. */
+		.anim-player[data-panels='true'] .anim-board {
+			grid-template-columns: minmax(0, 1fr) minmax(24rem, 0.9fr);
+			grid-template-rows: minmax(0, 1fr);
+			grid-template-areas: 'stage panels';
+		}
+
+		.anim-player[data-panels='true'] .anim-panels {
+			grid-template-columns: minmax(0, 1fr);
+			align-content: start;
+			min-height: 0;
+			overflow-y: auto;
+		}
+
+		.anim-player[data-panels='true'] .anim-terminal-body {
+			font-size: 0.82rem;
+		}
+
+		.anim-player[data-panels='true'] .anim-code {
+			white-space: pre-wrap;
+			overflow-wrap: anywhere;
+		}
+
 		.anim-controls {
 			grid-template-columns: auto 1fr;
 			grid-template-areas:
-				'buttons counter'
-				'progress progress'
-				'hint hint';
+				'buttons meta'
+				'progress progress';
 			align-items: center;
 		}
 
@@ -836,17 +1214,29 @@ const total = steps.length;
 			grid-area: buttons;
 		}
 
-		.anim-counter {
-			grid-area: counter;
-			text-align: right;
+		.anim-meta {
+			grid-area: meta;
+			justify-content: flex-end;
+			gap: var(--space-4);
 		}
 
 		.anim-progress {
 			grid-area: progress;
 		}
 
-		.anim-hint {
-			grid-area: hint;
+		/* The stage reserves its bottom band, so captions never cover the scene. */
+		.anim-subtitles {
+			grid-area: stage;
+			align-self: end;
+			z-index: 2;
+			margin: 0 var(--space-6) var(--space-3);
+			padding-block: 0;
+			background: none;
+			border: 0;
+		}
+
+		.anim-subtitle {
+			font-size: 1.15rem;
 		}
 	}
 
@@ -858,10 +1248,6 @@ const total = steps.length;
 			overflow: hidden;
 			clip: rect(0 0 0 0);
 		}
-
-		.anim-hint {
-			display: none;
-		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
@@ -870,10 +1256,6 @@ const total = steps.length;
 		.anim-line,
 		.anim-line--cursor::after {
 			animation: none;
-		}
-
-		.anim-progress-fill {
-			transition: none;
 		}
 	}
 </style>
