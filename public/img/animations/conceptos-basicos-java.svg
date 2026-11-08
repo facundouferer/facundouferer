@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%" role="img" aria-label="Java basics, step by step">
+	<!-- Organic palette literals (standalone asset, custom properties do not resolve here):
+	     surface #ebddc5, bg #f5ead8, ink #2e2b25 / #201e1d, accent #c67139, accent-700 #8c491a,
+	     accent-300 #ffc6a5, sage #7a8a5e, sage-300 #ccdbb2, neutral-300 #dcd3c4 -->
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Terminal window -->
+	<rect x="28" y="30" width="236" height="140" rx="16" fill="#2e2b25"/>
+	<rect x="28" y="30" width="236" height="28" rx="16" fill="#474238"/>
+	<rect x="28" y="44" width="236" height="14" fill="#474238"/>
+	<circle cx="48" cy="44" r="5" fill="#c67139"/>
+	<circle cx="64" cy="44" r="5" fill="#ffc6a5"/>
+	<circle cx="80" cy="44" r="5" fill="#7a8a5e"/>
+	<text x="146" y="48" font-family="'Figtree', sans-serif" font-size="10" font-weight="700" fill="#dcd3c4" text-anchor="middle">HolaMundo.java</text>
+
+	<!-- Code lines as colored bars -->
+	<rect x="46" y="74" width="34" height="8" rx="4" fill="#f6a06b"/>
+	<rect x="86" y="74" width="30" height="8" rx="4" fill="#f6a06b"/>
+	<rect x="122" y="74" width="62" height="8" rx="4" fill="#ffe1d0"/>
+	<rect x="190" y="74" width="10" height="8" rx="4" fill="#c0b6a5"/>
+
+	<rect x="62" y="92" width="34" height="8" rx="4" fill="#f6a06b"/>
+	<rect x="102" y="92" width="34" height="8" rx="4" fill="#f6a06b"/>
+	<rect x="142" y="92" width="26" height="8" rx="4" fill="#f6a06b"/>
+	<rect x="174" y="92" width="48" height="8" rx="4" fill="#f9f4ed"/>
+
+	<rect x="78" y="110" width="80" height="8" rx="4" fill="#ffe1d0"/>
+	<rect x="164" y="110" width="76" height="8" rx="4" fill="#ccdbb2"/>
+
+	<rect x="62" y="128" width="10" height="8" rx="4" fill="#c0b6a5"/>
+	<rect x="46" y="146" width="10" height="8" rx="4" fill="#c0b6a5"/>
+
+	<!-- Prompt with caret -->
+	<text x="150" y="152" font-family="'Figtree', sans-serif" font-size="11" font-weight="700" fill="#aebf92">$ java HolaMundo</text>
+	<rect x="244" y="143" width="6" height="12" rx="2" fill="#f9f4ed"/>
+
+	<!-- Play button -->
+	<circle cx="318" cy="100" r="44" fill="#f5ead8" stroke="#c67139" stroke-width="4"/>
+	<circle cx="318" cy="100" r="30" fill="#c67139"/>
+	<polygon points="309,84 334,100 309,116" fill="#f5ead8"/>
+
+	<!-- Step dots -->
+	<rect x="282" y="160" width="72" height="8" rx="4" fill="#dcd3c4"/>
+	<rect x="282" y="160" width="40" height="8" rx="4" fill="#7a8a5e"/>
+
+	<text x="318" y="36" font-family="'Caprasimo', serif" font-size="14" fill="#8c491a" text-anchor="middle">paso a paso</text>
+</svg>

@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { type Locale } from '../../../i18n/utils';
+import { animations } from '../../../data/animations';
+import AnimationLessonLink from '../../../components/AnimationLessonLink.astro';
+
+import ConceptosBasicosJava from '../../../components/animaciones/conceptos-basicos-java.astro';
+
+export function getStaticPaths() {
+	const paths: Array<{ params: { lang: Locale; slug: string } }> = [];
+	const locales: Locale[] = ['es', 'en'];
+	for (const lang of locales) {
+		for (const animation of animations) {
+			paths.push({ params: { lang, slug: animation.slug } });
+		}
+	}
+	return paths;
+}
+
+const { lang, slug } = Astro.params as { lang: Locale; slug: string };
+const animation = animations.find((entry) => entry.slug === slug);
+
+if (!animation) {
+	throw new Error(`Animation not found for slug: ${slug}`);
+}
+
+const componentMap: Record<string, any> = {
+	'conceptos-basicos-java': ConceptosBasicosJava,
+};
+
+const AnimationComponent = componentMap[slug];
+---
+
+<BaseLayout
+	title={`${animation.title[lang]} — Facundo Uferer`}
+	description={animation.description[lang]}
+	locale={lang}
+	esPath={`/animaciones/${slug}`}
+	enPath={`/en/animaciones/${slug}`}
+	canonicalPath={lang === 'en' ? `/en/animaciones/${slug}` : `/animaciones/${slug}`}
+>
+	<div class="container animation-page">
+		<AnimationLessonLink animationSlug={animation.slug} locale={lang} />
+		<AnimationComponent lang={lang} animation={animation} />
+	</div>
+</BaseLayout>
+
+<style>
+	.animation-page {
+		padding-top: var(--space-4);
+	}
+</style>

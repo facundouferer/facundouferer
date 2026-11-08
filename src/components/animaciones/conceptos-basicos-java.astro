@@ -1,0 +1,694 @@
+---
+/**
+ * Scenes for the "Java basics, step by step" animation (lesson java/01).
+ * The narration, code and terminal panels live in
+ * `src/data/animations/conceptos-basicos-java.ts`; this component only draws
+ * the diagrams the steps point to. Every `[data-scene]` block is one diagram
+ * and every `[data-el]` is an element a step can reveal or emphasize.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/conceptos-basicos-java';
+import { resolveScript } from '../../utils/animations';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+---
+
+<AnimationPlayer
+	lang={lang}
+	slug={animation.slug}
+	tag={animation.tag[lang]}
+	title={animation.title[lang]}
+	description={animation.description[lang]}
+	chapters={resolved.chapters}
+	steps={resolved.steps}
+>
+	<!-- INTRO: where Java lives -->
+	<div slot="scene" data-scene="intro" class="scene-intro">
+		<div class="dg-box dg-box--accent dg-box--center scene-intro-core" data-el="core">
+			<span class="dg-blob">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="M10 2v2" /><path d="M14 2v2" /><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1" /><path d="M6 2v2" />
+				</svg>
+			</span>
+			<p class="dg-title dg-title--lg">Java</p>
+			<p class="dg-sub">{isEs ? 'Robusto · popular · demandado' : 'Robust · popular · in demand'}</p>
+		</div>
+		<div class="dg-grid-2 scene-intro-uses">
+			<div class="dg-box" data-el="use-bank">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<line x1="3" x2="21" y1="22" y2="22" /><line x1="6" x2="6" y1="18" y2="11" /><line x1="10" x2="10" y1="18" y2="11" /><line x1="14" x2="14" y1="18" y2="11" /><line x1="18" x2="18" y1="18" y2="11" /><polygon points="12 2 20 7 4 7" />
+				</svg>
+				<p class="dg-title">{isEs ? 'Plataformas bancarias' : 'Banking platforms'}</p>
+				<p class="dg-sub">{isEs ? 'Alta disponibilidad' : 'High availability'}</p>
+			</div>
+			<div class="dg-box" data-el="use-backend">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<rect width="20" height="8" x="2" y="2" rx="2" ry="2" /><rect width="20" height="8" x="2" y="14" rx="2" ry="2" /><line x1="6" x2="6.01" y1="6" y2="6" /><line x1="6" x2="6.01" y1="18" y2="18" />
+				</svg>
+				<p class="dg-title">{isEs ? 'Backend empresarial' : 'Enterprise backend'}</p>
+				<p class="dg-sub">{isEs ? 'Sistemas masivos' : 'Massive systems'}</p>
+			</div>
+			<div class="dg-box" data-el="use-android">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" />
+				</svg>
+				<p class="dg-title">Android</p>
+				<p class="dg-sub">{isEs ? 'Aplicaciones móviles' : 'Mobile applications'}</p>
+			</div>
+			<div class="dg-box" data-el="use-micro">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<rect x="16" y="16" width="6" height="6" rx="1" /><rect x="2" y="16" width="6" height="6" rx="1" /><rect x="9" y="2" width="6" height="6" rx="1" /><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" /><path d="M12 12V8" />
+				</svg>
+				<p class="dg-title">{isEs ? 'Microservicios' : 'Microservices'}</p>
+				<p class="dg-sub">{isEs ? 'Arquitecturas modernas' : 'Modern architectures'}</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- 1. WORA: C/C++ vs Java -->
+	<div slot="scene" data-scene="wora" class="dg-grid-2 scene-wora">
+		<div class="dg-col">
+			<p class="dg-label" data-el="c-title">C / C++</p>
+			<div class="dg-box dg-box--center" data-el="c-src">
+				<code class="dg-code">programa.c</code>
+				<p class="dg-sub">{isEs ? 'Un código fuente' : 'One source code'}</p>
+			</div>
+			<div class="dg-arrow dg-arrow--down">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+			</div>
+			<div class="dg-grid-3 scene-wora-bins">
+				<div class="dg-box dg-box--center" data-el="c-bin-win">
+					<code class="dg-code">.exe</code>
+					<p class="dg-sub">Windows x86</p>
+				</div>
+				<div class="dg-box dg-box--center" data-el="c-bin-linux">
+					<code class="dg-code">ELF</code>
+					<p class="dg-sub">Linux ARM</p>
+				</div>
+				<div class="dg-box dg-box--center" data-el="c-bin-mac">
+					<code class="dg-code">Mach-O</code>
+					<p class="dg-sub">macOS Apple Silicon</p>
+				</div>
+			</div>
+			<p class="dg-sub" data-el="c-note">{isEs ? 'Tres compilaciones, tres binarios distintos.' : 'Three compilations, three different binaries.'}</p>
+		</div>
+		<div class="dg-col">
+			<p class="dg-label dg-label--sage" data-el="java-title">Java · WORA</p>
+			<div class="dg-box dg-box--center" data-el="java-src">
+				<code class="dg-code">Programa.java</code>
+				<p class="dg-sub">{isEs ? 'Un código fuente' : 'One source code'}</p>
+			</div>
+			<div class="dg-arrow dg-arrow--down dg-arrow-label" data-el="java-javac">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+				<span>javac</span>
+			</div>
+			<div class="dg-box dg-box--accent dg-box--center" data-el="java-class">
+				<code class="dg-code">Programa.class</code>
+				<p class="dg-sub">{isEs ? 'Un único bytecode' : 'One single bytecode'}</p>
+			</div>
+			<div class="dg-grid-3 scene-wora-bins">
+				<div class="dg-box dg-box--sage dg-box--center" data-el="java-jvm-win">
+					<p class="dg-title">JVM</p>
+					<p class="dg-sub">Windows</p>
+				</div>
+				<div class="dg-box dg-box--sage dg-box--center" data-el="java-jvm-linux">
+					<p class="dg-title">JVM</p>
+					<p class="dg-sub">Linux</p>
+				</div>
+				<div class="dg-box dg-box--sage dg-box--center" data-el="java-jvm-mac">
+					<p class="dg-title">JVM</p>
+					<p class="dg-sub">macOS</p>
+				</div>
+			</div>
+			<p class="dg-banner" data-el="wora-banner">Write Once, Run Anywhere</p>
+		</div>
+	</div>
+
+	<!-- 1. Platform: JDK ⊃ JRE ⊃ JVM -->
+	<div slot="scene" data-scene="platform" class="scene-platform">
+		<div class="dg-nest dg-nest--accent" data-el="jdk">
+			<div class="dg-row dg-row--between">
+				<p class="dg-title">JDK <span class="dg-sub">· Java Development Kit</span></p>
+				<span class="dg-chip dg-chip--accent">{isEs ? 'Desarrolladores' : 'Developers'}</span>
+			</div>
+			<div class="dg-chips" data-el="tools">
+				<code class="dg-chip">javac</code>
+				<code class="dg-chip">jar</code>
+				<code class="dg-chip">javadoc</code>
+				<code class="dg-chip">jdb</code>
+			</div>
+			<div class="dg-nest dg-nest--sage" data-el="jre">
+				<div class="dg-row dg-row--between">
+					<p class="dg-title">JRE <span class="dg-sub">· Java Runtime Environment</span></p>
+					<span class="dg-chip dg-chip--sage">{isEs ? 'Ejecutar' : 'Run'}</span>
+				</div>
+				<div class="dg-chips" data-el="libs">
+					<code class="dg-chip">java.lang</code>
+					<code class="dg-chip">java.util</code>
+					<code class="dg-chip">java.io</code>
+					<code class="dg-chip">java.net</code>
+				</div>
+				<div class="dg-nest dg-nest--core" data-el="jvm">
+					<div class="dg-row dg-row--between">
+						<p class="dg-title">JVM <span class="dg-sub">· Java Virtual Machine</span></p>
+						<span class="dg-chip dg-chip--ink">bytecode</span>
+					</div>
+					<div class="dg-grid-2 scene-platform-core">
+						<div class="dg-box" data-el="classloader">
+							<p class="dg-title">Class Loader</p>
+							<p class="dg-sub">{isEs ? 'Carga los .class en memoria' : 'Loads .class files into memory'}</p>
+						</div>
+						<div class="dg-box" data-el="verifier">
+							<p class="dg-title">Bytecode Verifier</p>
+							<p class="dg-sub">{isEs ? 'Comprueba seguridad e integridad' : 'Checks safety and integrity'}</p>
+						</div>
+						<div class="dg-box" data-el="jit">
+							<p class="dg-title">JIT</p>
+							<p class="dg-sub">{isEs ? 'Bytecode frecuente → código nativo' : 'Hot bytecode → native code'}</p>
+						</div>
+						<div class="dg-box" data-el="gc">
+							<p class="dg-title">Garbage Collector</p>
+							<p class="dg-sub">{isEs ? 'Libera objetos sin uso' : 'Frees unused objects'}</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 2. Pipeline -->
+	<div slot="scene" data-scene="pipeline" class="scene-pipeline">
+		<div class="dg-row dg-row--center scene-pipeline-flow">
+			<div class="dg-box dg-box--center scene-pipeline-node" data-el="src">
+				<svg class="dg-icon dg-icon--lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="m10 13-2 2 2 2" /><path d="m14 17 2-2-2-2" />
+				</svg>
+				<code class="dg-code">HolaMundo.java</code>
+				<p class="dg-sub">{isEs ? 'Código fuente' : 'Source code'}</p>
+			</div>
+			<div class="dg-arrow dg-arrow-label" data-el="javac">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+				<span>javac</span>
+			</div>
+			<div class="dg-box dg-box--accent dg-box--center scene-pipeline-node" data-el="bytecode">
+				<svg class="dg-icon dg-icon--lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<rect x="4" y="4" width="16" height="16" rx="3" /><path d="M8 10h2" /><path d="M14 10h2" /><path d="M8 14h8" />
+				</svg>
+				<code class="dg-code">HolaMundo.class</code>
+				<p class="dg-sub">Bytecode</p>
+			</div>
+			<div class="dg-arrow dg-arrow-label" data-el="jvm-arrow">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+				<span>java</span>
+			</div>
+			<div class="dg-box dg-box--sage scene-pipeline-node" data-el="jvm">
+				<p class="dg-title">JVM</p>
+				<div class="dg-chips">
+					<span class="dg-chip">Windows</span>
+					<span class="dg-chip">macOS</span>
+					<span class="dg-chip">Linux</span>
+				</div>
+				<p class="dg-sub">{isEs ? 'Interpreta + compila JIT' : 'Interprets + JIT compiles'}</p>
+			</div>
+			<div class="dg-arrow" data-el="cpu-arrow">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+			</div>
+			<div class="dg-box dg-box--ink dg-box--center scene-pipeline-node" data-el="cpu">
+				<svg class="dg-icon dg-icon--lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--color-accent-300)">
+					<rect x="4" y="4" width="16" height="16" rx="2" /><rect x="9" y="9" width="6" height="6" rx="1" /><path d="M15 2v2" /><path d="M15 20v2" /><path d="M2 15h2" /><path d="M2 9h2" /><path d="M20 15h2" /><path d="M20 9h2" /><path d="M9 2v2" /><path d="M9 20v2" />
+				</svg>
+				<p class="dg-title">CPU</p>
+				<p class="dg-sub">{isEs ? 'Procesador real' : 'Real processor'}</p>
+			</div>
+		</div>
+		<div class="dg-row dg-row--center scene-pipeline-phases">
+			<span class="dg-chip dg-chip--accent" data-el="phase-1">{isEs ? 'Fase 1 · compilar' : 'Phase 1 · compile'}</span>
+			<span class="dg-chip dg-chip--sage" data-el="phase-2">{isEs ? 'Fase 2 · ejecutar' : 'Phase 2 · run'}</span>
+		</div>
+	</div>
+
+	<!-- 3. Anatomy of HolaMundo -->
+	<div slot="scene" data-scene="anatomy" class="scene-anatomy">
+		<span class="dg-file-tab" data-el="file-tab">
+			<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--color-accent-300); width: 16px; height: 16px">
+				<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" />
+			</svg>
+			HolaMundo.java
+		</span>
+		<div class="dg-board" data-el="board">
+			<code><span class="dg-token dg-token--kw" data-el="kw-public">public</span> <span class="dg-token dg-token--kw" data-el="kw-class">class</span> <span class="dg-token dg-token--type" data-el="name">HolaMundo</span> <span class="dg-token" data-el="brace-open">&lbrace;</span></code>
+			<code>    <span class="dg-token dg-token--kw" data-el="kw-public-2">public</span> <span class="dg-token dg-token--kw" data-el="kw-static">static</span> <span class="dg-token dg-token--kw" data-el="kw-void">void</span> <span class="dg-token" data-el="name-main">main</span><span class="dg-token" data-el="args">(String[] args)</span> &lbrace;</code>
+			<code>        <span class="dg-token" data-el="println">System.out.println</span>(<span class="dg-token dg-token--str" data-el="string">{isEs ? '"¡Hola, Mundo desde Java!"' : '"Hello, World from Java!"'}</span>)<span class="dg-token" data-el="semicolon">;</span></code>
+			<code>    &rbrace;</code>
+			<code><span class="dg-token" data-el="brace-close">&rbrace;</span></code>
+		</div>
+		<div class="dg-chips scene-anatomy-legend">
+			<span class="dg-chip dg-chip--accent" data-el="legend-kw">{isEs ? 'palabra clave' : 'keyword'}</span>
+			<span class="dg-chip" data-el="legend-name">{isEs ? 'nombre' : 'name'}</span>
+			<span class="dg-chip dg-chip--sage" data-el="legend-str">{isEs ? 'cadena de texto' : 'text string'}</span>
+		</div>
+	</div>
+
+	<!-- 4. Terminal flow -->
+	<div slot="scene" data-scene="terminal-flow" class="scene-terminal">
+		<div class="dg-row dg-row--center">
+			<div class="dg-box dg-box--center scene-terminal-node" data-el="f-java">
+				<svg class="dg-icon dg-icon--lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="m10 13-2 2 2 2" /><path d="m14 17 2-2-2-2" />
+				</svg>
+				<code class="dg-code">HolaMundo.java</code>
+				<p class="dg-sub">{isEs ? 'Paso 1 · crear' : 'Step 1 · create'}</p>
+			</div>
+			<div class="dg-arrow dg-arrow-label" data-el="f-javac">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+				<code class="dg-code">javac</code>
+			</div>
+			<div class="dg-box dg-box--accent dg-box--center scene-terminal-node" data-el="f-class">
+				<svg class="dg-icon dg-icon--lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<rect x="4" y="4" width="16" height="16" rx="3" /><path d="M8 10h2" /><path d="M14 10h2" /><path d="M8 14h8" />
+				</svg>
+				<code class="dg-code">HolaMundo.class</code>
+				<p class="dg-sub">{isEs ? 'Paso 2 · compilar' : 'Step 2 · compile'}</p>
+			</div>
+			<div class="dg-arrow dg-arrow-label" data-el="f-java-cmd">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+				<code class="dg-code">java</code>
+			</div>
+			<div class="dg-box dg-box--ink scene-terminal-node scene-terminal-out" data-el="f-out">
+				<p class="dg-label" style="color: var(--color-accent-2-300)">
+					<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: inherit; width: 16px; height: 16px">
+						<polyline points="4 17 10 11 4 5" /><line x1="12" x2="20" y1="19" y2="19" />
+					</svg>
+					{isEs ? 'Consola' : 'Console'}
+				</p>
+				<code class="dg-code">{isEs ? '¡Hola, Mundo desde Java!' : 'Hello, World from Java!'}</code>
+				<p class="dg-sub">{isEs ? 'Paso 3 · ejecutar' : 'Step 3 · run'}</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- 5. Arguments -->
+	<div slot="scene" data-scene="args" class="scene-args">
+		<div class="dg-swap">
+			<div class="dg-box dg-box--ink" data-el="cmd-base">
+				<p class="dg-sub">{isEs ? 'Línea de comandos' : 'Command line'}</p>
+				<code class="dg-code">$ java SaludoPersonalizado</code>
+			</div>
+			<div class="dg-box dg-box--ink" data-el="cmd-arg">
+				<p class="dg-sub">{isEs ? 'Línea de comandos' : 'Command line'}</p>
+				<code class="dg-code">$ java SaludoPersonalizado <strong>Facundo</strong></code>
+			</div>
+		</div>
+		<div class="dg-arrow dg-arrow--down dg-arrow-label">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+			<code class="dg-code">String[] args</code>
+		</div>
+		<div class="dg-row dg-row--center">
+			<div class="dg-swap">
+				<div class="dg-array" data-el="arr-empty">
+					<div class="dg-array-cell dg-array-cell--empty">
+						<span>{isEs ? 'vacío' : 'empty'}</span>
+						<span class="dg-array-index">—</span>
+					</div>
+				</div>
+				<div class="dg-array" data-el="arr-filled">
+					<div class="dg-array-cell">
+						<code class="dg-code">"Facundo"</code>
+						<span class="dg-array-index">[0]</span>
+					</div>
+				</div>
+			</div>
+			<div class="dg-swap">
+				<span class="dg-chip dg-chip--accent" data-el="len-0"><code>args.length == 0</code></span>
+				<span class="dg-chip dg-chip--accent" data-el="len-1"><code>args.length == 1</code></span>
+			</div>
+		</div>
+		<div class="dg-grid-2 scene-args-branches">
+			<div class="dg-box dg-box--sage" data-el="branch-if">
+				<p class="dg-label dg-label--sage"><code>if (args.length &gt; 0)</code></p>
+				<p class="dg-sub">{isEs ? '"¡Hola, " + args[0] + "! Bienvenido a la ingeniería en Java."' : '"Hello, " + args[0] + "! Welcome to Java engineering."'}</p>
+			</div>
+			<div class="dg-box dg-box--accent" data-el="branch-else">
+				<p class="dg-label"><code>else</code></p>
+				<p class="dg-sub">{isEs ? '"¡Hola, Desarrollador Anónimo! Pasá tu nombre como argumento."' : '"Hello, Anonymous Developer! Pass your name as an argument."'}</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- 6. Conventions -->
+	<div slot="scene" data-scene="conventions" class="scene-conventions">
+		<div class="dg-grid-3">
+			<div class="dg-box dg-box--accent" data-el="pascal">
+				<p class="dg-label">PascalCase</p>
+				<p class="dg-sub">{isEs ? 'Clases e interfaces' : 'Classes and interfaces'}</p>
+				<div class="dg-chips">
+					<code class="dg-chip">HolaMundo</code>
+					<code class="dg-chip">CuentaBancaria</code>
+					<code class="dg-chip">UsuarioService</code>
+				</div>
+			</div>
+			<div class="dg-box dg-box--sage" data-el="camel">
+				<p class="dg-label dg-label--sage">camelCase</p>
+				<p class="dg-sub">{isEs ? 'Métodos y variables' : 'Methods and variables'}</p>
+				<div class="dg-chips">
+					<code class="dg-chip">{isEs ? 'calcularTotal()' : 'calculateTotal()'}</code>
+					<code class="dg-chip">{isEs ? 'nombreUsuario' : 'userName'}</code>
+					<code class="dg-chip">{isEs ? 'saldoInicial' : 'initialBalance'}</code>
+				</div>
+			</div>
+			<div class="dg-box" data-el="upper">
+				<p class="dg-label">UPPER_SNAKE_CASE</p>
+				<p class="dg-sub">{isEs ? 'Constantes' : 'Constants'}</p>
+				<div class="dg-chips">
+					<code class="dg-chip">MAX_RETRY_COUNT</code>
+					<code class="dg-chip">PI</code>
+				</div>
+			</div>
+		</div>
+		<div class="dg-row scene-conventions-row">
+			<div class="dg-box dg-box--ink dg-box--center scene-conventions-semi" data-el="semi">
+				<p class="dg-title dg-title--lg">;</p>
+				<p class="dg-sub">{isEs ? 'Cierra cada instrucción' : 'Ends every statement'}</p>
+			</div>
+			<div class="dg-box" data-el="cmt-line">
+				<code class="dg-code">// ...</code>
+				<p class="dg-sub">{isEs ? 'Una sola línea' : 'Single line'}</p>
+			</div>
+			<div class="dg-box" data-el="cmt-block">
+				<code class="dg-code">/* ... */</code>
+				<p class="dg-sub">{isEs ? 'Multilínea' : 'Multi-line'}</p>
+			</div>
+			<div class="dg-box dg-box--sage" data-el="cmt-doc">
+				<code class="dg-code">/** ... */</code>
+				<p class="dg-sub">{isEs ? 'Javadoc · documentación de APIs' : 'Javadoc · API documentation'}</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- 7. Development environment -->
+	<div slot="scene" data-scene="ide" class="scene-ide">
+		<div class="dg-grid-3">
+			<div class="dg-box dg-box--accent" data-el="ide-local">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" />
+				</svg>
+				<p class="dg-title">{isEs ? 'IDE local' : 'Local IDE'}</p>
+				<p class="dg-sub">IntelliJ IDEA · Eclipse · VS Code</p>
+				<div class="dg-chips">
+					<span class="dg-chip dg-chip--sage">{isEs ? 'Sin conexión' : 'Offline'}</span>
+					<span class="dg-chip dg-chip--sage">{isEs ? 'JDK local' : 'Local JDK'}</span>
+					<span class="dg-chip dg-chip--accent">{isEs ? 'Instalación' : 'Installation'}</span>
+				</div>
+			</div>
+			<div class="dg-box" data-el="ide-online">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" />
+				</svg>
+				<p class="dg-title">{isEs ? 'IDE online' : 'Online IDE'}</p>
+				<p class="dg-sub">{isEs ? 'En el navegador' : 'In the browser'}</p>
+				<div class="dg-chips">
+					<span class="dg-chip dg-chip--sage">{isEs ? 'Empieza rápido' : 'Quick start'}</span>
+					<span class="dg-chip dg-chip--accent">{isEs ? 'Límites de CPU y versión' : 'CPU and version limits'}</span>
+					<span class="dg-chip dg-chip--accent">{isEs ? 'Código en un tercero' : 'Code at a third party'}</span>
+				</div>
+			</div>
+			<div class="dg-box dg-box--ink" data-el="ide-term">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--color-accent-300)">
+					<polyline points="4 17 10 11 4 5" /><line x1="12" x2="20" y1="19" y2="19" />
+				</svg>
+				<p class="dg-title">Terminal</p>
+				<p class="dg-sub"><code>javac</code> + <code>java</code></p>
+				<div class="dg-chips">
+					<span class="dg-chip dg-chip--sage">{isEs ? 'Flujo real visible' : 'Real flow visible'}</span>
+					<span class="dg-chip dg-chip--accent">{isEs ? 'Sin autocompletado' : 'No completion'}</span>
+				</div>
+			</div>
+		</div>
+		<p class="dg-banner" data-el="lts">{isEs ? 'Opción segura: JDK LTS local + terminal como referencia' : 'Safe default: local LTS JDK + terminal as the reference'}</p>
+		<ul class="dg-list scene-ide-checklist">
+			<li data-el="chk1"><span class="dg-step-num">1</span><span><code>java --version</code> {isEs ? 'y' : 'and'} <code>javac --version</code> {isEs ? 'compatibles' : 'compatible'}</span></li>
+			<li data-el="chk2"><span class="dg-step-num">2</span><span>{isEs ? 'El proyecto usa ese JDK, no el que eligió el IDE' : 'The project uses that JDK, not the one the IDE picked'}</span></li>
+			<li data-el="chk3"><span class="dg-step-num">3</span><span>{isEs ? 'Compilar y ejecutar una vez desde la terminal' : 'Compile and run once from the terminal'}</span></li>
+			<li data-el="chk4"><span class="dg-step-num">4</span><span>{isEs ? 'Guardar localmente y bajo control de versiones' : 'Keep it locally and under version control'}</span></li>
+			<li data-el="chk5"><span class="dg-step-num">5</span><span>{isEs ? 'Nunca pegar contraseñas ni datos personales online' : 'Never paste passwords or personal data online'}</span></li>
+		</ul>
+	</div>
+
+	<!-- 8. Javadoc -->
+	<div slot="scene" data-scene="javadoc" class="scene-javadoc">
+		<div class="dg-box scene-javadoc-page">
+			<div class="dg-row dg-row--between">
+				<p class="dg-label">
+					<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width: 16px; height: 16px">
+						<path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+					</svg>
+					Javadoc
+				</p>
+				<span class="dg-chip dg-chip--accent" data-el="version">{isEs ? 'Versión del JDK del proyecto' : 'Project JDK version'}</span>
+			</div>
+			<div class="dg-chips">
+				<span class="dg-chip" data-el="module">{isEs ? 'Módulo' : 'Module'} <code>java.base</code></span>
+				<span class="dg-chip" data-el="package">{isEs ? 'Paquete' : 'Package'} <code>java.lang</code></span>
+				<span class="dg-chip dg-chip--ink" data-el="class">{isEs ? 'Clase' : 'Class'} <code>String</code></span>
+			</div>
+			<p class="dg-sub" data-el="summary">{isEs ? 'Resumen: propósito, herencia, interfaces y notas generales de la clase.' : 'Summary: purpose, inheritance, interfaces and general notes of the class.'}</p>
+			<div class="dg-box dg-box--ink" data-el="signature">
+				<code class="dg-code">public String substring(int beginIndex, int endIndex)</code>
+			</div>
+			<div class="dg-grid-2">
+				<div class="dg-box dg-box--sage" data-el="params">
+					<p class="dg-label dg-label--sage">{isEs ? 'Parámetros' : 'Parameters'}</p>
+					<p class="dg-sub"><code>beginIndex</code> {isEs ? 'inclusivo' : 'inclusive'} · <code>endIndex</code> {isEs ? 'exclusivo' : 'exclusive'}</p>
+				</div>
+				<div class="dg-box dg-box--sage" data-el="returns">
+					<p class="dg-label dg-label--sage">{isEs ? 'Devuelve' : 'Returns'}</p>
+					<p class="dg-sub">{isEs ? 'Un nuevo' : 'A new'} <code>String</code>; {isEs ? 'no modifica el original' : 'does not modify the original'}</p>
+				</div>
+				<div class="dg-box dg-box--accent" data-el="throws">
+					<p class="dg-label">Throws</p>
+					<p class="dg-sub"><code>IndexOutOfBoundsException</code> {isEs ? 'si los índices quedan fuera de rango o invertidos' : 'if the indices fall out of range or are reversed'}</p>
+				</div>
+				<div class="dg-box" data-el="meta">
+					<div class="dg-chips">
+						<span class="dg-chip">Since</span>
+						<span class="dg-chip dg-chip--accent">Deprecated</span>
+					</div>
+					<p class="dg-sub">{isEs ? 'Disponibilidad y señales de migración' : 'Availability and migration signals'}</p>
+				</div>
+			</div>
+			<p class="dg-sub" data-el="links">{isEs ? 'Tipos enlazados → seguí el enlace y repetí el proceso: también son parte del contrato.' : 'Linked types → follow the link and repeat the process: they are part of the contract too.'}</p>
+		</div>
+	</div>
+
+	<!-- 9. Common mistakes -->
+	<div slot="scene" data-scene="errors" class="scene-errors">
+		<div class="dg-box dg-box--accent" data-el="err1">
+			<p class="dg-label">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width: 16px; height: 16px">
+					<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" />
+				</svg>
+				{isEs ? 'Error 1' : 'Mistake 1'}
+			</p>
+			<code class="dg-code">class HolaMundo is public, should be declared in a file named HolaMundo.java</code>
+			<p class="dg-sub">{isEs ? 'El archivo no se llama exactamente como la clase public (mayúsculas incluidas).' : 'The file is not named exactly like the public class (capitalization included).'}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="err2">
+			<p class="dg-label">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width: 16px; height: 16px">
+					<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" />
+				</svg>
+				{isEs ? 'Error 2' : 'Mistake 2'}
+			</p>
+			<code class="dg-code">Error: Could not find or load main class HolaMundo</code>
+			<p class="dg-sub">{isEs ? 'Ejecutaste java HolaMundo.class en lugar de java HolaMundo, o no estás en el directorio correcto.' : 'You ran java HolaMundo.class instead of java HolaMundo, or you are not in the right directory.'}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="err3">
+			<p class="dg-label">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width: 16px; height: 16px">
+					<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" />
+				</svg>
+				{isEs ? 'Error 3' : 'Mistake 3'}
+			</p>
+			<code class="dg-code">java.lang.ArrayIndexOutOfBoundsException</code>
+			<p class="dg-sub">{isEs ? 'Accediste a args[0] sin verificar args.length > 0 y no enviaste argumentos.' : 'You accessed args[0] without checking args.length > 0 and passed no arguments.'}</p>
+		</div>
+	</div>
+
+	<!-- 10. Exercise -->
+	<div slot="scene" data-scene="exercise" class="scene-exercise">
+		<div class="dg-box dg-box--ink dg-box--center" data-el="check">
+			<code class="dg-code">PerfilDesarrollador.java</code>
+			<p class="dg-title"><code>args.length &gt;= 2</code> ?</p>
+		</div>
+		<div class="dg-grid-2">
+			<div class="dg-col">
+				<span class="dg-chip dg-chip--sage" data-el="yes">{isEs ? 'sí · nombre y lenguaje' : 'yes · name and language'}</span>
+				<div class="dg-box dg-box--sage" data-el="out-box">
+					<code class="dg-code">==========================================</code>
+					<code class="dg-code">{isEs ? ' Desarrollador: Facundo' : ' Developer: Facundo'}</code>
+					<code class="dg-code">{isEs ? ' Especialidad:  Java' : ' Specialty: Java'}</code>
+					<code class="dg-code">==========================================</code>
+				</div>
+			</div>
+			<div class="dg-col">
+				<span class="dg-chip dg-chip--accent" data-el="no">{isEs ? 'no · faltan argumentos' : 'no · missing arguments'}</span>
+				<div class="dg-box dg-box--accent" data-el="usage-box">
+					<code class="dg-code">{isEs ? 'Uso: java PerfilDesarrollador <TuNombre> <TuLenguaje>' : 'Usage: java PerfilDesarrollador <YourName> <YourLanguage>'}</code>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Lesson map (intro + closing) -->
+	<div slot="scene" data-scene="closing" class="scene-closing">
+		<div class="dg-chips scene-closing-map">
+			<span class="dg-chip dg-chip--accent" data-el="s1">1 · WORA · JDK / JRE / JVM</span>
+			<span class="dg-chip dg-chip--accent" data-el="s2">2 · {isEs ? 'Compilación y ejecución' : 'Compilation and execution'}</span>
+			<span class="dg-chip dg-chip--accent" data-el="s3">3 · {isEs ? 'Anatomía de HolaMundo' : 'Anatomy of HolaMundo'}</span>
+			<span class="dg-chip dg-chip--accent" data-el="s4">4 · {isEs ? 'Consola: javac y java' : 'Terminal: javac and java'}</span>
+			<span class="dg-chip dg-chip--accent" data-el="s5">5 · String[] args</span>
+			<span class="dg-chip dg-chip--sage" data-el="s6">6 · {isEs ? 'Convenciones' : 'Conventions'}</span>
+			<span class="dg-chip dg-chip--sage" data-el="s7">7 · {isEs ? 'Entorno de desarrollo' : 'Development environment'}</span>
+			<span class="dg-chip dg-chip--sage" data-el="s8">8 · API {isEs ? 'y' : 'and'} Javadoc</span>
+			<span class="dg-chip dg-chip--sage" data-el="s9">9 · {isEs ? 'Errores comunes' : 'Common mistakes'}</span>
+			<span class="dg-chip dg-chip--sage" data-el="s10">10 · {isEs ? 'Ejercicio' : 'Exercise'}</span>
+		</div>
+		<a class="dg-box dg-box--ink scene-closing-repo" data-el="repo" href="https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l01_conceptos_basicos" target="_blank" rel="noopener noreferrer">
+			<p class="dg-label" style="color: var(--color-accent-300)">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: inherit; width: 16px; height: 16px">
+					<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" />
+				</svg>
+				CursoDeJava · l01_conceptos_basicos
+			</p>
+			<div class="dg-chips">
+				<code class="dg-chip dg-chip--ink">Ej01HolaMundo</code>
+				<code class="dg-chip dg-chip--ink">Ej02SalidaEstandar</code>
+				<code class="dg-chip dg-chip--ink">Ej03ConstantesYConvenciones</code>
+			</div>
+		</a>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Layout unique to each scene. Colors, radii and spacing stay on tokens. */
+	.scene-intro {
+		grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+		align-items: center;
+	}
+
+	.scene-intro-core {
+		padding: var(--space-6) var(--space-4);
+	}
+
+	.scene-wora-bins .dg-box {
+		padding: var(--space-2);
+	}
+
+	.scene-wora-bins .dg-code {
+		white-space: nowrap;
+	}
+
+	.scene-platform-core .dg-box {
+		padding: var(--space-2) var(--space-3);
+	}
+
+	.scene-pipeline-flow {
+		justify-content: center;
+	}
+
+	.scene-pipeline-node {
+		min-width: 9rem;
+	}
+
+	.scene-anatomy {
+		align-content: center;
+		gap: 0;
+	}
+
+	.scene-anatomy-legend {
+		margin-top: var(--space-3);
+	}
+
+	.scene-terminal-node {
+		min-width: 9.5rem;
+	}
+
+	.scene-terminal-out {
+		min-width: 12rem;
+	}
+
+	.scene-args {
+		justify-items: center;
+	}
+
+	.scene-args-branches {
+		width: 100%;
+	}
+
+	.scene-conventions-row {
+		align-items: stretch;
+	}
+
+	.scene-conventions-row > .dg-box {
+		flex: 1 1 8rem;
+	}
+
+	.scene-conventions-semi {
+		flex: 0 0 7rem;
+	}
+
+	.scene-ide-checklist {
+		padding: var(--space-3);
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+		border: 1.5px solid var(--color-divider);
+	}
+
+	.scene-javadoc-page {
+		gap: var(--space-2);
+	}
+
+	.scene-errors {
+		gap: var(--space-2);
+	}
+
+	.scene-exercise {
+		justify-items: stretch;
+	}
+
+	.scene-closing-map {
+		justify-content: center;
+	}
+
+	.scene-closing-repo {
+		text-decoration: none;
+		color: var(--color-neutral-100);
+	}
+
+	.scene-closing-repo:hover {
+		border-color: var(--color-accent-400);
+	}
+
+	@media (width < 720px) {
+		.scene-intro {
+			grid-template-columns: 1fr;
+		}
+
+		.scene-pipeline-node,
+		.scene-terminal-node,
+		.scene-terminal-out {
+			min-width: 0;
+			flex: 1 1 40%;
+		}
+	}
+</style>

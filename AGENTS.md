@@ -578,6 +578,60 @@ Verification: `node --test tests/activities-grading.test.mjs
 tests/activities-content-model.test.mjs tests/activities-routes.test.mjs
 tests/activities-pilot-content.test.mjs`.
 
+#### Animations (`src/data/animations.ts`)
+
+Step-by-step explanatory animations are the third kind of lesson material, next to
+presentations and activities. Like presentations they are a **flat catalog**
+(`src/data/animations.ts`), not a content collection; every `Animation` record is
+bound to exactly one lesson through `lesson: { course, slug }` (frontmatter `slug`,
+not filename). Helpers mirror the presentation ones: `getAnimationsForLesson`,
+`getAnimationCountsForCourse`, `getLessonForAnimation`.
+
+An animation is made of three parts:
+
+- **Script** — `src/data/animations/<slug>.ts` exports `script: AnimationScript`
+  (types in `src/data/animations/types.ts`): `chapters` (one per lesson section) and
+  `steps`. Every step names the `scene` it shows, the `show` list of `data-el` ids it
+  reveals (`'*'` for all), the optional `focus` list it emphasizes, a bilingual
+  `title`/`text` narration, and optionally a `code` panel (file name, language,
+  localized source, `focusLines`) and/or a `shell` panel (`cmd`/`out`/`err`/`cmt`
+  lines). Narration follows the lesson text; code string literals are localized the
+  same way the lesson does. `src/utils/animations.ts` resolves a script for one locale
+  (`resolveScript`), estimates autoplay dwell times and validates references.
+- **Scenes** — `src/components/animaciones/<slug>.astro` draws the diagrams as plain
+  HTML (`[data-scene="<id>"]` blocks with `[data-el="<id>"]` elements) using the
+  primitives in `src/styles/animation-scene.css` (`.dg-box`, `.dg-chip`, `.dg-nest`,
+  `.dg-board`/`.dg-token`, `.dg-array`, …), imported from the component `<style>`. It
+  passes the resolved script and the scenes (`slot="scene"`) to the player.
+- **Player** — `src/components/animations/AnimationPlayer.astro` is the shared engine:
+  chapter pills, scene stage, narration card, terminal-styled code/shell panels with
+  syntax colors from `src/utils/highlightCode.ts` (a dependency-free Java/bash
+  tokenizer whose `tok-*` classes map to Organic ramps on the ink ground), and the
+  controls (previous/next, play/pause autoplay, restart, ← → and space keys, live step
+  counter). Every string is server-rendered through `t()`; the client script only
+  toggles classes. `prefers-reduced-motion` disables reveal, typing and progress
+  animations.
+
+Where this renders:
+
+- `src/pages/animaciones/[slug].astro` and `src/pages/[lang]/animaciones/[slug].astro`
+  (component map keyed by slug, like presentations) with `AnimationLessonLink.astro`
+  rendering the "Part of: Course › Lesson" kicker.
+- `LessonAnimationsMenu.astro` (title-row access, next to the presentations menu) and
+  `LessonAnimations.astro` (card section after the lesson presentations) on both lesson
+  pages; `LessonsList.astro` shows an `animationCount` badge (Lucide `clapperboard`).
+- Card thumbnails live in `public/img/animations/<slug>.svg` with Organic hex literals
+  (standalone asset, see DESIGN.md §6.2).
+- i18n keys: `courses.lessonAnimations.*` and `animations.*`.
+
+Adding an animation: register it in the catalog, write its script and scenes, import
+and map the component in both detail pages, add the thumbnail, and cover it with a
+test like `tests/animation-conceptos-basicos-java.test.mjs` (which also checks that
+every `scene`/`show`/`focus` reference exists in the component).
+
+Verification: `node --test tests/animations-lessons.test.mjs
+tests/animation-conceptos-basicos-java.test.mjs tests/highlight-code.test.mjs`.
+
 ### 6.10 i18n Runtime (`src/i18n/`)
 
 UI strings are centralized in `src/i18n/es.json` + `src/i18n/en.json` (Astro 6 native i18n config — `defaultLocale: 'es'`, `prefixDefaultLocale: false`). The deprecated `src/i18n/translations.ts`, `src/i18n/paths.ts`, and `src/seo/meta.ts` modules have been removed; do not reintroduce them.

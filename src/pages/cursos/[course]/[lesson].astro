@@ -7,7 +7,10 @@ import LessonsList from '../../../components/LessonsList.astro';
 import LessonPresentations from '../../../components/LessonPresentations.astro';
 import LessonPresentationsMenu from '../../../components/LessonPresentationsMenu.astro';
 import LessonActivitiesAccess from '../../../components/LessonActivitiesAccess.astro';
+import LessonAnimations from '../../../components/LessonAnimations.astro';
+import LessonAnimationsMenu from '../../../components/LessonAnimationsMenu.astro';
 import { getPresentationCountsForCourse, getPresentationsForLesson } from '../../../data/presentations';
+import { getAnimationCountsForCourse, getAnimationsForLesson } from '../../../data/animations';
 import { getActivitiesForLesson, getActivityCountsForCourse } from '../../../utils/activities';
 import { resolveRoadmap } from '../../../utils/roadmap';
 
@@ -62,6 +65,8 @@ const nextLesson = courseLessons.find((l) => l.data.order === entry.data.order +
 
 const presentationCounts = getPresentationCountsForCourse(courseSlug);
 const lessonPresentations = getPresentationsForLesson(courseSlug, lessonSlug);
+const animationCounts = getAnimationCountsForCourse(courseSlug);
+const lessonAnimations = getAnimationsForLesson(courseSlug, lessonSlug);
 
 const allActivities = await getCollection('activities');
 const lessonActivities = getActivitiesForLesson(allActivities, courseSlug, lessonSlug, 'es');
@@ -165,6 +170,7 @@ const schema = buildCourseBreadcrumbSchema({
 							order: l.data.order,
 							presentationCount: presentationCounts[l.data.slug],
 							activityCount: activityCounts[l.data.slug],
+							animationCount: animationCounts[l.data.slug],
 						}))}
 						courseSlug={courseSlug}
 						locale="es"
@@ -187,6 +193,9 @@ const schema = buildCourseBreadcrumbSchema({
 							{lessonPresentations.length > 0 && (
 								<LessonPresentationsMenu presentations={lessonPresentations} locale="es" />
 							)}
+							{lessonAnimations.length > 0 && (
+								<LessonAnimationsMenu animations={lessonAnimations} locale="es" />
+							)}
 							{lessonActivities.length > 0 && (
 								<LessonActivitiesAccess
 									course={courseSlug}
@@ -204,6 +213,7 @@ const schema = buildCourseBreadcrumbSchema({
 						<Content />
 					</div>
 					<LessonPresentations presentations={lessonPresentations} locale="es" />
+					<LessonAnimations animations={lessonAnimations} locale="es" />
 					<footer class="lesson-footer">
 						<nav class="pager" aria-label="Navegación de lecciones">
 							{prevLesson && (

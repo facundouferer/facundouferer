@@ -6,7 +6,10 @@ import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import LessonsList from '../../../../components/LessonsList.astro';
 import LessonPresentations from '../../../../components/LessonPresentations.astro';
 import LessonPresentationsMenu from '../../../../components/LessonPresentationsMenu.astro';
+import LessonAnimations from '../../../../components/LessonAnimations.astro';
+import LessonAnimationsMenu from '../../../../components/LessonAnimationsMenu.astro';
 import { getPresentationCountsForCourse, getPresentationsForLesson } from '../../../../data/presentations';
+import { getAnimationCountsForCourse, getAnimationsForLesson } from '../../../../data/animations';
 import { getActivityCountsForCourse } from '../../../../utils/activities';
 import { resolveRoadmap } from '../../../../utils/roadmap';
 
@@ -61,6 +64,8 @@ const nextLesson = courseLessons.find((l) => l.data.order === entry.data.order +
 
 const presentationCounts = getPresentationCountsForCourse(courseSlug);
 const lessonPresentations = getPresentationsForLesson(courseSlug, lessonSlug);
+const animationCounts = getAnimationCountsForCourse(courseSlug);
+const lessonAnimations = getAnimationsForLesson(courseSlug, lessonSlug);
 
 const allActivities = await getCollection('activities');
 const activityCounts = getActivityCountsForCourse(allActivities, courseSlug, 'en');
@@ -163,6 +168,7 @@ const schema = buildCourseBreadcrumbSchema({
 							order: l.data.order,
 							presentationCount: presentationCounts[l.data.slug],
 							activityCount: activityCounts[l.data.slug],
+							animationCount: animationCounts[l.data.slug],
 						}))}
 						courseSlug={courseSlug}
 						locale="en"
@@ -185,6 +191,9 @@ const schema = buildCourseBreadcrumbSchema({
 							{lessonPresentations.length > 0 && (
 								<LessonPresentationsMenu presentations={lessonPresentations} locale="en" />
 							)}
+							{lessonAnimations.length > 0 && (
+								<LessonAnimationsMenu animations={lessonAnimations} locale="en" />
+							)}
 						</div>
 						<p class="meta">
 							{`${t('courses.lesson')} ${entry.data.order}${entry.data.description ? ` · ${entry.data.description}` : ''}`}
@@ -194,6 +203,7 @@ const schema = buildCourseBreadcrumbSchema({
 						<Content />
 					</div>
 					<LessonPresentations presentations={lessonPresentations} locale="en" />
+					<LessonAnimations animations={lessonAnimations} locale="en" />
 					<footer class="lesson-footer">
 						<nav class="pager" aria-label="Lesson navigation">
 							{prevLesson && (

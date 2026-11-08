@@ -9,6 +9,7 @@ import LessonsList from '../../../components/LessonsList.astro';
 import CourseRoadmap from '../../../components/CourseRoadmap.astro';
 import { withBase } from '../../../utils/withBase';
 import { getPresentationCountsForCourse } from '../../../data/presentations';
+import { getAnimationCountsForCourse } from '../../../data/animations';
 import { getActivityCountsForCourse } from '../../../utils/activities';
 
 const lang = getLangFromUrl(Astro.url);
@@ -34,6 +35,7 @@ if (!course) {
 const lessons = getLessonsForCourse(allLessons, courseSlug, 'es');
 const roadmap = resolveRoadmap(course.data.roadmap, lessons, 'es', courseSlug);
 const presentationCounts = getPresentationCountsForCourse(courseSlug);
+const animationCounts = getAnimationCountsForCourse(courseSlug);
 const allActivities = await getCollection('activities');
 const activityCounts = getActivityCountsForCourse(allActivities, courseSlug, 'es');
 
@@ -82,6 +84,7 @@ const schema = buildCourseBreadcrumbSchema({
 					order: l.data.order,
 					presentationCount: presentationCounts[l.data.slug],
 					activityCount: activityCounts[l.data.slug],
+					animationCount: animationCounts[l.data.slug],
 				}))}
 				courseSlug={courseSlug}
 				locale="es"

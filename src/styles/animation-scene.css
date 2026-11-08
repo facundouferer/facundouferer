@@ -1,0 +1,498 @@
+/* Scene primitives for step-by-step animations (src/components/animaciones/*).
+   Import from the animation component's <style> so the rules get its scope:
+     @import '../../styles/animation-scene.css';
+   Every scene is a `[data-scene]` block; the player (AnimationPlayer.astro)
+   toggles `.is-active` on scenes, `.is-shown` / `.is-lit` on `[data-el]`
+   elements and `.has-focus` on a scene while some element is emphasized.
+   Tokens only — colors, radii, spacing and shadows come from the Organic
+   custom properties in src/styles/global.css. */
+
+[data-scene] {
+	grid-area: 1 / 1;
+	display: grid;
+	align-content: center;
+	gap: var(--space-3);
+	width: 100%;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
+
+[data-scene].is-active {
+	opacity: 1;
+	visibility: visible;
+	transition: opacity 0.35s ease;
+}
+
+/* Reveal / emphasis states ─────────────────────────────────────────────── */
+
+[data-el] {
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(8px) scale(0.97);
+	transition:
+		opacity 0.45s ease,
+		transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+		outline-color 0.3s ease,
+		background-color 0.3s ease,
+		border-color 0.3s ease,
+		visibility 0s linear 0.45s;
+	transition-delay: calc(min(var(--i, 0), 8) * 90ms);
+}
+
+[data-el].is-shown {
+	opacity: 1;
+	visibility: visible;
+	transform: none;
+	transition-delay: calc(min(var(--i, 0), 8) * 90ms), calc(min(var(--i, 0), 8) * 90ms), 0s, 0s, 0s, 0s;
+}
+
+/* While a step emphasizes some elements, shown leaves without emphasis recede.
+   Containers that hold other elements only lose their accent so their
+   children stay fully legible. */
+.has-focus [data-el].is-shown:not(.is-lit):not(:has([data-el])) {
+	opacity: 0.42;
+}
+
+/* Tokens sit on the ink board, where a lighter dim keeps the code legible. */
+.has-focus .dg-board .dg-token.is-shown:not(.is-lit) {
+	opacity: 0.62;
+}
+
+[data-el].is-lit {
+	outline: 3px solid var(--color-accent-300);
+	outline-offset: 3px;
+	border-radius: inherit;
+	animation: anim-lit-pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes anim-lit-pulse {
+	from {
+		outline-color: var(--color-accent-300);
+	}
+	to {
+		outline-color: var(--color-accent-500);
+	}
+}
+
+/* Diagram primitives ───────────────────────────────────────────────────── */
+
+.dg-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-3);
+}
+
+.dg-row--center {
+	justify-content: center;
+}
+
+.dg-row--between {
+	justify-content: space-between;
+}
+
+.dg-col {
+	display: grid;
+	gap: var(--space-2);
+	align-content: start;
+}
+
+.dg-grid-2 {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--space-3);
+}
+
+.dg-grid-3 {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: var(--space-3);
+}
+
+/* Alternates that occupy the same spot (e.g. empty vs. filled array). */
+.dg-swap {
+	display: grid;
+}
+
+.dg-swap > * {
+	grid-area: 1 / 1;
+}
+
+.dg-box {
+	display: grid;
+	gap: var(--space-1);
+	align-content: start;
+	padding: var(--space-3);
+	border-radius: var(--radius-md);
+	background: var(--color-bg);
+	border: 1.5px solid var(--color-divider);
+	min-width: 0;
+}
+
+.dg-box--accent {
+	background: var(--color-accent-100);
+	border-color: var(--color-accent-400);
+}
+
+.dg-box--sage {
+	background: var(--color-accent-2-100);
+	border-color: var(--color-accent-2-400);
+}
+
+.dg-box--ink {
+	background: var(--color-neutral-900);
+	border-color: var(--color-neutral-800);
+	color: var(--color-neutral-100);
+}
+
+.dg-box--ink .dg-sub {
+	color: var(--color-neutral-400);
+}
+
+.dg-box--center {
+	justify-items: center;
+	text-align: center;
+}
+
+.dg-nest {
+	display: grid;
+	gap: var(--space-3);
+	padding: var(--space-4);
+	border-radius: var(--radius-lg);
+	border: 2px solid var(--color-divider);
+	background: var(--color-bg);
+}
+
+.dg-nest--accent {
+	border-color: var(--color-accent-400);
+	background: var(--color-accent-100);
+}
+
+.dg-nest--sage {
+	border-color: var(--color-accent-2-400);
+	background: var(--color-accent-2-100);
+}
+
+.dg-nest--core {
+	border-color: var(--color-neutral-700);
+	background: var(--color-surface);
+}
+
+.dg-title {
+	font-family: var(--font-heading);
+	font-weight: var(--font-heading-weight);
+	font-size: 1.05rem;
+	line-height: 1.2;
+	margin: 0;
+}
+
+.dg-title--lg {
+	font-size: 1.4rem;
+}
+
+.dg-sub {
+	margin: 0;
+	font-size: 0.8rem;
+	line-height: 1.45;
+	color: var(--color-neutral-700);
+}
+
+.dg-label {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--color-accent-700);
+}
+
+.dg-label--sage {
+	color: var(--color-accent-2-700);
+}
+
+.dg-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-1);
+}
+
+.dg-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	padding: 3px 10px;
+	border-radius: 999px;
+	font-size: 0.78rem;
+	font-weight: 600;
+	line-height: 1.3;
+	background: var(--color-surface);
+	border: 1px solid var(--color-divider);
+	color: var(--color-text);
+}
+
+.dg-chip--accent {
+	background: var(--color-accent-100);
+	border-color: var(--color-accent-300);
+	color: var(--color-accent-800);
+}
+
+.dg-chip--sage {
+	background: var(--color-accent-2-100);
+	border-color: var(--color-accent-2-300);
+	color: var(--color-accent-2-800);
+}
+
+.dg-chip--ink {
+	background: var(--color-neutral-900);
+	border-color: var(--color-neutral-900);
+	color: var(--color-neutral-100);
+}
+
+/* Inline code inside a scene relies on the UA monospace of <code>. */
+.dg-code {
+	padding: 1px 6px;
+	border-radius: var(--radius-sm);
+	background: var(--color-neutral-200);
+	color: var(--color-neutral-900);
+	font-size: 0.85em;
+}
+
+.dg-box--ink .dg-code {
+	background: var(--color-neutral-800);
+	color: var(--color-accent-200);
+}
+
+/* Code tokens for the anatomy board: each one is a `[data-el]` leaf. */
+.dg-board {
+	display: grid;
+	gap: 2px;
+	padding: var(--space-4);
+	border-radius: var(--radius-md);
+	background: var(--color-neutral-900);
+	color: var(--color-neutral-100);
+	font-size: clamp(0.72rem, 1.25vw, 0.95rem);
+	line-height: 1.9;
+	overflow-x: auto;
+}
+
+.dg-board code {
+	display: block;
+	white-space: pre;
+}
+
+.dg-token {
+	display: inline-block;
+	padding: 0 3px;
+	border-radius: var(--radius-sm);
+	color: var(--color-neutral-100);
+}
+
+.dg-token--kw {
+	color: var(--color-accent-400);
+}
+
+.dg-token--type {
+	color: var(--color-accent-200);
+}
+
+.dg-token--str {
+	color: var(--color-accent-2-300);
+}
+
+.dg-token.is-lit {
+	background: var(--color-accent-500);
+	color: var(--color-bg);
+	outline-width: 2px;
+	outline-offset: 2px;
+	animation: none;
+}
+
+.dg-file-tab {
+	justify-self: start;
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	padding: 4px 12px;
+	border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+	background: var(--color-neutral-800);
+	color: var(--color-neutral-100);
+	font-size: 0.8rem;
+	font-weight: 600;
+	margin-bottom: calc(var(--space-1) * -1);
+}
+
+.dg-icon {
+	width: 22px;
+	height: 22px;
+	flex: none;
+	color: var(--color-accent-700);
+}
+
+.dg-icon--sage {
+	color: var(--color-accent-2-700);
+}
+
+.dg-icon--lg {
+	width: 34px;
+	height: 34px;
+}
+
+.dg-arrow {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--color-accent-600);
+	flex: none;
+}
+
+.dg-arrow svg {
+	width: 26px;
+	height: 26px;
+}
+
+.dg-arrow--down svg {
+	transform: rotate(90deg);
+}
+
+.dg-arrow-label {
+	display: grid;
+	justify-items: center;
+	gap: 0;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--color-accent-700);
+}
+
+.dg-blob {
+	width: 72px;
+	height: 72px;
+	border-radius: 50%;
+	display: grid;
+	place-items: center;
+	background: var(--color-accent);
+	color: var(--color-bg);
+}
+
+.dg-blob--sage {
+	background: var(--color-accent-2);
+}
+
+.dg-blob .dg-icon {
+	color: inherit;
+	width: 34px;
+	height: 34px;
+}
+
+.dg-list {
+	display: grid;
+	gap: var(--space-1);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.dg-list li {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--space-2);
+	font-size: 0.85rem;
+	line-height: 1.45;
+}
+
+.dg-list .dg-icon {
+	width: 18px;
+	height: 18px;
+	margin-top: 2px;
+}
+
+.dg-step-num {
+	display: inline-grid;
+	place-items: center;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--color-accent);
+	color: var(--color-bg);
+	font-size: 0.75rem;
+	font-weight: 700;
+	flex: none;
+}
+
+.dg-banner {
+	padding: var(--space-2) var(--space-3);
+	border-radius: 999px;
+	background: var(--color-accent-2-100);
+	border: 1.5px solid var(--color-accent-2-400);
+	color: var(--color-accent-2-800);
+	font-weight: 600;
+	font-size: 0.9rem;
+	text-align: center;
+}
+
+.dg-array {
+	display: inline-flex;
+	align-items: stretch;
+	border-radius: var(--radius-sm);
+	border: 1.5px solid var(--color-neutral-700);
+	overflow: hidden;
+}
+
+.dg-array-cell {
+	display: grid;
+	gap: 2px;
+	justify-items: center;
+	padding: var(--space-1) var(--space-3);
+	background: var(--color-bg);
+	border-right: 1.5px solid var(--color-neutral-700);
+	font-size: 0.85rem;
+}
+
+.dg-array-cell:last-child {
+	border-right: 0;
+}
+
+.dg-array-cell--empty {
+	color: var(--color-neutral-600);
+	font-style: italic;
+}
+
+.dg-array-index {
+	font-size: 0.7rem;
+	color: var(--color-neutral-600);
+}
+
+/* Narrow screens stack every diagram, so inactive scenes leave the flow
+   instead of stretching the stage to the tallest one. */
+@media (width < 900px) {
+	[data-scene]:not(.is-active) {
+		display: none;
+	}
+}
+
+@media (width < 720px) {
+	.dg-grid-3 {
+		grid-template-columns: 1fr;
+	}
+
+	.dg-grid-2 {
+		grid-template-columns: 1fr;
+	}
+
+	.dg-nest {
+		padding: var(--space-3);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	[data-scene],
+	[data-el] {
+		transition: none;
+	}
+
+	[data-el].is-lit {
+		animation: none;
+	}
+}

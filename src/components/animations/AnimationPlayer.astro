@@ -1,0 +1,879 @@
+---
+/**
+ * Generic engine for step-by-step explanatory animations.
+ *
+ * The parent animation component resolves its script for one locale and
+ * passes the steps here, plus the diagram scenes through the `scene` slot.
+ * Every step is server-rendered (narration, code and terminal panels) so no
+ * UI string is ever written by the client script; the script only toggles
+ * classes, moves between steps and drives autoplay.
+ */
+import { useTranslations, type Locale } from '../../i18n/utils';
+import { highlightCode } from '../../utils/highlightCode';
+import { renderInlineCode } from '../../utils/renderInlineCode';
+import type { ResolvedChapter, ResolvedStep } from '../../utils/animations';
+
+type Props = {
+	lang: Locale;
+	slug: string;
+	tag: string;
+	title: string;
+	description: string;
+	chapters: ResolvedChapter[];
+	steps: ResolvedStep[];
+};
+
+const { lang, slug, tag, title, description, chapters, steps } = Astro.props;
+const t = useTranslations(lang);
+
+const chapterLabel = new Map(chapters.map((chapter) => [chapter.id, chapter.label]));
+const total = steps.length;
+---
+
+<section class="anim-player" data-anim-player data-slug={slug} data-total={total}>
+	<header class="anim-header">
+		<span class="kicker">{t('animations.kicker')} · {tag}</span>
+		<h1 class="section-title anim-title">{title}</h1>
+		<p class="section-subtitle">{description}</p>
+	</header>
+
+	<nav class="anim-chapters" aria-label={t('animations.chapters')}>
+		{
+			chapters.map((chapter) => (
+				<button
+					type="button"
+					class="tag tag-outline anim-chapter"
+					data-anim-chapter={chapter.id}
+					data-anim-goto={chapter.firstStepIndex}
+					aria-pressed="false"
+				>
+					{chapter.label}
+				</button>
+			))
+		}
+	</nav>
+
+	<div class="anim-board">
+		<div class="anim-stage card elev-sm" data-anim-stage role="group" aria-label={t('animations.stage')}>
+			<slot name="scene" />
+		</div>
+
+		{
+			steps.map((step) => {
+				const show = step.show === '*' ? '*' : step.show.join(' ');
+				const focus = (step.focus ?? []).join(' ');
+				const codeLines = step.code ? highlightCode(step.code.source, step.code.language) : [];
+				const focusLines = new Set(step.code?.focusLines ?? []);
+				return (
+					<div
+						class="anim-step"
+						data-anim-step={step.index}
+						data-step-chapter={step.chapter}
+						data-step-scene={step.scene}
+						data-show={show}
+						data-focus={focus}
+						data-duration={step.duration}
+						aria-hidden="true"
+					>
+						<article class="anim-narration card elev-sm">
+							<p class="anim-step-kicker">
+								<span class="tag tag-accent">{chapterLabel.get(step.chapter)}</span>
+								<span class="anim-step-number text-muted">{step.index + 1}</span>
+							</p>
+							<h2 class="anim-step-title">{step.title}</h2>
+							<p class="anim-step-text" set:html={renderInlineCode(step.text)} />
+						</article>
+
+						{(step.code || step.shell) && (
+							<div class:list={['anim-panels', { 'anim-panels--two': !!(step.code && step.shell) }]}>
+								{step.code && (
+									<div class="anim-terminal anim-terminal--code">
+										<div class="anim-terminal-bar">
+											<span class="anim-terminal-dots" aria-hidden="true">
+												<i />
+												<i />
+												<i />
+											</span>
+											<span class="anim-terminal-title">{step.code.title}</span>
+											<span class="anim-terminal-lang">{step.code.language}</span>
+										</div>
+										<pre class="anim-terminal-body" data-has-focus={focusLines.size > 0 ? 'true' : undefined}><code class="anim-lines">{codeLines.map((html, index) => (
+											<span class:list={['anim-line', { 'is-focus': focusLines.has(index + 1) }]} style={`--i:${index}`} set:html={html || ' '} />
+										))}</code></pre>
+									</div>
+								)}
+								{step.shell && (
+									<div class="anim-terminal anim-terminal--shell">
+										<div class="anim-terminal-bar">
+											<span class="anim-terminal-dots" aria-hidden="true">
+												<i />
+												<i />
+												<i />
+											</span>
+											<span class="anim-terminal-title">{step.shell.title ?? t('animations.terminal')}</span>
+											<span class="anim-terminal-lang">bash</span>
+										</div>
+										<pre class="anim-terminal-body"><code class="anim-lines">{step.shell.lines.map((line, index) => (
+											<span class={`anim-line anim-line--${line.kind}`} style={`--i:${index}`} set:html={highlightCode(line.text, line.kind === 'cmd' ? 'bash' : 'text')[0] || ' '} />
+										))}<span class="anim-line anim-line--cursor" style={`--i:${step.shell.lines.length}`} aria-hidden="true" /></code></pre>
+									</div>
+								)}
+							</div>
+						)}
+					</div>
+				);
+			})
+		}
+	</div>
+
+	<div class="anim-controls" role="group" aria-label={t('animations.controls.region')}>
+		<div class="anim-buttons">
+			<button type="button" class="btn btn-secondary" data-anim-prev aria-label={t('animations.controls.prev')}>
+				<svg
+					aria-hidden="true"
+					xmlns="http://www.w3.org/2000/svg"
+					width="18"
+					height="18"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2.75"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span class="anim-btn-label">{t('animations.controls.prev')}</span>
+			</button>
+
+			<button type="button" class="btn btn-primary anim-play" data-anim-play aria-pressed="false">
+				<svg
+					class="anim-icon-play"
+					aria-hidden="true"
+					xmlns="http://www.w3.org/2000/svg"
+					width="18"
+					height="18"
+					viewBox="0 0 24 24"
+					fill="currentColor"
+					stroke="currentColor"
+					stroke-width="2.75"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<polygon points="6 3 20 12 6 21 6 3" />
+				</svg>
+				<svg
+					class="anim-icon-pause"
+					aria-hidden="true"
+					xmlns="http://www.w3.org/2000/svg"
+					width="18"
+					height="18"
+					viewBox="0 0 24 24"
+					fill="currentColor"
+					stroke="currentColor"
+					stroke-width="2.75"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<rect x="14" y="4" width="4" height="16" rx="1" />
+					<rect x="6" y="4" width="4" height="16" rx="1" />
+				</svg>
+				<span class="anim-label-play">{t('animations.controls.play')}</span>
+				<span class="anim-label-pause">{t('animations.controls.pause')}</span>
+			</button>
+
+			<button type="button" class="btn btn-secondary" data-anim-next aria-label={t('animations.controls.next')}>
+				<span class="anim-btn-label">{t('animations.controls.next')}</span>
+				<svg
+					aria-hidden="true"
+					xmlns="http://www.w3.org/2000/svg"
+					width="18"
+					height="18"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2.75"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+
+			<button type="button" class="btn btn-ghost" data-anim-restart>
+				<svg
+					aria-hidden="true"
+					xmlns="http://www.w3.org/2000/svg"
+					width="18"
+					height="18"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2.75"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+					<path d="M3 3v5h5" />
+				</svg>
+				<span class="anim-btn-label">{t('animations.controls.restart')}</span>
+			</button>
+		</div>
+
+		<p class="anim-counter text-muted" aria-live="polite" aria-atomic="true">
+			{t('animations.stepCounter.label')} <span data-anim-current>1</span> {t('animations.stepCounter.of')} {total}
+		</p>
+		<p class="anim-announcer" aria-live="polite" aria-atomic="true" data-anim-announce></p>
+
+		<div class="anim-progress" aria-hidden="true">
+			<span class="anim-progress-fill" data-anim-progress></span>
+		</div>
+		<p class="anim-hint text-muted">{t('animations.keyboardHint')}</p>
+	</div>
+</section>
+
+<script>
+	function setupAnimationPlayer(root: HTMLElement) {
+		if (root.dataset.ready === 'true') return;
+		root.dataset.ready = 'true';
+
+		const steps = Array.from(root.querySelectorAll<HTMLElement>('[data-anim-step]'));
+		const scenes = Array.from(root.querySelectorAll<HTMLElement>('[data-anim-stage] [data-scene]'));
+		const chapterButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-anim-chapter]'));
+		const prevBtn = root.querySelector<HTMLButtonElement>('[data-anim-prev]');
+		const nextBtn = root.querySelector<HTMLButtonElement>('[data-anim-next]');
+		const playBtn = root.querySelector<HTMLButtonElement>('[data-anim-play]');
+		const restartBtn = root.querySelector<HTMLButtonElement>('[data-anim-restart]');
+		const counter = root.querySelector<HTMLElement>('[data-anim-current]');
+		const announcer = root.querySelector<HTMLElement>('[data-anim-announce]');
+		const progress = root.querySelector<HTMLElement>('[data-anim-progress]');
+		const total = steps.length;
+		if (total === 0) return;
+
+		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+		let current = -1;
+		let playing = false;
+		let timer: number | undefined;
+
+		function applyScene(step: HTMLElement) {
+			const sceneId = step.dataset.stepScene;
+			const show = step.dataset.show ?? '';
+			const showAll = show === '*';
+			const showList = showAll ? [] : show.split(' ').filter(Boolean);
+			const focus = (step.dataset.focus ?? '').split(' ').filter(Boolean);
+
+			for (const scene of scenes) {
+				const active = scene.dataset.scene === sceneId;
+				scene.classList.toggle('is-active', active);
+				if (!active) continue;
+
+				let order = 0;
+				for (const el of Array.from(scene.querySelectorAll<HTMLElement>('[data-el]'))) {
+					const id = el.dataset.el ?? '';
+					const shown = showAll || showList.includes(id);
+					if (shown && !el.classList.contains('is-shown')) {
+						el.style.setProperty('--i', String(order));
+						order += 1;
+					}
+					el.classList.toggle('is-shown', shown);
+					el.classList.toggle('is-lit', shown && focus.includes(id));
+				}
+				scene.classList.toggle('has-focus', focus.length > 0);
+			}
+		}
+
+		function setProgress(fraction: number, durationMs: number) {
+			if (!progress) return;
+			progress.style.transitionDuration = reducedMotion.matches ? '0ms' : `${durationMs}ms`;
+			progress.style.width = `${Math.max(0, Math.min(1, fraction)) * 100}%`;
+		}
+
+		function clearTimer() {
+			if (timer !== undefined) {
+				window.clearTimeout(timer);
+				timer = undefined;
+			}
+		}
+
+		function scheduleAdvance() {
+			clearTimer();
+			if (!playing || current < 0) return;
+			const step = steps[current];
+			const duration = Number(step.dataset.duration ?? '6000');
+			setProgress((current + 1) / total, duration);
+			timer = window.setTimeout(() => {
+				if (current >= total - 1) {
+					stop();
+					return;
+				}
+				goTo(current + 1);
+			}, duration);
+		}
+
+		function goTo(index: number) {
+			const next = Math.max(0, Math.min(total - 1, index));
+			if (next === current) return;
+			current = next;
+
+			steps.forEach((step, i) => {
+				const active = i === current;
+				step.classList.toggle('is-active', active);
+				step.setAttribute('aria-hidden', active ? 'false' : 'true');
+			});
+
+			const step = steps[current];
+			applyScene(step);
+
+			const chapter = step.dataset.stepChapter;
+			for (const button of chapterButtons) {
+				button.setAttribute('aria-pressed', button.dataset.animChapter === chapter ? 'true' : 'false');
+			}
+
+			if (prevBtn) prevBtn.disabled = current === 0;
+			if (nextBtn) nextBtn.disabled = current === total - 1;
+			if (counter) counter.textContent = String(current + 1);
+			if (announcer) announcer.textContent = step.querySelector('.anim-step-title')?.textContent ?? '';
+
+			if (playing) {
+				setProgress(current / total, 0);
+				window.requestAnimationFrame(() => scheduleAdvance());
+			} else {
+				setProgress(current / total, 240);
+			}
+		}
+
+		function setPlaying(value: boolean) {
+			playing = value;
+			root.classList.toggle('is-playing', playing);
+			if (playBtn) playBtn.setAttribute('aria-pressed', playing ? 'true' : 'false');
+		}
+
+		function play() {
+			if (playing) return;
+			if (current >= total - 1) goTo(0);
+			setPlaying(true);
+			setProgress(current / total, 0);
+			window.requestAnimationFrame(() => scheduleAdvance());
+		}
+
+		function stop() {
+			clearTimer();
+			setPlaying(false);
+			setProgress(current / total, 240);
+		}
+
+		prevBtn?.addEventListener('click', () => goTo(current - 1));
+		nextBtn?.addEventListener('click', () => goTo(current + 1));
+		restartBtn?.addEventListener('click', () => {
+			stop();
+			goTo(0);
+		});
+		playBtn?.addEventListener('click', () => (playing ? stop() : play()));
+		for (const button of chapterButtons) {
+			button.addEventListener('click', () => goTo(Number(button.dataset.animGoto ?? '0')));
+		}
+
+		window.addEventListener('keydown', (event) => {
+			const target = event.target as HTMLElement | null;
+			const tag = target?.tagName ?? '';
+			if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target?.isContentEditable) return;
+			if (event.key === 'ArrowRight') {
+				event.preventDefault();
+				goTo(current + 1);
+			} else if (event.key === 'ArrowLeft') {
+				event.preventDefault();
+				goTo(current - 1);
+			} else if (event.key === ' ' && (tag === 'BODY' || target === root)) {
+				event.preventDefault();
+				playing ? stop() : play();
+			}
+		});
+
+		document.addEventListener('visibilitychange', () => {
+			if (document.hidden && playing) stop();
+		});
+
+		goTo(0);
+	}
+
+	function setupAll() {
+		document.querySelectorAll<HTMLElement>('[data-anim-player]').forEach(setupAnimationPlayer);
+	}
+
+	setupAll();
+	document.addEventListener('astro:page-load', setupAll);
+</script>
+
+<style>
+	.anim-player {
+		display: grid;
+		gap: var(--space-4);
+		padding-block: var(--space-4) var(--space-8);
+	}
+
+	.anim-header {
+		display: grid;
+		gap: var(--space-1);
+	}
+
+	.anim-title {
+		max-width: 26ch;
+	}
+
+	/* Chapter navigation ───────────────────────────────────────────────── */
+	.anim-chapters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1) var(--space-2);
+	}
+
+	.anim-chapter {
+		cursor: pointer;
+		font-family: var(--font-body);
+		font-size: 12px;
+		line-height: 1.2;
+		padding: 5px 12px;
+	}
+
+	.anim-chapter:hover {
+		background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+		border-color: var(--color-accent);
+	}
+
+	/* Board: scene + narration side by side, panels below ─────────────── */
+	.anim-board {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas:
+			'stage'
+			'narration'
+			'panels';
+		gap: var(--space-4);
+	}
+
+	.anim-stage.card {
+		grid-area: stage;
+		display: grid;
+		align-items: stretch;
+		min-height: 22rem;
+		padding: var(--space-4);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		overflow: hidden;
+	}
+
+	.anim-step {
+		display: none;
+	}
+
+	.anim-step.is-active {
+		display: contents;
+	}
+
+	.anim-narration {
+		grid-area: narration;
+		align-self: start;
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		animation: anim-rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+	}
+
+	.anim-step-kicker {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		margin: 0;
+	}
+
+	.anim-step-number {
+		font-family: var(--font-heading);
+		font-size: 1.6rem;
+		line-height: 1;
+	}
+
+	.anim-step-title {
+		font-size: clamp(1.25rem, 2.2vw, 1.7rem);
+		margin: 0;
+	}
+
+	.anim-step-text {
+		margin: 0;
+		font-size: 1rem;
+		line-height: 1.7;
+	}
+
+	.anim-step-text :global(code) {
+		padding: 1px 6px;
+		border-radius: var(--radius-sm);
+		background: var(--color-neutral-200);
+		font-size: 0.9em;
+	}
+
+	/* Terminal panels ──────────────────────────────────────────────────── */
+	.anim-panels {
+		grid-area: panels;
+		display: grid;
+		gap: var(--space-4);
+		animation: anim-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s both;
+	}
+
+	.anim-terminal {
+		display: grid;
+		grid-template-rows: auto 1fr;
+		min-width: 0;
+		border-radius: var(--radius-md);
+		background: var(--color-neutral-900);
+		color: var(--color-neutral-100);
+		overflow: hidden;
+		box-shadow: var(--shadow-md);
+	}
+
+	.anim-terminal-bar {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-3);
+		background: var(--color-neutral-800);
+		color: var(--color-neutral-300);
+		font-size: 0.8rem;
+	}
+
+	.anim-terminal-dots {
+		display: inline-flex;
+		gap: 6px;
+	}
+
+	.anim-terminal-dots i {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: var(--color-accent);
+	}
+
+	.anim-terminal-dots i:nth-child(2) {
+		background: var(--color-accent-300);
+	}
+
+	.anim-terminal-dots i:nth-child(3) {
+		background: var(--color-accent-2);
+	}
+
+	.anim-terminal-title {
+		flex: 1;
+		font-weight: 600;
+		color: var(--color-neutral-100);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.anim-terminal-lang {
+		font-size: 0.7rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-neutral-400);
+	}
+
+	.anim-terminal-body {
+		margin: 0;
+		padding: var(--space-3) var(--space-4);
+		overflow-x: auto;
+		font-size: 0.88rem;
+		line-height: 1.65;
+		tab-size: 4;
+	}
+
+	/* A grid container ignores whitespace-only text nodes between lines. */
+	.anim-lines {
+		display: grid;
+		counter-reset: line;
+	}
+
+	.anim-line {
+		display: block;
+		min-height: 1.65em;
+		padding-inline: var(--space-2);
+		border-radius: var(--radius-sm);
+		white-space: pre;
+		animation: anim-type 0.3s ease both;
+		animation-delay: calc(var(--i, 0) * 110ms);
+	}
+
+	.anim-terminal--code .anim-line::before {
+		counter-increment: line;
+		content: counter(line);
+		display: inline-block;
+		width: 2ch;
+		margin-right: var(--space-3);
+		text-align: right;
+		color: var(--color-neutral-600);
+	}
+
+	.anim-terminal-body[data-has-focus] .anim-line:not(.is-focus) {
+		opacity: 0.5;
+	}
+
+	.anim-line.is-focus {
+		background: color-mix(in srgb, var(--color-accent) 24%, transparent);
+		box-shadow: inset 3px 0 0 var(--color-accent);
+	}
+
+	.anim-terminal--shell .anim-line {
+		animation-duration: 0.35s;
+		animation-delay: calc(var(--i, 0) * 420ms);
+	}
+
+	.anim-line--cmd::before {
+		content: '$ ';
+		color: var(--color-accent-2-400);
+		font-weight: 700;
+	}
+
+	.anim-line--out {
+		color: var(--color-neutral-200);
+	}
+
+	.anim-line--err {
+		color: var(--color-accent-300);
+	}
+
+	.anim-line--cmt {
+		color: var(--color-neutral-500);
+		font-style: italic;
+	}
+
+	.anim-line--cursor::before {
+		content: '$ ';
+		color: var(--color-accent-2-400);
+		font-weight: 700;
+	}
+
+	.anim-line--cursor::after {
+		content: '';
+		display: inline-block;
+		width: 0.6em;
+		height: 1.1em;
+		vertical-align: text-bottom;
+		background: var(--color-neutral-200);
+		animation: anim-blink 1s steps(1) infinite;
+	}
+
+	/* Token colors — Organic ramps on the ink ground. */
+	.anim-terminal :global(.tok-kw) {
+		color: var(--color-accent-400);
+	}
+	.anim-terminal :global(.tok-type) {
+		color: var(--color-accent-200);
+	}
+	.anim-terminal :global(.tok-fn) {
+		color: var(--color-neutral-100);
+		font-weight: 700;
+	}
+	.anim-terminal :global(.tok-str) {
+		color: var(--color-accent-2-300);
+	}
+	.anim-terminal :global(.tok-num) {
+		color: var(--color-accent-300);
+	}
+	.anim-terminal :global(.tok-cmt) {
+		color: var(--color-neutral-500);
+		font-style: italic;
+	}
+	.anim-terminal :global(.tok-ann) {
+		color: var(--color-accent-2-400);
+	}
+	.anim-terminal :global(.tok-punct),
+	.anim-terminal :global(.tok-op) {
+		color: var(--color-neutral-400);
+	}
+	.anim-terminal :global(.tok-cmd) {
+		color: var(--color-accent-400);
+		font-weight: 700;
+	}
+	.anim-terminal :global(.tok-flag) {
+		color: var(--color-accent-2-300);
+	}
+	.anim-terminal :global(.tok-var) {
+		color: var(--color-accent-200);
+	}
+
+	/* Controls ─────────────────────────────────────────────────────────── */
+	.anim-controls {
+		position: sticky;
+		bottom: var(--space-3);
+		z-index: 5;
+		display: grid;
+		gap: var(--space-2);
+		padding: var(--space-3) var(--space-4);
+		border-radius: var(--radius-lg);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		box-shadow: var(--shadow-md);
+	}
+
+	.anim-buttons {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.anim-play {
+		min-width: 9.5rem;
+	}
+
+	.anim-icon-pause,
+	.anim-label-pause {
+		display: none;
+	}
+
+	.anim-player.is-playing .anim-icon-play,
+	.anim-player.is-playing .anim-label-play {
+		display: none;
+	}
+
+	.anim-player.is-playing .anim-icon-pause,
+	.anim-player.is-playing .anim-label-pause {
+		display: inline;
+	}
+
+	.anim-player.is-playing .anim-icon-pause {
+		display: block;
+	}
+
+	.anim-counter {
+		margin: 0;
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+
+	.anim-announcer {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+	}
+
+	.anim-progress {
+		height: 6px;
+		border-radius: 999px;
+		background: var(--color-neutral-300);
+		overflow: hidden;
+	}
+
+	.anim-progress-fill {
+		display: block;
+		height: 100%;
+		width: 0;
+		border-radius: 999px;
+		background: var(--color-accent);
+		transition: width 240ms linear;
+	}
+
+	.anim-hint {
+		margin: 0;
+		font-size: 0.75rem;
+	}
+
+	@keyframes anim-rise {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	@keyframes anim-type {
+		from {
+			opacity: 0;
+			transform: translateX(-6px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	@keyframes anim-blink {
+		50% {
+			opacity: 0;
+		}
+	}
+
+	@media (width >= 900px) {
+		.anim-board {
+			grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+			grid-template-areas:
+				'stage narration'
+				'panels panels';
+		}
+
+		.anim-stage {
+			min-height: 26rem;
+		}
+
+		.anim-panels--two {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.anim-controls {
+			grid-template-columns: auto 1fr;
+			grid-template-areas:
+				'buttons counter'
+				'progress progress'
+				'hint hint';
+			align-items: center;
+		}
+
+		.anim-buttons {
+			grid-area: buttons;
+		}
+
+		.anim-counter {
+			grid-area: counter;
+			text-align: right;
+		}
+
+		.anim-progress {
+			grid-area: progress;
+		}
+
+		.anim-hint {
+			grid-area: hint;
+		}
+	}
+
+	@media (width < 520px) {
+		.anim-btn-label {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+		}
+
+		.anim-hint {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.anim-narration,
+		.anim-panels,
+		.anim-line,
+		.anim-line--cursor::after {
+			animation: none;
+		}
+
+		.anim-progress-fill {
+			transition: none;
+		}
+	}
+</style>
