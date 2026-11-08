@@ -195,9 +195,13 @@ contador.merge(palabra, 1, Integer::sum);
 mapa.putIfAbsent(clave, valor);
 ```
 
+**Programa de práctica:** [`Ej16MapBasico`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej16MapBasico.java) (las tres implementaciones de `Map`, `put`, `get`, `getOrDefault` y `merge`) y [`Ej17RecorridoYComparacionDeMaps`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej17RecorridoYComparacionDeMaps.java) (recorrer con `keySet`, `values` y `entrySet`, y comparar el orden de `HashMap`, `LinkedHashMap` y `TreeMap`).
+
 ### `Queue` / `Deque` — orden de procesamiento
 
 Los vas a implementar a mano más adelante, en TAD Pila y TAD Cola, pero ya podés usarlos hoy: `ArrayDeque` para pila y cola; `PriorityQueue` cuando el próximo a salir no es el que llegó primero, sino el de mayor prioridad.
+
+**Programa de práctica:** [`Ej19QueueYDeque`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej19QueueYDeque.java) (`ArrayDeque` como cola y como pila, `PriorityQueue` y `LinkedList` como `Deque`).
 
 ---
 
@@ -215,32 +219,36 @@ Esto explica de una vez por qué `get()` es O(1) y por qué `equals`/`hashCode` 
 <line x1="172" y1="56" x2="206" y2="56" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-h)"/>
 <rect x="210" y="30" width="190" height="52" rx="14" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
 <text x="305" y="54" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">hashCode()</text>
-<text x="305" y="72" font-size="11" text-anchor="middle" fill="var(--color-neutral-800)">devuelve 3181970</text>
+<text x="305" y="72" font-size="11" text-anchor="middle" fill="var(--color-neutral-800)">devuelve 3165397</text>
 <line x1="402" y1="56" x2="436" y2="56" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-h)"/>
 <rect x="440" y="30" width="280" height="52" rx="14" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
-<text x="580" y="54" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">3181970 % 16 → bucket 2</text>
-<text x="580" y="72" font-size="11" text-anchor="middle" fill="var(--color-neutral-800)">una cuenta: por eso es O(1)</text>
+<text x="580" y="54" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">(h ^ (h &gt;&gt;&gt; 16)) &amp; 15 → bucket 5</text>
+<text x="580" y="72" font-size="11" text-anchor="middle" fill="var(--color-neutral-800)">mezcla de bits y una máscara: O(1)</text>
 <rect x="0" y="112" width="190" height="38" rx="10" fill="var(--color-neutral-100)" stroke="var(--color-neutral-400)"/>
-<text x="16" y="136" font-size="11.5" fill="var(--color-neutral-600)">bucket 0 — vacío</text>
+<text x="16" y="136" font-size="11.5" fill="var(--color-neutral-600)">bucket 3 — vacío</text>
 <rect x="0" y="156" width="190" height="38" rx="10" fill="var(--color-neutral-100)" stroke="var(--color-neutral-400)"/>
-<text x="16" y="180" font-size="11.5" fill="var(--color-neutral-600)">bucket 1 — vacío</text>
+<text x="16" y="180" font-size="11.5" fill="var(--color-neutral-600)">bucket 4 — vacío</text>
 <rect x="0" y="200" width="190" height="38" rx="10" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
-<text x="16" y="224" font-size="11.5" font-weight="700" fill="var(--color-accent-700)">bucket 2</text>
+<text x="16" y="224" font-size="11.5" font-weight="700" fill="var(--color-accent-700)">bucket 5</text>
 <rect x="0" y="244" width="190" height="38" rx="10" fill="var(--color-neutral-100)" stroke="var(--color-neutral-400)"/>
-<text x="16" y="268" font-size="11.5" fill="var(--color-neutral-600)">bucket 3 — vacío</text>
+<text x="16" y="268" font-size="11.5" fill="var(--color-neutral-600)">bucket 6 — vacío</text>
 <line x1="192" y1="219" x2="234" y2="219" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-h)"/>
 <text x="240" y="194" font-size="11" font-weight="700" fill="var(--color-accent-700)">colisión: dos claves distintas cayeron en el mismo bucket</text>
 <rect x="240" y="200" width="210" height="38" rx="10" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-600)" stroke-width="2"/>
-<text x="345" y="224" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">"gato" → 4</text>
+<text x="345" y="224" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">"gato" → 5</text>
 <line x1="452" y1="219" x2="486" y2="219" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-h)"/>
 <rect x="490" y="200" width="210" height="38" rx="10" fill="var(--color-neutral-200)" stroke="var(--color-neutral-500)"/>
-<text x="595" y="224" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-text)">"toga" → 9</text>
+<text x="595" y="224" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-text)">"mesa" → 9</text>
 <text x="240" y="262" font-size="11.5" fill="var(--color-neutral-800)">Dentro del bucket, equals() compara la clave real y decide cuál de los dos es.</text>
 <text x="0" y="302" font-size="12" fill="var(--color-neutral-800)">hashCode() elige el cajón; equals() elige el elemento dentro del cajón. Si hashCode está mal, la clave se busca</text>
 <text x="0" y="320" font-size="12" fill="var(--color-neutral-800)">en el cajón equivocado y el HashMap responde "no está" aunque el objeto esté guardado.</text>
 </svg>
 <figcaption>Con hash bien distribuido casi no hay colisiones y <code>get()</code> es una cuenta. Con hash malo, todo cae en un bucket y el mapa degenera en una lista: O(n).</figcaption>
 </figure>
+
+**Una precisión sobre la cuenta.** `HashMap` no calcula `hashCode() % n` a secas: primero mezcla los bits altos con los bajos, `h ^ (h >>> 16)`, y recién después aplica `& (n - 1)`, que equivale a un resto cuando `n` es potencia de 2. Con capacidad 16, `"gato"` (hash `3165397`) cae en el bucket 5, igual que `"mesa"`: esa es la colisión del diagrama.
+
+**Programa de práctica:** [`Ej18HashMapPorDentro`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej18HashMapPorDentro.java) (calcula el bucket de varias claves, arma un mini `HashMap` de 4 buckets para forzar colisiones y compara una clave con `hashCode` coherente contra otra sin él).
 
 Esa última frase del pie es el motivo por el que la próxima lección existe. Un `hashCode()` mal implementado no rompe la compilación ni lanza ninguna excepción: solo hace que tu `HashMap` sea cien veces más lento, o que directamente no encuentre lo que guardaste.
 
@@ -287,6 +295,8 @@ public static <T extends Comparable<T>> T maximo(List<T> lista) {
 
 Por convención los parámetros de tipo son una sola letra mayúscula: `T` (type), `E` (element), `K` y `V` (key, value), `R` (result).
 
+**Programa de práctica:** [`Ej20ClaseGenericaPropia`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej20ClaseGenericaPropia.java) (clases genéricas con uno y con dos parámetros de tipo) y [`Ej21MetodosGenericosYLimites`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej21MetodosGenericosYLimites.java) (métodos genéricos, `<T extends Comparable<T>>` y comodines `? extends` / `? super`).
+
 ### Type erasure: la letra chica
 
 Los genéricos existen **solo en tiempo de compilación**. La JVM no sabe nada de ellos: en el bytecode, `List<String>` y `List<Integer>` son la misma cosa. Se llama *borrado de tipos*, y explica limitaciones que de otra forma parecen arbitrarias:
@@ -298,6 +308,8 @@ System.out.println(a.getClass() == b.getClass());   // true — son la misma cla
 
 // T[] arreglo = new T[10];   // no se puede: en ejecución no se sabe qué es T
 ```
+
+**Programa de práctica:** [`Ej22TypeErasure`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej22TypeErasure.java) (demuestra que `List<String>` y `List<Integer>` son la misma clase en ejecución y por qué no se puede hacer `new T[10]`).
 
 ---
 
@@ -377,6 +389,8 @@ Escribí un programa que reciba un texto y muestre cuántas veces aparece cada p
 3. Mostrá el resultado **ordenado por frecuencia descendente** y, a igual frecuencia, alfabéticamente.
 4. Mostrá también cuántas palabras distintas hay, usando un `Set`.
 5. Ignorá palabras vacías de significado (`de`, `la`, `el`, `y`, `que`...).
+
+Intentá resolverlo vos antes de abrir la solución. El programa de referencia es [`Ej23ContadorDeFrecuenciasDePalabras`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej23ContadorDeFrecuenciasDePalabras.java). Una diferencia: ese programa ordena la lista de palabras de 10 letras con `Collections.sort` para que la salida sea determinista, mientras que la solución de abajo la imprime tal como sale del `HashMap`; si hubiera más de una palabra de esa longitud, el orden podría variar.
 
 <details>
 <summary>Ver solución sugerida</summary>
@@ -472,6 +486,6 @@ Y `VACIAS` es un `Set`, no una `List`, porque lo único que hacemos con él es p
 
 Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l15_java_collections_framework_y_genericos](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l15_java_collections_framework_y_genericos).
 
-Ahí vas a encontrar ejercicios con `List` y `Set` (agregar elementos, biblioteca, familia, conjunto de personas, unión de listas) y con `forEach`, `filter` y `map` sobre colecciones.
+Ahí vas a encontrar ejercicios con `List` y `Set` (agregar elementos, biblioteca, familia, conjunto de personas, unión de listas) y con `forEach`, `filter` y `map` sobre colecciones, además de los programas de práctica de cada sección: `Ej16` y `Ej17` (`Map`), `Ej18` (`HashMap` por dentro), `Ej19` (`Queue` y `Deque`), `Ej20` y `Ej21` (genéricos propios), `Ej22` (type erasure) y `Ej23` (el contador de frecuencias de palabras).
 
 Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

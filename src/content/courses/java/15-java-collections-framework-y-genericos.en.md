@@ -195,9 +195,13 @@ counter.merge(word, 1, Integer::sum);
 map.putIfAbsent(key, value);
 ```
 
+**Practice program:** [`Ej16MapBasico`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej16MapBasico.java) (the three main `Map` implementations, `put`, `get`, `getOrDefault` and `merge`) and [`Ej17RecorridoYComparacionDeMaps`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej17RecorridoYComparacionDeMaps.java) (walking a map with `keySet`, `values` and `entrySet`, and comparing the order of `HashMap`, `LinkedHashMap` and `TreeMap`).
+
 ### `Queue` / `Deque` — processing order
 
 You will implement them by hand later, in the Stack and Queue ADTs lesson, but you can already use them today: `ArrayDeque` for stacks and queues; `PriorityQueue` when the next item out is not the one that arrived first but the highest-priority one.
+
+**Practice program:** [`Ej19QueueYDeque`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej19QueueYDeque.java) (`ArrayDeque` as a queue and as a stack, `PriorityQueue`, and `LinkedList` as a `Deque`).
 
 ---
 
@@ -218,29 +222,33 @@ This explains once and for all why `get()` is O(1) and why `equals`/`hashCode` m
 <text x="305" y="72" font-size="11" text-anchor="middle" fill="var(--color-neutral-800)">returns 98262</text>
 <line x1="402" y1="56" x2="436" y2="56" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-h)"/>
 <rect x="440" y="30" width="280" height="52" rx="14" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
-<text x="580" y="54" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">98262 % 16 → bucket 2</text>
-<text x="580" y="72" font-size="11" text-anchor="middle" fill="var(--color-neutral-800)">plain arithmetic: hence O(1)</text>
+<text x="580" y="54" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">(h ^ (h &gt;&gt;&gt; 16)) &amp; 15 → bucket 7</text>
+<text x="580" y="72" font-size="11" text-anchor="middle" fill="var(--color-neutral-800)">bit mixing and a mask: O(1)</text>
 <rect x="0" y="112" width="190" height="38" rx="10" fill="var(--color-neutral-100)" stroke="var(--color-neutral-400)"/>
-<text x="16" y="136" font-size="11.5" fill="var(--color-neutral-600)">bucket 0 — empty</text>
+<text x="16" y="136" font-size="11.5" fill="var(--color-neutral-600)">bucket 5 — empty</text>
 <rect x="0" y="156" width="190" height="38" rx="10" fill="var(--color-neutral-100)" stroke="var(--color-neutral-400)"/>
-<text x="16" y="180" font-size="11.5" fill="var(--color-neutral-600)">bucket 1 — empty</text>
+<text x="16" y="180" font-size="11.5" fill="var(--color-neutral-600)">bucket 6 — empty</text>
 <rect x="0" y="200" width="190" height="38" rx="10" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
-<text x="16" y="224" font-size="11.5" font-weight="700" fill="var(--color-accent-700)">bucket 2</text>
+<text x="16" y="224" font-size="11.5" font-weight="700" fill="var(--color-accent-700)">bucket 7</text>
 <rect x="0" y="244" width="190" height="38" rx="10" fill="var(--color-neutral-100)" stroke="var(--color-neutral-400)"/>
-<text x="16" y="268" font-size="11.5" fill="var(--color-neutral-600)">bucket 3 — empty</text>
+<text x="16" y="268" font-size="11.5" fill="var(--color-neutral-600)">bucket 8 — empty</text>
 <line x1="192" y1="219" x2="234" y2="219" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-h)"/>
 <text x="240" y="194" font-size="11" font-weight="700" fill="var(--color-accent-700)">collision: two different keys landed in the same bucket</text>
 <rect x="240" y="200" width="210" height="38" rx="10" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-600)" stroke-width="2"/>
-<text x="345" y="224" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">"cat" → 4</text>
+<text x="345" y="224" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">"cat" → 5</text>
 <line x1="452" y1="219" x2="486" y2="219" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-h)"/>
 <rect x="490" y="200" width="210" height="38" rx="10" fill="var(--color-neutral-200)" stroke="var(--color-neutral-500)"/>
-<text x="595" y="224" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-text)">"act" → 9</text>
+<text x="595" y="224" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-text)">"bird" → 9</text>
 <text x="240" y="262" font-size="11.5" fill="var(--color-neutral-800)">Inside the bucket, equals() compares the real key and decides which one it is.</text>
 <text x="0" y="302" font-size="12" fill="var(--color-neutral-800)">hashCode() picks the drawer; equals() picks the item inside the drawer. If hashCode is wrong, the key is looked</text>
 <text x="0" y="320" font-size="12" fill="var(--color-neutral-800)">up in the wrong drawer and the HashMap answers "not found" even though the object is stored.</text>
 </svg>
 <figcaption>With a well-distributed hash there are almost no collisions and <code>get()</code> is arithmetic. With a bad hash everything lands in one bucket and the map degenerates into a list: O(n).</figcaption>
 </figure>
+
+**A precision about the arithmetic.** `HashMap` does not compute a plain `hashCode() % n`: it first mixes the high bits into the low ones, `h ^ (h >>> 16)`, and only then applies `& (n - 1)`, which equals a remainder when `n` is a power of 2. With capacity 16, `"cat"` (hash `98262`) lands in bucket 7, just like `"bird"`: that is the collision in the diagram.
+
+**Practice program:** [`Ej18HashMapPorDentro`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej18HashMapPorDentro.java) (computes the bucket of several keys, builds a 4-bucket mini `HashMap` to force collisions, and compares a key with a consistent `hashCode` against one without it).
 
 That last sentence in the caption is the reason the next lesson exists. A badly implemented `hashCode()` breaks no compilation and throws no exception: it just makes your `HashMap` a hundred times slower, or makes it fail to find what you stored.
 
@@ -287,6 +295,8 @@ public static <T extends Comparable<T>> T max(List<T> list) {
 
 By convention type parameters are single uppercase letters: `T` (type), `E` (element), `K` and `V` (key, value), `R` (result).
 
+**Practice program:** [`Ej20ClaseGenericaPropia`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej20ClaseGenericaPropia.java) (generic classes with one and two type parameters) and [`Ej21MetodosGenericosYLimites`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej21MetodosGenericosYLimites.java) (generic methods, `<T extends Comparable<T>>` and `? extends` / `? super` wildcards).
+
 ### Type erasure: the fine print
 
 Generics exist **only at compile time**. The JVM knows nothing about them: in bytecode, `List<String>` and `List<Integer>` are the same thing. This is called *type erasure*, and it explains limitations that otherwise look arbitrary:
@@ -298,6 +308,8 @@ System.out.println(a.getClass() == b.getClass());   // true — the same class
 
 // T[] array = new T[10];   // not allowed: at runtime nobody knows what T is
 ```
+
+**Practice program:** [`Ej22TypeErasure`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej22TypeErasure.java) (shows that `List<String>` and `List<Integer>` are the same class at runtime, and why `new T[10]` is not allowed).
 
 ---
 
@@ -377,6 +389,8 @@ Write a program that takes a text and reports how many times each word appears.
 3. Print the result **sorted by frequency descending** and, on ties, alphabetically.
 4. Also report how many distinct words there are, using a `Set`.
 5. Ignore stop words (`the`, `and`, `of`, `a`, `in`...).
+
+Try solving it yourself before opening the solution. The reference program is [`Ej23ContadorDeFrecuenciasDePalabras`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l15_java_collections_framework_y_genericos/Ej23ContadorDeFrecuenciasDePalabras.java). One difference: that program sorts the list of 10-letter words with `Collections.sort` so the output is deterministic, whereas the solution below prints it exactly as it comes out of the `HashMap`; with more than one word of that length, the order could vary.
 
 <details>
 <summary>See suggested solution</summary>
@@ -472,6 +486,6 @@ And `STOP_WORDS` is a `Set`, not a `List`, because the only thing we do with it 
 
 You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l15_java_collections_framework_y_genericos](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l15_java_collections_framework_y_genericos).
 
-There you will find exercises with `List` and `Set` (adding elements, library, family, set of people, merging lists) and with `forEach`, `filter` and `map` over collections.
+There you will find exercises with `List` and `Set` (adding elements, library, family, set of people, merging lists) and with `forEach`, `filter` and `map` over collections, plus a practice program for each section: `Ej16` and `Ej17` (`Map`), `Ej18` (`HashMap` internals), `Ej19` (`Queue` and `Deque`), `Ej20` and `Ej21` (your own generics), `Ej22` (type erasure) and `Ej23` (the word frequency counter).
 
 Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.
