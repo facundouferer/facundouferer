@@ -82,6 +82,8 @@ Ejemplos que ya usás todos los días:
 | Internet | Routers | Enlaces con latencia | Dirigido con pesos |
 | Dependencias de un build | Módulos | "depende de" | Dirigido, sin ciclos |
 
+**Programa de práctica:** [`Ej01VocabularioDeGrafos`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej01VocabularioDeGrafos.java) (vértices, aristas, vecinos y grado en un grafo no dirigido y en uno dirigido con pesos).
+
 ---
 
 ## 2. Las dos formas de representarlo
@@ -195,6 +197,8 @@ public class Grafo<V> {
 
 Fijate que `computeIfAbsent` y `getOrDefault` —los métodos de `Map` de la lección [Colecciones en Java y Genéricos (JCF)](/cursos/java/13-java-collections-framework-y-genericos)— hacen todo el trabajo pesado. Sin ellos harían falta cuatro `if` extra.
 
+**Programa de práctica:** [`Ej02MatrizDeAdyacencia`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej02MatrizDeAdyacencia.java) (el grafo A–B, A–C, B–C, C–D como matriz) y [`Ej03ListaDeAdyacencia`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej03ListaDeAdyacencia.java) (el mismo grafo con la clase genérica `Grafo` y un `Map<V, List<V>>`).
+
 ---
 
 ## 3. BFS y DFS: el mismo algoritmo con distinta memoria
@@ -299,6 +303,8 @@ private void dfs(V actual, Set<V> visitados, List<V> orden) {
 ```
 
 > **Marcá como visitado al encolar, no al desencolar.** Si esperás a sacarlo de la cola, un mismo vértice puede entrar varias veces antes de procesarse por primera vez. En un grafo grande eso no es un detalle: multiplica el trabajo y puede agotar la memoria.
+
+**Programa de práctica:** [`Ej04RecorridoBFS`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej04RecorridoBFS.java) (recorrido por capas con una cola y un `Set` de visitados: A · B · D · C · E · F) y [`Ej05RecorridoDFS`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej05RecorridoDFS.java) (la versión recursiva y la iterativa con pila explícita, ambas dan A · B · C · E · D · F; la iterativa es la salida al desborde de pila de la sección de errores frecuentes).
 
 ---
 
@@ -413,6 +419,8 @@ public Map<V, Integer> dijkstra(V origen) {
 
 > Dijkstra **no funciona con pesos negativos**. Su garantía se basa en que una vez que visitás un vértice, su distancia ya es definitiva; con un peso negativo eso deja de ser cierto. Para ese caso existe Bellman-Ford.
 
+**Programa de práctica:** [`Ej06DijkstraConPriorityQueue`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej06DijkstraConPriorityQueue.java) (distancias mínimas desde A con `PriorityQueue`: B = 3, C = 2, D = 8, E = 11; la arista directa A → B cuesta 4, pero A → C → B cuesta 3).
+
 ---
 
 ## 5. Errores frecuentes
@@ -436,6 +444,8 @@ public Map<V, Integer> dijkstra(V origen) {
 Implementá `saltosMinimos(String desde, String hasta)` que devuelva la cantidad mínima de intermediarios entre dos personas, y `caminoMasCorto(...)` que devuelva la cadena de personas.
 
 Pensá por qué **BFS es la única opción correcta** acá, y por qué DFS daría un resultado equivocado.
+
+Intentá resolverlo vos antes de abrir la solución. El programa de referencia es [`Ej07GradosDeSeparacionRedSocial`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej07GradosDeSeparacionRedSocial.java): usa BFS para `saltosMinimos` y `caminoMasCorto`, con un mapa de padres para reconstruir el camino.
 
 <details>
 <summary>Ver solución sugerida</summary>
@@ -561,7 +571,7 @@ BFS explora por capas: **agota todo lo que está a 1 salto antes de mirar nada a
 ---
 
 
-## 8. Floyd–Warshall: caminos mínimos entre todos los pares
+## 7. Floyd–Warshall: caminos mínimos entre todos los pares
 
 Dijkstra responde desde **un origen** y exige pesos no negativos. **Floyd–Warshall** calcula los **caminos más cortos entre todos los pares** de vértices y admite aristas negativas, siempre que el resultado no esté afectado por un ciclo negativo.
 
@@ -681,6 +691,8 @@ Floyd–Warshall usa **O(V³)** tiempo por sus tres bucles y **O(V²)** espacio 
 
 Repetir Dijkstra desde cada vértice suele costar `O(V · (E log V))` con lista de adyacencia y puede ser mejor en grafos dispersos, pero solo cuando todas las aristas son no negativas. La representación, los pesos permitidos y la consulta requerida deciden el algoritmo; no existe un ganador universal.
 
+**Programa de práctica:** [`Ej08FloydWarshall`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej08FloydWarshall.java) (matriz de distancias con `INF` seguro, validación de la entrada y detección de ciclos negativos; en el ejemplo, A → C baja de 5 a 2 pasando por B).
+
 ---
 
 ## Para llevarte
@@ -693,3 +705,15 @@ Repetir Dijkstra desde cada vértice suele costar `O(V · (E log V))` con lista 
 - Marcá los vértices como visitados **al encolar**, nunca al desencolar.
 - **BFS da el camino con menos aristas**; si las aristas tienen peso, hace falta Dijkstra.
 - Dijkstra visita siempre el pendiente más barato y **relaja** las aristas. No sirve con pesos negativos.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l18_grafos_representacion_y_algoritmos](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l18_grafos_representacion_y_algoritmos).
+
+Ahí vas a encontrar ocho programas, uno por cada tema de la lección: vocabulario de grafos (`Ej01`), matriz y lista de adyacencia (`Ej02` y `Ej03`), recorridos BFS y DFS, este último también en versión iterativa (`Ej04` y `Ej05`), Dijkstra con `PriorityQueue` (`Ej06`), los grados de separación en una red social (`Ej07`) y Floyd–Warshall con detección de ciclos negativos (`Ej08`). Los programas reproducen los grafos y las salidas de las figuras de la lección.
+
+**Una diferencia de nombres.** En la lección, `bfs`, `dfs` y `dijkstra` aparecen como métodos de una clase `Grafo<V>` genérica. En los programas, esa clase vive anidada dentro de cada archivo (`Grafo<V>` en `Ej03`, `Ej04` y `Ej05`, y `GrafoPonderado<V>` en `Ej06`), y `FloydWarshall` de la lección es la clase `Ej08FloydWarshall`, con el mismo método `calcular`.
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

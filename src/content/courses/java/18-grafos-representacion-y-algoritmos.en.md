@@ -82,6 +82,8 @@ Examples you already use every day:
 | The internet | Routers | Links with latency | Directed, weighted |
 | Build dependencies | Modules | "depends on" | Directed, acyclic |
 
+**Practice program:** [`Ej01VocabularioDeGrafos`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej01VocabularioDeGrafos.java) (vertices, edges, neighbors and degree in an undirected graph and in a weighted directed one).
+
 ---
 
 ## 2. The two ways to represent it
@@ -195,6 +197,8 @@ public class Graph<V> {
 
 Notice that `computeIfAbsent` and `getOrDefault` — the `Map` methods from the [Java Collections and Generics (JCF)](/en/courses/java/13-java-collections-framework-y-genericos) lesson — do all the heavy lifting. Without them you would need four extra `if` blocks.
 
+**Practice program:** [`Ej02MatrizDeAdyacencia`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej02MatrizDeAdyacencia.java) (the graph A–B, A–C, B–C, C–D as a matrix) and [`Ej03ListaDeAdyacencia`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej03ListaDeAdyacencia.java) (the same graph with the generic `Grafo` class and a `Map<V, List<V>>`).
+
 ---
 
 ## 3. BFS and DFS: the same algorithm with different memory
@@ -299,6 +303,8 @@ private void dfs(V current, Set<V> visited, List<V> order) {
 ```
 
 > **Mark as visited on enqueue, not on dequeue.** If you wait until you pull it off the queue, the same vertex can be enqueued several times before it is first processed. On a large graph that is not a detail: it multiplies the work and can exhaust memory.
+
+**Practice program:** [`Ej04RecorridoBFS`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej04RecorridoBFS.java) (layer-by-layer traversal with a queue and a visited `Set`: A · B · D · C · E · F) and [`Ej05RecorridoDFS`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej05RecorridoDFS.java) (the recursive version and the iterative one with an explicit stack, both give A · B · C · E · D · F; the iterative one is the way out of the stack overflow described in the common mistakes section).
 
 ---
 
@@ -413,6 +419,8 @@ public Map<V, Integer> dijkstra(V source) {
 
 > Dijkstra **does not work with negative weights**. Its guarantee rests on a visited vertex's distance being final; a negative weight breaks that. For that case there is Bellman-Ford.
 
+**Practice program:** [`Ej06DijkstraConPriorityQueue`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej06DijkstraConPriorityQueue.java) (shortest distances from A using a `PriorityQueue`: B = 3, C = 2, D = 8, E = 11; the direct edge A → B costs 4, but A → C → B costs 3).
+
 ---
 
 ## 5. Common mistakes
@@ -436,6 +444,8 @@ public Map<V, Integer> dijkstra(V source) {
 Implement `minimumHops(String from, String to)` returning the minimum number of intermediaries between two people, plus `shortestPath(...)` returning the chain of people.
 
 Think about why **BFS is the only correct choice** here, and why DFS would give the wrong answer.
+
+Try solving it yourself before opening the solution. The reference program is [`Ej07GradosDeSeparacionRedSocial`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej07GradosDeSeparacionRedSocial.java): it uses BFS for `saltosMinimos` and `caminoMasCorto`, with a parent map to rebuild the path.
 
 <details>
 <summary>See suggested solution</summary>
@@ -561,7 +571,7 @@ BFS explores in layers: **it exhausts everything one hop away before looking at 
 ---
 
 
-## 8. Floyd–Warshall: all-pairs shortest paths
+## 7. Floyd–Warshall: all-pairs shortest paths
 
 Dijkstra answers queries from **one source** and requires nonnegative weights. **Floyd–Warshall** computes **all-pairs shortest paths** and supports negative edges, provided the result is not affected by a negative cycle.
 
@@ -681,6 +691,8 @@ Floyd–Warshall takes **O(V³)** time because of its three loops and **O(V²)**
 
 Running Dijkstra from every vertex usually costs `O(V · (E log V))` with adjacency lists and can be better for sparse graphs, but only when every edge is nonnegative. Representation, permitted weights, and query shape determine the algorithm; there is no universal winner.
 
+**Practice program:** [`Ej08FloydWarshall`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l18_grafos_representacion_y_algoritmos/Ej08FloydWarshall.java) (distance matrix with a safe `INF`, input validation and negative-cycle detection; in the example, A → C drops from 5 to 2 going through B).
+
 ---
 
 ## Key takeaways
@@ -693,3 +705,15 @@ Running Dijkstra from every vertex usually costs `O(V · (E log V))` with adjace
 - Mark vertices visited **on enqueue**, never on dequeue.
 - **BFS gives the fewest-edges path**; when edges have weight, you need Dijkstra.
 - Dijkstra always visits the cheapest pending vertex and **relaxes** its edges. It is invalid with negative weights.
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l18_grafos_representacion_y_algoritmos](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l18_grafos_representacion_y_algoritmos).
+
+There you will find eight programs, one per topic of the lesson: graph vocabulary (`Ej01`), adjacency matrix and list (`Ej02` and `Ej03`), BFS and DFS traversals, the latter also in an iterative version (`Ej04` and `Ej05`), Dijkstra with a `PriorityQueue` (`Ej06`), degrees of separation in a social network (`Ej07`) and Floyd–Warshall with negative-cycle detection (`Ej08`). The programs reproduce the graphs and outputs of the lesson figures.
+
+**A naming difference.** In the lesson, `bfs`, `dfs` and `dijkstra` appear as methods of a generic `Grafo<V>` class. In the programs, that class is nested inside each file (`Grafo<V>` in `Ej03`, `Ej04` and `Ej05`, and `GrafoPonderado<V>` in `Ej06`), and the lesson's `FloydWarshall` is the class `Ej08FloydWarshall`, with the same `calcular` method.
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.
