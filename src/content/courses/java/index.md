@@ -67,8 +67,8 @@ roadmap:
           - '16-grafos-representacion-y-algoritmos'
   - title: 'Java profesional'
     title_en: 'Professional Java'
-    description: 'Persistencia, concurrencia, bases de datos y las prácticas de calidad para llevar código a producción.'
-    description_en: 'Persistence, concurrency, databases and the quality practices for shipping production code.'
+    description: 'Persistencia, concurrencia y bases de datos para llevar código a producción.'
+    description_en: 'Persistence, concurrency and databases for shipping production code.'
     children:
       - title: 'Persistencia y concurrencia'
         title_en: 'Persistence and concurrency'
@@ -76,9 +76,4 @@ roadmap:
           - '17-archivos-persistencia-y-empaquetado-jar'
           - '19-programacion-concurrente-hilos-y-pools'
           - '19-acceso-a-bases-de-datos-jdbc'
-      - title: 'Calidad de software'
-        title_en: 'Software quality'
-        lessons:
-          - '20-testing-junit-y-spring-boot'
-          - '27-depuracion-codigo-limpio-y-refactorizacion'
 ---

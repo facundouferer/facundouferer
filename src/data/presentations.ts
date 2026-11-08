@@ -656,22 +656,6 @@ export const presentations: Presentation[] = [
 		lesson: { course: 'java', slug: '19-acceso-a-bases-de-datos-jdbc' },
 	},
 	{
-		file: 'TestingJunitSpringBoot.java',
-		image: '/img/presentations/testing-junit-spring-boot-java.svg',
-		tag: { es: 'Java', en: 'Java' },
-		tagClass: 'text-orange-500 bg-orange-500/10 border-orange-500/20',
-		title: {
-			es: 'Testing con JUnit 5, Mockito y Arquitectura Spring Boot',
-			en: 'Testing with JUnit 5, Mockito, and Spring Boot Architecture',
-		},
-		description: {
-			es: 'Pirámide de tests, patrón AAA, aislamiento con dobles de prueba (Mockito) y la arquitectura en 3 capas de Spring Boot.',
-			en: 'Test pyramid, AAA pattern, test doubles isolation (Mockito), and Spring Boot 3-tier architecture.',
-		},
-		slug: 'testing-junit-spring-boot-java',
-		lesson: { course: 'java', slug: '20-testing-junit-y-spring-boot' },
-	},
-	{
 		file: 'AlgoritmiaVerificacionComplejidad.java',
 		image: '/img/presentations/algoritmia-verificacion-complejidad-java.svg',
 		tag: { es: 'Java', en: 'Java' },
@@ -702,22 +686,6 @@ export const presentations: Presentation[] = [
 		},
 		slug: 'arboles-n-arios-vectores-java',
 		lesson: { course: 'java', slug: '26-arboles-n-arios-y-representacion-con-vectores' },
-	},
-	{
-		file: 'DepuracionCodigoLimpio.java',
-		image: '/img/presentations/depuracion-codigo-limpio-java.svg',
-		tag: { es: 'Java', en: 'Java' },
-		tagClass: 'text-orange-500 bg-orange-500/10 border-orange-500/20',
-		title: {
-			es: 'Depuración, Código Limpio y Refactorización',
-			en: 'Debugging, Clean Code, and Refactoring',
-		},
-		description: {
-			es: 'El bucle científico de depuración, breakpoints y watches en el IDE, catálogo de code smells y refactor seguro con JUnit.',
-			en: 'Scientific debugging loop, breakpoints and watches in the IDE, code smells catalog, and test-backed refactoring.',
-		},
-		slug: 'depuracion-codigo-limpio-java',
-		lesson: { course: 'java', slug: '27-depuracion-codigo-limpio-y-refactorizacion' },
 	},
 	{
 		file: 'PaquetesNamespaces.java',

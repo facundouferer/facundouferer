@@ -14,20 +14,18 @@ const EXPECTED_LESSON_SLUGS = [
 	'17-archivos-persistencia-y-empaquetado-jar', // Order 21
 	'19-programacion-concurrente-hilos-y-pools', // Order 22
 	'19-acceso-a-bases-de-datos-jdbc', // Order 23
-	'20-testing-junit-y-spring-boot', // Order 24
-	'27-depuracion-codigo-limpio-y-refactorizacion', // Order 25
 ];
 
 const BASE_DIR = join(process.cwd(), 'src/content/activities/java');
 
-test('all 12 requested Java lessons (orders 14 to 25) have their activities directories', () => {
+test('all 10 requested Java lessons (orders 14 to 23) have their activities directories', () => {
 	for (const slug of EXPECTED_LESSON_SLUGS) {
 		const dirPath = join(BASE_DIR, slug);
 		assert.ok(existsSync(dirPath), `Expected directory src/content/activities/java/${slug} to exist`);
 	}
 });
 
-test('each lesson from 14 to 25 has exactly one project and one quiz activity in Spanish', () => {
+test('each lesson from 14 to 23 has exactly one project and one quiz activity in Spanish', () => {
 	for (const slug of EXPECTED_LESSON_SLUGS) {
 		const dirPath = join(BASE_DIR, slug);
 		const files = readdirSync(dirPath).filter((f) => f.endsWith('.es.md'));

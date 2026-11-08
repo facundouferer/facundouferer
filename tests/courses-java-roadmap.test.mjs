@@ -71,9 +71,9 @@ test('every roadmap module and submodule node declares both title and title_en',
 	assert.equal(titleCount, titleEnCount, 'every roadmap node must declare both title and title_en');
 });
 
-test('java roadmap groups the course into 5 top-level modules with 7 submodules total (12 nodes)', async () => {
+test('java roadmap groups the course into 5 top-level modules with 6 submodules total (11 nodes)', async () => {
 	const roadmapBlock = await readRoadmapBlock();
 	const totalNodeCount = [...roadmapBlock.matchAll(/^\s*-\s*title:\s*'/gm)].length;
 
-	assert.equal(totalNodeCount, 12);
+	assert.equal(totalNodeCount, 11);
 });

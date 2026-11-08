@@ -514,3 +514,16 @@ Y `buscarPorId` devuelve `Optional<Producto>`. "No existe" no es un error excepc
 - Una `Connection` **no es segura entre hilos**. Una por hilo, tomada del pool.
 - El valor que devuelve `executeUpdate()` es información: cero filas afectadas casi nunca es lo que esperabas.
 - El patrón **DAO** aísla el SQL en una clase por entidad, detrás de una interfaz.
+
+---
+
+## Fin del curso
+
+Empezaste con `System.out.println("Hola mundo")`.
+
+Terminás modelando dominios con objetos, eligiendo estructuras de datos con criterio, manejando errores sin tragarlos, coordinando concurrencia de forma segura y persistiendo tanto en archivos como en bases de datos relacionales con transacciones limpias.
+
+Lo que cambió no es la cantidad de sintaxis que sabés: es que ahora entendés **por qué** cada herramienta existe y **qué problema vino a resolver**. Un constructor no es ceremonia, es la garantía de que un objeto nazca válido. Una interfaz no es burocracia, es lo que te deja cambiar la base de datos sin tocar la lógica. Y una transacción no es un trámite, es lo que evita que tu sistema quede en un estado inconsistente cuando algo falla a mitad de camino.
+
+Eso es lo que no se aprende en dos horas, y es exactamente lo que te va a servir cuando el lenguaje de moda ya no sea Java.
+

@@ -50,7 +50,7 @@ let dataModule;
 test('src/data/presentations.ts can be loaded and exports the presentations catalog', async () => {
 	dataModule = await import(DATA_MODULE_PATH);
 	assert.ok(Array.isArray(dataModule.presentations));
-	assert.equal(dataModule.presentations.length, 52);
+	assert.equal(dataModule.presentations.length, 50);
 });
 
 test('src/data/presentations.ts exports the required helper functions', async () => {

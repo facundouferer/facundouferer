@@ -13,8 +13,7 @@ const NARY_TREES_LESSON = '26-arboles-n-arios-y-representacion-con-vectores';
 const GRAPHS_LESSON = '18-grafos-representacion-y-algoritmos';
 const PACKAGING_LESSON = '19-archivos-persistencia-y-empaquetado-jar';
 const CONCURRENCY_LESSON = '20-programacion-concurrente-hilos-y-pools';
-const DEBUGGING_LESSON = '27-depuracion-codigo-limpio-y-refactorizacion';
-const TESTING_SPRING_LESSON = '22-testing-junit-y-spring-boot';
+const JDBC_LESSON = '21-acceso-a-bases-de-datos-jdbc';
 
 async function readLesson(slug, lang) {
 	return readFile(path.join(JAVA_COURSE_DIR, `${slug}.${lang}.md`), 'utf8');
@@ -312,99 +311,6 @@ test('concurrency lesson teaches monitor coordination and deadlock diagnosis in 
 	}
 });
 
-test('Debugging and refactoring lesson is bilingual and follows the testing/Spring lesson', async () => {
-	const [spanish, english] = await Promise.all([
-		readLesson(DEBUGGING_LESSON, 'es'),
-		readLesson(DEBUGGING_LESSON, 'en'),
-	]);
-
-	assert.equal(frontmatterValue(spanish, 'slug'), DEBUGGING_LESSON);
-	assert.equal(frontmatterValue(english, 'slug'), DEBUGGING_LESSON);
-	assert.equal(frontmatterValue(spanish, 'lang'), 'es');
-	assert.equal(frontmatterValue(english, 'lang'), 'en');
-	assert.equal(Number(frontmatterValue(spanish, 'order')), 25);
-	assert.equal(Number(frontmatterValue(english, 'order')), 25);
-});
-
-test('Debugging and refactoring lesson teaches feedback loops, code smells, and behaviour-preserving refactors', async () => {
-	const [spanish, english] = await Promise.all([
-		readLesson(DEBUGGING_LESSON, 'es'),
-		readLesson(DEBUGGING_LESSON, 'en'),
-	]);
-
-	for (const [locale, content] of [
-		['Spanish', spanish],
-		['English', english],
-	]) {
-		assert.match(content, /reproduce|reproducir/i, `${locale}: reproduce step`);
-		assert.match(content, /hypothes(?:is|ize)|hip[oó]tesis/i, `${locale}: hypothesize step`);
-		assert.match(content, /observe|observar/i, `${locale}: observe step`);
-		assert.match(content, /verify|verificar/i, `${locale}: verify step`);
-		assert.match(content, /stack trace|traza de pila/i, `${locale}: reading a stack trace`);
-		assert.match(content, /breakpoint/i, `${locale}: breakpoint`);
-		assert.match(content, /conditional breakpoint|breakpoint condicional/i, `${locale}: conditional breakpoint`);
-		assert.match(content, /watch/i, `${locale}: watch expression`);
-		assert.match(content, /step over/i, `${locale}: step over`);
-		assert.match(content, /step into/i, `${locale}: step into`);
-		assert.match(content, /step out/i, `${locale}: step out`);
-		assert.match(content, /call stack|pila de llamadas/i, `${locale}: call stack inspection`);
-		assert.match(content, /println/, `${locale}: println tradeoffs`);
-		assert.match(content, /IntelliJ/, `${locale}: IntelliJ IDEA`);
-		assert.match(content, /Visual Studio Code/, `${locale}: VS Code`);
-		assert.match(content, /Eclipse/, `${locale}: Eclipse`);
-		assert.match(content, /magic numbers?|n[uú]meros? m[aá]gicos?/i, `${locale}: magic numbers`);
-		assert.match(content, /single responsibility|responsabilidad [uú]nica/i, `${locale}: single responsibility`);
-		assert.match(content, /long method/i, `${locale}: long method smell`);
-		assert.match(content, /long parameter list/i, `${locale}: long parameter list smell`);
-		assert.match(content, /duplicated code/i, `${locale}: duplicated code smell`);
-		assert.match(content, /feature envy/i, `${locale}: feature envy smell`);
-		assert.match(content, /primitive obsession/i, `${locale}: primitive obsession smell`);
-		assert.match(content, /god class/i, `${locale}: god class smell`);
-		assert.match(content, /code smell/i, `${locale}: code smell terminology`);
-		assert.match(content, /extract method/i, `${locale}: extract method refactor`);
-		assert.match(content, /rename/i, `${locale}: rename refactor`);
-		assert.match(content, /introduce constant/i, `${locale}: introduce constant refactor`);
-		assert.match(content, /parameter object/i, `${locale}: parameter object refactor`);
-		assert.match(content, /replace conditional with polymorphism/i, `${locale}: replace conditional with polymorphism`);
-		assert.match(content, /guard clause/i, `${locale}: guard clause refactor`);
-		assert.match(content, /JUnit/, `${locale}: JUnit-backed safety net`);
-		assert.match(content, /@Test/, `${locale}: JUnit test annotation`);
-		assert.match(content, /OrderCalculator/, `${locale}: before/after example subject`);
-		assert.match(content, /Antes|Before/, `${locale}: before section`);
-		assert.match(content, /Despu[eé]s|After/, `${locale}: after section`);
-		assert.match(content, /observable behavior|comportamiento observable/i, `${locale}: behaviour-preserving definition`);
-		assert.match(content, /green|verde/i, `${locale}: tests kept green`);
-		assert.match(content, /mixing them in a single step|mezclarlas en un mismo paso/i, `${locale}: never mix debugging and refactoring`);
-		assert.match(content, /are not the same step|no son el mismo paso/i, `${locale}: debugging vs refactoring distinction`);
-	}
-});
-
-test('testing and Spring Boot lesson completes the CRUD with an idempotent PUT in both locales', async () => {
-	const [spanish, english] = await Promise.all([
-		readLesson(TESTING_SPRING_LESSON, 'es'),
-		readLesson(TESTING_SPRING_LESSON, 'en'),
-	]);
-
-	for (const [locale, content] of [
-		['Spanish', spanish],
-		['English', english],
-	]) {
-		assert.match(content, /@PutMapping\("\/\{id\}"\)/, `${locale}: PUT mapping`);
-		assert.match(content, /@Valid @RequestBody/, `${locale}: validated request body`);
-		assert.match(content, /notFound\(\)|404/, `${locale}: not-found response`);
-		assert.match(content, /idempoten/i, `${locale}: idempotency`);
-		assert.match(content, /PATCH/, `${locale}: PATCH contrast`);
-		assert.match(content, /400/, `${locale}: validation-failure status`);
-		assert.match(content, /mockMvc\.perform\(put\(/, `${locale}: MockMvc PUT test`);
-		assert.match(content, /CREATE/, `${locale}: CRUD table CREATE row`);
-		assert.match(content, /READ/, `${locale}: CRUD table READ row`);
-		assert.match(content, /UPDATE/, `${locale}: CRUD table UPDATE row`);
-		assert.match(content, /DELETE/, `${locale}: CRUD table DELETE row`);
-		assert.match(content, /201/, `${locale}: create status in CRUD table`);
-		assert.match(content, /204/, `${locale}: delete status in CRUD table`);
-	}
-});
-
 test('Java lesson orders remain bilingual, unique, and contiguous', async () => {
 	const files = (await readdir(JAVA_COURSE_DIR)).filter((file) => /\.(es|en)\.md$/.test(file));
 	const lessons = await Promise.all(
@@ -455,8 +361,6 @@ const EXPECTED_LESSON_SEQUENCE = [
 	'19-archivos-persistencia-y-empaquetado-jar',
 	'20-programacion-concurrente-hilos-y-pools',
 	'21-acceso-a-bases-de-datos-jdbc',
-	'22-testing-junit-y-spring-boot',
-	'27-depuracion-codigo-limpio-y-refactorizacion',
 ];
 
 test('Java lesson filename sequence by order matches the target learning path (ES and EN)', async () => {
@@ -495,7 +399,7 @@ test('"Fin del curso" / "End of the course" heading appears only in the last les
 			matches.push(file);
 		}
 	}
-	assert.deepEqual(matches.sort(), [`${DEBUGGING_LESSON}.en.md`, `${DEBUGGING_LESSON}.es.md`].sort());
+	assert.deepEqual(matches.sort(), [`${JDBC_LESSON}.en.md`, `${JDBC_LESSON}.es.md`].sort());
 });
 
 test('exceptions lesson does not use FileReader or BufferedReader', async () => {

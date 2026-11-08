@@ -514,3 +514,16 @@ And `findById` returns `Optional<Product>`. "Not found" is not an exceptional er
 - A `Connection` is **not thread-safe**. One per thread, taken from the pool.
 - What `executeUpdate()` returns is information: zero rows affected is almost never what you expected.
 - The **DAO** pattern isolates SQL in one class per entity, behind an interface.
+
+---
+
+## End of the course
+
+You started with `System.out.println("Hello world")`.
+
+You finish modeling domains with objects, choosing data structures with judgment, handling errors without swallowing them, coordinating concurrency safely, and persisting both to files and to relational databases with clean transactions.
+
+What changed is not how much syntax you know: it is that you now understand **why** each tool exists and **what problem it came to solve**. A constructor is not ceremony, it is the guarantee that an object is born valid. An interface is not bureaucracy, it is what lets you swap the database without touching the logic. And a transaction is not paperwork, it is what prevents your system from ending up in an inconsistent state when something fails halfway through.
+
+That is what nobody learns in two hours, and it is exactly what will still serve you when the language of the moment is no longer Java.
+
