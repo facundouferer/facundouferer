@@ -656,8 +656,11 @@ Where this renders:
 - i18n keys: `courses.lessonAnimations.*` and `animations.*`.
 
 Existing animations: `conceptos-basicos-java` (lesson 01), `variables-tipos-datos-java`
-(02), `control-flujo-bucles-java` (03) and `arrays-strings-java` (04); each mixes slide
-chapters with motion canvases for its most visual concepts.
+(02), `control-flujo-bucles-java` (03), `arrays-strings-java` (04),
+`herencia-polimorfismo-java`, `abstractas-interfaces-java`, `excepciones-java`,
+`collections-genericos-java` and `iteradores-ordenamiento-java`; each mixes slide
+chapters with motion canvases for its most visual concepts. A catalog `lesson.slug` is the
+lesson's frontmatter `slug`, which can differ from its file name.
 
 Adding an animation: register it in the catalog, write its script and scenes, import
 and map the component in both detail pages, add the thumbnail, and cover it with a

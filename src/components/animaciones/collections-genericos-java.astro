@@ -1,0 +1,1151 @@
+---
+/**
+ * Scenes for the "Java Collections Framework and generics, step by step" animation
+ * (lesson java/15). The captions, code and terminal panels live in
+ * `src/data/animations/collections-genericos-java.ts`; this component only draws the
+ * diagrams the steps point to. Slide scenes are HTML blocks (`[data-scene]` with
+ * `[data-el]` elements); the `hier`, `gen`, `lset`, `ll`, `map`, `hash`, `box`,
+ * `bound` and `erase` scenes are SVG canvases (`data-motion`) choreographed by the
+ * cues of their motion steps.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/collections-genericos-java';
+import { resolveScript } from '../../utils/animations';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Motion canvas data ────────────────────────────────────────────────────
+// Hierarchy: implementation chips under each interface.
+const impls = [
+	{ id: 'hi-arraylist', cx: 170, y: 370, name: 'ArrayList', note: t('índice O(1) · el default', 'index O(1) · the default') },
+	{ id: 'hi-linkedlist', cx: 170, y: 450, name: 'LinkedList', note: t('extremos O(1)', 'ends O(1)') },
+	{ id: 'hi-hashset', cx: 450, y: 370, name: 'HashSet', note: t('sin orden · O(1)', 'no order · O(1)') },
+	{ id: 'hi-treeset', cx: 450, y: 450, name: 'TreeSet', note: t('ordenado · O(log n)', 'sorted · O(log n)') },
+	{ id: 'hi-arraydeque', cx: 730, y: 370, name: 'ArrayDeque', note: t('pila y cola · O(1)', 'stack and queue · O(1)') },
+	{ id: 'hi-pq', cx: 730, y: 450, name: 'PriorityQueue', note: t('sale el menor primero', 'smallest comes out first') },
+	{ id: 'hi-hashmap', cx: 1260, y: 370, name: 'HashMap', note: t('sin orden · O(1)', 'no order · O(1)') },
+	{ id: 'hi-treemap', cx: 1260, y: 450, name: 'TreeMap', note: t('ordenado por clave', 'sorted by key') },
+];
+
+// Marks (a cross on a red dot, a check on a sage dot) drawn over the canvases.
+const marks = [
+	{ id: 'gt-x', cx: 828, cy: 485, ok: false },
+	{ id: 'sb-x', cx: 275, cy: 540, ok: false },
+	{ id: 'bx-x', cx: 935, cy: 345, ok: false },
+	{ id: 'bd-x', cx: 640, cy: 330, ok: false },
+	{ id: 'ha-no', cx: 715, cy: 470, ok: false },
+	{ id: 'ha-ok', cx: 715, cy: 555, ok: true },
+	{ id: 'er-x', cx: 1440, cy: 525, ok: false },
+];
+
+// Invisible points the moving elements glide to.
+const anchors = [
+	{ id: 'gr-s0', x: 180, y: 135 },
+	{ id: 'gr-s1', x: 400, y: 135 },
+	{ id: 'gt-s0', x: 180, y: 485 },
+	{ id: 'gt-home', x: 1220, y: 485 },
+	{ id: 'la-s0', x: 195, y: 135 },
+	{ id: 'la-s1', x: 445, y: 135 },
+	{ id: 'la-s2', x: 695, y: 135 },
+	{ id: 'sb-s0', x: 195, y: 485 },
+	{ id: 'sb-s1', x: 445, y: 485 },
+	{ id: 'sb-home', x: 1250, y: 485 },
+	{ id: 'mp-a0', x: 60, y: 210 },
+	{ id: 'mp-a1', x: 60, y: 325 },
+	{ id: 'mp-a2', x: 60, y: 440 },
+	{ id: 'ha-bk5', x: 563, y: 355 },
+	{ id: 'ha-bk9', x: 947, y: 355 },
+	{ id: 'ha-n1', x: 563, y: 470 },
+	{ id: 'ha-n2', x: 563, y: 555 },
+	{ id: 'bx-sA', x: 830, y: 205 },
+	{ id: 'bx-sB', x: 1330, y: 205 },
+	{ id: 'bx-rej', x: 830, y: 370 },
+	{ id: 'bx-home42', x: 1330, y: 470 },
+	{ id: 'bd-p1', x: 880, y: 200 },
+	{ id: 'bd-p2', x: 880, y: 290 },
+	{ id: 'bd-stop', x: 560, y: 330 },
+	{ id: 'bd-home', x: 200, y: 330 },
+	{ id: 'bd-c0', x: 865, y: 230 },
+	{ id: 'bd-c1', x: 1025, y: 230 },
+	{ id: 'bd-c2', x: 1185, y: 230 },
+	...Array.from({ length: 8 }, (_, i) => ({ id: `ll-c-${i}`, x: 120 + i * 150, y: 150 })),
+	...Array.from({ length: 8 }, (_, i) => ({ id: `ll-n-${i}`, x: 120 + i * 150, y: 480 })),
+];
+
+const marksFor = (...prefixes: string[]) => marks.filter((mark) => prefixes.some((prefix) => mark.id.startsWith(`${prefix}-`)));
+const anchorsFor = (...prefixes: string[]) => anchors.filter((anchor) => prefixes.some((prefix) => anchor.id.startsWith(`${prefix}-`)));
+
+const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+const buckets = Array.from({ length: 16 }, (_, i) => ({ i, x: 40 + i * 96 }));
+const listSlots = [80, 330, 580];
+
+// ── Slide scene data ──────────────────────────────────────────────────────
+const chooseRows = [
+	{ id: 'ch-1', need: t('Orden de inserción y acceso por índice', 'Insertion order and access by index'), use: 'ArrayList' },
+	{ id: 'ch-2', need: t('Insertar y borrar mucho en los extremos', 'Lots of inserts and removals at the ends'), use: 'ArrayDeque' },
+	{ id: 'ch-3', need: t('Elementos únicos, sin importar el orden', 'Unique elements, order does not matter'), use: 'HashSet' },
+	{ id: 'ch-4', need: t('Elementos únicos, siempre ordenados', 'Unique elements, always sorted'), use: 'TreeSet' },
+	{ id: 'ch-5', need: t('Clave → valor, acceso rapidísimo', 'Key → value, very fast access'), use: 'HashMap' },
+	{ id: 'ch-6', need: t('Clave → valor, recorrido en orden de clave', 'Key → value, walked in key order'), use: 'TreeMap' },
+	{ id: 'ch-7', need: t('Clave → valor, en orden de inserción', 'Key → value, in insertion order'), use: 'LinkedHashMap' },
+	{ id: 'ch-8', need: t('Sacar siempre el de mayor prioridad', 'Always take the highest priority'), use: 'PriorityQueue' },
+];
+const mistakes = [
+	{ id: 'e15-1', text: t('ArrayList<T> x = new ArrayList<>()', 'ArrayList<T> x = new ArrayList<>()') },
+	{ id: 'e15-2', text: t('Sin equals/hashCode en HashSet/HashMap', 'No equals/hashCode in HashSet/HashMap') },
+	{ id: 'e15-3', text: t('Modificar mientras se recorre con for-each', 'Modifying while walking with for-each') },
+	{ id: 'e15-4', text: t('mapa.get(k) sin contemplar null', 'mapa.get(k) without handling null') },
+	{ id: 'e15-5', text: t('LinkedList "porque insertar es más rápido"', 'LinkedList "because inserting is faster"') },
+	{ id: 'e15-6', text: t('Clave mutable en un HashMap', 'Mutable key in a HashMap') },
+	{ id: 'e15-7', text: t('Modificar una lista de List.of(...)', 'Modifying a List.of(...) list') },
+];
+const exercises = [
+	{ id: 'ex-1', n: 1, name: t('Normalizar el texto', 'Normalize the text'), note: t('Minúsculas, sin puntuación', 'Lowercase, no punctuation') },
+	{ id: 'ex-2', n: 2, name: t('Contar con un Map', 'Count with a Map'), note: 'Map<String, Integer>' },
+	{ id: 'ex-3', n: 3, name: t('Ordenar por frecuencia', 'Sort by frequency'), note: t('Descendente y luego alfabético', 'Descending, then alphabetical') },
+	{ id: 'ex-4', n: 4, name: t('Palabras distintas', 'Distinct words'), note: t('Las claves, como Set', 'The keys, as a Set') },
+	{ id: 'ex-5', n: 5, name: t('Ignorar las vacías', 'Skip the stop words'), note: t('de, la, el, y, que…', 'de, la, el, y, que…') },
+];
+const takeaways = [
+	t('Declará con la interfaz', 'Declare with the interface'),
+	t('Map no extiende Collection', 'Map does not extend Collection'),
+	t('Genéricos: el error llega antes', 'Generics: the error comes earlier'),
+	t('Borrado de tipos', 'Type erasure'),
+	t('hashCode elige el bucket', 'hashCode picks the bucket'),
+	t('equals elige el elemento', 'equals picks the element'),
+	t('merge · computeIfAbsent · getOrDefault', 'merge · computeIfAbsent · getOrDefault'),
+	t('Elegir bien es rendimiento', 'Choosing well is performance'),
+];
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<!-- INTRO: write it by hand later, Java already ships it -->
+	<div slot="scene" data-scene="intro15" class="scene-intro15">
+		<div class="dg-box dg-box--accent" data-el="in-hand">
+			<p class="dg-label">{t('Lo vas a implementar a mano', 'You will build it by hand')}</p>
+			<div class="dg-chips">
+				<code class="dg-chip">TAD Lista</code><code class="dg-chip">TAD Pila</code><code class="dg-chip">TAD Cola</code>
+			</div>
+			<p class="dg-sub">{t('En las próximas lecciones, para ver cómo funcionan por dentro', 'In the next lessons, to see how they work inside')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="in-lib">
+			<p class="dg-label dg-label--sage">{t('Java ya lo trae', 'Java already ships it')}</p>
+			<div class="dg-chips">
+				<code class="dg-chip dg-chip--sage">ArrayList</code><code class="dg-chip dg-chip--sage">HashMap</code><code class="dg-chip dg-chip--sage">ArrayDeque</code>
+			</div>
+			<p class="dg-sub">{t('Treinta años de optimización y millones de aplicaciones', 'Thirty years of tuning and millions of applications')}</p>
+		</div>
+		<div class="dg-box dg-box--ink dg-box--center" data-el="in-know">
+			<p class="dg-title">{t('Usar una herramienta no es lo mismo que entenderla', 'Using a tool is not the same as understanding it')}</p>
+		</div>
+	</div>
+
+	<!-- 1. The JCF hierarchy (motion canvas) -->
+	<div slot="scene" data-scene="hier" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="hi-iterable">
+					<rect class="mg-card" x="340" y="30" width="220" height="60" rx="16" />
+					<text class="mg-heading" x="450" y="68" text-anchor="middle">Iterable</text>
+				</g>
+				<g data-el="hi-a1" class="mg-arrow">
+					<path class="mg-stroke" d="M450 92L450 130" pathLength="1" />
+					<path class="mg-head" d="M441 120L450 132L459 120" />
+				</g>
+				<g data-el="hi-collection">
+					<rect class="mg-card mg-card--accent" x="340" y="140" width="220" height="60" rx="16" />
+					<text class="mg-heading" x="450" y="178" text-anchor="middle">Collection</text>
+				</g>
+
+				<g data-el="hi-a-list" class="mg-arrow">
+					<path class="mg-stroke" d="M450 202C450 245 170 225 170 262" pathLength="1" />
+					<path class="mg-head" d="M161 252L170 264L179 252" />
+				</g>
+				<g data-el="hi-a-set" class="mg-arrow">
+					<path class="mg-stroke" d="M450 202L450 262" pathLength="1" />
+					<path class="mg-head" d="M441 252L450 264L459 252" />
+				</g>
+				<g data-el="hi-a-queue" class="mg-arrow">
+					<path class="mg-stroke" d="M450 202C450 245 730 225 730 262" pathLength="1" />
+					<path class="mg-head" d="M721 252L730 264L739 252" />
+				</g>
+				<g data-el="hi-list">
+					<rect class="mg-card mg-card--accent" x="70" y="270" width="200" height="60" rx="16" />
+					<text class="mg-heading" x="170" y="308" text-anchor="middle">List</text>
+				</g>
+				<g data-el="hi-set">
+					<rect class="mg-card mg-card--accent" x="350" y="270" width="200" height="60" rx="16" />
+					<text class="mg-heading" x="450" y="308" text-anchor="middle">Set</text>
+				</g>
+				<g data-el="hi-queue">
+					<rect class="mg-card mg-card--accent" x="630" y="270" width="200" height="60" rx="16" />
+					<text class="mg-heading" x="730" y="308" text-anchor="middle">Queue</text>
+				</g>
+
+				{
+					impls.map((impl) => (
+						<g data-el={impl.id}>
+							<rect class="mg-chip mg-chip--sage" x={impl.cx - 130} y={impl.y} width="260" height="64" rx="18" />
+							<text class="mg-chip-text mg-chip-text--sage" x={impl.cx} y={impl.y + 28} text-anchor="middle">{impl.name}</text>
+							<text class="mg-text mg-text--muted mg-note" x={impl.cx} y={impl.y + 50} text-anchor="middle">{impl.note}</text>
+						</g>
+					))
+				}
+
+				<g data-el="hi-no">
+					<rect class="mg-chip" x="1080" y="170" width="360" height="52" rx="26" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1260" y="203" text-anchor="middle">{t('NO extiende Collection', 'Does NOT extend Collection')}</text>
+				</g>
+				<g data-el="hi-map">
+					<rect class="mg-card mg-card--accent" x="1140" y="270" width="240" height="60" rx="16" />
+					<text class="mg-heading" x="1260" y="308" text-anchor="middle">Map</text>
+				</g>
+
+				<g data-el="hi-note">
+					<rect class="mg-card mg-card--sage" x="60" y="550" width="1480" height="90" rx="22" />
+					<text class="mg-text mg-text--strong" x="92" y="588">{t('Todo lo que cuelga de Collection guarda elementos sueltos y se recorre con for-each.', 'Everything under Collection stores loose elements and can be walked with for-each.')}</text>
+					<text class="mg-text" x="92" y="620">{t('Map guarda asociaciones clave → valor: por eso su interfaz es distinta.', 'Map stores key → value associations: that is why its interface is different.')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- Program against interfaces -->
+	<div slot="scene" data-scene="iface" class="scene-iface">
+		<div class="dg-box dg-box--sage" data-el="if-good">
+			<p class="dg-label dg-label--sage">{t('Bien: el tipo es la interfaz', 'Good: the type is the interface')}</p>
+			<code class="dg-code">{'List<String> nombres = new ArrayList<>();'}</code>
+			<code class="dg-code">{'Map<String, Integer> stock = new HashMap<>();'}</code>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="if-bad">
+			<p class="dg-label">{t('Mal: te atás a la implementación', 'Bad: you tie yourself to the implementation')}</p>
+			<code class="dg-code">{'ArrayList<String> nombres = new ArrayList<>();'}</code>
+		</div>
+		<div class="dg-box dg-box--ink dg-box--center" data-el="if-swap">
+			<p class="dg-title">{t('Cambiar a LinkedList es tocar una palabra', 'Switching to LinkedList means touching one word')}</p>
+			<code class="dg-code">{'List<String> nombres = new LinkedList<>();'}</code>
+		</div>
+	</div>
+
+	<!-- 2. Generics against Object (motion canvas, two lanes) -->
+	<div slot="scene" data-scene="gen" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<!-- Lane 1: without generics -->
+				<text class="mg-mono mg-mono--dark" x="60" y="50" data-el="gr-decl">List lista = new ArrayList();</text>
+				<g data-el="gr-list">
+					<rect class="mg-card" x="60" y="75" width="720" height="120" rx="20" />
+					{listSlots.slice(0, 3).map((_, i) => <rect class="mg-card" x={80 + i * 220} y="95" width="200" height="80" rx="14" style="stroke-dasharray: 8 6" />)}
+				</g>
+				<text class="mg-mono mg-mono--dark" x="890" y="62" data-el="gr-add1">{'lista.add("hola");'}</text>
+				<text class="mg-mono mg-mono--dark" x="1130" y="62" data-el="gr-add2">lista.add(42);</text>
+				<g data-el="gr-hola" data-x="980" data-y="135">
+					<rect class="mg-card mg-card--accent mg-token" x="-90" y="-35" width="180" height="70" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">{'"hola"'}</text>
+				</g>
+				<g data-el="gr-42" data-x="1220" data-y="135">
+					<rect class="mg-card mg-card--sage mg-token" x="-90" y="-35" width="180" height="70" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">42</text>
+				</g>
+				<g data-el="gr-ok">
+					<rect class="mg-chip mg-chip--sage" x="1130" y="182" width="210" height="38" rx="19" />
+					<text class="mg-chip-text mg-chip-text--sage" x="1235" y="207" text-anchor="middle">{t('compila perfecto', 'compiles perfectly')}</text>
+				</g>
+				<text class="mg-mono mg-mono--dark" x="60" y="262" data-el="gr-cast">String s = (String) lista.get(1);</text>
+				<g data-el="gr-boom">
+					<rect class="mg-card mg-card--ink" x="900" y="235" width="640" height="72" rx="16" />
+					<text class="mg-mono mg-err" x="1220" y="268" text-anchor="middle">ClassCastException</text>
+					<text class="mg-text mg-text--dim" x="1220" y="295" text-anchor="middle">{t('en EJECUCIÓN, con usuarios', 'at RUNTIME, with users')}</text>
+				</g>
+
+				<!-- Lane 2: with generics -->
+				<text class="mg-mono mg-mono--dark" x="60" y="400" data-el="gt-decl">{'List<String> lista = new ArrayList<>();'}</text>
+				<g data-el="gt-dia">
+					<rect class="mg-chip mg-chip--sage" x="470" y="377" width="330" height="40" rx="20" />
+					<text class="mg-chip-text mg-chip-text--sage" x="635" y="403" text-anchor="middle">{t('<> diamante: el mismo tipo', '<> diamond: the same type')}</text>
+				</g>
+				<g data-el="gt-list">
+					<rect class="mg-card mg-card--sage" x="60" y="430" width="720" height="120" rx="20" />
+					{listSlots.slice(0, 3).map((_, i) => <rect class="mg-card" x={80 + i * 220} y="445" width="200" height="80" rx="14" style="stroke-dasharray: 8 6" />)}
+				</g>
+				<g data-el="gt-gate">
+					<rect class="mg-bar" x="815" y="425" width="26" height="120" rx="10" />
+					<text class="mg-text mg-text--strong mg-text--muted mg-note" x="828" y="414" text-anchor="middle">{t('solo String', 'String only')}</text>
+				</g>
+				<text class="mg-mono mg-mono--dark" x="890" y="420" data-el="gt-add1">{'lista.add("hola");'}</text>
+				<text class="mg-mono mg-mono--dark" x="1130" y="420" data-el="gt-add2">lista.add(42);</text>
+				<g data-el="gt-hola" data-x="980" data-y="485">
+					<rect class="mg-card mg-card--accent mg-token" x="-90" y="-35" width="180" height="70" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">{'"hola"'}</text>
+				</g>
+				<g data-el="gt-42" data-x="1220" data-y="485">
+					<rect class="mg-card mg-card--sage mg-token" x="-90" y="-35" width="180" height="70" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">42</text>
+				</g>
+				<g data-el="gt-err">
+					<rect class="mg-card mg-card--sage" x="900" y="560" width="640" height="70" rx="16" />
+					<text class="mg-heading" x="1220" y="592" text-anchor="middle">{t('Error de compilación', 'Compile error')}</text>
+					<text class="mg-text mg-text--muted" x="1220" y="617" text-anchor="middle">{t('en tu IDE, antes de nada', 'in your IDE, before anything')}</text>
+				</g>
+				<text class="mg-mono mg-mono--dark" x="60" y="590" data-el="gt-get">{t('String s = lista.get(0);   // sin casteo', 'String s = lista.get(0);   // no cast')}</text>
+				{
+					marksFor('gr', 'gt').map((mark) => (
+						<g data-el={mark.id}>
+							<circle class:list={['mg-dot', { 'mg-dot--3': mark.ok }]} cx={mark.cx} cy={mark.cy} r="24" />
+							<svg x={mark.cx - 14} y={mark.cy - 14} width="28" height="28" viewBox="0 0 24 24" class="mg-icon mg-icon--bg" aria-hidden="true">
+								{mark.ok ? <path d="M20 6 9 17l-5-5" /> : (<><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>)}
+							</svg>
+						</g>
+					))
+				}
+				{anchorsFor('gr', 'gt').map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+
+	<!-- 3a. List and Set (motion canvas, two lanes) -->
+	<div slot="scene" data-scene="lset" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<!-- Lane 1: List -->
+				<text class="mg-mono mg-mono--dark" x="60" y="50" data-el="la-decl">{'List<String> tareas = new ArrayList<>();'}</text>
+				<g data-el="la-box">
+					<rect class="mg-card" x="60" y="75" width="780" height="120" rx="20" />
+					{[80, 330, 580].map((x) => <rect class="mg-card" x={x} y="95" width="230" height="80" rx="14" style="stroke-dasharray: 8 6" />)}
+				</g>
+				<g data-el="la-t1" data-x="1010" data-y="135">
+					<rect class="mg-card mg-card--accent mg-token" x="-105" y="-35" width="210" height="70" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">{'"Estudiar POO"'}</text>
+				</g>
+				<g data-el="la-t2" data-x="1010" data-y="135">
+					<rect class="mg-card mg-card--sage mg-token" x="-105" y="-35" width="210" height="70" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">{'"Practicar listas"'}</text>
+				</g>
+				<g data-el="la-t3" data-x="1010" data-y="135">
+					<rect class="mg-card mg-card--accent mg-token" x="-105" y="-35" width="210" height="70" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">{'"Estudiar POO"'}</text>
+				</g>
+				<g data-el="la-dup">
+					<rect class="mg-chip" x="880" y="210" width="330" height="40" rx="20" />
+					<text class="mg-chip-text" x="1045" y="236" text-anchor="middle">{t('se repite, y está bien', 'it repeats, and that is fine')}</text>
+				</g>
+				<text class="mg-mono mg-mono--dark" x="60" y="250" data-el="la-get">{t('tareas.get(1)   // "Practicar listas"', 'tareas.get(1)   // "Practicar listas"')}</text>
+				<text class="mg-mono mg-mono--dark" x="500" y="250" data-el="la-size">tareas.size()   // 3</text>
+
+				<!-- Lane 2: Set -->
+				<text class="mg-mono mg-mono--dark" x="60" y="400" data-el="sb-decl">{'Set<String> etiquetas = new HashSet<>();'}</text>
+				<g data-el="sb-box">
+					<rect class="mg-card mg-card--sage" x="60" y="425" width="780" height="120" rx="20" />
+					{[80, 330, 580].map((x) => <rect class="mg-card" x={x} y="445" width="230" height="80" rx="14" style="stroke-dasharray: 8 6" />)}
+				</g>
+				<g data-el="sb-t1" data-x="1250" data-y="485">
+					<rect class="mg-card mg-card--accent mg-token" x="-85" y="-35" width="170" height="70" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">{'"java"'}</text>
+				</g>
+				<g data-el="sb-t2" data-x="1250" data-y="485">
+					<rect class="mg-card mg-card--sage mg-token" x="-85" y="-35" width="170" height="70" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">{'"poo"'}</text>
+				</g>
+				<g data-el="sb-t3" data-x="1250" data-y="485">
+					<rect class="mg-card mg-card--accent mg-token" x="-85" y="-35" width="170" height="70" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">{'"java"'}</text>
+				</g>
+				<text class="mg-mono mg-mono--dark" x="330" y="590" data-el="sb-size">etiquetas.size()   // 2</text>
+				<g data-el="sb-warn">
+					<rect class="mg-chip" x="880" y="365" width="640" height="48" rx="24" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1200" y="396" text-anchor="middle">{t('Tus clases necesitan equals() y hashCode()', 'Your classes need equals() and hashCode()')}</text>
+				</g>
+				<g data-el="sb-i1">
+					<rect class="mg-chip mg-chip--sage" x="880" y="430" width="640" height="50" rx="25" />
+					<text class="mg-chip-text mg-chip-text--sage" x="1200" y="461" text-anchor="middle">{t('HashSet · sin ningún orden', 'HashSet · no order at all')}</text>
+				</g>
+				<g data-el="sb-i2">
+					<rect class="mg-chip mg-chip--sage" x="880" y="490" width="640" height="50" rx="25" />
+					<text class="mg-chip-text mg-chip-text--sage" x="1200" y="521" text-anchor="middle">{t('LinkedHashSet · conserva el orden de inserción', 'LinkedHashSet · keeps insertion order')}</text>
+				</g>
+				<g data-el="sb-i3">
+					<rect class="mg-chip mg-chip--sage" x="880" y="550" width="640" height="50" rx="25" />
+					<text class="mg-chip-text mg-chip-text--sage" x="1200" y="581" text-anchor="middle">{t('TreeSet · siempre ordenado · first(), last()', 'TreeSet · always sorted · first(), last()')}</text>
+				</g>
+				{
+					marksFor('la', 'sb').map((mark) => (
+						<g data-el={mark.id}>
+							<circle class:list={['mg-dot', { 'mg-dot--3': mark.ok }]} cx={mark.cx} cy={mark.cy} r="24" />
+							<svg x={mark.cx - 14} y={mark.cy - 14} width="28" height="28" viewBox="0 0 24 24" class="mg-icon mg-icon--bg" aria-hidden="true">
+								{mark.ok ? <path d="M20 6 9 17l-5-5" /> : (<><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>)}
+							</svg>
+						</g>
+					))
+				}
+				{anchorsFor('la', 'sb').map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+
+	<!-- 3b. ArrayList against LinkedList (motion canvas) -->
+	<div slot="scene" data-scene="ll" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="ll-al-t">
+					<text class="mg-heading" x="60" y="40">ArrayList</text>
+					<text class="mg-text mg-text--muted" x="190" y="40">{t('arreglo interno: celdas contiguas', 'inner array: contiguous cells')}</text>
+				</g>
+				<g data-el="ll-al-cells">
+					{
+						letters.map((letter, i) => (
+							<>
+								<rect class="mg-card mg-card--accent" x={60 + i * 150} y="110" width="120" height="80" rx="14" />
+								<text class="mg-heading mg-big" x={120 + i * 150} y="160" text-anchor="middle">{letter}</text>
+								<text class="mg-text mg-text--muted" x={120 + i * 150} y="215" text-anchor="middle">[{i}]</text>
+							</>
+						))
+					}
+				</g>
+				<g data-el="ll-cache">
+					<rect class="mg-cache" x="48" y="98" width="1194" height="104" rx="22" />
+				</g>
+				<g data-el="ll-cache-a">
+					<rect class="mg-chip mg-chip--sage" x="60" y="236" width="640" height="40" rx="20" />
+					<text class="mg-chip-text mg-chip-text--sage" x="380" y="262" text-anchor="middle">{t('celdas vecinas: la caché del CPU las trae juntas', 'neighbor cells: the CPU cache loads them together')}</text>
+				</g>
+				<g data-el="ll-ap" data-x="120" data-y="80">
+					<circle class="mg-dot" cx="0" cy="0" r="26" />
+					<text class="mg-chip-text mg-ptr-text" x="0" y="5" text-anchor="middle">get</text>
+				</g>
+				<rect class="mg-hit" x="954" y="104" width="132" height="92" rx="18" data-el="ll-hit-a" />
+				<g data-el="ll-cost-a">
+					<rect class="mg-chip mg-chip--sage" x="1290" y="124" width="270" height="52" rx="26" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1425" y="157" text-anchor="middle">{t('get(6) → 1 paso', 'get(6) → 1 step')}</text>
+				</g>
+
+				<g data-el="ll-l-t">
+					<text class="mg-heading" x="60" y="370">LinkedList</text>
+					<text class="mg-text mg-text--muted" x="215" y="370">{t('nodos enlazados por referencias', 'nodes linked by references')}</text>
+				</g>
+				<g data-el="ll-nodes">
+					{
+						letters.map((letter, i) => (
+							<>
+								<rect class="mg-card" x={60 + i * 150} y="440" width="120" height="80" rx="14" />
+								<text class="mg-heading mg-big" x={120 + i * 150} y="490" text-anchor="middle">{letter}</text>
+								<text class="mg-text mg-text--muted" x={120 + i * 150} y="545" text-anchor="middle">[{i}]</text>
+							</>
+						))
+					}
+				</g>
+				<g data-el="ll-links" class="mg-arrow">
+					{
+						letters.slice(0, 7).map((_, i) => (
+							<>
+								<path class="mg-stroke" d={`M${180 + i * 150} 480L${208 + i * 150} 480`} pathLength="1" />
+								<path class="mg-head" d={`M${199 + i * 150} 471L${210 + i * 150} 480L${199 + i * 150} 489`} />
+							</>
+						))
+					}
+				</g>
+				<g data-el="ll-lp" data-x="120" data-y="410">
+					<circle class="mg-dot" cx="0" cy="0" r="26" />
+					<text class="mg-chip-text mg-ptr-text" x="0" y="5" text-anchor="middle">get</text>
+				</g>
+				<rect class="mg-hit" x="954" y="434" width="132" height="92" rx="18" data-el="ll-hit-l" />
+				<g data-el="ll-cost-l">
+					<rect class="mg-chip" x="1290" y="454" width="270" height="52" rx="26" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1425" y="487" text-anchor="middle">{t('get(6) → 6 saltos', 'get(6) → 6 hops')}</text>
+				</g>
+				<g data-el="ll-500">
+					<rect class="mg-chip" x="800" y="590" width="700" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1150" y="619" text-anchor="middle">{t('con 500 elementos: get(500) → 500 saltos', 'with 500 elements: get(500) → 500 hops')}</text>
+				</g>
+				<g data-el="ll-scatter">
+					<rect class="mg-chip" x="60" y="590" width="700" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--lg" x="410" y="619" text-anchor="middle">{t('nodos dispersos en el Heap: más fallos de caché', 'nodes scattered across the Heap: more cache misses')}</text>
+				</g>
+				{
+					marksFor('ll').map((mark) => (
+						<g data-el={mark.id}>
+							<circle class:list={['mg-dot', { 'mg-dot--3': mark.ok }]} cx={mark.cx} cy={mark.cy} r="24" />
+							<svg x={mark.cx - 14} y={mark.cy - 14} width="28" height="28" viewBox="0 0 24 24" class="mg-icon mg-icon--bg" aria-hidden="true">
+								{mark.ok ? <path d="M20 6 9 17l-5-5" /> : (<><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>)}
+							</svg>
+						</g>
+					))
+				}
+				{anchorsFor('ll').map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+
+	<!-- 3c. Map (motion canvas) -->
+	<div slot="scene" data-scene="map" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark" x="60" y="60" data-el="mp-put1">{'stock.put("yerba", 12);'}</text>
+				<text class="mg-mono mg-mono--dark" x="60" y="60" data-el="mp-put2">{'stock.put("café", 5);'}</text>
+				<text class="mg-mono mg-mono--dark" x="60" y="60" data-el="mp-put3">{'stock.put("yerba", 20);'}</text>
+				<text class="mg-mono mg-mono--dark" x="60" y="60" data-el="mp-get1">{'stock.get("yerba")'}</text>
+				<text class="mg-mono mg-mono--dark" x="60" y="60" data-el="mp-get2">{'stock.get("azúcar")'}</text>
+				<text class="mg-mono mg-mono--dark" x="60" y="60" data-el="mp-get3">{'stock.getOrDefault("azúcar", 0)'}</text>
+
+				<g data-el="mp-table">
+					<rect class="mg-card" x="60" y="100" width="760" height="440" rx="22" />
+					<text class="mg-text mg-text--strong mg-text--muted" x="225" y="142" text-anchor="middle">{t('clave', 'key')}</text>
+					<text class="mg-text mg-text--strong mg-text--muted" x="620" y="142" text-anchor="middle">{t('valor', 'value')}</text>
+					<rect class="mg-card" x="90" y="400" width="680" height="80" rx="16" style="stroke-dasharray: 8 6" />
+				</g>
+				<g data-el="mp-row0">
+					<rect class="mg-card mg-card--accent" x="90" y="170" width="270" height="80" rx="16" />
+					<text class="mg-mono mg-mono--dark mg-big" x="225" y="220" text-anchor="middle">{'"yerba"'}</text>
+					<path class="mg-link" d="M365 210L465 210" />
+					<rect class="mg-card mg-card--sage" x="470" y="170" width="300" height="80" rx="16" />
+				</g>
+				<text class="mg-heading mg-huge" x="620" y="223" text-anchor="middle" data-el="mp-v0a">12</text>
+				<text class="mg-heading mg-huge" x="620" y="223" text-anchor="middle" data-el="mp-v0b">20</text>
+				<g data-el="mp-row1">
+					<rect class="mg-card mg-card--accent" x="90" y="285" width="270" height="80" rx="16" />
+					<text class="mg-mono mg-mono--dark mg-big" x="225" y="335" text-anchor="middle">{'"café"'}</text>
+					<path class="mg-link" d="M365 325L465 325" />
+					<rect class="mg-card mg-card--sage" x="470" y="285" width="300" height="80" rx="16" />
+					<text class="mg-heading mg-huge" x="620" y="338" text-anchor="middle">5</text>
+				</g>
+
+				<g data-el="mp-res">
+					<rect class="mg-card mg-card--ink" x="900" y="170" width="640" height="130" rx="22" />
+					<text class="mg-text mg-text--dim" x="930" y="206">{t('resultado', 'result')}</text>
+				</g>
+				<g data-el="mp-a-res" class="mg-arrow">
+					<path class="mg-stroke" d="M772 210C830 210 850 235 892 235" pathLength="1" />
+					<path class="mg-head" d="M880 226L893 235L880 244" />
+				</g>
+				<text class="mg-mono mg-out mg-huge" x="1220" y="258" text-anchor="middle" data-el="mp-res20">20</text>
+				<text class="mg-mono mg-out mg-huge" x="1220" y="258" text-anchor="middle" data-el="mp-resnull">null</text>
+				<text class="mg-mono mg-out mg-huge" x="1220" y="258" text-anchor="middle" data-el="mp-res0">0</text>
+				<g data-el="mp-npe">
+					<rect class="mg-chip" x="900" y="330" width="640" height="64" rx="20" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1220" y="368" text-anchor="middle">{t('null al desempaquetar un Integer → NullPointerException', 'null when unboxing an Integer → NullPointerException')}</text>
+				</g>
+
+				<g data-el="mp-ptr" data-x="60" data-y="130">
+					<circle class="mg-dot" cx="0" cy="0" r="22" />
+				</g>
+				{
+					marksFor('mp').map((mark) => (
+						<g data-el={mark.id}>
+							<circle class:list={['mg-dot', { 'mg-dot--3': mark.ok }]} cx={mark.cx} cy={mark.cy} r="24" />
+							<svg x={mark.cx - 14} y={mark.cy - 14} width="28" height="28" viewBox="0 0 24 24" class="mg-icon mg-icon--bg" aria-hidden="true">
+								{mark.ok ? <path d="M20 6 9 17l-5-5" /> : (<><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>)}
+							</svg>
+						</g>
+					))
+				}
+				{anchorsFor('mp').map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+
+	<!-- Map API helpers -->
+	<div slot="scene" data-scene="mapapi" class="scene-mapapi">
+		<div class="dg-box" data-el="mapi-entry">
+			<p class="dg-label">entrySet()</p>
+			<code class="dg-code">{'for (Map.Entry<String, Integer> e : stock.entrySet())'}</code>
+			<p class="dg-sub">{t('Cada entrada trae getKey() y getValue()', 'Each entry carries getKey() and getValue()')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="mapi-merge">
+			<p class="dg-label dg-label--sage">merge</p>
+			<code class="dg-code">contador.merge(palabra, 1, Integer::sum);</code>
+			<p class="dg-sub">{t('Cuenta frecuencias sin ningún if', 'Counts frequencies with no if at all')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="mapi-gd">
+			<p class="dg-label dg-label--sage">getOrDefault</p>
+			<code class="dg-code">{'stock.getOrDefault("azúcar", 0)'}</code>
+			<p class="dg-sub">{t('Un valor por defecto en lugar de null', 'A default value instead of null')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="mapi-pia">
+			<p class="dg-label">putIfAbsent</p>
+			<code class="dg-code">mapa.putIfAbsent(clave, valor);</code>
+			<p class="dg-sub">{t('Guarda solo si la clave falta', 'Stores only if the key is missing')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="mapi-cia">
+			<p class="dg-label">computeIfAbsent</p>
+			<code class="dg-code">{'mapa.computeIfAbsent(k, x -> new ArrayList<>()).add(v);'}</code>
+			<p class="dg-sub">{t('Arma un mapa de listas', 'Builds a map of lists')}</p>
+		</div>
+	</div>
+
+	<!-- Queue / Deque -->
+	<div slot="scene" data-scene="queue" class="scene-queue">
+		<div class="dg-box dg-box--sage" data-el="qu-deque">
+			<p class="dg-label dg-label--sage">ArrayDeque</p>
+			<p class="dg-title">{t('Pila y cola', 'Stack and queue')}</p>
+			<p class="dg-sub">{t('Inserta y saca por los extremos en O(1)', 'Inserts and removes at the ends in O(1)')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="qu-pq">
+			<p class="dg-label">PriorityQueue</p>
+			<p class="dg-title">{t('Sale el de mayor prioridad', 'The highest priority comes out')}</p>
+			<p class="dg-sub">{t('No el que llegó primero', 'Not the one that arrived first')}</p>
+		</div>
+		<div class="dg-box dg-box--ink dg-box--center" data-el="qu-later">
+			<p class="dg-title">{t('Los vas a implementar a mano en TAD Pila y TAD Cola', 'You will implement them by hand in ADT Stack and ADT Queue')}</p>
+		</div>
+	</div>
+
+	<!-- 4. HashMap inside (motion canvas) -->
+	<div slot="scene" data-scene="hash" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="ha-hc">
+					<rect class="mg-card mg-card--ink" x="340" y="40" width="360" height="70" rx="16" />
+				</g>
+				<text class="mg-mono mg-med" x="520" y="84" text-anchor="middle" data-el="ha-hc1">hashCode() → 3165397</text>
+				<text class="mg-mono mg-med" x="520" y="84" text-anchor="middle" data-el="ha-hc2">hashCode() → 3347942</text>
+				<text class="mg-mono mg-med" x="520" y="84" text-anchor="middle" data-el="ha-hc3">{t('hashCode() → otro valor', 'hashCode() → another value')}</text>
+				<g data-el="ha-a1" class="mg-arrow">
+					<path class="mg-stroke" d="M200 75L335 75" pathLength="1" />
+					<path class="mg-head" d="M325 66L337 75L325 84" />
+				</g>
+				<g data-el="ha-a2" class="mg-arrow">
+					<path class="mg-stroke" d="M700 75L795 75" pathLength="1" />
+					<path class="mg-head" d="M785 66L797 75L785 84" />
+				</g>
+				<g data-el="ha-mix">
+					<rect class="mg-card mg-card--ink" x="800" y="40" width="520" height="70" rx="16" />
+				</g>
+				<text class="mg-mono mg-med" x="1060" y="84" text-anchor="middle" data-el="ha-mixt">{'(h ^ (h >>> 16)) & 15  →  5'}</text>
+				<text class="mg-mono mg-med" x="1060" y="84" text-anchor="middle" data-el="ha-mix3">{'(h ^ (h >>> 16)) & 15  →  9'}</text>
+				<text class="mg-text mg-text--muted" x="1060" y="140" text-anchor="middle" data-el="ha-mixnote">{t('mezcla de bits y una máscara: O(1)', 'bit mixing and a mask: O(1)')}</text>
+				<g data-el="ha-a3" class="mg-arrow">
+					<path class="mg-stroke" d="M1060 112C1060 210 563 190 563 292" pathLength="1" />
+					<path class="mg-head" d="M554 282L563 296L572 282" />
+				</g>
+
+				<text class="mg-text mg-text--strong mg-text--muted" x="40" y="278" data-el="ha-cap">{t('capacidad 16 · 16 buckets', 'capacity 16 · 16 buckets')}</text>
+				<g data-el="ha-buckets">
+					{
+						buckets.map((bucket) => (
+							<>
+								<rect class="mg-card" x={bucket.x} y="300" width="86" height="110" rx="12" />
+								<text class="mg-text mg-text--muted mg-note" x={bucket.x + 43} y="433" text-anchor="middle">{bucket.i}</text>
+							</>
+						))
+					}
+				</g>
+				<rect class="mg-hit" x="516" y="296" width="94" height="118" rx="14" data-el="ha-b5" />
+				<rect class="mg-hit" x="900" y="296" width="94" height="118" rx="14" data-el="ha-b9" />
+
+				<g data-el="ha-c1" class="mg-arrow">
+					<path class="mg-stroke" d="M563 412L563 440" pathLength="1" />
+					<path class="mg-head" d="M555 431L563 442L571 431" />
+				</g>
+				<g data-el="ha-c2" class="mg-arrow">
+					<path class="mg-stroke" d="M563 500L563 526" pathLength="1" />
+					<path class="mg-head" d="M555 517L563 528L571 517" />
+				</g>
+				<g data-el="ha-coll">
+					<rect class="mg-chip" x="760" y="505" width="520" height="50" rx="25" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1020" y="537" text-anchor="middle">{t('colisión: dos claves, el mismo bucket', 'collision: two keys, the same bucket')}</text>
+				</g>
+				<g data-el="ha-eq">
+					<rect class="mg-chip mg-chip--sage" x="760" y="570" width="600" height="50" rx="25" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1060" y="602" text-anchor="middle">{t('equals() compara la clave real dentro del bucket', 'equals() compares the real key inside the bucket')}</text>
+				</g>
+				<g data-el="ha-lost">
+					<rect class="mg-chip" x="820" y="440" width="620" height="52" rx="26" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1130" y="473" text-anchor="middle">{t('bucket 9 vacío → null, aunque la clave está en el 5', 'bucket 9 empty → null, even though the key is in 5')}</text>
+				</g>
+
+				<g data-el="ha-gato" data-x="140" data-y="75">
+					<rect class="mg-card mg-card--accent mg-token" x="-55" y="-28" width="110" height="56" rx="14" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">{'"gato"'}</text>
+				</g>
+				<g data-el="ha-mesa" data-x="140" data-y="75">
+					<rect class="mg-card mg-card--sage mg-token" x="-55" y="-28" width="110" height="56" rx="14" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">{'"mesa"'}</text>
+				</g>
+				<g data-el="ha-ptr" data-x="140" data-y="170">
+					<circle class="mg-dot" cx="0" cy="0" r="24" />
+					<text class="mg-chip-text mg-ptr-text" x="0" y="5" text-anchor="middle">get</text>
+				</g>
+				{
+					marksFor('ha').map((mark) => (
+						<g data-el={mark.id}>
+							<circle class:list={['mg-dot', { 'mg-dot--3': mark.ok }]} cx={mark.cx} cy={mark.cy} r="24" />
+							<svg x={mark.cx - 14} y={mark.cy - 14} width="28" height="28" viewBox="0 0 24 24" class="mg-icon mg-icon--bg" aria-hidden="true">
+								{mark.ok ? <path d="M20 6 9 17l-5-5" /> : (<><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>)}
+							</svg>
+						</g>
+					))
+				}
+				{anchorsFor('ha').map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+
+	<!-- 5a. Generic code overview -->
+	<div slot="scene" data-scene="gcode" class="scene-gcode">
+		<div class="dg-box dg-box--accent" data-el="gc-class">
+			<p class="dg-label">{t('Clase genérica', 'Generic class')}</p>
+			<code class="dg-code">{'public class Caja<T>'}</code>
+			<p class="dg-sub">{t('El parámetro de tipo va entre <> después del nombre', 'The type parameter goes between <> after the name')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="gc-method">
+			<p class="dg-label dg-label--sage">{t('Método genérico', 'Generic method')}</p>
+			<code class="dg-code">{'public static <T> T primero(List<T> lista)'}</code>
+			<p class="dg-sub">{t('Su propio parámetro de tipo, antes del retorno', 'Its own type parameter, before the return type')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="gc-bound">
+			<p class="dg-label">{t('Tipo acotado', 'Bounded type')}</p>
+			<code class="dg-code">{'<T extends Comparable<T>>'}</code>
+			<p class="dg-sub">{t('Para poder llamar a compareTo con seguridad', 'So you can safely call compareTo')}</p>
+		</div>
+		<div class="dg-box dg-box--ink dg-box--center" data-el="gc-names">
+			<p class="dg-label" style="color: var(--color-accent-300)">{t('Por convención, una letra mayúscula', 'By convention, one capital letter')}</p>
+			<div class="dg-chips scene-gcode-names">
+				<code class="dg-chip dg-chip--accent">T · type</code>
+				<code class="dg-chip dg-chip--sage">E · element</code>
+				<code class="dg-chip dg-chip--accent">K · key</code>
+				<code class="dg-chip dg-chip--sage">V · value</code>
+				<code class="dg-chip dg-chip--accent">R · result</code>
+			</div>
+		</div>
+	</div>
+
+	<!-- 5b. A generic box (motion canvas) -->
+	<div slot="scene" data-scene="box" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="bx-tpl">
+					<rect class="mg-card mg-card--accent" x="60" y="60" width="420" height="240" rx="22" />
+					<text class="mg-heading mg-big" x="270" y="112" text-anchor="middle">{'Caja<T>'}</text>
+					<rect class="mg-card" x="110" y="150" width="320" height="110" rx="16" style="stroke-dasharray: 8 6" />
+				</g>
+				<g data-el="bx-T">
+					<rect class="mg-chip" x="240" y="175" width="60" height="60" rx="16" />
+					<text class="mg-chip-text mg-chip-text--lg" x="270" y="214" text-anchor="middle">T</text>
+				</g>
+				<g data-el="bx-swap">
+					<svg x="506" y="150" width="68" height="68" viewBox="0 0 24 24" class="mg-icon" aria-hidden="true">
+						<g class="mg-spin">
+							<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+							<path d="M21 3v5h-5" />
+							<path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+							<path d="M8 16H3v5" />
+						</g>
+					</svg>
+				</g>
+				<g data-el="bx-str">
+					<rect class="mg-card mg-card--sage" x="620" y="60" width="420" height="240" rx="22" />
+					<text class="mg-heading mg-big" x="830" y="112" text-anchor="middle">{'Caja<String>'}</text>
+					<rect class="mg-card" x="670" y="150" width="320" height="110" rx="16" style="stroke-dasharray: 8 6" />
+				</g>
+				<g data-el="bx-int">
+					<rect class="mg-card mg-card--sage" x="1120" y="60" width="420" height="240" rx="22" />
+					<text class="mg-heading mg-big" x="1330" y="112" text-anchor="middle">{'Caja<Integer>'}</text>
+					<rect class="mg-card" x="1170" y="150" width="320" height="110" rx="16" style="stroke-dasharray: 8 6" />
+				</g>
+
+				<text class="mg-mono mg-mono--dark" x="60" y="400" data-el="bx-c1">{'Caja<String> cajaTexto = new Caja<>();'}</text>
+				<text class="mg-mono mg-mono--dark" x="60" y="440" data-el="bx-c2">{'cajaTexto.guardar("hola");'}</text>
+				<text class="mg-mono mg-mono--dark" x="60" y="480" data-el="bx-c3">String s = cajaTexto.sacar();</text>
+				<text class="mg-mono mg-mono--dark" x="60" y="520" data-el="bx-c4">{t('cajaTexto.guardar(42);   // no compila', 'cajaTexto.guardar(42);   // does not compile')}</text>
+
+				<g data-el="bx-hola" data-x="830" data-y="470">
+					<rect class="mg-card mg-card--accent mg-token" x="-90" y="-35" width="180" height="70" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">{'"hola"'}</text>
+				</g>
+				<g data-el="bx-42" data-x="1330" data-y="470">
+					<rect class="mg-card mg-card--sage mg-token" x="-90" y="-35" width="180" height="70" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">42</text>
+				</g>
+				<g data-el="bx-nocast">
+					<rect class="mg-chip mg-chip--sage" x="740" y="560" width="520" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1000" y="589" text-anchor="middle">{t('sacar() → un String, sin casteo', 'sacar() → a String, with no cast')}</text>
+				</g>
+				<g data-el="bx-err">
+					<rect class="mg-chip" x="740" y="560" width="640" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1060" y="589" text-anchor="middle">{t('no compila: 42 no es un String', 'does not compile: 42 is not a String')}</text>
+				</g>
+				{
+					marksFor('bx').map((mark) => (
+						<g data-el={mark.id}>
+							<circle class:list={['mg-dot', { 'mg-dot--3': mark.ok }]} cx={mark.cx} cy={mark.cy} r="24" />
+							<svg x={mark.cx - 14} y={mark.cy - 14} width="28" height="28" viewBox="0 0 24 24" class="mg-icon mg-icon--bg" aria-hidden="true">
+								{mark.ok ? <path d="M20 6 9 17l-5-5" /> : (<><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>)}
+							</svg>
+						</g>
+					))
+				}
+				{anchorsFor('bx').map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+
+	<!-- 5c. A bounded type (motion canvas) -->
+	<div slot="scene" data-scene="bound" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark" x="60" y="50" data-el="bd-sig">{'public static <T extends Comparable<T>> T maximo(List<T> lista)'}</text>
+				<g data-el="bd-door">
+					<rect class="mg-bar" x="625" y="100" width="30" height="240" rx="12" />
+					<text class="mg-text mg-text--strong mg-text--muted mg-note" x="640" y="90" text-anchor="middle">Comparable</text>
+				</g>
+				<g data-el="bd-fn">
+					<rect class="mg-card mg-card--sage" x="760" y="100" width="780" height="260" rx="22" />
+					<text class="mg-heading" x="790" y="135">maximo(lista)</text>
+				</g>
+				<g data-el="bd-cells">
+					{
+						[7, 12, 5].map((value, i) => (
+							<>
+								<rect class="mg-card" x={800 + i * 160} y="190" width="130" height="80" rx="14" />
+								<text class="mg-heading mg-big" x={865 + i * 160} y="240" text-anchor="middle">{value}</text>
+							</>
+						))
+					}
+				</g>
+				<g data-el="bd-mayor">
+					<rect class="mg-card mg-card--accent" x="1330" y="190" width="190" height="80" rx="14" />
+					<text class="mg-text mg-text--muted mg-note" x="1425" y="212" text-anchor="middle">mayor</text>
+				</g>
+				<text class="mg-heading mg-big" x="1425" y="255" text-anchor="middle" data-el="bd-m7">7</text>
+				<text class="mg-heading mg-big" x="1425" y="255" text-anchor="middle" data-el="bd-m12">12</text>
+				<text class="mg-mono mg-mono--dark" x="800" y="338" data-el="bd-ct">elemento.compareTo(mayor) &gt; 0</text>
+				<g data-el="bd-cmp">
+					<rect class="mg-chip" x="800" y="300" width="440" height="40" rx="20" />
+					<text class="mg-chip-text" x="1020" y="326" text-anchor="middle">{t('12.compareTo(7) > 0 → nuevo mayor', '12.compareTo(7) > 0 → new largest')}</text>
+				</g>
+				<g data-el="bd-cmp2">
+					<rect class="mg-chip mg-chip--sage" x="800" y="300" width="440" height="40" rx="20" />
+					<text class="mg-chip-text mg-chip-text--sage" x="1020" y="326" text-anchor="middle">{t('5.compareTo(12) < 0 → sigue el 12', '5.compareTo(12) < 0 → the 12 stays')}</text>
+				</g>
+				<g data-el="bd-ret">
+					<rect class="mg-chip mg-chip--sage" x="1330" y="300" width="190" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1425" y="329" text-anchor="middle">return 12</text>
+				</g>
+				<g data-el="bd-err">
+					<rect class="mg-chip" x="60" y="400" width="640" height="48" rx="24" />
+					<text class="mg-chip-text mg-chip-text--lg" x="380" y="431" text-anchor="middle">{t('Perro no implementa Comparable: no compila', 'Perro does not implement Comparable: it does not compile')}</text>
+				</g>
+
+				<g data-el="bd-int" data-x="200" data-y="170">
+					<rect class="mg-card mg-card--sage mg-token" x="-80" y="-28" width="160" height="56" rx="14" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">Integer</text>
+				</g>
+				<g data-el="bd-str" data-x="200" data-y="250">
+					<rect class="mg-card mg-card--accent mg-token" x="-80" y="-28" width="160" height="56" rx="14" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">String</text>
+				</g>
+				<g data-el="bd-dog" data-x="200" data-y="330">
+					<rect class="mg-card mg-token" x="-80" y="-28" width="160" height="56" rx="14" />
+					<text class="mg-mono mg-mono--dark" x="0" y="6" text-anchor="middle">Perro</text>
+				</g>
+				<g data-el="bd-ptr" data-x="865" data-y="150">
+					<circle class="mg-dot" cx="0" cy="0" r="22" />
+				</g>
+				{
+					marksFor('bd').map((mark) => (
+						<g data-el={mark.id}>
+							<circle class:list={['mg-dot', { 'mg-dot--3': mark.ok }]} cx={mark.cx} cy={mark.cy} r="24" />
+							<svg x={mark.cx - 14} y={mark.cy - 14} width="28" height="28" viewBox="0 0 24 24" class="mg-icon mg-icon--bg" aria-hidden="true">
+								{mark.ok ? <path d="M20 6 9 17l-5-5" /> : (<><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>)}
+							</svg>
+						</g>
+					))
+				}
+				{anchorsFor('bd').map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+
+	<!-- 5d. Type erasure (motion canvas) -->
+	<div slot="scene" data-scene="erase" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="er-src">
+					<rect class="mg-card" x="60" y="70" width="560" height="330" rx="22" />
+					<text class="mg-heading" x="90" y="118">{t('Compilación: tu código', 'Compilation: your code')}</text>
+					<text class="mg-mono mg-mono--dark mg-big" x="100" y="200">List</text>
+					<text class="mg-mono mg-mono--dark mg-big" x="290" y="200">a;</text>
+					<text class="mg-mono mg-mono--dark mg-big" x="100" y="290">List</text>
+					<text class="mg-mono mg-mono--dark mg-big" x="320" y="290">b;</text>
+				</g>
+				<g data-el="er-ta">
+					<rect class="mg-chip" x="170" y="172" width="108" height="38" rx="19" />
+					<text class="mg-chip-text mg-chip-text--lg" x="224" y="198" text-anchor="middle">{'<String>'}</text>
+				</g>
+				<g data-el="er-tb">
+					<rect class="mg-chip" x="170" y="262" width="138" height="38" rx="19" />
+					<text class="mg-chip-text mg-chip-text--lg" x="239" y="288" text-anchor="middle">{'<Integer>'}</text>
+				</g>
+				<g data-el="er-arrow" class="mg-arrow">
+					<path class="mg-stroke" d="M625 235L790 235" pathLength="1" />
+					<path class="mg-head" d="M778 226L792 235L778 244" />
+					<text class="mg-text mg-text--strong" x="708" y="215" text-anchor="middle">javac</text>
+				</g>
+				<g data-el="er-run">
+					<rect class="mg-card mg-card--sage" x="800" y="70" width="740" height="330" rx="22" />
+					<text class="mg-heading" x="830" y="118">{t('Ejecución: el bytecode', 'Runtime: the bytecode')}</text>
+				</g>
+				<text class="mg-mono mg-mono--dark mg-big" x="840" y="200" data-el="er-ra">List a;</text>
+				<text class="mg-mono mg-mono--dark mg-big" x="840" y="290" data-el="er-rb">List b;</text>
+				<g data-el="er-eq">
+					<rect class="mg-card mg-card--ink" x="830" y="320" width="680" height="64" rx="14" />
+					<text class="mg-mono" x="1170" y="359" text-anchor="middle">a.getClass() == b.getClass()  →  true</text>
+				</g>
+				<g data-el="er-lim">
+					<rect class="mg-card mg-card--accent" x="60" y="450" width="1480" height="150" rx="22" />
+					<text class="mg-mono mg-mono--dark mg-big" x="100" y="520">T[] arreglo = new T[10];</text>
+					<text class="mg-text mg-text--strong" x="100" y="568">{t('No se puede: en ejecución la JVM no sabe qué es T.', 'Not allowed: at runtime the JVM does not know what T is.')}</text>
+				</g>
+				{
+					marksFor('er').map((mark) => (
+						<g data-el={mark.id}>
+							<circle class:list={['mg-dot', { 'mg-dot--3': mark.ok }]} cx={mark.cx} cy={mark.cy} r="24" />
+							<svg x={mark.cx - 14} y={mark.cy - 14} width="28" height="28" viewBox="0 0 24 24" class="mg-icon mg-icon--bg" aria-hidden="true">
+								{mark.ok ? <path d="M20 6 9 17l-5-5" /> : (<><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>)}
+							</svg>
+						</g>
+					))
+				}
+				{anchorsFor('er').map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+
+	<div slot="scene" data-scene="erasenote" class="scene-erasenote">
+		<div class="dg-box dg-box--ink dg-box--center" data-el="en-box">
+			<p class="dg-title">{t('Los genéricos existen solo en tiempo de compilación', 'Generics exist only at compile time')}</p>
+			<code class="dg-code">{'List<String>  ==  List<Integer>  →  List'}</code>
+		</div>
+	</div>
+
+	<!-- 6. Which one to pick -->
+	<div slot="scene" data-scene="choose" class="scene-choose">
+		{
+			chooseRows.map((row) => (
+				<div class="dg-box scene-choose-row" data-el={row.id}>
+					<span class="dg-sub">{row.need}</span>
+					<code class="dg-chip dg-chip--sage">{row.use}</code>
+				</div>
+			))
+		}
+	</div>
+
+	<!-- 7. Common mistakes -->
+	<div slot="scene" data-scene="errors15" class="scene-errors15">
+		{mistakes.map((m) => <span class="dg-chip dg-chip--accent" data-el={m.id}>{m.text}</span>)}
+	</div>
+
+	<!-- 8. Guided exercise -->
+	<div slot="scene" data-scene="exercise" class="scene-exercise">
+		{
+			exercises.map((ex) => (
+				<div class="dg-box" data-el={ex.id}>
+					<p class="dg-label"><span class="dg-step-num">{ex.n}</span> {t('Paso', 'Step')}</p>
+					<p class="dg-title">{ex.name}</p>
+					<p class="dg-sub">{ex.note}</p>
+				</div>
+			))
+		}
+		<div class="dg-box dg-box--sage scene-exercise-vs" data-el="ex-vs">
+			<p class="dg-label dg-label--sage">{t('contains sobre VACIAS', 'contains on VACIAS')}</p>
+			<div class="dg-row">
+				<code class="dg-chip dg-chip--sage">Set · O(1)</code>
+				<code class="dg-chip dg-chip--accent">List · O(n)</code>
+			</div>
+		</div>
+	</div>
+
+	<!-- Closing -->
+	<div slot="scene" data-scene="closing15" class="scene-closing15">
+		<div class="dg-chips scene-closing15-map">
+			{takeaways.map((text, i) => <span class:list={['dg-chip', i < 4 ? 'dg-chip--accent' : 'dg-chip--sage']} data-el={`c${i + 1}`}>{i + 1} · {text}</span>)}
+		</div>
+		<a class="dg-box dg-box--ink scene-closing15-repo" data-el="repo" href="https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l15_java_collections_framework_y_genericos" target="_blank" rel="noopener noreferrer">
+			<p class="dg-label" style="color: var(--color-accent-300)">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: inherit; width: 16px; height: 16px">
+					<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" />
+				</svg>
+				CursoDeJava · l15_java_collections_framework_y_genericos
+			</p>
+			<p class="dg-sub">{t('Programas ejecutables de cada sección', 'Runnable programs for every section')}</p>
+		</a>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Layout unique to each scene. Colors, radii and spacing stay on tokens. */
+	.scene-canvas {
+		width: 100%;
+	}
+
+	.mg-big {
+		font-size: 26px;
+	}
+
+	.mg-med {
+		font-size: 22px;
+	}
+
+	.mg-huge {
+		font-size: 40px;
+	}
+
+	.mg-note {
+		font-size: 14px;
+	}
+
+	.mg-icon--bg {
+		color: var(--color-bg);
+	}
+
+	.mg-ptr-text {
+		fill: var(--color-bg);
+	}
+
+	.mg-token {
+		stroke-width: 3;
+	}
+
+	.mg-err {
+		font-size: 26px;
+		font-weight: 700;
+		fill: var(--color-accent-300);
+	}
+
+	.mg-hit {
+		fill: none;
+		stroke: var(--color-accent-700);
+		stroke-width: 4;
+	}
+
+	.mg-cache {
+		fill: none;
+		stroke: var(--color-accent-2-500);
+		stroke-width: 4;
+		stroke-dasharray: 12 8;
+	}
+
+	.mg-link {
+		fill: none;
+		stroke: var(--color-accent-500);
+		stroke-width: 3;
+		stroke-linecap: round;
+	}
+
+	.scene-intro15,
+	.scene-iface,
+	.scene-queue,
+	.scene-mapapi,
+	.scene-gcode,
+	.scene-erasenote,
+	.scene-exercise {
+		align-content: center;
+	}
+
+	.scene-intro15 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-intro15 [data-el='in-know'],
+	.scene-iface [data-el='if-swap'],
+	.scene-queue [data-el='qu-later'],
+	.scene-gcode [data-el='gc-names'],
+	.scene-exercise-vs {
+		grid-column: 1 / -1;
+	}
+
+	.scene-iface,
+	.scene-queue {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-mapapi {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-mapapi [data-el='mapi-entry'] {
+		grid-column: 1 / -1;
+	}
+
+	.scene-iface .dg-code,
+	.scene-mapapi .dg-code,
+	.scene-gcode .dg-code {
+		font-size: 0.78em;
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+
+	.scene-gcode {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-gcode-names {
+		justify-content: center;
+	}
+
+	.scene-choose {
+		align-content: center;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-choose-row {
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		padding: var(--space-2) var(--space-3);
+	}
+
+	.scene-errors15 {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-content: center;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.scene-exercise {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.scene-closing15 {
+		align-content: center;
+		justify-items: center;
+	}
+
+	.scene-closing15-map {
+		justify-content: center;
+	}
+
+	.scene-closing15-repo {
+		justify-items: start;
+		text-decoration: none;
+		color: var(--color-neutral-100);
+		min-width: min(100%, 22rem);
+	}
+
+	.scene-closing15-repo:hover {
+		border-color: var(--color-accent-400);
+	}
+
+	@media (width < 720px) {
+		.scene-intro15,
+		.scene-iface,
+		.scene-queue,
+		.scene-mapapi,
+		.scene-gcode,
+		.scene-choose,
+		.scene-exercise {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

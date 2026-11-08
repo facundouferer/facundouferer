@@ -7,6 +7,11 @@ import ConceptosBasicosJava from '../../../components/animaciones/conceptos-basi
 import VariablesTiposDatosJava from '../../../components/animaciones/variables-tipos-datos-java.astro';
 import ControlFlujoBuclesJava from '../../../components/animaciones/control-flujo-bucles-java.astro';
 import ArraysStringsJava from '../../../components/animaciones/arrays-strings-java.astro';
+import HerenciaPolimorfismoJava from '../../../components/animaciones/herencia-polimorfismo-java.astro';
+import AbstractasInterfacesJava from '../../../components/animaciones/abstractas-interfaces-java.astro';
+import ExcepcionesJava from '../../../components/animaciones/excepciones-java.astro';
+import CollectionsGenericosJava from '../../../components/animaciones/collections-genericos-java.astro';
+import IteradoresOrdenamientoJava from '../../../components/animaciones/iteradores-ordenamiento-java.astro';
 
 export function getStaticPaths() {
 	const paths: Array<{ params: { lang: Locale; slug: string } }> = [];
@@ -31,6 +36,11 @@ const componentMap: Record<string, any> = {
 	'variables-tipos-datos-java': VariablesTiposDatosJava,
 	'control-flujo-bucles-java': ControlFlujoBuclesJava,
 	'arrays-strings-java': ArraysStringsJava,
+	'herencia-polimorfismo-java': HerenciaPolimorfismoJava,
+	'abstractas-interfaces-java': AbstractasInterfacesJava,
+	'excepciones-java': ExcepcionesJava,
+	'collections-genericos-java': CollectionsGenericosJava,
+	'iteradores-ordenamiento-java': IteradoresOrdenamientoJava,
 };
 
 const AnimationComponent = componentMap[slug];

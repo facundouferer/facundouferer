@@ -1,0 +1,864 @@
+---
+/**
+ * Scenes for the "Inheritance, polymorphism and overloading, step by step"
+ * animation (lesson java/10). The captions, code and terminal panels live in
+ * `src/data/animations/herencia-polimorfismo-java.ts`; this component only draws
+ * the diagrams the steps point to. Slide scenes are HTML blocks (`[data-scene]`
+ * with `[data-el]` elements); the `hier`, `chain`, `ovl`, `poly`, `fleet`,
+ * `compose` and `obj` scenes are SVG canvases (`data-motion`) choreographed by
+ * the cues of their motion steps.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/herencia-polimorfismo-java';
+import { resolveScript } from '../../utils/animations';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// Identifiers follow the lesson of each language (Vehiculo/Vehicle, Auto/Car…).
+const n = isEs
+	? {
+			V: 'Vehiculo', C: 'Auto', M: 'Moto', T: 'Camion', Tx: 'Camión', Bike: 'Bicicleta', Engine: 'Motor',
+			brand: 'marca', start: 'arrancar', brake: 'frenar', trunk: 'abrirBaul', wheelie: 'hacerCaballito',
+			load: 'cargar', ignite: 'encender', Garage: 'Taller', inspect: 'revisar', fleet: 'flota',
+			print: 'imprimir', text: 'texto', num: 'numero', times: 'veces', compute: 'calcular', car: 'auto',
+			EngineE: 'MotorElectrico', EngineF: 'MotorFalso', Emp: 'Empleado', Mgr: 'Gerente', Sales: 'Vendedor',
+			calcSalary: 'calcularSalario',
+		}
+	: {
+			V: 'Vehicle', C: 'Car', M: 'Motorcycle', T: 'Truck', Tx: 'Truck', Bike: 'Bicycle', Engine: 'Engine',
+			brand: 'brand', start: 'start', brake: 'brake', trunk: 'openTrunk', wheelie: 'doWheelie',
+			load: 'load', ignite: 'ignite', Garage: 'Garage', inspect: 'inspect', fleet: 'fleet',
+			print: 'print', text: 'text', num: 'number', times: 'times', compute: 'compute', car: 'car',
+			EngineE: 'ElectricEngine', EngineF: 'FakeEngine', Emp: 'Employee', Mgr: 'Manager', Sales: 'SalesRep',
+			calcSalary: 'computeSalary',
+		};
+
+// ── Slide scene data ──────────────────────────────────────────────────────
+const sharedMembers = [n.brand, `${n.start}()`, `${n.brake}()`];
+const overrideRules = [
+	{ id: 't1', name: t('Nombre y parámetros', 'Name and parameters'), rule: t('Idénticos: si cambian, es un método nuevo', 'Identical: if they change, it is a new method') },
+	{ id: 't2', name: t('Tipo de retorno', 'Return type'), rule: t('El mismo, o un subtipo (retorno covariante)', 'The same, or a subtype (covariant return)') },
+	{ id: 't3', name: t('Visibilidad', 'Visibility'), rule: t('La misma o más abierta, nunca más cerrada', 'The same or wider, never narrower') },
+	{ id: 't4', name: t('Excepciones checked', 'Checked exceptions'), rule: t('Las mismas, menos, o subtipos', 'The same, fewer, or subtypes') },
+	{ id: 't5', name: 'private · static · final', rule: t('No se pueden sobrescribir', 'Cannot be overridden') },
+];
+const mistakes = [
+	{ id: 'e1', title: t('Sobrescribir cambiando parámetros', 'Overriding with other parameters'), fix: t('Método nuevo. Poné siempre @Override', 'A new method. Always write @Override') },
+	{ id: 'e2', title: t('Constructor hijo sin super(...)', 'Child constructor without super(...)'), fix: t('Llamá a super(argumentos) en la primera línea', 'Call super(arguments) on the first line') },
+	{ id: 'e3', title: t('Método sobrescribible en el constructor del padre', 'Overridable method in the parent’s constructor'), fix: t('Usá solo métodos private o final', 'Use only private or final methods') },
+	{ id: 'e4', title: t('Castear sin instanceof', 'Casting without instanceof'), fix: t('ClassCastException. Usá if (v instanceof X x)', 'ClassCastException. Use if (v instanceof X x)') },
+	{ id: 'e5', title: t('Heredar solo para reutilizar código', 'Inheriting just to reuse code'), fix: t('Sin "es un", componé: tené el objeto y delegá', 'No "is-a": compose, hold the object and delegate') },
+	{ id: 'e6', title: t('Confundir sobrecarga con sobrescritura', 'Mixing up overloading and overriding'), fix: t('Misma clase y firmas distintas vs. subclase y misma firma', 'Same class, different signatures vs. subclass, same signature') },
+];
+const exercises = [
+	{ id: 'ex1', name: n.Emp, note: t('nombre, sueldoBase y calcularSalario()', 'name, baseSalary and computeSalary()') },
+	{ id: 'ex2', name: n.Mgr, note: t('suma un bono con super.calcularSalario()', 'adds a bonus via super.computeSalary()') },
+	{ id: 'ex3', name: n.Sales, note: t('suma una comisión del 8 % sobre sus ventas', 'adds an 8% commission on its sales') },
+	{ id: 'ex4', name: 'toString()', note: t('sobrescrito en las tres clases', 'overridden in all three classes') },
+	{ id: 'ex5', name: t('Un solo bucle', 'A single loop'), note: t('sobre un Empleado[]: sin instanceof ni casteos', 'over an Employee[]: no instanceof, no casts') },
+];
+const takeaways = [
+	t('extends si un X es un Y', 'extends if an X is a Y'),
+	t('super(...) sube, la ejecución baja', 'super(...) goes up, execution comes down'),
+	t('@Override siempre', 'Always @Override'),
+	t('Sobrecarga: compilador', 'Overloading: compiler'),
+	t('Sobrescritura: JVM', 'Overriding: JVM'),
+	t('La variable define qué llamás', 'The variable defines what you call'),
+	t('Código que no conoce las subclases', 'Code that ignores the subclasses'),
+	t('Composición antes que herencia', 'Composition over inheritance'),
+];
+
+// ── Motion canvas data ────────────────────────────────────────────────────
+const fleetItems = [
+	{ i: 0, x: 60, name: n.C, detail: `${n.brand} = "Toyota"`, line: t('Auto Toyota: arranca con botón', 'Car Toyota: starts with a button') },
+	{ i: 1, x: 430, name: n.M, detail: `${n.brand} = "Honda"`, line: t('Moto Honda: arranca con patada', 'Motorcycle Honda: kick start') },
+	{ i: 2, x: 800, name: n.Tx, detail: `${n.brand} = "Scania"`, line: t('Camión Scania: arranca con llave', 'Truck Scania: starts with a key') },
+	{ i: 3, x: 1170, name: n.Bike, detail: `${n.brand} = "Trek"`, line: t('Bicicleta Trek: arranca pedaleando', 'Bicycle Trek: starts by pedaling') },
+];
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<!-- INTRO: three classes repeating the same members -->
+	<div slot="scene" data-scene="intro10" class="scene-intro10">
+		<div class="dg-box" data-el="auto">
+			<p class="dg-label">{n.C}</p>
+			<div class="dg-chips">{sharedMembers.map((member) => <code class="dg-chip">{member}</code>)}</div>
+		</div>
+		<div class="dg-box" data-el="moto">
+			<p class="dg-label">{n.M}</p>
+			<div class="dg-chips">{sharedMembers.map((member) => <code class="dg-chip">{member}</code>)}</div>
+		</div>
+		<div class="dg-box" data-el="camion">
+			<p class="dg-label">{n.Tx}</p>
+			<div class="dg-chips">{sharedMembers.map((member) => <code class="dg-chip">{member}</code>)}</div>
+		</div>
+		<div class="dg-box dg-box--accent scene-intro10-wide" data-el="problem">
+			<p class="dg-label">{t('Copiar y pegar', 'Copy and paste')}</p>
+			<p class="dg-title">{t('Cambia una regla → hay que tocar tres lugares', 'A rule changes → you must touch three places')}</p>
+		</div>
+		<div class="dg-box dg-box--sage scene-intro10-wide" data-el="solution">
+			<p class="dg-label dg-label--sage">{t('Herencia', 'Inheritance')}</p>
+			<div class="dg-chips">
+				<code class="dg-chip dg-chip--sage">{n.V}</code>
+				{sharedMembers.map((member) => <code class="dg-chip dg-chip--sage">{member}</code>)}
+			</div>
+			<p class="dg-sub">{t('Lo común vive una sola vez, arriba; las subclases lo reciben con extends.', 'What is common lives once, on top; subclasses receive it with extends.')}</p>
+		</div>
+	</div>
+
+	<!-- 1. The hierarchy (motion canvas) -->
+	<div slot="scene" data-scene="hier" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="70" data-el="decl">public class {n.C} extends {n.V}</text>
+
+				<g data-el="isa-yes">
+					<rect class="mg-chip mg-chip--sage" x="60" y="22" width="560" height="48" rx="24" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="340" y="53" text-anchor="middle">{t(`${n.C} es un ${n.V}  ✔`, `${n.C} is a ${n.V}  ✔`)}</text>
+				</g>
+				<g data-el="isa-no">
+					<rect class="mg-chip" x="660" y="22" width="700" height="48" rx="24" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1010" y="53" text-anchor="middle">{t(`${n.C} no es un ${n.Engine}: tiene uno`, `${n.C} is not an ${n.Engine}: it has one`)}</text>
+				</g>
+				<g data-el="iface-lbl">
+					<rect class="mg-chip mg-chip--sage" x="60" y="22" width="560" height="48" rx="24" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="340" y="53" text-anchor="middle">{t('Para combinar: interfaces (lección siguiente)', 'To combine: interfaces (next lesson)')}</text>
+				</g>
+
+				<g data-el="ghost">
+					<rect class="mg-card" x="60" y="110" width="440" height="190" rx="22" style="stroke-dasharray: 10 6" />
+					<text class="mg-heading" x="90" y="156">{t('Otra clase', 'Another class')}</text>
+					<text class="mg-text mg-text--muted" x="90" y="198">{t('(un segundo padre)', '(a second parent)')}</text>
+				</g>
+				<g data-el="a-ghost" class="mg-arrow">
+					<path class="mg-stroke" d="M200 380C200 340 250 340 260 306" pathLength="1" />
+					<path class="mg-head" d="M248 318L260 304L272 318" />
+				</g>
+				<text class="mg-xmark" x="232" y="362" text-anchor="middle" data-el="x-mark">×</text>
+
+				<g data-el="vehiculo">
+					<rect class="mg-card mg-card--sage" x="550" y="110" width="500" height="190" rx="22" />
+					<text class="mg-heading" x="580" y="156">{n.V}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="580" y="200">protected String {n.brand};</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="580" y="234">void {n.start}()</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="580" y="268">void {n.brake}()</text>
+				</g>
+
+				<g data-el="auto">
+					<rect class="mg-card mg-card--accent" x="60" y="380" width="440" height="230" rx="22" />
+					<text class="mg-heading" x="90" y="426">{n.C}</text>
+				</g>
+				<g data-el="moto">
+					<rect class="mg-card" x="580" y="380" width="440" height="230" rx="22" />
+					<text class="mg-heading" x="610" y="426">{n.M}</text>
+				</g>
+				<g data-el="camion">
+					<rect class="mg-card" x="1100" y="380" width="440" height="230" rx="22" />
+					<text class="mg-heading" x="1130" y="426">{n.Tx}</text>
+				</g>
+
+				<g data-el="a-auto" class="mg-arrow">
+					<path class="mg-stroke" d="M280 380C280 340 640 340 660 306" pathLength="1" />
+					<path class="mg-head" d="M648 318L660 304L674 318" />
+				</g>
+				<g data-el="a-moto" class="mg-arrow">
+					<path class="mg-stroke" d="M800 380L800 308" pathLength="1" />
+					<path class="mg-head" d="M788 320L800 306L812 320" />
+				</g>
+				<g data-el="a-camion" class="mg-arrow">
+					<path class="mg-stroke" d="M1320 380C1320 340 960 340 940 306" pathLength="1" />
+					<path class="mg-head" d="M926 316L940 304L952 320" />
+				</g>
+
+				<rect data-anchor="auto-slot-a" x="80" y="470" width="180" height="40" fill="none" />
+				<rect data-anchor="auto-slot-b" x="300" y="470" width="180" height="40" fill="none" />
+				<g data-el="fly-marca" data-x="700" data-y="196">
+					<rect class="mg-chip" x="-90" y="-20" width="180" height="40" rx="20" />
+					<text class="mg-chip-text" x="0" y="6" text-anchor="middle">{n.brand}</text>
+				</g>
+				<g data-el="fly-frenar" data-x="700" data-y="260">
+					<rect class="mg-chip" x="-90" y="-20" width="180" height="40" rx="20" />
+					<text class="mg-chip-text" x="0" y="6" text-anchor="middle">{n.brake}()</text>
+				</g>
+				<text class="mg-text mg-text--muted" x="610" y="494" data-el="inh-moto">{t('hereda:', 'inherits:')} {n.brand}, {n.brake}()</text>
+				<text class="mg-text mg-text--muted" x="1130" y="494" data-el="inh-camion">{t('hereda:', 'inherits:')} {n.brand}, {n.start}()</text>
+				<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="594" data-el="own-auto">+ {n.trunk}()</text>
+				<text class="mg-mono mg-mono--dark mg-mono--sm" x="610" y="594" data-el="own-moto">+ {n.wheelie}()</text>
+				<text class="mg-mono mg-mono--dark mg-mono--sm" x="1130" y="594" data-el="own-camion">+ {n.load}(kg)</text>
+
+				<g data-el="ovr-auto">
+					<rect class="mg-chip" x="80" y="522" width="260" height="38" rx="19" />
+					<text class="mg-chip-text" x="210" y="547" text-anchor="middle">@Override {n.start}()</text>
+				</g>
+				<g data-el="ovr-moto">
+					<rect class="mg-chip" x="600" y="522" width="260" height="38" rx="19" />
+					<text class="mg-chip-text" x="730" y="547" text-anchor="middle">@Override {n.start}()</text>
+				</g>
+				<g data-el="ovr-camion">
+					<rect class="mg-chip" x="1120" y="522" width="260" height="38" rx="19" />
+					<text class="mg-chip-text" x="1250" y="547" text-anchor="middle">@Override {n.brake}()</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 2. The constructor chain (motion canvas) -->
+	<div slot="scene" data-scene="chain" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="62" data-el="decl">{n.C} a = new {n.C}("Toyota");</text>
+
+				<g data-el="c-object">
+					<rect class="mg-card" x="500" y="96" width="600" height="120" rx="22" />
+					<text class="mg-mono mg-mono--dark mg-big" x="530" y="142">Object()</text>
+					<text class="mg-text mg-text--muted" x="530" y="184">{t('La raíz implícita de toda clase Java', 'The implicit root of every Java class')}</text>
+				</g>
+				<g data-el="c-vehiculo">
+					<rect class="mg-card mg-card--sage" x="500" y="262" width="600" height="120" rx="22" />
+					<text class="mg-mono mg-mono--dark mg-big" x="530" y="308">{n.V}(String {n.brand})</text>
+					<text class="mg-text mg-text--muted" x="530" y="350">this.{n.brand} = {n.brand};  {t('→ el estado heredado queda listo', '→ the inherited state is ready')}</text>
+				</g>
+				<g data-el="c-auto">
+					<rect class="mg-card mg-card--accent" x="500" y="428" width="600" height="120" rx="22" />
+					<text class="mg-mono mg-mono--dark mg-big" x="530" y="474">{n.C}(String {n.brand})</text>
+					<text class="mg-text mg-text--muted" x="530" y="516">{t(`El cuerpo propio de ${n.C} corre ÚLTIMO`, `The own body of ${n.C} runs LAST`)}</text>
+				</g>
+
+				<g data-el="up1" class="mg-arrow">
+					<path class="mg-stroke" d="M700 428L700 390" pathLength="1" />
+					<path class="mg-head" d="M688 400L700 388L712 400" />
+				</g>
+				<g data-el="up2" class="mg-arrow">
+					<path class="mg-stroke" d="M700 262L700 224" pathLength="1" />
+					<path class="mg-head" d="M688 234L700 222L712 234" />
+				</g>
+				<text class="mg-mono mg-mono--dark mg-mono--sm" x="730" y="412" data-el="lbl-up1">super({n.brand})</text>
+				<text class="mg-mono mg-mono--dark mg-mono--sm" x="730" y="246" data-el="lbl-up2">{t('super() implícito', 'implicit super()')}</text>
+
+				<g data-el="dn1" class="mg-arrow mg-arrow--sage">
+					<path class="mg-stroke" d="M900 222L900 256" pathLength="1" />
+					<path class="mg-head" d="M888 246L900 258L912 246" />
+				</g>
+				<g data-el="dn2" class="mg-arrow mg-arrow--sage">
+					<path class="mg-stroke" d="M900 388L900 422" pathLength="1" />
+					<path class="mg-head" d="M888 412L900 424L912 412" />
+				</g>
+
+				<g data-el="run1">
+					<circle class="mg-dot mg-dot--3" cx="1160" cy="156" r="28" />
+					<text class="mg-chip-text mg-ptr-text" x="1160" y="165" text-anchor="middle">1</text>
+				</g>
+				<g data-el="run2">
+					<circle class="mg-dot mg-dot--3" cx="1160" cy="322" r="28" />
+					<text class="mg-chip-text mg-ptr-text" x="1160" y="331" text-anchor="middle">2</text>
+				</g>
+				<g data-el="run3">
+					<circle class="mg-dot mg-dot--3" cx="1160" cy="488" r="28" />
+					<text class="mg-chip-text mg-ptr-text" x="1160" y="497" text-anchor="middle">3</text>
+				</g>
+
+				<g data-el="tok" data-x="420" data-y="488">
+					<circle class="mg-dot" cx="0" cy="0" r="24" />
+					<text class="mg-chip-text mg-ptr-text" x="0" y="5" text-anchor="middle">new</text>
+				</g>
+
+				<g data-el="ready">
+					<rect class="mg-chip mg-chip--sage" x="440" y="582" width="720" height="50" rx="25" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="800" y="614" text-anchor="middle">{t(`Cuando corre ${n.C}, la parte heredada ya está lista`, `When ${n.C} runs, the inherited part is ready`)}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 2b. Constructor rules (slides) -->
+	<div slot="scene" data-scene="ctor-rules" class="scene-ctor">
+		<div class="dg-box dg-box--accent" data-el="r1">
+			<p class="dg-label"><span class="dg-step-num">1</span> {t('Primera sentencia', 'First statement')}</p>
+			<code class="dg-code">super(...)</code>
+			<p class="dg-sub">{t('Nada corre antes de que la parte heredada esté lista', 'Nothing runs before the inherited part is ready')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="r2">
+			<p class="dg-label dg-label--sage"><span class="dg-step-num">2</span> {t('Si falta', 'If missing')}</p>
+			<code class="dg-code">super()</code>
+			<p class="dg-sub">{t('Java lo inserta sin argumentos, automáticamente', 'Java inserts it with no arguments, automatically')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="r3">
+			<p class="dg-label"><span class="dg-step-num">3</span> {t('Sin constructor vacío en el padre', 'No empty constructor in the parent')}</p>
+			<code class="dg-code">{t('no compila', 'does not compile')}</code>
+			<p class="dg-sub">{t('Hay que llamar a uno que sí exista', 'You must call one that does exist')}</p>
+		</div>
+		<div class="dg-box dg-box--ink scene-ctor-wide" data-el="r-err">
+			<p class="dg-label" style="color: var(--color-accent-300)">{t('Error de compilación', 'Compile error')}</p>
+			<code class="dg-code">constructor {n.V} in class {n.V} cannot be applied to given types</code>
+			<p class="dg-sub">{t(`Al escribir un constructor con argumentos, ${n.V} dejó de tener uno vacío`, `By writing a constructor with arguments, ${n.V} no longer has an empty one`)}</p>
+		</div>
+		<div class="dg-box dg-box--sage scene-ctor-wide" data-el="super-m">
+			<p class="dg-label dg-label--sage">super.{n.start}()</p>
+			<code class="dg-code">super.{n.start}(); {t('// extiende, no reemplaza', '// extends, does not replace')}</code>
+			<p class="dg-sub">{t('Llama a la versión del padre de un método sobrescrito', 'Calls the parent’s version of an overridden method')}</p>
+		</div>
+	</div>
+
+	<!-- 3. Overriding (slides) -->
+	<div slot="scene" data-scene="override10" class="scene-override10">
+		<div class="dg-box dg-box--sage" data-el="ann-what">
+			<p class="dg-label dg-label--sage">@Override</p>
+			<p class="dg-title">{t('Verificación del compilador', 'A compiler check')}</p>
+			<p class="dg-sub">{t('No cambia la ejecución: confirma que realmente sobrescribís algo', 'It changes nothing at runtime: it confirms you really override something')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="ann-miss">
+			<p class="dg-label">{t('Sin la anotación', 'Without the annotation')}</p>
+			<code class="dg-code">{n.start}(int {isEs ? 'velocidad' : 'speed'})</code>
+			<p class="dg-sub">{t(`Es un método nuevo de ${n.C}: el original sigue heredado`, `It is a new method of ${n.C}: the original stays inherited`)}</p>
+		</div>
+		{
+			overrideRules.map((rule) => (
+				<div class="dg-box scene-override-row" data-el={rule.id}>
+					<p class="dg-label">{rule.name}</p>
+					<p class="dg-sub">{rule.rule}</p>
+				</div>
+			))
+		}
+	</div>
+
+	<!-- 4. Overloading vs. overriding (motion canvas) -->
+	<div slot="scene" data-scene="ovl" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-heading" x="60" y="96" data-el="t-left">{t('Sobrecarga: la decide el COMPILADOR', 'Overloading: the COMPILER decides')}</text>
+				<g data-el="b1">
+					<rect class="mg-card" x="60" y="130" width="480" height="64" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="300" y="169" text-anchor="middle">{n.print}(String {n.text})</text>
+				</g>
+				<g data-el="b2">
+					<rect class="mg-card" x="60" y="214" width="480" height="64" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="300" y="253" text-anchor="middle">{n.print}(int {n.num})</text>
+				</g>
+				<g data-el="b3">
+					<rect class="mg-card" x="60" y="298" width="480" height="64" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="300" y="337" text-anchor="middle">{n.print}(String {n.text}, int {n.times})</text>
+				</g>
+				<rect data-anchor="anc-b2" x="655" y="236" width="20" height="20" fill="none" />
+				<rect data-anchor="anc-b3" x="655" y="320" width="20" height="20" fill="none" />
+				<g data-el="call-a" data-x="665" data-y="600">
+					<rect class="mg-chip" x="-120" y="-22" width="240" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--lg" x="0" y="6" text-anchor="middle">{n.print}(42)</text>
+				</g>
+				<g data-el="call-b" data-x="665" data-y="600">
+					<rect class="mg-chip" x="-120" y="-22" width="240" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--lg" x="0" y="6" text-anchor="middle">{n.print}("Hola", 3)</text>
+				</g>
+				<g data-el="stamp-c">
+					<rect class="mg-chip mg-chip--sage" x="60" y="384" width="480" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage" x="300" y="412" text-anchor="middle">{t('Mira los TIPOS de los argumentos', 'It looks at the argument TYPES')}</text>
+				</g>
+				<g data-el="ret-a">
+					<rect class="mg-chip" x="60" y="470" width="240" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--lg" x="180" y="498" text-anchor="middle">int {n.compute}()</text>
+				</g>
+				<rect data-anchor="ret-anchor" x="170" y="482" width="20" height="20" fill="none" />
+				<g data-el="ret-b" data-x="440" data-y="492">
+					<rect class="mg-chip mg-chip--sage" x="-130" y="-22" width="260" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="0" y="6" text-anchor="middle">double {n.compute}()</text>
+				</g>
+				<g data-el="ret-msg">
+					<rect class="mg-chip" x="60" y="540" width="480" height="44" rx="22" />
+					<text class="mg-chip-text" x="300" y="568" text-anchor="middle">{t('No compila: el retorno no cuenta', 'Does not compile: the return does not count')}</text>
+				</g>
+
+				<text class="mg-heading" x="840" y="96" data-el="t-right">{t('Sobrescritura: la decide la JVM', 'Overriding: the JVM decides')}</text>
+				<g data-el="vh">
+					<rect class="mg-card mg-card--sage" x="840" y="130" width="680" height="70" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="870" y="172">{n.V}.{n.start}()</text>
+					<text class="mg-text mg-text--muted" x="1490" y="172" text-anchor="end">{t('la versión general', 'the general version')}</text>
+				</g>
+				<g data-el="au">
+					<rect class="mg-card mg-card--accent" x="840" y="240" width="680" height="70" rx="16" />
+					<text class="mg-mono mg-mono--dark" x="870" y="282">{n.C}.{n.start}()  @Override</text>
+					<text class="mg-text mg-text--muted" x="1490" y="282" text-anchor="end">{t('la que gana', 'the one that wins')}</text>
+				</g>
+				<g data-el="obj">
+					<rect class="mg-card" x="840" y="350" width="680" height="70" rx="16" />
+					<text class="mg-text mg-text--strong" x="870" y="392">{t('Objeto real en el Heap:', 'Real object on the Heap:')} {n.C}</text>
+				</g>
+				<g data-el="ar-obj" class="mg-arrow">
+					<path class="mg-stroke" d="M1180 348L1180 316" pathLength="1" />
+					<path class="mg-head" d="M1168 326L1180 314L1192 326" />
+				</g>
+				<g data-el="ar-call" class="mg-arrow">
+					<path class="mg-stroke" d="M1180 496L1180 426" pathLength="1" />
+					<path class="mg-head" d="M1168 436L1180 424L1192 436" />
+				</g>
+				<g data-el="call-v">
+					<rect class="mg-chip" x="1060" y="498" width="240" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1180" y="526" text-anchor="middle">v.{n.start}()</text>
+				</g>
+				<g data-el="stamp-j">
+					<rect class="mg-chip mg-chip--sage" x="840" y="566" width="680" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage" x="1180" y="594" text-anchor="middle">{t('Mira el OBJETO real, con el programa corriendo', 'It looks at the real OBJECT, while the program runs')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 5. Polymorphism and dynamic dispatch (motion canvas) -->
+	<div slot="scene" data-scene="poly" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="62" data-el="decl">{n.V} v = new {n.C}("Toyota");</text>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="62" data-el="inst">if (v instanceof {n.C} {n.car})</text>
+
+				<g data-el="stack">
+					<rect class="mg-card" x="40" y="110" width="380" height="300" rx="22" />
+					<text class="mg-text mg-text--strong mg-text--muted" x="68" y="148">STACK</text>
+				</g>
+				<g data-el="v">
+					<rect class="mg-card mg-card--accent" x="70" y="170" width="320" height="100" rx="16" />
+					<text class="mg-heading" x="94" y="214">v</text>
+					<text class="mg-text mg-text--muted" x="94" y="248">{t('tipo declarado:', 'declared type:')} {n.V}</text>
+				</g>
+				<g data-el="v-auto">
+					<rect class="mg-card mg-card--accent" x="70" y="300" width="320" height="90" rx="16" />
+					<text class="mg-heading" x="94" y="342">{n.car}</text>
+					<text class="mg-text mg-text--muted" x="94" y="372">{t('tipo declarado:', 'declared type:')} {n.C}</text>
+				</g>
+
+				<g data-el="heap">
+					<rect class="mg-card mg-card--sage" x="520" y="110" width="1040" height="420" rx="22" />
+					<text class="mg-text mg-text--strong mg-chip-text--sage" x="548" y="148">HEAP</text>
+				</g>
+				<text class="mg-text mg-text--strong mg-chip-text--sage" x="600" y="184" data-el="lbl-obj">{t(`objeto en el Heap, tipo real: ${n.C}`, `object on the Heap, real type: ${n.C}`)}</text>
+				<g data-el="obj-auto">
+					<rect class="mg-card mg-card--accent" x="600" y="196" width="500" height="130" rx="18" />
+					<text class="mg-heading" x="626" y="238">{n.C}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="626" y="274">@Override {n.start}()</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="626" y="304">{n.trunk}()</text>
+				</g>
+				<g data-el="obj-vh">
+					<rect class="mg-card" x="600" y="340" width="500" height="150" rx="18" />
+					<text class="mg-heading" x="626" y="382">{n.V}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="626" y="418">{n.brand}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="626" y="446">{n.start}()</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="626" y="474">{n.brake}()</text>
+				</g>
+
+				<g data-el="a-ref" class="mg-arrow">
+					<path class="mg-stroke" d="M392 220C480 220 520 261 590 261" pathLength="1" />
+					<path class="mg-head" d="M580 251L592 261L580 271" />
+				</g>
+				<g data-el="a-auto" class="mg-arrow">
+					<path class="mg-stroke" d="M392 345C470 345 520 322 592 300" pathLength="1" />
+					<path class="mg-head" d="M582 290L594 300L581 309" />
+				</g>
+
+				<g data-el="out">
+					<rect class="mg-card mg-card--ink" x="1160" y="196" width="380" height="110" rx="18" />
+					<text class="mg-text mg-text--dim" x="1184" y="232">stdout</text>
+					<text class="mg-mono mg-out mg-out-text" x="1184" y="270">{t('Auto Toyota arrancando con botón.', 'Car Toyota starting with a push button.')}</text>
+				</g>
+				<g data-el="out2">
+					<rect class="mg-card mg-card--ink" x="1160" y="350" width="380" height="110" rx="18" />
+					<text class="mg-text mg-text--dim" x="1184" y="386">stdout</text>
+					<text class="mg-mono mg-out mg-out-text" x="1184" y="424">{t('El vehículo frena.', 'The vehicle brakes.')}</text>
+				</g>
+
+				<g data-el="call">
+					<rect class="mg-chip" x="80" y="478" width="300" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--lg" x="230" y="506" text-anchor="middle">v.{n.start}()</text>
+				</g>
+				<g data-el="call2">
+					<rect class="mg-chip" x="80" y="478" width="300" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--lg" x="230" y="506" text-anchor="middle">v.{n.brake}()</text>
+				</g>
+				<g data-el="call3">
+					<rect class="mg-chip" x="80" y="478" width="300" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--lg" x="230" y="506" text-anchor="middle">v.{n.trunk}()</text>
+				</g>
+				<g data-el="tk" data-x="410" data-y="500">
+					<circle class="mg-dot" cx="0" cy="0" r="18" />
+				</g>
+
+				<g data-el="ty-var">
+					<rect class="mg-chip" x="40" y="548" width="480" height="44" rx="22" />
+					<text class="mg-chip-text" x="280" y="576" text-anchor="middle">{t('Variable: define qué podés escribir', 'Variable: defines what you may write')}</text>
+				</g>
+				<g data-el="ty-obj">
+					<rect class="mg-chip mg-chip--sage" x="560" y="548" width="640" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage" x="880" y="576" text-anchor="middle">{t('Objeto: define qué código corre', 'Object: defines which code runs')}</text>
+				</g>
+				<g data-el="chk">
+					<rect class="mg-chip mg-chip--sage" x="40" y="548" width="480" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage" x="280" y="576" text-anchor="middle">{t(`Compilador: ¿${n.V} declara ${n.start}()?  ✔`, `Compiler: does ${n.V} declare ${n.start}()?  ✔`)}</text>
+				</g>
+				<g data-el="chk2">
+					<rect class="mg-chip mg-chip--sage" x="40" y="548" width="480" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage" x="280" y="576" text-anchor="middle">{t(`Compilador: ¿${n.V} declara ${n.brake}()?  ✔`, `Compiler: does ${n.V} declare ${n.brake}()?  ✔`)}</text>
+				</g>
+				<g data-el="jvm">
+					<rect class="mg-chip" x="560" y="548" width="640" height="44" rx="22" />
+					<text class="mg-chip-text" x="880" y="576" text-anchor="middle">{t('JVM: sigue la referencia y busca en el objeto real', 'JVM: follows the reference and looks in the real object')}</text>
+				</g>
+				<g data-el="err-chip">
+					<rect class="mg-chip" x="40" y="548" width="700" height="44" rx="22" />
+					<text class="mg-chip-text" x="390" y="576" text-anchor="middle">{t(`Error de compilación: ${n.V} no declara ${n.trunk}()`, `Compile error: ${n.V} does not declare ${n.trunk}()`)}</text>
+				</g>
+				<g data-el="ok-chip">
+					<rect class="mg-chip mg-chip--sage" x="40" y="548" width="700" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage" x="390" y="576" text-anchor="middle">{n.car}.{n.trunk}()  ✔  {t('ya viene casteado', 'already cast')}</text>
+				</g>
+				<g data-el="cce">
+					<rect class="mg-chip" x="780" y="548" width="420" height="44" rx="22" />
+					<text class="mg-chip-text" x="990" y="576" text-anchor="middle">{t('Casteo equivocado → ClassCastException', 'Wrong cast → ClassCastException')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 5b. A polymorphic fleet (motion canvas) -->
+	<div slot="scene" data-scene="fleet" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="64" data-el="decl">{n.V}[] {n.fleet} = {'{'} new {n.C}(..), new {n.M}(..), new {n.T}(..) {'}'};</text>
+				{
+					fleetItems.map((item) => (
+						<>
+							<g data-el={`cell-${item.i}`}>
+								<rect class="mg-card mg-card--accent" x={item.x} y="130" width="320" height="70" rx="16" />
+								<text class="mg-mono mg-mono--dark" x={item.x + 160} y="173" text-anchor="middle">{n.fleet}[{item.i}]</text>
+							</g>
+							<g data-el={`obj-${item.i}`}>
+								<rect class="mg-card mg-card--sage" x={item.x} y="250" width="320" height="140" rx="18" />
+								<text class="mg-heading" x={item.x + 26} y="298">{item.name}</text>
+								<text class="mg-mono mg-mono--dark mg-mono--sm" x={item.x + 26} y="340">{item.detail}</text>
+								<text class="mg-text mg-text--muted" x={item.x + 26} y="372">{n.start}() {t('propio', 'own')}</text>
+							</g>
+							<g data-el={`arr-${item.i}`} class="mg-arrow">
+								<path class="mg-stroke" d={`M${item.x + 160} 204L${item.x + 160} 244`} pathLength="1" />
+								<path class="mg-head" d={`M${item.x + 148} 234L${item.x + 160} 246L${item.x + 172} 234`} />
+							</g>
+							<g data-el={`out-${item.i}`}>
+								<rect class="mg-card mg-card--ink" x={item.x} y="420" width="320" height="90" rx="18" />
+								<text class="mg-text mg-text--dim" x={item.x + 22} y="452">v.{n.start}()</text>
+								<text class="mg-mono mg-out mg-out-text" x={item.x + 22} y="488">{item.line}</text>
+							</g>
+						</>
+					))
+				}
+				<g data-el="vp" data-x="220" data-y="100">
+					<circle class="mg-dot" cx="0" cy="0" r="24" />
+					<text class="mg-chip-text mg-ptr-text" x="0" y="6" text-anchor="middle">v</text>
+				</g>
+				<g data-el="keep">
+					<rect class="mg-chip mg-chip--sage" x="60" y="528" width="640" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="380" y="557" text-anchor="middle">{t(`${n.Garage}: 0 líneas modificadas`, `${n.Garage}: 0 lines changed`)}</text>
+				</g>
+				<g data-el="garage">
+					<rect class="mg-card mg-card--ink" x="60" y="584" width="1430" height="60" rx="18" />
+					<text class="mg-mono" x="90" y="622">for ({n.V} v : {n.fleet}) {'{'} v.{n.start}(); {'}'}</text>
+					<text class="mg-text mg-text--dim" x="1460" y="620" text-anchor="end">{t(`${n.Garage}.${n.inspect}() no conoce ninguna subclase`, `${n.Garage}.${n.inspect}() knows no subclass`)}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 5c. instanceof ladder vs. polymorphism (slide) -->
+	<div slot="scene" data-scene="ladder10" class="scene-ladder">
+		<div class="dg-box dg-box--accent" data-el="bad">
+			<p class="dg-label">{t('Sin polimorfismo', 'Without polymorphism')}</p>
+			<code class="dg-code">if (v instanceof {n.C}) {'{'} … {'}'}</code>
+			<code class="dg-code">else if (v instanceof {n.M}) {'{'} … {'}'}</code>
+			<code class="dg-code">else if (v instanceof {n.T}) {'{'} … {'}'}</code>
+			<p class="dg-sub">{t('Crece para siempre y hay que editarla cada vez', 'It grows forever and must be edited every time')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="good">
+			<p class="dg-label dg-label--sage">{t('Con polimorfismo', 'With polymorphism')}</p>
+			<code class="dg-code">for ({n.V} v : {n.fleet}) v.{n.start}();</code>
+			<p class="dg-sub">{t('Cada objeto ejecuta su propia versión: ninguna cadena, ningún casteo', 'Each object runs its own version: no chain, no casts')}</p>
+		</div>
+	</div>
+
+	<!-- 6. Composition instead of inheritance (motion canvas) -->
+	<div slot="scene" data-scene="compose" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="64" data-el="decl">public class {n.C} extends {n.Engine}</text>
+
+				<g data-el="auto-card">
+					<rect class="mg-card mg-card--accent" x="480" y="330" width="640" height="230" rx="22" />
+					<text class="mg-heading" x="510" y="376">{n.C}</text>
+				</g>
+				<text class="mg-mono mg-mono--dark mg-mono--sm" x="510" y="414" data-el="field">private final {n.Engine} {isEs ? 'motor' : 'engine'};</text>
+				<text class="mg-text mg-text--strong" x="508" y="496" data-el="has-lbl">{t('tiene un', 'has an')}</text>
+				<rect data-anchor="slot" x="790" y="480" width="20" height="20" fill="none" />
+
+				<g data-el="motor" data-x="800" data-y="180">
+					<rect class="mg-card mg-card--sage" x="-170" y="-50" width="340" height="100" rx="18" />
+					<text class="mg-heading" x="0" y="-4" text-anchor="middle">{n.Engine}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="0" y="30" text-anchor="middle">{n.ignite}()</text>
+				</g>
+				<g data-el="motor-e">
+					<rect class="mg-card mg-card--sage" x="630" y="440" width="340" height="100" rx="18" />
+					<text class="mg-heading" x="800" y="486" text-anchor="middle">{n.EngineE}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="800" y="520" text-anchor="middle">{n.ignite}()</text>
+				</g>
+				<g data-el="motor-f">
+					<rect class="mg-card" x="630" y="440" width="340" height="100" rx="18" style="stroke-dasharray: 8 6" />
+					<text class="mg-heading" x="800" y="486" text-anchor="middle">{n.EngineF}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="800" y="520" text-anchor="middle">{n.ignite}()</text>
+				</g>
+
+				<g data-el="a-ext" class="mg-arrow">
+					<path class="mg-stroke" d="M800 328L800 242" pathLength="1" />
+					<path class="mg-head" d="M786 254L800 238L814 254" />
+				</g>
+				<g data-el="no-chip">
+					<rect class="mg-chip" x="1140" y="170" width="400" height="96" rx="24" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1340" y="208" text-anchor="middle">{t(`Un ${n.C} TIENE un ${n.Engine},`, `A ${n.C} HAS AN ${n.Engine},`)}</text>
+					<text class="mg-chip-text mg-chip-text--lg" x="1340" y="240" text-anchor="middle">{t(`no ES un ${n.Engine}`, `it IS NOT an ${n.Engine}`)}</text>
+				</g>
+				<g data-el="tk" data-x="300" data-y="450">
+					<circle class="mg-dot" cx="0" cy="0" r="20" />
+					<text class="mg-chip-text mg-ptr-text" x="0" y="5" text-anchor="middle">{n.start}</text>
+				</g>
+				<g data-el="test-chip">
+					<rect class="mg-chip mg-chip--sage" x="1140" y="440" width="400" height="60" rx="24" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1340" y="477" text-anchor="middle">{t(`Test de ${n.C} con un motor falso`, `${n.C} test with a fake engine`)}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 6b. final (slide) -->
+	<div slot="scene" data-scene="final10" class="scene-final">
+		<div class="dg-box dg-box--accent" data-el="fin-class">
+			<p class="dg-label">{t('Clase final', 'Final class')}</p>
+			<code class="dg-code">public final class {isEs ? 'Coordenada' : 'Coordinate'}</code>
+			<p class="dg-sub">{t('Nadie puede heredar de acá', 'Nobody can inherit from this')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="fin-method">
+			<p class="dg-label dg-label--sage">{t('Método final', 'Final method')}</p>
+			<code class="dg-code">public final void {isEs ? 'acreditar' : 'credit'}(…)</code>
+			<p class="dg-sub">{t('Este método no se sobrescribe', 'This method cannot be overridden')}</p>
+		</div>
+	</div>
+
+	<!-- 7. Everything inherits from Object (motion canvas) -->
+	<div slot="scene" data-scene="obj" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="o-object">
+					<rect class="mg-card" x="60" y="90" width="460" height="100" rx="20" />
+					<text class="mg-heading" x="90" y="132">Object</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="166">toString() → Class@hash</text>
+				</g>
+				<g data-el="o-veh">
+					<rect class="mg-card mg-card--sage" x="60" y="240" width="460" height="100" rx="20" />
+					<text class="mg-heading" x="90" y="282">{n.V}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="316">{n.brand}, {n.start}(), {n.brake}()</text>
+				</g>
+				<g data-el="o-auto">
+					<rect class="mg-card mg-card--accent" x="60" y="390" width="460" height="100" rx="20" />
+					<text class="mg-heading" x="90" y="432">{n.C}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="466">{n.trunk}()</text>
+				</g>
+				<g data-el="o-auto-ts">
+					<rect class="mg-chip" x="280" y="404" width="220" height="38" rx="19" />
+					<text class="mg-chip-text" x="390" y="429" text-anchor="middle">@Override toString()</text>
+				</g>
+				<g data-el="u2" class="mg-arrow">
+					<path class="mg-stroke" d="M290 238L290 196" pathLength="1" />
+					<path class="mg-head" d="M278 206L290 194L302 206" />
+				</g>
+				<g data-el="u1" class="mg-arrow">
+					<path class="mg-stroke" d="M290 388L290 346" pathLength="1" />
+					<path class="mg-head" d="M278 356L290 344L302 356" />
+				</g>
+
+				<g data-el="root-lbl">
+					<rect class="mg-chip mg-chip--sage" x="700" y="232" width="640" height="48" rx="24" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1020" y="263" text-anchor="middle">{t('Toda clase hereda de Object', 'Every class inherits from Object')}</text>
+				</g>
+				<g data-el="more">
+					<rect class="mg-chip" x="700" y="296" width="640" height="48" rx="24" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1020" y="327" text-anchor="middle">toString() · equals() · hashCode()</text>
+				</g>
+
+				<g data-el="call-p">
+					<rect class="mg-card mg-card--ink" x="700" y="560" width="520" height="56" rx="18" />
+					<text class="mg-mono" x="730" y="595">System.out.println(a);</text>
+				</g>
+				<g data-el="tk" data-x="670" data-y="588">
+					<circle class="mg-dot" cx="0" cy="0" r="20" />
+				</g>
+				<g data-el="res-def">
+					<rect class="mg-card mg-card--ink" x="650" y="90" width="560" height="100" rx="18" />
+					<text class="mg-mono mg-out mg-big" x="680" y="152">{n.C}@1b6d3586</text>
+				</g>
+				<g data-el="res-ovr">
+					<rect class="mg-card mg-card--ink" x="650" y="390" width="560" height="100" rx="18" />
+					<text class="mg-mono mg-out mg-big" x="680" y="452">{n.C}{'{'}{n.brand}='Toyota'{'}'}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 8. Common mistakes -->
+	<div slot="scene" data-scene="errors10" class="scene-errors10">
+		{
+			mistakes.map((mistake) => (
+				<div class="dg-box dg-box--accent" data-el={mistake.id}>
+					<p class="dg-label">{mistake.title}</p>
+					<p class="dg-sub">{mistake.fix}</p>
+				</div>
+			))
+		}
+	</div>
+
+	<!-- 9. Guided exercise -->
+	<div slot="scene" data-scene="ex10" class="scene-ex10">
+		{
+			exercises.map((exercise, i) => (
+				<div class="dg-box" data-el={exercise.id}>
+					<p class="dg-label"><span class="dg-step-num">{i + 1}</span> {t('Paso', 'Step')}</p>
+					<p class="dg-title">{exercise.name}</p>
+					<p class="dg-sub">{exercise.note}</p>
+				</div>
+			))
+		}
+	</div>
+
+	<div slot="scene" data-scene="closing10" class="scene-closing10">
+		<div class="dg-chips scene-closing10-map">
+			{takeaways.map((text, i) => <span class:list={['dg-chip', i < 4 ? 'dg-chip--accent' : 'dg-chip--sage']} data-el={`c${i + 1}`}>{i + 1} · {text}</span>)}
+		</div>
+		<a class="dg-box dg-box--ink scene-closing10-repo" data-el="repo" href="https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l10_herencia_polimorfismo_y_sobrecarga" target="_blank" rel="noopener noreferrer">
+			<p class="dg-label" style="color: var(--color-accent-300)">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: inherit; width: 16px; height: 16px">
+					<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" />
+				</svg>
+				CursoDeJava · l10_herencia_polimorfismo_y_sobrecarga
+			</p>
+			<p class="dg-sub">{t('Empleados, zoológico, transporte, animales, personas y materias, y un integrador de biblioteca', 'Employees, zoo, transport, animals, people and subjects, and a library integrator')}</p>
+		</a>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Layout unique to each scene. Colors, radii and spacing stay on tokens. */
+	.scene-canvas {
+		width: 100%;
+	}
+
+	.mg-big {
+		font-size: 26px;
+	}
+
+	.mg-ptr-text {
+		fill: var(--color-bg);
+	}
+
+	.mg-out-text {
+		font-size: 13.5px;
+	}
+
+	.mg-xmark {
+		font-family: var(--font-heading);
+		font-size: 76px;
+		font-weight: var(--font-heading-weight);
+		fill: var(--color-accent-700);
+	}
+
+	.scene-intro10,
+	.scene-ctor,
+	.scene-override10,
+	.scene-ladder,
+	.scene-final,
+	.scene-errors10,
+	.scene-ex10 {
+		align-content: center;
+	}
+
+	.scene-intro10,
+	.scene-ctor,
+	.scene-errors10 {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.scene-intro10-wide,
+	.scene-ctor-wide {
+		grid-column: 1 / -1;
+	}
+
+	.scene-override10,
+	.scene-ladder,
+	.scene-final,
+	.scene-ex10 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-override-row {
+		grid-column: 1 / -1;
+		grid-template-columns: minmax(0, 0.45fr) minmax(0, 1fr);
+		align-items: center;
+		padding: var(--space-2) var(--space-3);
+	}
+
+	.scene-ladder .dg-code {
+		display: block;
+		font-size: 0.8em;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.scene-ex10 [data-el='ex5'] {
+		grid-column: 1 / -1;
+	}
+
+	.scene-closing10 {
+		align-content: center;
+		justify-items: center;
+	}
+
+	.scene-closing10-map {
+		justify-content: center;
+	}
+
+	.scene-closing10-repo {
+		justify-items: start;
+		text-decoration: none;
+		color: var(--color-neutral-100);
+		min-width: min(100%, 22rem);
+	}
+
+	.scene-closing10-repo:hover {
+		border-color: var(--color-accent-400);
+	}
+
+	@media (width < 720px) {
+		.scene-intro10,
+		.scene-ctor,
+		.scene-errors10,
+		.scene-override10,
+		.scene-ladder,
+		.scene-final,
+		.scene-ex10 {
+			grid-template-columns: 1fr;
+		}
+
+		.scene-override-row {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

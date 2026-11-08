@@ -1,0 +1,958 @@
+---
+/**
+ * Scenes for the "Exceptions and error handling, step by step" animation (lesson java/12).
+ * The captions, code and terminal panels live in
+ * `src/data/animations/excepciones-java.ts`; this component only draws the
+ * diagrams the steps point to. Slide scenes are HTML blocks (`[data-scene]` with
+ * `[data-el]` elements). The `gap`, `hier`, `obj`, `flow`, `check`, `stack`, `catches`,
+ * `res`, `exits`, `chain` and `anti` scenes are SVG canvases (`data-motion`) choreographed
+ * by the cues of their motion steps: an exception object is thrown, travels up the call
+ * stack and is caught.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/excepciones-java';
+import { resolveScript } from '../../utils/animations';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Slide scene data ──────────────────────────────────────────────────────
+const failures = [
+	{ id: 'if1', label: t('El archivo no está', 'The file is missing'), code: 'FileNotFoundException' },
+	{ id: 'if2', label: t('La red se cae', 'The network drops'), code: 'SocketException' },
+	{ id: 'if3', label: t('El usuario escribe "veintidós"', 'The user types "twenty-two"'), code: 'NumberFormatException' },
+	{ id: 'if4', label: t('La base rechaza la conexión', 'The database refuses the connection'), code: 'SQLException' },
+];
+const mistakes = [
+	{ id: 'm1', text: t('catch vacío', 'Empty catch') },
+	{ id: 'm2', text: 'catch (Exception e) ' + t('primero', 'first') },
+	{ id: 'm3', text: t('catch general antes del específico', 'General catch before the specific one') },
+	{ id: 'm4', text: t('Relanzar sin la causa', 'Rethrowing without the cause') },
+	{ id: 'm5', text: t('try de cincuenta líneas', 'Fifty-line try') },
+	{ id: 'm6', text: t('Cerrar recursos a mano', 'Closing resources by hand') },
+	{ id: 'm7', text: t('Excepciones para casos normales', 'Exceptions for normal cases') },
+];
+const exercise = [
+	{ id: 'ex1', n: 1, name: 'EdadInvalidaException', note: t('extends RuntimeException + edad rechazada', 'extends RuntimeException + rejected age') },
+	{ id: 'ex2', n: 2, name: 'registrar(nombre, edad)', note: t('La regla del rango, en un solo lugar', 'The range rule, in a single place') },
+	{ id: 'ex3', n: 3, name: 'registrarDesdeTexto(…)', note: t('Traduce NumberFormatException, conserva la causa', 'Translates NumberFormatException, keeps the cause') },
+	{ id: 'ex4', n: 4, name: 'main', note: t('Caso válido, fuera de rango y texto inválido', 'Valid case, out of range and invalid text') },
+	{ id: 'ex5', n: 5, name: 'finally', note: t('Constancia de que el intento terminó', 'A record that the attempt finished') },
+];
+const takeaways = [
+	t('Una excepción es un objeto', 'An exception is an object'),
+	t('Unchecked se evita, checked te obliga', 'Unchecked is avoided, checked forces you'),
+	t('El try se corta; el finally corre siempre', 'The try is cut; the finally always runs'),
+	t('Sube por la pila hasta un catch', 'Travels up the stack to a catch'),
+	t('De lo específico a lo general', 'From specific to general'),
+	t('try-with-resources para cerrar', 'try-with-resources to close'),
+	t('Al relanzar, pasá la causa', 'When rethrowing, pass the cause'),
+	t('Un catch vacío es peor que nada', 'An empty catch is worse than nothing'),
+];
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<!-- INTRO (motion): the boolean that can be ignored vs. the exception that cannot -->
+	<div slot="scene" data-scene="gap" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<rect class="mg-card" data-el="pl" data-base="shown" x="40" y="40" width="740" height="580" rx="22" />
+				<rect class="mg-card mg-card--accent" data-el="pr" data-base="shown" x="820" y="40" width="740" height="580" rx="22" />
+				<text class="mg-heading" x="70" y="96">{t('boolean: se puede ignorar', 'boolean: it can be ignored')}</text>
+				<text class="mg-heading" x="850" y="96">{t('excepción: no se puede ignorar', 'exception: it cannot be ignored')}</text>
+
+				<g data-el="b-call">
+					<rect class="mg-card" x="90" y="150" width="300" height="110" rx="18" />
+					<text class="mg-mono mg-mono--dark" x="115" y="196">producto.</text>
+					<text class="mg-mono mg-mono--dark" x="115" y="228">setPrecio(-500);</text>
+				</g>
+				<g data-el="b-meth">
+					<rect class="mg-card mg-card--sage" x="470" y="150" width="270" height="110" rx="18" />
+					<text class="mg-text mg-text--strong" x="492" y="184">setPrecio</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="492" y="212">if (precio &lt; 0)</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="492" y="238">  return false;</text>
+				</g>
+				<g data-el="b-arg" data-x="400" data-y="205">
+					<rect class="mg-chip" x="-45" y="-20" width="90" height="40" rx="20" />
+					<text class="mg-chip-text" x="0" y="6" text-anchor="middle">-500</text>
+				</g>
+				<g data-el="b-false" data-x="605" data-y="290">
+					<rect class="mg-chip mg-chip--sage" x="-50" y="-20" width="100" height="40" rx="20" />
+					<text class="mg-chip-text mg-chip-text--sage" x="0" y="6" text-anchor="middle">false</text>
+				</g>
+				<circle data-anchor="b-back" cx="240" cy="320" r="1" fill="none" />
+				<g data-el="b-silent">
+					<rect class="mg-card mg-card--dashed" x="90" y="380" width="650" height="190" rx="20" />
+					<text class="mg-heading" x="120" y="430">{t('El resultado se ignora', 'The result is ignored')}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="120" y="470">producto.setPrecio(-500);   // ¿y el false?</text>
+					<text class="mg-text mg-text--muted" x="120" y="510">{t('Precio sin cambios, sin aviso.', 'Price unchanged, no warning.')}</text>
+					<text class="mg-text mg-text--muted" x="120" y="540">{t('El programa sigue como si nada.', 'The program carries on as if nothing happened.')}</text>
+				</g>
+
+				<g data-el="x-call">
+					<rect class="mg-card" x="850" y="150" width="300" height="110" rx="18" />
+					<text class="mg-mono mg-mono--dark" x="875" y="196">producto.</text>
+					<text class="mg-mono mg-mono--dark" x="875" y="228">setPrecio(-500);</text>
+				</g>
+				<g data-el="x-meth">
+					<rect class="mg-card mg-card--accent" x="1230" y="150" width="280" height="110" rx="18" />
+					<text class="mg-text mg-text--strong" x="1252" y="184">setPrecio</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="1252" y="212">throw new</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="1252" y="238">IllegalArgumentException</text>
+				</g>
+				<g data-el="x-exc" data-x="1370" data-y="290">
+					<rect class="mg-exc" x="-130" y="-20" width="260" height="40" rx="20" />
+					<text class="mg-exc-text" x="0" y="6" text-anchor="middle">IllegalArgumentException</text>
+				</g>
+				<circle data-anchor="x-back" cx="1000" cy="300" r="1" fill="none" />
+				<g data-el="x-stop">
+					<rect class="mg-card mg-card--ink" x="850" y="380" width="660" height="190" rx="20" />
+					<text class="mg-mono mg-out" x="880" y="428">Exception in thread "main"</text>
+					<text class="mg-mono" x="880" y="460">java.lang.IllegalArgumentException: precio &lt; 0</text>
+					<text class="mg-mono" x="880" y="492">    at Producto.setPrecio(Producto.java:14)</text>
+					<text class="mg-text mg-text--light mg-text--strong" x="880" y="540">{t('El programa se detiene.', 'The program stops.')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- INTRO (slide): programs fail all the time -->
+	<div slot="scene" data-scene="intro12" class="scene-intro12">
+		{
+			failures.map((f) => (
+				<div class="dg-box" data-el={f.id}>
+					<p class="dg-label">{f.label}</p>
+					<code class="dg-code">{f.code}</code>
+				</div>
+			))
+		}
+		<div class="dg-box dg-box--ink dg-box--center" data-el="iq">
+			<p class="dg-title">{t('¿Qué hace tu código cuando falla?', 'What does your code do when it fails?')}</p>
+		</div>
+	</div>
+
+	<!-- 1. The Throwable hierarchy (motion) -->
+	<div slot="scene" data-scene="hier" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="h-c1" class="mg-arrow">
+					<path class="mg-stroke" d="M800 110C800 170 310 170 310 226" pathLength="1" />
+					<path class="mg-head" d="M298 214L310 228L322 214" />
+				</g>
+				<g data-el="h-c2" class="mg-arrow mg-arrow--sage">
+					<path class="mg-stroke" d="M800 110C800 170 1190 170 1190 226" pathLength="1" />
+					<path class="mg-head" d="M1178 214L1190 228L1202 214" />
+				</g>
+				<g data-el="h-c3" class="mg-arrow">
+					<path class="mg-stroke" d="M1190 370L1190 476" pathLength="1" />
+					<path class="mg-head" d="M1178 464L1190 478L1202 464" />
+				</g>
+				<g data-el="h-thr">
+					<rect class="mg-card mg-card--ink" x="650" y="40" width="300" height="70" rx="20" />
+					<text class="mg-heading mg-text--light" x="800" y="86" text-anchor="middle">Throwable</text>
+				</g>
+				<g data-el="h-err">
+					<rect class="mg-card" x="100" y="230" width="420" height="140" rx="20" />
+					<text class="mg-heading" x="130" y="274">Error</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="130" y="306">OutOfMemoryError</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="130" y="330">StackOverflowError</text>
+					<text class="mg-text mg-text--strong mg-text--muted" x="130" y="356">{t('Fallas de la JVM', 'JVM failures')}</text>
+				</g>
+				<g data-el="h-exc">
+					<rect class="mg-card mg-card--sage" x="880" y="230" width="620" height="140" rx="20" />
+					<text class="mg-heading" x="910" y="274">Exception</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="910" y="308">IOException · SQLException</text>
+					<text class="mg-text mg-text--muted" x="910" y="346">{t('Condiciones esperables del entorno', 'Expected environment conditions')}</text>
+				</g>
+				<g data-el="h-run">
+					<rect class="mg-card mg-card--accent" x="880" y="480" width="620" height="110" rx="20" />
+					<text class="mg-heading" x="910" y="523">RuntimeException</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="910" y="552">NullPointerException · ArithmeticException</text>
+					<text class="mg-text mg-text--muted" x="910" y="578">{t('Errores de programación', 'Programming errors')}</text>
+				</g>
+				<g data-el="h-checked">
+					<rect class="mg-chip mg-chip--sage" x="880" y="396" width="440" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage" x="1100" y="424" text-anchor="middle">CHECKED · {t('el compilador te obliga', 'the compiler forces you')}</text>
+				</g>
+				<g data-el="h-unchecked">
+					<rect class="mg-chip" x="880" y="602" width="500" height="44" rx="22" />
+					<text class="mg-chip-text" x="1130" y="630" text-anchor="middle">UNCHECKED · {t('el compilador no dice nada', 'the compiler says nothing')}</text>
+				</g>
+				<g data-el="h-why">
+					<rect class="mg-card mg-card--dashed" x="100" y="420" width="420" height="200" rx="20" />
+					<text class="mg-text mg-text--strong" x="130" y="466">{t('¿Por qué no capturar un Error?', 'Why not catch an Error?')}</text>
+					<text class="mg-text mg-text--muted" x="130" y="508">{t('Si la JVM se quedó sin memoria,', 'If the JVM ran out of memory,')}</text>
+					<text class="mg-text mg-text--muted" x="130" y="534">{t('tu catch tampoco va a poder', 'your catch will not be able')}</text>
+					<text class="mg-text mg-text--muted" x="130" y="560">{t('ejecutarse.', 'to run either.')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 1b. An exception is an object (motion) -->
+	<div slot="scene" data-scene="obj" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="o-card">
+					<rect class="mg-card mg-card--accent" x="470" y="40" width="620" height="330" rx="22" />
+					<text class="mg-heading" x="500" y="94">ArithmeticException</text>
+					<text class="mg-text mg-text--muted" x="500" y="124">{t('una instancia de una clase', 'an instance of a class')}</text>
+					<g data-el="o-r1" data-base="shown">
+						<rect class="mg-card" x="490" y="145" width="580" height="48" rx="14" />
+						<text class="mg-text mg-text--strong" x="510" y="175">message</text>
+						<text class="mg-mono mg-mono--dark" x="660" y="175">"/ by zero"</text>
+					</g>
+					<g data-el="o-r2" data-base="shown">
+						<rect class="mg-card" x="490" y="205" width="580" height="48" rx="14" />
+						<text class="mg-text mg-text--strong" x="510" y="235">cause</text>
+						<text class="mg-mono mg-mono--dark" x="660" y="235">null</text>
+					</g>
+					<g data-el="o-r3" data-base="shown">
+						<rect class="mg-card" x="490" y="265" width="580" height="48" rx="14" />
+						<text class="mg-text mg-text--strong" x="510" y="295">stackTrace</text>
+						<text class="mg-mono mg-mono--dark" x="660" y="295">[Main.main(Main.java:5)]</text>
+					</g>
+				</g>
+				<g data-el="o-note">
+					<rect class="mg-card mg-card--sage" x="1130" y="40" width="400" height="210" rx="22" />
+					<text class="mg-heading" x="1160" y="92">{t('Es un objeto', 'It is an object')}</text>
+					<text class="mg-text" x="1160" y="132">{t('Tiene jerarquía, atributos', 'It has a hierarchy, attributes')}</text>
+					<text class="mg-text" x="1160" y="160">{t('y métodos, como todo lo', 'and methods, like everything')}</text>
+					<text class="mg-text" x="1160" y="188">{t('que venís viendo.', 'you have seen so far.')}</text>
+				</g>
+
+				<g data-el="o-m1"><rect class="mg-chip" x="60" y="145" width="340" height="48" rx="24" /><text class="mg-mono mg-mono--dark mg-mono--sm" x="230" y="175" text-anchor="middle">getMessage()</text></g>
+				<g data-el="o-m2"><rect class="mg-chip" x="60" y="205" width="340" height="48" rx="24" /><text class="mg-mono mg-mono--dark mg-mono--sm" x="230" y="235" text-anchor="middle">getCause()</text></g>
+				<g data-el="o-m3"><rect class="mg-chip" x="60" y="265" width="340" height="48" rx="24" /><text class="mg-mono mg-mono--dark mg-mono--sm" x="230" y="295" text-anchor="middle">getStackTrace()</text></g>
+				<g data-el="o-m4"><rect class="mg-chip" x="60" y="325" width="340" height="48" rx="24" /><text class="mg-mono mg-mono--dark mg-mono--sm" x="230" y="355" text-anchor="middle">printStackTrace()</text></g>
+				<g data-el="o-a1" class="mg-arrow"><path class="mg-stroke" d="M400 169L462 169" pathLength="1" /><path class="mg-head" d="M452 159L464 169L452 179" /></g>
+				<g data-el="o-a2" class="mg-arrow"><path class="mg-stroke" d="M400 229L462 229" pathLength="1" /><path class="mg-head" d="M452 219L464 229L452 239" /></g>
+				<g data-el="o-a3" class="mg-arrow"><path class="mg-stroke" d="M400 289L462 289" pathLength="1" /><path class="mg-head" d="M452 279L464 289L452 299" /></g>
+				<g data-el="o-a4" class="mg-arrow mg-arrow--sage"><path class="mg-stroke" d="M400 349C440 349 420 480 462 480" pathLength="1" /><path class="mg-head" d="M451 470L464 480L450 489" /></g>
+
+				<g data-el="o-out">
+					<rect class="mg-card mg-card--ink" x="470" y="410" width="620" height="200" rx="22" />
+					<text class="mg-mono mg-text--dim mg-mono--sm" x="500" y="448">System.err</text>
+					<text class="mg-mono mg-out" x="500" y="500" data-el="o-l1">java.lang.ArithmeticException: / by zero</text>
+					<text class="mg-mono" x="500" y="540" data-el="o-l2">    at Main.main(Main.java:5)</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 2. try, catch, finally (motion) -->
+	<div slot="scene" data-scene="flow" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="f-try">
+					<rect class="mg-card" x="50" y="130" width="330" height="330" rx="22" />
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="210">try {'{'}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="250">  println("A");</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="350">  println("B");</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="400">{'}'}</text>
+				</g>
+				<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="300" data-el="l-div-ok">  int x = 10 / 2;</text>
+				<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="300" data-el="l-div-bad">  int x = 10 / 0;</text>
+				<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="300" data-el="l-ret">  return;</text>
+				<g data-el="f-strike" class="mg-arrow"><path class="mg-stroke" d="M95 345L300 345" pathLength="1" /></g>
+
+				<g data-el="f-ar1" class="mg-arrow"><path class="mg-stroke" d="M386 295L460 295" pathLength="1" /><path class="mg-head" d="M450 285L462 295L450 305" /></g>
+				<g data-el="f-catch">
+					<rect class="mg-card mg-card--accent" x="470" y="130" width="330" height="330" rx="22" />
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="510" y="210">catch (ArithmeticException e) {'{'}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="510" y="250">  println("C");</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="510" y="400">{'}'}</text>
+				</g>
+				<g data-el="f-ar2" class="mg-arrow"><path class="mg-stroke" d="M806 295L880 295" pathLength="1" /><path class="mg-head" d="M870 285L882 295L870 305" /></g>
+				<g data-el="f-fin">
+					<rect class="mg-card mg-card--sage" x="890" y="130" width="330" height="330" rx="22" />
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="930" y="210">finally {'{'}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="930" y="250">  println("F");</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="930" y="400">{'}'}</text>
+				</g>
+				<g data-el="f-ar3" class="mg-arrow"><path class="mg-stroke" d="M1226 295L1300 295" pathLength="1" /><path class="mg-head" d="M1290 285L1302 295L1290 305" /></g>
+				<g data-el="f-next">
+					<rect class="mg-card" x="1310" y="130" width="240" height="330" rx="22" />
+					<text class="mg-text mg-text--muted" x="1350" y="210">{t('// lo que sigue', '// what follows')}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="1350" y="250">println("D");</text>
+				</g>
+
+				<g data-el="o-strip">
+					<rect class="mg-card mg-card--ink" x="50" y="520" width="1500" height="100" rx="22" />
+					<text class="mg-mono mg-prompt" x="90" y="578">&gt; {t('salida', 'output')}</text>
+				</g>
+				<text class="mg-mono mg-out mg-big" x="330" y="580" data-el="o-a">A</text>
+				<text class="mg-mono mg-out mg-big" x="420" y="580" data-el="o-b">B</text>
+				<text class="mg-mono mg-out mg-big" x="420" y="580" data-el="o-c">C</text>
+				<text class="mg-mono mg-out mg-big" x="420" y="580" data-el="o-f2">F</text>
+				<text class="mg-mono mg-out mg-big" x="510" y="580" data-el="o-f">F</text>
+				<text class="mg-mono mg-out mg-big" x="600" y="580" data-el="o-d">D</text>
+
+				<circle data-anchor="ta2" cx="70" cy="300" r="1" fill="none" />
+				<circle data-anchor="ta3" cx="70" cy="350" r="1" fill="none" />
+				<circle data-anchor="ta1" cx="70" cy="250" r="1" fill="none" />
+				<circle data-anchor="ca1" cx="490" cy="250" r="1" fill="none" />
+				<circle data-anchor="fa1" cx="910" cy="250" r="1" fill="none" />
+				<circle data-anchor="na1" cx="1330" cy="250" r="1" fill="none" />
+				<circle data-anchor="fp-catch" cx="635" cy="92" r="1" fill="none" />
+
+				<g data-el="f-skip" data-x="635" data-y="92">
+					<rect class="mg-chip mg-chip--light" x="-75" y="-20" width="150" height="40" rx="20" style="stroke-dasharray: 6 5" />
+					<text class="mg-chip-text mg-chip-text--sage" x="0" y="6" text-anchor="middle">{t('se saltea', 'skipped')}</text>
+				</g>
+				<g data-el="f-bolt" data-x="215" data-y="92">
+					<rect class="mg-exc" x="-130" y="-20" width="260" height="40" rx="20" />
+					<text class="mg-exc-text" x="0" y="6" text-anchor="middle">ArithmeticException</text>
+				</g>
+				<g data-el="f-leave" data-x="1430" data-y="295">
+					<rect class="mg-chip mg-chip--sage" x="-100" y="-20" width="200" height="40" rx="20" />
+					<text class="mg-chip-text mg-chip-text--sage" x="0" y="6" text-anchor="middle">{t('sale del método', 'leaves the method')}</text>
+				</g>
+				<g data-el="f-tok" data-x="70" data-y="250"><circle class="mg-dot" r="12" /></g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 2b. try/catch/finally (slide) -->
+	<div slot="scene" data-scene="tcf" class="scene-tcf">
+		<div class="dg-box dg-box--sage" data-el="t1">
+			<p class="dg-label dg-label--sage">try</p>
+			<p class="dg-sub">{t('Se corta en la línea que falla', 'It is cut at the line that fails')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="t2">
+			<p class="dg-label">catch</p>
+			<p class="dg-sub">{t('Corre solo si el tipo coincide', 'Runs only if the type matches')}</p>
+		</div>
+		<div class="dg-box" data-el="t3">
+			<p class="dg-label">finally</p>
+			<p class="dg-sub">{t('Corre siempre, incluso con return', 'Always runs, even with a return')}</p>
+		</div>
+		<div class="dg-box" data-el="t4">
+			<p class="dg-label">{t('Lo que sigue', 'What follows')}</p>
+			<p class="dg-sub">{t('El programa continúa normalmente', 'The program continues normally')}</p>
+		</div>
+	</div>
+
+	<!-- 3. Checked vs. unchecked (motion) -->
+	<div slot="scene" data-scene="check" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="60" y="100">CHECKED · Exception</text>
+				<text class="mg-chip-text mg-chip-text--lg" x="60" y="400">UNCHECKED · RuntimeException</text>
+				<g data-el="ck-gate">
+					<rect class="mg-card mg-card--ink" x="730" y="40" width="140" height="580" rx="22" />
+					<text class="mg-text mg-text--light mg-text--strong" x="800" y="336" text-anchor="middle">{t('compilador', 'compiler')}</text>
+				</g>
+				<circle data-anchor="ck-pass" cx="800" cy="470" r="1" fill="none" />
+				<circle data-anchor="ck-wait" cx="650" cy="190" r="1" fill="none" />
+				<g data-el="ck-ch" data-x="190" data-y="190">
+					<rect class="mg-chip mg-chip--sage" x="-95" y="-22" width="190" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage" x="0" y="6" text-anchor="middle">IOException</text>
+				</g>
+				<g data-el="ck-un" data-x="210" data-y="470">
+					<rect class="mg-exc" x="-130" y="-22" width="260" height="44" rx="22" />
+					<text class="mg-exc-text" x="0" y="6" text-anchor="middle">NullPointerException</text>
+				</g>
+				<g data-el="ck-bug">
+					<rect class="mg-card mg-card--accent" x="1000" y="420" width="520" height="100" rx="20" />
+					<text class="mg-heading" x="1030" y="462">{t('Bug de programación', 'Programming bug')}</text>
+					<text class="mg-text mg-text--muted" x="1030" y="494">{t('Se arregla el código', 'Fix the code')}</text>
+				</g>
+				<g data-el="ck-ask">
+					<rect class="mg-chip mg-chip--sage" x="1000" y="40" width="520" height="48" rx="24" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1260" y="72" text-anchor="middle">{t('¿Lo manejás o lo declarás?', 'Handle it or declare it?')}</text>
+				</g>
+				<g data-el="ck-opt1">
+					<rect class="mg-card mg-card--sage" x="1000" y="110" width="520" height="100" rx="20" />
+					<text class="mg-heading" x="1030" y="152">{t('Manejarla', 'Handle it')}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="1030" y="186">try / catch</text>
+				</g>
+				<g data-el="ck-opt2">
+					<rect class="mg-card mg-card--sage" x="1000" y="240" width="520" height="100" rx="20" />
+					<text class="mg-heading" x="1030" y="282">{t('Declararla', 'Declare it')}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="1030" y="316">void leer() throws …</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 3b. Checked vs. unchecked (slide) -->
+	<div slot="scene" data-scene="unchecked" class="scene-unchecked">
+		<div class="dg-box dg-box--accent" data-el="u-un">
+			<p class="dg-label">Unchecked · RuntimeException</p>
+			<p class="dg-title">{t('Errores de programación', 'Programming errors')}</p>
+			<p class="dg-sub">{t('Se evitan, no se manejan. El compilador no dice nada.', 'They are avoided, not handled. The compiler says nothing.')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="u-ch">
+			<p class="dg-label dg-label--sage">Checked · Exception</p>
+			<p class="dg-title">{t('Condiciones del entorno', 'Environment conditions')}</p>
+			<p class="dg-sub">{t('Esperables y fuera de tu control. El compilador te obliga a decidir.', 'Expected and out of your control. The compiler forces you to decide.')}</p>
+		</div>
+	</div>
+
+	<div slot="scene" data-scene="throwkw" class="scene-throwkw">
+		<div class="dg-box dg-box--sage" data-el="tw-throw">
+			<p class="dg-label dg-label--sage">throw</p>
+			<p class="dg-title">{t('Una acción', 'An action')}</p>
+			<code class="dg-code">throw new EdadInvalidaException(edad);</code>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="tw-throws">
+			<p class="dg-label">throws</p>
+			<p class="dg-title">{t('Una advertencia', 'A warning')}</p>
+			<code class="dg-code">void setEdad(int e) throws EdadInvalidaException</code>
+		</div>
+	</div>
+
+	<!-- 4. Propagation through the call stack (motion) -->
+	<div slot="scene" data-scene="stack" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-text mg-text--strong mg-text--muted" x="100" y="76">{t('PILA DE LLAMADAS', 'CALL STACK')}</text>
+				<g data-el="sa-1" class="mg-arrow"><path class="mg-stroke" d="M380 234L380 200" pathLength="1" /><path class="mg-head" d="M370 210L380 198L390 210" /></g>
+				<g data-el="sa-2" class="mg-arrow"><path class="mg-stroke" d="M380 370L380 336" pathLength="1" /><path class="mg-head" d="M370 346L380 334L390 346" /></g>
+				<g data-el="sa-3" class="mg-arrow"><path class="mg-stroke" d="M380 506L380 472" pathLength="1" /><path class="mg-head" d="M370 482L380 470L390 482" /></g>
+				<g data-el="fr-1">
+					<rect class="mg-card mg-card--accent" x="100" y="100" width="560" height="96" rx="18" />
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="130" y="140">Integer.parseInt("veintidós")</text>
+					<text class="mg-text mg-text--muted" x="130" y="170">throw new NumberFormatException(…)</text>
+				</g>
+				<g data-el="fr-2">
+					<rect class="mg-card" x="100" y="236" width="560" height="96" rx="18" />
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="130" y="276">leerLinea()</text>
+					<text class="mg-text mg-text--muted" x="130" y="306">{t('no tiene try/catch', 'has no try/catch')}</text>
+				</g>
+				<g data-el="fr-3">
+					<rect class="mg-card" x="100" y="372" width="560" height="96" rx="18" />
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="130" y="412">procesarArchivo()</text>
+					<text class="mg-text mg-text--muted" x="130" y="442">{t('tampoco tiene try/catch', 'has no try/catch either')}</text>
+				</g>
+				<g data-el="fr-4">
+					<rect class="mg-card mg-card--sage" x="100" y="508" width="560" height="96" rx="18" />
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="130" y="548">main()</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="130" y="578">catch (NumberFormatException e) {'{'} … {'}'}</text>
+				</g>
+				<g data-el="st-born" data-x="800" data-y="148">
+					<rect class="mg-chip mg-chip--sage" x="-105" y="-20" width="210" height="40" rx="20" />
+					<text class="mg-chip-text mg-chip-text--sage" x="0" y="6" text-anchor="middle">{t('acá NACE la excepción', 'the exception is born here')}</text>
+				</g>
+				<g data-el="st-trace">
+					<rect class="mg-card mg-card--ink" x="760" y="100" width="780" height="300" rx="22" />
+					<text class="mg-mono mg-out mg-mono--sm" x="790" y="150" data-el="tr-0">java.lang.NumberFormatException: For input string: "veintidós"</text>
+					<text class="mg-mono mg-mono--sm" x="790" y="194" data-el="tr-1">    at java.base/java.lang.Integer.parseInt(Integer.java:661)</text>
+					<text class="mg-mono mg-mono--sm" x="790" y="238" data-el="tr-2">    at Main.leerLinea(Main.java:12)</text>
+					<text class="mg-mono mg-mono--sm" x="790" y="282" data-el="tr-3">    at Main.procesarArchivo(Main.java:8)</text>
+					<text class="mg-mono mg-mono--sm" x="790" y="326" data-el="tr-4">    at Main.main(Main.java:4)</text>
+				</g>
+				<g data-el="st-handler">
+					<rect class="mg-card mg-card--sage" x="760" y="440" width="780" height="170" rx="22" />
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="790" y="490">catch (NumberFormatException e) {'{'}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="790" y="526">    System.out.println("Dato inválido");</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="790" y="562">{'}'}</text>
+				</g>
+				<g data-el="st-jvm">
+					<rect class="mg-card mg-card--ink" x="760" y="440" width="780" height="170" rx="22" />
+					<text class="mg-mono mg-out mg-mono--sm" x="790" y="490">Exception in thread "main" java.lang.NumberFormatException:</text>
+					<text class="mg-mono mg-mono--sm" x="790" y="526">    at Main.main(Main.java:4)</text>
+					<text class="mg-text mg-text--light mg-text--strong" x="790" y="580">{t('La JVM termina el hilo.', 'The JVM ends the thread.')}</text>
+				</g>
+				<g data-el="st-exc" data-x="530" data-y="148">
+					<rect class="mg-exc" x="-130" y="-20" width="260" height="40" rx="20" />
+					<text class="mg-exc-text" x="0" y="6" text-anchor="middle">NumberFormatException</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<div slot="scene" data-scene="design" class="scene-design">
+		<div class="dg-box" data-el="d1">
+			<p class="dg-label">{t('No donde ocurre', 'Not where it happens')}</p>
+			<p class="dg-sub">{t('Leer un archivo casi nunca sabe qué hacer si no existe.', 'Reading a file rarely knows what to do if it is missing.')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="d2">
+			<p class="dg-label dg-label--sage">{t('Donde podés decidir', 'Where you can decide')}</p>
+			<p class="dg-sub">{t('El que mandó a leer sabe si reintentar, avisar o usar un valor por defecto.', 'The one who asked for the read knows whether to retry, warn or use a default.')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="d3">
+			<p class="dg-label">{t('Un catch que sobra', 'A catch that is not needed')}</p>
+			<p class="dg-sub">{t('Si no puede tomar ninguna decisión útil, no lo escribas.', 'If it cannot make any useful decision, do not write it.')}</p>
+		</div>
+	</div>
+
+	<!-- 5. Several catch blocks (motion) -->
+	<div slot="scene" data-scene="catches" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<circle data-anchor="ra1" cx="640" cy="165" r="1" fill="none" />
+				<circle data-anchor="ra2" cx="640" cy="325" r="1" fill="none" />
+				<circle data-anchor="ra3" cx="640" cy="485" r="1" fill="none" />
+				<circle data-anchor="cb1" cx="1320" cy="165" r="1" fill="none" />
+				<circle data-anchor="cb2" cx="1320" cy="325" r="1" fill="none" />
+				<circle data-anchor="cb3" cx="1320" cy="485" r="1" fill="none" />
+
+				<g data-el="ca1">
+					<rect class="mg-card mg-card--sage" x="700" y="110" width="800" height="110" rx="20" />
+					<text class="mg-mono mg-mono--dark" x="730" y="162">catch (NumberFormatException e)</text>
+					<text class="mg-text mg-text--muted" x="730" y="194">{t('la más específica, primero', 'the most specific, first')}</text>
+				</g>
+				<g data-el="ca2">
+					<rect class="mg-card mg-card--sage" x="700" y="270" width="800" height="110" rx="20" />
+					<text class="mg-mono mg-mono--dark" x="730" y="322">catch (IllegalArgumentException e)</text>
+					<text class="mg-text mg-text--muted" x="730" y="354">{t('NumberFormatException hereda de esta', 'NumberFormatException extends this one')}</text>
+				</g>
+				<g data-el="ca3">
+					<rect class="mg-card mg-card--sage" x="700" y="430" width="800" height="110" rx="20" />
+					<text class="mg-mono mg-mono--dark" x="730" y="482">catch (Exception e)</text>
+					<text class="mg-text mg-text--muted" x="730" y="514">{t('la más general, al final', 'the most general, last')}</text>
+				</g>
+
+				<g data-el="cw1">
+					<rect class="mg-card mg-card--accent" x="700" y="110" width="800" height="110" rx="20" />
+					<text class="mg-mono mg-mono--dark" x="730" y="162">catch (Exception e)</text>
+					<text class="mg-text mg-text--muted" x="730" y="194">{t('atrapa todo, primero', 'catches everything, first')}</text>
+				</g>
+				<g data-el="cw2">
+					<rect class="mg-card mg-card--dashed" x="700" y="270" width="800" height="110" rx="20" />
+					<text class="mg-mono mg-text--dim" x="730" y="322">catch (NumberFormatException e)</text>
+					<text class="mg-text mg-text--muted" x="730" y="354">{t('inalcanzable', 'unreachable')}</text>
+				</g>
+				<g data-el="cw3">
+					<rect class="mg-card mg-card--dashed" x="700" y="430" width="800" height="110" rx="20" />
+					<text class="mg-mono mg-text--dim" x="730" y="482">catch (IllegalArgumentException e)</text>
+					<text class="mg-text mg-text--muted" x="730" y="514">{t('inalcanzable', 'unreachable')}</text>
+				</g>
+				<g data-el="cw-err">
+					<rect class="mg-exc" x="700" y="575" width="800" height="56" rx="28" />
+					<text class="mg-exc-text" x="1100" y="609" text-anchor="middle">{t('error de compilación: el catch es inalcanzable', 'compile error: the catch is unreachable')}</text>
+				</g>
+
+				<g data-el="cm">
+					<rect class="mg-card mg-card--sage" x="700" y="270" width="800" height="110" rx="20" />
+					<text class="mg-mono mg-mono--dark" x="730" y="322">catch (IOException | SQLException e)</text>
+					<text class="mg-text mg-text--muted" x="730" y="354">{t('un solo bloque para los dos tipos', 'a single block for both types')}</text>
+				</g>
+
+				<g data-el="ct-1" data-x="170" data-y="325">
+					<rect class="mg-exc" x="-125" y="-20" width="250" height="40" rx="20" />
+					<text class="mg-exc-text" x="0" y="6" text-anchor="middle">NumberFormatException</text>
+				</g>
+				<g data-el="ct-2" data-x="170" data-y="325">
+					<rect class="mg-exc" x="-145" y="-20" width="290" height="40" rx="20" />
+					<text class="mg-exc-text" x="0" y="6" text-anchor="middle">IllegalArgumentException</text>
+				</g>
+				<g data-el="ct-3" data-x="170" data-y="325">
+					<rect class="mg-exc" x="-85" y="-20" width="170" height="40" rx="20" />
+					<text class="mg-exc-text" x="0" y="6" text-anchor="middle">IOException</text>
+				</g>
+				<g data-el="ct-io" data-x="170" data-y="325">
+					<rect class="mg-exc" x="-85" y="-20" width="170" height="40" rx="20" />
+					<text class="mg-exc-text" x="0" y="6" text-anchor="middle">IOException</text>
+				</g>
+				<g data-el="ct-sql" data-x="170" data-y="425">
+					<rect class="mg-exc" x="-90" y="-20" width="180" height="40" rx="20" />
+					<text class="mg-exc-text" x="0" y="6" text-anchor="middle">SQLException</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<div slot="scene" data-scene="catchsl" class="scene-catchsl">
+		<div class="dg-box dg-box--sage" data-el="cs-order">
+			<p class="dg-label dg-label--sage">{t('Orden', 'Order')}</p>
+			<p class="dg-title">{t('De lo específico a lo general', 'From specific to general')}</p>
+			<p class="dg-sub">{t('Si invertís el orden, el compilador te frena.', 'If you swap the order, the compiler stops you.')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="cs-multi">
+			<p class="dg-label">multi-catch</p>
+			<code class="dg-code">catch (IOException | SQLException e)</code>
+			<p class="dg-sub">{t('Un solo bloque cuando dos tipos se manejan igual.', 'A single block when two types are handled the same way.')}</p>
+		</div>
+	</div>
+
+	<!-- 6. try-with-resources (slide, motion, motion) -->
+	<div slot="scene" data-scene="ressl" class="scene-ressl">
+		<div class="dg-box" data-el="rl-manual">
+			<p class="dg-label">{t('A mano', 'By hand')}</p>
+			<p class="dg-title">{t('Nueve líneas de ceremonia', 'Nine lines of ceremony')}</p>
+			<p class="dg-sub">{t('null check, close() que también puede fallar y casi nadie sabe qué poner.', 'null check, a close() that can also fail and almost nobody knows what to put.')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="rl-auto">
+			<p class="dg-label">AutoCloseable</p>
+			<p class="dg-title">{t('Un recurso simulado', 'A simulated resource')}</p>
+			<p class="dg-sub">{t('Imprime un mensaje al abrirse y otro al cerrarse.', 'It prints one message when it opens and another when it closes.')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="rl-twr">
+			<p class="dg-label dg-label--sage">try-with-resources</p>
+			<p class="dg-title">{t('El cierre ya no depende de vos', 'The closing no longer depends on you')}</p>
+			<p class="dg-sub">{t('Funciona con cualquier clase AutoCloseable.', 'It works with any AutoCloseable class.')}</p>
+		</div>
+	</div>
+
+	<div slot="scene" data-scene="res" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="rs-code">
+					<rect class="mg-card mg-card--ink" x="60" y="70" width="760" height="230" rx="22" />
+					<text class="mg-mono mg-mono--sm" x="90" y="118">try (ConexionSimulada c = new ConexionSimulada("srv")) {'{'}</text>
+					<text class="mg-mono mg-mono--sm" x="90" y="154">    c.enviar("SELECT * FROM productos");</text>
+					<text class="mg-mono mg-mono--sm" x="90" y="190">{'}'} catch (IllegalArgumentException e) {'{'}</text>
+					<text class="mg-mono mg-mono--sm" x="90" y="226">    System.out.println("No se pudo conectar.");</text>
+					<text class="mg-mono mg-mono--sm" x="90" y="262">{'}'}</text>
+				</g>
+				<g data-el="rs-console">
+					<rect class="mg-card mg-card--ink" x="860" y="70" width="680" height="230" rx="22" />
+					<text class="mg-mono mg-text--dim mg-mono--sm" x="890" y="116">&gt; {t('salida', 'output')}</text>
+					<text class="mg-mono mg-out mg-mono--sm" x="890" y="164" data-el="rs-o1">Conectando a servidor-datos...</text>
+					<text class="mg-mono mg-out mg-mono--sm" x="890" y="204" data-el="rs-o2">Enviando: SELECT * FROM productos</text>
+					<text class="mg-mono mg-out mg-mono--sm" x="890" y="244" data-el="rs-o3">Conexión a servidor-datos cerrada.</text>
+				</g>
+				<g data-el="rs-life">
+					<rect class="mg-card mg-card--sage" x="60" y="380" width="1480" height="120" rx="22" />
+					<rect class="mg-bar" x="120" y="436" width="1360" height="8" rx="4" />
+				</g>
+				<circle data-anchor="rt1" cx="260" cy="440" r="1" fill="none" />
+				<circle data-anchor="rt2" cx="800" cy="440" r="1" fill="none" />
+				<circle data-anchor="rt3" cx="1340" cy="440" r="1" fill="none" />
+				<g data-el="rs-t1"><rect class="mg-chip" x="155" y="525" width="210" height="40" rx="20" /><text class="mg-chip-text" x="260" y="551" text-anchor="middle">{t('se abre', 'it opens')}</text></g>
+				<g data-el="rs-t2"><rect class="mg-chip" x="695" y="525" width="210" height="40" rx="20" /><text class="mg-chip-text" x="800" y="551" text-anchor="middle">{t('se usa', 'it is used')}</text></g>
+				<g data-el="rs-t3"><rect class="mg-chip" x="1235" y="525" width="210" height="40" rx="20" /><text class="mg-chip-text" x="1340" y="551" text-anchor="middle">{t('se cierra sola', 'it closes itself')}</text></g>
+				<g data-el="rs-res" data-x="150" data-y="440">
+					<rect class="mg-chip mg-chip--light" x="-85" y="-22" width="170" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage" x="0" y="6" text-anchor="middle">conexion</text>
+				</g>
+				<g data-el="rs-auto">
+					<rect class="mg-exc" x="330" y="590" width="940" height="52" rx="26" />
+					<text class="mg-exc-text" x="800" y="623" text-anchor="middle">{t('close() lo llama Java por vos, pase lo que pase', 'Java calls close() for you, no matter what')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<div slot="scene" data-scene="exits" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="ex-try">
+					<rect class="mg-card mg-card--accent" x="480" y="30" width="640" height="100" rx="22" />
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="510" y="78">try (var conexion = new ConexionSimulada(…)) {'{'}</text>
+					<text class="mg-text mg-text--muted" x="510" y="108">{t('el recurso queda declarado en el paréntesis', 'the resource is declared in the parentheses')}</text>
+				</g>
+				<g data-el="ex-a1" class="mg-arrow"><path class="mg-stroke" d="M650 130C650 170 280 150 280 192" pathLength="1" /><path class="mg-head" d="M270 182L280 194L290 182" /></g>
+				<g data-el="ex-a2" class="mg-arrow"><path class="mg-stroke" d="M800 130L800 192" pathLength="1" /><path class="mg-head" d="M790 182L800 194L810 182" /></g>
+				<g data-el="ex-a3" class="mg-arrow"><path class="mg-stroke" d="M950 130C950 170 1320 150 1320 192" pathLength="1" /><path class="mg-head" d="M1310 182L1320 194L1330 182" /></g>
+				<g data-el="ex-ok">
+					<rect class="mg-card mg-card--sage" x="60" y="200" width="440" height="100" rx="20" />
+					<text class="mg-heading" x="90" y="245">{t('Termina bien', 'Ends normally')}</text>
+					<text class="mg-text mg-text--muted" x="90" y="275">{t('llegó a la última línea', 'reached the last line')}</text>
+				</g>
+				<g data-el="ex-exc">
+					<rect class="mg-card" x="580" y="200" width="440" height="100" rx="20" />
+					<text class="mg-heading" x="610" y="245">{t('Lanza una excepción', 'Throws an exception')}</text>
+					<text class="mg-text mg-text--muted" x="610" y="275">{t('se corta a la mitad', 'it is cut midway')}</text>
+				</g>
+				<g data-el="ex-ret">
+					<rect class="mg-card" x="1100" y="200" width="440" height="100" rx="20" />
+					<text class="mg-heading" x="1130" y="245">{t('Hace un return', 'Does a return')}</text>
+					<text class="mg-text mg-text--muted" x="1130" y="275">{t('sale antes de tiempo', 'leaves early')}</text>
+				</g>
+				<g data-el="ex-b1" class="mg-arrow"><path class="mg-stroke" d="M280 300C280 370 560 360 600 424" pathLength="1" /><path class="mg-head" d="M586 416L600 426L610 412" /></g>
+				<g data-el="ex-b2" class="mg-arrow"><path class="mg-stroke" d="M800 300L800 424" pathLength="1" /><path class="mg-head" d="M790 412L800 424L810 412" /></g>
+				<g data-el="ex-b3" class="mg-arrow"><path class="mg-stroke" d="M1320 300C1320 370 1040 360 1000 424" pathLength="1" /><path class="mg-head" d="M990 412L1000 426L1014 416" /></g>
+				<g data-el="ex-close">
+					<rect class="mg-card mg-card--accent" x="450" y="430" width="700" height="120" rx="22" />
+					<text class="mg-heading" x="800" y="484" text-anchor="middle">conexion.close() — {t('automático', 'automatic')}</text>
+					<text class="mg-text mg-text--muted" x="800" y="522" text-anchor="middle">{t('antes de que se ejecute el catch o el finally', 'before the catch or the finally runs')}</text>
+				</g>
+				<g data-el="ex-note">
+					<rect class="mg-chip mg-chip--sage" x="300" y="590" width="1000" height="48" rx="24" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="800" y="622" text-anchor="middle">{t('Funciona con cualquier clase que implemente AutoCloseable', 'It works with any class that implements AutoCloseable')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 7. Custom exceptions -->
+	<div slot="scene" data-scene="custom" class="scene-custom">
+		<div class="dg-box dg-box--accent" data-el="cu-class">
+			<p class="dg-label">{t('Excepción del dominio', 'Domain exception')}</p>
+			<code class="dg-code">SaldoInsuficienteException</code>
+			<p class="dg-sub">{t('Te dice qué pasó desde el nombre.', 'It tells you what happened from its name.')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="cu-data">
+			<p class="dg-label dg-label--sage">{t('Lleva datos', 'Carries data')}</p>
+			<code class="dg-code">e.getFaltante()</code>
+			<p class="dg-sub">{t('No solo un texto: el catch puede usarlos.', 'Not just a text: the catch can use them.')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="cu-checked">
+			<p class="dg-label dg-label--sage">extends Exception · checked</p>
+			<p class="dg-sub">{t('Condición esperable del entorno: archivo de configuración no encontrado.', 'Expected environment condition: configuration file not found.')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="cu-unchecked">
+			<p class="dg-label">extends RuntimeException · unchecked</p>
+			<p class="dg-sub">{t('Error de uso de la API: el llamador debió validar antes. Lo más común hoy.', 'API usage error: the caller should have validated first. The most common today.')}</p>
+		</div>
+	</div>
+
+	<div slot="scene" data-scene="chain" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="ch-hi">
+					<rect class="mg-card mg-card--accent" x="640" y="70" width="880" height="380" rx="24" />
+					<text class="mg-heading" x="680" y="124">RepositorioNoDisponibleException</text>
+					<text class="mg-text mg-text--muted" x="680" y="154">extends RuntimeException</text>
+					<rect class="mg-card" x="670" y="180" width="820" height="56" rx="14" />
+					<text class="mg-text mg-text--strong" x="690" y="215">message</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="800" y="215">"No se pudo consultar el cliente 42"</text>
+					<rect class="mg-card mg-card--dashed" x="670" y="270" width="820" height="140" rx="14" />
+					<text class="mg-text mg-text--strong" x="690" y="300">cause</text>
+					<text class="mg-mono mg-mono--dark" x="1080" y="348" text-anchor="middle" data-el="ch-null">cause: null</text>
+				</g>
+				<circle data-anchor="ch-slot" cx="1080" cy="345" r="1" fill="none" />
+				<g data-el="ch-low" data-x="290" data-y="250">
+					<rect class="mg-card" x="-190" y="-50" width="380" height="100" rx="18" />
+					<text class="mg-text mg-text--strong" x="0" y="-8" text-anchor="middle">SQLException</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="0" y="24" text-anchor="middle">"No se pudo conectar"</text>
+				</g>
+				<text class="mg-mono mg-mono--dark mg-mono--sm" x="80" y="540" data-el="ch-code">throw new RepositorioNoDisponibleException("No se pudo consultar el cliente " + id, e);</text>
+				<text class="mg-mono mg-mono--dark mg-mono--sm" x="80" y="540" data-el="ch-bad">throw new MiException(e.getMessage());</text>
+				<g data-el="ch-e">
+					<rect class="mg-chip mg-chip--sage" x="900" y="512" width="320" height="40" rx="20" />
+					<text class="mg-chip-text mg-chip-text--sage" x="1060" y="538" text-anchor="middle">e = {t('la causa original', 'the original cause')}</text>
+				</g>
+				<g data-el="ch-note">
+					<rect class="mg-chip mg-chip--sage" x="80" y="585" width="760" height="48" rx="24" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="460" y="617" text-anchor="middle">{t('El stack trace completo sigue disponible', 'The full stack trace remains available')}</text>
+				</g>
+				<g data-el="ch-cut">
+					<rect class="mg-exc" x="80" y="585" width="1000" height="52" rx="26" />
+					<text class="mg-exc-text" x="580" y="618" text-anchor="middle">{t('stack trace cortado: la línea que falló de verdad ya no está', 'stack trace cut: the line that really failed is gone')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 8. Antipatterns -->
+	<div slot="scene" data-scene="anti" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="an-t1">
+					<rect class="mg-card" x="60" y="110" width="380" height="120" rx="20" />
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="160">try {'{'} guardarPedido(pedido); {'}'}</text>
+					<text class="mg-text mg-text--muted" x="90" y="196">{t('el pedido puede fallar', 'the order may fail')}</text>
+				</g>
+				<g data-el="an-c1">
+					<rect class="mg-card mg-card--accent" x="600" y="110" width="420" height="120" rx="20" />
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="630" y="150">catch (Exception e) {'{'}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="630" y="178">    // TODO: ver esto después</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="630" y="206">{'}'}</text>
+				</g>
+				<g data-el="an-v1">
+					<rect class="mg-card mg-card--dashed" x="1180" y="110" width="360" height="120" rx="20" />
+					<text class="mg-text mg-text--strong" x="1210" y="160">log: {t('(nada)', '(nothing)')}</text>
+					<text class="mg-text mg-text--muted" x="1210" y="192">{t('ni un rastro', 'not a trace')}</text>
+				</g>
+				<g data-el="an-ok">
+					<rect class="mg-chip mg-chip--sage" x="1235" y="252" width="250" height="40" rx="20" />
+					<text class="mg-chip-text mg-chip-text--sage" x="1360" y="278" text-anchor="middle">{t('El usuario ve «listo»', 'The user sees “done”')}</text>
+				</g>
+				<g data-el="an-tok1" data-x="250" data-y="92">
+					<rect class="mg-exc" x="-95" y="-20" width="190" height="40" rx="20" />
+					<text class="mg-exc-text" x="0" y="6" text-anchor="middle">SQLException</text>
+				</g>
+
+				<g data-el="an-t2">
+					<rect class="mg-card" x="60" y="410" width="380" height="120" rx="20" />
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="450">try {'{'}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="480">  throw new IllegalStateException(</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="90" y="510">    "algo grave"); {'}'}</text>
+				</g>
+				<g data-el="an-f2">
+					<rect class="mg-card mg-card--sage" x="600" y="410" width="420" height="120" rx="20" />
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="630" y="450">finally {'{'}</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="630" y="480">    return 0;</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="630" y="510">{'}'}</text>
+				</g>
+				<g data-el="an-v2">
+					<rect class="mg-card mg-card--dashed" x="1180" y="410" width="360" height="120" rx="20" />
+					<text class="mg-text mg-text--strong" x="1210" y="460">{t('La excepción DESAPARECE', 'The exception VANISHES')}</text>
+					<text class="mg-text mg-text--muted" x="1210" y="492">{t('nadie se entera nunca', 'nobody ever finds out')}</text>
+				</g>
+				<g data-el="an-tok2" data-x="250" data-y="392">
+					<rect class="mg-exc" x="-120" y="-20" width="240" height="40" rx="20" />
+					<text class="mg-exc-text" x="0" y="6" text-anchor="middle">IllegalStateException</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<div slot="scene" data-scene="antis" class="scene-antis">
+		<div class="dg-box dg-box--accent" data-el="an1">
+			<p class="dg-label"><span class="dg-step-num">1</span> {t('El catch vacío', 'The empty catch')}</p>
+			<p class="dg-sub">{t('Un error tragado es infinitamente peor que uno visible.', 'A swallowed error is infinitely worse than a visible one.')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="an2">
+			<p class="dg-label"><span class="dg-step-num">2</span> {t('Capturar Exception de entrada', 'Catching Exception up front')}</p>
+			<p class="dg-sub">{t('Atrapa también los bugs que debían explotar temprano.', 'It also catches the bugs that were meant to blow up early.')}</p>
+		</div>
+		<div class="dg-box" data-el="an3">
+			<p class="dg-label"><span class="dg-step-num">3</span> {t('Control de flujo normal', 'Normal flow control')}</p>
+			<p class="dg-sub">{t('Que un usuario no exista no es excepcional, es martes.', 'A user not existing is not exceptional, it is just Tuesday.')}</p>
+		</div>
+		<div class="dg-box" data-el="an4">
+			<p class="dg-label"><span class="dg-step-num">4</span> {t('return dentro de finally', 'return inside finally')}</p>
+			<p class="dg-sub">{t('Descarta en silencio la excepción que viajaba.', 'It silently discards the traveling exception.')}</p>
+		</div>
+	</div>
+
+	<!-- 9. Common mistakes -->
+	<div slot="scene" data-scene="mistakes12" class="scene-mistakes12">
+		{mistakes.map((m) => <span class="dg-chip dg-chip--accent" data-el={m.id}>{m.text}</span>)}
+	</div>
+
+	<!-- 10. Guided exercise -->
+	<div slot="scene" data-scene="exercise12" class="scene-exercise12">
+		{
+			exercise.map((ex) => (
+				<div class="dg-box" data-el={ex.id}>
+					<p class="dg-label"><span class="dg-step-num">{ex.n}</span> {t('Paso', 'Step')}</p>
+					<p class="dg-title">{ex.name}</p>
+					<p class="dg-sub">{ex.note}</p>
+				</div>
+			))
+		}
+	</div>
+
+	<div slot="scene" data-scene="closing12" class="scene-closing12">
+		<div class="dg-chips scene-closing12-map">
+			{takeaways.map((text, i) => <span class:list={['dg-chip', i < 4 ? 'dg-chip--accent' : 'dg-chip--sage']} data-el={`c${i + 1}`}>{i + 1} · {text}</span>)}
+		</div>
+		<a class="dg-box dg-box--ink scene-closing12-repo" data-el="repo" href="https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l12_excepciones_y_manejo_de_errores" target="_blank" rel="noopener noreferrer">
+			<p class="dg-label" style="color: var(--color-accent-300)">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: inherit; width: 16px; height: 16px">
+					<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" />
+				</svg>
+				CursoDeJava · l12_excepciones_y_manejo_de_errores
+			</p>
+			<p class="dg-sub">{t('16 ejercicios: de la división sin control a las excepciones propias', '16 exercises: from the unchecked division to custom exceptions')}</p>
+		</a>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	.mg-big {
+		font-size: 26px;
+	}
+
+	/* Thrown exceptions are solid accent chips so they stand out against the neutral cards. */
+	.mg-exc {
+		fill: var(--color-accent);
+	}
+
+	.mg-exc-text {
+		font-family: var(--font-body);
+		font-size: 15px;
+		font-weight: 700;
+		fill: var(--color-bg);
+	}
+
+	.mg-card--dashed {
+		stroke-dasharray: 8 6;
+	}
+
+	.scene-intro12,
+	.scene-tcf,
+	.scene-unchecked,
+	.scene-throwkw,
+	.scene-design,
+	.scene-catchsl,
+	.scene-ressl,
+	.scene-custom,
+	.scene-antis,
+	.scene-exercise12,
+	.scene-closing12 {
+		align-content: center;
+	}
+
+	.scene-intro12 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-intro12 [data-el='iq'] {
+		grid-column: 1 / -1;
+	}
+
+	.scene-tcf,
+	.scene-unchecked,
+	.scene-throwkw,
+	.scene-catchsl,
+	.scene-custom,
+	.scene-antis {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-design,
+	.scene-ressl {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.scene-throwkw .dg-code,
+	.scene-catchsl .dg-code {
+		font-size: 0.78em;
+		white-space: nowrap;
+	}
+
+	.scene-mistakes12 {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-content: center;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.scene-exercise12 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-closing12 {
+		justify-items: center;
+	}
+
+	.scene-closing12-map {
+		justify-content: center;
+	}
+
+	.scene-closing12-repo {
+		justify-items: start;
+		text-decoration: none;
+		color: var(--color-neutral-100);
+		min-width: min(100%, 22rem);
+	}
+
+	.scene-closing12-repo:hover {
+		border-color: var(--color-accent-400);
+	}
+
+	@media (width < 720px) {
+		.scene-intro12,
+		.scene-tcf,
+		.scene-unchecked,
+		.scene-throwkw,
+		.scene-design,
+		.scene-catchsl,
+		.scene-ressl,
+		.scene-custom,
+		.scene-antis,
+		.scene-exercise12 {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

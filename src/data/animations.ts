@@ -90,6 +90,81 @@ export const animations: Animation[] = [
 		minutes: 16,
 		lesson: { course: 'java', slug: '04-arrays-y-strings' },
 	},
+	{
+		slug: 'herencia-polimorfismo-java',
+		image: '/img/animations/herencia-polimorfismo-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'Herencia, polimorfismo y sobrecarga, paso a paso',
+			en: 'Inheritance, polymorphism and overloading, step by step',
+		},
+		description: {
+			es: 'Recorrido animado por extends, la cadena de constructores con super, @Override, la diferencia entre sobrecarga y sobrescritura, el despacho dinámico, instanceof, la composición y la clase Object.',
+			en: 'An animated walkthrough of extends, the constructor chain with super, @Override, overloading versus overriding, dynamic dispatch, instanceof, composition and the Object class.',
+		},
+		minutes: 15,
+		lesson: { course: 'java', slug: '08-herencia-polimorfismo-y-sobrecarga' },
+	},
+	{
+		slug: 'abstractas-interfaces-java',
+		image: '/img/animations/abstractas-interfaces-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'Clases abstractas e interfaces, paso a paso',
+			en: 'Abstract classes and interfaces, step by step',
+		},
+		description: {
+			es: 'Recorrido animado por las clases abstractas y las interfaces, default, static y adaptadoras, la implementación de varios contratos, cuándo elegir cada una, los packages y el FQCN, y la asociación, agregación y composición.',
+			en: 'An animated walkthrough of abstract classes and interfaces, default, static and adapter classes, implementing several contracts, when to pick each one, packages and the FQCN, and association, aggregation and composition.',
+		},
+		minutes: 15,
+		lesson: { course: 'java', slug: '09-clases-abstractas-interfaces-y-modelado' },
+	},
+	{
+		slug: 'excepciones-java',
+		image: '/img/animations/excepciones-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'Excepciones y manejo de errores, paso a paso',
+			en: 'Exceptions and error handling, step by step',
+		},
+		description: {
+			es: 'Recorrido animado por la jerarquía Throwable, el flujo de try, catch y finally, checked y unchecked, la propagación por la pila de llamadas, el orden de los catch, try-with-resources, las excepciones propias con su causa y los antipatrones.',
+			en: 'An animated walkthrough of the Throwable hierarchy, the try, catch and finally flow, checked and unchecked exceptions, propagation up the call stack, catch ordering, try-with-resources, custom exceptions with their cause, and common antipatterns.',
+		},
+		minutes: 14,
+		lesson: { course: 'java', slug: '10-excepciones-y-manejo-de-errores' },
+	},
+	{
+		slug: 'collections-genericos-java',
+		image: '/img/animations/collections-genericos-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'Java Collections Framework y genéricos, paso a paso',
+			en: 'Java Collections Framework and generics, step by step',
+		},
+		description: {
+			es: 'Recorrido animado por la jerarquía del Java Collections Framework, los genéricos, List, Set y Map, ArrayList contra LinkedList, el funcionamiento interno de HashMap, las clases y métodos genéricos propios y el borrado de tipos.',
+			en: 'An animated walkthrough of the Java Collections Framework hierarchy, generics, List, Set and Map, ArrayList against LinkedList, how a HashMap works inside, your own generic classes and methods, and type erasure.',
+		},
+		minutes: 16,
+		lesson: { course: 'java', slug: '13-java-collections-framework-y-genericos' },
+	},
+	{
+		slug: 'iteradores-ordenamiento-java',
+		image: '/img/animations/iteradores-ordenamiento-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'Iteradores, ordenamiento, equals y hashCode, paso a paso',
+			en: 'Iterators, sorting, equals and hashCode, step by step',
+		},
+		description: {
+			es: 'Recorrido animado por el iterador detrás del for-each, ConcurrentModificationException, Comparable y Comparator, el contrato equals/hashCode con los cajones de un HashSet y la trampa del TreeSet.',
+			en: 'An animated walkthrough of the iterator behind the for-each, ConcurrentModificationException, Comparable and Comparator, the equals/hashCode contract with HashSet buckets and the TreeSet trap.',
+		},
+		minutes: 16,
+		lesson: { course: 'java', slug: '14-iteradores-ordenamiento-equals-hashcode' },
+	},
 ];
 
 /**

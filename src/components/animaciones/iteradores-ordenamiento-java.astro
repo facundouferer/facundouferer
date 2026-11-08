@@ -1,0 +1,831 @@
+---
+/**
+ * Scenes for the "Iterators, sorting and equals/hashCode, step by step" animation
+ * (lesson java/16). The captions, code and terminal panels live in
+ * `src/data/animations/iteradores-ordenamiento-java.ts`; this component only draws the
+ * diagrams the steps point to. Slide scenes are HTML blocks (`[data-scene]` with
+ * `[data-el]` elements); the `iter`, `cme`, `rm`, `sort`, `eq`, `hash` and `tree`
+ * scenes are SVG canvases (`data-motion`) choreographed by the cues of their motion steps.
+ * Elements that travel are drawn around their own origin and placed with `data-x`/`data-y`;
+ * the invisible `data-anchor` circles are the spots they glide to.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/iteradores-ordenamiento-java';
+import { resolveScript } from '../../utils/animations';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Motion canvas data ────────────────────────────────────────────────────
+// iter: three wide cells, the cursor sits in the gaps between them
+const iterCells = [
+	{ id: 'cell-0', x: 110, name: '"Ana"' },
+	{ id: 'cell-1', x: 600, name: '"Luis"' },
+	{ id: 'cell-2', x: 1090, name: '"Marta"' },
+];
+const iterGaps = [75, 555, 1045, 1525];
+const iterPills = iterCells.map((cell, i) => ({
+	has: `has-${i}`,
+	next: `next-${i}`,
+	x: 110 + i * 490,
+	name: cell.name,
+}));
+
+// cme / rm: four tasks of 290 units; slot centers and cursor gaps
+const taskNames = ['"estudiar"', '"descansar"', '"practicar"', '"leer"'];
+const taskCenters = [245, 615, 985, 1355];
+const taskGaps = [70, 430, 800, 1170, 1530];
+
+// sort: four books that glide between four slots
+const bookSlots = [230, 610, 990, 1370];
+const books = [
+	{ id: 'bk0', title: 'Rayuela', author: 'Cortázar', pages: 736, tone: 'accent' },
+	{ id: 'bk1', title: 'El Aleph', author: 'Borges', pages: 146, tone: 'sage' },
+	{ id: 'bk2', title: '1984', author: 'Orwell', pages: 328, tone: 'accent' },
+	{ id: 'bk3', title: 'Ficciones', author: 'Borges', pages: 174, tone: 'sage' },
+];
+
+// hash: twelve buckets, 116 wide
+const buckets = Array.from({ length: 12 }, (_, i) => ({ id: `bk-${i}`, x: 60 + i * 124, cx: 118 + i * 124, index: i }));
+
+// eq: the three fields compared by the overridden equals
+const eqFields = [
+	{ id: 'ln-t', y: 360, label: 'titulo', value: '"1984"' },
+	{ id: 'ln-a', y: 420, label: 'autor', value: '"Orwell"' },
+	{ id: 'ln-p', y: 480, label: 'paginas', value: '328' },
+];
+
+// ── Slide scene data ──────────────────────────────────────────────────────
+const collections = ['ArrayList', 'HashSet', 'ArrayDeque', 'LinkedList', 'TreeSet'];
+const rules = [
+	{ id: 'ru-refl', name: t('Reflexiva', 'Reflexive'), note: 'a.equals(a) → true' },
+	{ id: 'ru-sym', name: t('Simétrica', 'Symmetric'), note: t('a.equals(b) ⇒ b.equals(a)', 'a.equals(b) ⇒ b.equals(a)') },
+	{ id: 'ru-trans', name: t('Transitiva', 'Transitive'), note: t('a=b y b=c ⇒ a=c', 'a=b and b=c ⇒ a=c') },
+	{ id: 'ru-cons', name: t('Consistente', 'Consistent'), note: t('Mismo resultado si nada cambió', 'Same result if nothing changed') },
+	{ id: 'ru-null', name: t('Contra null', 'Against null'), note: t('a.equals(null) → false', 'a.equals(null) → false') },
+];
+const mistakes = [
+	{ id: 'e1', text: t('equals sin hashCode', 'equals without hashCode') },
+	{ id: 'e2', text: t('equals(Libro o) en vez de equals(Object o)', 'equals(Libro o) instead of equals(Object o)') },
+	{ id: 'e3', text: t('compareTo con a - b', 'compareTo returning a - b') },
+	{ id: 'e4', text: t('== para comparar String', '== to compare String') },
+	{ id: 'e5', text: t('Modificar un objeto guardado en un HashSet', 'Mutating an object stored in a HashSet') },
+	{ id: 'e6', text: t('remove dentro de un for-each', 'remove inside a for-each') },
+	{ id: 'e7', text: t('compareTo inconsistente con equals', 'compareTo inconsistent with equals') },
+];
+const challenge = [
+	{ id: 'x1', n: 1, name: t('Libro inmutable', 'Immutable Libro'), note: 'titulo · autor · paginas' },
+	{ id: 'x2', n: 2, name: 'equals + hashCode', note: t('Con los tres campos', 'Over the three fields') },
+	{ id: 'x3', n: 3, name: 'Comparable', note: t('Orden natural por título', 'Natural order by title') },
+	{ id: 'x4', n: 4, name: 'HashSet', note: t('Descarta el duplicado', 'Discards the duplicate') },
+	{ id: 'x5', n: 5, name: 'Comparator', note: t('Tres órdenes distintos', 'Three different orders') },
+	{ id: 'x6', n: 6, name: 'TreeSet', note: t('La trampa del compareTo', 'The compareTo trap') },
+];
+const takeaways = [
+	t('for-each = Iterator', 'for-each = Iterator'),
+	t('CME no es de hilos', 'CME is not about threads'),
+	t('removeIf · it.remove()', 'removeIf · it.remove()'),
+	t('Comparable vs Comparator', 'Comparable vs Comparator'),
+	t('compareTo: solo el signo', 'compareTo: only the sign'),
+	t('equals + hashCode juntos', 'equals + hashCode together'),
+	t('equals(Object o)', 'equals(Object o)'),
+	t('TreeSet decide con compareTo', 'TreeSet decides with compareTo'),
+	t('record lo da gratis', 'record gives it for free'),
+];
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<!-- INTRO: three debts and their common root -->
+	<div slot="scene" data-scene="intro16" class="scene-intro16">
+		<div class="dg-box dg-box--accent" data-el="q-iter">
+			<p class="dg-label">{t('Deuda 1', 'Debt 1')}</p>
+			<p class="dg-title">{t('Iteradores y for-each', 'Iterators and for-each')}</p>
+			<code class="dg-code">ConcurrentModificationException</code>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="q-sort">
+			<p class="dg-label dg-label--sage">{t('Deuda 2', 'Debt 2')}</p>
+			<p class="dg-title">{t('Ordenar objetos propios', 'Sorting your own objects')}</p>
+			<code class="dg-code">Comparable · Comparator</code>
+		</div>
+		<div class="dg-box" data-el="q-eq">
+			<p class="dg-label">{t('Deuda 3', 'Debt 3')}</p>
+			<p class="dg-title">{t('Duplicados en un HashSet', 'Duplicates in a HashSet')}</p>
+			<code class="dg-code">equals · hashCode</code>
+		</div>
+		<div class="dg-box dg-box--ink dg-box--center" data-el="q-root">
+			<p class="dg-title">{t('Las colecciones le hacen preguntas a tus objetos', 'Collections ask your objects questions')}</p>
+			<p class="dg-sub">{t('Si contestan mal, todo falla en silencio', 'If they answer wrongly, everything fails silently')}</p>
+		</div>
+	</div>
+
+	<!-- 1. Behind the for-each -->
+	<div slot="scene" data-scene="foreach" class="scene-foreach">
+		<div class="dg-box" data-el="fe-for">
+			<p class="dg-label">for-each</p>
+			<code class="dg-code">for (String n : nombres)</code>
+		</div>
+		<span class="dg-arrow" data-el="fe-arrow" aria-hidden="true">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+		</span>
+		<div class="dg-box dg-box--accent" data-el="fe-it">
+			<p class="dg-label">Iterator</p>
+			<code class="dg-code">it = nombres.iterator()</code>
+			<code class="dg-code">while (it.hasNext()) {'{'} it.next() {'}'}</code>
+		</div>
+		<div class="dg-box dg-box--sage scene-foreach-wide" data-el="fe-methods">
+			<p class="dg-label dg-label--sage">{t('Solo tres métodos', 'Just three methods')}</p>
+			<div class="dg-chips">
+				<code class="dg-chip dg-chip--sage">hasNext()</code>
+				<code class="dg-chip dg-chip--sage">next()</code>
+				<code class="dg-chip dg-chip--sage">remove()</code>
+				<span class="dg-chip dg-chip--ink">Iterable → iterator()</span>
+			</div>
+		</div>
+		<div class="dg-box scene-foreach-wide" data-el="fe-same">
+			<p class="dg-label">{t('La misma sintaxis, estructuras muy distintas', 'The same syntax, very different structures')}</p>
+			<div class="dg-chips">
+				{collections.map((name) => <code class="dg-chip dg-chip--accent">{name}</code>)}
+			</div>
+		</div>
+	</div>
+
+	<!-- 1b. Iterator cursor (motion canvas) -->
+	<div slot="scene" data-scene="iter" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="80" data-el="decl">Iterator&lt;String&gt; it = nombres.iterator();</text>
+
+				<g data-el="list">
+					<rect class="mg-card" x="40" y="140" width="1520" height="240" rx="22" />
+					<text class="mg-text mg-text--strong mg-text--muted" x="68" y="366">nombres</text>
+				</g>
+				{
+					iterCells.map((cell, i) => (
+						<g data-el={cell.id}>
+							<rect class="mg-card mg-card--accent" x={cell.x} y="215" width="400" height="120" rx="18" />
+							<text class="mg-mono mg-mono--dark mg-big" x={cell.x + 200} y="282" text-anchor="middle">{cell.name}</text>
+							<text class="mg-text mg-text--strong mg-text--muted" x={cell.x + 200} y="322" text-anchor="middle">[{i}]</text>
+						</g>
+					))
+				}
+				{iterGaps.map((x, i) => <circle data-anchor={`gp-${i}`} cx={x} cy="170" r="2" fill="none" />)}
+
+				<g data-el="cur" data-x="75" data-y="170">
+					<circle class="mg-dot" cx="0" cy="0" r="24" />
+					<text class="mg-chip-text mg-ptr-text" x="0" y="6" text-anchor="middle">it</text>
+					<path class="mg-pin" d="M-11 20L0 42L11 20Z" />
+				</g>
+
+				{
+					iterPills.map((pill) => (
+						<>
+							<g data-el={pill.has}>
+								<rect class="mg-chip mg-chip--sage" x={pill.x} y="430" width="400" height="54" rx="27" />
+								<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x={pill.x + 200} y="465" text-anchor="middle">hasNext()  →  true</text>
+							</g>
+							<g data-el={pill.next}>
+								<rect class="mg-chip" x={pill.x} y="500" width="400" height="54" rx="27" />
+								<text class="mg-chip-text mg-chip-text--lg" x={pill.x + 200} y="535" text-anchor="middle">next()  →  {pill.name}</text>
+							</g>
+						</>
+					))
+				}
+				<g data-el="has-end">
+					<rect class="mg-card mg-card--ink" x="110" y="580" width="1380" height="56" rx="28" />
+					<text class="mg-text mg-text--light mg-text--strong" x="800" y="615" text-anchor="middle">hasNext()  →  false  ·  {t('el recorrido termina', 'the traversal ends')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 2. ConcurrentModificationException -->
+	<div slot="scene" data-scene="cmefix" class="scene-cmefix">
+		<div class="dg-box dg-box--ink scene-cmefix-wide" data-el="cf-bad">
+			<p class="dg-label" style="color: var(--color-accent-300)">{t('Borrar dentro del for-each', 'Deleting inside the for-each')}</p>
+			<code class="dg-code">tareas.remove(t)</code>
+			<p class="dg-sub">{t('La lista cambia por fuera del iterador → ConcurrentModificationException', 'The list changes behind the iterator → ConcurrentModificationException')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="cf-opt1">
+			<p class="dg-label dg-label--sage">{t('Opción 1 · iterador explícito', 'Option 1 · explicit iterator')}</p>
+			<code class="dg-code">it.remove()</code>
+			<p class="dg-sub">{t('Borra Y mantiene el iterador consistente', 'Deletes AND keeps the iterator consistent')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="cf-opt2">
+			<p class="dg-label">{t('Opción 2 · desde Java 8', 'Option 2 · since Java 8')}</p>
+			<code class="dg-code">tareas.removeIf(t -&gt; …)</code>
+			<p class="dg-sub">{t('Una línea, sin iterador explícito', 'One line, no explicit iterator')}</p>
+		</div>
+		<div class="dg-box dg-box--center scene-cmefix-wide" data-el="cf-threads">
+			<p class="dg-title">{t('Nada que ver con hilos', 'Nothing to do with threads')}</p>
+			<p class="dg-sub">{t('Pasa igual en un programa de un solo hilo', 'It happens the same in a single-threaded program')}</p>
+		</div>
+	</div>
+
+	<!-- 2b. modCount mismatch (motion canvas) -->
+	<div slot="scene" data-scene="cme" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="80" data-el="decl">for (String t : tareas) {'{'} if (t.startsWith("d")) tareas.remove(t); {'}'}</text>
+
+				<g data-el="list">
+					<rect class="mg-card" x="40" y="130" width="1520" height="260" rx="22" />
+					<text class="mg-text mg-text--strong mg-text--muted" x="68" y="372">tareas</text>
+				</g>
+				<g data-el="lmc0">
+					<rect class="mg-chip" x="1290" y="146" width="240" height="40" rx="20" />
+					<text class="mg-chip-text" x="1410" y="173" text-anchor="middle">modCount = 0</text>
+				</g>
+				<g data-el="lmc1">
+					<rect class="mg-chip mg-chip--lost" x="1290" y="146" width="240" height="40" rx="20" />
+					<text class="mg-chip-text" x="1410" y="173" text-anchor="middle">modCount = 1</text>
+				</g>
+				{
+					taskNames.map((name, i) => (
+						<g data-el={`t${i}`} data-x={taskCenters[i]} data-y="260">
+							<rect class="mg-card mg-card--accent mg-token" x="-145" y="-55" width="290" height="110" rx="18" />
+							<text class="mg-mono mg-mono--dark" x="0" y="8" text-anchor="middle">{name}</text>
+						</g>
+					))
+				}
+				{taskCenters.map((x, i) => <circle data-anchor={`sl-${i}`} cx={x} cy="260" r="2" fill="none" />)}
+				{taskGaps.map((x, i) => <circle data-anchor={`gp-${i}`} cx={x} cy="165" r="2" fill="none" />)}
+
+				<g data-el="it-card">
+					<rect class="mg-card mg-card--sage" x="40" y="430" width="730" height="190" rx="22" />
+					<text class="mg-heading" x="72" y="482">Iterator it</text>
+					<text class="mg-text mg-text--muted" x="72" y="590">{t('Memorizó el contador al crearse', 'It memorized the counter when created')}</text>
+				</g>
+				<text class="mg-mono mg-mono--dark mg-big" x="72" y="548" data-el="iexp0">expectedModCount = 0</text>
+
+				<g data-el="cur" data-x="70" data-y="165">
+					<circle class="mg-dot" cx="0" cy="0" r="22" />
+					<text class="mg-chip-text mg-ptr-text" x="0" y="6" text-anchor="middle">it</text>
+					<path class="mg-pin" d="M-10 18L0 40L10 18Z" />
+				</g>
+
+				<g data-el="rmc">
+					<rect class="mg-chip" x="800" y="430" width="760" height="56" rx="28" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1180" y="466" text-anchor="middle">tareas.remove("descansar")</text>
+				</g>
+				<g data-el="chk">
+					<rect class="mg-chip mg-chip--sage" x="800" y="504" width="760" height="56" rx="28" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1180" y="540" text-anchor="middle">next():  modCount 1  ≠  expectedModCount 0</text>
+				</g>
+				<g data-el="boom">
+					<rect class="mg-card mg-card--ink" x="800" y="578" width="760" height="64" rx="20" />
+					<text class="mg-mono mg-big" x="1180" y="621" text-anchor="middle">ConcurrentModificationException</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 2c. it.remove() keeps the counters in sync (motion canvas) -->
+	<div slot="scene" data-scene="rm" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="80" data-el="decl">while (it.hasNext()) {'{'} if (it.next().startsWith("d")) it.remove(); {'}'}</text>
+
+				<g data-el="list" data-base="shown">
+					<rect class="mg-card" x="40" y="130" width="1520" height="260" rx="22" />
+					<text class="mg-text mg-text--strong mg-text--muted" x="68" y="372">tareas</text>
+				</g>
+				<g data-el="lmc0" data-base="shown">
+					<rect class="mg-chip" x="1290" y="146" width="240" height="40" rx="20" />
+					<text class="mg-chip-text" x="1410" y="173" text-anchor="middle">modCount = 0</text>
+				</g>
+				<g data-el="lmc1">
+					<rect class="mg-chip mg-chip--sage" x="1290" y="146" width="240" height="40" rx="20" />
+					<text class="mg-chip-text mg-chip-text--sage" x="1410" y="173" text-anchor="middle">modCount = 1</text>
+				</g>
+				{
+					taskNames.map((name, i) => (
+						<g data-el={`t${i}`} data-base="shown" data-x={taskCenters[i]} data-y="260">
+							<rect class="mg-card mg-card--accent mg-token" x="-145" y="-55" width="290" height="110" rx="18" />
+							<text class="mg-mono mg-mono--dark" x="0" y="8" text-anchor="middle">{name}</text>
+						</g>
+					))
+				}
+				{taskCenters.map((x, i) => <circle data-anchor={`sl-${i}`} cx={x} cy="260" r="2" fill="none" />)}
+				{taskGaps.map((x, i) => <circle data-anchor={`gp-${i}`} cx={x} cy="165" r="2" fill="none" />)}
+
+				<g data-el="it-card" data-base="shown">
+					<rect class="mg-card mg-card--sage" x="40" y="430" width="730" height="190" rx="22" />
+					<text class="mg-heading" x="72" y="482">Iterator it</text>
+					<text class="mg-text mg-text--muted" x="72" y="590">{t('it.remove() actualiza su contador', 'it.remove() updates its counter')}</text>
+				</g>
+				<text class="mg-mono mg-mono--dark mg-big" x="72" y="548" data-el="iexp0" data-base="shown">expectedModCount = 0</text>
+				<text class="mg-mono mg-mono--sage mg-big" x="72" y="548" data-el="iexp1">expectedModCount = 1</text>
+
+				<g data-el="cur" data-x="70" data-y="165">
+					<circle class="mg-dot" cx="0" cy="0" r="22" />
+					<text class="mg-chip-text mg-ptr-text" x="0" y="6" text-anchor="middle">it</text>
+					<path class="mg-pin" d="M-10 18L0 40L10 18Z" />
+				</g>
+
+				<g data-el="itrm">
+					<rect class="mg-chip" x="800" y="430" width="760" height="56" rx="28" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1180" y="466" text-anchor="middle">it.remove()</text>
+				</g>
+				<g data-el="okc">
+					<rect class="mg-chip mg-chip--sage" x="800" y="504" width="760" height="56" rx="28" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1180" y="540" text-anchor="middle">modCount 1  =  expectedModCount 1  ·  {t('sigue válido', 'still valid')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 3. Comparable -->
+	<div slot="scene" data-scene="sign" class="scene-sign">
+		<div class="dg-box dg-box--ink scene-sign-wide" data-el="sg-error">
+			<p class="dg-label" style="color: var(--color-accent-300)">{t('Error de compilación', 'Compile error')}</p>
+			<code class="dg-code">Collections.sort(libros)</code>
+			<p class="dg-sub">{t('Libro no implementa Comparable: ¿ordenar por título, autor, páginas?', 'Libro does not implement Comparable: sort by title, author, pages?')}</p>
+		</div>
+		<div class="dg-box dg-box--accent dg-box--center" data-el="sg-neg">
+			<p class="dg-title">{t('negativo', 'negative')}</p>
+			<p class="dg-sub">{t('a va ANTES que b', 'a goes BEFORE b')}</p>
+		</div>
+		<div class="dg-box dg-box--center" data-el="sg-zero">
+			<p class="dg-title">{t('cero', 'zero')}</p>
+			<p class="dg-sub">{t('son equivalentes', 'they are equivalent')}</p>
+		</div>
+		<div class="dg-box dg-box--sage dg-box--center" data-el="sg-pos">
+			<p class="dg-title">{t('positivo', 'positive')}</p>
+			<p class="dg-sub">{t('a va DESPUÉS que b', 'a goes AFTER b')}</p>
+		</div>
+		<div class="dg-box dg-box--ink scene-sign-wide" data-el="sg-trap">
+			<p class="dg-label" style="color: var(--color-accent-300)">{t('La trampa clásica', 'The classic trap')}</p>
+			<code class="dg-code">return this.edad - otro.edad;</code>
+			<p class="dg-sub">{t('Con valores grandes desborda el int y el signo sale mal. Usá Integer.compare.', 'With large values it overflows the int and the sign is wrong. Use Integer.compare.')}</p>
+		</div>
+	</div>
+
+	<!-- 4. Comparable vs Comparator -->
+	<div slot="scene" data-scene="cmpvs" class="scene-cmpvs">
+		<div class="dg-box dg-box--sage" data-el="cv-comparable">
+			<p class="dg-label dg-label--sage">Comparable</p>
+			<code class="dg-code">compareTo(Libro otro)</code>
+			<p class="dg-sub">{t('Orden natural DENTRO de la clase: solo uno por clase', 'Natural order INSIDE the class: only one per class')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="cv-comparator">
+			<p class="dg-label">Comparator</p>
+			<code class="dg-code">Comparator.comparing(…)</code>
+			<p class="dg-sub">{t('Órdenes FUERA de la clase: tantos como necesites', 'Orders OUTSIDE the class: as many as you need')}</p>
+		</div>
+		<div class="dg-box" data-el="cv-chain">
+			<p class="dg-label">{t('Encadenar criterios', 'Chaining criteria')}</p>
+			<code class="dg-code">comparing(…).thenComparing(…)</code>
+			<code class="dg-code">comparingInt(…).reversed()</code>
+		</div>
+		<div class="dg-box" data-el="cv-null">
+			<p class="dg-label">{t('Con nulos', 'With nulls')}</p>
+			<code class="dg-code">nullsLast(naturalOrder())</code>
+			<p class="dg-sub">{t('Sin que el ordenamiento reviente', 'Without the sort blowing up')}</p>
+		</div>
+	</div>
+
+	<!-- 4b. Sorting cards (motion canvas) -->
+	<div slot="scene" data-scene="sort" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="80" data-el="s-natural">Collections.sort(libros);   // compareTo → {t('por título', 'by title')}</text>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="80" data-el="s-pages">libros.sort(comparingInt(Libro::getPaginas).reversed());</text>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="80" data-el="s-author">comparing(Libro::getAutor).thenComparing(Libro::getTitulo)</text>
+
+				<g data-el="slots" data-base="shown">
+					{bookSlots.map((x) => <rect class="mg-card mg-slot" x={x - 165} y="205" width="330" height="190" rx="22" />)}
+				</g>
+				{bookSlots.map((x, i) => <circle data-anchor={`ps-${i}`} cx={x} cy="300" r="2" fill="none" />)}
+				{
+					books.map((book, i) => (
+						<g data-el={book.id} data-x={bookSlots[i]} data-y="300">
+							<rect class={`mg-card mg-card--${book.tone} mg-token`} x="-165" y="-95" width="330" height="190" rx="22" />
+							<text class="mg-heading mg-big" x="0" y="-22" text-anchor="middle">{book.title}</text>
+							<text class="mg-text mg-text--strong" x="0" y="24" text-anchor="middle">{book.author}</text>
+							<text class="mg-text mg-text--muted" x="0" y="64" text-anchor="middle">{book.pages} {t('páginas', 'pages')}</text>
+						</g>
+					))
+				}
+
+				<g data-el="sort-note">
+					<rect class="mg-card mg-card--accent" x="60" y="470" width="1480" height="130" rx="22" />
+					<text class="mg-text mg-text--strong" x="92" y="520">{t('sort ordena la lista original en el lugar.', 'sort orders the original list in place.')}</text>
+					<text class="mg-mono mg-mono--dark" x="92" y="566">new ArrayList&lt;&gt;(libros).sort(…)  {t('// conserva el original', '// keeps the original')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 5. == vs equals (motion canvas) -->
+	<div slot="scene" data-scene="eq" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="56" data-el="code1">Libro a = new Libro("1984", "Orwell", 328);</text>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="100" data-el="code2">Libro b = new Libro("1984", "Orwell", 328);</text>
+
+				<g data-el="va">
+					<rect class="mg-card mg-card--accent" x="560" y="140" width="360" height="70" rx="18" />
+					<text class="mg-heading" x="590" y="186">a</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="890" y="184" text-anchor="end">0x7f3a2c</text>
+				</g>
+				<g data-el="vb">
+					<rect class="mg-card mg-card--accent" x="1140" y="140" width="360" height="70" rx="18" />
+					<text class="mg-heading" x="1170" y="186">b</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="1470" y="184" text-anchor="end">0x4be92d</text>
+				</g>
+				<g data-el="arr-a" class="mg-arrow"><path class="mg-stroke" d="M740 212L740 262" pathLength="1" /><path class="mg-head" d="M730 250L740 264L750 250" /></g>
+				<g data-el="arr-b" class="mg-arrow"><path class="mg-stroke" d="M1320 212L1320 262" pathLength="1" /><path class="mg-head" d="M1310 250L1320 264L1330 250" /></g>
+
+				<g data-el="oa">
+					<rect class="mg-card mg-card--sage" x="560" y="270" width="360" height="250" rx="22" />
+					<text class="mg-text mg-text--strong mg-chip-text--sage" x="590" y="312">Libro</text>
+					{
+						eqFields.map((field) => (
+							<>
+								<text class="mg-text mg-text--muted" x="590" y={field.y}>{field.label}</text>
+								<text class="mg-mono mg-mono--dark" x="890" y={field.y} text-anchor="end">{field.value}</text>
+							</>
+						))
+					}
+				</g>
+				<g data-el="ob">
+					<rect class="mg-card mg-card--sage" x="1140" y="270" width="360" height="250" rx="22" />
+					<text class="mg-text mg-text--strong mg-chip-text--sage" x="1170" y="312">Libro</text>
+					{
+						eqFields.map((field) => (
+							<>
+								<text class="mg-text mg-text--muted" x="1170" y={field.y}>{field.label}</text>
+								<text class="mg-mono mg-mono--dark" x="1470" y={field.y} text-anchor="end">{field.value}</text>
+							</>
+						))
+					}
+				</g>
+				{
+					eqFields.map((field) => (
+						<g data-el={field.id} class="mg-arrow mg-arrow--sage"><path class="mg-stroke" d={`M926 ${field.y - 6}L1134 ${field.y - 6}`} pathLength="1" /></g>
+					))
+				}
+
+				<g data-el="r1">
+					<rect class="mg-chip" x="60" y="270" width="440" height="58" rx="29" />
+					<text class="mg-chip-text mg-chip-text--lg" x="280" y="306" text-anchor="middle">a == b  →  false</text>
+				</g>
+				<g data-el="r2">
+					<rect class="mg-chip" x="60" y="350" width="440" height="58" rx="29" />
+					<text class="mg-chip-text mg-chip-text--lg" x="280" y="386" text-anchor="middle">a.equals(b) {t('heredado', 'inherited')}  →  false</text>
+				</g>
+				<g data-el="r3">
+					<rect class="mg-chip mg-chip--sage" x="60" y="430" width="440" height="58" rx="29" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="280" y="466" text-anchor="middle">a.equals(b) {t('sobrescrito', 'overridden')}  →  true</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<div slot="scene" data-scene="rules" class="scene-rules">
+		{
+			rules.map((rule) => (
+				<div class="dg-box dg-box--sage" data-el={rule.id}>
+					<p class="dg-label dg-label--sage">{rule.name}</p>
+					<code class="dg-code">{rule.note}</code>
+				</div>
+			))
+		}
+		<div class="dg-box dg-box--ink scene-rules-wide" data-el="ru-overload">
+			<p class="dg-label" style="color: var(--color-accent-300)">{t('Sobrecarga vs sobrescritura', 'Overload vs override')}</p>
+			<code class="dg-code">equals(Libro o)  ≠  equals(Object o)</code>
+			<p class="dg-sub">{t('Las colecciones llaman a equals(Object)', 'Collections call equals(Object)')}</p>
+		</div>
+	</div>
+
+	<!-- 6. hashCode: buckets (motion canvas) -->
+	<div slot="scene" data-scene="hash" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="64" data-el="hh1">libro1.hashCode() = 366712642  →  bucket 2</text>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="108" data-el="hh2">libro2.hashCode() = 1829164700  →  bucket 11</text>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="64" data-el="hh3">Objects.hash(titulo, autor, paginas)  →  bucket 6</text>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="64" data-el="hh4">libro.setPaginas(500)  →  {t('hash nuevo', 'new hash')}  →  bucket 9</text>
+
+				<g data-el="buckets">
+					<text class="mg-text mg-text--strong mg-text--muted" x="60" y="352">HashSet&lt;Libro&gt;  ·  {t('12 cajones (buckets)', '12 buckets')}</text>
+					{
+						buckets.map((bucket) => (
+							<>
+								<rect class="mg-card mg-card--sage" x={bucket.x} y="370" width="116" height="170" rx="16" />
+								<text class="mg-text mg-text--strong mg-chip-text--sage" x={bucket.cx} y="570" text-anchor="middle">{bucket.index}</text>
+								<circle data-anchor={bucket.id} cx={bucket.cx} cy="445" r="2" fill="none" />
+							</>
+						))
+					}
+				</g>
+
+				<g data-el="sz2">
+					<rect class="mg-chip" x="1100" y="40" width="440" height="56" rx="28" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1320" y="76" text-anchor="middle">set.size() == 2</text>
+				</g>
+				<g data-el="sz1">
+					<rect class="mg-chip mg-chip--sage" x="1100" y="40" width="440" height="56" rx="28" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1320" y="76" text-anchor="middle">set.size() == 1</text>
+				</g>
+				<g data-el="skip">
+					<rect class="mg-chip" x="60" y="150" width="680" height="56" rx="28" />
+					<text class="mg-chip-text mg-chip-text--lg" x="400" y="186" text-anchor="middle">{t('equals() nunca se ejecutó: cajones distintos', 'equals() never ran: different buckets')}</text>
+				</g>
+				<g data-el="eqc">
+					<rect class="mg-chip mg-chip--sage" x="940" y="290" width="480" height="56" rx="28" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1180" y="326" text-anchor="middle">equals() → true  ·  add() → false</text>
+				</g>
+
+				<g data-el="L1" data-x="230" data-y="250">
+					<rect class="mg-card mg-card--accent mg-token" x="-52" y="-40" width="104" height="80" rx="14" />
+					<text class="mg-text mg-text--strong" x="0" y="-6" text-anchor="middle">libro1</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="0" y="24" text-anchor="middle">"1984"</text>
+				</g>
+				<g data-el="L2" data-x="1370" data-y="250">
+					<rect class="mg-card mg-card--accent mg-token" x="-52" y="-40" width="104" height="80" rx="14" />
+					<text class="mg-text mg-text--strong" x="0" y="-6" text-anchor="middle">libro2</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="0" y="24" text-anchor="middle">"1984"</text>
+				</g>
+				<g data-el="G1" data-x="230" data-y="250">
+					<rect class="mg-card mg-card--accent mg-token" x="-52" y="-40" width="104" height="80" rx="14" />
+					<text class="mg-text mg-text--strong" x="0" y="-6" text-anchor="middle">libro1</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="0" y="24" text-anchor="middle">"1984"</text>
+				</g>
+				<g data-el="G2" data-x="1370" data-y="250">
+					<rect class="mg-card mg-card--accent mg-token" x="-52" y="-40" width="104" height="80" rx="14" />
+					<text class="mg-text mg-text--strong" x="0" y="-6" text-anchor="middle">libro2</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="0" y="24" text-anchor="middle">"1984"</text>
+				</g>
+
+				<g data-el="M" data-x="490" data-y="445">
+					<rect class="mg-card mg-card--accent mg-token" x="-52" y="-40" width="104" height="80" rx="14" />
+					<text class="mg-text mg-text--strong" x="0" y="-6" text-anchor="middle">libro</text>
+					<text class="mg-mono mg-mono--dark mg-mono--sm" x="0" y="24" text-anchor="middle" data-el="m-old" data-base="shown">328 p.</text>
+					<text class="mg-mono mg-mono--sage mg-mono--sm" x="0" y="24" text-anchor="middle" data-el="m-new">500 p.</text>
+				</g>
+				<g data-el="ghost">
+					<rect class="mg-card mg-slot" x="1182" y="405" width="104" height="80" rx="14" />
+					<text class="mg-text mg-text--muted" x="1234" y="452" text-anchor="middle">{t('¿acá?', 'here?')}</text>
+				</g>
+				<g data-el="probe" data-x="1370" data-y="250">
+					<circle class="mg-dot mg-dot--3" cx="0" cy="0" r="24" />
+					<text class="mg-chip-text mg-ptr-text" x="0" y="6" text-anchor="middle">?</text>
+				</g>
+				<g data-el="miss">
+					<rect class="mg-chip" x="760" y="240" width="520" height="56" rx="28" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1020" y="276" text-anchor="middle">contains(libro)  →  false</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<div slot="scene" data-scene="hcrule" class="scene-hcrule">
+		<div class="dg-box dg-box--accent scene-hcrule-wide" data-el="hr-rule">
+			<p class="dg-label">{t('La regla', 'The rule')}</p>
+			<code class="dg-code">a.equals(b)  ⇒  a.hashCode() == b.hashCode()</code>
+		</div>
+		<div class="dg-box" data-el="hr-conv">
+			<p class="dg-label">{t('Al revés no hace falta', 'The reverse is not required')}</p>
+			<p class="dg-sub">{t('Dos objetos distintos pueden compartir hash: una colisión, y es normal', 'Two different objects may share a hash: a collision, and it is normal')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="hr-fields">
+			<p class="dg-label dg-label--sage">{t('Los mismos campos', 'The same fields')}</p>
+			<code class="dg-code">Objects.hash(titulo, autor, paginas)</code>
+		</div>
+		<div class="dg-box dg-box--ink scene-hcrule-wide" data-el="hr-record">
+			<p class="dg-label" style="color: var(--color-accent-300)">record</p>
+			<code class="dg-code">record Libro(String titulo, String autor, int paginas)</code>
+			<p class="dg-sub">{t('equals, hashCode y toString correctos, generados por el compilador', 'Correct equals, hashCode and toString, generated by the compiler')}</p>
+		</div>
+	</div>
+
+	<!-- 7. Common mistakes -->
+	<div slot="scene" data-scene="errors16" class="scene-errors16">
+		{mistakes.map((m) => <span class="dg-chip dg-chip--accent" data-el={m.id}>{m.text}</span>)}
+	</div>
+
+	<!-- 8. Guided exercise -->
+	<div slot="scene" data-scene="exercise16" class="scene-exercise16">
+		{
+			challenge.map((step) => (
+				<div class="dg-box" data-el={step.id}>
+					<p class="dg-label"><span class="dg-step-num">{step.n}</span> {t('Paso', 'Step')}</p>
+					<p class="dg-title">{step.name}</p>
+					<p class="dg-sub">{step.note}</p>
+				</div>
+			))
+		}
+		<div class="dg-box dg-box--sage scene-exercise16-wide" data-el="x-fix">
+			<p class="dg-label dg-label--sage">{t('Consistencia', 'Consistency')}</p>
+			<p class="dg-sub">{t('compareTo devuelve 0 exactamente cuando equals devuelve true', 'compareTo returns 0 exactly when equals returns true')}</p>
+		</div>
+	</div>
+
+	<!-- 8b. The TreeSet trap (motion canvas) -->
+	<div slot="scene" data-scene="tree" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="ts">
+					<rect class="mg-card" x="60" y="130" width="700" height="380" rx="22" />
+					<text class="mg-text mg-text--strong mg-text--muted" x="92" y="176">TreeSet&lt;Libro&gt;  ·  compareTo {t('por título', 'by title')}</text>
+				</g>
+				<g data-el="n1">
+					<rect class="mg-card mg-card--sage" x="110" y="230" width="600" height="220" rx="22" />
+					<text class="mg-heading mg-big" x="146" y="296">1984</text>
+					<text class="mg-text mg-text--strong" x="146" y="346">Orwell</text>
+					<text class="mg-text mg-text--muted" x="146" y="392">328 {t('páginas', 'pages')}</text>
+				</g>
+				<text class="mg-mono mg-mono--dark" x="92" y="490" data-el="szt">size() == 1</text>
+
+				<g data-el="inc" data-x="1300" data-y="340">
+					<rect class="mg-card mg-card--accent mg-token" x="-240" y="-110" width="480" height="220" rx="22" />
+					<text class="mg-heading mg-big" x="0" y="-38" text-anchor="middle">1984</text>
+					<text class="mg-text mg-text--strong" x="0" y="12" text-anchor="middle">Otro Autor</text>
+					<text class="mg-text mg-text--muted" x="0" y="58" text-anchor="middle">500 {t('páginas', 'pages')}</text>
+				</g>
+
+				<g data-el="c-eq">
+					<rect class="mg-chip" x="800" y="130" width="740" height="56" rx="28" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1170" y="166" text-anchor="middle">equals()  →  false  ({t('cambian autor y páginas', 'author and pages differ')})</text>
+				</g>
+				<g data-el="c-cmp">
+					<rect class="mg-chip mg-chip--sage" x="800" y="480" width="740" height="56" rx="28" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1170" y="516" text-anchor="middle">compareTo()  →  0  ({t('solo mira el título', 'only looks at the title')})</text>
+				</g>
+				<g data-el="c-rej">
+					<rect class="mg-card mg-card--ink" x="60" y="550" width="1480" height="80" rx="24" />
+					<text class="mg-text mg-text--light mg-text--strong" x="800" y="598" text-anchor="middle">add()  →  false  ·  {t('para el TreeSet es un duplicado y se descarta', 'for the TreeSet it is a duplicate and gets dropped')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- Closing -->
+	<div slot="scene" data-scene="closing16" class="scene-closing16">
+		<div class="dg-chips scene-closing16-map">
+			{takeaways.map((text, i) => <span class:list={['dg-chip', i < 5 ? 'dg-chip--accent' : 'dg-chip--sage']} data-el={`c${i + 1}`}>{i + 1} · {text}</span>)}
+		</div>
+		<a class="dg-box dg-box--ink scene-closing16-repo" data-el="repo" href="https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l16_iteradores_ordenamiento_equals_hashcode" target="_blank" rel="noopener noreferrer">
+			<p class="dg-label" style="color: var(--color-accent-300)">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: inherit; width: 16px; height: 16px">
+					<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" />
+				</svg>
+				CursoDeJava · l16_iteradores_ordenamiento_equals_hashcode
+			</p>
+			<p class="dg-sub">{t('Iteradores, lambdas, referencias a métodos y tres integradores', 'Iterators, lambdas, method references and three integrators')}</p>
+		</a>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Layout unique to each scene. Colors, radii and spacing stay on tokens. */
+	.scene-canvas {
+		width: 100%;
+	}
+
+	.mg-big {
+		font-size: 26px;
+	}
+
+	.mg-ptr-text {
+		fill: var(--color-bg);
+	}
+
+	.mg-token {
+		stroke-width: 3;
+	}
+
+	.mg-pin {
+		fill: var(--color-accent);
+	}
+
+	.mg-slot {
+		fill: none;
+		stroke-dasharray: 10 8;
+	}
+
+	.mg-chip--lost {
+		fill: var(--color-neutral-200);
+		stroke: var(--color-neutral-500);
+	}
+
+	.mg-mono--sage {
+		fill: var(--color-accent-2-800);
+	}
+
+	.scene-intro16,
+	.scene-foreach,
+	.scene-cmefix,
+	.scene-sign,
+	.scene-cmpvs,
+	.scene-rules,
+	.scene-hcrule,
+	.scene-exercise16 {
+		align-content: center;
+	}
+
+	.scene-intro16 {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.scene-intro16 [data-el='q-root'] {
+		grid-column: 1 / -1;
+	}
+
+	.scene-foreach {
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+		align-items: center;
+	}
+
+	.scene-foreach-wide {
+		grid-column: 1 / -1;
+	}
+
+	.scene-cmefix {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-cmefix-wide,
+	.scene-sign-wide,
+	.scene-rules-wide,
+	.scene-hcrule-wide,
+	.scene-exercise16-wide {
+		grid-column: 1 / -1;
+	}
+
+	.scene-sign {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.scene-cmpvs {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-rules {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.scene-hcrule {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-exercise16 {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.scene-errors16 {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-content: center;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.scene-closing16 {
+		align-content: center;
+		justify-items: center;
+	}
+
+	.scene-closing16-map {
+		justify-content: center;
+	}
+
+	.scene-closing16-repo {
+		justify-items: start;
+		text-decoration: none;
+		color: var(--color-neutral-100);
+		min-width: min(100%, 22rem);
+	}
+
+	.scene-closing16-repo:hover {
+		border-color: var(--color-accent-400);
+	}
+
+	@media (width < 720px) {
+		.scene-intro16,
+		.scene-cmefix,
+		.scene-sign,
+		.scene-cmpvs,
+		.scene-rules,
+		.scene-hcrule,
+		.scene-exercise16 {
+			grid-template-columns: 1fr;
+		}
+
+		.scene-foreach {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

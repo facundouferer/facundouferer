@@ -1,0 +1,889 @@
+---
+/**
+ * Scenes for the "Abstract classes and interfaces, step by step" animation (lesson
+ * java/11). The captions, code and terminal panels live in
+ * `src/data/animations/abstractas-interfaces-java.ts`; this component only draws the
+ * diagrams the steps point to. Slide scenes are HTML blocks (`[data-scene]` with
+ * `[data-el]` elements); the `abs`, `contract`, `multi`, `combo`, `fqcn` and `rel`
+ * scenes are SVG canvases (`data-motion`) choreographed by the cues of their motion steps.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/abstractas-interfaces-java';
+import { resolveScript } from '../../utils/animations';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Slide scene data ──────────────────────────────────────────────────────
+const cmpRows = [
+	{ n: 1, label: t('Relación que expresa', 'Relationship it expresses'), abs: t('«es un»: identidad compartida', '“is a”: shared identity'), iface: t('«es capaz de»: capacidad compartida', '“is capable of”: shared capability') },
+	{ n: 2, label: t('Cuántas podés usar', 'How many you can use'), abs: t('Solo una (extends)', 'Only one (extends)'), iface: t('Las que quieras (implements)', 'As many as you want (implements)') },
+	{ n: 3, label: t('Estado de instancia', 'Instance state'), abs: t('Sí, campos comunes', 'Yes, ordinary fields'), iface: t('No, solo constantes static final', 'No, only static final constants') },
+	{ n: 4, label: t('Constructores', 'Constructors'), abs: t('Sí', 'Yes'), iface: t('No', 'No') },
+	{ n: 5, label: t('Visibilidad de métodos', 'Method visibility'), abs: t('Cualquiera, incluso protected', 'Anything, including protected'), iface: t('Siempre public', 'Always public') },
+	{ n: 6, label: t('Agregar un método después', 'Adding a method later'), abs: t('Rompe subclases si es abstracto', 'Breaks subclasses if abstract'), iface: t('No rompe nada si es default', 'Breaks nothing if default') },
+];
+const nsRules = [
+	t('Dominio al revés: com.facundouferer', 'Reversed domain: com.facundouferer'),
+	t('Todo en minúsculas', 'All lowercase'),
+	t('Un .java por clase pública', 'One .java per public class'),
+	t('Agrupar por responsabilidad', 'Group by responsibility'),
+	t('import static, con moderación', 'Static imports, sparingly'),
+	t('package-private: frontera de confianza', 'package-private: a trust boundary'),
+];
+const mistakes = [
+	t('Clase abstracta donde va una interfaz', 'Abstract class where an interface belongs'),
+	t('default en cada método', 'A default on every method'),
+	t('Campos mutables en una interfaz', 'Mutable fields in an interface'),
+	t('package distinto de la carpeta', 'Package that does not match the folder'),
+	t('Choque de nombres al importar', 'Name collision when importing'),
+	t('Agregación que era composición', 'Aggregation that was composition'),
+	t('Un único package gigante', 'One giant package'),
+];
+const tasks = [
+	{ n: 1, name: 'Payable', note: 'pay · isAvailable · default payIfPossible' },
+	{ n: 2, name: 'CreditCard · DigitalWallet', note: 'implements Payable' },
+	{ n: 3, name: 'DigitalPaymentMethod', note: t('Clase abstracta: email + active', 'Abstract class: email + active') },
+	{ n: 4, name: 'DigitalWallet extends', note: t('Reutiliza super.isAvailable()', 'Reuses super.isAvailable()') },
+	{ n: 5, name: 'Payable[]', note: t('Un bucle, sin instanceof ni casting', 'One loop, no instanceof and no casting') },
+];
+const takeaways = [
+	t('Clase abstracta: molde incompleto', 'Abstract class: incomplete mold'),
+	t('Interfaz: contrato puro', 'Interface: pure contract'),
+	t('Interfaz primero', 'Interface first'),
+	t('default: evolucionar sin romper', 'default: evolve without breaking'),
+	t('Extiende una, implementa muchas', 'Extends one, implements many'),
+	t('package = namespace · FQCN', 'package = namespace · FQCN'),
+	t('Si destruyo el todo, ¿existe la parte?', 'If I destroy the whole, does the part exist?'),
+];
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<!-- INTRO: the two problems and the two tools -->
+	<div slot="scene" data-scene="intro11" class="scene-intro11">
+		<div class="dg-box" data-el="p1">
+			<p class="dg-label">{t('Problema 1', 'Problem 1')}</p>
+			<code class="dg-code">new Vehicle("Ford")</code>
+			<p class="dg-sub">{t('Compila, pero un «vehículo genérico» no existe', 'It compiles, but a “generic vehicle” does not exist')}</p>
+		</div>
+		<div class="dg-box" data-el="p2">
+			<p class="dg-label">{t('Problema 2', 'Problem 2')}</p>
+			<code class="dg-code">Vehicle.start()</code>
+			<p class="dg-sub">{t('Un cuerpo inventado solo para que compile', 'A body invented just so it compiles')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="abs">
+			<p class="dg-label">{t('Clase abstracta', 'Abstract class')}</p>
+			<p class="dg-title">{t('Un molde incompleto', 'An incomplete mold')}</p>
+			<p class="dg-sub">{t('Trae estado y comportamiento resuelto, y deja huecos', 'Brings state and solved behavior, and leaves gaps')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="iface">
+			<p class="dg-label dg-label--sage">{t('Interfaz', 'Interface')}</p>
+			<p class="dg-title">{t('Un contrato puro', 'A pure contract')}</p>
+			<p class="dg-sub">{t('Dice qué debe poder hacer quien lo firma', 'Says what whoever signs it must be able to do')}</p>
+		</div>
+	</div>
+
+	<!-- 1. Anatomy of an abstract class -->
+	<div slot="scene" data-scene="abs-anatomy" class="scene-abs-anatomy">
+		<div class="dg-box" data-el="an-state">
+			<p class="dg-label">{t('Estado', 'State')}</p>
+			<code class="dg-code">protected final String name;</code>
+			<p class="dg-sub">{t('Campos y constructor, como cualquier clase', 'Fields and a constructor, like any class')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="an-gap">
+			<p class="dg-label">{t('Hueco', 'Gap')}</p>
+			<code class="dg-code">public abstract double area();</code>
+			<p class="dg-sub">{t('Sin cuerpo: la subclase debe escribirlo', 'No body: the subclass must write it')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="an-body">
+			<p class="dg-label dg-label--sage">{t('Resuelto', 'Solved')}</p>
+			<code class="dg-code">public void describe()</code>
+			<p class="dg-sub">{t('Con cuerpo: se hereda tal cual', 'Has a body: inherited as is')}</p>
+		</div>
+		<div class="dg-box dg-box--ink" data-el="an-rule">
+			<p class="dg-title">{t('No se puede instanciar · una clase extiende UNA sola', 'Cannot be instantiated · a class extends ONE only')}</p>
+		</div>
+	</div>
+
+	<!-- 1. The abstract mold (motion canvas) -->
+	<div slot="scene" data-scene="abs" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="64" data-el="a-decl">public abstract class Shape</text>
+
+				<g data-el="a-shape">
+					<rect class="mg-card mg-card--sage" x="60" y="96" width="980" height="330" rx="22" style="stroke-dasharray: 10 7" />
+					<text class="mg-text mg-text--strong mg-chip-text--sage" x="90" y="132">abstract class Shape</text>
+				</g>
+
+				<g data-el="r-state">
+					<rect class="mg-card" x="80" y="150" width="720" height="52" rx="14" />
+					<text class="mg-mono mg-mono--dark" x="100" y="183">protected final String name;</text>
+				</g>
+				<g data-el="tag-state">
+					<rect class="mg-chip mg-chip--sage" x="880" y="157" width="150" height="38" rx="19" />
+					<text class="mg-chip-text mg-chip-text--sage" x="955" y="182" text-anchor="middle">{t('ESTADO', 'STATE')}</text>
+				</g>
+
+				<g data-el="r-area">
+					<rect class="mg-card mg-card--accent" x="80" y="215" width="720" height="52" rx="14" style="stroke-dasharray: 8 6" />
+					<text class="mg-mono mg-mono--dark" x="100" y="248">public abstract double area();</text>
+				</g>
+				<g data-el="tag-gap1">
+					<rect class="mg-chip" x="880" y="222" width="150" height="38" rx="19" />
+					<text class="mg-chip-text" x="955" y="247" text-anchor="middle">{t('SIN CUERPO', 'NO BODY')}</text>
+				</g>
+
+				<g data-el="r-perim">
+					<rect class="mg-card mg-card--accent" x="80" y="280" width="720" height="52" rx="14" style="stroke-dasharray: 8 6" />
+					<text class="mg-mono mg-mono--dark" x="100" y="313">public abstract double perimeter();</text>
+				</g>
+				<g data-el="tag-gap2">
+					<rect class="mg-chip" x="880" y="287" width="150" height="38" rx="19" />
+					<text class="mg-chip-text" x="955" y="312" text-anchor="middle">{t('SIN CUERPO', 'NO BODY')}</text>
+				</g>
+
+				<g data-el="r-describe">
+					<rect class="mg-card mg-card--sage" x="80" y="345" width="720" height="52" rx="14" />
+					<text class="mg-mono mg-mono--dark" x="100" y="378">public void describe() {'{ … }'}</text>
+				</g>
+				<g data-el="tag-body">
+					<rect class="mg-chip mg-chip--sage" x="880" y="352" width="150" height="38" rx="19" />
+					<text class="mg-chip-text mg-chip-text--sage" x="955" y="377" text-anchor="middle">{t('CON CUERPO', 'HAS BODY')}</text>
+				</g>
+
+				<g data-el="call-area" class="mg-arrow">
+					<path class="mg-stroke" d="M800 371C875 371 875 241 806 241" pathLength="1" />
+					<path class="mg-head" d="M818 231L806 241L818 251" />
+				</g>
+				<g data-el="call-perim" class="mg-arrow">
+					<path class="mg-stroke" d="M800 371C850 371 850 306 806 306" pathLength="1" />
+					<path class="mg-head" d="M818 296L806 306L818 316" />
+				</g>
+
+				<rect class="mg-card mg-card--ink" data-el="newcard" x="1090" y="100" width="470" height="100" rx="18" />
+				<text class="mg-mono mg-big" data-el="newtext" x="1115" y="160">Shape s = new Shape("x");</text>
+				<g data-el="newerr">
+					<rect class="mg-chip" x="1090" y="230" width="470" height="70" rx="22" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1325" y="259" text-anchor="middle">error: Shape is abstract;</text>
+					<text class="mg-chip-text mg-chip-text--lg" x="1325" y="285" text-anchor="middle">cannot be instantiated</text>
+				</g>
+				<g data-el="ban" class="mg-arrow">
+					<circle class="mg-stroke" cx="1325" cy="420" r="70" pathLength="1" />
+					<path class="mg-stroke" d="M1275 470L1375 370" pathLength="1" />
+				</g>
+
+				<g data-el="circ">
+					<rect class="mg-card mg-card--accent" x="80" y="500" width="470" height="140" rx="20" />
+					<text class="mg-heading" x="110" y="543">Circle</text>
+					<text class="mg-mono mg-mono--dark" x="110" y="575">extends Shape</text>
+				</g>
+				<g data-el="rect">
+					<rect class="mg-card mg-card--accent" x="580" y="500" width="470" height="140" rx="20" />
+					<text class="mg-heading" x="610" y="543">Rectangle</text>
+					<text class="mg-mono mg-mono--dark" x="610" y="575">extends Shape</text>
+					<text class="mg-text mg-text--muted" x="610" y="615">area() · perimeter()</text>
+				</g>
+				<g data-el="ext-circ" class="mg-arrow mg-arrow--sage">
+					<path class="mg-stroke" d="M315 500V430" pathLength="1" />
+					<path class="mg-head" d="M303 442L315 430L327 442" />
+				</g>
+				<g data-el="ext-rect" class="mg-arrow mg-arrow--sage">
+					<path class="mg-stroke" d="M815 500V430" pathLength="1" />
+					<path class="mg-head" d="M803 442L815 430L827 442" />
+				</g>
+
+				<g data-el="impl-area" data-x="200" data-y="610">
+					<rect class="mg-chip mg-chip--sage" x="-90" y="-22" width="180" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage" x="0" y="6" text-anchor="middle">area()</text>
+				</g>
+				<g data-el="impl-perim" data-x="410" data-y="610">
+					<rect class="mg-chip mg-chip--sage" x="-90" y="-22" width="180" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage" x="0" y="6" text-anchor="middle">perimeter()</text>
+				</g>
+				<g data-el="fill-area">
+					<rect class="mg-card mg-card--sage" x="80" y="215" width="720" height="52" rx="14" />
+					<text class="mg-mono mg-mono--dark" x="100" y="248">Circle: Math.PI * r * r</text>
+				</g>
+				<g data-el="fill-perim">
+					<rect class="mg-card mg-card--sage" x="80" y="280" width="720" height="52" rx="14" />
+					<text class="mg-mono mg-mono--dark" x="100" y="313">Circle: 2 * Math.PI * r</text>
+				</g>
+
+				<g data-el="warn">
+					<rect class="mg-chip" x="1090" y="500" width="470" height="140" rx="22" />
+					<text class="mg-mono mg-mono--dark" x="1325" y="548" text-anchor="middle">class Triangle extends Shape</text>
+					<text class="mg-chip-text mg-chip-text--lg" x="1325" y="584" text-anchor="middle">{t('falta perimeter()', 'perimeter() is missing')}</text>
+					<text class="mg-chip-text mg-chip-text--lg" x="1325" y="614" text-anchor="middle">{t('→ debe declararse abstract', '→ it must be declared abstract')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 2. Anatomy of an interface -->
+	<div slot="scene" data-scene="iface-anatomy" class="scene-iface-anatomy">
+		<div class="dg-box dg-box--sage" data-el="if-const">
+			<p class="dg-label dg-label--sage">{t('Constante', 'Constant')}</p>
+			<code class="dg-code">int MAX_LAYERS = 10;</code>
+			<p class="dg-sub">public static final</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="if-abs">
+			<p class="dg-label">{t('Abstracto', 'Abstract')}</p>
+			<code class="dg-code">void draw();</code>
+			<p class="dg-sub">{t('Público y abstracto por defecto', 'Public and abstract by default')}</p>
+		</div>
+		<div class="dg-box" data-el="if-def">
+			<p class="dg-label">default</p>
+			<code class="dg-code">default void highlight()</code>
+			<p class="dg-sub">{t('Implementación heredable (Java 8+)', 'Inheritable implementation (Java 8+)')}</p>
+		</div>
+		<div class="dg-box" data-el="if-static">
+			<p class="dg-label">static</p>
+			<code class="dg-code">static Drawable empty()</code>
+			<p class="dg-sub">{t('Utilidad de la interfaz misma', 'A utility of the interface itself')}</p>
+		</div>
+		<div class="dg-box dg-box--ink" data-el="if-rule">
+			<p class="dg-title">{t('Sin estado de instancia · implementás todas las que quieras', 'No instance state · implement as many as you want')}</p>
+		</div>
+	</div>
+
+	<!-- 2. The signed contract (motion canvas) -->
+	<div slot="scene" data-scene="contract" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="payable">
+					<rect class="mg-card mg-card--accent" x="560" y="40" width="480" height="250" rx="22" />
+					<text class="mg-heading" x="800" y="86" text-anchor="middle">«interface» Payable</text>
+				</g>
+				<g data-el="cl-pay">
+					<rect class="mg-card" x="590" y="112" width="420" height="46" rx="14" />
+					<text class="mg-mono mg-mono--dark" x="608" y="142">boolean pay(double amount);</text>
+				</g>
+				<g data-el="cl-avail">
+					<rect class="mg-card" x="590" y="168" width="420" height="46" rx="14" />
+					<text class="mg-mono mg-mono--dark" x="608" y="198">boolean isAvailable();</text>
+				</g>
+				<g data-el="cl-def">
+					<rect class="mg-card mg-card--sage" x="590" y="224" width="420" height="46" rx="14" />
+					<text class="mg-mono mg-mono--dark" x="608" y="254">default void payIfPossible(…)</text>
+				</g>
+
+				<g data-el="cc">
+					<rect class="mg-card" x="80" y="410" width="440" height="170" rx="22" />
+					<text class="mg-heading" x="110" y="458">CreditCard</text>
+					<text class="mg-mono mg-mono--dark" x="110" y="496">implements Payable</text>
+					<text class="mg-text mg-text--muted" x="110" y="540">{t('crédito: $50000', 'credit: $50000')}</text>
+				</g>
+				<g data-el="dw">
+					<rect class="mg-card mg-card--sage" x="580" y="410" width="440" height="170" rx="22" />
+					<text class="mg-heading" x="610" y="458">DigitalWallet</text>
+					<text class="mg-mono mg-mono--dark" x="610" y="496">implements Payable</text>
+					<text class="mg-mono mg-mono--dark" x="610" y="528">extends DigitalPaymentMethod</text>
+					<text class="mg-text mg-text--muted" x="610" y="560">{t('saldo: $30000', 'balance: $30000')}</text>
+				</g>
+				<g data-el="ew">
+					<rect class="mg-card" x="1080" y="410" width="440" height="170" rx="22" />
+					<text class="mg-heading" x="1110" y="458">emptyWallet</text>
+					<text class="mg-mono mg-mono--dark" x="1110" y="496">implements Payable</text>
+					<text class="mg-text mg-text--muted" x="1110" y="540">{t('saldo: $0', 'balance: $0')}</text>
+				</g>
+
+				<g data-el="lab-impl">
+					<rect class="mg-chip" x="60" y="330" width="190" height="40" rx="20" />
+					<text class="mg-chip-text" x="155" y="356" text-anchor="middle">implements</text>
+				</g>
+				<g data-el="arr-1" class="mg-arrow mg-arrow--sage">
+					<path class="mg-stroke" d="M300 410C300 350 640 360 700 296" pathLength="1" />
+					<path class="mg-head" d="M698 312L700 296L684 299" />
+				</g>
+				<g data-el="arr-2" class="mg-arrow mg-arrow--sage">
+					<path class="mg-stroke" d="M800 410V300" pathLength="1" />
+					<path class="mg-head" d="M788 314L800 300L812 314" />
+				</g>
+				<g data-el="arr-3" class="mg-arrow mg-arrow--sage">
+					<path class="mg-stroke" d="M1300 410C1300 350 960 360 900 296" pathLength="1" />
+					<path class="mg-head" d="M902 312L900 296L916 299" />
+				</g>
+
+				<g data-el="sig-1">
+					<circle class="mg-dot--3" cx="480" cy="450" r="24" />
+					<path class="mg-check" stroke-width="2.75" transform="translate(466.2 436.8) scale(1.15)" d="M20 6 9 17l-5-5" />
+				</g>
+				<g data-el="sig-2">
+					<circle class="mg-dot--3" cx="980" cy="450" r="24" />
+					<path class="mg-check" stroke-width="2.75" transform="translate(966.2 436.8) scale(1.15)" d="M20 6 9 17l-5-5" />
+				</g>
+				<g data-el="sig-3">
+					<circle class="mg-dot--3" cx="1480" cy="450" r="24" />
+					<path class="mg-check" stroke-width="2.75" transform="translate(1466.2 436.8) scale(1.15)" d="M20 6 9 17l-5-5" />
+				</g>
+
+				<g data-el="coin" data-x="800" data-y="340">
+					<rect class="mg-chip" x="-80" y="-24" width="160" height="48" rx="24" />
+					<text class="mg-chip-text mg-chip-text--lg" x="0" y="6" text-anchor="middle">$12,500</text>
+				</g>
+				<g data-el="res-1">
+					<rect class="mg-chip mg-chip--sage" x="80" y="598" width="440" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage" x="300" y="627" text-anchor="middle">{t('✓ crédito restante $37500', '✓ remaining credit $37500')}</text>
+				</g>
+				<g data-el="res-2">
+					<rect class="mg-chip mg-chip--sage" x="580" y="598" width="440" height="44" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage" x="800" y="627" text-anchor="middle">{t('✓ saldo restante $17500', '✓ remaining balance $17500')}</text>
+				</g>
+				<g data-el="res-3">
+					<rect class="mg-chip" x="1080" y="598" width="440" height="44" rx="22" />
+					<text class="mg-chip-text" x="1300" y="627" text-anchor="middle">{t('✗ no disponible: cobro omitido', '✗ unavailable: charge skipped')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 3. default, static and adapters -->
+	<div slot="scene" data-scene="evolve" class="scene-evolve">
+		<div class="dg-box" data-el="ev-before">
+			<p class="dg-label">{t('Antes de Java 8', 'Before Java 8')}</p>
+			<p class="dg-title">{t('Agregar un método rompía todo', 'Adding a method broke everything')}</p>
+			<p class="dg-sub">{t('Las mil clases que ya la implementaban dejaban de compilar', 'The thousand classes already implementing it stopped compiling')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="ev-default">
+			<p class="dg-label dg-label--sage">default</p>
+			<p class="dg-title">{t('Un método con cuerpo', 'A method with a body')}</p>
+			<p class="dg-sub">{t('Las clases lo heredan y pueden sobrescribirlo o no', 'Classes inherit it and may override it or not')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="ev-warn">
+			<p class="dg-label">{t('Con moderación', 'Sparingly')}</p>
+			<p class="dg-title">{t('No es una clase abstracta disfrazada', 'Not a disguised abstract class')}</p>
+			<p class="dg-sub">{t('default es para evolucionar un contrato, no para escribir lógica', 'default is for evolving a contract, not for writing logic')}</p>
+		</div>
+		<div class="dg-box" data-el="ev-static">
+			<p class="dg-label">static</p>
+			<code class="dg-code">Payable.isValidAmount(500)</code>
+			<p class="dg-sub">{t('No se hereda: se llama por la interfaz', 'Not inherited: called through the interface')}</p>
+		</div>
+		<div class="dg-box dg-box--ink" data-el="ev-adapter">
+			<p class="dg-label" style="color: var(--color-accent-300)">{t('Clase adaptadora', 'Adapter class')}</p>
+			<p class="dg-title">WindowListener → WindowAdapter</p>
+			<p class="dg-sub">{t('Siete métodos vacíos ya escritos: vos sobrescribís solo uno', 'Seven empty methods already written: you override just one')}</p>
+		</div>
+	</div>
+
+	<!-- 4. One class, many contracts (motion canvas) -->
+	<div slot="scene" data-scene="multi" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="bird">
+					<rect class="mg-card mg-card--sage" x="60" y="40" width="420" height="130" rx="22" />
+					<text class="mg-text mg-text--muted" x="270" y="72" text-anchor="middle">«abstract class»</text>
+					<text class="mg-heading" x="270" y="108" text-anchor="middle">Bird</text>
+					<text class="mg-mono mg-mono--dark" x="270" y="146" text-anchor="middle">eat() · plumage</text>
+				</g>
+				<g data-el="swimmer">
+					<rect class="mg-card mg-card--accent" x="590" y="40" width="420" height="130" rx="22" />
+					<text class="mg-text mg-text--muted" x="800" y="72" text-anchor="middle">«interface»</text>
+					<text class="mg-heading" x="800" y="108" text-anchor="middle">Swimmer</text>
+					<text class="mg-mono mg-mono--dark" x="800" y="146" text-anchor="middle">swim()</text>
+				</g>
+				<g data-el="flyer">
+					<rect class="mg-card mg-card--accent" x="1120" y="40" width="420" height="130" rx="22" />
+					<text class="mg-text mg-text--muted" x="1330" y="72" text-anchor="middle">«interface»</text>
+					<text class="mg-heading" x="1330" y="108" text-anchor="middle">Flyer</text>
+					<text class="mg-mono mg-mono--dark" x="1330" y="146" text-anchor="middle">fly() · maxAltitude()</text>
+				</g>
+
+				<g data-el="duck">
+					<rect class="mg-card" x="560" y="300" width="480" height="130" rx="22" />
+					<text class="mg-heading" x="800" y="346" text-anchor="middle">Duck</text>
+					<text class="mg-mono mg-mono--dark" x="800" y="382" text-anchor="middle">extends Bird implements Swimmer, Flyer</text>
+					<text class="mg-text mg-text--muted" x="800" y="412" text-anchor="middle">{t('hereda eat(); escribe swim() y fly()', 'inherits eat(); writes swim() and fly()')}</text>
+				</g>
+				<g data-el="ext" class="mg-arrow mg-arrow--sage">
+					<path class="mg-stroke" d="M620 300C620 230 270 250 270 176" pathLength="1" />
+					<path class="mg-head" d="M258 190L270 176L282 190" />
+				</g>
+				<g data-el="imp-s" class="mg-arrow">
+					<path class="mg-stroke" d="M800 300V176" pathLength="1" />
+					<path class="mg-head" d="M788 190L800 176L812 190" />
+				</g>
+				<g data-el="imp-f" class="mg-arrow">
+					<path class="mg-stroke" d="M980 300C980 230 1330 250 1330 176" pathLength="1" />
+					<path class="mg-head" d="M1318 190L1330 176L1342 190" />
+				</g>
+				<g data-el="lab-ext">
+					<rect class="mg-chip mg-chip--sage" x="40" y="205" width="210" height="38" rx="19" />
+					<text class="mg-chip-text mg-chip-text--sage" x="145" y="230" text-anchor="middle">{t('extends: solo una', 'extends: only one')}</text>
+				</g>
+				<g data-el="lab-imp">
+					<rect class="mg-chip" x="1360" y="205" width="200" height="38" rx="19" />
+					<text class="mg-chip-text" x="1460" y="230" text-anchor="middle">{t('implements: muchas', 'implements: many')}</text>
+				</g>
+
+				<g data-el="view-b">
+					<rect class="mg-card" x="80" y="500" width="460" height="100" rx="18" />
+					<text class="mg-mono mg-mono--dark" x="110" y="545">Bird b = duck;</text>
+					<text class="mg-text mg-text--muted" x="110" y="580">{t('como un pájaro', 'as a bird')}</text>
+				</g>
+				<g data-el="view-s">
+					<rect class="mg-card" x="570" y="500" width="460" height="100" rx="18" />
+					<text class="mg-mono mg-mono--dark" x="600" y="545">Swimmer s = duck;</text>
+					<text class="mg-text mg-text--muted" x="600" y="580">{t('como algo que nada', 'as something that swims')}</text>
+				</g>
+				<g data-el="view-f">
+					<rect class="mg-card" x="1060" y="500" width="460" height="100" rx="18" />
+					<text class="mg-mono mg-mono--dark" x="1090" y="545">Flyer f = duck;</text>
+					<text class="mg-text mg-text--muted" x="1090" y="580">{t('como algo que vuela', 'as something that flies')}</text>
+				</g>
+
+				<g data-el="p-duck">
+					<rect class="mg-card" x="130" y="300" width="360" height="110" rx="20" />
+					<text class="mg-heading" x="310" y="348" text-anchor="middle">Duck</text>
+					<text class="mg-mono mg-mono--dark" x="310" y="384" text-anchor="middle">implements Swimmer</text>
+				</g>
+				<g data-el="p-fish">
+					<rect class="mg-card" x="620" y="300" width="360" height="110" rx="20" />
+					<text class="mg-heading" x="800" y="348" text-anchor="middle">Fish</text>
+					<text class="mg-mono mg-mono--dark" x="800" y="384" text-anchor="middle">implements Swimmer</text>
+				</g>
+				<g data-el="p-sub">
+					<rect class="mg-card" x="1110" y="300" width="360" height="110" rx="20" />
+					<text class="mg-heading" x="1290" y="348" text-anchor="middle">Submarine</text>
+					<text class="mg-mono mg-mono--dark" x="1290" y="384" text-anchor="middle">implements Swimmer</text>
+				</g>
+				<g data-el="pa-duck" class="mg-arrow">
+					<path class="mg-stroke" d="M310 300C310 230 700 250 740 176" pathLength="1" />
+					<path class="mg-head" d="M728 190L740 176L753 186" />
+				</g>
+				<g data-el="pa-fish" class="mg-arrow">
+					<path class="mg-stroke" d="M800 300V176" pathLength="1" />
+					<path class="mg-head" d="M788 190L800 176L812 190" />
+				</g>
+				<g data-el="pa-sub" class="mg-arrow">
+					<path class="mg-stroke" d="M1290 300C1290 230 900 250 860 176" pathLength="1" />
+					<path class="mg-head" d="M848 186L860 176L873 190" />
+				</g>
+				<g data-el="arrc">
+					<rect class="mg-card mg-card--ink" x="300" y="500" width="1000" height="80" rx="20" />
+					<text class="mg-mono mg-big" x="330" y="551">Swimmer[] participants = {'{ duck, fish, submarine }'};</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<div slot="scene" data-scene="duck-code" class="scene-duck-code">
+		<div class="dg-box dg-box--sage" data-el="dk-ext">
+			<p class="dg-label dg-label--sage">extends</p>
+			<p class="dg-title">Bird</p>
+			<p class="dg-sub">{t('Una sola línea de herencia', 'A single line of inheritance')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="dk-imp">
+			<p class="dg-label">implements</p>
+			<p class="dg-title">Swimmer, Flyer</p>
+			<p class="dg-sub">{t('Todos los contratos que haga falta', 'As many contracts as needed')}</p>
+		</div>
+		<div class="dg-box" data-el="dk-views">
+			<p class="dg-label">{t('El mismo objeto, varios ángulos', 'The same object, several angles')}</p>
+			<div class="dg-chips">
+				<code class="dg-chip">Bird b = duck</code>
+				<code class="dg-chip dg-chip--accent">Swimmer s = duck</code>
+				<code class="dg-chip dg-chip--sage">Flyer f = duck</code>
+			</div>
+		</div>
+	</div>
+
+	<!-- 5. Which one to pick -->
+	<div slot="scene" data-scene="compare" class="scene-compare">
+		<div class="dg-box scene-cmp-row scene-cmp-head" data-el="cmp-head">
+			<span class="dg-chip">{t('Criterio', 'Criterion')}</span>
+			<span class="dg-chip dg-chip--sage">{t('Clase abstracta', 'Abstract class')}</span>
+			<span class="dg-chip dg-chip--accent">{t('Interfaz', 'Interface')}</span>
+		</div>
+		{
+			cmpRows.map((row) => (
+				<div class="dg-box scene-cmp-row" data-el={`cmp-${row.n}`}>
+					<p class="dg-label">{row.label}</p>
+					<p class="dg-sub">{row.abs}</p>
+					<p class="dg-sub">{row.iface}</p>
+				</div>
+			))
+		}
+		<div class="dg-box dg-box--ink" data-el="cmp-rule">
+			<p class="dg-title">{t('Interfaz por defecto. Clase abstracta solo con estado o código compartido.', 'Interface by default. Abstract class only with shared state or code.')}</p>
+		</div>
+	</div>
+
+	<!-- 5. Interface + abstract base (motion canvas) -->
+	<div slot="scene" data-scene="combo" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="repo">
+					<rect class="mg-card mg-card--accent" x="560" y="40" width="480" height="150" rx="22" />
+					<text class="mg-heading" x="800" y="84" text-anchor="middle">«interface» CourseRepository</text>
+					<text class="mg-mono mg-mono--dark" x="800" y="128" text-anchor="middle">void save(Course c);</text>
+					<text class="mg-mono mg-mono--dark" x="800" y="160" text-anchor="middle">Course findById(long id);</text>
+				</g>
+				<g data-el="tag-contract">
+					<rect class="mg-chip" x="60" y="95" width="330" height="50" rx="25" />
+					<text class="mg-chip-text mg-chip-text--lg" x="225" y="127" text-anchor="middle">{t('contrato: qué se puede hacer', 'contract: what can be done')}</text>
+				</g>
+
+				<g data-el="comb-abs">
+					<rect class="mg-card mg-card--sage" x="500" y="250" width="600" height="190" rx="22" style="stroke-dasharray: 10 7" />
+					<text class="mg-heading" x="800" y="292" text-anchor="middle">«abstract» InMemoryCourseRepository</text>
+				</g>
+				<g data-el="abs-solved">
+					<rect class="mg-chip mg-chip--sage" x="530" y="360" width="265" height="60" rx="18" />
+					<text class="mg-chip-text mg-chip-text--sage" x="662" y="396" text-anchor="middle">{t('findById() · resuelto', 'findById() · solved')}</text>
+				</g>
+				<g data-el="abs-gap">
+					<rect class="mg-chip" x="805" y="360" width="265" height="60" rx="18" />
+					<text class="mg-chip-text" x="937" y="396" text-anchor="middle">{t('save() · abstracto', 'save() · abstract')}</text>
+				</g>
+				<g data-el="cmb-a1" class="mg-arrow mg-arrow--sage">
+					<path class="mg-stroke" d="M800 250V198" pathLength="1" />
+					<path class="mg-head" d="M788 212L800 198L812 212" />
+				</g>
+				<g data-el="tag-shared">
+					<rect class="mg-chip mg-chip--sage" x="60" y="320" width="330" height="50" rx="25" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="225" y="352" text-anchor="middle">{t('código compartido', 'shared code')}</text>
+				</g>
+
+				<g data-el="conc">
+					<rect class="mg-card" x="500" y="520" width="600" height="110" rx="22" />
+					<text class="mg-heading" x="800" y="566" text-anchor="middle">ValidatingRepository</text>
+					<text class="mg-mono mg-mono--dark" x="800" y="604" text-anchor="middle">save() {'{ validate(); store[count++] = c; }'}</text>
+				</g>
+				<g data-el="cmb-a2" class="mg-arrow mg-arrow--sage">
+					<path class="mg-stroke" d="M800 520V448" pathLength="1" />
+					<path class="mg-head" d="M788 462L800 448L812 462" />
+				</g>
+				<g data-el="tag-own">
+					<rect class="mg-chip" x="60" y="548" width="330" height="50" rx="25" />
+					<text class="mg-chip-text mg-chip-text--lg" x="225" y="580" text-anchor="middle">{t('decisión propia', 'its own decision')}</text>
+				</g>
+
+				<rect class="mg-card mg-card--ink" data-el="rule" x="1140" y="250" width="420" height="190" rx="22" />
+				<g data-el="rule-text">
+					<text class="mg-text mg-text--light mg-text--strong" x="1170" y="312">{t('Interfaz por defecto.', 'Interface by default.')}</text>
+					<text class="mg-text mg-text--light" x="1170" y="352">{t('Clase abstracta solo con', 'Abstract class only with')}</text>
+					<text class="mg-text mg-text--light" x="1170" y="384">{t('estado o código compartido.', 'shared state or code.')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 6. Packages and namespaces -->
+	<div slot="scene" data-scene="ns-pillars" class="scene-ns-pillars">
+		<div class="dg-box dg-box--ink" data-el="pl-ns">
+			<p class="dg-label" style="color: var(--color-accent-300)">namespace</p>
+			<p class="dg-title">{t('Un contenedor que da un contexto único a cada tipo', 'A container that gives every type a unique context')}</p>
+			<p class="dg-sub">{t('Evita que dos clases con el mismo nombre compitan en un único ámbito global', 'Stops two classes with the same name from competing in one global scope')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="pl-package">
+			<p class="dg-label"><span class="dg-step-num">1</span> package</p>
+			<code class="dg-code">package com.facundouferer.shop;</code>
+			<p class="dg-sub">{t('Define el namespace de todo el archivo', 'Defines the namespace of the whole file')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="pl-fqcn">
+			<p class="dg-label dg-label--sage"><span class="dg-step-num">2</span> FQCN</p>
+			<code class="dg-code">com.facundouferer.shop.domain.Product</code>
+			<p class="dg-sub">{t('La identidad real de la clase para la JVM', 'The real identity of the class for the JVM')}</p>
+		</div>
+		<div class="dg-box" data-el="pl-import">
+			<p class="dg-label"><span class="dg-step-num">3</span> import</p>
+			<code class="dg-code">import ...shop.domain.Product;</code>
+			<p class="dg-sub">{t('Un atajo léxico: no carga bytecode', 'A lexical shortcut: it loads no bytecode')}</p>
+		</div>
+	</div>
+
+	<!-- 6. FQCN collisions (motion canvas) -->
+	<div slot="scene" data-scene="fqcn" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="pkg-a">
+					<rect class="mg-card mg-card--accent" x="60" y="40" width="700" height="260" rx="22" />
+					<text class="mg-heading" x="90" y="84">com.facundouferer.shop.domain</text>
+				</g>
+				<g data-el="cls-a">
+					<rect class="mg-card" x="100" y="110" width="620" height="90" rx="16" />
+					<text class="mg-heading" x="130" y="150">Product</text>
+					<text class="mg-text mg-text--muted" x="130" y="182">{t('entidad del dominio', 'core domain entity')}</text>
+				</g>
+				<text class="mg-mono mg-mono--dark mg-big" data-el="fq-a" x="100" y="262">com.facundouferer.shop.domain.Product</text>
+
+				<g data-el="pkg-b">
+					<rect class="mg-card mg-card--sage" x="840" y="40" width="700" height="260" rx="22" />
+					<text class="mg-heading" x="870" y="84">com.supplier.catalog</text>
+				</g>
+				<g data-el="cls-b">
+					<rect class="mg-card" x="880" y="110" width="620" height="90" rx="16" />
+					<text class="mg-heading" x="910" y="150">Product</text>
+					<text class="mg-text mg-text--muted" x="910" y="182">{t('DTO del proveedor', 'supplier DTO')}</text>
+				</g>
+				<text class="mg-mono mg-mono--dark mg-big" data-el="fq-b" x="880" y="262">com.supplier.catalog.Product</text>
+
+				<rect class="mg-card mg-card--ink" data-el="clash-card" x="60" y="340" width="860" height="120" rx="20" />
+				<text class="mg-mono mg-big" data-el="clash-l1" x="90" y="392">import java.util.Date;</text>
+				<text class="mg-mono mg-big" data-el="clash-l2" x="90" y="434">import java.sql.Date;</text>
+				<g data-el="clash-err">
+					<rect class="mg-chip" x="960" y="360" width="600" height="90" rx="22" />
+					<text class="mg-chip-text mg-chip-text--lg" x="1260" y="398" text-anchor="middle">✗ error: Date is already defined</text>
+					<text class="mg-chip-text mg-chip-text--lg" x="1260" y="428" text-anchor="middle">in a single-type import</text>
+				</g>
+
+				<rect class="mg-card mg-card--ink" data-el="fix-card" x="60" y="490" width="1500" height="150" rx="20" />
+				<text class="mg-mono mg-big" data-el="fix-l1" x="90" y="544">Date operationDate = new Date();</text>
+				<text class="mg-mono mg-big" data-el="fix-l2" x="90" y="596">java.sql.Date databaseDate = new java.sql.Date(ms);</text>
+				<g data-el="fix-ok">
+					<rect class="mg-chip mg-chip--sage" x="960" y="360" width="600" height="90" rx="22" />
+					<text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1260" y="412" text-anchor="middle">{t('✓ cada Date sin ambigüedad', '✓ every Date is unambiguous')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<div slot="scene" data-scene="ns-rules" class="scene-ns-rules">
+		{nsRules.map((text, i) => <span class:list={['dg-chip', i === 5 ? 'dg-chip--accent' : 'dg-chip--sage']} data-el={`nr-${i + 1}`}>{text}</span>)}
+	</div>
+
+	<!-- 7. Relationships (motion canvas) -->
+	<div slot="scene" data-scene="rel" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="w-1">
+					<rect class="mg-card" x="60" y="60" width="300" height="120" rx="20" />
+					<text class="mg-heading" x="210" y="130" text-anchor="middle">Teacher</text>
+				</g>
+				<g data-el="lk-1" class="mg-arrow">
+					<path class="mg-stroke" d="M360 120H700" pathLength="1" />
+				</g>
+				<g data-el="p-1">
+					<rect class="mg-card" x="700" y="60" width="300" height="120" rx="20" />
+					<text class="mg-heading" x="850" y="130" text-anchor="middle">Course</text>
+				</g>
+				<g data-el="ds-1">
+					<text class="mg-heading" x="1060" y="105">{t('Asociación', 'Association')}</text>
+					<text class="mg-text" x="1060" y="136">{t('se conocen y colaboran;', 'they know each other and collaborate;')}</text>
+					<text class="mg-text" x="1060" y="162">{t('cada uno vive por su cuenta.', 'each one lives on its own.')}</text>
+				</g>
+
+				<g data-el="w-2">
+					<rect class="mg-card mg-card--sage" x="60" y="250" width="300" height="120" rx="20" />
+					<text class="mg-heading" x="210" y="320" text-anchor="middle">Team</text>
+				</g>
+				<polygon class="mg-card mg-card--sage" data-el="dia-2" points="360,310 390,292 420,310 390,328" />
+				<g data-el="lk-2" class="mg-arrow mg-arrow--sage">
+					<path class="mg-stroke" d="M420 310H700" pathLength="1" />
+				</g>
+				<g data-el="p-2">
+					<rect class="mg-card" x="700" y="250" width="300" height="120" rx="20" />
+					<text class="mg-heading" x="850" y="320" text-anchor="middle">Player</text>
+				</g>
+				<g data-el="ds-2">
+					<text class="mg-heading" x="1060" y="295">{t('Agregación', 'Aggregation')}</text>
+					<text class="mg-text" x="1060" y="326">{t('el todo reúne partes que', 'the whole gathers parts that')}</text>
+					<text class="mg-text" x="1060" y="352">{t('ya existían y las recibe.', 'already existed and receives them.')}</text>
+				</g>
+
+				<g data-el="w-3">
+					<rect class="mg-card mg-card--accent" x="60" y="440" width="300" height="120" rx="20" />
+					<text class="mg-heading" x="210" y="510" text-anchor="middle">House</text>
+				</g>
+				<polygon class="mg-dot" data-el="dia-3" points="360,500 390,482 420,500 390,518" />
+				<g data-el="lk-3" class="mg-arrow">
+					<path class="mg-stroke" d="M420 500H700" pathLength="1" />
+				</g>
+				<g data-el="p-3">
+					<rect class="mg-card" x="700" y="440" width="300" height="120" rx="20" />
+					<text class="mg-heading" x="850" y="510" text-anchor="middle">Room</text>
+				</g>
+				<g data-el="ds-3">
+					<text class="mg-heading" x="1060" y="485">{t('Composición', 'Composition')}</text>
+					<text class="mg-text" x="1060" y="516">{t('la parte no existe sin el todo;', 'the part cannot exist without the whole;')}</text>
+					<text class="mg-text" x="1060" y="542">{t('el todo la crea en su constructor.', 'the whole creates it in its constructor.')}</text>
+				</g>
+
+				<text class="mg-heading" data-el="q" x="60" y="642">{t('¿Qué pasa con la parte si destruyo el todo?', 'What happens to the part if I destroy the whole?')}</text>
+				<g data-el="ok-1">
+					<rect class="mg-chip mg-chip--sage" x="700" y="192" width="300" height="40" rx="20" />
+					<text class="mg-chip-text mg-chip-text--sage" x="850" y="218" text-anchor="middle">{t('✓ sigue existiendo', '✓ still exists')}</text>
+				</g>
+				<g data-el="ok-2">
+					<rect class="mg-chip mg-chip--sage" x="700" y="382" width="300" height="40" rx="20" />
+					<text class="mg-chip-text mg-chip-text--sage" x="850" y="408" text-anchor="middle">{t('✓ sigue existiendo', '✓ still exists')}</text>
+				</g>
+				<g data-el="ko-3">
+					<rect class="mg-chip" x="700" y="572" width="300" height="40" rx="20" />
+					<text class="mg-chip-text" x="850" y="598" text-anchor="middle">{t('✗ desaparece con la casa', '✗ goes with the house')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<div slot="scene" data-scene="rel-code" class="scene-rel-code">
+		<div class="dg-box" data-el="rc-assoc">
+			<p class="dg-label">{t('Asociación', 'Association')}</p>
+			<p class="dg-title">Teacher → Course</p>
+			<p class="dg-sub">{t('Se conocen, ninguno es dueño', 'They know each other, neither owns the other')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="rc-aggr">
+			<p class="dg-label dg-label--sage">{t('Agregación', 'Aggregation')}</p>
+			<p class="dg-title">Team ◇ Player</p>
+			<p class="dg-sub">{t('Recibe las partes desde afuera', 'Receives the parts from outside')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="rc-comp">
+			<p class="dg-label">{t('Composición', 'Composition')}</p>
+			<p class="dg-title">House ◆ Room</p>
+			<p class="dg-sub">{t('Crea las partes y no las expone', 'Creates the parts and does not expose them')}</p>
+		</div>
+	</div>
+
+	<!-- 8. Common mistakes -->
+	<div slot="scene" data-scene="errors11" class="scene-errors11">
+		{mistakes.map((text, i) => <span class="dg-chip dg-chip--accent" data-el={`er-${i + 1}`}>{text}</span>)}
+	</div>
+
+	<!-- 9. Guided exercise -->
+	<div slot="scene" data-scene="exercise11" class="scene-exercise11">
+		{
+			tasks.map((task) => (
+				<div class:list={['dg-box', { 'dg-box--accent': task.n === 5 }]} data-el={`ex${task.n}`}>
+					<p class="dg-label"><span class="dg-step-num">{task.n}</span> {t('Paso', 'Step')}</p>
+					<p class="dg-title">{task.name}</p>
+					<p class="dg-sub">{task.note}</p>
+				</div>
+			))
+		}
+	</div>
+
+	<div slot="scene" data-scene="closing11" class="scene-closing11">
+		<div class="dg-chips scene-closing11-map">
+			{takeaways.map((text, i) => <span class:list={['dg-chip', i < 4 ? 'dg-chip--accent' : 'dg-chip--sage']} data-el={`c${i + 1}`}>{i + 1} · {text}</span>)}
+		</div>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Layout unique to each scene. Colors, radii and spacing stay on tokens. */
+	.scene-canvas {
+		width: 100%;
+	}
+
+	.mg-big {
+		font-size: 26px;
+	}
+
+	/* The check mark drawn on the sage "signed" badges. */
+	.mg-check {
+		fill: none;
+		stroke: var(--color-bg);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.scene-intro11,
+	.scene-abs-anatomy,
+	.scene-iface-anatomy,
+	.scene-evolve,
+	.scene-duck-code,
+	.scene-ns-pillars,
+	.scene-rel-code,
+	.scene-exercise11 {
+		align-content: center;
+	}
+
+	.scene-intro11 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-abs-anatomy {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.scene-abs-anatomy [data-el='an-rule'],
+	.scene-iface-anatomy [data-el='if-rule'],
+	.scene-evolve [data-el='ev-adapter'],
+	.scene-duck-code [data-el='dk-views'],
+	.scene-ns-pillars [data-el='pl-ns'] {
+		grid-column: 1 / -1;
+	}
+
+	.scene-abs-anatomy .dg-code,
+	.scene-evolve .dg-code,
+	.scene-ns-pillars .dg-code {
+		font-size: 0.78em;
+		white-space: nowrap;
+	}
+
+	.scene-iface-anatomy,
+	.scene-evolve,
+	.scene-duck-code {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-ns-pillars {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.scene-compare {
+		align-content: center;
+	}
+
+	.scene-cmp-row {
+		grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr) minmax(0, 1.1fr);
+		align-items: center;
+		padding: var(--space-2) var(--space-3);
+	}
+
+	.scene-rel-code {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.scene-exercise11 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-ns-rules,
+	.scene-errors11 {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-content: center;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.scene-closing11 {
+		align-content: center;
+		justify-items: center;
+	}
+
+	.scene-closing11-map {
+		justify-content: center;
+	}
+
+	@media (width < 720px) {
+		.scene-intro11,
+		.scene-abs-anatomy,
+		.scene-iface-anatomy,
+		.scene-evolve,
+		.scene-duck-code,
+		.scene-ns-pillars,
+		.scene-rel-code,
+		.scene-exercise11 {
+			grid-template-columns: 1fr;
+		}
+
+		.scene-cmp-row {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
