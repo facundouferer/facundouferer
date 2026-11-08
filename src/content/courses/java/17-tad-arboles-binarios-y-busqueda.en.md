@@ -549,3 +549,13 @@ We use `long` for the range because a node may legitimately hold `Integer.MIN_VA
 - The BST property — smaller left, larger right, **across the whole tree** — is what turns a search into a decision.
 - Inserting already-sorted data **degenerates** a BST into a list and drops it from O(log n) to O(n).
 - In production use `TreeMap`/`TreeSet`: red-black trees that rebalance themselves.
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l17_tad_arboles_binarios_y_busqueda](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l17_tad_arboles_binarios_y_busqueda).
+
+There you will find a binary search tree (`Ej01ArbolBinarioDeBusqueda`) and a capstone with `NodoArbol`, `ArbolBinario`, in-order traversal and tree search.
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

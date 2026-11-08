@@ -160,3 +160,13 @@ boolean puedeIngresar = tieneEdad && esEstudiante;
 
 ## 6. Ejercicio Práctico
 Escribí un programa que declare las notas de tres exámenes de un alumno, calcule su promedio usando valores decimales (`double`), e imprima si el alumno aprobó (promedio mayor o igual a 6.0) mediante un resultado booleano.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l02_variables_tipos_datos_y_operadores](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l02_variables_tipos_datos_y_operadores).
+
+Ahí vas a encontrar ocho programas cortos sobre tipos de datos primitivos, clases envoltorio (wrappers), autoboxing y unboxing, conversión de texto y de unidades, y operadores aritméticos, relacionales y lógicos.
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

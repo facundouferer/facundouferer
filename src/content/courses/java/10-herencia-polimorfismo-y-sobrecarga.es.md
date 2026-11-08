@@ -537,3 +537,13 @@ Fijate también en `super.calcularSalario()`: `Gerente` y `Vendedor` no repiten 
 - El beneficio real es escribir código que funciona con subclases que todavía no existen.
 - Castear seguido es un síntoma de que el diseño de la jerarquía está pidiendo un método en la superclase.
 - Preferí composición antes que herencia, y marcá con `final` lo que no debe extenderse.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l10_herencia_polimorfismo_y_sobrecarga](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l10_herencia_polimorfismo_y_sobrecarga).
+
+Ahí vas a encontrar jerarquías de clases con herencia, polimorfismo y sobrecarga: empleados, zoológico, transporte, animales, personas y materias, y el integrador de biblioteca con libros físicos y digitales.
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

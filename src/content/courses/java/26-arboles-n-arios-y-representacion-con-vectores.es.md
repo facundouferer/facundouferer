@@ -197,3 +197,13 @@ La validación es O(n): cada nodo y enlace válido se procesa una cantidad acota
 | Capacidad dispersa | Sin huecos explícitos | Índices estables pueden dejar huecos |
 
 Los índices son útiles para persistencia, redes y pools compactos. Las referencias facilitan ediciones y evitan actualizar índices al compactar. En ambos casos, insertar o borrar exige conservar padre, primer hijo y cadena de hermanos; rendimiento sin invariantes solo produce corrupción más rápido.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l26_arboles_n_arios_y_representacion_con_vectores](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l26_arboles_n_arios_y_representacion_con_vectores).
+
+Ahí vas a encontrar una implementación de árbol n-ario (`Ej01ArbolNario`).
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

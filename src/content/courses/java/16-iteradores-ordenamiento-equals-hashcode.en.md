@@ -474,3 +474,13 @@ Now `compareTo` returns `0` exactly when `equals` returns `true`, and both famil
 - The correct signature is `equals(Object o)`. With `Book o` you are overloading and collections will not use it.
 - `TreeSet` and `TreeMap` ignore `equals` and decide duplicates by `compareTo == 0`. Keep them consistent.
 - A `record` gives you correct `equals` and `hashCode` for free.
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l16_iteradores_ordenamiento_equals_hashcode](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l16_iteradores_ordenamiento_equals_hashcode).
+
+There you will find iterators over collections, people without duplicates, functional interfaces, lambda expressions and the four kinds of method references, plus three capstones (car dealership, technology store and veterinary clinic).
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

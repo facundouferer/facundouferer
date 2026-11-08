@@ -217,3 +217,13 @@ public class BankAccount {
 }
 ```
 </details>
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l07_fundamentos_poo_clases_y_objetos](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l07_fundamentos_poo_clases_y_objetos).
+
+There you will find twelve exercises that model classes and objects (car, person, rectangle, order, account, book, fraction, vector, mate, calculator and garage) plus the `integrador_fin_finales` capstone.
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

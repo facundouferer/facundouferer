@@ -751,3 +751,13 @@ This class is already, conceptually, a miniature dynamic list: internal array, d
 - Assigning one slot to another **does not copy the object**: you get two arrows to the same place.
 - A class's internal array is copied on the way in and on the way out, or `private` protects nothing.
 - Separating **capacity** from **count** is what turns an array into a data structure. That is the starting point of the List ADT.
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l09_arrays_de_objetos](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l09_arrays_de_objetos).
+
+There you will find arrays of objects applied to a sports squad and a university, plus four capstones: product quality, a polling company, a contact book and stock management.
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

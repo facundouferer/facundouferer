@@ -217,3 +217,13 @@ public class CuentaBancaria {
 }
 ```
 </details>
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l07_fundamentos_poo_clases_y_objetos](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l07_fundamentos_poo_clases_y_objetos).
+
+Ahí vas a encontrar doce ejercicios que modelan clases y objetos (coche, persona, rectángulo, pedido, cuenta, libro, fracción, vector, mate, calculadora y garage) más el integrador `integrador_fin_finales`.
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

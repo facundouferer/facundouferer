@@ -465,3 +465,13 @@ And `STOP_WORDS` is a `Set`, not a `List`, because the only thing we do with it 
 - A bad `hashCode()` throws no exception: it just makes you unable to find what you stored.
 - `merge`, `computeIfAbsent`, `getOrDefault`, and `putIfAbsent` remove most of the `if` blocks around a map.
 - Picking the right collection **is a performance decision**: `contains` on a `Set` is O(1); on a `List`, O(n).
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l15_java_collections_framework_y_genericos](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l15_java_collections_framework_y_genericos).
+
+There you will find exercises with `List` and `Set` (adding elements, library, family, set of people, merging lists) and with `forEach`, `filter` and `map` over collections.
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

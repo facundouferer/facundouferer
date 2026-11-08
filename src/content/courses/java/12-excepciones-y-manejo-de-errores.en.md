@@ -589,3 +589,13 @@ And `register` is the single place where the range rule lives. `registerFromText
 - `try-with-resources` for anything that opens and closes. No exceptions.
 - When rethrowing, **always pass the cause**: without it you lose the line that actually failed.
 - An empty `catch` is worse than not catching at all.
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l12_excepciones_y_manejo_de_errores](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l12_excepciones_y_manejo_de_errores).
+
+There you will find 16 exercises in order of difficulty: from unguarded division to `try-catch-finally`, checked and unchecked exceptions, `throws`, multiple `catch` blocks, retry loops, `try-with-resources` and custom exceptions, ending with two complete cases (microprocessors and cleaning products).
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

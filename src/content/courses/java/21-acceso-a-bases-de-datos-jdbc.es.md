@@ -527,3 +527,12 @@ Lo que cambió no es la cantidad de sintaxis que sabés: es que ahora entendés 
 
 Eso es lo que no se aprende en dos horas, y es exactamente lo que te va a servir cuando el lenguaje de moda ya no sea Java.
 
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l21_acceso_a_bases_de_datos_jdbc](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l21_acceso_a_bases_de_datos_jdbc).
+
+Ahí vas a encontrar proyectos JDBC con clase `Conexion` y patrón DAO (empresa, con su script `empresa.sql`, tienda, pizzería y estudiantes), más tres integradores con base de datos (concesionario, hospital y ventas).
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

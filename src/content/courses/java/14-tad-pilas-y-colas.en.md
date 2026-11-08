@@ -654,3 +654,13 @@ The FIFO queue models **who is next**; the priority queue models **what happens 
 - `pop`/`dequeue` on an empty structure is a usage error: throw `NoSuchElementException`.
 - In real Java use **`ArrayDeque`** as a `Deque`, never the old `Stack` class.
 - "The last thing I opened is the first thing I must close" is LIFO stated in words. Which is why a stack solves balance checking.
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l14_tad_pilas_y_colas](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l14_tad_pilas_y_colas).
+
+There you will find an array-based stack (`Ej01`), a linked-list stack (`Ej02`), a linked-list queue (`Ej03`) and how to use the implementations Java already provides (`Ej04PilaYColaDeJava`).
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

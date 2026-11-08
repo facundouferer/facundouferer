@@ -589,3 +589,13 @@ Y `registrar` es el único lugar donde vive la regla del rango. `registrarDesdeT
 - `try-with-resources` para todo lo que se abre y se cierra. Sin excepciones.
 - Al relanzar, **pasá siempre la causa**: sin ella perdés la línea donde realmente falló.
 - Un `catch` vacío es peor que no capturar nada.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l12_excepciones_y_manejo_de_errores](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l12_excepciones_y_manejo_de_errores).
+
+Ahí vas a encontrar 16 ejercicios en orden de dificultad: de la división sin control a `try-catch-finally`, excepciones chequeadas y no chequeadas, `throws`, varios `catch`, reintentos con bucle, `try-with-resources` y excepciones propias, cerrando con dos casos completos (microprocesadores y productos de limpieza).
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

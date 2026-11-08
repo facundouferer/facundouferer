@@ -686,3 +686,13 @@ Second: `DigitalWallet.isAvailable()` calls `super.isAvailable()` and adds its o
 - A class extends one class but implements every interface it needs. That is Java's answer to multiple inheritance.
 - The `package` is Java's native implementation of the **namespace** concept: it prevents collisions via FQCNs, must strictly match the folder hierarchy, and should be grouped by **responsibility**, not by artifact type.
 - Association, aggregation, and composition are told apart by one question: if I destroy the whole, does the part still exist?
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l11_clases_abstractas_interfaces_y_modelado](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l11_clases_abstractas_interfaces_y_modelado).
+
+There you will find abstract classes and interfaces in shapes, transports, a company, a veterinary clinic and a university; the Template Method and State patterns; adapter classes; and packages (`ej09_namespaces`). It includes a university capstone with a menu.
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

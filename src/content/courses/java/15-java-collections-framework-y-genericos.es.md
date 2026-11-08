@@ -465,3 +465,13 @@ Y `VACIAS` es un `Set`, no una `List`, porque lo único que hacemos con él es p
 - Un `hashCode()` mal hecho no lanza ninguna excepción: solo hace que no encuentres lo que guardaste.
 - `merge`, `computeIfAbsent`, `getOrDefault` y `putIfAbsent` eliminan la mayoría de los `if` alrededor de un mapa.
 - Elegir la colección correcta **es una decisión de rendimiento**: `contains` sobre un `Set` es O(1); sobre una `List`, O(n).
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l15_java_collections_framework_y_genericos](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l15_java_collections_framework_y_genericos).
+
+Ahí vas a encontrar ejercicios con `List` y `Set` (agregar elementos, biblioteca, familia, conjunto de personas, unión de listas) y con `forEach`, `filter` y `map` sobre colecciones.
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

@@ -293,3 +293,13 @@ public class StatUtils {
 }
 ```
 </details>
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l05_metodos_y_funciones](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l05_metodos_y_funciones).
+
+There you will find methods with parameters and return values, pass by value, variable scope, overloading, static methods, and recursion (factorial, Fibonacci, mutual recursion and stack overflow). It includes the `RopaShop` capstone.
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

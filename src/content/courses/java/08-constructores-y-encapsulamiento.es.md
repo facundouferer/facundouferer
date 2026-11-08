@@ -619,3 +619,13 @@ public class Estudiante {
 - `private` es el valor por defecto de todo atributo. Abrí solo lo que el contrato necesita.
 - Devolver un array u objeto interno sin copiar **anula el encapsulamiento** por más `private` que tenga el campo.
 - Lo que no puede cambiar, no puede romperse: preferí `final` e inmutabilidad siempre que el dominio lo permita.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l08_constructores_y_encapsulamiento](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l08_constructores_y_encapsulamiento).
+
+Ahí vas a encontrar una clase con miembros estáticos (`Ej01Matematica`), los modificadores de acceso en acción (`Ej02ModificadoresDeAcceso`) y una cuenta bancaria con constructores y encapsulamiento (`Ej03CuentaBancaria`).
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

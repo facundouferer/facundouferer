@@ -654,3 +654,13 @@ La cola FIFO modela **quién sigue**; la cola de prioridad modela **qué ocurre 
 - `pop`/`dequeue` sobre una estructura vacía es un error de uso: lanzá `NoSuchElementException`.
 - En Java real usá **`ArrayDeque`** como `Deque`, nunca la vieja clase `Stack`.
 - "Lo último que abrí es lo primero que tengo que cerrar" es LIFO expresado en palabras. Por eso la pila resuelve el balanceo.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l14_tad_pilas_y_colas](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l14_tad_pilas_y_colas).
+
+Ahí vas a encontrar una pila con arreglo (`Ej01`), una pila con lista enlazada (`Ej02`), una cola con lista (`Ej03`) y cómo usar las implementaciones que ya trae Java (`Ej04PilaYColaDeJava`).
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

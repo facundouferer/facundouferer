@@ -160,3 +160,13 @@ boolean canAccess = isAdult && isStudent;
 
 ## 6. Hands-on Exercise
 Write a program that declares the grades for three exams of a student, calculates their average using floating-point numbers (`double`), and prints whether the student passed (average >= 6.0) using a boolean expression.
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l02_variables_tipos_datos_y_operadores](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l02_variables_tipos_datos_y_operadores).
+
+There you will find eight short programs on primitive data types, wrapper classes, autoboxing and unboxing, text and unit conversion, and arithmetic, relational and logical operators.
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

@@ -967,3 +967,13 @@ Note that the output array is declared `new int[columns][rows]`, not `new int[ro
 - `String` is **immutable**: no method modifies it, they all return a new string you have to assign.
 - The **String Constant Pool** is why `==` sometimes appears to work. Contents are compared with `.equals()`, always.
 - `StringBuilder` is mandatory when you concatenate **inside a loop**; within a single expression the compiler already handles it for you.
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l04_arrays_y_strings](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l04_arrays_y_strings).
+
+There you will find 33 exercises: creating, traversing and searching arrays, statistics, reversing, rotating and interleaving, matrices (diagonal, transpose, multiplication, rotation) and `String` handling (comparing, alphabetical order, counting vowels).
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

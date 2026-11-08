@@ -503,3 +503,13 @@ Y fijate que "eliminar" nunca borra nada: solo deja de apuntarlo. Sin ninguna re
 - Los cuatro casos de toda operación son: lista vacía, primer elemento, elemento del medio, elemento inexistente.
 - La doble permite ir para atrás y borrar sin buscar al anterior; la circular no tiene `null` y cambia la condición de corte.
 - En producción, **`ArrayList` casi siempre**. La memoria contigua le gana a la teoría gracias a la caché del procesador.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l13_tad_listas_estaticas_y_dinamicas](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l13_tad_listas_estaticas_y_dinamicas).
+
+Ahí vas a encontrar la implementación completa de los TAD de lista: `ListaEstatica`, `ListaEnlazadaSimple`, `ListaDoblementeEnlazada` y `ListaCircular`, con su clase `Nodo` y una demo (`DemoListas`) que las usa para administrar personas.
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

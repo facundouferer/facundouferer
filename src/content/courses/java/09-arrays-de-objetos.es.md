@@ -751,3 +751,13 @@ Esta clase ya es, conceptualmente, una lista dinámica en miniatura: array inter
 - Asignar una casilla a otra **no copia el objeto**: quedan dos flechas al mismo lugar.
 - Un array interno de una clase se copia al entrar y al salir, o el `private` no protege nada.
 - Separar **capacidad** de **cantidad** es lo que convierte un array en una estructura de datos. Ese es el punto de partida del TAD Lista.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l09_arrays_de_objetos](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l09_arrays_de_objetos).
+
+Ahí vas a encontrar arreglos de objetos aplicados a un plantel deportivo y a una universidad, más cuatro integradores: calidad de productos, encuestadora, agenda de contactos y manejo de stock.
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

@@ -126,3 +126,13 @@ for (int i = 1; i <= 10; i++) {
 
 ## 5. Ejercicio Práctico
 Escribí un programa en Java que use un bucle para calcular la suma de todos los números pares entre 1 y 100 e imprima el resultado final.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l03_control_de_flujo_y_bucles](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l03_control_de_flujo_y_bucles).
+
+Ahí vas a encontrar 43 ejercicios resueltos: `if`, `if-else` y anidados, operador ternario, `switch`, y los bucles `for`, `while`, `do-while` y `for-each`, aplicados a problemas como números primos, suma de dígitos, descuentos, sueldos y validación de claves.
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

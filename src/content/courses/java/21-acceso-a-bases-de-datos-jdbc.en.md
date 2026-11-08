@@ -527,3 +527,12 @@ What changed is not how much syntax you know: it is that you now understand **wh
 
 That is what nobody learns in two hours, and it is exactly what will still serve you when the language of the moment is no longer Java.
 
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l21_acceso_a_bases_de_datos_jdbc](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l21_acceso_a_bases_de_datos_jdbc).
+
+There you will find JDBC projects with a `Conexion` class and the DAO pattern (company, with its `empresa.sql` script, shop, pizzeria and students), plus three database capstones (car dealership, hospital and sales).
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

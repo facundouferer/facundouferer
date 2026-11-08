@@ -246,3 +246,13 @@ public class Phone {
 }
 ```
 </details>
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l06_introduccion_y_pilares_poo](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l06_introduccion_y_pilares_poo).
+
+There you will find one mini project per pillar: abstraction (`ej01_abstraccion`, with `Figura`, `Circulo` and `Cuadrado`), encapsulation (`ej02_encapsulamiento`) and inheritance (`ej03_herencia`, with `Persona`, `Empleado` and `Cliente`).
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

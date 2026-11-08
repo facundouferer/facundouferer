@@ -967,3 +967,13 @@ Fijate que el array de salida se declara `new int[columnas][filas]`, no `new int
 - `String` es **inmutable**: ningún método lo modifica, todos devuelven una cadena nueva que hay que asignar.
 - El **String Constant Pool** hace que `==` a veces parezca funcionar. El contenido se compara con `.equals()`, siempre.
 - `StringBuilder` es obligatorio cuando concatenás **dentro de un bucle**; en una sola expresión el compilador ya lo resuelve por vos.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l04_arrays_y_strings](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l04_arrays_y_strings).
+
+Ahí vas a encontrar 33 ejercicios: crear, recorrer y buscar en arreglos, estadísticas, invertir, rotar e intercalar, matrices (diagonal, transpuesta, multiplicación, rotación) y manejo de `String` (comparar, ordenar alfabéticamente, contar vocales).
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

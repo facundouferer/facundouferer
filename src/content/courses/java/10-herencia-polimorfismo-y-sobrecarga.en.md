@@ -536,3 +536,13 @@ Notice `super.computeSalary()` too: `Manager` and `SalesRep` do not repeat the b
 - The real benefit is writing code that works with subclasses that do not exist yet.
 - Frequent casting is a symptom that the hierarchy is asking for a method on the superclass.
 - Prefer composition over inheritance, and mark with `final` whatever must not be extended.
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l10_herencia_polimorfismo_y_sobrecarga](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l10_herencia_polimorfismo_y_sobrecarga).
+
+There you will find class hierarchies using inheritance, polymorphism and overloading: employees, zoo, transport, animals, people and subjects, and the library capstone with physical and digital books.
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

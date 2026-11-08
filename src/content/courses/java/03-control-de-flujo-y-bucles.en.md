@@ -126,3 +126,13 @@ for (int i = 1; i <= 10; i++) {
 
 ## 5. Hands-on Exercise
 Write a Java program using a loop to calculate the sum of all even numbers between 1 and 100, and print the total.
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l03_control_de_flujo_y_bucles](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l03_control_de_flujo_y_bucles).
+
+There you will find 43 solved exercises: `if`, `if-else` and nested conditions, the ternary operator, `switch`, and the `for`, `while`, `do-while` and `for-each` loops, applied to problems such as prime numbers, digit sums, discounts, salaries and password validation.
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

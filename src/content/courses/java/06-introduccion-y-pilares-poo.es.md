@@ -246,3 +246,13 @@ public class Celular {
 }
 ```
 </details>
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l06_introduccion_y_pilares_poo](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l06_introduccion_y_pilares_poo).
+
+Ahí vas a encontrar un mini proyecto por cada pilar: abstracción (`ej01_abstraccion`, con `Figura`, `Circulo` y `Cuadrado`), encapsulamiento (`ej02_encapsulamiento`) y herencia (`ej03_herencia`, con `Persona`, `Empleado` y `Cliente`).
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

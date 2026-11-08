@@ -293,3 +293,13 @@ public class EstadisticaUtils {
 }
 ```
 </details>
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l05_metodos_y_funciones](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l05_metodos_y_funciones).
+
+Ahí vas a encontrar métodos con parámetros y retorno, pasaje por valor, alcance de variables, sobrecarga, métodos estáticos, y recursión (factorial, Fibonacci, recursión mutua y desbordamiento de pila). Incluye el integrador `RopaShop`.
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

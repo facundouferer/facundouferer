@@ -619,3 +619,13 @@ public class Student {
 - `private` is the default for every field. Open only what the contract requires.
 - Returning an internal array or object without copying **cancels encapsulation**, no matter how `private` the field is.
 - What cannot change cannot break: prefer `final` and immutability whenever the domain allows it.
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l08_constructores_y_encapsulamiento](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l08_constructores_y_encapsulamiento).
+
+There you will find a class with static members (`Ej01Matematica`), access modifiers in action (`Ej02ModificadoresDeAcceso`) and a bank account with constructors and encapsulation (`Ej03CuentaBancaria`).
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

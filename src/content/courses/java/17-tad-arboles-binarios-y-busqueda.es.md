@@ -549,3 +549,13 @@ Usamos `long` para el rango porque un nodo puede valer legítimamente `Integer.M
 - La propiedad del ABB —izquierda menor, derecha mayor, **en todo el árbol**— es lo que convierte una búsqueda en una decisión.
 - Insertar datos ya ordenados **degenera** el ABB en una lista y lo lleva de O(log n) a O(n).
 - En producción usá `TreeMap`/`TreeSet`: son árboles rojo-negro que se reequilibran solos.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l17_tad_arboles_binarios_y_busqueda](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l17_tad_arboles_binarios_y_busqueda).
+
+Ahí vas a encontrar un árbol binario de búsqueda (`Ej01ArbolBinarioDeBusqueda`) y un integrador con `NodoArbol`, `ArbolBinario`, recorrido en orden y búsqueda en el árbol.
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

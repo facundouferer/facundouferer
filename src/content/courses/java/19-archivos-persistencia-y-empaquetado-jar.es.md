@@ -577,3 +577,13 @@ Sin embargo, Launch4j no reemplaza por sí solo todo el instalador, el runtime n
 - Declará `serialVersionUID` a mano o vas a perder todos los archivos guardados al primer cambio de la clase.
 - Preferí **formatos de texto** (CSV, JSON) antes que la serialización nativa: son portables, legibles y estables.
 - Un JAR es un ZIP con un `MANIFEST.MF`; sin `Main-Class` no es ejecutable.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l19_archivos_persistencia_y_empaquetado_jar](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l19_archivos_persistencia_y_empaquetado_jar).
+
+Ahí vas a encontrar lectura y escritura de archivos (`FileWriter`, lectura por caracteres y por líneas con buffer), rutas y directorios, listado recursivo, serialización de objetos, y dos integradores (hospital y hotelería).
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

@@ -224,3 +224,13 @@ La solución esperada usa `O(n)` tiempo, `O(1)` espacio adicional y devuelve `-1
 ## Resumen
 
 Un algoritmo profesional nace de un contrato claro, se sostiene con un argumento de corrección y pruebas, y se evalúa con análisis temporal y espacial. La notación asintótica permite anticipar la escalabilidad, mientras que la medición confirma el comportamiento real. Primero hacé que el resultado sea correcto; después mejorá su eficiencia sin perder esa garantía.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l23_algoritmia_verificacion_y_complejidad](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l23_algoritmia_verificacion_y_complejidad).
+
+Ahí vas a encontrar tres algoritmos de ordenamiento implementados en Java: burbuja (`Ej01`), mezcla o merge sort (`Ej02`) y rápido o quick sort (`Ej03`).
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

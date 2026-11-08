@@ -224,3 +224,13 @@ The expected solution uses `O(n)` time, `O(1)` additional space, and returns `-1
 ## Summary
 
 A professional algorithm starts with a clear contract, is supported by a correctness argument and tests, and is evaluated through time and space analysis. Asymptotic notation anticipates scalability, while measurement confirms real behavior. Make the result correct first; then improve its efficiency without losing that guarantee.
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l23_algoritmia_verificacion_y_complejidad](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l23_algoritmia_verificacion_y_complejidad).
+
+There you will find three sorting algorithms implemented in Java: bubble sort (`Ej01`), merge sort (`Ej02`) and quick sort (`Ej03`).
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.

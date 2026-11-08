@@ -280,3 +280,13 @@ public class PerfilDesarrollador {
 }
 ```
 </details>
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l01_conceptos_basicos](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l01_conceptos_basicos).
+
+Ahí vas a encontrar tu primer programa (`Ej01HolaMundo`), la salida estándar con `print`, `println` y `printf` (`Ej02SalidaEstandar`) y el uso de constantes y convenciones de nombres (`Ej03ConstantesYConvenciones`).
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

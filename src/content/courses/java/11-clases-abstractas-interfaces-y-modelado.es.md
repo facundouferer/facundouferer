@@ -686,3 +686,13 @@ La segunda: `MercadoPago.estaDisponible()` llama a `super.estaDisponible()` y le
 - Una clase extiende una sola clase, pero implementa todas las interfaces que necesite. Esa es la salida de Java a la herencia múltiple.
 - El `package` es la implementación del concepto de **namespace** en Java: previene colisiones mediante el FQCN, debe coincidir con la jerarquía de carpetas y conviene organizarlo por **responsabilidad**, no por tipo de artefacto.
 - Asociación, agregación y composición se distinguen con una sola pregunta: si destruyo el todo, ¿la parte sigue existiendo?
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l11_clases_abstractas_interfaces_y_modelado](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l11_clases_abstractas_interfaces_y_modelado).
+
+Ahí vas a encontrar clases abstractas e interfaces en figuras, transportes, empresa, veterinaria y universidad; los patrones Template Method y State; clases adaptadoras; y paquetes (`ej09_namespaces`). Incluye un integrador de universidad con menú.
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto.

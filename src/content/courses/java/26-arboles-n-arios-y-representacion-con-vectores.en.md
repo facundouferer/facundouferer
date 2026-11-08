@@ -197,3 +197,13 @@ Validation is O(n): each node and valid link is processed a bounded number of ti
 | Sparse capacity | No explicit holes | Stable indices may leave holes |
 
 Indices work well for persistence, network transfer, and compact pools. References make edits easier and avoid updating indices after compaction. In either representation, insertion and deletion must preserve parent, first-child, and sibling-chain invariants; performance without invariants merely corrupts data faster.
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l26_arboles_n_arios_y_representacion_con_vectores](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l26_arboles_n_arios_y_representacion_con_vectores).
+
+There you will find an implementation of an n-ary tree (`Ej01ArbolNario`).
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action.
