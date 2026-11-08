@@ -62,6 +62,8 @@ Callable<Integer> calculoComplejo = () -> {
 };
 ```
 
+**Programa de práctica:** [`Ej01ThreadConRunnable`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej01ThreadConRunnable.java) (`Runnable` en una clase y en una lambda, y la diferencia entre `start()` y `run()`), [`Ej02CallableYFuture`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej02CallableYFuture.java) (una tarea que devuelve un resultado y puede lanzar excepciones chequeadas) y [`Ej03CicloDeVidaDelHilo`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej03CicloDeVidaDelHilo.java) (los estados `NEW`, `RUNNABLE`, `TIMED_WAITING` y `TERMINATED` con `getState()`).
+
 ---
 
 ## 3. Condiciones de Carrera (*Race Conditions*) y Sincronización
@@ -81,6 +83,8 @@ public class ContadorInseguro {
     }
 }
 ```
+
+**Programa de práctica:** [`Ej04CondicionDeCarrera`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej04CondicionDeCarrera.java) (10 hilos incrementan un contador 1000 veces cada uno y el resultado casi nunca es 10000). El resultado varía entre ejecuciones: correrlo varias veces es parte de la práctica.
 
 ### Soluciones de Sincronización en Java:
 
@@ -117,6 +121,11 @@ public class ContadorAtomico {
 #### 3. Visibilidad de memoria con `volatile`
 La palabra clave `volatile` indica a la JVM que las lecturas y escrituras de una variable deben hacerse directamente sobre la memoria RAM principal, sin almacenarse en la caché del núcleo procesador (L1/L2).
 
+#### 4. Locks explícitos con `ReentrantLock`
+Es la alternativa a `synchronized` cuando necesitás más control: el lock se toma con `lock()` y se libera a mano con `unlock()`, siempre dentro de un `finally`. Es también la base de `tryLock`, que aparece en la sección 7.
+
+**Programa de práctica:** [`Ej05ContadorSynchronized`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej05ContadorSynchronized.java) (solución 1), [`Ej06ContadorAtomico`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej06ContadorAtomico.java) (solución 2) y [`Ej07ContadorReentrantLock`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej07ContadorReentrantLock.java) (lock explícito). Las tres corrigen la carrera de `Ej04` y siempre dan 10000.
+
 ---
 
 ## 4. Pools de Hilos con `ExecutorService`
@@ -131,6 +140,8 @@ La solución es reutilizar un conjunto finito de hilos usando **Thread Pools** m
 - **`Executors.newFixedThreadPool(int n)`**: Reutiliza un número fijo de hilos en paralelo.
 - **`Executors.newCachedThreadPool()`**: Crea hilos según demanda y destruye los inactivos.
 - **`Executors.newSingleThreadExecutor()`**: Garatiza ejecución secuencial de tareas en un único hilo.
+
+**Programa de práctica:** [`Ej09TiposDePools`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej09TiposDePools.java) (cuenta cuántos hilos distintos usan `newFixedThreadPool`, `newCachedThreadPool` y `newSingleThreadExecutor` para 6 tareas).
 
 ### Ejemplo Práctico con `ExecutorService` y `Future`:
 ```java
@@ -164,6 +175,8 @@ public class EjemploThreadPool {
 }
 ```
 
+**Programa de práctica:** [`Ej08ExecutorServiceYFuture`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej08ExecutorServiceYFuture.java) (tareas `Callable` en un pool de 3 hilos y sus resultados con `Future`).
+
 ---
 
 ## 5. El Futuro de la Concurrencia: Virtual Threads (Java 21+)
@@ -185,6 +198,8 @@ try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 } // El try-with-resources cierra automáticamente el executor al finalizar todas las tareas
 ```
 
+**Programa de práctica:** [`Ej10HilosVirtuales`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej10HilosVirtuales.java) (10 000 tareas en hilos virtuales; requiere JDK 21 o superior).
+
 ---
 
 ## 6. Ejercicio Práctico Guiado
@@ -193,6 +208,8 @@ try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 Desarrollá un programa que simule la descarga de 5 archivos pesados utilizando un pool de **2 hilos concurrentes**:
 1. Cada tarea de descarga debe tardar un tiempo aleatorio de 1 a 3 segundos e imprimir el inicio y fin de la descarga indicando qué hilo la procesó.
 2. Medí el tiempo total transcurrido desde el inicio hasta el cierre del pool.
+
+Intentá resolverlo vos antes de abrir la solución. El programa de referencia es [`Ej11DescargadorConcurrente`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej11DescargadorConcurrente.java). Para que se ejecute rápido, usa tiempos de 100 a 300 ms; la constante `ESCALA` en 10 reproduce los 1 a 3 segundos de la consigna.
 
 <details>
 <summary>Ver solución sugerida</summary>
@@ -358,6 +375,8 @@ public class BoundedBuffer<T> {
 
 `put()` y `take()` comparten el mismo lock (el propio objeto `lock`), así que nunca se ejecutan al mismo tiempo. `notifyAll()` es obligatorio acá porque conviven dos condiciones distintas ("hay espacio" y "hay elemento") sobre el mismo monitor; `notify()` podría despertar al hilo equivocado y dejar al programa colgado.
 
+**Programa de práctica:** [`Ej12BufferAcotado`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej12BufferAcotado.java) (productores y consumidores con `wait()` y `notifyAll()`; el orden varía, pero la suma final es siempre la misma).
+
 ### Deadlocks: las cuatro condiciones de Coffman
 
 Un **deadlock** (interbloqueo) ocurre cuando dos o más hilos quedan bloqueados para siempre, cada uno esperando un recurso que retiene otro. Coffman describió cuatro condiciones que, dadas **todas juntas**, hacen posible un deadlock:
@@ -414,6 +433,8 @@ public class DeadlockDemo {
 
 Si el primer hilo entra a `transferAtoB()` y adquiere `LOCK_A`, y casi al mismo tiempo el segundo hilo entra a `transferBtoA()` y adquiere `LOCK_B`, ambos quedan esperando un lock que el otro ya tiene y nunca va a soltar. El programa no lanza ninguna excepción: simplemente deja de progresar.
 
+**Programa de práctica:** [`Ej13DeadlockMinimo`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej13DeadlockMinimo.java) (dos hilos y dos locks en orden cruzado; un `CountDownLatch` hace que el deadlock sea determinista).
+
 ### Prevención: orden de locks, `tryLock` con tiempo límite y bloqueos acotados
 
 - **Orden consistente de los locks.** Si todos los hilos adquieren `LOCK_A` antes que `LOCK_B` (nunca al revés), la espera circular es imposible. Cuando los locks son dinámicos, un orden estable como `System.identityHashCode()` sirve de criterio:
@@ -459,6 +480,8 @@ boolean transfer() throws InterruptedException {
 
 - **Bloqueos acotados.** Cuanto más corto sea el bloque `synchronized` (o el tramo entre `lock()` y `unlock()`), menos tiempo retiene un hilo un recurso y menor es la ventana para un deadlock. Evitá llamar a código desconocido (I/O, callbacks, otro lock) mientras sostenés un lock.
 
+**Programa de práctica:** [`Ej14PrevencionDeDeadlock`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej14PrevencionDeDeadlock.java) (el mismo escenario resuelto con un orden consistente de locks y con `tryLock` con tiempo límite).
+
 ### Diagnóstico: `jstack`, volcados de hilos y JConsole/VisualVM
 
 Cuando un programa deja de responder, la primera pregunta es si está en deadlock o simplemente lento. `jstack`, incluido en el JDK, genera un **volcado de hilos** (*thread dump*) con el estado y la pila de cada hilo de la JVM:
@@ -473,6 +496,8 @@ Si hay un deadlock, `jstack` lo detecta automáticamente e imprime una sección 
 
 **JConsole** y **VisualVM**, ambos incluidos o descargables junto al JDK, ofrecen la misma información con interfaz gráfica: la pestaña de hilos tiene un botón "Detect Deadlock" que resalta los hilos bloqueados entre sí y su cadena de espera, sin tener que leer un volcado de texto a mano.
 
+**Programa de práctica:** [`Ej13DeadlockMinimo`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej13DeadlockMinimo.java) no usa `jstack`: marca los hilos como daemon y detecta el deadlock desde el propio programa con `ThreadMXBean.findDeadlockedThreads()`, así el proceso no se cuelga. Es la misma información que muestra `jstack`, obtenida por código.
+
 ### Alternativas más seguras de alto nivel
 
 `wait()`/`notify()`/`synchronized` son las herramientas de más bajo nivel; usarlas a mano es propenso a errores. `java.util.concurrent` ofrece utilidades de más alto nivel que ya resuelven estos problemas internamente:
@@ -481,3 +506,13 @@ Si hay un deadlock, `jstack` lo detecta automáticamente e imprime una sección 
 - **`ReentrantLock` + `Condition`**: en vez de un único monitor con `wait()`/`notifyAll()`, `newCondition()` permite tener **múltiples colas de espera** independientes (por ejemplo, una para "no lleno" y otra para "no vacío"), evitando despertar hilos que no corresponden.
 - **`CountDownLatch`**: coordina un evento de "esperar hasta que N tareas terminen", como esperar a que varios hilos de arranque terminen antes de aceptar tráfico.
 - El resto de `java.util.concurrent` (`Semaphore`, `CyclicBarrier`, `ExecutorService`, `CompletableFuture`) cubre la gran mayoría de los escenarios de coordinación sin tocar `wait()`/`notify()` directamente. Reservá el monitor manual para entender estas herramientas o para mantener código heredado.
+
+---
+
+## Profundizá con código real
+
+Podés reforzar esta lección viendo programas completos y ejecutables en el repositorio del curso: [l20_programacion_concurrente_hilos_y_pools](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools).
+
+Ahí vas a encontrar catorce programas que siguen el orden de la lección: hilos con `Runnable` y `Callable` (`Ej01` a `Ej03`), la condición de carrera y sus tres soluciones con `synchronized`, `AtomicInteger` y `ReentrantLock` (`Ej04` a `Ej07`), pools con `ExecutorService` (`Ej08` y `Ej09`), hilos virtuales (`Ej10`, requiere JDK 21 o superior), el descargador concurrente (`Ej11`), el buffer acotado con `wait()` y `notifyAll()` (`Ej12`) y el deadlock con su prevención (`Ej13` y `Ej14`).
+
+Cloná el repositorio, abrí la carpeta y ejecutá cada programa mientras leés la lección para ver en acción cada concepto. Con la concurrencia conviene ejecutar varias veces: el orden de la salida cambia entre corridas.

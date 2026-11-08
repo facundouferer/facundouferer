@@ -62,6 +62,8 @@ Callable<Integer> complexTask = () -> {
 };
 ```
 
+**Practice program:** [`Ej01ThreadConRunnable`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej01ThreadConRunnable.java) (`Runnable` in a class and in a lambda, and the difference between `start()` and `run()`), [`Ej02CallableYFuture`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej02CallableYFuture.java) (a task that returns a result and may throw checked exceptions) and [`Ej03CicloDeVidaDelHilo`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej03CicloDeVidaDelHilo.java) (the `NEW`, `RUNNABLE`, `TIMED_WAITING` and `TERMINATED` states via `getState()`).
+
 ---
 
 ## 3. Race Conditions and Synchronization
@@ -81,6 +83,8 @@ public class UnsafeCounter {
     }
 }
 ```
+
+**Practice program:** [`Ej04CondicionDeCarrera`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej04CondicionDeCarrera.java) (10 threads increment a counter 1000 times each and the result is almost never 10000). The result changes between runs: running it several times is part of the practice.
 
 ### Synchronization Solutions in Java:
 
@@ -117,6 +121,11 @@ public class AtomicCounter {
 #### 3. Memory Visibility with `volatile`
 The `volatile` keyword instructs the JVM to read and write a variable directly to/from main RAM memory, bypassing CPU core caches (L1/L2).
 
+#### 4. Explicit locks with `ReentrantLock`
+It is the alternative to `synchronized` when you need more control: the lock is taken with `lock()` and released by hand with `unlock()`, always inside a `finally`. It is also the foundation of `tryLock`, which appears in section 7.
+
+**Practice program:** [`Ej05ContadorSynchronized`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej05ContadorSynchronized.java) (solution 1), [`Ej06ContadorAtomico`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej06ContadorAtomico.java) (solution 2) and [`Ej07ContadorReentrantLock`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej07ContadorReentrantLock.java) (explicit lock). All three fix the race in `Ej04` and always give 10000.
+
 ---
 
 ## 4. Thread Pools with `ExecutorService`
@@ -131,6 +140,8 @@ The solution is to reuse a managed set of worker threads using **Thread Pools** 
 - **`Executors.newFixedThreadPool(int n)`**: Reuses a fixed number of worker threads.
 - **`Executors.newCachedThreadPool()`**: Creates threads on demand and reclaims idle ones.
 - **`Executors.newSingleThreadExecutor()`**: Guarantees sequential task execution on a single worker thread.
+
+**Practice program:** [`Ej09TiposDePools`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej09TiposDePools.java) (counts how many distinct threads `newFixedThreadPool`, `newCachedThreadPool` and `newSingleThreadExecutor` use for 6 tasks).
 
 ### Practical `ExecutorService` and `Future` Example:
 ```java
@@ -164,6 +175,8 @@ public class ThreadPoolExample {
 }
 ```
 
+**Practice program:** [`Ej08ExecutorServiceYFuture`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej08ExecutorServiceYFuture.java) (`Callable` tasks in a 3-thread pool and their results through `Future`).
+
 ---
 
 ## 5. The Future of Concurrency: Virtual Threads (Java 21+)
@@ -185,6 +198,8 @@ try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 } // Try-with-resources automatically closes the executor when tasks finish
 ```
 
+**Practice program:** [`Ej10HilosVirtuales`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej10HilosVirtuales.java) (10,000 tasks on virtual threads; requires JDK 21 or later).
+
 ---
 
 ## 6. Guided Hands-on Exercise
@@ -193,6 +208,8 @@ try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 Develop a program simulating the download of 5 heavy files using a pool of **2 concurrent worker threads**:
 1. Each download task should take a random duration between 1 to 3 seconds and print start/completion logs including the processing thread name.
 2. Measure the total elapsed time from start until pool termination.
+
+Try solving it yourself before opening the solution. The reference program is [`Ej11DescargadorConcurrente`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej11DescargadorConcurrente.java). To run quickly it uses 100 to 300 ms delays; setting the `ESCALA` constant to 10 reproduces the 1 to 3 seconds of the challenge.
 
 <details>
 <summary>View Suggested Solution</summary>
@@ -358,6 +375,8 @@ public class BoundedBuffer<T> {
 
 `put()` and `take()` share the same lock (the `lock` object itself), so they never run at the same time. `notifyAll()` is mandatory here because two different conditions coexist on the same monitor ("there is space" and "there is an item"); `notify()` could wake the wrong thread and leave the program stuck.
 
+**Practice program:** [`Ej12BufferAcotado`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej12BufferAcotado.java) (producers and consumers with `wait()` and `notifyAll()`; the order varies, but the final sum is always the same).
+
 ### Deadlocks: the four Coffman conditions
 
 A **deadlock** happens when two or more threads are blocked forever, each one waiting for a resource that another one holds. Coffman described four conditions that, **all together**, make a deadlock possible:
@@ -414,6 +433,8 @@ public class DeadlockDemo {
 
 If the first thread enters `transferAtoB()` and acquires `LOCK_A`, and almost simultaneously the second thread enters `transferBtoA()` and acquires `LOCK_B`, both end up waiting for a lock the other already holds and will never release. The program throws no exception: it simply stops making progress.
 
+**Practice program:** [`Ej13DeadlockMinimo`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej13DeadlockMinimo.java) (two threads and two locks in opposite order; a `CountDownLatch` makes the deadlock deterministic).
+
 ### Prevention: lock ordering, `tryLock` with a timeout, and bounded critical sections
 
 - **Consistent lock ordering.** If every thread acquires `LOCK_A` before `LOCK_B` (never the other way around), circular wait becomes impossible. When the locks are dynamic, a stable order such as `System.identityHashCode()` works as a criterion:
@@ -459,6 +480,8 @@ boolean transfer() throws InterruptedException {
 
 - **Bounded critical sections.** The shorter the `synchronized` block (or the span between `lock()` and `unlock()`), the less time a thread holds a resource and the smaller the window for a deadlock. Avoid calling unknown code (I/O, callbacks, another lock) while holding a lock.
 
+**Practice program:** [`Ej14PrevencionDeDeadlock`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej14PrevencionDeDeadlock.java) (the same scenario solved with a consistent lock order and with `tryLock` with a timeout).
+
 ### Diagnosis: `jstack`, thread dumps, and JConsole/VisualVM
 
 When a program stops responding, the first question is whether it is deadlocked or just slow. `jstack`, bundled with the JDK, produces a **thread dump** with the state and stack trace of every JVM thread:
@@ -473,6 +496,8 @@ If there is a deadlock, `jstack` detects it automatically and prints a section w
 
 **JConsole** and **VisualVM**, both bundled with or downloadable alongside the JDK, surface the same information graphically: the Threads tab has a "Detect Deadlock" button that highlights threads blocking each other and their wait chain, without having to read a text dump by hand.
 
+**Practice program:** [`Ej13DeadlockMinimo`](https://github.com/facundouferer/CursoDeJava/blob/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools/Ej13DeadlockMinimo.java) does not use `jstack`: it marks the threads as daemon and detects the deadlock from inside the program with `ThreadMXBean.findDeadlockedThreads()`, so the process does not hang. It is the same information `jstack` shows, obtained from code.
+
 ### Safer high-level alternatives
 
 `wait()`/`notify()`/`synchronized` are the lowest-level tools; using them by hand is error-prone. `java.util.concurrent` offers higher-level utilities that already solve these problems internally:
@@ -481,3 +506,13 @@ If there is a deadlock, `jstack` detects it automatically and prints a section w
 - **`ReentrantLock` + `Condition`**: instead of a single monitor with `wait()`/`notifyAll()`, `newCondition()` allows **multiple independent wait sets** (for example, one for "not full" and another for "not empty"), avoiding waking up threads that do not apply.
 - **`CountDownLatch`**: coordinates a "wait until N tasks finish" event, such as waiting for several startup threads to complete before accepting traffic.
 - The rest of `java.util.concurrent` (`Semaphore`, `CyclicBarrier`, `ExecutorService`, `CompletableFuture`) covers the vast majority of coordination scenarios without touching `wait()`/`notify()` directly. Reserve the manual monitor for understanding these tools or maintaining legacy code.
+
+---
+
+## Go deeper with real code
+
+You can reinforce this lesson by browsing complete, runnable programs in the course repository: [l20_programacion_concurrente_hilos_y_pools](https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l20_programacion_concurrente_hilos_y_pools).
+
+There you will find fourteen programs that follow the order of the lesson: threads with `Runnable` and `Callable` (`Ej01` to `Ej03`), the race condition and its three fixes with `synchronized`, `AtomicInteger` and `ReentrantLock` (`Ej04` to `Ej07`), pools with `ExecutorService` (`Ej08` and `Ej09`), virtual threads (`Ej10`, requires JDK 21 or later), the concurrent downloader (`Ej11`), the bounded buffer with `wait()` and `notifyAll()` (`Ej12`) and the deadlock with its prevention (`Ej13` and `Ej14`).
+
+Clone the repository, open the folder and run each program while you read the lesson to see every concept in action. With concurrency it pays to run them several times: the output order changes between runs.
