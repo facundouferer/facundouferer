@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%" role="img" aria-label="Control flow and loops, step by step">
+	<!-- Organic palette literals (standalone asset, custom properties do not resolve here):
+	     surface #ebddc5, bg #f5ead8, ink #2e2b25, accent #c67139, accent-700 #8c491a,
+	     accent-300 #ffc6a5, sage #7a8a5e, sage-300 #ccdbb2, neutral-300 #dcd3c4 -->
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Loop track with the cursor skipping the 5 -->
+	<rect x="24" y="118" width="352" height="52" rx="26" fill="#f5ead8" stroke="#dcd3c4" stroke-width="2"/>
+	<circle cx="56" cy="144" r="14" fill="#f5ead8" stroke="#6f6757" stroke-width="3"/>
+	<circle cx="100" cy="144" r="14" fill="#f5ead8" stroke="#6f6757" stroke-width="3"/>
+	<circle cx="144" cy="144" r="14" fill="#f5ead8" stroke="#6f6757" stroke-width="3"/>
+	<circle cx="188" cy="144" r="14" fill="#ffc6a5" stroke="#c67139" stroke-width="3"/>
+	<circle cx="232" cy="144" r="14" fill="#f5ead8" stroke="#6f6757" stroke-width="3"/>
+	<circle cx="276" cy="144" r="14" fill="#7a8a5e" stroke="#7a8a5e" stroke-width="3"/>
+	<circle cx="320" cy="144" r="14" fill="#f5ead8" stroke="#dcd3c4" stroke-width="3"/>
+	<circle cx="352" cy="144" r="8" fill="#f5ead8" stroke="#dcd3c4" stroke-width="3"/>
+	<path d="M188 128 C188 96 232 96 232 128" fill="none" stroke="#c67139" stroke-width="4" stroke-linecap="round"/>
+	<path d="M225 120 L232 129 L239 120" fill="none" stroke="#c67139" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+	<circle cx="100" cy="102" r="14" fill="#c67139"/>
+
+	<!-- Decision diamond -->
+	<path d="M70 30 L118 58 L70 86 L22 58 Z" fill="#f5ead8" stroke="#c67139" stroke-width="4" stroke-linejoin="round"/>
+	<text x="70" y="64" font-family="'Figtree', sans-serif" font-size="16" font-weight="700" fill="#8c491a" text-anchor="middle">if</text>
+	<path d="M118 58 H156" stroke="#7a8a5e" stroke-width="4" stroke-linecap="round"/>
+	<rect x="160" y="40" width="64" height="36" rx="18" fill="#ccdbb2" stroke="#7a8a5e" stroke-width="2"/>
+	<text x="192" y="63" font-family="'Figtree', sans-serif" font-size="13" font-weight="700" fill="#4d5a37" text-anchor="middle">else</text>
+
+	<!-- Play button -->
+	<circle cx="318" cy="64" r="40" fill="#f5ead8" stroke="#c67139" stroke-width="4"/>
+	<circle cx="318" cy="64" r="27" fill="#c67139"/>
+	<polygon points="310,50 332,64 310,78" fill="#f5ead8"/>
+
+	<text x="256" y="22" font-family="'Caprasimo', serif" font-size="14" fill="#8c491a" text-anchor="start">for · while · switch</text>
+</svg>

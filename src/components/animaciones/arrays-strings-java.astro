@@ -1,0 +1,737 @@
+---
+/**
+ * Scenes for the "Arrays and Strings, step by step" animation (lesson java/04).
+ * The captions, code and terminal panels live in
+ * `src/data/animations/arrays-strings-java.ts`; this component only draws the
+ * diagrams the steps point to. Slide scenes are HTML blocks (`[data-scene]` with
+ * `[data-el]` elements); the `mem`, `grow`, `pool` and `sb` scenes are SVG canvases
+ * (`data-motion`) choreographed by the cues of their motion steps.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/arrays-strings-java';
+import { resolveScript } from '../../utils/animations';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Motion canvas data ────────────────────────────────────────────────────
+const memCells = Array.from({ length: 5 }, (_, i) => ({ id: `cell-${i}`, x: 590 + i * 150, index: i }));
+const oldValues = [10, 20, 30, 40];
+const oldCells = oldValues.map((value, i) => ({ value, x: 60 + i * 170, cx: 60 + i * 170 + 75 }));
+const newCells = Array.from({ length: 8 }, (_, i) => ({ id: `ncell-${i}`, x: 60 + i * 170 }));
+const poolVars = [
+	{ id: 'v-s1', y: 170, name: 's1', note: '"Java"' },
+	{ id: 'v-s2', y: 280, name: 's2', note: '"Java"' },
+	{ id: 'v-s3', y: 390, name: 's3', note: 'new String("Java")' },
+	{ id: 'v-c', y: 500, name: 'c', note: 'parte + "va"' },
+];
+const bufferPieces = [
+	{ id: 'b1', x: 890, text: '0,' },
+	{ id: 'b2', x: 990, text: '1,' },
+	{ id: 'b3', x: 1090, text: '2,' },
+	{ id: 'b4', x: 1190, text: '3,' },
+];
+const stringSteps = [
+	{ id: 'l1', w: 330, text: '"0, "' },
+	{ id: 'l2', w: 440, text: '"0, 1, "' },
+	{ id: 'l3', w: 550, text: '"0, 1, 2, "' },
+	{ id: 'l4', w: 660, text: '"0, 1, 2, 3, "' },
+];
+
+// ── Slide scene data ──────────────────────────────────────────────────────
+const grades = [8, 7, 9, 10];
+const stringChars = ['J', 'a', 'v', 'a'];
+const learning = isEs ? 'Aprender'.split('') : 'Learning'.split('');
+const defaults = [
+	{ id: 'df1', type: 'byte · short · int · long', value: '0' },
+	{ id: 'df2', type: 'float · double', value: '0.0' },
+	{ id: 'df3', type: 'char', value: "'\\u0000'" },
+	{ id: 'df4', type: 'boolean', value: 'false' },
+	{ id: 'df5', type: t('Referencias (String, objetos)', 'References (String, objects)'), value: 'null' },
+];
+const tools = [
+	{ id: 't-print', name: 'toString · deepToString', note: t('Imprimir', 'Print') },
+	{ id: 't-sort', name: 'sort', note: t('Ordena el original', 'Sorts the original') },
+	{ id: 't-search', name: 'binarySearch', note: t('Exige ordenado', 'Needs sorted data') },
+	{ id: 't-copy', name: 'copyOf · copyOfRange', note: t('Copiar y redimensionar', 'Copy and resize') },
+	{ id: 't-fill', name: 'fill', note: t('Rellenar', 'Fill') },
+	{ id: 't-equals', name: 'equals · deepEquals', note: t('Compara contenido', 'Compares content') },
+	{ id: 't-stream', name: 'stream', note: t('Sumar, filtrar, promediar', 'Sum, filter, average') },
+];
+const reasons = [
+	{ id: 'im-sec', label: t('Seguridad', 'Security'), note: t('Rutas y credenciales no cambian', 'Paths and credentials do not change') },
+	{ id: 'im-conc', label: t('Concurrencia', 'Concurrency'), note: t('Se comparte entre hilos', 'Shared across threads') },
+	{ id: 'im-hash', label: 'hashCode', note: t('Se calcula una sola vez', 'Computed only once') },
+	{ id: 'im-reuse', label: t('Reutilización', 'Reuse'), note: t('Es la base del pool', 'It is the basis of the pool') },
+];
+const mistakes = [
+	{ id: 'er1', text: t('length vs length()', 'length vs length()') },
+	{ id: 'er2', text: t('Comparar con ==', 'Comparing with ==') },
+	{ id: 'er3', text: t('Olvidar asignar', 'Forgetting to assign') },
+	{ id: 'er4', text: t('Iterar hasta <= length', 'Looping up to <= length') },
+	{ id: 'er5', text: t('Concatenar en un bucle', 'Concatenating in a loop') },
+	{ id: 'er6', text: t('binarySearch sin ordenar', 'binarySearch unsorted') },
+	{ id: 'er7', text: t('copyOf no clona objetos', 'copyOf does not clone objects') },
+	{ id: 'er8', text: t('toString en una matriz', 'toString on a matrix') },
+	{ id: 'er9', text: t('String[] nuevo = nulls', 'New String[] = nulls') },
+];
+const exercises = [
+	{ id: 'ex1', n: 1, name: t('Palíndromos', 'Palindromes'), note: 'StringBuilder · equals' },
+	{ id: 'ex2', n: 2, name: t('Estadísticas', 'Statistics'), note: t('Suma · máximo · promedio', 'Sum · max · average') },
+	{ id: 'ex3', n: 3, name: t('Palabras', 'Words'), note: 'split · length()' },
+	{ id: 'ex4', n: 4, name: t('Transponer', 'Transpose'), note: t('Matriz [filas][cols]', 'Matrix [rows][cols]') },
+];
+const takeaways = [
+	t('Bloque contiguo', 'Contiguous block'),
+	t('length vs length()', 'length vs length()'),
+	t('Crecer = copiar', 'Growing = copying'),
+	t('Referencias: copia superficial', 'References: shallow copy'),
+	t('Matriz = array de arrays', 'Matrix = array of arrays'),
+	t('Arrays resuelve casi todo', 'Arrays solves almost all'),
+	t('String inmutable', 'String is immutable'),
+	t('Pool y .equals()', 'Pool and .equals()'),
+	t('StringBuilder en bucles', 'StringBuilder in loops'),
+];
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<!-- INTRO: loose variables, an array, a String -->
+	<div slot="scene" data-scene="intro04" class="scene-intro04">
+		<div class="dg-box" data-el="loose">
+			<p class="dg-label">{t('Variables sueltas', 'Loose variables')}</p>
+			<div class="dg-chips">
+				<code class="dg-chip">nota1</code><code class="dg-chip">nota2</code><code class="dg-chip">nota3</code><span class="dg-chip">…</span>
+			</div>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="arr">
+			<p class="dg-label">{t('Un array', 'An array')}</p>
+			<div class="dg-array">
+				{grades.map((value, i) => <span class="dg-array-cell"><b>{value}</b><span class="dg-array-index">{i}</span></span>)}
+			</div>
+			<code class="dg-code">notas</code>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="str">
+			<p class="dg-label dg-label--sage">String</p>
+			<div class="dg-array">
+				{stringChars.map((c, i) => <span class="dg-array-cell"><b>{c}</b><span class="dg-array-index">{i}</span></span>)}
+			</div>
+			<p class="dg-sub">{t('Un objeto sobre un array de char', 'An object over a char array')}</p>
+		</div>
+		<div class="dg-box dg-box--ink dg-box--center" data-el="mem">
+			<p class="dg-title">{t('Cómo Java acomoda los datos en memoria', 'How Java lays data out in memory')}</p>
+		</div>
+	</div>
+
+	<!-- 1. Array memory (motion canvas) -->
+	<div slot="scene" data-scene="mem" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="80" data-el="decl">int[] edades = new int[5];</text>
+
+				<g data-el="stack">
+					<rect class="mg-card" x="60" y="130" width="380" height="300" rx="22" />
+					<text class="mg-text mg-text--strong mg-text--muted" x="90" y="170">STACK</text>
+				</g>
+				<g data-el="ref">
+					<rect class="mg-card mg-card--accent" x="90" y="210" width="320" height="170" rx="18" />
+					<text class="mg-heading" x="116" y="270">edades</text>
+					<text class="mg-mono mg-mono--dark" x="116" y="316">0x7f3a2c</text>
+					<text class="mg-text mg-text--muted" x="116" y="350">{t('(referencia)', '(reference)')}</text>
+				</g>
+				<g data-el="arrow-ref" class="mg-arrow">
+					<path class="mg-stroke" d="M410 295C480 295 500 280 578 280" pathLength="1" />
+					<path class="mg-head" d="M568 270L580 280L568 290" />
+				</g>
+
+				<g data-el="heap">
+					<rect class="mg-card mg-card--sage" x="560" y="130" width="1000" height="300" rx="22" />
+					<text class="mg-text mg-text--strong mg-chip-text--sage" x="590" y="170">{t('HEAP — un solo bloque contiguo', 'HEAP — one contiguous block')}</text>
+				</g>
+				{
+					memCells.map((cell) => (
+						<g data-el={cell.id}>
+							<rect class="mg-card" x={cell.x} y="230" width="130" height="100" rx="16" />
+							<text class="mg-heading mg-big" x={cell.x + 65} y="292" text-anchor="middle">0</text>
+							<text class="mg-text mg-text--strong" x={cell.x + 65} y="362" text-anchor="middle">[{cell.index}]</text>
+						</g>
+					))
+				}
+				<g data-el="other">
+					<rect class="mg-card" x="1340" y="230" width="190" height="100" rx="16" style="stroke-dasharray: 8 6" />
+					<text class="mg-text mg-text--muted" x="1435" y="287" text-anchor="middle">{t('otro dato', 'other data')}</text>
+				</g>
+				<text class="mg-text mg-text--strong mg-chip-text--sage" x="1540" y="170" text-anchor="end" data-el="len">length = 5</text>
+
+				<g data-el="formula">
+					<rect class="mg-card mg-card--accent" x="60" y="480" width="1500" height="150" rx="22" />
+					<text class="mg-heading mg-big" x="96" y="548">{t('dirección = base + i × tamaño', 'address = base + i × size')}</text>
+					<text class="mg-text" x="96" y="592">{t('Una multiplicación y una suma: llegar a edades[0] o a edades[4] cuesta lo mismo.', 'One multiplication and one addition: reaching edades[0] or edades[4] costs the same.')}</text>
+				</g>
+				<g data-el="ptr" data-x="655" data-y="205">
+					<circle class="mg-dot" cx="0" cy="0" r="26" />
+					<text class="mg-chip-text mg-ptr-text" x="0" y="7" text-anchor="middle">i</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 2. Declare, instantiate, initialize -->
+	<div slot="scene" data-scene="declare" class="scene-declare">
+		<div class="dg-box" data-el="d1">
+			<p class="dg-label"><span class="dg-step-num">1</span> {t('Declarar', 'Declare')}</p>
+			<code class="dg-code">int[] edades;</code>
+			<p class="dg-sub">{t('Crea la variable: vale null', 'Creates the variable: it is null')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="d2">
+			<p class="dg-label dg-label--sage"><span class="dg-step-num">2</span> {t('Instanciar', 'Instantiate')}</p>
+			<code class="dg-code">new int[5]</code>
+			<p class="dg-sub">{t('Reserva el bloque en el Heap', 'Reserves the block on the Heap')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="d3">
+			<p class="dg-label"><span class="dg-step-num">3</span> {t('Inicializar', 'Initialize')}</p>
+			<code class="dg-code">{'{ 10, 20, 30 }'}</code>
+			<p class="dg-sub">{t('Pone los valores', 'Sets the values')}</p>
+		</div>
+		<p class="dg-sub scene-declare-alt" data-el="alt"><code class="dg-code">int edades[]</code> {t('compila, pero no la uses: viene de C.', 'compiles, but do not use it: it comes from C.')}</p>
+	</div>
+
+	<div slot="scene" data-scene="defaults" class="scene-defaults">
+		{
+			defaults.map((row) => (
+				<div class:list={['dg-box', 'scene-defaults-row', { 'dg-box--accent': row.id === 'df5' }]} data-el={row.id}>
+					<span class="dg-sub">{row.type}</span>
+					<code class="dg-chip dg-chip--ink">{row.value}</code>
+				</div>
+			))
+		}
+	</div>
+
+	<div slot="scene" data-scene="errs" class="scene-errs">
+		<div class="dg-box dg-box--accent" data-el="e1">
+			<p class="dg-label">{t('Índice fuera de rango', 'Index out of range')}</p>
+			<code class="dg-code">datos[3] = 99;</code>
+			<p class="dg-sub">ArrayIndexOutOfBoundsException</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="e2">
+			<p class="dg-label">{t('Índice negativo', 'Negative index')}</p>
+			<code class="dg-code">datos[-1] = 99;</code>
+			<p class="dg-sub">ArrayIndexOutOfBoundsException</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="e3">
+			<p class="dg-label">{t('Tamaño negativo', 'Negative size')}</p>
+			<code class="dg-code">new int[-5]</code>
+			<p class="dg-sub">NegativeArraySizeException</p>
+		</div>
+	</div>
+
+	<!-- 3. Traversing -->
+	<div slot="scene" data-scene="traverse" class="scene-traverse">
+		<div class="dg-box" data-el="tr-for">
+			<p class="dg-label">for</p>
+			<code class="dg-code">for (int i = 0; i &lt; a.length; i++)</code>
+			<p class="dg-sub">{t('Tenés el índice: leer y modificar', 'You have the index: read and modify')}</p>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="tr-each">
+			<p class="dg-label dg-label--sage">for-each</p>
+			<code class="dg-code">for (String f : frutas)</code>
+			<p class="dg-sub">{t('El valor por defecto para leer', 'The default for reading')}</p>
+		</div>
+		<div class="dg-box" data-el="tr-back">
+			<p class="dg-label">{t('Hacia atrás', 'Backwards')}</p>
+			<code class="dg-code">for (int i = a.length - 1; i &gt;= 0; i--)</code>
+			<p class="dg-sub">{t('De length - 1 a 0', 'From length - 1 down to 0')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="tr-trap">
+			<p class="dg-label">{t('La trampa', 'The trap')}</p>
+			<div class="dg-row">
+				<div class="dg-array">
+					{[1, 2, 3].map((v, i) => <span class="dg-array-cell"><b>{v}</b><span class="dg-array-index">{i}</span></span>)}
+				</div>
+				<code class="dg-chip dg-chip--accent">n = n * 2</code>
+				<span class="dg-sub">{t('n es una copia: el array no cambia', 'n is a copy: the array does not change')}</span>
+			</div>
+		</div>
+	</div>
+
+	<!-- 4. Growing: the canvas -->
+	<div slot="scene" data-scene="grow" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<text class="mg-mono mg-mono--dark mg-big" x="60" y="80" data-el="g-decl">int[] copia = Arrays.copyOf(datos, 8);</text>
+
+				<g data-el="old">
+					<text class="mg-text mg-text--strong" x="60" y="140">datos — length 4</text>
+					{
+						oldCells.map((cell) => (
+							<>
+								<rect class="mg-card mg-card--accent" x={cell.x} y="160" width="150" height="90" rx="16" />
+								<text class="mg-heading mg-big" x={cell.cx} y="217" text-anchor="middle">{cell.value}</text>
+							</>
+						))
+					}
+				</g>
+				<text class="mg-text mg-text--strong mg-text--muted" x="760" y="214" data-el="gc">{t('sin referencias → recolector de basura', 'no references → garbage collector')}</text>
+
+				<text class="mg-text mg-text--strong" x="60" y="330" data-el="nlabel">{t('copia — length 8', 'copia — length 8')}</text>
+				{
+					newCells.map((cell) => (
+						<g data-el={cell.id}>
+							<rect class="mg-card" x={cell.x} y="350" width="150" height="90" rx="16" />
+							<text class="mg-text mg-text--muted mg-big" x={cell.x + 75} y="406" text-anchor="middle">0</text>
+						</g>
+					))
+				}
+
+				{
+					oldCells.map((cell, i) => (
+						<g data-el={`tok-${i}`} data-x={cell.cx} data-y="205">
+							<rect class="mg-card mg-card--accent mg-token" x="-75" y="-45" width="150" height="90" rx="16" />
+							<text class="mg-heading mg-big" x="0" y="12" text-anchor="middle">{cell.value}</text>
+						</g>
+					))
+				}
+
+				<g data-el="g-note">
+					<rect class="mg-card mg-card--accent" x="60" y="500" width="1380" height="110" rx="22" />
+					<text class="mg-text mg-text--strong" x="92" y="548">{t('ArrayList duplica su capacidad en vez de agrandar de a uno.', 'ArrayList doubles its capacity instead of growing one slot at a time.')}</text>
+					<text class="mg-text" x="92" y="582">{t('Así el costo de copiar se reparte y deja de notarse.', 'That spreads the cost of copying until it stops being noticeable.')}</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 7. java.util.Arrays -->
+	<div slot="scene" data-scene="arrays-api" class="scene-api">
+		{
+			tools.map((tool) => (
+				<div class="dg-box scene-api-tool" data-el={tool.id}>
+					<code class="dg-code">{tool.name}</code>
+					<p class="dg-sub">{tool.note}</p>
+				</div>
+			))
+		}
+	</div>
+
+	<!-- 5. Primitives vs. objects -->
+	<div slot="scene" data-scene="refs" class="scene-refs">
+		<div class="dg-box dg-box--accent" data-el="r-int">
+			<p class="dg-label"><code>int[]</code> · {t('contiene los valores', 'holds the values')}</p>
+			<div class="dg-array">
+				{[0, 1, 2].map((i) => <span class="dg-array-cell"><b>0</b><span class="dg-array-index">{i}</span></span>)}
+			</div>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="r-str">
+			<p class="dg-label dg-label--sage"><code>String[]</code> · {t('contiene referencias', 'holds references')}</p>
+			<div class="dg-array">
+				{[0, 1, 2].map((i) => <span class="dg-array-cell dg-array-cell--empty"><b>null</b><span class="dg-array-index">{i}</span></span>)}
+			</div>
+		</div>
+		<div class="dg-box scene-refs-shallow" data-el="r-shallow">
+			<p class="dg-label">{t('Copia superficial', 'Shallow copy')}</p>
+			<div class="dg-row">
+				<div class="dg-col">
+					<code class="dg-chip dg-chip--accent">original[0]</code>
+					<code class="dg-chip dg-chip--accent">copia[0]</code>
+				</div>
+				<span class="dg-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg></span>
+				<div class="dg-box dg-box--ink dg-box--center"><code class="dg-code">"Hola mundo"</code><p class="dg-sub">{t('un solo objeto', 'a single object')}</p></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 6. Matrices -->
+	<div slot="scene" data-scene="matrix" class="scene-matrix">
+		<p class="dg-label scene-matrix-outer" data-el="m-outer"><code class="dg-code">datos</code> · {t('array externo de 3 referencias', 'outer array of 3 references')}</p>
+		{
+			[
+				{ id: 'm-r0', row: [1, 2, 3] },
+				{ id: 'm-r1', row: [4, 5, 6, 7, 8] },
+				{ id: 'm-r2', row: [9, 0] },
+			].map((r, i) => (
+				<div class="dg-row scene-matrix-row" data-el={r.id}>
+					<code class="dg-chip dg-chip--accent">[{i}]</code>
+					<span class="dg-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg></span>
+					<div class="dg-array">
+						{r.row.map((v, k) => <span class="dg-array-cell"><b>{v}</b><span class="dg-array-index">{k}</span></span>)}
+					</div>
+					<span class="dg-sub">length {r.row.length}</span>
+				</div>
+			))
+		}
+		<p class="dg-sub" data-el="m-note">{t('Cada fila es un objeto independiente: puede medir distinto.', 'Each row is an independent object: it can have a different length.')}</p>
+	</div>
+
+	<!-- 8. Immutable Strings -->
+	<div slot="scene" data-scene="immut" class="scene-immut">
+		<div class="dg-box" data-el="im-var">
+			<p class="dg-label">{t('Variable', 'Variable')}</p>
+			<code class="dg-code">texto</code>
+		</div>
+		<div class="dg-box dg-box--sage" data-el="im-old">
+			<p class="dg-label dg-label--sage">{t('Objeto original', 'Original object')}</p>
+			<code class="dg-code">"hola"</code>
+			<p class="dg-sub">{t('Nunca cambia', 'Never changes')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="im-new">
+			<p class="dg-label">toUpperCase()</p>
+			<code class="dg-code">"HOLA"</code>
+			<p class="dg-sub">{t('Un objeto nuevo: hay que asignarlo', 'A new object: you must assign it')}</p>
+		</div>
+		<div class="scene-immut-why">
+			{
+				reasons.map((reason) => (
+					<div class="dg-box dg-box--center" data-el={reason.id}>
+						<p class="dg-title">{reason.label}</p>
+						<p class="dg-sub">{reason.note}</p>
+					</div>
+				))
+			}
+		</div>
+	</div>
+
+	<!-- 9. String Constant Pool (motion canvas) -->
+	<div slot="scene" data-scene="pool" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="r1"><rect class="mg-chip mg-chip--sage" x="40" y="26" width="440" height="50" rx="25" /><text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="260" y="58" text-anchor="middle">s1 == s2  →  true</text></g>
+				<g data-el="r2"><rect class="mg-chip" x="520" y="26" width="440" height="50" rx="25" /><text class="mg-chip-text mg-chip-text--lg" x="740" y="58" text-anchor="middle">s1 == s3  →  false</text></g>
+				<g data-el="r3"><rect class="mg-chip mg-chip--sage" x="1000" y="26" width="540" height="50" rx="25" /><text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="1270" y="58" text-anchor="middle">s1.equals(s3)  →  true</text></g>
+				<g data-el="r4"><rect class="mg-chip" x="40" y="26" width="440" height="50" rx="25" /><text class="mg-chip-text mg-chip-text--lg" x="260" y="58" text-anchor="middle">s1 == c  →  false</text></g>
+				<g data-el="r5"><rect class="mg-chip mg-chip--sage" x="520" y="26" width="540" height="50" rx="25" /><text class="mg-chip-text mg-chip-text--sage mg-chip-text--lg" x="790" y="58" text-anchor="middle">s1.equals(c)  →  true</text></g>
+
+				<g data-el="stack">
+					<rect class="mg-card" x="40" y="110" width="360" height="520" rx="22" />
+					<text class="mg-text mg-text--strong mg-text--muted" x="68" y="148">STACK</text>
+				</g>
+				{
+					poolVars.map((v) => (
+						<g data-el={v.id}>
+							<rect class="mg-card mg-card--accent" x="70" y={v.y} width="300" height="80" rx="16" />
+							<text class="mg-heading" x="94" y={v.y + 36}>{v.name}</text>
+							<text class="mg-mono mg-mono--dark mg-mono--sm" x="94" y={v.y + 64}>{v.note}</text>
+						</g>
+					))
+				}
+
+				<g data-el="heap">
+					<rect class="mg-card mg-card--sage" x="520" y="110" width="1040" height="520" rx="22" />
+					<text class="mg-text mg-text--strong mg-chip-text--sage" x="548" y="148">HEAP</text>
+				</g>
+				<g data-el="pool">
+					<rect class="mg-card" x="560" y="170" width="520" height="230" rx="18" style="stroke-dasharray: 10 6" />
+					<text class="mg-text mg-text--strong mg-text--muted" x="584" y="206">String Constant Pool</text>
+				</g>
+				<g data-el="o-pool">
+					<rect class="mg-card mg-card--ink" x="640" y="250" width="360" height="100" rx="16" />
+					<text class="mg-mono mg-big" x="820" y="312" text-anchor="middle">"Java"</text>
+				</g>
+				<g data-el="o-new">
+					<rect class="mg-card mg-card--ink" x="1160" y="190" width="350" height="100" rx="16" />
+					<text class="mg-mono mg-big" x="1335" y="252" text-anchor="middle">"Java"</text>
+					<text class="mg-text mg-text--dim" x="1335" y="278" text-anchor="middle">{t('objeto aparte', 'separate object')}</text>
+				</g>
+				<g data-el="o-run">
+					<rect class="mg-card mg-card--ink" x="1160" y="430" width="350" height="100" rx="16" />
+					<text class="mg-mono mg-big" x="1335" y="492" text-anchor="middle">"Java"</text>
+					<text class="mg-text mg-text--dim" x="1335" y="518" text-anchor="middle">{t('armado en ejecución', 'built at runtime')}</text>
+				</g>
+
+				<g data-el="a-s1" class="mg-arrow"><path class="mg-stroke" d="M372 210C500 210 520 275 630 290" pathLength="1" /><path class="mg-head" d="M619 280L631 290L618 298" /></g>
+				<g data-el="a-s2" class="mg-arrow"><path class="mg-stroke" d="M372 320C500 320 520 312 630 312" pathLength="1" /><path class="mg-head" d="M620 303L631 312L620 321" /></g>
+				<g data-el="a-s3" class="mg-arrow"><path class="mg-stroke" d="M372 430C640 520 1000 420 1150 250" pathLength="1" /><path class="mg-head" d="M1138 258L1151 246L1152 263" /></g>
+				<g data-el="a-c" class="mg-arrow"><path class="mg-stroke" d="M372 540C700 600 1000 520 1150 480" pathLength="1" /><path class="mg-head" d="M1139 470L1152 479L1138 490" /></g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 10. Indexes and text -->
+	<div slot="scene" data-scene="indexing" class="scene-indexing">
+		<div class="dg-box dg-box--sage" data-el="ix-str">
+			<code class="dg-code">texto = "{learning.join('')}"</code>
+			<div class="dg-array">
+				{learning.map((c, i) => <span class="dg-array-cell"><b>{c}</b><span class="dg-array-index">{i}</span></span>)}
+			</div>
+			<p class="dg-sub"><span data-el="ix-len">length() = 8</span> · <span data-el="ix-last">{t('último índice = 7', 'last index = 7')}</span></p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="ix-hl">
+			<p class="dg-label">substring(2, 5)</p>
+			<div class="dg-array">
+				{learning.slice(2, 5).map((c, i) => <span class="dg-array-cell"><b>{c}</b><span class="dg-array-index">{i + 2}</span></span>)}
+			</div>
+			<p class="dg-sub">{t('Inicio incluido · fin excluido', 'Start included · end excluded')}</p>
+		</div>
+		<div class="dg-chips" data-el="ix-methods">
+			{['indexOf', 'contains', 'startsWith', 'trim', 'replace', 'toUpperCase'].map((m) => <code class="dg-chip dg-chip--sage">{m}()</code>)}
+		</div>
+		<div class="dg-chips" data-el="ix-fmt">
+			{['split', 'String.join', 'strip', 'isBlank', 'formatted', '"""'].map((m) => <code class="dg-chip dg-chip--accent">{m}</code>)}
+		</div>
+	</div>
+
+	<!-- 11. StringBuilder: the canvas and the "when" scene -->
+	<div slot="scene" data-scene="sb" data-motion class="scene-canvas">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<rect class="mg-card" data-el="pl" data-base="shown" x="40" y="100" width="740" height="520" rx="22" />
+				<rect class="mg-card mg-card--sage" data-el="pr" data-base="shown" x="820" y="100" width="740" height="520" rx="22" />
+				<text class="mg-mono mg-mono--dark" x="70" y="150" data-el="sb-tl">resultado += i + ", ";</text>
+				<text class="mg-mono mg-mono--dark" x="850" y="150" data-el="sb-tr">sb.append(i).append(", ");</text>
+				{
+					stringSteps.map((step, i) => (
+						<g data-el={step.id}>
+							<rect class="mg-card mg-card--accent" x="70" y={190 + i * 84} width={step.w} height="68" rx="14" />
+							<text class="mg-mono mg-mono--dark" x="94" y={232 + i * 84}>{step.text}</text>
+						</g>
+					))
+				}
+				<text class="mg-text mg-text--strong" x="70" y="570" data-el="l-note">{t('1000 objetos nuevos y medio millón de caracteres copiados', '1000 new objects and half a million characters copied')}</text>
+				<rect class="mg-card mg-card--ink" x="850" y="230" width="680" height="130" rx="18" data-el="r-buf" />
+				{bufferPieces.map((piece) => <text class="mg-mono mg-out mg-big" x={piece.x} y="310" data-el={piece.id}>{piece.text}</text>)}
+				<text class="mg-text mg-text--strong mg-chip-text--sage" x="850" y="570" data-el="r-note">{t('Un único buffer mutable: copia solo al agotar su capacidad', 'A single mutable buffer: it only copies when its capacity runs out')}</text>
+			</g>
+		</svg>
+	</div>
+
+	<div slot="scene" data-scene="builder-when" class="scene-builder">
+		<div class="dg-box dg-box--sage" data-el="bw-single">
+			<p class="dg-label dg-label--sage">{t('Una sola expresión', 'A single expression')}</p>
+			<code class="dg-code">"Hola " + nombre + ", tenés " + n</code>
+			<p class="dg-sub">{t('El compilador ya lo optimiza', 'The compiler already optimizes it')}</p>
+		</div>
+		<div class="dg-box dg-box--accent" data-el="bw-loop">
+			<p class="dg-label">{t('Dentro de un bucle', 'Inside a loop')}</p>
+			<code class="dg-code">for (…) {'{'} sb.append(i).append(", "); {'}'}</code>
+			<p class="dg-sub">{t('Acá StringBuilder es una necesidad', 'Here StringBuilder is a necessity')}</p>
+		</div>
+		<div class="dg-box" data-el="bw-buffer">
+			<p class="dg-label"><code>StringBuffer</code></p>
+			<p class="dg-sub">{t('Misma API, sincronizada y más lenta', 'Same API, synchronized and slower')}</p>
+		</div>
+	</div>
+
+	<!-- 12. Common mistakes -->
+	<div slot="scene" data-scene="errors04" class="scene-errors04">
+		{mistakes.map((m) => <span class="dg-chip dg-chip--accent" data-el={m.id}>{m.text}</span>)}
+	</div>
+
+	<!-- 13. Exercises -->
+	<div slot="scene" data-scene="exercises" class="scene-exercises">
+		{
+			exercises.map((ex) => (
+				<div class="dg-box" data-el={ex.id}>
+					<p class="dg-label"><span class="dg-step-num">{ex.n}</span> {t('Ejercicio', 'Exercise')}</p>
+					<p class="dg-title">{ex.name}</p>
+					<p class="dg-sub">{ex.note}</p>
+				</div>
+			))
+		}
+	</div>
+
+	<div slot="scene" data-scene="closing04" class="scene-closing04">
+		<div class="dg-chips scene-closing04-map">
+			{takeaways.map((text, i) => <span class:list={['dg-chip', i < 5 ? 'dg-chip--accent' : 'dg-chip--sage']} data-el={`c${i + 1}`}>{i + 1} · {text}</span>)}
+		</div>
+		<a class="dg-box dg-box--ink scene-closing04-repo" data-el="repo" href="https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l04_arrays_y_strings" target="_blank" rel="noopener noreferrer">
+			<p class="dg-label" style="color: var(--color-accent-300)">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: inherit; width: 16px; height: 16px">
+					<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" />
+				</svg>
+				CursoDeJava · l04_arrays_y_strings
+			</p>
+			<p class="dg-sub">{t('33 ejercicios: arreglos, matrices y String', '33 exercises: arrays, matrices and String')}</p>
+		</a>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Layout unique to each scene. Colors, radii and spacing stay on tokens. */
+	.scene-canvas {
+		width: 100%;
+	}
+
+	.mg-big {
+		font-size: 26px;
+	}
+
+	.mg-ptr-text {
+		fill: var(--color-bg);
+	}
+
+	.mg-token {
+		stroke-width: 3;
+	}
+
+	.scene-intro04,
+	.scene-declare,
+	.scene-refs,
+	.scene-immut,
+	.scene-builder {
+		align-content: center;
+	}
+
+	.scene-intro04 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-intro04 .dg-array {
+		justify-self: start;
+	}
+
+	.scene-intro04 [data-el='mem'] {
+		grid-column: 1 / -1;
+	}
+
+	.scene-declare {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.scene-declare-alt {
+		grid-column: 1 / -1;
+	}
+
+	.scene-defaults,
+	.scene-api,
+	.scene-errs {
+		align-content: center;
+	}
+
+	.scene-defaults-row {
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		padding: var(--space-2) var(--space-3);
+	}
+
+	.scene-errs {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.scene-traverse {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-content: center;
+	}
+
+	.scene-traverse [data-el='tr-trap'] {
+		grid-column: 1 / -1;
+	}
+
+	.scene-traverse .dg-code {
+		font-size: 0.78em;
+		white-space: nowrap;
+	}
+
+	.scene-api {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-api-tool {
+		padding: var(--space-2) var(--space-3);
+	}
+
+	.scene-refs-shallow {
+		grid-column: 1 / -1;
+	}
+
+	.scene-refs {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-matrix {
+		align-content: center;
+		justify-items: start;
+	}
+
+	.scene-matrix-row {
+		flex-wrap: nowrap;
+		gap: var(--space-2);
+	}
+
+	.scene-immut {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.scene-immut-why {
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: var(--space-2);
+	}
+
+	.scene-indexing {
+		align-content: center;
+		justify-items: start;
+	}
+
+	.scene-indexing .dg-array {
+		justify-self: start;
+	}
+
+	.scene-builder {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.scene-builder [data-el='bw-buffer'] {
+		grid-column: 1 / -1;
+	}
+
+	.scene-errors04 {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		align-content: center;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.scene-exercises {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-content: center;
+	}
+
+	.scene-closing04 {
+		align-content: center;
+		justify-items: center;
+	}
+
+	.scene-closing04-map {
+		justify-content: center;
+	}
+
+	.scene-closing04-repo {
+		justify-items: start;
+		text-decoration: none;
+		color: var(--color-neutral-100);
+		min-width: min(100%, 22rem);
+	}
+
+	.scene-closing04-repo:hover {
+		border-color: var(--color-accent-400);
+	}
+
+	@media (width < 720px) {
+		.scene-intro04,
+		.scene-declare,
+		.scene-errs,
+		.scene-immut,
+		.scene-traverse,
+		.scene-api,
+		.scene-refs,
+		.scene-builder,
+		.scene-exercises {
+			grid-template-columns: 1fr;
+		}
+
+		.scene-immut-why {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+</style>

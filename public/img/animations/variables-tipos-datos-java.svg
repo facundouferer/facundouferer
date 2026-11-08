@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%" role="img" aria-label="Variables, data types and operators, step by step">
+	<!-- Organic palette literals (standalone asset, custom properties do not resolve here):
+	     surface #ebddc5, bg #f5ead8, ink #2e2b25 / #474238, accent #c67139, accent-100 #ffe1d0,
+	     accent-300 #ffc6a5, accent-700 #8c491a, sage #7a8a5e, sage-100 #e6efd4, sage-300 #ccdbb2, neutral-300 #dcd3c4 -->
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Stack of typed variable cells -->
+	<rect x="28" y="30" width="196" height="140" rx="16" fill="#2e2b25"/>
+	<rect x="28" y="30" width="196" height="26" rx="16" fill="#474238"/>
+	<rect x="28" y="44" width="196" height="12" fill="#474238"/>
+	<circle cx="46" cy="43" r="5" fill="#c67139"/>
+	<circle cx="62" cy="43" r="5" fill="#ffc6a5"/>
+	<circle cx="78" cy="43" r="5" fill="#7a8a5e"/>
+	<text x="150" y="47" font-family="'Figtree', sans-serif" font-size="10" font-weight="700" fill="#dcd3c4" text-anchor="middle">Stack</text>
+
+	<rect x="44" y="68" width="164" height="26" rx="8" fill="#474238"/>
+	<rect x="52" y="76" width="30" height="10" rx="5" fill="#f6a06b"/>
+	<text x="92" y="86" font-family="'Figtree', sans-serif" font-size="11" font-weight="700" fill="#f9f4ed">edad</text>
+	<rect x="160" y="73" width="40" height="16" rx="8" fill="#c67139"/>
+	<text x="180" y="85" font-family="'Figtree', sans-serif" font-size="11" font-weight="700" fill="#f5ead8" text-anchor="middle">25</text>
+
+	<rect x="44" y="102" width="164" height="26" rx="8" fill="#474238"/>
+	<rect x="52" y="110" width="44" height="10" rx="5" fill="#f6a06b"/>
+	<text x="104" y="120" font-family="'Figtree', sans-serif" font-size="11" font-weight="700" fill="#f9f4ed">precio</text>
+	<rect x="152" y="107" width="48" height="16" rx="8" fill="#c67139"/>
+	<text x="176" y="119" font-family="'Figtree', sans-serif" font-size="11" font-weight="700" fill="#f5ead8" text-anchor="middle">99.9</text>
+
+	<rect x="44" y="136" width="164" height="26" rx="8" fill="#474238"/>
+	<rect x="52" y="144" width="40" height="10" rx="5" fill="#ffe1d0"/>
+	<text x="100" y="154" font-family="'Figtree', sans-serif" font-size="11" font-weight="700" fill="#f9f4ed">nombre</text>
+	<rect x="152" y="141" width="48" height="16" rx="8" fill="#7a8a5e"/>
+	<text x="176" y="153" font-family="'Figtree', sans-serif" font-size="11" font-weight="700" fill="#f5ead8" text-anchor="middle">0x1A</text>
+
+	<!-- Reference arrow to a heap object -->
+	<path d="M204 149 C 236 149 238 128 262 128" fill="none" stroke="#7a8a5e" stroke-width="3" stroke-linecap="round"/>
+	<polygon points="262,121 276,128 262,135" fill="#7a8a5e"/>
+	<rect x="278" y="106" width="94" height="44" rx="12" fill="#e6efd4" stroke="#7a8a5e" stroke-width="3"/>
+	<text x="325" y="124" font-family="'Figtree', sans-serif" font-size="10" font-weight="700" fill="#4f5b3b" text-anchor="middle">String</text>
+	<text x="325" y="140" font-family="'Figtree', sans-serif" font-size="12" font-weight="700" fill="#2e2b25" text-anchor="middle">"Facundo"</text>
+
+	<!-- Casting chips -->
+	<rect x="262" y="40" width="46" height="26" rx="13" fill="#ffe1d0" stroke="#ffc6a5" stroke-width="2"/>
+	<text x="285" y="58" font-family="'Figtree', sans-serif" font-size="12" font-weight="700" fill="#8c491a" text-anchor="middle">int</text>
+	<path d="M312 53 H336" stroke="#c67139" stroke-width="3" stroke-linecap="round"/>
+	<polygon points="334,47 346,53 334,59" fill="#c67139"/>
+	<rect x="350" y="40" width="30" height="26" rx="13" fill="#e6efd4" stroke="#ccdbb2" stroke-width="2"/>
+	<text x="365" y="58" font-family="'Figtree', sans-serif" font-size="11" font-weight="700" fill="#4f5b3b" text-anchor="middle">dbl</text>
+
+	<text x="322" y="30" font-family="'Caprasimo', serif" font-size="14" fill="#8c491a" text-anchor="middle">paso a paso</text>
+	<rect x="262" y="172" width="118" height="8" rx="4" fill="#dcd3c4"/>
+	<rect x="262" y="172" width="52" height="8" rx="4" fill="#7a8a5e"/>
+</svg>

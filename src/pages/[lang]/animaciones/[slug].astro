@@ -4,6 +4,9 @@ import { type Locale } from '../../../i18n/utils';
 import { animations } from '../../../data/animations';
 
 import ConceptosBasicosJava from '../../../components/animaciones/conceptos-basicos-java.astro';
+import VariablesTiposDatosJava from '../../../components/animaciones/variables-tipos-datos-java.astro';
+import ControlFlujoBuclesJava from '../../../components/animaciones/control-flujo-bucles-java.astro';
+import ArraysStringsJava from '../../../components/animaciones/arrays-strings-java.astro';
 
 export function getStaticPaths() {
 	const paths: Array<{ params: { lang: Locale; slug: string } }> = [];
@@ -25,6 +28,9 @@ if (!animation) {
 
 const componentMap: Record<string, any> = {
 	'conceptos-basicos-java': ConceptosBasicosJava,
+	'variables-tipos-datos-java': VariablesTiposDatosJava,
+	'control-flujo-bucles-java': ControlFlujoBuclesJava,
+	'arrays-strings-java': ArraysStringsJava,
 };
 
 const AnimationComponent = componentMap[slug];

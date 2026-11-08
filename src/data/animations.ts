@@ -45,6 +45,51 @@ export const animations: Animation[] = [
 		minutes: 14,
 		lesson: { course: 'java', slug: '01-conceptos-basicos' },
 	},
+	{
+		slug: 'variables-tipos-datos-java',
+		image: '/img/animations/variables-tipos-datos-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'Variables, tipos de datos y operadores, paso a paso',
+			en: 'Variables, data types and operators, step by step',
+		},
+		description: {
+			es: 'Recorrido animado por la declaración de variables y constantes, el ámbito, los tipos primitivos y por referencia, el casting y los operadores.',
+			en: 'An animated walkthrough of variable and constant declarations, scope, primitive and reference types, casting and operators.',
+		},
+		minutes: 14,
+		lesson: { course: 'java', slug: '02-variables-tipos-datos-y-operadores' },
+	},
+	{
+		slug: 'control-flujo-bucles-java',
+		image: '/img/animations/control-flujo-bucles-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'Control de flujo y bucles, paso a paso',
+			en: 'Control flow and loops, step by step',
+		},
+		description: {
+			es: 'Recorrido animado por if, else if, else, switch, los bucles while, do-while y for, y el control con break y continue.',
+			en: 'An animated walkthrough of if, else if, else, switch, the while, do-while and for loops, and control with break and continue.',
+		},
+		minutes: 12,
+		lesson: { course: 'java', slug: '03-control-de-flujo-y-bucles' },
+	},
+	{
+		slug: 'arrays-strings-java',
+		image: '/img/animations/arrays-strings-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'Arrays y Strings, paso a paso',
+			en: 'Arrays and Strings, step by step',
+		},
+		description: {
+			es: 'Recorrido animado por la memoria de los arrays, su recorrido, matrices, java.util.Arrays, la inmutabilidad de String, el String Pool y StringBuilder.',
+			en: 'An animated walkthrough of array memory, traversal, matrices, java.util.Arrays, String immutability, the String Pool and StringBuilder.',
+		},
+		minutes: 16,
+		lesson: { course: 'java', slug: '04-arrays-y-strings' },
+	},
 ];
 
 /**

@@ -655,6 +655,10 @@ Where this renders:
   (standalone asset, see DESIGN.md §6.2).
 - i18n keys: `courses.lessonAnimations.*` and `animations.*`.
 
+Existing animations: `conceptos-basicos-java` (lesson 01), `variables-tipos-datos-java`
+(02), `control-flujo-bucles-java` (03) and `arrays-strings-java` (04); each mixes slide
+chapters with motion canvases for its most visual concepts.
+
 Adding an animation: register it in the catalog, write its script and scenes, import
 and map the component in both detail pages, add the thumbnail, and cover it with a
 test like `tests/animation-conceptos-basicos-java.test.mjs` (which also checks that

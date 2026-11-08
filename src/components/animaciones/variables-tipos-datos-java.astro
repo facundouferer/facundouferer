@@ -1,0 +1,795 @@
+---
+/**
+ * Scenes for the "Variables, data types and operators, step by step" animation
+ * (lesson java/02). The captions, code and terminal panels live in
+ * `src/data/animations/variables-tipos-datos-java.ts`; this component only draws
+ * the diagrams the steps point to. Every `[data-scene]` block is one diagram and
+ * every `[data-el]` is an element a step can reveal, emphasize or animate. The
+ * `memory` and `casting` scenes are SVG canvases driven by motion cues.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/variables-tipos-datos-java';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+
+// Canvas code: SVG text needs <tspan> where the highlighter emits <span>.
+const toTspans = (html: string) => html.replaceAll('<span class="', '<tspan class="').replaceAll('</span>', '</tspan>');
+const tspans = (code: string) => toTspans(highlightCode(code, 'java')[0]);
+
+const names = isEs
+	? { edad: 'edad', precio: 'precio', nombre: 'nombre', entero: 'numeroEntero', decimal: 'numeroDecimal', exacto: 'precioExacto', aprox: 'precioAproximado' }
+	: { edad: 'age', precio: 'price', nombre: 'name', entero: 'wholeNumber', decimal: 'decimalNumber', exacto: 'exactPrice', aprox: 'roundedPrice' };
+
+const c = isEs
+	? { cuenta: 'Cuenta', total: 'totalCuentas', saldo: 'saldo', acreditar: 'acreditar', monto: 'monto', anterior: 'saldoAnterior', mensaje: 'mensaje', permitido: 'Acceso permitido', resultado: 'resultado', seguro: 'resultadoSeguro' }
+	: { cuenta: 'Account', total: 'totalAccounts', saldo: 'balance', acreditar: 'credit', monto: 'amount', anterior: 'previousBalance', mensaje: 'message', permitido: 'Access granted', resultado: 'result', seguro: 'safeResult' };
+
+const memoryLines = [
+	`int ${names.edad} = 25;`,
+	`double ${names.precio} = 99.99;`,
+	`String ${names.nombre} = "Facundo";`,
+].map((code, index) => ({ number: index + 1, y: 160 + index * 40, html: tspans(code) }));
+
+const codeWidening = tspans(`double ${names.decimal} = ${names.entero};`);
+const codeNarrowing = tspans(`int ${names.aprox} = (int) ${names.exacto};`);
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<!-- INTRO: static typing -->
+	<div slot="scene" data-scene="typing" class="scene-typing">
+		<div class="dg-row dg-row--center scene-typing-decl">
+			<div class="dg-box dg-box--accent dg-box--center" data-el="t-type">
+				<p class="dg-label">{isEs ? 'Tipo' : 'Type'}</p>
+				<code class="dg-code">int</code>
+			</div>
+			<div class="dg-box dg-box--center" data-el="t-name">
+				<p class="dg-label">{isEs ? 'Nombre' : 'Name'}</p>
+				<code class="dg-code">{names.edad}</code>
+			</div>
+			<div class="dg-box dg-box--sage dg-box--center" data-el="t-value">
+				<p class="dg-label dg-label--sage">{isEs ? 'Valor' : 'Value'}</p>
+				<code class="dg-code">= 25;</code>
+			</div>
+		</div>
+		<div class="dg-row dg-row--center">
+			<span class="dg-chip dg-chip--ink" data-el="t-lock">
+				<svg class="dg-icon dg-icon--lg scene-chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+				</svg>
+				{isEs ? 'Tipo fijo: no cambia durante la ejecución' : 'Fixed type: it never changes while running'}
+			</span>
+		</div>
+	</div>
+
+	<!-- 1. Variables and constants -->
+	<div slot="scene" data-scene="declare" class="scene-declare">
+		<div class="dg-grid-2">
+			<div class="dg-box" data-el="v-int">
+				<div class="dg-row">
+					<span class="dg-chip dg-chip--accent">int</span>
+					<code class="dg-code">{names.edad}</code>
+				</div>
+				<p class="dg-title scene-var-value">25</p>
+			</div>
+			<div class="dg-box" data-el="v-double">
+				<div class="dg-row">
+					<span class="dg-chip dg-chip--accent">double</span>
+					<code class="dg-code">{names.precio}</code>
+				</div>
+				<p class="dg-title scene-var-value">99.99</p>
+			</div>
+			<div class="dg-box" data-el="v-bool">
+				<div class="dg-row">
+					<span class="dg-chip dg-chip--accent">boolean</span>
+					<code class="dg-code">{isEs ? 'esEstudiante' : 'isStudent'}</code>
+				</div>
+				<p class="dg-title scene-var-value">true</p>
+			</div>
+			<div class="dg-box" data-el="v-char">
+				<div class="dg-row">
+					<span class="dg-chip dg-chip--accent">char</span>
+					<code class="dg-code">{isEs ? 'inicial' : 'initial'}</code>
+				</div>
+				<p class="dg-title scene-var-value">'F'</p>
+			</div>
+		</div>
+		<div class="dg-box dg-box--ink scene-final" data-el="v-final">
+			<div class="dg-row">
+				<svg class="dg-icon scene-chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--color-accent-300)">
+					<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+				</svg>
+				<code class="dg-code">final double PI = 3.14159;</code>
+			</div>
+			<p class="dg-sub">{isEs ? 'Constante: asignada una vez, no se puede modificar' : 'Constant: assigned once, it cannot be modified'}</p>
+		</div>
+	</div>
+
+	<!-- 2. Scope: the three terms -->
+	<div slot="scene" data-scene="scopeterms" class="scene-scopeterms">
+		<div class="dg-grid-3">
+			<div class="dg-box dg-box--accent" data-el="sc-scope">
+				<p class="dg-label">{isEs ? 'Ámbito' : 'Scope'}</p>
+				<p class="dg-title">{isEs ? 'Dónde puede usarse un nombre' : 'Where a name can be used'}</p>
+				<p class="dg-sub">{isEs ? 'La región del código' : 'The region of code'}</p>
+			</div>
+			<div class="dg-box dg-box--sage" data-el="sc-vis">
+				<p class="dg-label dg-label--sage">{isEs ? 'Visibilidad' : 'Visibility'}</p>
+				<p class="dg-title">{isEs ? 'Desde qué líneas se accede' : 'From which lines it is reachable'}</p>
+				<p class="dg-sub">{isEs ? 'Quién lo ve' : 'Who can see it'}</p>
+			</div>
+			<div class="dg-box" data-el="sc-life">
+				<p class="dg-label">{isEs ? 'Tiempo de vida' : 'Lifetime'}</p>
+				<p class="dg-title">{isEs ? 'Cuánto existe su valor' : 'How long its value exists'}</p>
+				<p class="dg-sub">{isEs ? 'Durante la ejecución' : 'During execution'}</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- 2. Scope: lexical nesting -->
+	<div slot="scene" data-scene="nesting" class="scene-nesting">
+		<div class="dg-nest dg-nest--accent" data-el="n-class">
+			<p class="dg-label">{isEs ? 'Clase' : 'Class'} <code>{c.cuenta}</code></p>
+			<div class="dg-nest dg-nest--sage" data-el="n-method">
+				<p class="dg-label dg-label--sage">{isEs ? 'Método' : 'Method'} <code>{c.acreditar}(...)</code></p>
+				<div class="dg-nest dg-nest--core" data-el="n-block">
+					<p class="dg-label">{isEs ? 'Bloque' : 'Block'} <code>{'{ }'}</code></p>
+				</div>
+			</div>
+		</div>
+		<div class="dg-row dg-row--center">
+			<span class="dg-chip dg-chip--ink" data-el="n-noglobal">{isEs ? 'No existen variables globales libres' : 'There are no free global variables'}</span>
+		</div>
+	</div>
+
+	<!-- 2. Scope: categories table -->
+	<div slot="scene" data-scene="scopetable" class="scene-scopetable">
+		<div class="scene-scope-row scene-scope-head">
+			<span>{isEs ? 'Categoría' : 'Category'}</span>
+			<span>{isEs ? 'Visibilidad' : 'Visibility'}</span>
+			<span>{isEs ? 'Tiempo de vida' : 'Lifetime'}</span>
+		</div>
+		<div class="dg-box scene-scope-row" data-el="row-local">
+			<span class="dg-chip dg-chip--accent">{isEs ? 'Variable local' : 'Local variable'}</span>
+			<span>{isEs ? 'Desde su declaración hasta el fin del bloque' : 'From its declaration to the end of the block'}</span>
+			<span>{isEs ? 'Esa invocación y bloque' : 'That call and block'}</span>
+		</div>
+		<div class="dg-box scene-scope-row" data-el="row-block">
+			<span class="dg-chip dg-chip--accent">{isEs ? 'De bloque' : 'Block-scoped'}</span>
+			<span>{isEs ? 'Solo dentro de ese bloque' : 'Only inside that block'}</span>
+			<span>{isEs ? 'Hasta que termina el bloque' : 'Until the block ends'}</span>
+		</div>
+		<div class="dg-box scene-scope-row" data-el="row-param">
+			<span class="dg-chip dg-chip--accent">{isEs ? 'Parámetro' : 'Parameter'}</span>
+			<span>{isEs ? 'Todo el cuerpo del método' : 'The whole method body'}</span>
+			<span>{isEs ? 'Durante la invocación' : 'During the call'}</span>
+		</div>
+		<div class="dg-box dg-box--sage scene-scope-row" data-el="row-instance">
+			<span class="dg-chip dg-chip--sage">{isEs ? 'Campo de instancia' : 'Instance field'}</span>
+			<span>{isEs ? 'Según su modificador de acceso' : 'Per its access modifier'}</span>
+			<span>{isEs ? 'Mientras el objeto sea alcanzable' : 'While the object is reachable'}</span>
+		</div>
+		<div class="dg-box dg-box--sage scene-scope-row" data-el="row-class">
+			<span class="dg-chip dg-chip--sage">{isEs ? 'Campo de clase (static)' : 'Class field (static)'}</span>
+			<span>{isEs ? 'Según su modificador de acceso' : 'Per its access modifier'}</span>
+			<span>{isEs ? 'Desde que se carga la clase' : 'From the moment the class loads'}</span>
+		</div>
+	</div>
+
+	<!-- 2. Scope: field defaults -->
+	<div slot="scene" data-scene="defaults" class="scene-defaults">
+		<div class="dg-grid-3">
+			<div class="dg-box dg-box--center" data-el="d-num">
+				<p class="dg-label">{isEs ? 'Numéricos' : 'Numeric'}</p>
+				<code class="dg-code">0</code>
+				<p class="dg-sub">int, double…</p>
+			</div>
+			<div class="dg-box dg-box--center" data-el="d-bool">
+				<p class="dg-label">boolean</p>
+				<code class="dg-code">false</code>
+				<p class="dg-sub">{isEs ? 'campo sin asignar' : 'unassigned field'}</p>
+			</div>
+			<div class="dg-box dg-box--center" data-el="d-null">
+				<p class="dg-label">{isEs ? 'Referencias' : 'References'}</p>
+				<code class="dg-code">null</code>
+				<p class="dg-sub">String, Cuenta…</p>
+			</div>
+		</div>
+		<div class="dg-banner" data-el="d-warn">{isEs ? 'Predeterminado no es lo mismo que válido para tu dominio' : 'Default is not the same as valid for your domain'}</div>
+	</div>
+
+	<!-- 2. Scope: shadowing -->
+	<div slot="scene" data-scene="shadow" class="scene-shadow">
+		<div class="dg-grid-2">
+			<div class="dg-box dg-box--accent" data-el="sh-class">
+				<p class="dg-label">{isEs ? 'Campos de' : 'Fields of'} {c.cuenta}</p>
+				<code class="dg-code">static int {c.total}</code>
+				<code class="dg-code scene-shadow-field">int {c.saldo}</code>
+			</div>
+			<div class="dg-box dg-box--sage" data-el="sh-param">
+				<p class="dg-label dg-label--sage">Constructor <code>{c.cuenta}(int {c.saldo})</code></p>
+				<p class="dg-sub">{isEs ? `El parámetro ${c.saldo} sombrea al campo ${c.saldo}` : `The ${c.saldo} parameter shadows the ${c.saldo} field`}</p>
+			</div>
+		</div>
+		<div class="dg-row dg-row--center">
+			<span class="dg-chip dg-chip--ink" data-el="sh-this"><code>this.{c.saldo} = {c.saldo};</code> · {isEs ? 'campo = parámetro' : 'field = parameter'}</span>
+		</div>
+	</div>
+
+	<!-- 2. Scope: a method with a parameter and a local -->
+	<div slot="scene" data-scene="flow" class="scene-flow">
+		<div class="dg-box scene-flow-row" data-el="f-check">
+			<span class="dg-step-num">1</span>
+			<span><code class="dg-code">{c.monto} &lt;= 0</code> · {isEs ? 'parámetro: se rechaza y se vuelve' : 'parameter: rejected and returns'}</span>
+		</div>
+		<div class="dg-box dg-box--accent scene-flow-row" data-el="f-local">
+			<span class="dg-step-num">2</span>
+			<span><code class="dg-code">int {c.anterior} = {c.saldo};</code> · {isEs ? 'variable local' : 'local variable'}</span>
+		</div>
+		<div class="dg-box scene-flow-row" data-el="f-add">
+			<span class="dg-step-num">3</span>
+			<span><code class="dg-code">{c.saldo} += {c.monto};</code> · {isEs ? 'actualiza el campo' : 'updates the field'}</span>
+		</div>
+		<div class="dg-box dg-box--sage scene-flow-row" data-el="f-overflow">
+			<span class="dg-step-num">4</span>
+			<span><code class="dg-code">{c.saldo} &lt; {c.anterior}</code> · {isEs ? 'desbordamiento: se restaura' : 'overflow: it is restored'}</span>
+		</div>
+	</div>
+
+	<!-- 2. Scope: block-scoped variable -->
+	<div slot="scene" data-scene="blockscope" class="scene-blockscope">
+		<div class="dg-nest dg-nest--sage" data-el="bk-outer">
+			<p class="dg-label dg-label--sage">{isEs ? 'Método' : 'Method'} · <code>{names.edad}</code> visible</p>
+			<div class="dg-nest dg-nest--accent" data-el="bk-inner">
+				<p class="dg-label"><code>if ({names.edad} &gt;= 18) {'{'}</code></p>
+				<code class="dg-code">String {c.mensaje} = "{c.permitido}";</code>
+			</div>
+		</div>
+		<div class="dg-row dg-row--center">
+			<span class="dg-chip dg-chip--ink" data-el="bk-fail">
+				<svg class="dg-icon scene-chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--color-accent-300)">
+					<path d="M18 6 6 18" /><path d="m6 6 12 12" />
+				</svg>
+				{isEs ? `Fuera del bloque: ${c.mensaje} no se ve` : `Outside the block: ${c.mensaje} is not visible`}
+			</span>
+		</div>
+	</div>
+
+	<!-- 2. Scope: definite assignment -->
+	<div slot="scene" data-scene="definite" class="scene-definite">
+		<div class="dg-grid-2">
+			<div class="dg-box dg-box--accent" data-el="df-bad">
+				<p class="dg-label">
+					<svg class="dg-icon scene-chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M18 6 6 18" /><path d="m6 6 12 12" />
+					</svg>
+					{isEs ? 'No compila' : 'Does not compile'}
+				</p>
+				<code class="dg-code">int {c.resultado};</code>
+				<p class="dg-sub">{isEs ? 'Leerla: quizá no fue inicializada' : 'Reading it: it may not be initialized'}</p>
+			</div>
+			<div class="dg-box dg-box--sage" data-el="df-good">
+				<p class="dg-label dg-label--sage">
+					<svg class="dg-icon dg-icon--sage scene-chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M20 6 9 17l-5-5" />
+					</svg>
+					{isEs ? 'Compila' : 'Compiles'}
+				</p>
+				<code class="dg-code">int {c.seguro} = 0;</code>
+				<p class="dg-sub">{isEs ? 'Solo si 0 es un valor válido' : 'Only if 0 is a valid value'}</p>
+			</div>
+		</div>
+		<div class="dg-banner" data-el="df-note">{isEs ? 'Si falta un dato obligatorio: validalo y avisá' : 'If a required value is missing: validate and report it'}</div>
+	</div>
+
+	<!-- 3. Primitive types -->
+	<div slot="scene" data-scene="primitives" class="scene-primitives">
+		<div class="scene-prim-grid">
+			<div class="dg-box dg-box--center" data-el="p-byte">
+				<code class="dg-code">byte</code>
+				<p class="dg-title">8 bits</p>
+				<p class="dg-sub">-128 … 127</p>
+			</div>
+			<div class="dg-box dg-box--center" data-el="p-short">
+				<code class="dg-code">short</code>
+				<p class="dg-title">16 bits</p>
+				<p class="dg-sub">-32,768 … 32,767</p>
+			</div>
+			<div class="dg-box dg-box--center" data-el="p-int">
+				<code class="dg-code">int</code>
+				<p class="dg-title">32 bits</p>
+				<p class="dg-sub">±2,147,483,647</p>
+			</div>
+			<div class="dg-box dg-box--center" data-el="p-long">
+				<code class="dg-code">long</code>
+				<p class="dg-title">64 bits</p>
+				<p class="dg-sub">10000000000L</p>
+			</div>
+			<div class="dg-box dg-box--accent dg-box--center" data-el="p-float">
+				<code class="dg-code">float</code>
+				<p class="dg-title">32 bits</p>
+				<p class="dg-sub">3.14f</p>
+			</div>
+			<div class="dg-box dg-box--accent dg-box--center" data-el="p-double">
+				<code class="dg-code">double</code>
+				<p class="dg-title">64 bits</p>
+				<p class="dg-sub">3.14159265</p>
+			</div>
+			<div class="dg-box dg-box--sage dg-box--center" data-el="p-boolean">
+				<code class="dg-code">boolean</code>
+				<p class="dg-title">true / false</p>
+				<p class="dg-sub">{isEs ? 'verdadero o falso' : 'true or false'}</p>
+			</div>
+			<div class="dg-box dg-box--sage dg-box--center" data-el="p-char">
+				<code class="dg-code">char</code>
+				<p class="dg-title">16 bits</p>
+				<p class="dg-sub">'A' · Unicode</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- 3. Stack and heap (motion canvas, viewBox 1600 x 660) -->
+	<div slot="scene" data-scene="memory" data-motion class="scene-memory">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<!-- Editor with the three declarations -->
+				<g data-el="editor">
+					<rect class="mg-card mg-card--ink" x="40" y="60" width="560" height="250" rx="18" />
+					<path class="mg-bar" d="M58 60H582A18 18 0 0 1 600 78V98H40V78A18 18 0 0 1 58 60Z" />
+					<circle class="mg-dot" cx="64" cy="79" r="6" />
+					<circle class="mg-dot mg-dot--2" cx="84" cy="79" r="6" />
+					<circle class="mg-dot mg-dot--3" cx="104" cy="79" r="6" />
+					<text class="mg-text mg-text--bar" x="126" y="84">Main.java</text>
+					{
+						memoryLines.map((line) => (
+							<>
+								<text class="mg-mono mg-gutter" x="76" y={line.y} text-anchor="end">
+									{line.number}
+								</text>
+								<text class="mg-mono" x="100" y={line.y} data-el={`code-${line.number}`} set:html={line.html} />
+							</>
+						))
+					}
+				</g>
+
+				<!-- Stack -->
+				<g data-el="stack">
+					<rect class="mg-card" x="700" y="60" width="400" height="440" rx="20" />
+					<text class="mg-heading" x="724" y="104">Stack</text>
+					<text class="mg-text mg-text--muted" x="1076" y="104" text-anchor="end">{isEs ? 'pila' : 'call stack'}</text>
+				</g>
+				<g data-el="slot-edad">
+					<rect class="mg-card mg-card--accent" x="720" y="130" width="360" height="100" rx="14" />
+					<text class="mg-heading" x="744" y="176">{names.edad}</text>
+					<text class="mg-text mg-text--muted" x="744" y="204">int</text>
+				</g>
+				<g data-el="slot-precio">
+					<rect class="mg-card mg-card--accent" x="720" y="250" width="360" height="100" rx="14" />
+					<text class="mg-heading" x="744" y="296">{names.precio}</text>
+					<text class="mg-text mg-text--muted" x="744" y="324">double</text>
+				</g>
+				<g data-el="slot-nombre">
+					<rect class="mg-card mg-card--sage" x="720" y="370" width="360" height="100" rx="14" />
+					<text class="mg-heading" x="744" y="416">{names.nombre}</text>
+					<text class="mg-text mg-text--muted" x="744" y="444">String</text>
+				</g>
+				<rect data-anchor="a-edad" x="935" y="155" width="50" height="50" fill="none" />
+				<rect data-anchor="a-precio" x="935" y="275" width="50" height="50" fill="none" />
+
+				<!-- Heap -->
+				<g data-el="heap">
+					<rect class="mg-card" x="1200" y="60" width="360" height="440" rx="20" />
+					<text class="mg-heading" x="1224" y="104">Heap</text>
+					<text class="mg-text mg-text--muted" x="1536" y="104" text-anchor="end">{isEs ? 'montón' : 'object memory'}</text>
+				</g>
+				<g data-el="obj-string">
+					<rect class="mg-card mg-card--sage" x="1230" y="360" width="300" height="120" rx="18" />
+					<text class="mg-text mg-text--muted" x="1254" y="396">String</text>
+					<text class="mg-mono mg-mono--sage" x="1254" y="444">"Facundo"</text>
+				</g>
+				<g data-el="arrow-ref" class="mg-arrow mg-arrow--sage">
+					<path class="mg-stroke" d="M1016 420H1218" pathLength="1" />
+					<path class="mg-head" d="M1206 411L1220 420L1206 429" />
+				</g>
+
+				<!-- Callouts for the comparison step -->
+				<g data-el="note-direct">
+					<rect class="mg-card mg-card--accent" x="40" y="350" width="560" height="110" rx="18" />
+					<text class="mg-heading" x="66" y="394">{isEs ? 'Primitivo' : 'Primitive'}</text>
+					<text class="mg-text" x="66" y="430">{isEs ? 'El valor vive directo en la variable' : 'The value lives directly in the variable'}</text>
+				</g>
+				<g data-el="note-ref">
+					<rect class="mg-card mg-card--sage" x="40" y="480" width="560" height="110" rx="18" />
+					<text class="mg-heading" x="66" y="524">{isEs ? 'Referencia' : 'Reference'}</text>
+					<text class="mg-text" x="66" y="560">{isEs ? 'Guarda la dirección; el objeto vive en el heap' : 'Stores the address; the object lives on the heap'}</text>
+				</g>
+
+				<!-- Values: tokens that travel from the code into their stack cell -->
+				<g data-el="val-edad" data-x="520" data-y="150">
+					<rect class="mg-card mg-card--ink" x="-50" y="-24" width="100" height="48" rx="14" />
+					<text class="mg-mono mg-out" x="0" y="6" text-anchor="middle">25</text>
+				</g>
+				<g data-el="val-precio" data-x="520" data-y="190">
+					<rect class="mg-card mg-card--ink" x="-60" y="-24" width="120" height="48" rx="14" />
+					<text class="mg-mono mg-out" x="0" y="6" text-anchor="middle">99.99</text>
+				</g>
+				<g data-el="val-ref" data-x="960" data-y="420">
+					<rect class="mg-card mg-card--ink" x="-62" y="-24" width="124" height="48" rx="14" />
+					<text class="mg-mono mg-out" x="0" y="6" text-anchor="middle">0x1A2B</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 4. Casting: widening and narrowing (motion canvas, viewBox 1600 x 660) -->
+	<div slot="scene" data-scene="casting" data-motion class="scene-casting">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<!-- Size ladder: from smaller to larger types -->
+				<g data-el="ladder">
+					<rect class="mg-chip" x="40" y="30" width="90" height="40" rx="20" />
+					<text class="mg-chip-text" x="85" y="56" text-anchor="middle">byte</text>
+					<path class="mg-ladder-step" d="M138 50H162M156 44L164 50L156 56" />
+					<rect class="mg-chip" x="170" y="30" width="100" height="40" rx="20" />
+					<text class="mg-chip-text" x="220" y="56" text-anchor="middle">short</text>
+					<path class="mg-ladder-step" d="M278 50H302M296 44L304 50L296 56" />
+					<rect class="mg-chip" x="310" y="30" width="80" height="40" rx="20" />
+					<text class="mg-chip-text" x="350" y="56" text-anchor="middle">int</text>
+					<path class="mg-ladder-step" d="M398 50H422M416 44L424 50L416 56" />
+					<rect class="mg-chip" x="430" y="30" width="90" height="40" rx="20" />
+					<text class="mg-chip-text" x="475" y="56" text-anchor="middle">long</text>
+					<path class="mg-ladder-step" d="M528 50H552M546 44L554 50L546 56" />
+					<rect class="mg-chip mg-chip--sage" x="560" y="30" width="100" height="40" rx="20" />
+					<text class="mg-chip-text mg-chip-text--sage" x="610" y="56" text-anchor="middle">float</text>
+					<path class="mg-ladder-step" d="M668 50H692M686 44L694 50L686 56" />
+					<rect class="mg-chip mg-chip--sage" x="700" y="30" width="110" height="40" rx="20" />
+					<text class="mg-chip-text mg-chip-text--sage" x="755" y="56" text-anchor="middle">double</text>
+					<text class="mg-text mg-text--muted" x="840" y="56">{isEs ? 'de menor a mayor: automático' : 'smaller to larger: automatic'}</text>
+				</g>
+
+				<!-- Widening lane: int -> double -->
+				<g data-el="code-w">
+					<rect class="mg-card mg-card--ink" x="40" y="104" width="760" height="48" rx="12" />
+					<text class="mg-mono" x="62" y="135" set:html={codeWidening} />
+				</g>
+				<g data-el="w-int">
+					<rect class="mg-card mg-card--accent" x="80" y="190" width="300" height="150" rx="20" />
+					<text class="mg-heading" x="104" y="232">{names.entero}</text>
+					<text class="mg-text mg-text--muted" x="104" y="258">int · 32 bits</text>
+				</g>
+				<g data-el="w-arrow" class="mg-arrow">
+					<path class="mg-stroke" d="M392 292H688" pathLength="1" />
+					<path class="mg-head" d="M676 282L690 292L676 302" />
+					<text class="mg-chip-text" x="540" y="278" text-anchor="middle">{isEs ? 'automático' : 'automatic'}</text>
+				</g>
+				<g data-el="w-double">
+					<rect class="mg-card mg-card--sage" x="700" y="190" width="300" height="150" rx="20" />
+					<text class="mg-heading" x="724" y="232">{names.decimal}</text>
+					<text class="mg-text mg-text--muted" x="724" y="258">double · 64 bits</text>
+				</g>
+				<rect data-anchor="a-wdouble" x="825" y="267" width="50" height="50" fill="none" />
+				<g data-el="w-note">
+					<rect class="mg-card mg-card--sage" x="1040" y="215" width="520" height="100" rx="18" />
+					<text class="mg-heading" x="1066" y="258">{isEs ? 'Sin pérdida de información' : 'No information is lost'}</text>
+					<text class="mg-text" x="1066" y="290">{isEs ? 'int (32 bits) cabe en double (64 bits)' : 'int (32 bits) fits in double (64 bits)'}</text>
+				</g>
+
+				<!-- Narrowing lane: double -> (int) -> int -->
+				<g data-el="code-n">
+					<rect class="mg-card mg-card--ink" x="40" y="372" width="760" height="48" rx="12" />
+					<text class="mg-mono" x="62" y="403" set:html={codeNarrowing} />
+				</g>
+				<g data-el="n-double">
+					<rect class="mg-card mg-card--sage" x="80" y="440" width="300" height="150" rx="20" />
+					<text class="mg-heading" x="104" y="482">{names.exacto}</text>
+					<text class="mg-text mg-text--muted" x="104" y="508">double · 64 bits</text>
+				</g>
+				<g data-el="n-arrow-in" class="mg-arrow">
+					<path class="mg-stroke" d="M392 540H438" pathLength="1" />
+					<path class="mg-head" d="M428 531L440 540L428 549" />
+				</g>
+				<g data-el="n-gate">
+					<rect class="mg-card mg-card--accent" x="450" y="440" width="170" height="150" rx="20" />
+					<text class="mg-mono mg-mono--dark mg-mono--lg" x="535" y="490" text-anchor="middle">(int)</text>
+					<text class="mg-text mg-text--muted" x="535" y="580" text-anchor="middle">cast</text>
+				</g>
+				<rect data-anchor="a-gate" x="510" y="515" width="50" height="50" fill="none" />
+				<g data-el="n-arrow-out" class="mg-arrow">
+					<path class="mg-stroke" d="M628 540H688" pathLength="1" />
+					<path class="mg-head" d="M678 531L690 540L678 549" />
+				</g>
+				<g data-el="n-int">
+					<rect class="mg-card mg-card--accent" x="700" y="440" width="300" height="150" rx="20" />
+					<text class="mg-heading" x="724" y="482">{names.aprox}</text>
+					<text class="mg-text mg-text--muted" x="724" y="508">int · 32 bits</text>
+				</g>
+				<rect data-anchor="a-nint" x="825" y="515" width="50" height="50" fill="none" />
+				<rect data-anchor="a-drop" x="510" y="615" width="50" height="40" fill="none" />
+				<g data-el="n-note">
+					<rect class="mg-card mg-card--accent" x="1040" y="465" width="520" height="100" rx="18" />
+					<text class="mg-heading" x="1066" y="508">{isEs ? 'Se pierden los decimales' : 'The decimals are lost'}</text>
+					<text class="mg-text" x="1066" y="540">{isEs ? '45.89 se convierte en 45' : '45.89 becomes 45'}</text>
+				</g>
+
+				<!-- Travelling values, last so they pass over everything else -->
+				<g data-el="tok-10" data-x="230" data-y="292">
+					<rect class="mg-card mg-card--ink" x="-50" y="-26" width="100" height="52" rx="14" />
+					<text class="mg-mono mg-out" x="0" y="6" text-anchor="middle">10</text>
+				</g>
+				<g data-el="tok-10d" data-x="850" data-y="292">
+					<rect class="mg-card mg-card--ink" x="-56" y="-26" width="112" height="52" rx="14" />
+					<text class="mg-mono mg-out" x="0" y="6" text-anchor="middle">10.0</text>
+				</g>
+				<g data-el="tok-4589" data-x="230" data-y="540">
+					<rect class="mg-card mg-card--ink" x="-64" y="-26" width="128" height="52" rx="14" />
+					<text class="mg-mono mg-out" x="0" y="6" text-anchor="middle">45.89</text>
+				</g>
+				<g data-el="tok-45" data-x="505" data-y="540">
+					<rect class="mg-card mg-card--ink" x="-40" y="-26" width="80" height="52" rx="14" />
+					<text class="mg-mono mg-out" x="0" y="6" text-anchor="middle">45</text>
+				</g>
+				<g data-el="tok-frac" data-x="565" data-y="540">
+					<rect class="mg-card mg-card--lost" x="-36" y="-26" width="72" height="52" rx="14" />
+					<text class="mg-mono mg-mono--lost" x="0" y="6" text-anchor="middle">.89</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 5. Operators -->
+	<div slot="scene" data-scene="operators" class="dg-grid-2 scene-operators">
+		<div class="dg-col">
+			<p class="dg-label" data-el="op-arith">{isEs ? 'Aritméticos' : 'Arithmetic'} · <code>+ - * / %</code></p>
+			<div class="dg-box dg-box--accent dg-box--center" data-el="op-div">
+				<code class="dg-code">10 / 3</code>
+				<p class="dg-title scene-op-result">3</p>
+				<p class="dg-sub">{isEs ? 'cociente entero: sin decimales' : 'integer quotient: no decimals'}</p>
+			</div>
+			<div class="dg-box dg-box--sage dg-box--center" data-el="op-mod">
+				<code class="dg-code">10 % 3</code>
+				<p class="dg-title scene-op-result">1</p>
+				<p class="dg-sub">{isEs ? 'módulo: el resto de la división' : 'modulo: the division remainder'}</p>
+			</div>
+		</div>
+		<div class="dg-col">
+			<p class="dg-label dg-label--sage" data-el="op-rel">{isEs ? 'Relacionales' : 'Relational'} · <code>== != &gt; &lt; &gt;= &lt;=</code></p>
+			<div class="dg-box" data-el="op-and">
+				<div class="dg-row">
+					<code class="dg-code">{isEs ? 'tieneEdad' : 'isAdult'}</code>
+					<span class="dg-chip dg-chip--sage">true</span>
+					<code class="dg-code">&amp;&amp;</code>
+					<code class="dg-code">{isEs ? 'esEstudiante' : 'isStudent'}</code>
+					<span class="dg-chip dg-chip--sage">true</span>
+				</div>
+				<p class="dg-title scene-op-result">{isEs ? 'puedeIngresar = true' : 'canEnter = true'}</p>
+			</div>
+			<div class="dg-chips" data-el="op-log">
+				<span class="dg-chip dg-chip--accent"><code>&amp;&amp;</code> AND</span>
+				<span class="dg-chip dg-chip--accent"><code>||</code> OR</span>
+				<span class="dg-chip dg-chip--accent"><code>!</code> NOT</span>
+			</div>
+		</div>
+	</div>
+
+	<!-- 6. Exercise -->
+	<div slot="scene" data-scene="exercise" class="scene-exercise">
+		<div class="dg-row dg-row--center">
+			<div class="dg-box dg-box--center" data-el="ex-n1">
+				<code class="dg-code">{isEs ? 'nota1' : 'grade1'}</code>
+				<p class="dg-title">7.0</p>
+			</div>
+			<div class="dg-box dg-box--center" data-el="ex-n2">
+				<code class="dg-code">{isEs ? 'nota2' : 'grade2'}</code>
+				<p class="dg-title">6.0</p>
+			</div>
+			<div class="dg-box dg-box--center" data-el="ex-n3">
+				<code class="dg-code">{isEs ? 'nota3' : 'grade3'}</code>
+				<p class="dg-title">8.0</p>
+			</div>
+		</div>
+		<div class="dg-grid-2">
+			<div class="dg-swap">
+				<div class="dg-box dg-box--accent dg-box--center" data-el="ex-avg-q">
+					<code class="dg-code">double {isEs ? 'promedio' : 'average'}</code>
+					<p class="dg-title">?</p>
+				</div>
+				<div class="dg-box dg-box--accent dg-box--center" data-el="ex-avg">
+					<code class="dg-code">double {isEs ? 'promedio' : 'average'}</code>
+					<p class="dg-title">(7.0 + 6.0 + 8.0) / 3 = 7.0</p>
+				</div>
+			</div>
+			<div class="dg-swap">
+				<div class="dg-box dg-box--sage dg-box--center" data-el="ex-pass-q">
+					<code class="dg-code">boolean {isEs ? 'aprobo' : 'passed'}</code>
+					<p class="dg-title">?</p>
+				</div>
+				<div class="dg-box dg-box--sage dg-box--center" data-el="ex-pass">
+					<code class="dg-code">boolean {isEs ? 'aprobo' : 'passed'}</code>
+					<p class="dg-title">7.0 &gt;= 6.0 = true</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Closing: summary and repository -->
+	<div slot="scene" data-scene="closing" class="scene-closing">
+		<div class="dg-chips scene-closing-map">
+			<span class="dg-chip dg-chip--accent" data-el="s1">1 · {isEs ? 'Variables y constantes' : 'Variables and constants'}</span>
+			<span class="dg-chip dg-chip--accent" data-el="s2">2 · {isEs ? 'Ámbito y tiempo de vida' : 'Scope and lifetime'}</span>
+			<span class="dg-chip dg-chip--accent" data-el="s3">3 · {isEs ? 'Primitivos y referencias' : 'Primitives and references'}</span>
+			<span class="dg-chip dg-chip--sage" data-el="s4">4 · {isEs ? 'Casting' : 'Casting'}</span>
+			<span class="dg-chip dg-chip--sage" data-el="s5">5 · {isEs ? 'Operadores' : 'Operators'}</span>
+			<span class="dg-chip dg-chip--sage" data-el="s6">6 · {isEs ? 'Ejercicio' : 'Exercise'}</span>
+		</div>
+		<a class="dg-box dg-box--ink scene-closing-repo" data-el="repo" href="https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l02_variables_tipos_datos_y_operadores" target="_blank" rel="noopener noreferrer">
+			<p class="dg-label" style="color: var(--color-accent-300)">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: inherit; width: 16px; height: 16px">
+					<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" />
+				</svg>
+				CursoDeJava · l02_variables_tipos_datos_y_operadores
+			</p>
+			<div class="dg-chips">
+				<span class="dg-chip dg-chip--ink">{isEs ? 'Tipos primitivos' : 'Primitive types'}</span>
+				<span class="dg-chip dg-chip--ink">Wrappers · autoboxing · unboxing</span>
+				<span class="dg-chip dg-chip--ink">{isEs ? 'Conversión de texto y unidades' : 'Text and unit conversion'}</span>
+				<span class="dg-chip dg-chip--ink">{isEs ? 'Operadores' : 'Operators'}</span>
+			</div>
+		</a>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Layout unique to each scene. Colors, radii and spacing stay on tokens. */
+	.scene-typing-decl {
+		gap: var(--space-4);
+	}
+
+	.scene-typing-decl .dg-box {
+		min-width: 7rem;
+	}
+
+	.scene-chip-icon {
+		width: 18px;
+		height: 18px;
+	}
+
+	.scene-var-value {
+		font-size: 1.4rem;
+	}
+
+	.scene-final {
+		margin-top: var(--space-1);
+	}
+
+	.scene-scopeterms .dg-box,
+	.scene-defaults .dg-box {
+		min-height: 8.5rem;
+		align-content: center;
+	}
+
+	.scene-scopetable {
+		gap: var(--space-2);
+	}
+
+	.scene-scope-row {
+		display: grid;
+		grid-template-columns: 11rem minmax(0, 1fr) minmax(0, 1fr);
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-2) var(--space-3);
+		font-size: 0.82rem;
+		line-height: 1.35;
+	}
+
+	.scene-scope-row .dg-chip {
+		justify-self: start;
+	}
+
+	.scene-scope-head {
+		padding-block: 0;
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-neutral-700);
+	}
+
+	.scene-shadow-field {
+		justify-self: start;
+	}
+
+	.scene-flow-row {
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-2) var(--space-3);
+		font-size: 0.9rem;
+	}
+
+	.scene-flow {
+		gap: var(--space-2);
+	}
+
+	.scene-prim-grid {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: var(--space-3);
+	}
+
+	.scene-prim-grid .dg-box {
+		gap: 2px;
+	}
+
+	.scene-op-result {
+		font-size: 1.5rem;
+	}
+
+	.scene-operators {
+		align-items: start;
+	}
+
+	.scene-closing {
+		gap: var(--space-4);
+	}
+
+	.scene-closing-repo {
+		text-decoration: none;
+		color: var(--color-neutral-100);
+	}
+
+	/* Canvas pieces specific to this animation (code and values drawn in SVG). */
+	.mg-mono--sage {
+		font-weight: 700;
+		fill: var(--color-accent-2-800);
+	}
+
+	.mg-mono--lg {
+		font-size: 28px;
+	}
+
+	.mg-card--lost {
+		fill: none;
+		stroke: var(--color-accent-500);
+		stroke-width: 3;
+		stroke-dasharray: 8 6;
+	}
+
+	.mg-mono--lost {
+		fill: var(--color-accent-700);
+		font-weight: 700;
+	}
+
+	.mg-ladder-step {
+		fill: none;
+		stroke: var(--color-accent-500);
+		stroke-width: 3;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	@media (width < 720px) {
+		.scene-prim-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.scene-scope-row {
+			grid-template-columns: 1fr;
+			gap: var(--space-1);
+		}
+
+		.scene-scope-head {
+			display: none;
+		}
+	}
+</style>

@@ -1,0 +1,528 @@
+---
+/**
+ * Scenes for the "Control flow and loops, step by step" animation (lesson java/03).
+ * The captions, code and terminal panels live in
+ * `src/data/animations/control-flujo-bucles-java.ts`; this component only draws
+ * the diagrams the steps point to. Every `[data-scene]` block is one diagram and
+ * every `[data-el]` is an element a step can reveal or emphasize. The `jumps`
+ * scene is an SVG motion canvas driven by cues.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/control-flujo-bucles-java';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+
+// Lucide icon bodies (stroke 2.75, set on each <svg>).
+const ICON = {
+	branch: '<line x1="6" x2="6" y1="3" y2="15" /><circle cx="18" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><path d="M18 9a9 9 0 0 1-9 9" />',
+	repeat: '<path d="m17 2 4 4-4 4" /><path d="M3 11v-1a4 4 0 0 1 4-4h14" /><path d="m7 22-4-4 4-4" /><path d="M21 13v1a4 4 0 0 1-4 4H3" />',
+	jump: '<polyline points="15 10 20 15 15 20" /><path d="M4 4v7a4 4 0 0 0 4 4h12" />',
+	check: '<path d="M20 6 9 17l-5-5" />',
+	cross: '<path d="M18 6 6 18" /><path d="m6 6 12 12" />',
+	arrow: '<path d="M5 12h14" /><path d="m12 5 7 7-7 7" />',
+	github: '<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" />',
+};
+
+// Canvas code: SVG text needs <tspan> where the highlighter emits <span>, and
+// explicit x offsets for indentation (a monospace glyph at 16px is ~9.6 units).
+const CODE_ADVANCE = 9.6;
+const toTspans = (html: string) => html.replaceAll('<span class="', '<tspan class="').replaceAll('</span>', '</tspan>');
+const loopCode = `for (int i = 1; i <= 10; i++) {
+    if (i == 5) continue; // ${isEs ? 'Salta el 5' : 'Skips 5'}
+    if (i == 8) break;    // ${isEs ? 'Detiene el bucle en el 8' : 'Stops the loop at 8'}
+    System.out.print(i + " ");
+}`;
+const codeLines = highlightCode(loopCode, 'java').map((html, index) => {
+	const indent = html.match(/^ */)?.[0].length ?? 0;
+	return {
+		number: index + 1,
+		x: 100 + (indent / 2) * CODE_ADVANCE,
+		y: 112 + index * 32,
+		html: toTspans(html.slice(indent)),
+	};
+});
+
+const t = {
+	nota: isEs ? 'Excelente' : 'Excellent',
+	pass: isEs ? 'Aprobado' : 'Passed',
+	fail: isEs ? 'Reprobado' : 'Failed',
+	days: isEs ? ['Lunes', 'Martes', 'Miércoles', 'Día no válido'] : ['Monday', 'Tuesday', 'Wednesday', 'Invalid day'],
+};
+---
+
+<AnimationPlayer
+	lang={lang}
+	slug={animation.slug}
+	title={animation.title[lang]}
+	steps={resolved.steps}
+>
+	<!-- INTRO: three ways to steer the flow -->
+	<div slot="scene" data-scene="intro" class="dg-grid-3 scene-intro">
+		<div class="dg-box dg-box--accent dg-box--center" data-el="decide">
+			<svg class="dg-icon dg-icon--lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.branch} />
+			<p class="dg-title">{isEs ? 'Decidir' : 'Decide'}</p>
+			<p class="dg-sub">{isEs ? 'Solo si se cumple una condición' : 'Only when a condition holds'}</p>
+			<div class="dg-chips"><code class="dg-chip">if</code><code class="dg-chip">else</code><code class="dg-chip">switch</code></div>
+		</div>
+		<div class="dg-box dg-box--sage dg-box--center" data-el="repeat">
+			<svg class="dg-icon dg-icon--lg dg-icon--sage" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.repeat} />
+			<p class="dg-title">{isEs ? 'Repetir' : 'Repeat'}</p>
+			<p class="dg-sub">{isEs ? 'Un bloque, muchas veces' : 'One block, many times'}</p>
+			<div class="dg-chips"><code class="dg-chip">for</code><code class="dg-chip">while</code><code class="dg-chip">do-while</code></div>
+		</div>
+		<div class="dg-box dg-box--center" data-el="jump">
+			<svg class="dg-icon dg-icon--lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.jump} />
+			<p class="dg-title">{isEs ? 'Saltar' : 'Jump'}</p>
+			<p class="dg-sub">{isEs ? 'Cortar o saltear vueltas' : 'Cut or skip laps'}</p>
+			<div class="dg-chips"><code class="dg-chip">break</code><code class="dg-chip">continue</code></div>
+		</div>
+	</div>
+
+	<!-- 1. if / else if / else with nota = 85 -->
+	<div slot="scene" data-scene="branches" class="scene-branches">
+		<div class="cf-top"><span class="dg-chip dg-chip--ink" data-el="val"><code>nota = 85</code></span></div>
+		<div class="cf-row">
+			<div class="dg-box cf-cond" data-el="c1"><code class="dg-code">nota &gt;= 90</code></div>
+			<span class="dg-arrow" data-el="a1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.arrow} /></span>
+			<span class="dg-chip dg-chip--sage cf-res" data-el="r1">{t.nota}</span>
+			<svg class="dg-icon cf-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-el="x1" set:html={ICON.cross} />
+		</div>
+		<div class="cf-row">
+			<div class="dg-box dg-box--accent cf-cond" data-el="c2"><code class="dg-code">nota &gt;= 70</code></div>
+			<span class="dg-arrow" data-el="a2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.arrow} /></span>
+			<span class="dg-chip dg-chip--sage cf-res" data-el="r2">{t.pass}</span>
+			<svg class="dg-icon dg-icon--sage cf-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-el="ok2" set:html={ICON.check} />
+		</div>
+		<div class="cf-row">
+			<div class="dg-box cf-cond" data-el="c3"><code class="dg-code">else</code></div>
+			<span class="dg-arrow" data-el="a3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.arrow} /></span>
+			<span class="dg-chip dg-chip--sage cf-res" data-el="r3">{t.fail}</span>
+		</div>
+	</div>
+
+	<!-- Ternary operator -->
+	<div slot="scene" data-scene="ternary" class="scene-ternary">
+		<div class="cf-top"><span class="dg-chip dg-chip--ink" data-el="t-val"><code>nota = 85</code></span></div>
+		<div class="dg-row dg-row--center cf-tern">
+			<div class="dg-box dg-box--accent dg-box--center" data-el="t-cond"><code class="dg-code">(nota &gt;= 70)</code><p class="dg-sub">{isEs ? 'condición' : 'condition'}</p></div>
+			<span class="cf-op" data-el="t-q">?</span>
+			<div class="dg-box dg-box--sage dg-box--center" data-el="t-yes"><code class="dg-code">"{t.pass}"</code><p class="dg-sub">{isEs ? 'si es verdadera' : 'if true'}</p></div>
+			<span class="cf-op" data-el="t-colon">:</span>
+			<div class="dg-box dg-box--center" data-el="t-no"><code class="dg-code">"{t.fail}"</code><p class="dg-sub">{isEs ? 'si es falsa' : 'if false'}</p></div>
+		</div>
+		<div class="cf-top"><div class="dg-box dg-box--ink dg-box--center" data-el="t-out"><code class="dg-code">resultado = "{t.pass}"</code></div></div>
+	</div>
+
+	<!-- 2. switch -->
+	<div slot="scene" data-scene="switch" class="scene-switch">
+		<div class="cf-top"><span class="dg-chip dg-chip--ink" data-el="s-val"><code>dia = 3</code></span></div>
+		<div class="dg-box cf-case" data-el="k1"><code class="dg-code">case 1</code><span class="dg-sub">→</span><span class="cf-case-out">{t.days[0]}</span></div>
+		<div class="dg-box cf-case" data-el="k2"><code class="dg-code">case 2</code><span class="dg-sub">→</span><span class="cf-case-out">{t.days[1]}</span></div>
+		<div class="dg-box dg-box--accent cf-case" data-el="k3"><code class="dg-code">case 3</code><span class="dg-sub">→</span><span class="cf-case-out">{t.days[2]}</span><code class="dg-chip dg-chip--ink" data-el="brk">break</code></div>
+		<div class="dg-box cf-case" data-el="kd"><code class="dg-code">default</code><span class="dg-sub">→</span><span class="cf-case-out">{t.days[3]}</span></div>
+		<p class="dg-banner cf-fall" data-el="fall">{isEs ? 'Sin break, la ejecución cae al caso siguiente' : 'Without break, execution falls into the next case'}</p>
+	</div>
+
+	<!-- Switch expression -->
+	<div slot="scene" data-scene="switch-expr" class="scene-expr">
+		<div class="dg-col">
+			<div class="dg-box cf-case" data-el="e1"><code class="dg-code">case 1 -&gt;</code><span class="cf-case-out">"{t.days[0]}"</span></div>
+			<div class="dg-box cf-case" data-el="e2"><code class="dg-code">case 2 -&gt;</code><span class="cf-case-out">"{t.days[1]}"</span></div>
+			<div class="dg-box dg-box--accent cf-case" data-el="e3"><code class="dg-code">case 3 -&gt;</code><span class="cf-case-out">"{t.days[2]}"</span></div>
+			<div class="dg-box cf-case" data-el="ed"><code class="dg-code">default -&gt;</code><span class="cf-case-out">"{t.days[3]}"</span></div>
+		</div>
+		<div class="dg-box dg-box--ink dg-box--center" data-el="e-res"><p class="dg-label" style="color: var(--color-accent-300)">dia = 3</p><code class="dg-code">nombreDia = "{t.days[2]}"</code></div>
+	</div>
+
+	<!-- Switch with arrows: a console menu -->
+	<div slot="scene" data-scene="menu" class="scene-menu">
+		<div class="dg-box dg-box--ink">
+			<p class="dg-label" style="color: var(--color-accent-300)">{isEs ? 'Menú de consola' : 'Console menu'}</p>
+			<div class="cf-case" data-el="m1"><code class="dg-chip dg-chip--ink">1</code><span>{isEs ? 'Cargar persona' : 'Add person'}</span><code class="dg-code">cargarPersona()</code></div>
+			<div class="cf-case" data-el="m2"><code class="dg-chip dg-chip--ink">2</code><span>{isEs ? 'Listar personas' : 'List people'}</span><code class="dg-code">listarPersonas()</code></div>
+			<div class="cf-case" data-el="m0"><code class="dg-chip dg-chip--ink">0</code><span>{isEs ? 'Salir' : 'Quit'}</span><code class="dg-code">println("…")</code></div>
+			<div class="cf-case" data-el="md"><code class="dg-chip dg-chip--ink">default</code><span>{isEs ? 'Opción inválida' : 'Invalid option'}</span><code class="dg-code">println("…")</code></div>
+		</div>
+		<code class="dg-chip dg-chip--accent" data-el="m-block">case 1 -&gt; {'{'} … {'}'}</code>
+	</div>
+
+	<!-- 3. Three loops side by side -->
+	<div slot="scene" data-scene="loops" class="dg-grid-3 scene-loops">
+		<div class="dg-box dg-box--accent dg-box--center" data-el="lf">
+			<code class="dg-title">for</code>
+			<p class="dg-sub">{isEs ? 'Vueltas conocidas de antemano' : 'Laps known in advance'}</p>
+			<code class="dg-chip dg-chip--accent" data-el="cf">{isEs ? 'inicio · condición · paso' : 'start · condition · step'}</code>
+		</div>
+		<div class="dg-box dg-box--sage dg-box--center" data-el="lw">
+			<code class="dg-title">while</code>
+			<p class="dg-sub">{isEs ? 'Evalúa antes del bloque' : 'Checks before the block'}</p>
+			<code class="dg-chip dg-chip--sage" data-el="cw">{isEs ? 'puede no ejecutarse' : 'may never run'}</code>
+		</div>
+		<div class="dg-box dg-box--ink dg-box--center" data-el="ld">
+			<code class="dg-title">do-while</code>
+			<p class="dg-sub">{isEs ? 'Evalúa al final del bloque' : 'Checks after the block'}</p>
+			<code class="dg-chip dg-chip--ink" data-el="cd">{isEs ? 'al menos una vez' : 'at least once'}</code>
+		</div>
+	</div>
+
+	<!-- for: head anatomy, then the five laps -->
+	<div slot="scene" data-scene="for-trace" class="scene-for">
+		<div class="dg-grid-3">
+			<div class="dg-box dg-box--accent dg-box--center" data-el="init"><p class="dg-label">{isEs ? 'Inicio' : 'Start'}</p><code class="dg-code">int i = 1</code></div>
+			<div class="dg-box dg-box--sage dg-box--center" data-el="cond"><p class="dg-label dg-label--sage">{isEs ? 'Condición' : 'Condition'}</p><code class="dg-code">i &lt;= 5</code></div>
+			<div class="dg-box dg-box--center" data-el="step"><p class="dg-label">{isEs ? 'Paso' : 'Step'}</p><code class="dg-code">i++</code></div>
+		</div>
+		<div class="dg-row dg-row--center cf-laps">
+			<div class="dg-box dg-box--center cf-lap" data-el="it1"><code class="dg-code">i = 1</code><svg class="dg-icon dg-icon--sage" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.check} /></div>
+			<div class="dg-box dg-box--center cf-lap" data-el="it2"><code class="dg-code">i = 2</code><svg class="dg-icon dg-icon--sage" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.check} /></div>
+			<div class="dg-box dg-box--center cf-lap" data-el="it3"><code class="dg-code">i = 3</code><svg class="dg-icon dg-icon--sage" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.check} /></div>
+			<div class="dg-box dg-box--center cf-lap" data-el="it4"><code class="dg-code">i = 4</code><svg class="dg-icon dg-icon--sage" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.check} /></div>
+			<div class="dg-box dg-box--center cf-lap" data-el="it5"><code class="dg-code">i = 5</code><svg class="dg-icon dg-icon--sage" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.check} /></div>
+			<div class="dg-box dg-box--ink dg-box--center cf-lap" data-el="it6"><code class="dg-code">i = 6</code><p class="dg-sub">6 &lt;= 5 {isEs ? 'falso: sale' : 'false: exits'}</p></div>
+		</div>
+	</div>
+
+	<!-- while: check, run, increment, until the condition fails -->
+	<div slot="scene" data-scene="while-trace" class="scene-while">
+		<div class="cf-top"><code class="dg-chip dg-chip--sage" data-el="wcheck">while (contador &lt; 3)</code></div>
+		<div class="dg-row dg-row--center cf-laps">
+			<div class="dg-box dg-box--center cf-lap" data-el="w0"><code class="dg-code">contador = 0</code><p class="dg-sub">0 &lt; 3 {isEs ? 'verdadero' : 'true'}</p></div>
+			<div class="dg-box dg-box--center cf-lap" data-el="w1"><code class="dg-code">contador = 1</code><p class="dg-sub">1 &lt; 3 {isEs ? 'verdadero' : 'true'}</p></div>
+			<div class="dg-box dg-box--center cf-lap" data-el="w2"><code class="dg-code">contador = 2</code><p class="dg-sub">2 &lt; 3 {isEs ? 'verdadero' : 'true'}</p></div>
+			<div class="dg-box dg-box--ink dg-box--center cf-lap" data-el="w3"><code class="dg-code">contador = 3</code><p class="dg-sub">3 &lt; 3 {isEs ? 'falso: sale' : 'false: exits'}</p></div>
+		</div>
+	</div>
+
+	<!-- do-while: the block runs before the check -->
+	<div slot="scene" data-scene="dowhile" class="scene-dowhile">
+		<div class="dg-row dg-row--center">
+			<div class="dg-box dg-box--accent dg-box--center cf-step" data-el="d-block"><p class="dg-title">{isEs ? 'Bloque' : 'Block'}</p><p class="dg-sub">{isEs ? 'se ejecuta primero' : 'runs first'}</p></div>
+			<span class="dg-arrow" data-el="d-a1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.arrow} /></span>
+			<div class="dg-box dg-box--sage dg-box--center cf-step" data-el="d-cond"><code class="dg-code">numero &lt; 5</code><p class="dg-sub">{isEs ? 'se evalúa al final' : 'checked at the end'}</p></div>
+			<span class="dg-arrow" data-el="d-a2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.arrow} /></span>
+			<div class="dg-box dg-box--ink dg-box--center cf-step" data-el="d-end"><p class="dg-title">10 &lt; 5 = false</p><p class="dg-sub">{isEs ? 'el bucle termina' : 'the loop ends'}</p></div>
+		</div>
+		<div class="cf-top"><span class="dg-banner" data-el="d-once">{isEs ? 'El bloque corrió 1 vez, aunque la condición era falsa' : 'The block ran once, even though the condition was false'}</span></div>
+	</div>
+
+	<!-- 4. break and continue: motion canvas (viewBox 1600 x 660) -->
+	<div slot="scene" data-scene="jumps" data-motion class="scene-jumps">
+		<svg class="mg-canvas" viewBox="0 0 1600 660" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<g class="mg-camera" data-camera>
+				<g data-el="code">
+					<rect class="mg-card mg-card--ink" x="40" y="30" width="700" height="240" rx="18" />
+					<path class="mg-bar" d="M58 30H722A18 18 0 0 1 740 48V68H40V48A18 18 0 0 1 58 30Z" />
+					<circle class="mg-dot" cx="64" cy="49" r="6" />
+					<circle class="mg-dot mg-dot--2" cx="84" cy="49" r="6" />
+					<circle class="mg-dot mg-dot--3" cx="104" cy="49" r="6" />
+					<text class="mg-text mg-text--bar" x="126" y="54">Saltos.java</text>
+					{
+						codeLines.map((line) => (
+							<>
+								<text class="mg-mono mg-gutter" x="76" y={line.y} text-anchor="end">
+									{line.number}
+								</text>
+								<text class="mg-mono" x={line.x} y={line.y} data-el={`code-${line.number}`} set:html={line.html} />
+							</>
+						))
+					}
+				</g>
+
+				<g data-el="out-card">
+					<rect class="mg-card mg-card--ink" x="780" y="30" width="780" height="240" rx="18" />
+					<path class="mg-bar" d="M798 30H1542A18 18 0 0 1 1560 48V68H780V48A18 18 0 0 1 798 30Z" />
+					<circle class="mg-dot" cx="804" cy="49" r="6" />
+					<circle class="mg-dot mg-dot--2" cx="824" cy="49" r="6" />
+					<circle class="mg-dot mg-dot--3" cx="844" cy="49" r="6" />
+					<text class="mg-text mg-text--bar" x="866" y="54">{isEs ? 'Salida' : 'Output'}</text>
+				</g>
+				<text class="cf-out" x="850" y="190" text-anchor="middle" data-el="out-1">1</text>
+				<text class="cf-out" x="960" y="190" text-anchor="middle" data-el="out-2">2</text>
+				<text class="cf-out" x="1070" y="190" text-anchor="middle" data-el="out-3">3</text>
+				<text class="cf-out" x="1180" y="190" text-anchor="middle" data-el="out-4">4</text>
+				<text class="cf-out" x="1290" y="190" text-anchor="middle" data-el="out-6">6</text>
+				<text class="cf-out" x="1400" y="190" text-anchor="middle" data-el="out-7">7</text>
+				<g data-el="track">
+					<rect class="cf-track" x="70" y="384" width="1470" height="92" rx="46" />
+				</g>
+				<g data-el="c1">
+					<circle class="cf-node" cx="130" cy="430" r="34" />
+					<text class="cf-node-text" x="130" y="439" text-anchor="middle">1</text>
+				</g>
+				<g data-el="c2">
+					<circle class="cf-node" cx="280" cy="430" r="34" />
+					<text class="cf-node-text" x="280" y="439" text-anchor="middle">2</text>
+				</g>
+				<g data-el="c3">
+					<circle class="cf-node" cx="430" cy="430" r="34" />
+					<text class="cf-node-text" x="430" y="439" text-anchor="middle">3</text>
+				</g>
+				<g data-el="c4">
+					<circle class="cf-node" cx="580" cy="430" r="34" />
+					<text class="cf-node-text" x="580" y="439" text-anchor="middle">4</text>
+				</g>
+				<g data-el="c5">
+					<circle class="cf-node" cx="730" cy="430" r="34" />
+					<text class="cf-node-text" x="730" y="439" text-anchor="middle">5</text>
+				</g>
+				<g data-el="c6">
+					<circle class="cf-node" cx="880" cy="430" r="34" />
+					<text class="cf-node-text" x="880" y="439" text-anchor="middle">6</text>
+				</g>
+				<g data-el="c7">
+					<circle class="cf-node" cx="1030" cy="430" r="34" />
+					<text class="cf-node-text" x="1030" y="439" text-anchor="middle">7</text>
+				</g>
+				<g data-el="c8">
+					<circle class="cf-node" cx="1180" cy="430" r="34" />
+					<text class="cf-node-text" x="1180" y="439" text-anchor="middle">8</text>
+				</g>
+				<g data-el="c9">
+					<circle class="cf-node" cx="1330" cy="430" r="34" />
+					<text class="cf-node-text" x="1330" y="439" text-anchor="middle">9</text>
+				</g>
+				<g data-el="c10">
+					<circle class="cf-node" cx="1480" cy="430" r="34" />
+					<text class="cf-node-text" x="1480" y="439" text-anchor="middle">10</text>
+				</g>
+				<g data-el="arc-continue" class="mg-arrow">
+					<path class="mg-stroke" pathLength="1" d="M730 472 C730 552 880 552 880 472" />
+					<path class="mg-head" d="M870 484 L880 471 L890 484" />
+				</g>
+				<g data-el="tag-continue">
+					<rect class="mg-chip" x="725" y="566" width="160" height="40" rx="20" />
+					<text class="mg-chip-text" x="805" y="592" text-anchor="middle">continue</text>
+				</g>
+
+				<g data-el="arrow-break" class="mg-arrow">
+					<path class="mg-stroke" pathLength="1" d="M1180 474 V558" />
+					<path class="mg-head" d="M1171 548 L1180 561 L1189 548" />
+				</g>
+				<g data-el="tag-break">
+					<rect class="mg-chip" x="1100" y="566" width="160" height="40" rx="20" />
+					<text class="mg-chip-text" x="1180" y="592" text-anchor="middle">break</text>
+				</g>
+				<g data-el="arrow-exit" class="mg-arrow mg-arrow--sage">
+					<path class="mg-stroke" pathLength="1" d="M1264 586 H1296" />
+					<path class="mg-head" d="M1286 577 L1298 586 L1286 595" />
+				</g>
+				<g data-el="exit-chip">
+					<rect class="mg-chip mg-chip--sage" x="1302" y="562" width="258" height="48" rx="24" />
+					<text class="mg-chip-text mg-chip-text--sage" x="1431" y="592" text-anchor="middle">{isEs ? 'fuera del bucle' : 'out of the loop'}</text>
+				</g>
+
+				<!-- The cursor sits above the track and glides to each value. -->
+				<g data-el="cursor" data-x="130" data-y="345">
+					<circle class="cf-cursor" r="26" />
+					<text class="cf-cursor-text" y="8" text-anchor="middle">i</text>
+				</g>
+			</g>
+		</svg>
+	</div>
+
+	<!-- 5. Exercise: sum of the even numbers 1..100 -->
+	<div slot="scene" data-scene="exercise" class="scene-exercise">
+		<div class="dg-row dg-row--center">
+			<span class="dg-chip dg-chip--accent cf-big" data-el="x-range">1 … 100</span>
+			<span class="dg-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.arrow} /></span>
+			<span class="dg-chip dg-chip--sage cf-big" data-el="x-even">{isEs ? 'solo pares: 2, 4, 6 …' : 'even only: 2, 4, 6 …'}</span>
+			<span class="dg-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICON.arrow} /></span>
+			<span class="dg-chip cf-big" data-el="x-sum">suma = ?</span>
+		</div>
+		<div class="cf-top"><div class="dg-box dg-box--ink dg-box--center" data-el="x-res"><p class="dg-label" style="color: var(--color-accent-300)">{isEs ? 'Resultado' : 'Result'}</p><code class="dg-code">suma = 2550</code></div></div>
+	</div>
+
+	<!-- Closing: what was covered + real code -->
+	<div slot="scene" data-scene="closing" class="scene-closing">
+		<div class="dg-chips">
+			<code class="dg-chip dg-chip--accent">if / else if / else</code>
+			<code class="dg-chip dg-chip--accent">{isEs ? 'ternario' : 'ternary'}</code>
+			<code class="dg-chip dg-chip--accent">switch</code>
+			<code class="dg-chip dg-chip--sage">for</code>
+			<code class="dg-chip dg-chip--sage">while</code>
+			<code class="dg-chip dg-chip--sage">do-while</code>
+			<code class="dg-chip dg-chip--sage">for-each</code>
+			<code class="dg-chip">break</code>
+			<code class="dg-chip">continue</code>
+		</div>
+		<a class="dg-box dg-box--ink scene-closing-repo" data-el="repo" href="https://github.com/facundouferer/CursoDeJava/tree/main/src/CursoJava/l03_control_de_flujo_y_bucles" target="_blank" rel="noopener noreferrer">
+			<p class="dg-label" style="color: var(--color-accent-300)">
+				<svg class="dg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: inherit; width: 16px; height: 16px" set:html={ICON.github} />
+				CursoDeJava · l03_control_de_flujo_y_bucles
+			</p>
+			<p class="dg-sub">{isEs ? '43 ejercicios resueltos' : '43 solved exercises'}</p>
+			<div class="dg-chips">
+				<code class="dg-chip dg-chip--ink">{isEs ? 'números primos' : 'prime numbers'}</code>
+				<code class="dg-chip dg-chip--ink">{isEs ? 'suma de dígitos' : 'sum of digits'}</code>
+				<code class="dg-chip dg-chip--ink">{isEs ? 'descuentos y sueldos' : 'discounts and salaries'}</code>
+				<code class="dg-chip dg-chip--ink">{isEs ? 'validación de claves' : 'password checks'}</code>
+			</div>
+		</a>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Layout unique to each scene. Colors, radii and spacing stay on tokens. */
+	.scene-intro {
+		align-items: stretch;
+	}
+
+	.cf-top {
+		display: flex;
+		justify-content: center;
+	}
+
+	.cf-row {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-3);
+	}
+
+	.cf-cond {
+		min-width: 9rem;
+		text-align: center;
+	}
+
+	.cf-res {
+		min-width: 7rem;
+		justify-content: center;
+	}
+
+	.cf-mark {
+		width: 28px;
+		height: 28px;
+	}
+
+	.cf-tern {
+		flex-wrap: wrap;
+	}
+
+	.cf-op {
+		font-family: var(--font-heading);
+		font-size: 2rem;
+		line-height: 1;
+		color: var(--color-accent-700);
+	}
+
+	.cf-case {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-2) var(--space-3);
+	}
+
+	.cf-case-out {
+		font-weight: 600;
+	}
+
+	.cf-case .dg-chip:last-child:not(:first-child) {
+		margin-left: auto;
+	}
+
+	.cf-fall {
+		margin: 0;
+	}
+
+	.scene-expr {
+		grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+		align-items: center;
+	}
+
+	.scene-menu .dg-box--ink .cf-case span {
+		color: var(--color-neutral-100);
+	}
+
+	.cf-laps {
+		align-items: stretch;
+	}
+
+	.cf-lap {
+		min-width: 6rem;
+		padding: var(--space-2);
+	}
+
+	.cf-step {
+		min-width: 9rem;
+	}
+
+	.cf-big {
+		font-size: 1rem;
+		padding: var(--space-2) var(--space-4);
+	}
+
+	.scene-closing {
+		align-content: center;
+		gap: var(--space-4);
+	}
+
+	.scene-closing-repo {
+		text-decoration: none;
+		color: var(--color-neutral-100);
+	}
+
+	/* Motion canvas ─────────────────────────────────────────────────────── */
+	.cf-track {
+		fill: var(--color-surface);
+		stroke: var(--color-divider);
+		stroke-width: 2;
+	}
+
+	.cf-node {
+		fill: var(--color-bg);
+		stroke: var(--color-neutral-700);
+		stroke-width: 3;
+	}
+
+	.cf-node-text {
+		font-family: var(--font-heading);
+		font-size: 24px;
+		fill: var(--color-text);
+	}
+
+	.cf-cursor {
+		fill: var(--color-accent);
+		stroke: var(--color-accent-700);
+		stroke-width: 3;
+	}
+
+	.cf-cursor-text {
+		font-family: var(--font-heading);
+		font-size: 24px;
+		fill: var(--color-bg);
+	}
+
+	.cf-out {
+		font-family: monospace;
+		font-size: 64px;
+		font-weight: 700;
+		fill: var(--color-accent-2-300);
+	}
+
+	.mg-canvas :global(.tok-cmt) {
+		fill: var(--color-neutral-500);
+		font-style: italic;
+	}
+
+	@media (width < 720px) {
+		.scene-expr {
+			grid-template-columns: 1fr;
+		}
+
+		.cf-row {
+			flex-wrap: wrap;
+		}
+	}
+</style>
