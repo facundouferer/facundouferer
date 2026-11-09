@@ -196,6 +196,21 @@ export const animations: Animation[] = [
 		lesson: { course: 'java', slug: '13-java-collections-framework-y-genericos' },
 	},
 	{
+		slug: 'viaje-clave-hashmap-java',
+		image: '/img/animations/viaje-clave-hashmap-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje de una clave por un HashMap',
+			en: 'The journey of a key through a HashMap',
+		},
+		description: {
+			es: 'Un corto animado de dos minutos que sigue una clave desde put hasta su bucket: hashCode(), la máscara, una colisión que equals() resuelve y un get que repite el mismo camino.',
+			en: 'A two-minute animated short that follows a key from put to its bucket: hashCode(), the mask, a collision that equals() resolves and a get that repeats the same path.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '13-java-collections-framework-y-genericos' },
+	},
+	{
 		slug: 'iteradores-ordenamiento-java',
 		image: '/img/animations/iteradores-ordenamiento-java.svg',
 		tag: { es: 'Java', en: 'Java' },

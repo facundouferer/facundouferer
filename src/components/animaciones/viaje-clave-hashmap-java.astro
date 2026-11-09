@@ -1,0 +1,1121 @@
+---
+/**
+ * Scene for "The journey of a key" (lesson java/13), a short film played on one
+ * persistent motion canvas. The captions and cues live in
+ * `src/data/animations/viaje-clave-hashmap-java.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: it shows
+ * the Java source and the cues slide a bar over the line being executed. The
+ * viewport on the right holds the camera: an isometric system where every
+ * instruction of `main` is a module, `hashCode()` and the mask are the two
+ * machines every key goes through, and the `HashMap` is a row of sixteen buckets.
+ * A light blue particle is the execution flow and a light blue object is the key.
+ * The collision is magenta; `equals()`, which resolves it, is violet.
+ *
+ * The hashes and bucket numbers are the real ones, computed below with the same
+ * arithmetic Java uses, so they differ between the Spanish and English keys.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { CAPACITY, bucketOf, entries, javaHashCode, script } from '../../data/animations/viaje-clave-hashmap-java';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Source code shown in the editor ───────────────────────────────────────
+// Identifiers and string literals are localized the same way the lesson does.
+const names = {
+	file: t('Viaje.java', 'Journey.java'),
+	type: t('Viaje', 'Journey'),
+	map: t('frecuencias', 'frequencies'),
+};
+const [first, other, third] = entries[lang].map((entry) => ({
+	...entry,
+	quoted: `"${entry.key}"`,
+	hash: javaHashCode(entry.key),
+	bucket: bucketOf(entry.key, CAPACITY),
+}));
+
+const source = [
+	'import java.util.HashMap;',
+	'import java.util.Map;',
+	'',
+	`public class ${names.type} {`,
+	'    public static void main(String[] args) {',
+	`        Map<String, Integer> ${names.map} = new HashMap<>();`,
+	`        ${names.map}.put(${first.quoted}, ${first.value});`,
+	`        ${names.map}.put(${other.quoted}, ${other.value});`,
+	`        ${names.map}.put(${third.quoted}, ${third.value});`,
+	`        System.out.println(${names.map}.get(${third.quoted}));`,
+	'    }',
+	'}',
+].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const svgLines = (code: string) =>
+	highlightCode(code, 'java').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+const page = svgLines(source);
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 64;
+const GUTTER_X = 50;
+const CODE_TOP = 74;
+const LINE_H = 23;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 5;
+const CONSOLE_TOP = 552;
+const outY = (row: number) => 597 + row * LINE_H;
+
+// Lines the highlight bar travels to.
+const lineAnchors = [
+	{ id: 'ln-6', n: 6 },
+	{ id: 'ln-7', n: 7 },
+	{ id: 'ln-8', n: 8 },
+	{ id: 'ln-9', n: 9 },
+	{ id: 'ln-10', n: 10 },
+];
+
+// Program output: the only line printed is the value `get` returns.
+const outputs = [{ id: 'out-1', row: 0, text: String(third.value) }];
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right (the way a key travels), +v down-left, z is up.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 58;
+const EY = 33.5;
+const ORIGIN = { x: 566, y: 311 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const path = (points: Point[]) => 'M' + points.map((point) => `${point.x} ${point.y}`).join(' L');
+
+/** A box standing on the floor at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const leftCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	const rightCenter = { x: round((front.x + right.x) / 2), y: round((front.y + right.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		// Text on a face follows its 30° edge.
+		leftMatrix: `matrix(0.866 0.5 0 1 ${leftCenter.x} ${leftCenter.y})`,
+		rightMatrix: `matrix(0.866 -0.5 0 1 ${rightCenter.x} ${rightCenter.y})`,
+	};
+}
+type Slab = ReturnType<typeof slab>;
+/** Text lying flat on the floor, reading along +u. */
+const floorMatrix = (point: Point) => `matrix(0.866 0.5 -0.866 0.5 ${point.x} ${point.y})`;
+
+// Columns of the system, in the order a key crosses them.
+const LINES_U = -1.7;
+const HASH_U = -0.45;
+const MASK_U = 0.75;
+const BUCKET_U = 2.3;
+const NODE_U = [3.15, 4.25];
+const lineV = (n: number) => (n - 8) * 0.5;
+const bucketV = (index: number) => -2.7 + index * 0.36;
+
+const G = {
+	mainPlate: slab(LINES_U, 0.08, 0.5, 1.53, 8, -8),
+	arrayPlate: slab(BUCKET_U, 0, 0.4, 2.95, 8, -8),
+	hash: slab(HASH_U, 0, 0.4, 0.4, 18),
+	mask: slab(MASK_U, 0, 0.4, 0.4, 18),
+};
+const bucketSlab = (index: number) => slab(BUCKET_U, bucketV(index), 0.28, 0.15, 12);
+const nodeSlab = (slot: number, bucket: number) => slab(NODE_U[slot], bucketV(bucket), 0.34, 0.2, 10);
+
+// One module per instruction of `main`; its lit face shows the editor line it runs.
+const lineModules = [
+	{ id: 'm-l6', lit: 'l6-on', n: 6 },
+	{ id: 'm-l7', lit: 'l7-on', n: 7 },
+	{ id: 'm-l8', lit: 'l8-on', n: 8 },
+	{ id: 'm-l9', lit: 'l9-on', n: 9 },
+	{ id: 'm-l10', lit: 'l10-on', n: 10 },
+].map((module) => ({ ...module, g: slab(LINES_U, lineV(module.n), 0.3, 0.2, 14) }));
+
+// The two machines every key crosses. `face` is drawn on the left face.
+const machines = [
+	{ id: 'm-h', lit: 'h-on', g: G.hash, face: 'h', label: 'hashCode()', labelAt: pt(HASH_U - 0.62, -0.56), icon: true },
+	{ id: 'm-x', lit: 'x-on', g: G.mask, face: `& ${CAPACITY - 1}`, label: t('máscara', 'mask'), labelAt: pt(MASK_U - 0.36, -0.56), icon: false },
+];
+
+const buckets = Array.from({ length: CAPACITY }, (_, index) => ({ index, g: bucketSlab(index) }));
+const B1 = bucketSlab(first.bucket);
+const B2 = bucketSlab(other.bucket);
+const litBuckets = [
+	{ id: 'b1-on', g: B1, index: first.bucket, tone: 'flow' },
+	{ id: 'b1-x', g: B1, index: first.bucket, tone: 'magenta' },
+	{ id: 'b2-on', g: B2, index: other.bucket, tone: 'flow' },
+];
+
+// Entries: the key together with its value, chained behind their bucket.
+const N1 = nodeSlab(0, first.bucket);
+const N2 = nodeSlab(0, other.bucket);
+const N3 = nodeSlab(1, third.bucket);
+const nodeLink = (slot: number, bucket: number) => {
+	const from = slot === 0 ? BUCKET_U + 0.28 : NODE_U[slot - 1] + 0.34;
+	return path([pt(from, bucketV(bucket), 2), pt(NODE_U[slot] - 0.34, bucketV(bucket), 2)]);
+};
+// The label of an entry hangs in front of it, clear of the bucket row and of the next entry.
+const tagAt = (g: Slab, slot: number): Point => ({ x: g.center.x + (slot === 0 ? -24 : 10), y: g.center.y + 42 });
+const nodes = [
+	{ id: 'n1', g: N1, link: nodeLink(0, first.bucket), text: `${first.quoted} → ${first.value}`, tag: tagAt(N1, 0) },
+	{ id: 'n2', g: N2, link: nodeLink(0, other.bucket), text: `${other.quoted} → ${other.value}`, tag: tagAt(N2, 0) },
+	{ id: 'n3', g: N3, link: nodeLink(1, third.bucket), text: `${third.quoted} → ${third.value}`, tag: tagAt(N3, 1) },
+];
+const tagWidth = (text: string) => Math.round(text.length * 7.6 + 20);
+const scan = (slot: number, bucket: number) => slab(NODE_U[slot], bucketV(bucket), 0.5, 0.36, 0, 11).top;
+
+// Routes on the floor.
+const HASH = pt(HASH_U, 0);
+const MASK = pt(MASK_U, 0);
+// The mask turns the hash into an address: one straight line to each bucket.
+const bucketDoor = (bucket: number) => pt(BUCKET_U - 0.4, bucketV(bucket));
+const routes = {
+	fanIn: lineModules.filter((module) => module.n >= 7).map((module) => path([pt(LINES_U, lineV(module.n)), HASH])),
+	hashToMask: path([HASH, MASK]),
+	fanOut: buckets.map((bucket) => path([MASK, bucketDoor(bucket.index)])),
+	toFirst: path([MASK, bucketDoor(first.bucket)]),
+	toOther: path([MASK, bucketDoor(other.bucket)]),
+};
+const callRoutes = lineModules.filter((module) => module.n >= 7).map((module) => ({ id: `fl-in-${module.n}`, d: path([pt(LINES_U, lineV(module.n)), HASH]) }));
+// Ids of the lit call routes, as the script names them: fl-in-7, fl-in-8, fl-in-9, fl-in-10.
+const gridLines = [
+	...[-4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7].map((u) => path([pt(u, -5), pt(u, 5)])),
+	...[-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5].map((v) => path([pt(-4, v), pt(7, v)])),
+];
+
+// Where the travelling objects stop: just above the top of each module.
+const hover = (g: Slab, by = 14) => lift(g.center, by);
+const anchors = [
+	...lineModules.map((module) => ({ id: `a-l${module.n}`, ...hover(module.g) })),
+	{ id: 'a-h', ...hover(G.hash, 16) },
+	{ id: 'a-x', ...hover(G.mask, 16) },
+	{ id: 'a-b1', ...hover(B1) },
+	{ id: 'a-b2', ...hover(B2) },
+	{ id: 'a-n1', ...hover(N1, 30) },
+	{ id: 'a-n3', ...hover(N3, 30) },
+];
+// Anchor ids, as the script names them: a-l6, a-l7, a-l8, a-l9, a-l10.
+const lineAnchor = (n: number) => hover(lineModules[n - 6].g);
+const KEY_BIRTH = 26;
+
+// The key: one object per call, born over the instruction that passes it to the map.
+const keys = [
+	{ id: 'k1', text: first.quoted, at: lineAnchor(7), query: false },
+	{ id: 'k2', text: other.quoted, at: lineAnchor(8), query: false },
+	{ id: 'k3', text: third.quoted, at: lineAnchor(9), query: false },
+	{ id: 'kq', text: third.quoted, at: lineAnchor(10), query: true },
+];
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const mid = (a: Point, b: Point): Point => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+const world = (dx: number, dy: number): Point => ({ x: ORIGIN.x + dx, y: ORIGIN.y + dy });
+const shots = [
+	{ id: 'shot-main', c: world(-70, -15), s: 1.5 },
+	{ id: 'shot-all', c: world(74, 28), s: 1.05 },
+	{ id: 'shot-hash', c: world(-50, -12), s: 1.5 },
+	{ id: 'shot-route', c: lift(mid(MASK, B1.center), 10), s: 1.5 },
+	{ id: 'shot-b1', c: { x: mid(B1.center, N3.center).x + 26, y: mid(B1.center, N3.center).y - 24 }, s: 1.5 },
+	{ id: 'shot-b2', c: lift(mid(MASK, N2.center), 10), s: 1.3 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.c.x - 640 / item.s),
+	y: round(item.c.y - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | 'flow' | 'magenta' | 'violet';
+	mono?: boolean;
+	check?: boolean;
+	lead?: Point;
+};
+const H = G.hash.center;
+const X = G.mask.center;
+const hashChip = (id: string, entry: typeof first, row: number, tone: Chip['tone']): Chip => ({
+	id,
+	text: `${entry.quoted}.hashCode() → ${entry.hash}`,
+	x: H.x + 14,
+	y: H.y + 66 + row * 30,
+	align: 'end',
+	tone,
+	mono: true,
+});
+const bucketChip = (id: string, entry: typeof first): Chip => ({
+	id,
+	text: `→ bucket ${entry.bucket}`,
+	x: X.x + 8,
+	y: X.y - 98,
+	align: 'middle',
+	tone: 'flow',
+	mono: true,
+});
+const CHAIN = mid(N1.center, N3.center);
+const equalsChip = (id: string, stored: typeof first, result: boolean): Chip => ({
+	id,
+	text: `${third.quoted}.equals(${stored.quoted}) → ${result}`,
+	x: CHAIN.x + 10,
+	y: N3.center.y + 78,
+	align: 'middle',
+	tone: 'violet',
+	mono: true,
+	check: result,
+});
+const NOTES = world(-40, 250);
+const chips: Chip[] = [
+	hashChip('ch-h1', first, 1, 'plain'),
+	hashChip('ch-h2', other, 0, 'flow'),
+	hashChip('ch-h3', third, 0, 'flow'),
+	{ id: 'ch-f', text: `(h ^ (h >>> 16)) & ${CAPACITY - 1}`, x: X.x + 8, y: X.y - 128, align: 'middle', tone: 'plain', mono: true },
+	bucketChip('ch-x1', first),
+	bucketChip('ch-x2', other),
+	{
+		id: 'col',
+		text: t('colisión: mismo bucket', 'collision: same bucket'),
+		x: B1.center.x - 6,
+		y: B1.center.y - 92,
+		align: 'middle',
+		tone: 'magenta',
+		lead: { x: B1.center.x, y: B1.center.y - 34 },
+	},
+	equalsChip('eq-no', first, false),
+	equalsChip('eq-yes', third, true),
+	{
+		id: 'val',
+		text: t(`devuelve ${third.value}`, `returns ${third.value}`),
+		x: N3.center.x + 46,
+		y: N3.center.y - 8,
+		align: 'start',
+		tone: 'flow',
+		mono: true,
+	},
+	{ id: 'o1', text: t('HashMap: una cuenta, 1 bucket de 16 · O(1)', 'HashMap: one calculation, 1 bucket of 16 · O(1)'), x: NOTES.x, y: NOTES.y, align: 'middle', tone: 'flow' },
+	{ id: 'on', text: t('List: recorrer hasta encontrar · O(n)', 'List: walk until found · O(n)'), x: NOTES.x, y: NOTES.y + 30, align: 'middle', tone: 'plain' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.6 : 6.7) + (chip.check ? 42 : 24));
+const chipLeft = (chip: Chip) => (chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x);
+
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="xk-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="xk-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="xk-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="xk-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xk-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xk-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xk-g-key">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.6"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the running system, seen through the camera -->
+			<g clip-path="url(#xk-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + 150} cy={VP.y + 110} rx="420" ry="320" fill="url(#xk-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + VP.w - 60} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#xk-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- The floor: an open grid, and the plate where main() runs -->
+						<g data-el="floor" data-base="shown">
+							{gridLines.map((d) => <path class="xj-grid" d={d} />)}
+							<polygon class="xj-plate-shadow" points={G.mainPlate.base} transform="translate(12 18)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.mainPlate.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.mainPlate.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.mainPlate.top} fill="url(#xk-g-floor)"></polygon>
+							<text class="xj-floor-text" transform={floorMatrix(pt(LINES_U - 0.42, 1.53))}>main()</text>
+						</g>
+
+						<!-- Routes: the dim base first, the lit runs on top -->
+						<g data-el="tr-fan">
+							{routes.fanIn.map((d) => <path class="mg-stroke xj-trace xj-trace--thin" pathLength="1" d={d} />)}
+						</g>
+						<g data-el="tr-out">
+							<path class="mg-stroke xj-trace" pathLength="1" d={routes.hashToMask}></path>
+							{routes.fanOut.map((d) => <path class="mg-stroke xj-trace xj-trace--thin" pathLength="1" d={d} />)}
+						</g>
+						{
+							callRoutes.map((route) => (
+								<g data-el={route.id} class="xj-flowline">
+									<path class="mg-stroke xj-flowline-halo" pathLength="1" d={route.d} />
+									<path class="mg-stroke xj-flowline-core" pathLength="1" d={route.d} />
+								</g>
+							))
+						}
+						<g data-el="fl-hx" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.hashToMask}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.hashToMask}></path>
+						</g>
+						<g data-el="fl-r1" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.toFirst}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.toFirst}></path>
+						</g>
+						<g data-el="fl-r2" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.toOther}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.toOther}></path>
+						</g>
+
+						<!-- The instructions of main(), back to front, each with its lit state -->
+						{
+							lineModules.map((module) => (
+								<>
+									<g data-el={module.id} class="xj-mod">
+										<polygon class="xj-shadow" points={module.g.base} transform="translate(6 8)" />
+										<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#xk-g-top)" />
+										<text class="xj-face-text" transform={module.g.rightMatrix} text-anchor="middle" y="4.5">
+											{module.n}
+										</text>
+									</g>
+									<g data-el={module.lit} class="xj-lit xj-lit--flow">
+										<polygon class="xj-lit-halo" points={module.g.top} />
+										<polygon class="xj-lit-top" points={module.g.top} />
+										<polygon class="xj-lit-side" points={module.g.rightFace} />
+										<text class="xj-face-text xj-face-text--on" transform={module.g.rightMatrix} text-anchor="middle" y="4.5">
+											{module.n}
+										</text>
+									</g>
+								</>
+							))
+						}
+
+						<!-- hashCode() and the mask: the two machines every key crosses. The first one carries
+						     the Lucide `hash` icon lying on its top. -->
+						{
+							machines.map((machine) => (
+								<>
+									<g data-el={machine.id} class="xj-mod">
+										<polygon class="xj-shadow" points={machine.g.base} transform="translate(7 9)" />
+										<polygon class="xj-face xj-face--l" points={machine.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={machine.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={machine.g.top} fill="url(#xk-g-top)" />
+										<text class="xj-face-text xj-face-text--mono" transform={machine.g.leftMatrix} text-anchor="middle" y="4.5">
+											{machine.face}
+										</text>
+										<text class="xj-floor-text xj-floor-text--flow" transform={floorMatrix(machine.labelAt)}>
+											{machine.label}
+										</text>
+										{machine.icon && (
+											<g class="xj-icon xj-icon--flat" transform={`${floorMatrix(machine.g.center)} translate(-14 -14) scale(1.17)`} stroke-width="2.75">
+												<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18" />
+											</g>
+										)}
+									</g>
+									<g data-el={machine.lit} class="xj-lit xj-lit--flow">
+										<polygon class="xj-lit-halo" points={machine.g.top} />
+										<polygon class="xj-lit-top" points={machine.g.top} />
+										<polygon class="xj-lit-side" points={machine.g.leftFace} />
+										<text class="xj-face-text xj-face-text--mono xj-face-text--on" transform={machine.g.leftMatrix} text-anchor="middle" y="4.5">
+											{machine.face}
+										</text>
+									</g>
+								</>
+							))
+						}
+
+						<!-- The HashMap: an array of sixteen buckets -->
+						<g data-el="array">
+							<polygon class="xj-plate-shadow" points={G.arrayPlate.base} transform="translate(12 18)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.arrayPlate.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.arrayPlate.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.arrayPlate.top} fill="url(#xk-g-floor)"></polygon>
+							{
+								buckets.map((bucket) => (
+									<>
+										<polygon class="xj-face xj-face--l" points={bucket.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={bucket.g.rightFace} />
+										<polygon class="xj-face xj-face--t xj-face--slot" points={bucket.g.top} />
+										<text class="xj-face-text xj-face-text--sm" transform={bucket.g.rightMatrix} text-anchor="middle" y="3.5">
+											{bucket.index}
+										</text>
+									</>
+								))
+							}
+							<text class="xj-floor-text" transform={floorMatrix(pt(BUCKET_U - 0.86, 3.34))}>HashMap</text>
+							<text class="xj-floor-text xj-floor-text--dim" transform={floorMatrix(pt(BUCKET_U - 0.86, 3.72))}>{CAPACITY} buckets</text>
+						</g>
+						{
+							litBuckets.map((bucket) => (
+								<g data-el={bucket.id} class:list={['xj-lit', `xj-lit--${bucket.tone}`]}>
+									<polygon class="xj-lit-halo" points={bucket.g.top} />
+									<polygon class="xj-lit-top" points={bucket.g.top} />
+									<polygon class="xj-lit-side" points={bucket.g.rightFace} />
+									<text class="xj-face-text xj-face-text--sm xj-face-text--on" transform={bucket.g.rightMatrix} text-anchor="middle" y="3.5">
+										{bucket.index}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Entries: key and value together, chained behind their bucket -->
+						{
+							nodes.map((node) => (
+								<g data-el={node.id} class="xj-node">
+									<path class="xj-link" d={node.link} />
+									<polygon class="xj-shadow" points={node.g.base} transform="translate(6 8)" />
+									<polygon class="xj-face xj-face--l" points={node.g.leftFace} />
+									<polygon class="xj-face xj-face--r" points={node.g.rightFace} />
+									<polygon class="xj-face xj-face--t" points={node.g.top} />
+									<rect class="xj-tag" x={node.tag.x - tagWidth(node.text) / 2} y={node.tag.y - 11} width={tagWidth(node.text)} height="22" rx="11" />
+									<text class="xj-tag-text" x={node.tag.x} y={node.tag.y + 4.5} text-anchor="middle">
+										{node.text}
+									</text>
+								</g>
+							))
+						}
+						<g data-el="n3-hit" class="xj-lit xj-lit--violet">
+							<polygon class="xj-lit-halo" points={N3.top}></polygon>
+							<polygon class="xj-lit-top" points={N3.top}></polygon>
+							<polygon class="xj-lit-side" points={N3.leftFace}></polygon>
+						</g>
+						<polygon data-el="scan-1" class="xj-scan" points={scan(0, first.bucket)}></polygon>
+						<polygon data-el="scan-3" class="xj-scan" points={scan(1, third.bucket)}></polygon>
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									{chip.lead && <line class="xj-lead" x1={chip.lead.x} y1={chip.lead.y} x2={chip.x} y2={chip.y + 12} />}
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.check && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M20 6 9 17l-5-5" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.check ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The key: the same object from put() to its bucket. The player moves it with
+						     `translate`, so it is drawn around the origin. -->
+						{
+							keys.map((key) => (
+								<g data-el={key.id} class:list={['xj-key', { 'xj-key--query': key.query }]} data-x={key.at.x} data-y={key.at.y - KEY_BIRTH}>
+									<circle r="28" fill="url(#xk-g-key)" />
+									<polygon class="xj-gem xj-gem--l" points="-12,-8.5 0,-1.5 0,12 -12,5" />
+									<polygon class="xj-gem xj-gem--r" points="12,-8.5 0,-1.5 0,12 12,5" />
+									<polygon class="xj-gem xj-gem--t" points="0,-15.5 12,-8.5 0,-1.5 -12,-8.5" />
+									<rect class="xj-tag" x={-tagWidth(key.text) / 2} y="-46" width={tagWidth(key.text)} height="22" rx="11" />
+									<text class="xj-tag-text" x="0" y="-30.5" text-anchor="middle">
+										{key.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The execution flow -->
+						<g data-el="p" class="xj-particle" data-x={lineAnchor(6).x} data-y={lineAnchor(6).y}>
+							<circle r="20" fill="url(#xk-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<polygon class="xj-legend-key" points={`${VP.x + 190},${LEGEND_Y - 6} ${VP.x + 196},${LEGEND_Y} ${VP.x + 190},${LEGEND_Y + 6} ${VP.x + 184},${LEGEND_Y}`}></polygon>
+				<text x={VP.x + 204} y={LEGEND_Y + 4}>{t('Clave', 'Key')}</text>
+				<rect class="xj-legend-col" x={VP.x + 264} y={LEGEND_Y - 5} width="10" height="10" rx="2.5"></rect>
+				<text x={VP.x + 282} y={LEGEND_Y + 4}>{t('Colisión', 'Collision')}</text>
+				<rect class="xj-legend-eq" x={VP.x + 358} y={LEGEND_Y - 5} width="10" height="10" rx="2.5"></rect>
+				<text x={VP.x + 376} y={LEGEND_Y + 4}>equals()</text>
+			</g>
+
+			<!-- EDITOR: the source, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.file}</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<!-- The running line sits behind the code -->
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(6)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<g class="xj-code">
+					{
+						page.map((line) => (
+							<g data-el={`e-${line.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				{
+					outputs.map((line) => (
+						<text data-el={line.id} class="xj-out" x={ED.x + 20} y={outY(line.row)} xml:space="preserve">
+							{line.text}
+						</text>
+					))
+				}
+				{lineAnchors.map((anchor) => <circle data-anchor={anchor.id} cx={BAR_CX} cy={lineMid(anchor.n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of the films only (DESIGN.md §8): a deep blue ground, a light blue
+	   normal flow, magenta for the problem (here, the collision) and violet for
+	   what resolves it (here, equals). Every rule below reads these tokens; no
+	   other color is written in this file. */
+	:global(.anim-player[data-slug='viaje-clave-hashmap-java']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='viaje-clave-hashmap-java'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='viaje-clave-hashmap-java'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='viaje-clave-hashmap-java'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-white);
+		stroke: var(--xj-flow);
+		stroke-width: 3;
+	}
+
+	.xj-legend-key {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-col {
+		fill: var(--xj-magenta);
+	}
+
+	.xj-legend-eq {
+		fill: var(--xj-violet);
+	}
+
+	/* Floor, plates and modules */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-grid {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 1;
+		opacity: 0.06;
+	}
+
+	.xj-floor-text {
+		font-family: var(--font-body);
+		font-size: 15px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		fill: var(--xj-mist);
+		opacity: 0.85;
+	}
+
+	.xj-floor-text--flow {
+		font-size: 13px;
+		fill: var(--xj-flow);
+	}
+
+	.xj-floor-text--dim {
+		font-size: 13px;
+		fill: var(--xj-dim);
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	/* An empty bucket is a dark slot. */
+	.xj-face--slot {
+		fill: var(--xj-panel);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--mono {
+		font-family: monospace;
+	}
+
+	.xj-face-text--sm {
+		font-size: 9.5px;
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	/* Lit states: the module that is running, the bucket that was chosen */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* Routes */
+	.xj-trace {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 3;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-trace--thin {
+		stroke-width: 2;
+	}
+
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	.xj-scan {
+		fill: var(--xj-violet);
+		fill-opacity: 0.12;
+		stroke: var(--xj-violet-soft);
+		stroke-width: 2.5;
+		stroke-linejoin: round;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-lead {
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+		stroke-opacity: 0.7;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	.xj-icon--flat {
+		stroke: var(--xj-flow-soft);
+	}
+
+	/* The key, the entries and the flow */
+	.xj-gem {
+		stroke: var(--xj-flow-soft);
+		stroke-width: 1.2;
+		stroke-linejoin: round;
+	}
+
+	.xj-gem--t {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gem--l {
+		fill: var(--xj-flow);
+	}
+
+	.xj-gem--r {
+		fill: var(--xj-steel-hi);
+	}
+
+	.xj-tag {
+		fill: var(--xj-deep);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+	}
+
+	/* A key that is only being looked up, not stored. */
+	.xj-key--query .xj-tag {
+		stroke-dasharray: 5 4;
+	}
+
+	.xj-tag-text {
+		font-family: monospace;
+		font-size: 12.5px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-node .xj-face {
+		stroke: var(--xj-flow);
+	}
+
+	.xj-node .xj-face--t {
+		fill: var(--xj-steel-hi);
+	}
+
+	.xj-link {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 14px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+</style>
