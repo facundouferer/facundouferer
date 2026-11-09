@@ -136,6 +136,21 @@ export const animations: Animation[] = [
 		lesson: { course: 'java', slug: '10-excepciones-y-manejo-de-errores' },
 	},
 	{
+		slug: 'viaje-excepcion-java',
+		image: '/img/animations/viaje-excepcion-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje de una excepción',
+			en: 'The journey of an exception',
+		},
+		description: {
+			es: 'Un corto animado de dos minutos: el flujo normal de un programa, la excepción que lo interrumpe, su propagación por la pila de llamadas, la captura en un catch, el bloque finally y cómo el programa continúa.',
+			en: 'A two-minute animated short: the normal flow of a program, the exception that interrupts it, its propagation through the call stack, the capture in a catch, the finally block and how the program carries on.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '10-excepciones-y-manejo-de-errores' },
+	},
+	{
 		slug: 'collections-genericos-java',
 		image: '/img/animations/collections-genericos-java.svg',
 		tag: { es: 'Java', en: 'Java' },

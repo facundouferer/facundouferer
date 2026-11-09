@@ -247,6 +247,7 @@ These are deliberate. Do not "fix" them back toward Organic.
 | `.card` padding / title | `--space-3` / `17px` | `--space-4` / `19px` | Content-site density |
 | `.tag-outline` | accent border, accent text | divider border, text color, plus `.is-active` state | Used as a filter control |
 | Added | — | `.card-icon`, `.card-hover`, `.container`, `.section`, `.kicker`, `.section-title`, `.section-subtitle`, `.accent-word`, `.badge` | Site scaffolding Organic does not cover |
+| Lesson films (`src/components/animaciones/viaje-excepcion-java.astro` and films built from it) | Organic palette on the cream ground | Own `--xj-*` tokens inside the film's player: near-black blue ground, deep blue `#00203a`, light blue, magenta `#f7038a`, violet, white | Cinematic dark canvas requested by the owner for lesson films. Scoped by `data-slug`; fonts, icons, the player chrome and the card thumbnail stay Organic. Not a license to use these colors anywhere else |
 
 ## 9) Verification
 

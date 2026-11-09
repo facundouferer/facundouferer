@@ -195,12 +195,15 @@ test('i18n dictionaries carry the animation keys in both locales', async () => {
 });
 
 test('new animation components contain no raw hex colors (tokens only)', async () => {
+	// Approved palette exception (DESIGN.md §8): this film declares its own `--xj-*`
+	// tokens. Its own test checks that raw colors appear only in that token block.
+	const paletteExceptions = new Set(['viaje-excepcion-java.astro']);
 	const files = [
 		'src/components/animations/AnimationPlayer.astro',
 		'src/components/LessonAnimations.astro',
 		'src/components/LessonAnimationsMenu.astro',
 		'src/styles/animation-scene.css',
-		...(await readdir('src/components/animaciones')).map((file) => `src/components/animaciones/${file}`),
+		...(await readdir('src/components/animaciones')).filter((file) => !paletteExceptions.has(file)).map((file) => `src/components/animaciones/${file}`),
 	];
 	for (const file of files) {
 		assert.ok(existsSync(file), `${file} is missing`);

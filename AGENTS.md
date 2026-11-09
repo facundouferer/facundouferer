@@ -662,6 +662,13 @@ Existing animations: `conceptos-basicos-java` (lesson 01), `variables-tipos-dato
 chapters with motion canvases for its most visual concepts. A catalog `lesson.slug` is the
 lesson's frontmatter `slug`, which can differ from its file name.
 
+A lesson can carry a second animation of a different kind, a **film**:
+`viaje-excepcion-java` (lesson `10-excepciones-y-manejo-de-errores`) is a two-minute
+short on a single 16:9 motion canvas, with the code drawn inside the scene and its own
+dark palette (`--xj-*` tokens, the approved exception in DESIGN.md §8, listed in
+`paletteExceptions` of `tests/animations-lessons.test.mjs`). `CLAUDE.md` §Lesson films
+is the recipe for new ones.
+
 Adding an animation: register it in the catalog, write its script and scenes, import
 and map the component in both detail pages, add the thumbnail, and cover it with a
 test like `tests/animation-conceptos-basicos-java.test.mjs` (which also checks that

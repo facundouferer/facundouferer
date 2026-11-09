@@ -1,0 +1,1284 @@
+---
+/**
+ * Scene for "The journey of an exception" (lesson java/12), a short film played on
+ * one persistent motion canvas. The captions and cues live in
+ * `src/data/animations/viaje-excepcion-java.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: it shows
+ * the Java source and the cues slide a bar over the line being executed. The
+ * viewport on the right holds the camera: an isometric system whose modules are the
+ * instructions of `main`, one level per method of the call stack, a light blue
+ * particle (the execution flow) and a magenta object (the exception).
+ *
+ * Palette: this animation is the one approved exception to the Organic palette
+ * (DESIGN.md §8). Its colors are the `--xj-*` tokens declared once in the style
+ * block; nothing else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/viaje-excepcion-java';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Source code shown in the editor ───────────────────────────────────────
+// Identifiers and string literals are localized the same way the lesson does.
+const names = {
+	file: t('Viaje.java', 'Journey.java'),
+	result: t('resultado', 'result'),
+	process: t('procesar', 'process'),
+	calculate: t('calcular', 'calculate'),
+};
+const strings = {
+	start: t('Inicio', 'Start'),
+	math: t('Se produjo un error matemático', 'A math error occurred'),
+	closing: t('Finalizando operación', 'Finishing operation'),
+	done: t('Programa finalizado', 'Program finished'),
+};
+
+const sourceA = (divisor: number) =>
+	[
+		'public static void main(String[] args) {',
+		'    try {',
+		`        System.out.println("${strings.start}");`,
+		`        int ${names.result} = 10 / ${divisor};`,
+		`        System.out.println(${names.result});`,
+		'    } catch (ArithmeticException e) {',
+		'        System.out.println("Error");',
+		'    }',
+		'}',
+	].join('\n');
+
+const sourceB = [
+	'public static void main(String[] args) {',
+	'    try {',
+	`        System.out.println("${strings.start}");`,
+	`        int ${names.result} = ${names.process}();`,
+	`        System.out.println(${names.result});`,
+	'    } catch (ArithmeticException e) {',
+	`        System.out.println("${strings.math}");`,
+	'    } finally {',
+	`        System.out.println("${strings.closing}");`,
+	'    }',
+	`    System.out.println("${strings.done}");`,
+	'}',
+	'',
+	`static int ${names.process}() {`,
+	`    return ${names.calculate}();`,
+	'}',
+	'',
+	`static int ${names.calculate}() {`,
+	'    return 10 / 0;',
+	'}',
+].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const svgLines = (source: string) =>
+	highlightCode(source, 'java').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+
+const pageA = svgLines(sourceA(2));
+const lineZero = svgLines(sourceA(0))[3];
+const pageB = svgLines(sourceB);
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 64;
+const GUTTER_X = 50;
+const CODE_TOP = 74;
+const LINE_H = 23;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 5;
+const CONSOLE_TOP = 552;
+const outY = (row: number) => 597 + row * LINE_H;
+
+// Lines the highlight bar travels to (`la-*` on the first program, `lb-*` on the second).
+const lineAnchors = [
+	{ id: 'la-3', n: 3 },
+	{ id: 'la-4', n: 4 },
+	{ id: 'la-5', n: 5 },
+	{ id: 'la-9', n: 9 },
+	{ id: 'lb-3', n: 3 },
+	{ id: 'lb-4', n: 4 },
+	{ id: 'lb-7', n: 7 },
+	{ id: 'lb-9', n: 9 },
+	{ id: 'lb-11', n: 11 },
+	{ id: 'lb-12', n: 12 },
+	{ id: 'lb-15', n: 15 },
+	{ id: 'lb-19', n: 19 },
+];
+
+// Program output, one element per printed line of each run.
+const outputs = [
+	{ id: 'out-a1', row: 0, text: strings.start },
+	{ id: 'out-a2', row: 1, text: '5' },
+	{ id: 'out-b1', row: 0, text: strings.start },
+	{ id: 'out-c1', row: 0, text: strings.start },
+	{ id: 'out-c2', row: 1, text: strings.math },
+	{ id: 'out-c3', row: 2, text: strings.closing },
+	{ id: 'out-c4', row: 3, text: strings.done },
+];
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right (the order of execution), +v down-left, z is up.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 58;
+const EY = 33.5;
+const ORIGIN = { x: 480, y: 290 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const path = (points: Point[]) => 'M' + points.map((point) => `${point.x} ${point.y}`).join(' L');
+
+/** A box standing on the floor at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		// Silhouette of the whole box, for the veil that dims an abandoned level.
+		outline: poly([back, right, down(right), down(front), down(left), left]),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		// Text on the left face follows its 30° edge.
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+/** Text lying flat on a floor, reading along +u. */
+const floorMatrix = (point: Point) => `matrix(0.866 0.5 -0.866 0.5 ${point.x} ${point.y})`;
+
+const MODULE_H = 18;
+const LEVEL_PROCESS = -260;
+const LEVEL_CALCULATE = -520;
+const CALL_U = 1.1;
+
+const block = (u: number, v = 0, z = 0) => slab(u, v, 0.4, 0.4, MODULE_H, z);
+const G = {
+	floor: slab(2.2, -0.55, 3.5, 1.45, 12, -12),
+	entry: slab(-0.9, 0, 0.2, 0.2, 6),
+	t1: block(0),
+	t2: block(CALL_U),
+	t3: block(2.2),
+	catcher: slab(1.9, -1.3, 0.62, 0.42, 12),
+	fin: slab(3.3, 0, 0.46, 0.46, MODULE_H),
+	after: block(4.4),
+	end: slab(5.3, 0, 0.24, 0.24, 8),
+	floorP: slab(CALL_U, 0, 0.95, 0.95, 10, LEVEL_PROCESS - 10),
+	process: block(CALL_U, 0, LEVEL_PROCESS),
+	floorK: slab(CALL_U, 0, 0.95, 0.95, 10, LEVEL_CALCULATE - 10),
+	calculate: block(CALL_U, 0, LEVEL_CALCULATE),
+};
+type Slab = typeof G.floor;
+
+// Modules of `main`, back to front. `face` is the editor line the module runs.
+type Tone = 'flow' | 'violet';
+type Module = { id: string; g: Slab; tone: Tone; face?: string; lit?: { id: string }; hot?: { id: string } };
+const modules: Module[] = [
+	{ id: 'm-entry', g: G.entry, tone: 'flow' },
+	{ id: 'm-t1', g: G.t1, tone: 'flow', face: '3', lit: { id: 't1-on' } },
+	{ id: 'm-c', g: G.catcher, tone: 'violet', face: 'catch', lit: { id: 'c-on' } },
+	{ id: 'm-t2', g: G.t2, tone: 'flow', face: '4', lit: { id: 't2-on' }, hot: { id: 't2-x' } },
+	{ id: 'm-t3', g: G.t3, tone: 'flow', face: '5', lit: { id: 't3-on' } },
+	{ id: 'm-f', g: G.fin, tone: 'violet', face: 'finally', lit: { id: 'f-on' } },
+	{ id: 'm-d', g: G.after, tone: 'flow', face: '11', lit: { id: 'd-on' } },
+	{ id: 'm-end', g: G.end, tone: 'flow', lit: { id: 'end-on' } },
+];
+
+// Routes on the floor of `main`.
+const TURN = pt(CALL_U, -1.3);
+const CATCH_EXIT = pt(3.3, -1.3);
+const routes = {
+	main: path([pt(-0.9, 0), pt(5.3, 0)]),
+	catcher: path([pt(CALL_U, 0), TURN, CATCH_EXIT, pt(3.3, 0)]),
+	entry: path([pt(-0.9, 0), pt(0, 0)]),
+	step1: path([pt(0, 0), pt(CALL_U, 0)]),
+	step2: path([pt(CALL_U, 0), pt(2.2, 0)]),
+	rest: path([pt(2.2, 0), pt(5.3, 0)]),
+	thrown: path([pt(CALL_U, 0), TURN, pt(1.9, -1.3)]),
+	handled: path([pt(1.9, -1.3), CATCH_EXIT, pt(3.3, 0)]),
+	normal: path([pt(2.2, 0), pt(3.3, 0)]),
+	toAfter: path([pt(3.3, 0), pt(4.4, 0)]),
+	toEnd: path([pt(4.4, 0), pt(5.3, 0)]),
+	call1: path([pt(CALL_U, 0), G.process.center]),
+	call2: path([pt(CALL_U, 0, LEVEL_PROCESS), G.calculate.center]),
+};
+const tryZone = poly([pt(-0.56, -0.56, 1), pt(2.76, -0.56, 1), pt(2.76, 0.56, 1), pt(-0.56, 0.56, 1)]);
+const cut = [path([pt(1.6, -0.2, 2), pt(1.6, 0.2, 2)]), path([pt(1.72, -0.2, 2), pt(1.72, 0.2, 2)])];
+const gridLines = [
+	...[-1, 0, 1, 2, 3, 4, 5].map((u) => path([pt(u, -2, 0.5), pt(u, 0.9, 0.5)])),
+	...[-1.5, -1, -0.5, 0, 0.5].map((v) => path([pt(-1.3, v, 0.5), pt(5.7, v, 0.5)])),
+];
+
+// Where the travelling objects stop: just above the top of each module.
+const hover = (g: Slab, by = 16) => lift(g.center, by);
+const DOCK = lift(pt(1.72, -1.3, 12), 18);
+const anchors = [
+	{ id: 'a-entry', ...hover(G.entry, 14) },
+	{ id: 'a-t1', ...hover(G.t1) },
+	{ id: 'a-t2', ...hover(G.t2) },
+	{ id: 'a-t3', ...hover(G.t3) },
+	{ id: 'a-end', ...hover(G.end, 14) },
+	{ id: 'a-p', ...hover(G.process) },
+	{ id: 'a-k', ...hover(G.calculate) },
+	{ id: 'a-cturn', ...lift(TURN, 14) },
+	{ id: 'a-c', ...DOCK },
+	{ id: 'a-cp', ...lift(pt(2.3, -1.3, 12), 14) },
+	{ id: 'a-cend', ...lift(CATCH_EXIT, 14) },
+	{ id: 'a-f', ...hover(G.fin) },
+	{ id: 'a-d', ...hover(G.after) },
+];
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-try', cx: 602, cy: 320, s: 1.35 },
+	{ id: 'shot-op', cx: 610, cy: 280, s: 1.45 },
+	{ id: 'shot-tower', cx: 590, cy: 548, s: 0.84 },
+	{ id: 'shot-p', cx: 555, cy: 572, s: 1.45 },
+	{ id: 'shot-k', cx: 555, cy: 832, s: 1.45 },
+	{ id: 'shot-rise', cx: 575, cy: 335, s: 1.25 },
+	{ id: 'shot-catch', cx: 615, cy: 285, s: 1.5 },
+	{ id: 'shot-fin', cx: 665, cy: 345, s: 1.45 },
+	{ id: 'shot-out', cx: 720, cy: 420, s: 1.55 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | 'flow' | 'magenta' | 'violet';
+	mono?: boolean;
+	check?: boolean;
+	lead?: Point;
+};
+const T2 = G.t2.center;
+const T3 = G.t3.center;
+const opChip = (id: string, text: string, tone: Chip['tone']): Chip => ({
+	id,
+	text,
+	x: T2.x - 34,
+	y: T2.y + 62,
+	align: 'end',
+	tone,
+	mono: true,
+	lead: { x: T2.x - 22, y: T2.y + 26 },
+});
+const chips: Chip[] = [
+	opChip('lb-t2-a', '10 / 2', 'plain'),
+	opChip('lb-t2-b', '10 / 0', 'magenta'),
+	opChip('lb-t2-c', `${names.process}()`, 'plain'),
+	{ id: 'val-5', text: `${names.result} = 5`, x: T2.x - 6, y: T2.y - 60, align: 'start', tone: 'flow', mono: true },
+	{ id: 'c-idle', text: t('sin excepción: no se usa', 'no exception: not used'), x: 634, y: 175, align: 'start', tone: 'plain' },
+	{ id: 'match', text: t('tipo compatible', 'compatible type'), x: 634, y: 175, align: 'start', tone: 'violet', check: true },
+	{
+		id: 't3-skip',
+		text: t('no se ejecuta', 'does not run'),
+		x: T3.x - 34,
+		y: T3.y + 62,
+		align: 'end',
+		tone: 'magenta',
+		lead: { x: T3.x - 22, y: T3.y + 26 },
+	},
+	{
+		id: 'fin-note',
+		text: t('con excepción o sin ella', 'with or without an exception'),
+		x: G.fin.center.x - 30,
+		y: G.fin.center.y + 70,
+		align: 'end',
+		tone: 'violet',
+		lead: { x: G.fin.center.x - 22, y: G.fin.center.y + 28 },
+	},
+	{ id: 'ab-p', text: t('sin catch: se abandona', 'no catch: abandoned'), x: G.process.center.x + 52, y: G.process.center.y - 56, align: 'start', tone: 'magenta' },
+	{ id: 'ab-k', text: t('sin catch: se abandona', 'no catch: abandoned'), x: G.calculate.center.x + 52, y: G.calculate.center.y - 56, align: 'start', tone: 'magenta' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.6 : 6.7) + (chip.check ? 42 : 24));
+const chipLeft = (chip: Chip) => (chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x);
+
+// The catch label sits above its pad; the stack bracket runs beside the levels.
+const CATCH_LABEL = { x: 630, y: 118, w: 196, h: 40 };
+const STACK_X = 372;
+const stackTop = G.t2.center.y;
+const stackBottom = G.calculate.center.y + 40;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="xj-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="xj-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="xj-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="xj-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xj-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xj-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xj-g-exception">
+					<stop offset="0" class="xj-stop-magenta" stop-opacity="0.75"></stop>
+					<stop offset="1" class="xj-stop-magenta" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xj-g-held">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.7"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the running system, seen through the camera -->
+			<g clip-path="url(#xj-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + 150} cy={VP.y + 110} rx="420" ry="320" fill="url(#xj-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + VP.w - 60} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#xj-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- Level 3: calcular() -->
+						<g data-el="floor-k">
+							<polygon class="xj-plate-shadow" points={G.floorK.base} transform="translate(10 16)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.floorK.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.floorK.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.floorK.top} fill="url(#xj-g-floor)"></polygon>
+							<text class="xj-floor-text" transform={floorMatrix(pt(CALL_U - 0.85, 0.84, LEVEL_CALCULATE))}>{names.calculate}()</text>
+							<g data-el="fl-call2" class="xj-flowline">
+								<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.call2}></path>
+								<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.call2}></path>
+							</g>
+							<polygon class="xj-shadow" points={G.calculate.base} transform="translate(7 9)"></polygon>
+							<polygon class="xj-face xj-face--l" points={G.calculate.leftFace}></polygon>
+							<polygon class="xj-face xj-face--r" points={G.calculate.rightFace}></polygon>
+							<polygon class="xj-face xj-face--t" points={G.calculate.top} fill="url(#xj-g-top)"></polygon>
+							<text class="xj-face-text" transform={G.calculate.faceMatrix} text-anchor="middle" y="4.5">19</text>
+						</g>
+						<g data-el="k-on" class="xj-lit xj-lit--flow">
+							<polygon class="xj-lit-halo" points={G.calculate.top}></polygon>
+							<polygon class="xj-lit-top" points={G.calculate.top}></polygon>
+							<polygon class="xj-lit-side" points={G.calculate.leftFace}></polygon>
+							<text class="xj-face-text xj-face-text--on" transform={G.calculate.faceMatrix} text-anchor="middle" y="4.5">19</text>
+						</g>
+						<g data-el="k-x" class="xj-lit xj-lit--magenta">
+							<polygon class="xj-lit-halo" points={G.calculate.top}></polygon>
+							<polygon class="xj-lit-top" points={G.calculate.top}></polygon>
+							<polygon class="xj-lit-side" points={G.calculate.leftFace}></polygon>
+							<text class="xj-face-text xj-face-text--on" transform={G.calculate.faceMatrix} text-anchor="middle" y="4.5">19</text>
+						</g>
+						<g data-el="k-off">
+							<g class="xj-veil">
+								<polygon points={G.floorK.outline}></polygon>
+								<polygon points={G.calculate.outline}></polygon>
+							</g>
+						</g>
+
+						<!-- Level 2: procesar() -->
+						<g data-el="floor-p">
+							<polygon class="xj-plate-shadow" points={G.floorP.base} transform="translate(10 16)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.floorP.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.floorP.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.floorP.top} fill="url(#xj-g-floor)"></polygon>
+							<text class="xj-floor-text" transform={floorMatrix(pt(CALL_U - 0.85, 0.84, LEVEL_PROCESS))}>{names.process}()</text>
+							<g data-el="fl-call1" class="xj-flowline">
+								<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.call1}></path>
+								<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.call1}></path>
+							</g>
+							<polygon class="xj-shadow" points={G.process.base} transform="translate(7 9)"></polygon>
+							<polygon class="xj-face xj-face--l" points={G.process.leftFace}></polygon>
+							<polygon class="xj-face xj-face--r" points={G.process.rightFace}></polygon>
+							<polygon class="xj-face xj-face--t" points={G.process.top} fill="url(#xj-g-top)"></polygon>
+							<text class="xj-face-text" transform={G.process.faceMatrix} text-anchor="middle" y="4.5">15</text>
+						</g>
+						<g data-el="p-on" class="xj-lit xj-lit--flow">
+							<polygon class="xj-lit-halo" points={G.process.top}></polygon>
+							<polygon class="xj-lit-top" points={G.process.top}></polygon>
+							<polygon class="xj-lit-side" points={G.process.leftFace}></polygon>
+							<text class="xj-face-text xj-face-text--on" transform={G.process.faceMatrix} text-anchor="middle" y="4.5">15</text>
+						</g>
+						<g data-el="p-off">
+							<g class="xj-veil">
+								<polygon points={G.floorP.outline}></polygon>
+								<polygon points={G.process.outline}></polygon>
+							</g>
+						</g>
+
+						<!-- Level 1: main() -->
+						<g data-el="floor-main" data-base="shown">
+							<polygon class="xj-plate-shadow" points={G.floor.base} transform="translate(14 22)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.floor.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.floor.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.floor.top} fill="url(#xj-g-floor)"></polygon>
+							{gridLines.map((d) => <path class="xj-grid" d={d} />)}
+							<text class="xj-floor-text" transform={floorMatrix(pt(-1.15, -0.78))}>main()</text>
+						</g>
+
+						<g data-el="try-zone">
+							<polygon class="xj-zone" points={tryZone}></polygon>
+							<text class="xj-floor-text xj-floor-text--flow" transform={floorMatrix(pt(-0.5, 0.76))}>try</text>
+						</g>
+
+						<!-- Routes: the dim base first, the lit runs on top -->
+						<g data-el="tr-main"><path class="mg-stroke xj-trace" pathLength="1" d={routes.main}></path></g>
+						<g data-el="tr-c"><path class="mg-stroke xj-trace" pathLength="1" d={routes.catcher}></path></g>
+						<g data-el="fl-0" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.entry}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.entry}></path>
+						</g>
+						<g data-el="fl-1" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.step1}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.step1}></path>
+						</g>
+						<g data-el="fl-2" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.step2}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.step2}></path>
+						</g>
+						<g data-el="fl-3" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.rest}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.rest}></path>
+						</g>
+						<g data-el="rt-tf" class="xj-flowline xj-flowline--violet">
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.normal}></path>
+						</g>
+						<g data-el="rt-x" class="xj-flowline xj-flowline--magenta">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.thrown}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.thrown}></path>
+						</g>
+						<g data-el="fl-cf" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.handled}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.handled}></path>
+						</g>
+						<g data-el="fl-fd" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.toAfter}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.toAfter}></path>
+						</g>
+						<g data-el="fl-de" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.toEnd}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.toEnd}></path>
+						</g>
+						<g data-el="tr-cut" class="xj-cut">
+							{cut.map((d) => <path d={d} />)}
+						</g>
+
+						<!-- Modules of main(), back to front, each with its lit states -->
+						{
+							modules.map((module) => (
+								<>
+									<g data-el={module.id} class:list={['xj-mod', `xj-mod--${module.tone}`]}>
+										<polygon class="xj-shadow" points={module.g.base} transform="translate(7 9)" />
+										<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#xj-g-top)" />
+										{module.face && (
+											<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+												{module.face}
+											</text>
+										)}
+									</g>
+									{module.lit && (
+										<g data-el={module.lit.id} class:list={['xj-lit', `xj-lit--${module.tone}`]}>
+											<polygon class="xj-lit-halo" points={module.g.top} />
+											<polygon class="xj-lit-top" points={module.g.top} />
+											<polygon class="xj-lit-side" points={module.g.leftFace} />
+											{module.face && (
+												<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+													{module.face}
+												</text>
+											)}
+										</g>
+									)}
+									{module.hot && (
+										<g data-el={module.hot.id} class="xj-lit xj-lit--magenta">
+											<polygon class="xj-lit-halo" points={module.g.top} />
+											<polygon class="xj-lit-top" points={module.g.top} />
+											<polygon class="xj-lit-side" points={module.g.leftFace} />
+											{module.face && (
+												<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+													{module.face}
+												</text>
+											)}
+										</g>
+									)}
+								</>
+							))
+						}
+
+						<!-- The catch names the type it can take -->
+						<g data-el="lb-c" class="xj-chip xj-chip--violet">
+							<line class="xj-lead" x1={G.catcher.center.x + 40} y1={G.catcher.center.y + 4} x2={CATCH_LABEL.x + 150} y2={CATCH_LABEL.y + CATCH_LABEL.h}></line>
+							<rect x={CATCH_LABEL.x} y={CATCH_LABEL.y} width={CATCH_LABEL.w} height={CATCH_LABEL.h} rx="12"></rect>
+							<text class="xj-chip-mono xj-chip-mono--strong" x={CATCH_LABEL.x + 14} y={CATCH_LABEL.y + 17}>catch</text>
+							<text class="xj-chip-mono" x={CATCH_LABEL.x + 14} y={CATCH_LABEL.y + 32}>(ArithmeticException e)</text>
+						</g>
+						<polygon data-el="c-scan" class="xj-scan" points={slab(1.9, -1.3, 0.78, 0.58, 0, 13).top}></polygon>
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									{chip.lead && <line class="xj-lead" x1={chip.lead.x} y1={chip.lead.y} x2={chipLeft(chip) + chipWidth(chip) - 14} y2={chip.y - 12} />}
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.check && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M20 6 9 17l-5-5" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.check ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The call stack bracket, beside the three levels -->
+						<g data-el="stack-tag" class="xj-stack">
+							<path d={`M${STACK_X + 10} ${stackTop} H${STACK_X} V${stackBottom} H${STACK_X + 10}`}></path>
+							<text transform={`rotate(-90 ${STACK_X - 12} ${(stackTop + stackBottom) / 2})`} x={STACK_X - 12} y={(stackTop + stackBottom) / 2} text-anchor="middle">
+								{t('PILA DE LLAMADAS', 'CALL STACK')}
+							</text>
+						</g>
+
+						<!-- The exception once it has been caught: same object, new state. The player resets
+						     `transform` on `data-el` elements, so the placement lives on an inner group. -->
+						<g data-el="exc-held">
+							<g class="xj-held" transform={`translate(${DOCK.x} ${DOCK.y})`}>
+								<circle r="34" fill="url(#xj-g-held)"></circle>
+								<ellipse class="xj-held-ring" cx="0" cy="12" rx="27" ry="13.5"></ellipse>
+								<polygon class="xj-gem xj-gem--l" points="-13,-9 0,-2 0,13 -13,6"></polygon>
+								<polygon class="xj-gem xj-gem--r" points="13,-9 0,-2 0,13 13,6"></polygon>
+								<polygon class="xj-gem xj-gem--t" points="0,-17 13,-9 0,-2 -13,-9"></polygon>
+								<rect class="xj-tag" x="-52" y="-48" width="104" height="22" rx="11"></rect>
+								<svg class="xj-icon" x="-44" y="-45" width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+									<path d="M20 6 9 17l-5-5"></path>
+								</svg>
+								<text class="xj-tag-text" x="9" y="-32.5" text-anchor="middle">{t('capturada', 'caught')}</text>
+							</g>
+						</g>
+
+						<!-- An exception is an object: a class, a message -->
+						<g data-el="exc-card" class="xj-card">
+							<rect x={T2.x - 118} y={T2.y - 164} width="196" height="50" rx="12"></rect>
+							<text class="xj-card-kicker" x={T2.x - 104} y={T2.y - 145}>{t('ES UN OBJETO', 'IT IS AN OBJECT')}</text>
+							<text class="xj-chip-mono" x={T2.x - 104} y={T2.y - 126}>getMessage() → "/ by zero"</text>
+						</g>
+
+						<!-- The exception: one magenta object for the whole journey -->
+						<g data-el="exc" class="xj-exc" data-x={anchors[2].x} data-y={anchors[2].y - 30}>
+							<circle r="38" fill="url(#xj-g-exception)"></circle>
+							<polygon class="xj-gem xj-gem--l" points="-15,-10.5 0,-2 0,15 -15,6.5"></polygon>
+							<polygon class="xj-gem xj-gem--r" points="15,-10.5 0,-2 0,15 15,6.5"></polygon>
+							<polygon class="xj-gem xj-gem--t" points="0,-19 15,-10.5 0,-2 -15,-10.5"></polygon>
+							<rect class="xj-tag" x="-80" y="-58" width="160" height="22" rx="11"></rect>
+							<text class="xj-tag-text" x="0" y="-42.5" text-anchor="middle">ArithmeticException</text>
+						</g>
+
+						<!-- The execution flow -->
+						<g data-el="p" class="xj-particle" data-x={anchors[0].x} data-y={anchors[0].y}>
+							<circle r="20" fill="url(#xj-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={VP.y + VP.h - 22} r="5"></circle>
+				<text x={VP.x + 38} y={VP.y + VP.h - 18}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<polygon class="xj-legend-exc" points={`${VP.x + 190},${VP.y + VP.h - 28} ${VP.x + 196},${VP.y + VP.h - 22} ${VP.x + 190},${VP.y + VP.h - 16} ${VP.x + 184},${VP.y + VP.h - 22}`}></polygon>
+				<text x={VP.x + 204} y={VP.y + VP.h - 18}>{t('Excepción', 'Exception')}</text>
+			</g>
+
+			<!-- EDITOR: the source, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.file}</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<!-- Line states sit behind the code -->
+				<rect data-el="hx-a" class="xj-bar xj-bar--magenta" x={BAR.x} y={lineTop(4)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<rect data-el="hx-b19" class="xj-bar xj-bar--magenta" x={BAR.x} y={lineTop(19)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<rect data-el="hx-b15" class="xj-bar xj-bar--trail" x={BAR.x} y={lineTop(15)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<rect data-el="hx-b4" class="xj-bar xj-bar--trail" x={BAR.x} y={lineTop(4)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<rect data-el="hm-b6" class="xj-bar xj-bar--violet" x={BAR.x} y={lineTop(6)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(1)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<!-- First program: the try with the division inside main -->
+				<g data-el="ea" data-base="shown" class="xj-code">
+					{
+						pageA.map((line) => (
+							<g data-el={`ea-${line.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+					<g data-el="ea-zero">
+						<text class="xj-gutter" x={GUTTER_X} y={lineBase(4)} text-anchor="end">4</text>
+						<text class="xj-mono" x={CODE_X} y={lineBase(4)} xml:space="preserve" set:html={lineZero.html} />
+					</g>
+				</g>
+
+				<!-- Second program: the division moves two calls away -->
+				<g data-el="eb" class="xj-code">
+					{
+						pageB.map((line) => (
+							<>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</>
+						))
+					}
+					<g data-el="veil-fin" data-base="shown">
+						<rect class="xj-code-veil" x="104" y={lineTop(8)} width={BAR.x + BAR.w - 104} height={LINE_H}></rect>
+						<rect class="xj-code-veil" x={BAR.x} y={lineTop(9)} width={BAR.w} height={LINE_H * 2}></rect>
+					</g>
+					<rect data-el="veil-end" data-base="shown" class="xj-code-veil" x={BAR.x} y={lineTop(11)} width={BAR.w} height={LINE_H}></rect>
+				</g>
+
+				<!-- The rest of the try never runs -->
+				<g data-el="skip-a5" class="xj-skip">
+					<rect class="xj-code-veil" x={BAR.x} y={lineTop(5)} width={BAR.w} height={LINE_H}></rect>
+					<rect class="xj-skip-tag" x="420" y={lineTop(5) + 2} width="150" height={LINE_H - 4} rx="9.5"></rect>
+					<text x="495" y={lineBase(5) - 1} text-anchor="middle">{t('no se ejecuta', 'does not run')}</text>
+				</g>
+				<g data-el="skip-b5" class="xj-skip">
+					<rect class="xj-code-veil" x={BAR.x} y={lineTop(5)} width={BAR.w} height={LINE_H}></rect>
+					<rect class="xj-skip-tag" x="420" y={lineTop(5) + 2} width="150" height={LINE_H - 4} rx="9.5"></rect>
+					<text x="495" y={lineBase(5) - 1} text-anchor="middle">{t('no se ejecuta', 'does not run')}</text>
+				</g>
+
+				{
+					outputs.map((line) => (
+						<text data-el={line.id} class="xj-out" x={ED.x + 20} y={outY(line.row)} xml:space="preserve">
+							{line.text}
+						</text>
+					))
+				}
+				{lineAnchors.map((anchor) => <circle data-anchor={anchor.id} cx={BAR_CX} cy={lineMid(anchor.n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue execution flow, a magenta exception and violet for what handles it.
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='viaje-excepcion-java']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='viaje-excepcion-java'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='viaje-excepcion-java'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='viaje-excepcion-java'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-magenta {
+		stop-color: var(--xj-magenta);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker,
+	.xj-card-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-exc {
+		fill: var(--xj-magenta);
+	}
+
+	/* Levels and modules */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-grid {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 1;
+		opacity: 0.07;
+	}
+
+	.xj-floor-text {
+		font-family: var(--font-body);
+		font-size: 15px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		fill: var(--xj-mist);
+		opacity: 0.85;
+	}
+
+	.xj-floor-text--flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-zone {
+		fill: var(--xj-flow);
+		fill-opacity: 0.05;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.55;
+		stroke-width: 1.5;
+		stroke-dasharray: 7 6;
+		stroke-linejoin: round;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-mod--violet .xj-face {
+		stroke: var(--xj-violet);
+	}
+
+	.xj-mod--violet .xj-face--l {
+		fill: var(--xj-violet-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	/* Lit states: the module that is running, or the one that failed */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* One flat layer, so the overlapping silhouettes dim the level evenly. */
+	.xj-veil {
+		opacity: 0.62;
+	}
+
+	.xj-veil polygon {
+		fill: var(--xj-ink);
+		stroke: var(--xj-ink);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	/* Routes */
+	.xj-trace {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 3;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--magenta {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-flowline--violet {
+		--xj-line: var(--xj-violet);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	.xj-cut path {
+		fill: none;
+		stroke: var(--xj-magenta);
+		stroke-width: 4;
+		stroke-linecap: round;
+	}
+
+	.xj-scan {
+		fill: var(--xj-violet);
+		fill-opacity: 0.12;
+		stroke: var(--xj-violet-soft);
+		stroke-width: 2.5;
+		stroke-linejoin: round;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect,
+	.xj-card rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip, var(--xj-magenta));
+		stroke-width: 1.5;
+	}
+
+	.xj-lead {
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+		stroke-opacity: 0.7;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-chip-mono--strong {
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	.xj-stack path {
+		fill: none;
+		stroke: var(--xj-dim);
+		stroke-width: 1.5;
+	}
+
+	.xj-stack text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		fill: var(--xj-dim);
+	}
+
+	/* The exception and the flow */
+	.xj-gem {
+		stroke: var(--xj-magenta-soft);
+		stroke-width: 1.2;
+		stroke-linejoin: round;
+	}
+
+	.xj-gem--t {
+		fill: var(--xj-magenta-soft);
+	}
+
+	.xj-gem--l {
+		fill: var(--xj-magenta);
+	}
+
+	.xj-gem--r {
+		fill: var(--xj-magenta-deep);
+	}
+
+	.xj-tag {
+		fill: var(--xj-magenta-deep);
+		stroke: var(--xj-magenta);
+		stroke-width: 1.5;
+	}
+
+	.xj-tag-text {
+		font-family: monospace;
+		font-size: 12.5px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-held .xj-gem {
+		stroke: var(--xj-violet-soft);
+	}
+
+	.xj-held .xj-gem--t {
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-held .xj-gem--l {
+		fill: var(--xj-violet);
+	}
+
+	.xj-held .xj-gem--r {
+		fill: var(--xj-violet-deep);
+	}
+
+	.xj-held .xj-tag {
+		fill: var(--xj-violet-deep);
+		stroke: var(--xj-violet);
+	}
+
+	.xj-held .xj-tag-text {
+		font-family: var(--font-body);
+	}
+
+	.xj-held-ring {
+		fill: none;
+		stroke: var(--xj-violet-soft);
+		stroke-width: 2;
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 14px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-code-veil {
+		fill: var(--xj-panel);
+		fill-opacity: 0.8;
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-bar--magenta {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.24;
+		stroke: var(--xj-magenta);
+		stroke-width: 1.2;
+	}
+
+	.xj-bar--trail {
+		fill: none;
+		stroke: var(--xj-magenta);
+		stroke-width: 1.5;
+		stroke-dasharray: 6 5;
+	}
+
+	.xj-bar--violet {
+		fill: var(--xj-violet);
+		fill-opacity: 0.24;
+		stroke: var(--xj-violet);
+		stroke-width: 1.2;
+	}
+
+	.xj-skip-tag {
+		fill: var(--xj-magenta-deep);
+		stroke: var(--xj-magenta);
+		stroke-width: 1.2;
+	}
+
+	.xj-skip text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+</style>
