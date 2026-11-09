@@ -136,6 +136,21 @@ export const animations: Animation[] = [
 		lesson: { course: 'java', slug: '09-clases-abstractas-interfaces-y-modelado' },
 	},
 	{
+		slug: 'viaje-contrato-interfaz-java',
+		image: '/img/animations/viaje-contrato-interfaz-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje de un contrato: de la interfaz al objeto',
+			en: 'The journey of a contract: from the interface to the object',
+		},
+		description: {
+			es: 'Un corto animado de dos minutos que sigue al contrato Pagable desde la interfaz hasta el objeto: la clase abstracta que lo deja incompleto, el compilador que rechaza instanciarla, la clase concreta que lo completa y la llamada que main hace a través de la interfaz.',
+			en: 'A two-minute animated short that follows the Payable contract from the interface to the object: the abstract class that leaves it incomplete, the compiler refusing to instantiate it, the concrete class that completes it and the call main makes through the interface.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '09-clases-abstractas-interfaces-y-modelado' },
+	},
+	{
 		slug: 'excepciones-java',
 		image: '/img/animations/excepciones-java.svg',
 		tag: { es: 'Java', en: 'Java' },
