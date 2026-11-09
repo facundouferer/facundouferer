@@ -667,7 +667,9 @@ A lesson can carry a second animation of a different kind, a **film**:
 short on a single 16:9 motion canvas, with the code drawn inside the scene and its own
 dark palette (`--xj-*` tokens, the approved exception in DESIGN.md §8, listed in
 `paletteExceptions` of `tests/animations-lessons.test.mjs`). `CLAUDE.md` §Lesson films
-is the recipe for new ones.
+is the recipe for new ones. Films built from it: `viaje-llamada-polimorfica-java` (lesson 08),
+`viaje-contrato-interfaz-java` (09), `viaje-clave-hashmap-java` (13) and
+`viaje-comparacion-ordenamiento-java` (14).
 
 Adding an animation: register it in the catalog, write its script and scenes, import
 and map the component in both detail pages, add the thumbnail, and cover it with a
