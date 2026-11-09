@@ -58,6 +58,67 @@ If a component exists in `Organic/` but not yet in `src/styles/global.css`
 If the design system genuinely cannot express what a task needs, say so and
 propose a token or class addition. Do not silently diverge.
 
+## Lesson films — the default for "make the animation for this lesson"
+
+When the user passes a lesson URL (`/cursos/<course>/<slug>`) and asks for its
+animation, build a **film** in the style of `viaje-excepcion-java`, without asking
+for a brief. Reference implementation, to copy and adapt:
+
+- `src/data/animations/viaje-excepcion-java.ts` (captions and cues)
+- `src/components/animaciones/viaje-excepcion-java.astro` (canvas and palette)
+- `tests/animation-viaje-excepcion-java.test.mjs`
+
+Steps:
+
+1. **Study the lesson first.** The URL slug is the frontmatter `slug`, not the file
+   name: find the file with `rg "slug: '<slug>'" src/content/courses`. Read it whole
+   (explanations, code, diagrams, exercises). The film must not contradict it nor
+   add concepts it does not teach.
+2. **Pick one story.** A film explains the central mechanism of the lesson as a
+   single continuous journey, not a tour of every section. Write down the five or
+   six questions a student must be able to answer after watching; each scene
+   answers one, and the test asserts the narration covers them.
+3. **Build it as one persistent motion canvas** (`data-scene` + `data-motion`,
+   `viewBox="0 0 1280 720"`), six scenes, about eight motion steps, 90 to 120
+   seconds in both languages (the test checks the total).
+4. **Register it** as an extra animation of the lesson (catalog entry in
+   `src/data/animations.ts` after the lesson's existing one, both `[slug].astro`
+   component maps, thumbnail, test). Never replace the step-by-step animation.
+
+Style and treatment (this is the approved exception to the Organic palette, see
+`DESIGN.md` §8; it applies to films only):
+
+- **Palette:** copy the `--xj-*` token block as is: near-black blue ground, deep
+  blue `#00203a`, light blue for the normal flow, magenta `#f7038a` for the
+  problem or exceptional element, violet for what handles or resolves it, white
+  text. Raw colors appear only in that block; add the new file to
+  `paletteExceptions` in `tests/animations-lessons.test.mjs`. Fonts stay Organic
+  (`--font-body`, generic `monospace` for code); icons stay Lucide at `2.75`. The
+  card thumbnail stays in the Organic palette, since it lives on the lesson page.
+- **Layout:** a fixed code editor on the left (outside the camera) and an
+  isometric 2.5D system on the right (inside it). The code is part of the scene:
+  syntax colors, a bar that slides to the line being executed, the failing line
+  marked, the program output typed below. Every instruction has a module, and the
+  module shows its editor line number.
+- **Metaphor:** one consistent visual identity per concept for the whole film (a
+  particle for the flow, an object for the thing that travels, a level per
+  method). State changes are shown on the same object, never as explosions or
+  cartoon characters. No decoration that does not explain something.
+- **Camera:** slow, deliberate moves between named `shot-*` anchors; it follows
+  the subject and pulls back at the end to reveal the whole system.
+- **Narration:** two or three short captions per step, in neutral Latin American
+  Spanish (no voseo) with precise vocabulary, plus English. Identifiers and string
+  literals are localized like the lesson does. Clarity beats spectacle.
+
+Engine gotchas already paid for: the player resets `transform` on `data-el`
+elements, so place them with an inner group; camera and `move` targets must be
+anchors, not elements that travel; after an `exit`, show an element again only
+with `enter`; keep cues in chronological order; no SVG filters (fake the glow with
+a wide translucent stroke or a radial gradient).
+
+Verify in the browser at every scene (desktop, mobile, English) before reporting,
+then run the tests listed in `AGENTS.md` §Animations plus `npx astro check`.
+
 ## Everything else
 
 Commands, TDD workflow, TypeScript rules, content collections (articles,
