@@ -106,6 +106,21 @@ export const animations: Animation[] = [
 		lesson: { course: 'java', slug: '08-herencia-polimorfismo-y-sobrecarga' },
 	},
 	{
+		slug: 'viaje-llamada-polimorfica-java',
+		image: '/img/animations/viaje-llamada-polimorfica-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje de una llamada polimórfica',
+			en: 'The journey of a polymorphic call',
+		},
+		description: {
+			es: 'Un corto de dos minutos que sigue a v.arrancar() desde una variable Vehiculo hasta el objeto Auto real: qué revisa el compilador, cómo el despacho dinámico elige la sobrescritura, qué hace super y por qué la sobrecarga se decide antes de ejecutar.',
+			en: 'A two-minute short that follows v.start() from a Vehicle variable to the real Car object: what the compiler checks, how dynamic dispatch picks the override, what super does and why overloading is decided before running.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '08-herencia-polimorfismo-y-sobrecarga' },
+	},
+	{
 		slug: 'abstractas-interfaces-java',
 		image: '/img/animations/abstractas-interfaces-java.svg',
 		tag: { es: 'Java', en: 'Java' },
