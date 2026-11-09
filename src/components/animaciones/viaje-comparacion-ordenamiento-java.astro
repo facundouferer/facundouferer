@@ -1,0 +1,1290 @@
+---
+/**
+ * Scene for "The journey of a comparison" (lesson java/16), a short film played on
+ * one persistent motion canvas. The captions and cues live in
+ * `src/data/animations/viaje-comparacion-ordenamiento-java.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: it shows
+ * the Java source and the cues slide a bar over the line being executed. The
+ * viewport on the right holds the camera: an isometric system whose modules are the
+ * instructions of the program, a shelf that is the list, one platform for the class
+ * (`compareTo` lives in it) and another one beside it for the `Comparator`, a light
+ * blue particle (the execution flow) and a violet token (the answer of a comparison).
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing else
+ * in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/viaje-comparacion-ordenamiento-java';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Source code shown in the editor ───────────────────────────────────────
+// Identifiers and string literals are localized the same way the lesson does.
+const names = {
+	file: t('Libro.java', 'Book.java'),
+	cls: t('Libro', 'Book'),
+	title: t('titulo', 'title'),
+	author: t('autor', 'author'),
+	pages: t('paginas', 'pages'),
+	other: t('otro', 'other'),
+	list: t('libros', 'books'),
+	item: t('l', 'x'),
+	getTitle: t('getTitulo', 'getTitle'),
+	getPages: t('getPaginas', 'getPages'),
+};
+
+// The list of the lesson, in order of arrival (three of its books).
+type Book = { id: string; title: string; author: string; pages: number };
+const rayuela: Book = { id: 'bk-r', title: t('Rayuela', 'Hopscotch'), author: t('Cortázar', 'Cortazar'), pages: 736 };
+const orwell: Book = { id: 'bk-n', title: '1984', author: 'Orwell', pages: 328 };
+const ficciones: Book = { id: 'bk-f', title: t('Ficciones', 'Fictions'), author: 'Borges', pages: 174 };
+const books = [rayuela, orwell, ficciones];
+
+const source = (comparable: boolean) =>
+	[
+		`public class ${names.cls}${comparable ? ` implements Comparable<${names.cls}>` : ''} {`,
+		`    private final String ${names.title};`,
+		`    private final String ${names.author};`,
+		`    private final int ${names.pages};`,
+		`    // ${t('constructor y getters', 'constructor and getters')}`,
+		'',
+		'    @Override',
+		`    public int compareTo(${names.cls} ${names.other}) {`,
+		`        return this.${names.title}.compareTo(${names.other}.${names.title});`,
+		'    }',
+		'}',
+		'',
+		`List<${names.cls}> ${names.list} = new ArrayList<>(List.of(`,
+		...books.map((book, index) => `    new ${names.cls}("${book.title}", "${book.author}", ${book.pages})${index === books.length - 1 ? '));' : ','}`),
+		'',
+		`Collections.sort(${names.list});`,
+		`${names.list}.forEach(${names.item} -> System.out.println(${names.item}.${names.getTitle}()));`,
+		'',
+		`${names.list}.sort(Comparator.comparingInt(${names.cls}::${names.getPages}));`,
+		`${names.list}.forEach(${names.item} -> System.out.println(${names.item}.${names.getTitle}()));`,
+	].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const svgLines = (code: string) =>
+	highlightCode(code, 'java').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+
+const page = svgLines(source(true));
+// Before the class is Comparable: a shorter header, and the class closes right after its fields.
+const plainHeader = svgLines(source(false))[0];
+const closingBrace = page[10];
+const CLASS_HEADER = 1;
+
+// What Java answers. `String.compareTo` returns the difference of the first pair of
+// different characters; `comparingInt` answers with `Integer.compare`.
+const compareTo = (a: string, b: string) => {
+	for (let i = 0; i < Math.min(a.length, b.length); i += 1) {
+		const diff = a.charCodeAt(i) - b.charCodeAt(i);
+		if (diff !== 0) return diff;
+	}
+	return a.length - b.length;
+};
+const byTitle = (a: Book, b: Book) => compareTo(a.title, b.title);
+const byPages = (a: Book, b: Book) => Math.sign(a.pages - b.pages);
+const signName = (value: number) => (value < 0 ? t('negativo', 'negative') : value > 0 ? t('positivo', 'positive') : t('cero', 'zero'));
+const verdict = (value: number) => `${value} → ${signName(value)}`;
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 68;
+const GUTTER_X = 54;
+const CODE_TOP = 70;
+const LINE_H = 21;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 5;
+const CONSOLE_TOP = 540;
+const outY = (row: number) => 582 + row * 19.5;
+
+// Lines the highlight bar travels to.
+const lineAnchors = [
+	{ id: 'l-9', n: 9 },
+	{ id: 'l-18', n: 18 },
+	{ id: 'l-19', n: 19 },
+	{ id: 'l-21', n: 21 },
+	{ id: 'l-22', n: 22 },
+];
+
+// Program output: the titles after each sort, one printed line per book.
+const outputs = [...[...books].sort(byTitle), ...[...books].sort(byPages)].map((book, index) => ({
+	id: `out-${index + 1}`,
+	row: index,
+	text: book.title,
+}));
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right (the order of execution), +v down-left, z is up.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 58;
+const EY = 33.5;
+const ORIGIN = { x: 470, y: 240 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const path = (points: Point[]) => 'M' + points.map((point) => `${point.x} ${point.y}`).join(' L');
+
+/** A box standing on the floor at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		// Text on the left face follows its 30° edge.
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+/** Text lying flat on a floor, reading along +u. */
+const floorMatrix = (point: Point) => `matrix(0.866 0.5 -0.866 0.5 ${point.x} ${point.y})`;
+
+const MODULE_H = 18;
+const SORT_U = 1.1;
+const SORT2_U = 4;
+const LEVEL_CLASS = -243;
+const LEVEL_COMPARATOR = -171;
+const SHELF_V = -1.5;
+const SLOT_U = [0.6, 2.5, 4.4];
+
+const block = (u: number, v = 0, z = 0) => slab(u, v, 0.4, 0.4, MODULE_H, z);
+const G = {
+	floor: slab(2.15, -0.8, 3.55, 1.4, 12, -12),
+	shelf: slab(2.5, SHELF_V, 2.5, 0.42, 4),
+	entry: slab(-1, 0, 0.2, 0.2, 6),
+	create: block(0),
+	sort: block(SORT_U),
+	print: block(2.2),
+	sort2: block(SORT2_U),
+	print2: block(5.1),
+	floorClass: slab(SORT_U, 0, 0.7, 0.7, 10, LEVEL_CLASS - 10),
+	compareTo: block(SORT_U, 0, LEVEL_CLASS),
+	floorComparator: slab(SORT2_U, 0, 0.7, 0.7, 10, LEVEL_COMPARATOR - 10),
+	comparator: block(SORT2_U, 0, LEVEL_COMPARATOR),
+};
+type Slab = typeof G.floor;
+
+// Modules, back to front. `face` is the editor line the module runs.
+type Tone = 'flow' | 'violet';
+type Module = { id: string; g: Slab; tone: Tone; face?: string; lit?: { id: string }; hot?: { id: string } };
+const modules: Module[] = [
+	{ id: 'm-entry', g: G.entry, tone: 'flow' },
+	{ id: 'm-new', g: G.create, tone: 'flow', face: '13', lit: { id: 'new-on' } },
+	{ id: 'm-sort', g: G.sort, tone: 'flow', face: '18', lit: { id: 'sort-on' }, hot: { id: 'sort-x' } },
+	{ id: 'm-print', g: G.print, tone: 'flow', face: '19', lit: { id: 'print-on' } },
+	{ id: 'm-sort2', g: G.sort2, tone: 'flow', face: '21', lit: { id: 'sort2-on' } },
+	{ id: 'm-print2', g: G.print2, tone: 'flow', face: '22', lit: { id: 'print2-on' } },
+];
+// Whoever answers a comparison: `compareTo` inside the class, the `Comparator` beside it.
+const judges: Module[] = [
+	{ id: 'm-cto', g: G.compareTo, tone: 'violet', face: '9', lit: { id: 'cto-on' } },
+	{ id: 'm-cmp', g: G.comparator, tone: 'violet', face: '21', lit: { id: 'cmp-on' } },
+];
+
+// Routes on the floor of the program, and the calls that leave it.
+const routes = {
+	main: path([pt(-1, 0), pt(2.2, 0)]),
+	rest: path([pt(2.2, 0), pt(5.1, 0)]),
+	entry: path([pt(-1, 0), pt(0, 0)]),
+	toSort: path([pt(0, 0), pt(SORT_U, 0)]),
+	toPrint: path([pt(SORT_U, 0), pt(2.2, 0)]),
+	toSort2: path([pt(2.2, 0), pt(SORT2_U, 0)]),
+	toPrint2: path([pt(SORT2_U, 0), pt(5.1, 0)]),
+	ask: path([pt(SORT_U, 0), G.compareTo.center]),
+	ask2: path([pt(SORT2_U, 0), G.comparator.center]),
+};
+const gridLines = [
+	...[-1, 0, 1, 2, 3, 4, 5].map((u) => path([pt(u, -2.2, 0.5), pt(u, 0.6, 0.5)])),
+	...[-2, -1.5, -1, -0.5, 0, 0.5].map((v) => path([pt(-1.4, v, 0.5), pt(5.7, v, 0.5)])),
+];
+// Footprint of the method the class still lacks.
+const missingSlot = slab(SORT_U, 0, 0.4, 0.4, 0, LEVEL_CLASS + 1).top;
+
+// The list: a shelf with three positions. A pair of neighbours is what the sort compares.
+const slots = SLOT_U.map((u, index) => ({ id: `s-${index}`, ...pt(u, SHELF_V, 4) }));
+const pairZone = (first: number) => slab((SLOT_U[first] + SLOT_U[first + 1]) / 2, SHELF_V, (SLOT_U[first + 1] - SLOT_U[first]) / 2 + 0.62, 0.56, 0, 5).top;
+const zones = [
+	{ id: 'z-01', tone: 'flow', points: pairZone(0) },
+	{ id: 'z-12', tone: 'flow', points: pairZone(1) },
+	{ id: 'x-01', tone: 'magenta', points: pairZone(0) },
+	{ id: 'x-12', tone: 'magenta', points: pairZone(1) },
+	{ id: 'ok-01', tone: 'violet', points: pairZone(0) },
+	{ id: 'ok-12', tone: 'violet', points: pairZone(1) },
+];
+
+// A book, drawn around the middle of its base so it can travel between positions.
+const BOOK = { a: 0.34, b: 0.2, h: 16 };
+const rel = (u: number, v: number, z: number): Point => ({ x: round((u - v) * EX), y: round((u + v) * EY - z) });
+const bookShape = (() => {
+	const { a, b, h } = BOOK;
+	const back = rel(-a, -b, h);
+	const right = rel(a, -b, h);
+	const front = rel(a, b, h);
+	const left = rel(-a, b, h);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	return {
+		top: poly([back, right, front, left]),
+		shadow: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		// The pages show on the long side.
+		pages: path([lift(down(left), 5), lift(down(front), 5)]) + ' ' + path([lift(down(left), 10), lift(down(front), 10)]),
+	};
+})();
+const pagesLabel = (book: Book) => `${book.pages} p.`;
+const tagWidth = (book: Book) => Math.round((book.title.length + pagesLabel(book).length) * 7.6 + 30);
+
+// Where the travelling objects stop: just above the top of each module.
+const hover = (g: Slab, by = 16) => lift(g.center, by);
+const anchors = [
+	{ id: 'a-entry', ...hover(G.entry, 14) },
+	{ id: 'a-new', ...hover(G.create) },
+	{ id: 'a-sort', ...hover(G.sort) },
+	{ id: 'a-print', ...hover(G.print) },
+	{ id: 'a-sort2', ...hover(G.sort2) },
+	{ id: 'a-print2', ...hover(G.print2) },
+	{ id: 'a-cto', ...hover(G.compareTo) },
+	{ id: 'a-cmp', ...hover(G.comparator) },
+];
+const START = anchors[0];
+const A_CTO = anchors[6];
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-main', cx: 640, cy: 300, s: 1.1 },
+	{ id: 'shot-sort', cx: 500, cy: 392, s: 1.3 },
+	{ id: 'shot-cto', cx: 490, cy: 425, s: 1.5 },
+	{ id: 'shot-shelf', cx: 655, cy: 300, s: 1.3 },
+	{ id: 'shot-wide', cx: 618, cy: 365, s: 1.06 },
+	{ id: 'shot-out', cx: 682, cy: 470, s: 1.3 },
+	{ id: 'shot-cmp', cx: 755, cy: 376, s: 1.3 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type ChipTone = 'plain' | 'flow' | 'magenta' | 'violet';
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: ChipTone;
+	mono?: boolean;
+	check?: boolean;
+	lead?: Point;
+};
+const CTO = G.compareTo.center;
+const CMP = G.comparator.center;
+/** Notes of `compareTo` go on its left, the ones of the `Comparator` on its right. */
+const LEFT_X = 330;
+const LEFT_Y = 338;
+const RIGHT_X = 796;
+const RIGHT_Y = 508;
+const result = (id: string, value: number, side: 'left' | 'right'): Chip => ({
+	id,
+	text: verdict(value),
+	x: side === 'left' ? LEFT_X : RIGHT_X,
+	y: (side === 'left' ? LEFT_Y : RIGHT_Y) + 60,
+	align: 'start',
+	tone: 'violet',
+	mono: true,
+});
+const chips: Chip[] = [
+	result('r1', byTitle(orwell, rayuela), 'left'),
+	result('r2', byTitle(ficciones, rayuela), 'left'),
+	result('r3', byTitle(ficciones, orwell), 'left'),
+	result('rb1', byPages(ficciones, orwell), 'right'),
+	result('rb2', byPages(rayuela, orwell), 'right'),
+	{ id: 'untouched', text: t('la clase no se toca', 'the class is not touched'), x: CTO.x, y: CTO.y + 104, align: 'middle', tone: 'plain' },
+	{ id: 'sorted-t', text: t('ordenada por título', 'sorted by title'), x: 930, y: 188, align: 'end', tone: 'violet', check: true },
+	{ id: 'sorted-p', text: t('ordenada por páginas', 'sorted by pages'), x: 930, y: 188, align: 'end', tone: 'violet', check: true },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.6 : 6.7) + (chip.check ? 42 : 24));
+const chipLeft = (chip: Chip) => (chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x);
+
+// Two-line notes: what a comparison receives, and the names of who answers.
+type Note = { id: string; x: number; y: number; tone: ChipTone; lines: [string, string]; strong?: boolean; mono?: boolean; lead?: [Point, Point] };
+const quoted = (book: Book) => `"${book.title}"`;
+const titlePair = (id: string, self: Book, other: Book): Note => ({
+	id,
+	x: LEFT_X,
+	y: LEFT_Y,
+	tone: 'flow',
+	mono: true,
+	lines: [`this → ${quoted(self)}`, `${names.other} → ${quoted(other)}`],
+});
+const pagesPair = (id: string, first: Book, second: Book): Note => ({
+	id,
+	x: RIGHT_X,
+	y: RIGHT_Y,
+	tone: 'flow',
+	mono: true,
+	lines: [`${names.getPages}() → ${first.pages}`, `${names.getPages}() → ${second.pages}`],
+});
+const notes: Note[] = [
+	titlePair('a1', orwell, rayuela),
+	titlePair('a2', ficciones, rayuela),
+	titlePair('a3', ficciones, orwell),
+	pagesPair('b1', ficciones, orwell),
+	pagesPair('b2', rayuela, orwell),
+	{
+		id: 'why',
+		x: LEFT_X,
+		y: LEFT_Y,
+		tone: 'magenta',
+		strong: true,
+		lines: [t('¿ordenar por qué?', 'sort by what?'), t('título · autor · páginas', 'title · author · pages')],
+	},
+	{
+		id: 'lb-cto',
+		x: CTO.x + 28,
+		y: CTO.y - 62,
+		tone: 'violet',
+		strong: true,
+		mono: true,
+		lines: ['compareTo()', t('por título', 'by title')],
+		lead: [
+			{ x: CTO.x + 42, y: CTO.y - 22 },
+			{ x: CTO.x + 22, y: CTO.y - 2 },
+		],
+	},
+	{
+		id: 'lb-cmp',
+		x: RIGHT_X,
+		y: RIGHT_Y - 52,
+		tone: 'violet',
+		strong: true,
+		mono: true,
+		lines: ['Comparator', t('por páginas', 'by pages')],
+		lead: [
+			{ x: RIGHT_X + 14, y: RIGHT_Y - 12 },
+			{ x: CMP.x + 26, y: CMP.y + 2 },
+		],
+	},
+];
+const noteWidth = (note: Note) => Math.round(Math.max(note.lines[0].length * (note.mono || note.strong ? 7.6 : 6.7), note.lines[1].length * (note.mono && !note.strong ? 7.6 : 6.7)) + 28);
+
+// The three possible answers of a comparison.
+const signs = [
+	{ id: 'sg-neg', sign: t('negativo', 'negative'), meaning: t('va antes', 'goes before') },
+	{ id: 'sg-zero', sign: t('cero', 'zero'), meaning: t('equivalentes', 'equivalent') },
+	{ id: 'sg-pos', sign: t('positivo', 'positive'), meaning: t('va después', 'goes after') },
+];
+const SIGNS = { x: LEFT_X, y: LEFT_Y - 6, w: 188, h: 84 };
+
+// The answer that travels back to the sort: only its sign matters.
+const answers = [
+	{ id: 'ans-neg', glyph: 'M-6 0 H6' },
+	{ id: 'ans-pos', glyph: 'M-6 0 H6 M0 -6 V6' },
+];
+const MISSING = { x: CTO.x + 30, y: CTO.y - 46 };
+const missingText = t('falta compareTo()', 'compareTo() is missing');
+const missingWidth = Math.round(missingText.length * 6.7 + 24);
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="xj-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="xj-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="xj-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="xj-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xj-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xj-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xj-g-answer">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.75"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the running system, seen through the camera -->
+			<g clip-path="url(#xj-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + 150} cy={VP.y + 110} rx="420" ry="320" fill="url(#xj-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + VP.w - 60} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#xj-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- The class: compareTo lives inside it -->
+						<g data-el="floor-l">
+							<polygon class="xj-plate-shadow" points={G.floorClass.base} transform="translate(10 16)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.floorClass.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.floorClass.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.floorClass.top} fill="url(#xj-g-floor)"></polygon>
+							<text class="xj-floor-text" transform={floorMatrix(pt(SORT_U - 0.62, 0.6, LEVEL_CLASS))}>{names.cls}</text>
+						</g>
+						<g data-el="rt-x" class="xj-flowline xj-flowline--magenta">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.ask}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.ask}></path>
+						</g>
+						<g data-el="fl-q1" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.ask}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.ask}></path>
+						</g>
+						<g data-el="slot-x" class="xj-chip xj-chip--magenta">
+							<polygon class="xj-missing" points={missingSlot}></polygon>
+							<line class="xj-lead" x1={CTO.x + 14} y1={CTO.y + 8} x2={MISSING.x + 14} y2={MISSING.y + 12}></line>
+							<rect x={MISSING.x} y={MISSING.y - 12} width={missingWidth} height="24" rx="12"></rect>
+							<text class="xj-chip-text" x={MISSING.x + missingWidth / 2} y={MISSING.y + 4.5} text-anchor="middle">{missingText}</text>
+						</g>
+
+						<!-- The Comparator: an order that stands beside the class -->
+						<g data-el="floor-c">
+							<polygon class="xj-plate-shadow" points={G.floorComparator.base} transform="translate(10 16)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.floorComparator.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.floorComparator.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.floorComparator.top} fill="url(#xj-g-floor)"></polygon>
+							<text class="xj-floor-text xj-floor-text--small" transform={floorMatrix(pt(SORT2_U - 0.64, 0.6, LEVEL_COMPARATOR))}>Comparator</text>
+						</g>
+						<g data-el="fl-q2" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.ask2}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.ask2}></path>
+						</g>
+
+						{
+							judges.map((module) => (
+								<>
+									<g data-el={module.id} class:list={['xj-mod', `xj-mod--${module.tone}`]}>
+										<polygon class="xj-shadow" points={module.g.base} transform="translate(7 9)" />
+										<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#xj-g-top)" />
+										<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+											{module.face}
+										</text>
+									</g>
+									<g data-el={module.lit?.id} class:list={['xj-lit', `xj-lit--${module.tone}`]}>
+										<polygon class="xj-lit-halo" points={module.g.top} />
+										<polygon class="xj-lit-top" points={module.g.top} />
+										<polygon class="xj-lit-side" points={module.g.leftFace} />
+										<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+											{module.face}
+										</text>
+									</g>
+								</>
+							))
+						}
+
+						<!-- The program -->
+						<g data-el="floor-main" data-base="shown">
+							<polygon class="xj-plate-shadow" points={G.floor.base} transform="translate(14 22)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.floor.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.floor.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.floor.top} fill="url(#xj-g-floor)"></polygon>
+							{gridLines.map((d) => <path class="xj-grid" d={d} />)}
+							<text class="xj-floor-text" transform={floorMatrix(pt(-1.28, 0.46))}>main()</text>
+						</g>
+
+						<!-- The list: one position per element -->
+						<g data-el="shelf">
+							<polygon class="xj-shadow" points={G.shelf.base} transform="translate(5 7)"></polygon>
+							<polygon class="xj-face xj-face--l" points={G.shelf.leftFace}></polygon>
+							<polygon class="xj-face xj-face--r" points={G.shelf.rightFace}></polygon>
+							<polygon class="xj-face xj-shelf-top" points={G.shelf.top}></polygon>
+							<text class="xj-floor-text xj-floor-text--flow" transform={floorMatrix(pt(-1.22, SHELF_V + 0.16))}>{names.list}</text>
+							{SLOT_U.map((u, index) => <text class="xj-floor-text xj-floor-text--small" transform={floorMatrix(pt(u - 0.16, SHELF_V + 0.78))}>[{index}]</text>)}
+						</g>
+						{zones.map((zone) => <polygon data-el={zone.id} class:list={['xj-zone', `xj-zone--${zone.tone}`]} points={zone.points} />)}
+
+						<!-- Routes: the dim base first, the lit runs on top -->
+						<g data-el="tr-main"><path class="mg-stroke xj-trace" pathLength="1" d={routes.main}></path></g>
+						<g data-el="tr-rest"><path class="mg-stroke xj-trace" pathLength="1" d={routes.rest}></path></g>
+						<g data-el="fl-0" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.entry}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.entry}></path>
+						</g>
+						<g data-el="fl-1" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.toSort}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.toSort}></path>
+						</g>
+						<g data-el="fl-2" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.toPrint}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.toPrint}></path>
+						</g>
+						<g data-el="fl-3" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.toSort2}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.toSort2}></path>
+						</g>
+						<g data-el="fl-4" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.toPrint2}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.toPrint2}></path>
+						</g>
+
+						<!-- Modules of the program, back to front, each with its lit states -->
+						{
+							modules.map((module) => (
+								<>
+									<g data-el={module.id} class:list={['xj-mod', `xj-mod--${module.tone}`]}>
+										<polygon class="xj-shadow" points={module.g.base} transform="translate(7 9)" />
+										<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#xj-g-top)" />
+										{module.face && (
+											<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+												{module.face}
+											</text>
+										)}
+									</g>
+									{module.lit && (
+										<g data-el={module.lit.id} class:list={['xj-lit', `xj-lit--${module.tone}`]}>
+											<polygon class="xj-lit-halo" points={module.g.top} />
+											<polygon class="xj-lit-top" points={module.g.top} />
+											<polygon class="xj-lit-side" points={module.g.leftFace} />
+											<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+												{module.face}
+											</text>
+										</g>
+									)}
+									{module.hot && (
+										<g data-el={module.hot.id} class="xj-lit xj-lit--magenta">
+											<polygon class="xj-lit-halo" points={module.g.top} />
+											<polygon class="xj-lit-top" points={module.g.top} />
+											<polygon class="xj-lit-side" points={module.g.leftFace} />
+											<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+												{module.face}
+											</text>
+										</g>
+									)}
+								</>
+							))
+						}
+
+						<!-- Two-line notes -->
+						{
+							notes.map((note) => (
+								<g data-el={note.id} class:list={['xj-chip', `xj-chip--${note.tone}`]}>
+									{note.lead && <line class="xj-lead" x1={note.lead[0].x} y1={note.lead[0].y} x2={note.lead[1].x} y2={note.lead[1].y} />}
+									<rect x={note.x} y={note.y} width={noteWidth(note)} height="40" rx="12" />
+									<text class:list={[note.mono ? 'xj-chip-mono' : 'xj-chip-text', note.strong && 'xj-chip-strong']} x={note.x + 14} y={note.y + 17}>
+										{note.lines[0]}
+									</text>
+									<text class={note.mono && !note.strong ? 'xj-chip-mono' : 'xj-chip-text'} x={note.x + 14} y={note.y + 32}>
+										{note.lines[1]}
+									</text>
+								</g>
+							))
+						}
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									{chip.lead && <line class="xj-lead" x1={chip.lead.x} y1={chip.lead.y} x2={chipLeft(chip) + chipWidth(chip) - 14} y2={chip.y - 12} />}
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.check && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M20 6 9 17l-5-5" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.check ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The three answers a comparison can give -->
+						<g data-el="signs" class="xj-chip xj-chip--violet">
+							<rect x={SIGNS.x} y={SIGNS.y} width={SIGNS.w} height={SIGNS.h} rx="12"></rect>
+							{
+								signs.map((row, index) => (
+									<text data-el={row.id} class="xj-chip-text" x={SIGNS.x + 14} y={SIGNS.y + 24 + index * 24}>
+										<tspan class="xj-chip-strong">{row.sign}</tspan> → {row.meaning}
+									</text>
+								))
+							}
+						</g>
+
+						<!-- The books. The player resets `transform` on `data-el` elements, so each one is
+						     drawn around its own origin and placed through `data-x` / `data-y`. -->
+						{
+							books.map((book, index) => (
+								<g data-el={book.id} class="xj-book" data-x={slots[index].x} data-y={slots[index].y}>
+									<polygon class="xj-shadow" points={bookShape.shadow} transform="translate(5 6)" />
+									<polygon class="xj-face xj-face--l" points={bookShape.leftFace} />
+									<polygon class="xj-face xj-face--r" points={bookShape.rightFace} />
+									<polygon class="xj-face xj-face--t" points={bookShape.top} fill="url(#xj-g-top)" />
+									<path class="xj-book-pages" d={bookShape.pages} />
+									<rect class="xj-book-tag" x={-tagWidth(book) / 2} y="-64" width={tagWidth(book)} height="22" rx="11" />
+									<text class="xj-book-text" x="0" y="-48.5" text-anchor="middle">
+										<tspan class="xj-book-title">{book.title}</tspan>
+										<tspan dx="6">{pagesLabel(book)}</tspan>
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The answer of a comparison: one violet token, whose sign is all that matters -->
+						{
+							answers.map((answer) => (
+								<g data-el={answer.id} class="xj-answer" data-x={A_CTO.x} data-y={A_CTO.y - 30}>
+									<circle r="30" fill="url(#xj-g-answer)" />
+									<circle class="xj-answer-disc" r="13" />
+									<path class="xj-answer-glyph" d={answer.glyph} />
+								</g>
+							))
+						}
+
+						<!-- The execution flow -->
+						<g data-el="p" class="xj-particle" data-x={START.x} data-y={START.y}>
+							<circle r="20" fill="url(#xj-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{slots.map((slot) => <circle data-anchor={slot.id} cx={slot.x} cy={slot.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<polygon class="xj-legend-problem" points={`${VP.x + 186},${LEGEND_Y - 6} ${VP.x + 192},${LEGEND_Y} ${VP.x + 186},${LEGEND_Y + 6} ${VP.x + 180},${LEGEND_Y}`}></polygon>
+				<text x={VP.x + 200} y={LEGEND_Y + 4}>{t('Par desordenado', 'Pair out of order')}</text>
+				<circle class="xj-legend-answer" cx={VP.x + 338} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 350} y={LEGEND_Y + 4}>{t('Quien responde', 'Who answers')}</text>
+			</g>
+
+			<!-- EDITOR: the source, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.file}</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 21}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<!-- Line states sit behind the code -->
+				<rect data-el="hx-18" class="xj-bar xj-bar--magenta" x={BAR.x} y={lineTop(18)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<rect data-el="hv-1" class="xj-bar xj-bar--violet" x={BAR.x} y={lineTop(1)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<rect data-el="hv-9" class="xj-bar xj-bar--violet" x={BAR.x} y={lineTop(7)} width={BAR.w} height={LINE_H * 4} rx="6"></rect>
+				<rect data-el="hv-21" class="xj-bar xj-bar--violet" x={BAR.x} y={lineTop(21)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(13)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 3} -4.5 l6 4.5 l-6 4.5 z`}></path>
+				</g>
+
+				<!-- The program. Line 1 and the closing brace have an earlier version: the class before it is Comparable. -->
+				<g class="xj-code">
+					{
+						page.map((line) => (
+							<g data-el={line.n === CLASS_HEADER ? 'ea-1b' : `ea-${line.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+					<g data-el="ea-1a">
+						<text class="xj-gutter" x={GUTTER_X} y={lineBase(1)} text-anchor="end">1</text>
+						<text class="xj-mono" x={CODE_X} y={lineBase(1)} xml:space="preserve" set:html={plainHeader.html} />
+					</g>
+					<g data-el="ea-6a">
+						<text class="xj-gutter" x={GUTTER_X} y={lineBase(6)} text-anchor="end">6</text>
+						<text class="xj-mono" x={CODE_X} y={lineBase(6)} xml:space="preserve" set:html={closingBrace.html} />
+					</g>
+				</g>
+
+				<!-- Java rejects the sort before anything runs -->
+				<g data-el="err-18" class="xj-skip">
+					<rect class="xj-skip-tag" x="372" y={lineTop(18) + 1.5} width="212" height={LINE_H - 3} rx="9"></rect>
+					<text x="478" y={lineBase(18) - 0.5} text-anchor="middle">{t('ERROR: Libro no es Comparable', 'ERROR: Book is not Comparable')}</text>
+				</g>
+
+				{
+					outputs.map((line) => (
+						<text data-el={line.id} class="xj-out" x={ED.x + 20} y={outY(line.row)}>{line.text}</text>
+					))
+				}
+				{lineAnchors.map((anchor) => <circle data-anchor={anchor.id} cx={BAR_CX} cy={lineMid(anchor.n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of the lesson films (DESIGN.md §8): a deep blue ground, a light blue
+	   execution flow, magenta for the problem and violet for what resolves it.
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='viaje-comparacion-ordenamiento-java']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='viaje-comparacion-ordenamiento-java'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='viaje-comparacion-ordenamiento-java'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='viaje-comparacion-ordenamiento-java'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-problem {
+		fill: var(--xj-magenta);
+	}
+
+	.xj-legend-answer {
+		fill: var(--xj-violet);
+	}
+
+	/* Levels and modules */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-grid {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 1;
+		opacity: 0.07;
+	}
+
+	.xj-floor-text {
+		font-family: var(--font-body);
+		font-size: 15px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		fill: var(--xj-mist);
+		opacity: 0.85;
+	}
+
+	.xj-floor-text--flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-zone {
+		fill: var(--xj-flow);
+		fill-opacity: 0.05;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.55;
+		stroke-width: 1.5;
+		stroke-dasharray: 7 6;
+		stroke-linejoin: round;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-mod--violet .xj-face {
+		stroke: var(--xj-violet);
+	}
+
+	.xj-mod--violet .xj-face--l {
+		fill: var(--xj-violet-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	/* Lit states: the module that is running, or the one that failed */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* Routes */
+	.xj-trace {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 3;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--magenta {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-lead {
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+		stroke-opacity: 0.7;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 14px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-bar--magenta {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.24;
+		stroke: var(--xj-magenta);
+		stroke-width: 1.2;
+	}
+
+	.xj-bar--violet {
+		fill: var(--xj-violet);
+		fill-opacity: 0.24;
+		stroke: var(--xj-violet);
+		stroke-width: 1.2;
+	}
+
+	.xj-skip-tag {
+		fill: var(--xj-magenta-deep);
+		stroke: var(--xj-magenta);
+		stroke-width: 1.2;
+	}
+
+	.xj-skip text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	/* The list, its pairs and the books */
+	.xj-shelf-top {
+		fill: var(--xj-deep-hi);
+	}
+
+	.xj-floor-text--small {
+		font-size: 13px;
+	}
+
+	.xj-zone--magenta {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.16;
+		stroke: var(--xj-magenta);
+		stroke-opacity: 0.9;
+	}
+
+	.xj-zone--violet {
+		fill: var(--xj-violet);
+		fill-opacity: 0.16;
+		stroke: var(--xj-violet-soft);
+		stroke-opacity: 0.9;
+		stroke-dasharray: none;
+	}
+
+	.xj-missing {
+		fill: none;
+		stroke: var(--xj-magenta);
+		stroke-width: 2;
+		stroke-dasharray: 5 4;
+		stroke-linejoin: round;
+	}
+
+	.xj-book-pages {
+		fill: none;
+		stroke: var(--xj-flow-soft);
+		stroke-width: 1;
+		stroke-opacity: 0.6;
+	}
+
+	.xj-book-tag {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.7;
+		stroke-width: 1.5;
+	}
+
+	.xj-book-text {
+		font-family: monospace;
+		font-size: 12.5px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-book-title {
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	/* The answer and the flow */
+	.xj-answer-disc {
+		fill: var(--xj-violet);
+		stroke: var(--xj-violet-soft);
+		stroke-width: 2;
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	.xj-answer-glyph {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-width: 3;
+		stroke-linecap: round;
+	}
+
+	.xj-chip-strong {
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-ann) {
+		fill: var(--xj-violet-soft);
+	}
+</style>

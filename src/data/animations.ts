@@ -225,6 +225,21 @@ export const animations: Animation[] = [
 		minutes: 16,
 		lesson: { course: 'java', slug: '14-iteradores-ordenamiento-equals-hashcode' },
 	},
+	{
+		slug: 'viaje-comparacion-ordenamiento-java',
+		image: '/img/animations/viaje-comparacion-ordenamiento-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje de una comparación: cómo se ordena una lista',
+			en: 'The journey of a comparison: how a list gets sorted',
+		},
+		description: {
+			es: 'Un corto de dos minutos: por qué Java rechaza ordenar una lista de Libro, cómo compareTo responde cada comparación con un signo y cómo un Comparator aporta otro orden sin tocar la clase.',
+			en: 'A two-minute short: why Java refuses to sort a list of Book, how compareTo answers each comparison with a sign, and how a Comparator supplies another order without touching the class.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '14-iteradores-ordenamiento-equals-hashcode' },
+	},
 ];
 
 /**

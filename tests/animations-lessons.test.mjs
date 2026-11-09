@@ -202,6 +202,7 @@ test('new animation components contain no raw hex colors (tokens only)', async (
 		'viaje-llamada-polimorfica-java.astro',
 		'viaje-contrato-interfaz-java.astro',
 		'viaje-clave-hashmap-java.astro',
+		'viaje-comparacion-ordenamiento-java.astro',
 	]);
 	const files = [
 		'src/components/animations/AnimationPlayer.astro',
