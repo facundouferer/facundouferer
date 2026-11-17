@@ -1,0 +1,1179 @@
+---
+/**
+ * Scene for "The journey of a SQL query through JDBC" (lesson
+ * java/19-acceso-a-bases-de-datos-jdbc, order: 23), a short film played on one
+ * persistent motion canvas. The captions and cues live in
+ * `src/data/animations/jdbc-java.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: it shows
+ * the Java source and the cues slide a bar over the line being executed. The
+ * viewport on the right holds the camera: an isometric tower where your code is the
+ * top floor, the `java.sql` level with the `Connection` sits in the middle and the
+ * database is the bottom floor. Every query is a card that travels down the pipe.
+ * Magenta marks the problem (concatenated SQL, the half-done transfer), violet what
+ * resolves it (`PreparedStatement` parameters, the transaction).
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/jdbc-java';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Source code shown in the editor ───────────────────────────────────────
+// Identifiers and string literals are localized the same way the lesson does.
+const names = {
+	file: t('Tienda.java', 'Shop.java'),
+	db: t('tienda', 'shop'),
+	users: t('usuarios', 'users'),
+	name: t('nombre', 'name'),
+	all: t('todos', 'all'),
+	getConn: t('obtenerConexion', 'getConnection'),
+	debit: t('debitar', 'debit'),
+	credit: t('acreditar', 'credit'),
+	source: t('cuentaOrigen', 'sourceAccount'),
+	target: t('cuentaDestino', 'targetAccount'),
+};
+const strings = {
+	user: t('usuario', 'user'),
+	secret: t('clave', 'secret'),
+	found: t('encontrado', 'found'),
+	nobody: t('nadie', 'nobody'),
+	failed: t('No se pudo transferir', 'Transfer failed'),
+};
+const notes = {
+	input: t('// lo escribió el usuario', '// typed by the user'),
+	never: t('// NUNCA HAGAS ESTO', '// NEVER DO THIS'),
+	always: t('// SIEMPRE ASÍ', '// ALWAYS LIKE THIS'),
+	index: t('// índices desde 1', '// indexes start at 1'),
+	open: t('// 1. abrimos la transacción', '// 1. open the transaction'),
+	confirm: t('// 2. las dos salieron bien', '// 2. both succeeded'),
+	undo: t('// 3. deshacemos todo', '// 3. undo everything'),
+	restore: t('// 4. como la encontramos', '// 4. as we found it'),
+};
+
+// First program: the same query, concatenated (never) and prepared (always).
+const sourceA = [
+	`String url = "jdbc:postgresql://localhost:5432/${names.db}";`,
+	`String email = "' OR '1'='1";  ${notes.input}`,
+	'',
+	'try (Connection conn =',
+	`         DriverManager.getConnection(url, "${strings.user}", "${strings.secret}")) {`,
+	`    ${notes.never}`,
+	'    Statement st = conn.createStatement();',
+	`    String sql = "SELECT * FROM ${names.users} WHERE email = '"`,
+	`            + email + "'";`,
+	`    ResultSet ${names.all} = st.executeQuery(sql);`,
+	`    ${notes.always}`,
+	'    try (PreparedStatement ps = conn.prepareStatement(',
+	`            "SELECT id, ${names.name} FROM ${names.users} WHERE email = ?")) {`,
+	`        ps.setString(1, email);  ${notes.index}`,
+	'        ResultSet rs = ps.executeQuery();',
+	`        System.out.println(rs.next() ? "${strings.found}" : "${strings.nobody}");`,
+	'    }',
+	'}',
+].join('\n');
+
+// Second program: a transfer of two dependent updates inside a transaction.
+const sourceB = [
+	`Connection conn = ${names.getConn}();`,
+	'try {',
+	`    conn.setAutoCommit(false);  ${notes.open}`,
+	'',
+	`    ${names.debit}(conn, ${names.source}, 5000);`,
+	`    ${names.credit}(conn, ${names.target}, 5000);`,
+	'',
+	`    conn.commit();  ${notes.confirm}`,
+	'',
+	'} catch (SQLException e) {',
+	`    conn.rollback();  ${notes.undo}`,
+	`    throw new IllegalStateException("${strings.failed}", e);`,
+	'} finally {',
+	`    conn.setAutoCommit(true);  ${notes.restore}`,
+	'    conn.close();',
+	'}',
+].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const svgLines = (source: string) =>
+	highlightCode(source, 'java').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+
+const pageA = svgLines(sourceA);
+const pageB = svgLines(sourceB);
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 68;
+const GUTTER_X = 54;
+const CODE_TOP = 74;
+const LINE_H = 23;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 5;
+const CONSOLE_TOP = 552;
+const outY = (row: number) => 597 + row * LINE_H;
+
+// Lines the highlight bar travels to (`ln-<n>`, valid for both programs).
+const lineAnchors = [1, 3, 4, 5, 6, 8, 10, 11, 12, 14, 15, 16].map((n) => ({ id: `ln-${n}`, n }));
+
+// Program output: the prepared query finds nobody.
+const outputs = [{ id: 'out-a', row: 0, text: strings.nobody }];
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right, +v down-left, z is up. The tower descends along
+// +v: your code on top, `java.sql` in the middle, the database at the bottom.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 56;
+const EY = 32;
+const ORIGIN = { x: 460, y: 270 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const path = (points: Point[]) => 'M' + points.map((point) => `${point.x} ${point.y}`).join(' L');
+
+/** A box standing on the floor at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+/** Text lying flat on a floor, reading along +u. */
+const floorMatrix = (point: Point) => `matrix(0.866 0.5 -0.866 0.5 ${point.x} ${point.y})`;
+
+const LV_JDBC = -110;
+const LV_DB = -220;
+const ROW_A = -1.1;
+const ROW_B = 0.1;
+const COLS = [-0.9, -0.3, 0.3, 0.9, 1.5, 2.1];
+const block = (u: number, v: number) => slab(u, v, 0.24, 0.24, 16);
+
+const G = {
+	app: slab(0.6, -0.425, 1.95, 1.225, 12, -12),
+	jdbc: slab(0.6, 1.2, 1.3, 0.6, 10, LV_JDBC - 10),
+	db: slab(0.6, 2.7, 1.95, 1.1, 12, LV_DB - 12),
+	connBox: slab(0.2, 1.2, 0.42, 0.3, 24, LV_JDBC),
+	driver: slab(1.35, 1.2, 0.3, 0.26, 14, LV_JDBC),
+	engine: slab(-0.8, 1.95, 0.32, 0.28, 24, LV_DB),
+	rows: [0.2, 0.7, 1.2, 1.7].map((u) => slab(u, 1.85, 0.22, 0.18, 10, LV_DB)),
+	accA: slab(-0.8, 3.4, 0.34, 0.28, 30, LV_DB),
+	accB: slab(1.4, 3.4, 0.34, 0.28, 30, LV_DB),
+	mConn: block(COLS[0], ROW_A),
+	mSql: block(COLS[1], ROW_A),
+	mExec: block(COLS[2], ROW_A),
+	mPrep: block(COLS[3], ROW_A),
+	mSet: block(COLS[4], ROW_A),
+	mQuery: block(COLS[5], ROW_A),
+	mAuto: block(COLS[0], ROW_B),
+	mDeb: block(COLS[1], ROW_B),
+	mAcr: block(COLS[2], ROW_B),
+	mCommit: block(COLS[3], ROW_B),
+	mRb: block(COLS[4], ROW_B),
+	mFin: block(COLS[5], ROW_B),
+};
+type Slab = typeof G.app;
+type Tone = 'flow' | 'violet' | 'magenta';
+
+// The pipe: from the front edge of your code, through the Connection, into the engine.
+const PORT = pt(0.4, 0.8, 0);
+const CUT = { x: round((G.connBox.center.x + G.engine.center.x) / 2), y: round((G.connBox.center.y + G.engine.center.y) / 2) };
+const routes = {
+	pipe: path([PORT, G.connBox.center, G.engine.center]),
+	rowA: path([pt(COLS[0], ROW_A), pt(COLS[5], ROW_A)]),
+	rowB: path([pt(COLS[0], ROW_B), pt(COLS[5], ROW_B)]),
+	users: path([G.engine.center, G.rows[0].center, G.rows[3].center]),
+	accounts: `${path([G.engine.center, G.accA.center])} ${path([G.engine.center, G.accB.center])}`,
+};
+const gridLines = [
+	...[-1, 0, 1, 2].map((u) => path([pt(u, -1.6, 0.5), pt(u, 0.6, 0.5)])),
+	...[-1.5, -1, -0.5, 0, 0.5].map((v) => path([pt(-1.35, v, 0.5), pt(2.55, v, 0.5)])),
+];
+
+// Modules of both programs, back to front, with their lit states and editor line.
+type Module = { id: string; g: Slab; face: string; lits: { id: string; tone: Tone }[] };
+const modules: Module[] = [
+	{ id: 'm-conn', g: G.mConn, face: '4', lits: [{ id: 'connm-on', tone: 'flow' }] },
+	{ id: 'm-sql', g: G.mSql, face: '8', lits: [{ id: 'sql-on', tone: 'magenta' }] },
+	{ id: 'm-exec', g: G.mExec, face: '10', lits: [{ id: 'exec-on', tone: 'magenta' }] },
+	{ id: 'm-prep', g: G.mPrep, face: '12', lits: [{ id: 'prep-on', tone: 'violet' }] },
+	{ id: 'm-set', g: G.mSet, face: '14', lits: [{ id: 'set-on', tone: 'violet' }] },
+	{ id: 'm-query', g: G.mQuery, face: '15', lits: [{ id: 'query-on', tone: 'violet' }] },
+	{ id: 'm-auto', g: G.mAuto, face: '3', lits: [{ id: 'auto-on', tone: 'violet' }] },
+	{ id: 'm-deb', g: G.mDeb, face: '5', lits: [{ id: 'deb-on', tone: 'flow' }] },
+	{
+		id: 'm-acr',
+		g: G.mAcr,
+		face: '6',
+		lits: [
+			{ id: 'acr-bad', tone: 'magenta' },
+			{ id: 'acr-on', tone: 'flow' },
+		],
+	},
+	{ id: 'm-commit', g: G.mCommit, face: '8', lits: [{ id: 'commit-on', tone: 'violet' }] },
+	{ id: 'm-rb', g: G.mRb, face: '11', lits: [{ id: 'rb-on', tone: 'violet' }] },
+	{ id: 'm-fin', g: G.mFin, face: '14', lits: [{ id: 'fin-on', tone: 'violet' }] },
+];
+
+// Where the particle stops (just above a module) and where query cards rest or land.
+const hover = (g: Slab, by = 16) => lift(g.center, by);
+const rest = (g: Slab) => lift(g.center, 50);
+const anchors = [
+	{ id: 'a-mconn', ...hover(G.mConn) },
+	{ id: 'a-sql', ...hover(G.mSql) },
+	{ id: 'a-exec', ...hover(G.mExec) },
+	{ id: 'a-prep', ...hover(G.mPrep) },
+	{ id: 'a-set', ...hover(G.mSet) },
+	{ id: 'a-query', ...hover(G.mQuery) },
+	{ id: 'a-auto', ...hover(G.mAuto) },
+	{ id: 'a-deb', ...hover(G.mDeb) },
+	{ id: 'a-acr', ...hover(G.mAcr) },
+	{ id: 'a-commit', ...hover(G.mCommit) },
+	{ id: 'a-rb', ...hover(G.mRb) },
+	{ id: 'a-fin', ...hover(G.mFin) },
+	{ id: 'a-qsql', ...rest(G.mSql) },
+	{ id: 'a-qprep', ...rest(G.mPrep) },
+	{ id: 'a-qset', ...rest(G.mSet) },
+	{ id: 'a-qdeb', ...rest(G.mDeb) },
+	{ id: 'a-qacr', ...rest(G.mAcr) },
+	{ id: 'a-port', ...lift(PORT, 16) },
+	{ id: 'a-conn', ...hover(G.connBox, 22) },
+	{ id: 'a-cut', ...CUT },
+	{ id: 'a-engine', ...hover(G.engine, 22) },
+	{ id: 'a-users', ...lift(pt(0.95, 1.85, LV_DB + 10), 24) },
+	{ id: 'a-acc-a', ...hover(G.accA, 22) },
+	{ id: 'a-acc-b', ...hover(G.accB, 22) },
+];
+const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0, y: 0 };
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-tower', cx: 420, cy: 440, s: 1.0 },
+	{ id: 'shot-app', cx: 520, cy: 250, s: 1.35 },
+	{ id: 'shot-db', cx: 400, cy: 470, s: 1.05 },
+	{ id: 'shot-mid', cx: 420, cy: 470, s: 1.05 },
+	{ id: 'shot-all', cx: 430, cy: 440, s: 0.92 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Query cards: one visual identity for "a piece of SQL travelling to the database".
+type Packet = { id: string; text: string; tone: Tone; restAt: string };
+const packets: Packet[] = [
+	{ id: 'q-bad', text: "WHERE email = '' OR '1'='1'", tone: 'magenta', restAt: 'a-qsql' },
+	{ id: 'q-tpl', text: 'WHERE email = ?', tone: 'flow', restAt: 'a-qprep' },
+	{ id: 'q-val', text: "' OR '1'='1", tone: 'violet', restAt: 'a-qset' },
+	{ id: 'q-deb', text: t('saldo - 5000', 'balance - 5000'), tone: 'flow', restAt: 'a-qdeb' },
+	{ id: 'q-acr', text: t('saldo + 5000', 'balance + 5000'), tone: 'flow', restAt: 'a-qacr' },
+];
+const packetWidth = (packet: Packet) => Math.round(packet.text.length * 7.6 + 28);
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | Tone;
+	mono?: boolean;
+	icon?: 'check' | 'x';
+	lead?: Point;
+};
+const RES = { x: G.rows[3].center.x + 30, y: G.rows[3].center.y + 20 };
+const SA = { x: G.accA.center.x - 10, y: G.accA.center.y + 58 };
+const SB = { x: G.accB.center.x, y: G.accB.center.y + 58 };
+const NOTE = { x: G.connBox.center.x + 60, y: G.connBox.center.y - 6 };
+const SLOT1 = { x: 300, y: 706 };
+const SLOT2 = { x: 300, y: 740 };
+
+const chips: Chip[] = [
+	{
+		id: 'lb-twr',
+		text: t('try-with-resources: se cierra sola', 'try-with-resources: closes itself'),
+		x: G.mConn.center.x - 20,
+		y: G.mConn.center.y - 44,
+		align: 'end',
+		tone: 'flow',
+		lead: G.mConn.center,
+	},
+	{
+		id: 'lb-conn',
+		text: t('Connection: interfaz de java.sql', 'Connection: a java.sql interface'),
+		...NOTE,
+		align: 'start',
+		tone: 'plain',
+		lead: G.connBox.center,
+	},
+	{
+		id: 'lb-driver',
+		text: t('driver PostgreSQL', 'PostgreSQL driver'),
+		x: G.driver.center.x + 46,
+		y: G.driver.center.y + 18,
+		align: 'start',
+		tone: 'plain',
+		lead: G.driver.center,
+	},
+	{ id: 'plan', text: t('compilada: email = ?', 'compiled: email = ?'), x: G.engine.center.x - 70, y: G.engine.center.y - 46, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'res-all', text: t('4 filas: TODOS los usuarios', '4 rows: ALL the users'), ...RES, align: 'start', tone: 'magenta' },
+	{ id: 'res-none', text: t('0 filas: nadie con ese email', '0 rows: nobody with that email'), ...RES, align: 'start', tone: 'violet', icon: 'check' },
+	{ id: 'sa-0', text: t('origen: $20000', 'source: $20000'), ...SA, align: 'middle', tone: 'plain', mono: true },
+	{ id: 'sa-auto', text: t('origen: $15000', 'source: $15000'), ...SA, align: 'middle', tone: 'flow', mono: true, icon: 'check' },
+	{ id: 'sa-pend', text: t('origen: $15000 (pendiente)', 'source: $15000 (pending)'), ...SA, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'sa-ok', text: t('origen: $15000', 'source: $15000'), ...SA, align: 'middle', tone: 'violet', mono: true, icon: 'check' },
+	{ id: 'sb-0', text: t('destino: $3000', 'target: $3000'), ...SB, align: 'middle', tone: 'plain', mono: true },
+	{ id: 'sb-pend', text: t('destino: $8000 (pendiente)', 'target: $8000 (pending)'), ...SB, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'sb-ok', text: t('destino: $8000', 'target: $8000'), ...SB, align: 'middle', tone: 'violet', mono: true, icon: 'check' },
+	{ id: 'cut', text: t('se cortó la red', 'network down'), x: CUT.x - 20, y: CUT.y, align: 'end', tone: 'magenta', icon: 'x' },
+	{ id: 'lb-tx', text: t('transacción abierta', 'transaction open'), ...SLOT1, align: 'middle', tone: 'violet' },
+	{ id: 'lb-auto', text: t('autocommit: confirmado al instante', 'autocommit: confirmed at once'), ...SLOT2, align: 'middle', tone: 'flow' },
+	{ id: 'lb-evap', text: t('$5000 evaporados', '$5000 evaporated'), ...SLOT2, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-rb', text: t('rollback: todo deshecho', 'rollback: all undone'), ...SLOT2, align: 'middle', tone: 'violet', icon: 'check' },
+	{ id: 'lb-commit', text: t('commit: las dos confirmadas', 'commit: both confirmed'), ...SLOT2, align: 'middle', tone: 'violet', icon: 'check' },
+	{ id: 'lb-reset', text: 'autocommit = true', ...NOTE, align: 'start', tone: 'flow', mono: true, icon: 'check' },
+	{ id: 'r-bridge', text: t('JDBC: el puente', 'JDBC: the bridge'), ...NOTE, align: 'start', tone: 'flow' },
+	{ id: 'r-param', text: t('? = dato, nunca código', '? = data, never code'), ...RES, align: 'start', tone: 'violet' },
+	{ id: 'r-tx', text: t('transacción: todo o nada', 'transaction: all or nothing'), ...SLOT2, align: 'middle', tone: 'violet', icon: 'check' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + (chip.icon ? 42 : 24));
+const chipLeft = (chip: Chip) =>
+	chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x;
+const chipJoin = (chip: Chip) =>
+	chip.align === 'end' ? chipLeft(chip) + chipWidth(chip) - 14 : chip.align === 'middle' ? chip.x : chipLeft(chip) + 14;
+
+// The transaction outline drawn on the database floor around both accounts.
+const TX_BOX = poly([pt(-1.25, 3.05, LV_DB), pt(1.85, 3.05, LV_DB), pt(1.85, 3.75, LV_DB), pt(-1.25, 3.75, LV_DB)]);
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="xd-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="xd-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="xd-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="xd-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xd-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xd-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the running system, seen through the camera -->
+			<g clip-path="url(#xd-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#xd-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#xd-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- Bottom floor: the database, its SQL engine and the users table -->
+						<g data-el="floor-db">
+							<polygon class="xj-plate-shadow" points={G.db.base} transform="translate(12 18)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.db.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.db.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.db.top} fill="url(#xd-g-floor)"></polygon>
+							<text class="xj-floor-text" transform={floorMatrix(pt(-1.25, 2.5, LV_DB))}>PostgreSQL</text>
+							<text class="xj-floor-text xj-floor-text--small" transform={floorMatrix(pt(0.25, 2.25, LV_DB))}>{names.users}</text>
+							{
+								G.rows.map((row) => (
+									<>
+										<polygon class="xj-shadow" points={row.base} transform="translate(5 6)" />
+										<polygon class="xj-face xj-face--l" points={row.leftFace} />
+										<polygon class="xj-face xj-face--r" points={row.rightFace} />
+										<polygon class="xj-face xj-face--t" points={row.top} fill="url(#xd-g-top)" />
+									</>
+								))
+							}
+							<polygon class="xj-shadow" points={G.engine.base} transform="translate(7 9)"></polygon>
+							<polygon class="xj-face xj-face--l" points={G.engine.leftFace}></polygon>
+							<polygon class="xj-face xj-face--r" points={G.engine.rightFace}></polygon>
+							<polygon class="xj-face xj-face--t" points={G.engine.top} fill="url(#xd-g-top)"></polygon>
+							<text class="xj-face-text" transform={G.engine.faceMatrix} text-anchor="middle" y="4.5">SQL</text>
+						</g>
+						<g data-el="tr-users"><path class="mg-stroke xj-ref" pathLength="1" d={routes.users}></path></g>
+						<g data-el="tr-acc"><path class="mg-stroke xj-ref" pathLength="1" d={routes.accounts}></path></g>
+
+						<g data-el="engine-on" class="xj-lit xj-lit--flow">
+							<polygon class="xj-lit-halo" points={G.engine.top}></polygon>
+							<polygon class="xj-lit-top" points={G.engine.top}></polygon>
+							<polygon class="xj-lit-side" points={G.engine.leftFace}></polygon>
+						</g>
+						<g data-el="rows-bad" class="xj-lit xj-lit--magenta">
+							{
+								G.rows.map((row) => (
+									<>
+										<polygon class="xj-lit-halo" points={row.top} />
+										<polygon class="xj-lit-top" points={row.top} />
+										<polygon class="xj-lit-side" points={row.leftFace} />
+									</>
+								))
+							}
+						</g>
+
+						<!-- The transaction outline and the two accounts -->
+						<g data-el="tx-box" class="xj-tx">
+							<polygon points={TX_BOX}></polygon>
+						</g>
+						<g data-el="accounts">
+							{
+								[G.accA, G.accB].map((acc) => (
+									<>
+										<polygon class="xj-shadow" points={acc.base} transform="translate(7 9)" />
+										<polygon class="xj-face xj-face--l" points={acc.leftFace} />
+										<polygon class="xj-face xj-face--r" points={acc.rightFace} />
+										<polygon class="xj-face xj-face--t" points={acc.top} fill="url(#xd-g-top)" />
+										<text class="xj-face-text" transform={acc.faceMatrix} text-anchor="middle" y="4.5">$</text>
+									</>
+								))
+							}
+						</g>
+						<g data-el="acc-a-bad" class="xj-lit xj-lit--magenta">
+							<polygon class="xj-lit-halo" points={G.accA.top}></polygon>
+							<polygon class="xj-lit-top" points={G.accA.top}></polygon>
+							<polygon class="xj-lit-side" points={G.accA.leftFace}></polygon>
+						</g>
+						<g data-el="acc-a-on" class="xj-lit xj-lit--violet">
+							<polygon class="xj-lit-halo" points={G.accA.top}></polygon>
+							<polygon class="xj-lit-top" points={G.accA.top}></polygon>
+							<polygon class="xj-lit-side" points={G.accA.leftFace}></polygon>
+						</g>
+						<g data-el="acc-b-on" class="xj-lit xj-lit--violet">
+							<polygon class="xj-lit-halo" points={G.accB.top}></polygon>
+							<polygon class="xj-lit-top" points={G.accB.top}></polygon>
+							<polygon class="xj-lit-side" points={G.accB.leftFace}></polygon>
+						</g>
+
+						<!-- Middle floor: java.sql, the Connection interface and the driver -->
+						<g data-el="floor-jdbc">
+							<polygon class="xj-plate-shadow" points={G.jdbc.base} transform="translate(10 14)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.jdbc.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.jdbc.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.jdbc.top} fill="url(#xd-g-floor)"></polygon>
+							<text class="xj-floor-text xj-floor-text--small" transform={floorMatrix(pt(0.7, 1.74, LV_JDBC))}>java.sql</text>
+							<polygon class="xj-shadow" points={G.connBox.base} transform="translate(7 9)"></polygon>
+							<polygon class="xj-face xj-face--l" points={G.connBox.leftFace}></polygon>
+							<polygon class="xj-face xj-face--r" points={G.connBox.rightFace}></polygon>
+							<polygon class="xj-face xj-face--t" points={G.connBox.top} fill="url(#xd-g-top)"></polygon>
+							<polygon class="xj-shadow" points={G.driver.base} transform="translate(6 7)"></polygon>
+							<polygon class="xj-face xj-face--l" points={G.driver.leftFace}></polygon>
+							<polygon class="xj-face xj-face--r" points={G.driver.rightFace}></polygon>
+							<polygon class="xj-face xj-face--t" points={G.driver.top} fill="url(#xd-g-top)"></polygon>
+						</g>
+						<g data-el="conn-on" class="xj-lit xj-lit--flow">
+							<polygon class="xj-lit-halo" points={G.connBox.top}></polygon>
+							<polygon class="xj-lit-top" points={G.connBox.top}></polygon>
+							<polygon class="xj-lit-side" points={G.connBox.leftFace}></polygon>
+						</g>
+
+						<!-- Top floor: your code, one module per executed line -->
+						<g data-el="floor-app">
+							<polygon class="xj-plate-shadow" points={G.app.base} transform="translate(14 22)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.app.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.app.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.app.top} fill="url(#xd-g-floor)"></polygon>
+							{gridLines.map((d) => <path class="xj-grid" d={d} />)}
+							<text class="xj-floor-text" transform={floorMatrix(pt(-1.2, 0.72))}>{t('Tu código', 'Your code')}</text>
+						</g>
+						<g data-el="tr-a"><path class="mg-stroke xj-trace" pathLength="1" d={routes.rowA}></path></g>
+						<g data-el="tr-b"><path class="mg-stroke xj-trace" pathLength="1" d={routes.rowB}></path></g>
+
+						<!-- The pipe through the Connection, and the lines each query lights on it -->
+						<g data-el="tr-pipe">
+							<path class="mg-stroke xj-pipe" pathLength="1" d={routes.pipe}></path>
+							<path class="mg-stroke xj-trace" pathLength="1" d={routes.pipe}></path>
+						</g>
+						{
+							[
+								{ id: 'fl-bad', tone: 'magenta' },
+								{ id: 'fl-tpl', tone: 'flow' },
+								{ id: 'fl-val', tone: 'violet' },
+								{ id: 'fl-tx', tone: 'flow' },
+								{ id: 'fl-rb', tone: 'violet' },
+								{ id: 'fl-commit', tone: 'violet' },
+							].map((line) => (
+								<g data-el={line.id} class:list={['xj-flowline', `xj-flowline--${line.tone}`]}>
+									<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.pipe} />
+									<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.pipe} />
+								</g>
+							))
+						}
+
+						{
+							modules.map((module) => (
+								<>
+									<g data-el={module.id} class="xj-mod">
+										<polygon class="xj-shadow" points={module.g.base} transform="translate(6 8)" />
+										<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#xd-g-top)" />
+										<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+											{module.face}
+										</text>
+									</g>
+									{module.lits.map((lit) => (
+										<g data-el={lit.id} class:list={['xj-lit', `xj-lit--${lit.tone}`]}>
+											<polygon class="xj-lit-halo" points={module.g.top} />
+											<polygon class="xj-lit-top" points={module.g.top} />
+											<polygon class="xj-lit-side" points={module.g.leftFace} />
+											<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+												{module.face}
+											</text>
+										</g>
+									))}
+								</>
+							))
+						}
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									{chip.lead && <line class="xj-lead" x1={chip.lead.x} y1={chip.lead.y} x2={chipJoin(chip)} y2={chip.y + (chip.y < chip.lead.y ? 12 : -12)} />}
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.icon === 'check' && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M20 6 9 17l-5-5" />
+										</svg>
+									)}
+									{chip.icon === 'x' && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M18 6 6 18" />
+											<path d="m6 6 12 12" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.icon ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Query cards. Placement lives on the inner group: the player resets data-el transforms. -->
+						{
+							packets.map((packet) => (
+								<g data-el={packet.id} data-x={at(packet.restAt).x} data-y={at(packet.restAt).y}>
+									<g class:list={['xj-packet', `xj-packet--${packet.tone}`]}>
+										<rect class="xj-packet-halo" x={-packetWidth(packet) / 2 - 5} y="-18" width={packetWidth(packet) + 10} height="36" rx="18" />
+										<rect class="xj-packet-card" x={-packetWidth(packet) / 2} y="-13" width={packetWidth(packet)} height="26" rx="13" />
+										<text class="xj-packet-text" x="0" y="4.5" text-anchor="middle">
+											{packet.text}
+										</text>
+									</g>
+								</g>
+							))
+						}
+
+						<!-- The execution flow -->
+						<g data-el="p" class="xj-particle" data-x={at('a-mconn').x} data-y={at('a-mconn').y}>
+							<circle r="20" fill="url(#xd-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="300" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<rect class="xj-legend-card" x={VP.x + 172} y={LEGEND_Y - 6} width="20" height="12" rx="6"></rect>
+				<text x={VP.x + 200} y={LEGEND_Y + 4}>{t('Consulta SQL', 'SQL query')}</text>
+			</g>
+
+			<!-- EDITOR: the source, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.file}</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<!-- Line states sit behind the code -->
+				<rect data-el="hxa-8" class="xj-bar xj-bar--trail" x={BAR.x} y={lineTop(8)} width={BAR.w} height={LINE_H * 2} rx="6"></rect>
+				<rect data-el="hva-13" class="xj-bar xj-bar--violet" x={BAR.x} y={lineTop(13)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<rect data-el="hxb-6" class="xj-bar xj-bar--trail" x={BAR.x} y={lineTop(6)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<rect data-el="hvb-11" class="xj-bar xj-bar--violet" x={BAR.x} y={lineTop(11)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<rect data-el="hvb-8" class="xj-bar xj-bar--violet" x={BAR.x} y={lineTop(8)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(4)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<!-- First program: concatenated query versus PreparedStatement -->
+				<g data-el="ea" data-base="shown" class="xj-code">
+					{
+						pageA.map((line) => (
+							<g data-el={`ea-${line.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				<!-- Second program: the transfer inside a transaction -->
+				<g data-el="eb" class="xj-code">
+					{
+						pageB.map((line) => (
+							<g data-el={`eb-${line.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				{
+					outputs.map((line) => (
+						<text data-el={line.id} class="xj-out" x={ED.x + 20} y={outY(line.row)} xml:space="preserve">
+							{line.text}
+						</text>
+					))
+				}
+				{lineAnchors.map((anchor) => <circle data-anchor={anchor.id} cx={BAR_CX} cy={lineMid(anchor.n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue execution flow, magenta for the problem (injection, half-done transfer)
+	   and violet for what resolves it (parameters, transaction).
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='jdbc-java']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='jdbc-java'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='jdbc-java'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='jdbc-java'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-card {
+		fill: var(--xj-panel);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+	}
+
+	/* Levels and modules */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-grid {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 1;
+		opacity: 0.07;
+	}
+
+	.xj-floor-text {
+		font-family: var(--font-body);
+		font-size: 15px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		fill: var(--xj-mist);
+		opacity: 0.85;
+	}
+
+	.xj-floor-text--small {
+		font-size: 12.5px;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-tx polygon {
+		fill: var(--xj-violet);
+		fill-opacity: 0.1;
+		stroke: var(--xj-violet);
+		stroke-width: 2;
+		stroke-dasharray: 8 6;
+		stroke-linejoin: round;
+	}
+
+	/* Routes */
+	.xj-trace {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 3;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-pipe {
+		fill: none;
+		stroke: var(--xj-steel);
+		stroke-width: 16;
+		stroke-opacity: 0.55;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-ref {
+		fill: none;
+		stroke: var(--xj-mist);
+		stroke-width: 2;
+		stroke-opacity: 0.45;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--magenta {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-flowline--violet {
+		--xj-line: var(--xj-violet);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-lead {
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+		stroke-opacity: 0.7;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* Query cards and the flow */
+	.xj-packet {
+		--xj-card: var(--xj-flow);
+		--xj-card-ink: var(--xj-flow-soft);
+	}
+
+	.xj-packet--magenta {
+		--xj-card: var(--xj-magenta);
+		--xj-card-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-packet--violet {
+		--xj-card: var(--xj-violet);
+		--xj-card-ink: var(--xj-violet-soft);
+	}
+
+	.xj-packet-halo {
+		fill: var(--xj-card);
+		fill-opacity: 0.16;
+	}
+
+	.xj-packet-card {
+		fill: var(--xj-ink);
+		stroke: var(--xj-card);
+		stroke-width: 2;
+	}
+
+	.xj-packet-text {
+		font-family: monospace;
+		font-size: 12.5px;
+		font-weight: 700;
+		fill: var(--xj-card-ink);
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-bar--trail {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.12;
+		stroke: var(--xj-magenta);
+		stroke-width: 1.5;
+		stroke-dasharray: 6 5;
+	}
+
+	.xj-bar--violet {
+		fill: var(--xj-violet);
+		fill-opacity: 0.24;
+		stroke: var(--xj-violet);
+		stroke-width: 1.2;
+	}
+</style>
