@@ -1,0 +1,1082 @@
+---
+/**
+ * Scene for "The journey through a graph: from BFS to Dijkstra shortest path"
+ * (lesson java/16-grafos-representacion-y-algoritmos, order: 20), a short film played
+ * on one persistent motion canvas. The captions and cues live in
+ * `src/data/animations/grafos-java.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: it shows
+ * the Java source (BFS first, then Dijkstra on the weighted graph) and the cues
+ * slide a bar over the line being executed. The viewport on the right holds the
+ * camera: an isometric floor with five vertex pedestals joined by edges, the
+ * adjacency list floating above it, and a queue tray in front of it where the
+ * pending vertices wait as light blue tokens. The particle is `actual`, the vertex
+ * being processed. Magenta marks the problem (the one-hop path that costs more);
+ * violet marks what solves it (Dijkstra's relaxed distances and its shortest-path tree).
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/grafos-java';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Source code shown in the editor ───────────────────────────────────────
+// Identifiers are localized the same way the lesson does.
+const names = {
+	file: t('Grafo.java', 'Graph.java'),
+	adjacency: t('adyacencia', 'adjacency'),
+	addEdge: t('agregarArista', 'addEdge'),
+	order: t('orden', 'order'),
+	visited: t('visitados', 'visited'),
+	pending: t('pendientes', 'pending'),
+	current: t('actual', 'current'),
+	neighbor: t('vecino', 'neighbor'),
+	neighbors: t('vecinos', 'neighbors'),
+	distance: t('distancia', 'distance'),
+	queue: t('cola', 'queue'),
+	byDistance: t('porDistancia', 'byDistance'),
+	edge: t('Arista', 'Edge'),
+	edgesFrom: t('aristasDe', 'edgesFrom'),
+	e: t('a', 'e'),
+	weight: t('peso', 'weight'),
+	to: t('destino', 'to'),
+	candidate: t('nueva', 'candidate'),
+};
+const comments = {
+	mark: t('// marcar AL ENCOLAR', '// mark ON ENQUEUE'),
+	cheapest: t('// el más barato', '// the cheapest'),
+	relax: t('// relajar', '// relax'),
+};
+
+// First page: the adjacency list and BFS with a FIFO queue.
+const sourceA = [
+	`Map<String, List<String>> ${names.adjacency} = new HashMap<>();`,
+	`${names.addEdge}("A", "B");  ${names.addEdge}("A", "C");`,
+	`${names.addEdge}("C", "B");  ${names.addEdge}("B", "D");`,
+	`${names.addEdge}("C", "D");  ${names.addEdge}("D", "E");`,
+	`List<String> ${names.order} = new ArrayList<>();`,
+	`Set<String> ${names.visited} = new HashSet<>();`,
+	`Queue<String> ${names.pending} = new ArrayDeque<>();`,
+	`${names.visited}.add("A");`.padEnd(26) + comments.mark,
+	`${names.pending}.offer("A");`,
+	`while (!${names.pending}.isEmpty()) {`,
+	`    String ${names.current} = ${names.pending}.poll();`,
+	`    ${names.order}.add(${names.current});`,
+	`    for (String ${names.neighbor} : ${names.neighbors}(${names.current})) {`,
+	`        if (${names.visited}.add(${names.neighbor})) ${names.pending}.offer(${names.neighbor});`,
+	'    }',
+	'}',
+	`System.out.println(${names.order});`,
+].join('\n');
+
+// Second page: the same graph with weights, and Dijkstra with a priority queue.
+const sourceB = [
+	`Map<String, List<${names.edge}>> ${names.adjacency} = new HashMap<>();`,
+	`${names.addEdge}("A", "B", 4);  ${names.addEdge}("A", "C", 2);`,
+	`${names.addEdge}("C", "B", 1);  ${names.addEdge}("B", "D", 5);`,
+	`${names.addEdge}("C", "D", 8);  ${names.addEdge}("D", "E", 3);`,
+	`Map<String, Integer> ${names.distance} = new HashMap<>();`,
+	`Set<String> ${names.visited} = new HashSet<>();`,
+	`PriorityQueue<String> ${names.queue} = new PriorityQueue<>(${names.byDistance});`,
+	`${names.distance}.put("A", 0);  ${names.queue}.offer("A");`,
+	`while (!${names.queue}.isEmpty()) {`,
+	`    String ${names.current} = ${names.queue}.poll();`.padEnd(36) + comments.cheapest,
+	`    if (!${names.visited}.add(${names.current})) continue;`,
+	`    for (${names.edge} ${names.e} : ${names.edgesFrom}(${names.current})) {`,
+	`        int ${names.candidate} = ${names.distance}.get(${names.current}) + ${names.e}.${names.weight}();`,
+	`        if (${names.candidate} < ${names.distance}.getOrDefault(${names.e}.${names.to}(), INF)) {`,
+	`            ${names.distance}.put(${names.e}.${names.to}(), ${names.candidate});   ` + comments.relax,
+	`            ${names.queue}.offer(${names.e}.${names.to}());`,
+	'        }',
+	'    }',
+	'}',
+	`System.out.println(${names.distance});`,
+].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const svgLines = (source: string) =>
+	highlightCode(source, 'java').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+
+const pageA = svgLines(sourceA);
+const pageB = svgLines(sourceB);
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 64;
+const GUTTER_X = 50;
+const CODE_TOP = 74;
+const LINE_H = 23;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 5;
+const CONSOLE_TOP = 552;
+const outY = (row: number) => 597 + row * LINE_H;
+
+// Lines the highlight bar travels to (`ln-<n>`, valid for both pages).
+const lineAnchors = Array.from({ length: 20 }, (_, index) => index + 1);
+
+// Program output, one element per run.
+const outputs = [
+	{ id: 'out-a', row: 0, text: '[A, B, C, D, E]' },
+	{ id: 'out-b', row: 1, text: '{A=0, B=3, C=2, D=8, E=11}' },
+];
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right, +v down-left, z is up.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 56;
+const EY = 32;
+const ORIGIN = { x: 460, y: 270 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+/** Grid coordinates of a point drawn on the floor at screen position (x, y). */
+const uvAt = (x: number, y: number) => {
+	const p = (x - ORIGIN.x) / EX;
+	const q = (y - ORIGIN.y) / EY;
+	return { u: (p + q) / 2, v: (q - p) / 2 };
+};
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const path = (points: Point[]) => 'M' + points.map((point) => `${point.x} ${point.y}`).join(' L');
+const mid = (a: Point, b: Point): Point => ({ x: round((a.x + b.x) / 2), y: round((a.y + b.y) / 2) });
+
+/** A box standing on the floor at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+type Slab = ReturnType<typeof slab>;
+/** Text lying flat on a floor, reading along +u. */
+const floorMatrix = (point: Point) => `matrix(0.866 0.5 -0.866 0.5 ${point.x} ${point.y})`;
+/** A flat ring around a floor point, as an isometric ellipse. */
+const ringPath = (c: Point, rx = 50, ry = 29) => `M${c.x - rx} ${c.y} a${rx} ${ry} 0 1 0 ${rx * 2} 0 a${rx} ${ry} 0 1 0 ${-rx * 2} 0`;
+
+// The five vertices, placed by where they sit on screen.
+type V = 'A' | 'B' | 'C' | 'D' | 'E';
+const VERTICES: V[] = ['A', 'B', 'C', 'D', 'E'];
+const SCREEN: Record<V, Point> = {
+	A: { x: 440, y: 330 },
+	B: { x: 580, y: 245 },
+	C: { x: 580, y: 425 },
+	D: { x: 730, y: 330 },
+	E: { x: 865, y: 420 },
+};
+const PEDESTAL_H = 22;
+const vertex = Object.fromEntries(
+	VERTICES.map((v) => {
+		const { u, v: w } = uvAt(SCREEN[v].x, SCREEN[v].y);
+		return [v, { floor: pt(u, w), g: slab(u, w, 0.3, 0.3, PEDESTAL_H) }];
+	}),
+) as Record<V, { floor: Point; g: Slab }>;
+
+// The floor plate under the graph, padded around every vertex.
+const uvs = VERTICES.map((v) => uvAt(SCREEN[v].x, SCREEN[v].y));
+const span = (values: number[]) => ({ lo: Math.min(...values) - 0.6, hi: Math.max(...values) + 0.6 });
+const US = span(uvs.map((p) => p.u));
+const VS = span(uvs.map((p) => p.v));
+const plate = slab((US.lo + US.hi) / 2, (VS.lo + VS.hi) / 2, (US.hi - US.lo) / 2, (VS.hi - VS.lo) / 2, 12, -12);
+const PLATE_LABEL = pt(5.3, VS.hi - 0.15);
+
+// The queue tray in front of the graph: three slots, the front one closest to the exit.
+const TRAY = uvAt(470, 575);
+const tray = slab(TRAY.u, TRAY.v, 1.35, 0.36, 10);
+const slot = (offset: number) => pt(TRAY.u + offset, TRAY.v, 10);
+const SLOTS = [slot(0.85), slot(0), slot(-0.85)];
+const TRAY_EXIT = pt(TRAY.u + 1.95, TRAY.v, 10);
+
+// Edges of the undirected graph, with their weight (shown from scene 4 on).
+type Edge = { id: string; from: V; to: V; w: number };
+const EDGES: Edge[] = [
+	{ id: 'AB', from: 'A', to: 'B', w: 4 },
+	{ id: 'AC', from: 'A', to: 'C', w: 2 },
+	{ id: 'CB', from: 'C', to: 'B', w: 1 },
+	{ id: 'BD', from: 'B', to: 'D', w: 5 },
+	{ id: 'CD', from: 'C', to: 'D', w: 8 },
+	{ id: 'DE', from: 'D', to: 'E', w: 3 },
+];
+const edgePath = (from: V, to: V, z = 0) => path([lift(vertex[from].floor, z), lift(vertex[to].floor, z)]);
+const routePath = (...vs: V[]) => path(vs.map((v) => lift(vertex[v].floor, 2)));
+// Flowlines: BFS discovery (light blue), the one-hop trap (magenta), relaxed edges (violet).
+type Tone = 'flow' | 'violet' | 'magenta';
+const flowlines: { id: string; d: string; tone: Tone }[] = [
+	{ id: 'bf-AB', d: routePath('A', 'B'), tone: 'flow' },
+	{ id: 'bf-AC', d: routePath('A', 'C'), tone: 'flow' },
+	{ id: 'bf-BD', d: routePath('B', 'D'), tone: 'flow' },
+	{ id: 'bf-DE', d: routePath('D', 'E'), tone: 'flow' },
+	{ id: 'hop-AB', d: routePath('A', 'B'), tone: 'magenta' },
+	{ id: 'via-ACB', d: routePath('A', 'C', 'B'), tone: 'violet' },
+	...EDGES.map((edge) => ({ id: `rx-${edge.id}`, d: routePath(edge.from, edge.to), tone: 'violet' as Tone })),
+];
+
+// Where travelling things stop: above a pedestal, or above a tray slot.
+const hover = (v: V, by = 16) => lift(vertex[v].g.center, by);
+const anchors = [
+	...VERTICES.map((v) => ({ id: `a-${v}`, ...hover(v) })),
+	{ id: 'q-1', ...lift(SLOTS[0], 14) },
+	{ id: 'q-2', ...lift(SLOTS[1], 14) },
+	{ id: 'q-3', ...lift(SLOTS[2], 14) },
+	{ id: 'q-out', ...lift(TRAY_EXIT, 14) },
+];
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-build', cx: 640, cy: 300, s: 1.0 },
+	{ id: 'shot-queue', cx: 600, cy: 362, s: 1.0 },
+	{ id: 'shot-wave', cx: 610, cy: 362, s: 1.02 },
+	{ id: 'shot-wave2', cx: 650, cy: 362, s: 1.0 },
+	{ id: 'shot-weights', cx: 615, cy: 300, s: 1.08 },
+	{ id: 'shot-dij', cx: 640, cy: 330, s: 1.04 },
+	{ id: 'shot-right', cx: 645, cy: 340, s: 1.0 },
+	{ id: 'shot-all', cx: 640, cy: 370, s: 0.94 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | Tone;
+	mono?: boolean;
+	check?: boolean;
+};
+
+// The adjacency list, one row per vertex (insertion order of `agregarArista`, both directions).
+const NEIGHBORS: Record<V, [V, number][]> = {
+	A: [['B', 4], ['C', 2]],
+	B: [['A', 4], ['C', 1], ['D', 5]],
+	C: [['A', 2], ['B', 1], ['D', 8]],
+	D: [['B', 5], ['C', 8], ['E', 3]],
+	E: [['D', 3]],
+};
+const ADJ_X = 334;
+const adjY = (index: number) => 78 + index * 28;
+const adjRows: Chip[] = VERTICES.flatMap((v, index) => [
+	{ id: `adj-${v}`, text: `${v} → [${NEIGHBORS[v].map(([n]) => n).join(', ')}]`, x: ADJ_X, y: adjY(index), align: 'start' as const, tone: 'flow' as const, mono: true },
+	{
+		id: `adjw-${v}`,
+		text: `${v} → [${NEIGHBORS[v].map(([n, w]) => `${n}:${w}`).join(', ')}]`,
+		x: ADJ_X,
+		y: adjY(index),
+		align: 'start' as const,
+		tone: 'violet' as const,
+		mono: true,
+	},
+]);
+
+// Distance tags above each vertex: ∞ at first, then the values Dijkstra finds.
+type Tag = { id: string; v: V; value: string; tone: Chip['tone']; check?: boolean };
+const tag = ({ id, v, value, tone, check = false }: Tag): Chip => ({
+	id,
+	text: value,
+	x: vertex[v].g.center.x,
+	y: vertex[v].g.center.y - 40,
+	align: 'middle',
+	tone,
+	mono: true,
+	check,
+});
+const weightChip = (edge: Edge): Chip => {
+	// C-B is vertical: its weight sits higher so it clears the distance tag above C.
+	const a = vertex[edge.from].floor;
+	const b = vertex[edge.to].floor;
+	const at = edge.id === 'CB' ? mid(mid(a, b), b) : mid(a, b);
+	return { id: `w-${edge.id}`, text: String(edge.w), x: at.x, y: at.y + 4, align: 'middle', tone: 'plain', mono: true };
+};
+
+const chips: Chip[] = [
+	{ id: 'adj-t', text: t('lista de adyacencia · Map', 'adjacency list · Map'), x: ADJ_X, y: 50, align: 'start', tone: 'plain' },
+	...adjRows,
+	{ id: 'q-lb', text: t('pendientes · Queue (FIFO)', 'pending · Queue (FIFO)'), x: SLOTS[2].x - 40, y: SLOTS[2].y + 58, align: 'start', tone: 'flow' },
+	{ id: 'pq-lb', text: t('cola · PriorityQueue: sale el más barato', 'queue · PriorityQueue: cheapest first'), x: SLOTS[2].x - 40, y: SLOTS[2].y + 58, align: 'start', tone: 'violet' },
+	{
+		id: 'dup-D',
+		text: t('D ya está visitado: no se encola', 'D already visited: not enqueued'),
+		x: vertex.D.floor.x + 30,
+		y: vertex.D.floor.y + 135,
+		align: 'middle',
+		tone: 'plain',
+		check: true,
+	},
+	...EDGES.map(weightChip),
+	{ id: 'lb-hop', text: t('BFS: 1 arista · costo 4', 'BFS: 1 edge · cost 4'), x: vertex.B.floor.x - 40, y: vertex.B.floor.y - 6, align: 'end', tone: 'magenta' },
+	{
+		id: 'lb-via',
+		text: t('A → C → B: 2 aristas · costo 3', 'A → C → B: 2 edges · cost 3'),
+		x: vertex.C.floor.x - 60,
+		y: vertex.C.floor.y + 56,
+		align: 'middle',
+		tone: 'violet',
+		check: true,
+	},
+	tag({ id: 'd-A-0', v: 'A', value: '0', tone: 'violet' }),
+	tag({ id: 'd-B-inf', v: 'B', value: '∞', tone: 'plain' }),
+	tag({ id: 'd-C-inf', v: 'C', value: '∞', tone: 'plain' }),
+	tag({ id: 'd-D-inf', v: 'D', value: '∞', tone: 'plain' }),
+	tag({ id: 'd-E-inf', v: 'E', value: '∞', tone: 'plain' }),
+	tag({ id: 'd-B-4', v: 'B', value: '4', tone: 'magenta' }),
+	tag({ id: 'd-C-2', v: 'C', value: '2', tone: 'plain' }),
+	tag({ id: 'd-B-3', v: 'B', value: '3', tone: 'violet', check: true }),
+	tag({ id: 'd-D-10', v: 'D', value: '10', tone: 'plain' }),
+	tag({ id: 'd-D-8', v: 'D', value: '8', tone: 'violet', check: true }),
+	tag({ id: 'd-E-11', v: 'E', value: '11', tone: 'violet', check: true }),
+	{ id: 'sum-bfs', text: t('BFS: menos aristas', 'BFS: fewest edges'), x: 745, y: 500, align: 'start', tone: 'flow' },
+	{ id: 'sum-dij', text: t('Dijkstra: menor costo total', 'Dijkstra: lowest total cost'), x: 745, y: 532, align: 'start', tone: 'violet', check: true },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + (chip.check ? 42 : 24));
+const chipLeft = (chip: Chip) =>
+	chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x;
+
+// The BFS layers: rings around the vertices at 0, 1, 2 and 3 hops from A.
+const rings = [
+	{ id: 'ring-0', of: ['A'] as V[], label: t('capa 0', 'layer 0') },
+	{ id: 'ring-1', of: ['B', 'C'] as V[], label: t('capa 1', 'layer 1') },
+	{ id: 'ring-2', of: ['D'] as V[], label: t('capa 2', 'layer 2') },
+	{ id: 'ring-3', of: ['E'] as V[], label: t('capa 3', 'layer 3') },
+];
+
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="gf-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="gf-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="gf-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="gf-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="gf-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="gf-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the graph, seen through the camera -->
+			<g clip-path="url(#gf-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + 150} cy={VP.y + 110} rx="420" ry="320" fill="url(#gf-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + VP.w - 60} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#gf-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- The floor the graph stands on -->
+						<g data-el="floor">
+							<polygon class="xj-plate-shadow" points={plate.base} transform="translate(14 22)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={plate.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={plate.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={plate.top} fill="url(#gf-g-floor)"></polygon>
+							<text class="xj-floor-text" transform={floorMatrix(PLATE_LABEL)}>{t('grafo', 'graph')}</text>
+						</g>
+
+						<!-- The queue tray, in front of the graph -->
+						<g data-el="tray">
+							<polygon class="xj-plate-shadow" points={tray.base} transform="translate(8 12)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={tray.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={tray.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={tray.top} fill="url(#gf-g-floor)"></polygon>
+							{SLOTS.map((s) => <path class="xj-slot" d={ringPath(s, 20, 11.5)} />)}
+							<path class="xj-exit" d={path([lift(SLOTS[0], -2), TRAY_EXIT])}></path>
+						</g>
+
+						<!-- BFS layers, under everything that stands on the floor -->
+						{
+							rings.map((ring) => (
+								<g data-el={ring.id} class="xj-ring">
+									{ring.of.map((v) => (
+										<>
+											<path class="xj-ring-halo" d={ringPath(vertex[v].floor)} />
+											<path class="xj-ring-core" d={ringPath(vertex[v].floor)} />
+											<text class="xj-ring-text" x={vertex[v].floor.x + 58} y={vertex[v].floor.y + 4} text-anchor="start">
+												{ring.label}
+											</text>
+										</>
+									))}
+								</g>
+							))
+						}
+
+						<!-- Edges: base traces, then the coloured flowlines drawn over them -->
+						{
+							EDGES.map((edge) => (
+								<g data-el={`e-${edge.id}`}>
+									<path class="mg-stroke xj-trace" pathLength="1" d={edgePath(edge.from, edge.to)} />
+								</g>
+							))
+						}
+						{
+							flowlines.map((line) => (
+								<g data-el={line.id} class:list={['xj-flowline', `xj-flowline--${line.tone}`]}>
+									<path class="mg-stroke xj-flowline-halo" pathLength="1" d={line.d} />
+									<path class="mg-stroke xj-flowline-core" pathLength="1" d={line.d} />
+								</g>
+							))
+						}
+
+						<!-- Vertices, back to front, each with a visited (flow) and a settled (violet) state -->
+						{
+							VERTICES.map((v) => (
+								<>
+									<g data-el={`v-${v}`}>
+										<polygon class="xj-shadow" points={vertex[v].g.base} transform="translate(7 9)" />
+										<polygon class="xj-face xj-face--l" points={vertex[v].g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={vertex[v].g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={vertex[v].g.top} fill="url(#gf-g-top)" />
+										<text class="xj-vertex-text" transform={floorMatrix(lift(vertex[v].g.center, -5))} text-anchor="middle">
+											{v}
+										</text>
+									</g>
+									<g data-el={`on-${v}`} class="xj-lit xj-lit--flow">
+										<polygon class="xj-lit-halo" points={vertex[v].g.top} />
+										<polygon class="xj-lit-top" points={vertex[v].g.top} />
+										<polygon class="xj-lit-side" points={vertex[v].g.leftFace} />
+										<text class="xj-vertex-text xj-vertex-text--on" transform={floorMatrix(lift(vertex[v].g.center, -5))} text-anchor="middle">
+											{v}
+										</text>
+									</g>
+									<g data-el={`set-${v}`} class="xj-lit xj-lit--violet">
+										<polygon class="xj-lit-halo" points={vertex[v].g.top} />
+										<polygon class="xj-lit-top" points={vertex[v].g.top} />
+										<polygon class="xj-lit-side" points={vertex[v].g.leftFace} />
+										<text class="xj-vertex-text xj-vertex-text--on" transform={floorMatrix(lift(vertex[v].g.center, -5))} text-anchor="middle">
+											{v}
+										</text>
+									</g>
+								</>
+							))
+						}
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.check && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M20 6 9 17l-5-5" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.check ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Pending tokens: each starts on its vertex and travels through the queue -->
+						{
+							VERTICES.map((v) => {
+								const start = lift(vertex[v].g.center, 14);
+								return (
+									<g data-el={`tk-${v}`} class="xj-token" data-x={start.x} data-y={start.y}>
+										<polygon class="xj-token-l" points="-13,-9 0,-1.5 0,11 -13,3.5" />
+										<polygon class="xj-token-r" points="13,-9 0,-1.5 0,11 13,3.5" />
+										<polygon class="xj-token-t" points="0,-16.5 13,-9 0,-1.5 -13,-9" />
+										<text class="xj-token-text" x="0" y="-21" text-anchor="middle">
+											{v}
+										</text>
+									</g>
+								);
+							})
+						}
+
+						<!-- The vertex being processed (`actual`) -->
+						<g data-el="p" class="xj-particle" data-x={anchors[0].x} data-y={anchors[0].y}>
+							<circle r="20" fill="url(#gf-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="330" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('BFS / pendiente', 'BFS / pending')}</text>
+				<circle class="xj-legend-violet" cx={VP.x + 176} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 188} y={LEGEND_Y + 4}>{t('Dijkstra / definitivo', 'Dijkstra / final')}</text>
+			</g>
+
+			<!-- EDITOR: the source, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.file}</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<!-- Line states sit behind the code -->
+				<rect data-el="hm-8" class="xj-bar xj-bar--flow" x={BAR.x} y={lineTop(8)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<rect data-el="hr-15" class="xj-bar xj-bar--violet" x={BAR.x} y={lineTop(15)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(8)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<!-- First page: adjacency list and BFS, typed line by line -->
+				<g data-el="ea" data-base="shown" class="xj-code">
+					{
+						pageA.map((line) => (
+							<g data-el={`ea-${line.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				<!-- Second page: weighted graph and Dijkstra, shown whole -->
+				<g data-el="eb" class="xj-code">
+					{
+						pageB.map((line) => (
+							<g>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				{
+					outputs.map((line) => (
+						<text data-el={line.id} class="xj-out" x={ED.x + 20} y={outY(line.row)} xml:space="preserve">
+							{line.text}
+						</text>
+					))
+				}
+				{lineAnchors.map((n) => <circle data-anchor={`ln-${n}`} cx={BAR_CX} cy={lineMid(n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue BFS flow, magenta for the cheap-in-hops but expensive path and violet for
+	   Dijkstra's relaxed distances. Every rule below reads these tokens; no other
+	   color is written in this file. */
+	:global(.anim-player[data-slug='grafos-java']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='grafos-java'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='grafos-java'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='grafos-java'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-violet {
+		fill: var(--xj-violet);
+	}
+
+	/* Floor, tray and vertices */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-floor-text {
+		font-family: var(--font-body);
+		font-size: 15px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		fill: var(--xj-mist);
+		opacity: 0.85;
+	}
+
+	.xj-slot {
+		fill: var(--xj-ink);
+		fill-opacity: 0.6;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.35;
+		stroke-width: 1.5;
+	}
+
+	.xj-exit {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.35;
+		stroke-width: 2;
+		stroke-dasharray: 4 5;
+		stroke-linecap: round;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-vertex-text {
+		font-family: var(--font-body);
+		font-size: 22px;
+		font-weight: 800;
+		fill: var(--xj-white);
+	}
+
+	.xj-vertex-text--on {
+		fill: var(--xj-ink);
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.7;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* BFS layers */
+	.xj-ring-halo,
+	.xj-ring-core {
+		fill: none;
+		stroke: var(--xj-flow);
+	}
+
+	.xj-ring-halo {
+		stroke-width: 10;
+		stroke-opacity: 0.14;
+	}
+
+	.xj-ring-core {
+		stroke-width: 1.8;
+		stroke-opacity: 0.8;
+		stroke-dasharray: 5 5;
+	}
+
+	.xj-ring-text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-flow-soft);
+	}
+
+	/* Routes */
+	.xj-trace {
+		fill: none;
+		stroke: var(--xj-steel-hi);
+		stroke-width: 3;
+		stroke-linecap: round;
+	}
+
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--magenta {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-flowline--violet {
+		--xj-line: var(--xj-violet);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* Tokens and the particle */
+	.xj-token-t {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-token-l {
+		fill: var(--xj-flow);
+	}
+
+	.xj-token-r {
+		fill: var(--xj-steel-hi);
+	}
+
+	.xj-token polygon {
+		stroke: var(--xj-flow-soft);
+		stroke-width: 1;
+		stroke-linejoin: round;
+	}
+
+	.xj-token-text {
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 800;
+		fill: var(--xj-white);
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+		font-style: italic;
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-bar--flow {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+		stroke-dasharray: 6 5;
+	}
+
+	.xj-bar--violet {
+		fill: var(--xj-violet);
+		fill-opacity: 0.24;
+		stroke: var(--xj-violet);
+		stroke-width: 1.2;
+	}
+</style>
