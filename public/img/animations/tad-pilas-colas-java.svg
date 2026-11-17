@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" role="img" aria-label="El viaje por una pila y una cola: LIFO frente a FIFO">
+  <rect width="400" height="200" fill="#f1e8d9"/>
+  <rect x="24" y="22" width="352" height="156" rx="22" fill="#2e2b25"/>
+  <circle cx="48" cy="44" r="6" fill="#c0714a"/><circle cx="66" cy="44" r="6" fill="#e8a27c"/><circle cx="84" cy="44" r="6" fill="#7d9a76"/>
+  <!-- Stack (LIFO) on the left -->
+  <text x="98" y="64" font-family="sans-serif" font-size="11" font-weight="700" fill="#e8a27c" text-anchor="middle">PILA (LIFO)</text>
+  <rect x="58" y="72" width="80" height="24" rx="8" fill="#faf5ec" stroke="#c0714a" stroke-width="2.5"/>
+  <text x="98" y="88" font-family="monospace" font-size="12" font-weight="700" fill="#2e2b25" text-anchor="middle">C ← tope</text>
+  <rect x="58" y="102" width="80" height="24" rx="8" fill="#faf5ec" stroke="#e8a27c" stroke-width="2"/>
+  <text x="98" y="118" font-family="monospace" font-size="12" font-weight="700" fill="#2e2b25" text-anchor="middle">B</text>
+  <rect x="58" y="132" width="80" height="24" rx="8" fill="#faf5ec" stroke="#e8a27c" stroke-width="2"/>
+  <text x="98" y="148" font-family="monospace" font-size="12" font-weight="700" fill="#2e2b25" text-anchor="middle">A</text>
+  <path d="M44 84h10M142 84h14" fill="none" stroke="#c0714a" stroke-width="3" stroke-linecap="round"/>
+  <!-- Queue (FIFO) on the right -->
+  <text x="266" y="64" font-family="sans-serif" font-size="11" font-weight="700" fill="#7d9a76" text-anchor="middle">COLA (FIFO)</text>
+  <rect x="192" y="86" width="44" height="36" rx="10" fill="#faf5ec" stroke="#7d9a76" stroke-width="2.5"/>
+  <text x="214" y="109" font-family="monospace" font-size="13" font-weight="700" fill="#2e2b25" text-anchor="middle">A</text>
+  <rect x="244" y="86" width="44" height="36" rx="10" fill="#faf5ec" stroke="#e8a27c" stroke-width="2"/>
+  <text x="266" y="109" font-family="monospace" font-size="13" font-weight="700" fill="#2e2b25" text-anchor="middle">B</text>
+  <rect x="296" y="86" width="44" height="36" rx="10" fill="#faf5ec" stroke="#c0714a" stroke-width="2.5"/>
+  <text x="318" y="109" font-family="monospace" font-size="13" font-weight="700" fill="#2e2b25" text-anchor="middle">C</text>
+  <path d="M188 104h-16" fill="none" stroke="#7d9a76" stroke-width="3" stroke-linecap="round"/>
+  <path d="M358 104h-14" fill="none" stroke="#c0714a" stroke-width="3" stroke-linecap="round"/>
+  <text x="214" y="144" font-family="monospace" font-size="10.5" font-weight="700" fill="#7d9a76" text-anchor="middle">frente</text>
+  <text x="318" y="144" font-family="monospace" font-size="10.5" font-weight="700" fill="#e8a27c" text-anchor="middle">fondo</text>
+</svg>
