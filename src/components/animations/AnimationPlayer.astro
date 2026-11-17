@@ -507,7 +507,8 @@ const lessonHref = lessonRef
 					s.opacity = 1;
 					const characters = Math.max(1, (el.textContent ?? '').trim().length);
 					schedule(el, [{ opacity: 1, clipPath: 'inset(0 100% 0 0)' }, { opacity: 1, clipPath: 'inset(0 0% 0 0)' }], {
-						easing: `steps(${characters}, end)`,
+						// jump-start: Chrome can finish a delayed steps(n, end) one step short.
+						easing: `steps(${characters}, jump-start)`,
 					});
 					break;
 				}
