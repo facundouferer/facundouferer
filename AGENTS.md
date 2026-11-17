@@ -669,7 +669,12 @@ dark palette (`--xj-*` tokens, the approved exception in DESIGN.md §8, listed i
 `paletteExceptions` of `tests/animations-lessons.test.mjs`). `CLAUDE.md` §Lesson films
 is the recipe for new ones. Films built from it: `viaje-llamada-polimorfica-java` (lesson 08),
 `viaje-contrato-interfaz-java` (09), `viaje-clave-hashmap-java` (13) and
-`viaje-comparacion-ordenamiento-java` (14).
+`viaje-comparacion-ordenamiento-java` (14). Lessons that had no animation got a film
+as their only animation: `metodos-funciones-java`, `algoritmia-complejidad-java`,
+`introduccion-pilares-poo-java`, `clases-objetos-java`,
+`constructores-encapsulamiento-java`, `arrays-objetos-java`, `tad-listas-java`,
+`tad-pilas-colas-java`, `arboles-binarios-java`, `arboles-n-arios-java`, `grafos-java`,
+`archivos-jar-java`, `concurrencia-hilos-java` and `jdbc-java`.
 
 Adding an animation: register it in the catalog, write its script and scenes, import
 and map the component in both detail pages, add the thumbnail, and cover it with a

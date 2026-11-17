@@ -240,6 +240,216 @@ export const animations: Animation[] = [
 		minutes: 2,
 		lesson: { course: 'java', slug: '14-iteradores-ordenamiento-equals-hashcode' },
 	},
+	{
+		slug: 'metodos-funciones-java',
+		image: '/img/animations/metodos-funciones-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje de una llamada a un método',
+			en: 'The journey of a method call',
+		},
+		description: {
+			es: 'Un corto de dos minutos que sigue una llamada desde main hasta la pila de llamadas (Call Stack): el marco que se apila, la copia por valor de los argumentos, el return que devuelve el resultado y cómo el marco desaparece.',
+			en: 'A two-minute short that follows a call from main onto the Call Stack: the pushed stack frame, pass-by-value argument copying, the return statement delivering the result and how the frame disappears.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '05-metodos-y-funciones' },
+	},
+	{
+		slug: 'introduccion-pilares-poo-java',
+		image: '/img/animations/introduccion-pilares-poo-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje hacia un objeto: los cuatro pilares de la POO',
+			en: 'The journey to an object: the four pillars of OOP',
+		},
+		description: {
+			es: 'Un corto de dos minutos que muestra cómo variables sueltas se reúnen en un objeto con estado y comportamiento propios: abstracción, encapsulamiento, herencia y polimorfismo en acción.',
+			en: 'A two-minute short showing how scattered variables come together into an object with its own state and behavior: abstraction, encapsulation, inheritance and polymorphism in action.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '06-introduccion-y-pilares-poo' },
+	},
+	{
+		slug: 'clases-objetos-java',
+		image: '/img/animations/clases-objetos-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje de new: del molde en la clase al objeto en el Heap',
+			en: 'The journey of new: from the class blueprint to the Heap object',
+		},
+		description: {
+			es: 'Un corto de dos minutos que sigue a new cuando reserva memoria en el Heap a partir de una clase, guarda la referencia en el Stack, modifica atributos independientes y muestra qué pasa cuando dos variables apuntan al mismo objeto.',
+			en: 'A two-minute short that follows new as it allocates Heap memory from a class, stores the reference on the Stack, mutates independent attributes and shows what happens when two variables point to the same object.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '07-fundamentos-poo-clases-y-objetos' },
+	},
+	{
+		slug: 'constructores-encapsulamiento-java',
+		image: '/img/animations/constructores-encapsulamiento-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje de un dato privado: constructores y encapsulamiento',
+			en: 'The journey of a private field: constructors and encapsulation',
+		},
+		description: {
+			es: 'Un corto de dos minutos que sigue la inicialización de un objeto con su constructor y this, el bloqueo del compilador ante un atributo private y cómo el setter valida la regla antes de cambiar el estado.',
+			en: 'A two-minute short that follows object initialization with its constructor and this, the compiler blocking direct access to a private field, and how the setter validates the rule before changing state.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '07-constructores-y-encapsulamiento' },
+	},
+	{
+		slug: 'arrays-objetos-java',
+		image: '/img/animations/arrays-objetos-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje por un array de objetos: de null a las instancias',
+			en: 'The journey through an array of objects: from null to instances',
+		},
+		description: {
+			es: 'Un corto de dos minutos que muestra por qué new Persona[3] solo crea casilleros en null, el tropiezo de NullPointerException en una celda vacía, cómo cada índice enlaza su objeto en el Heap y cómo recorrerlos.',
+			en: 'A two-minute short showing why new Person[3] only creates null slots, the NullPointerException trap on an empty cell, how each index links its Heap object, and how to traverse them.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '09-arrays-de-objetos' },
+	},
+	{
+		slug: 'tad-listas-java',
+		image: '/img/animations/tad-listas-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje de un nodo: listas estáticas frente a enlazadas',
+			en: 'The journey of a node: static lists versus linked lists',
+		},
+		description: {
+			es: 'Un corto de dos minutos que compara desplazar elementos en un arreglo fijo con enlazar nodos mediante referencias siguiente en una lista dinámica.',
+			en: 'A two-minute short comparing shifting elements in a fixed array against linking nodes through next references in a dynamic list.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '11-tad-listas-estaticas-y-dinamicas' },
+	},
+	{
+		slug: 'tad-pilas-colas-java',
+		image: '/img/animations/tad-pilas-colas-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje por una pila y una cola: LIFO frente a FIFO',
+			en: 'The journey through a stack and a queue: LIFO versus FIFO',
+		},
+		description: {
+			es: 'Un corto de dos minutos que sigue a los mismos elementos al apilar y desapilar por el tope (LIFO) y al encolar por el fondo y desencolar por el frente (FIFO).',
+			en: 'A two-minute short that follows the same elements as they push and pop at the top of a stack (LIFO) and enqueue at the rear and dequeue at the front of a queue (FIFO).',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '12-tad-pilas-y-colas' },
+	},
+	{
+		slug: 'arboles-binarios-java',
+		image: '/img/animations/arboles-binarios-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje de una búsqueda en un árbol binario (ABB)',
+			en: 'The journey of a search in a binary search tree (BST)',
+		},
+		description: {
+			es: 'Un corto de dos minutos que sigue una clave desde la raíz de un ABB, doblando a la izquierda o a la derecha para descartar subárboles enteros, y cómo el recorrido inorden devuelve las claves ordenadas.',
+			en: 'A two-minute short that follows a key from the root of a BST, branching left or right to discard whole subtrees, and how in-order traversal yields the keys in sorted order.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '15-tad-arboles-binarios-y-busqueda' },
+	},
+	{
+		slug: 'grafos-java',
+		image: '/img/animations/grafos-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje por un grafo: de BFS al camino mínimo con Dijkstra',
+			en: 'The journey through a graph: from BFS to Dijkstra shortest path',
+		},
+		description: {
+			es: 'Un corto de dos minutos que recorre una lista de adyacencia por capas con la cola de BFS y luego relaja aristas con peso para encontrar la ruta más corta con Dijkstra.',
+			en: 'A two-minute short that explores an adjacency list layer by layer with a BFS queue and then relaxes weighted edges to find the shortest path with Dijkstra.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '16-grafos-representacion-y-algoritmos' },
+	},
+	{
+		slug: 'archivos-jar-java',
+		image: '/img/animations/archivos-jar-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje de un dato al disco y al archivo JAR',
+			en: 'The journey of data to disk and into a JAR file',
+		},
+		description: {
+			es: 'Un corto de dos minutos que muestra por qué el Heap se evapora al terminar main, cómo try-with-resources y BufferedWriter persisten datos en disco, y cómo MANIFEST.MF empaqueta las clases en un JAR ejecutable.',
+			en: 'A two-minute short showing why the Heap vanishes when main ends, how try-with-resources and BufferedWriter persist data to disk, and how MANIFEST.MF packages classes into an executable JAR.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '17-archivos-persistencia-y-empaquetado-jar' },
+	},
+	{
+		slug: 'concurrencia-hilos-java',
+		image: '/img/animations/concurrencia-hilos-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje de dos hilos: de la condición de carrera al cerrojo',
+			en: 'The journey of two threads: from a race condition to the lock',
+		},
+		description: {
+			es: 'Un corto de dos minutos que sigue a dos hilos pisándose al incrementar un contador compartido, cómo synchronized serializa el paso con un monitor y cómo un pool reutiliza hilos.',
+			en: 'A two-minute short that follows two threads overwriting each other on a shared counter, how synchronized serializes access with a monitor lock, and how a thread pool reuses workers.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '19-programacion-concurrente-hilos-y-pools' },
+	},
+	{
+		slug: 'jdbc-java',
+		image: '/img/animations/jdbc-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje de una consulta SQL por JDBC: parámetros y transacción',
+			en: 'The journey of a SQL query through JDBC: parameters and transaction',
+		},
+		description: {
+			es: 'Un corto de dos minutos que contrasta el peligro de concatenar SQL con un PreparedStatement que separa consulta y parámetros ?, y cómo commit o rollback protegen la transacción.',
+			en: 'A two-minute short contrasting the danger of concatenating SQL with a PreparedStatement that separates query and ? parameters, and how commit or rollback protects the transaction.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '19-acceso-a-bases-de-datos-jdbc' },
+	},
+	{
+		slug: 'algoritmia-complejidad-java',
+		image: '/img/animations/algoritmia-complejidad-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje de un algoritmo: contrato, invariante y O(log n)',
+			en: 'The journey of an algorithm: contract, invariant and O(log n)',
+		},
+		description: {
+			es: 'Un corto de dos minutos que sigue la precondición de un método, el invariante que sostiene cada vuelta y la diferencia entre revisar elemento por elemento O(n) y partir el arreglo a la mitad O(log n).',
+			en: 'A two-minute short that follows a method precondition, the loop invariant holding on every iteration, and the contrast between scanning one by one O(n) and halving the array O(log n).',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '23-algoritmia-verificacion-y-complejidad' },
+	},
+	{
+		slug: 'arboles-n-arios-java',
+		image: '/img/animations/arboles-n-arios-java.svg',
+		tag: { es: 'Java', en: 'Java' },
+		title: {
+			es: 'El viaje por un árbol N-ario: primer hijo, siguiente hermano y vectores',
+			en: 'The journey through an N-ary tree: first child, next sibling and arrays',
+		},
+		description: {
+			es: 'Un corto de dos minutos que transforma una jerarquía con muchos hijos por nodo en dos punteros fijos (primerHijo y siguienteHermano) y la almacena en vectores paralelos de índices padre.',
+			en: 'A two-minute short that transforms a hierarchy with many children per node into two fixed pointers (firstChild and nextSibling) and stores it in parallel parent-index arrays.',
+		},
+		minutes: 2,
+		lesson: { course: 'java', slug: '26-arboles-n-arios-y-representacion-con-vectores' },
+	},
 ];
 
 /**

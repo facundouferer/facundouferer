@@ -17,6 +17,20 @@ import ViajeClaveHashmapJava from '../../components/animaciones/viaje-clave-hash
 import ViajeComparacionOrdenamientoJava from '../../components/animaciones/viaje-comparacion-ordenamiento-java.astro';
 import CollectionsGenericosJava from '../../components/animaciones/collections-genericos-java.astro';
 import IteradoresOrdenamientoJava from '../../components/animaciones/iteradores-ordenamiento-java.astro';
+import MetodosFuncionesJava from '../../components/animaciones/metodos-funciones-java.astro';
+import IntroduccionPilaresPooJava from '../../components/animaciones/introduccion-pilares-poo-java.astro';
+import ClasesObjetosJava from '../../components/animaciones/clases-objetos-java.astro';
+import ConstructoresEncapsulamientoJava from '../../components/animaciones/constructores-encapsulamiento-java.astro';
+import ArraysObjetosJava from '../../components/animaciones/arrays-objetos-java.astro';
+import TadListasJava from '../../components/animaciones/tad-listas-java.astro';
+import TadPilasColasJava from '../../components/animaciones/tad-pilas-colas-java.astro';
+import ArbolesBinariosJava from '../../components/animaciones/arboles-binarios-java.astro';
+import GrafosJava from '../../components/animaciones/grafos-java.astro';
+import ArchivosJarJava from '../../components/animaciones/archivos-jar-java.astro';
+import ConcurrenciaHilosJava from '../../components/animaciones/concurrencia-hilos-java.astro';
+import JdbcJava from '../../components/animaciones/jdbc-java.astro';
+import AlgoritmiaComplejidadJava from '../../components/animaciones/algoritmia-complejidad-java.astro';
+import ArbolesNAriosJava from '../../components/animaciones/arboles-n-arios-java.astro';
 
 export function getStaticPaths() {
 	return animations.map((animation) => ({
@@ -47,6 +61,20 @@ const componentMap: Record<string, any> = {
 	'viaje-comparacion-ordenamiento-java': ViajeComparacionOrdenamientoJava,
 	'collections-genericos-java': CollectionsGenericosJava,
 	'iteradores-ordenamiento-java': IteradoresOrdenamientoJava,
+	'metodos-funciones-java': MetodosFuncionesJava,
+	'introduccion-pilares-poo-java': IntroduccionPilaresPooJava,
+	'clases-objetos-java': ClasesObjetosJava,
+	'constructores-encapsulamiento-java': ConstructoresEncapsulamientoJava,
+	'arrays-objetos-java': ArraysObjetosJava,
+	'tad-listas-java': TadListasJava,
+	'tad-pilas-colas-java': TadPilasColasJava,
+	'arboles-binarios-java': ArbolesBinariosJava,
+	'grafos-java': GrafosJava,
+	'archivos-jar-java': ArchivosJarJava,
+	'concurrencia-hilos-java': ConcurrenciaHilosJava,
+	'jdbc-java': JdbcJava,
+	'algoritmia-complejidad-java': AlgoritmiaComplejidadJava,
+	'arboles-n-arios-java': ArbolesNAriosJava,
 };
 
 const AnimationComponent = componentMap[slug];
