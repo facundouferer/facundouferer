@@ -1,0 +1,1065 @@
+---
+/**
+ * Scene for "The journey through an N-ary tree" (lesson
+ * java/26-arboles-n-arios-y-representacion-con-vectores, order: 19), a short film
+ * played on one persistent motion canvas. The captions and cues live in
+ * `src/data/animations/arboles-n-arios-java.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: it shows the
+ * Java source and the cues slide a bar over the line being executed. The viewport on
+ * the right holds the camera: an isometric floor where the nodes `A`..`E` stand as
+ * blocks (first children along one axis, siblings along the other), and a deck
+ * behind it with the parallel vectors `etiquetas[]` and `padres[]`. Magenta marks
+ * what does not fit or is invalid, violet the links that solve it, light blue the
+ * walk of the execution flow.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing else
+ * in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/arboles-n-arios-java';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Source code shown in the editor ───────────────────────────────────────
+// Identifiers and string literals are localized the same way the lesson does.
+const names = {
+	fileA: t('ArbolNario.java', 'NaryTree.java'),
+	fileB: t('ArbolVector.java', 'VectorTree.java'),
+	mainA: t('ArbolNario', 'NaryTree'),
+	mainB: t('ArbolVector', 'VectorTree'),
+	node: t('Nodo', 'Node'),
+	value: t('valor', 'value'),
+	firstChild: t('primerHijo', 'firstChild'),
+	nextSibling: t('siguienteHermano', 'nextSibling'),
+	child: t('hijo', 'child'),
+	none: t('SIN_INDICE', 'NO_INDEX'),
+	validate: t('validarEnlace', 'validateLink'),
+	parents: t('padres', 'parents'),
+	labels: t('etiquetas', 'labels'),
+	curr: t('actual', 'current'),
+	depth: t('profundidad', 'depth'),
+};
+const strings = {
+	index: t('índice ', 'index '),
+	left: t('enlace izquierdo', 'left link'),
+	right: t('enlace derecho', 'right link'),
+};
+
+// First program: first-child / next-sibling links and the walk over the children of `A`.
+const sourceA = [
+	`class ${names.node} {`,
+	`    String ${names.value};`,
+	`    ${names.node} ${names.firstChild};`.padEnd(30) + `// ${strings.left}`,
+	`    ${names.node} ${names.nextSibling};`.padEnd(30) + `// ${strings.right}`,
+	`    ${names.node}(String ${names.value}) { this.${names.value} = ${names.value}; }`,
+	'}',
+	`public class ${names.mainA} {`,
+	'    public static void main(String[] args) {',
+	`        ${names.node} a = new ${names.node}("A"), b = new ${names.node}("B"), c = new ${names.node}("C");`,
+	`        ${names.node} d = new ${names.node}("D"), e = new ${names.node}("E");`,
+	`        a.${names.firstChild} = b;  b.${names.firstChild} = e;`,
+	`        b.${names.nextSibling} = c;`,
+	`        c.${names.nextSibling} = d;`,
+	`        ${names.node} ${names.child} = a.${names.firstChild};`,
+	`        while (${names.child} != null) {`,
+	`            System.out.println(${names.child}.${names.value});`,
+	`            ${names.child} = ${names.child}.${names.nextSibling};`,
+	'        }',
+	'    }',
+	'}',
+].join('\n');
+
+// Second program: the same tree as parallel vectors, validated, then climbed to the root.
+const sourceB = [
+	`public class ${names.mainB} {`,
+	`    static final int ${names.none} = -1;`,
+	'',
+	`    static void ${names.validate}(int i, int n) {`,
+	`        if (i != ${names.none} && (i < 0 || i >= n)) {`,
+	`            throw new IndexOutOfBoundsException("${strings.index}" + i);`,
+	'        }',
+	'    }',
+	'    public static void main(String[] args) {',
+	`        String[] ${names.labels} = {"A", "B", "C", "D", "E"};`,
+	`        int[] ${names.parents} = {-1, 0, 0, 0, 1};`,
+	`        for (int p : ${names.parents}) ${names.validate}(p, ${names.parents}.length);`,
+	`        int ${names.curr} = 4, ${names.depth} = 0;`,
+	`        while (${names.parents}[${names.curr}] != ${names.none}) {`,
+	`            ${names.curr} = ${names.parents}[${names.curr}];`,
+	`            ${names.depth}++;`,
+	'        }',
+	`        System.out.println(${names.labels}[4] + ": " + ${names.depth});`,
+	'    }',
+	'}',
+].join('\n');
+
+// The hypothetical bad input of the validation scene, drawn over line 11.
+const lineBad = `        int[] ${names.parents} = {-1, 0, 0, 0, 7};`;
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const svgLines = (source: string) =>
+	highlightCode(source, 'java').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+
+const pageA = svgLines(sourceA);
+const pageB = svgLines(sourceB);
+const badHtml = svgLines(lineBad)[0].html;
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 64;
+const GUTTER_X = 50;
+const CODE_TOP = 74;
+const LINE_H = 23;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 5;
+const CONSOLE_TOP = 552;
+const outY = (row: number) => 597 + row * LINE_H;
+
+// Lines the highlight bar travels to (`ln-<n>`, valid for both programs).
+const lineAnchors = Array.from({ length: 20 }, (_, index) => ({ id: `ln-${index + 1}`, n: index + 1 }));
+
+// Program output, one element per printed line.
+const outputs = [
+	{ id: 'out-1', row: 0, text: 'B' },
+	{ id: 'out-2', row: 1, text: 'C' },
+	{ id: 'out-3', row: 2, text: 'D' },
+	{ id: 'out-b', row: 0, text: 'E: 2' },
+];
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right (first child), +v down-left (next sibling), z is up.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 56;
+const EY = 32;
+const ORIGIN = { x: 510, y: 322 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const path = (points: Point[]) => 'M' + points.map((point) => `${point.x} ${point.y}`).join(' L');
+
+/** A box standing on the floor at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+type Slab = ReturnType<typeof slab>;
+/** Text lying flat on a floor, reading along +u. */
+const floorMatrix = (point: Point) => `matrix(0.866 0.5 -0.866 0.5 ${point.x} ${point.y})`;
+
+const NODE_H = 20;
+const CELL_H = 14;
+const floor = slab(1.45, 1.6, 2.0, 2.3, 12, -12);
+const deck = slab(1.8, -2.15, 2.4, 0.85, 12, -12);
+
+// The tree A{B{E}, C, D}: first children along +u, siblings along +v.
+const P = {
+	a: { u: 0, v: 0 },
+	b: { u: 1.5, v: 0 },
+	c: { u: 1.5, v: 1.2 },
+	d: { u: 1.5, v: 2.4 },
+	e: { u: 3.0, v: 0 },
+	nul: { u: 1.5, v: 3.4 },
+};
+const at = (key: keyof typeof P) => pt(P[key].u, P[key].v);
+const nodeSlab = (key: keyof typeof P) => slab(P[key].u, P[key].v, 0.3, 0.3, NODE_H);
+
+// Nodes, back to front, with their index in the vectors.
+const nodes = [
+	{ id: 'n-a', letter: 'A', index: 0, g: nodeSlab('a') },
+	{ id: 'n-b', letter: 'B', index: 1, g: nodeSlab('b') },
+	{ id: 'n-c', letter: 'C', index: 2, g: nodeSlab('c') },
+	{ id: 'n-e', letter: 'E', index: 4, g: nodeSlab('e') },
+	{ id: 'n-d', letter: 'D', index: 3, g: nodeSlab('d') },
+];
+const nodeOf = (letter: string) => nodes.find((node) => node.letter === letter)!.g;
+type Tone = 'flow' | 'violet' | 'magenta';
+const nodeLits: { id: string; letter: string; tone: Tone }[] = [
+	{ id: 'on-a', letter: 'A', tone: 'flow' },
+	{ id: 'on-b', letter: 'B', tone: 'flow' },
+	{ id: 'on-c', letter: 'C', tone: 'flow' },
+	{ id: 'on-e', letter: 'E', tone: 'flow' },
+	{ id: 'on-d', letter: 'D', tone: 'flow' },
+	{ id: 'x-d', letter: 'D', tone: 'magenta' },
+];
+
+// Routes on the floor. N-ary edges fan out from the parent; LCRS links follow the axes.
+const route = (from: keyof typeof P, to: keyof typeof P) => path([at(from), at(to)]);
+const edges = [
+	{ id: 'e-ab', d: route('a', 'b') },
+	{ id: 'e-ac', d: route('a', 'c') },
+	{ id: 'e-ad', d: route('a', 'd') },
+	{ id: 'e-be', d: route('b', 'e') },
+];
+type Line = { id: string; d: string; tone: 'flow' | 'violet' | 'sib' | 'magenta' };
+const lines: Line[] = [
+	// The two slots a binary node offers, and the third child that does not fit.
+	{ id: 'fl-ab', d: route('a', 'b'), tone: 'flow' },
+	{ id: 'fl-ac', d: route('a', 'c'), tone: 'flow' },
+	{ id: 'x-ad', d: route('a', 'd'), tone: 'magenta' },
+	// First-child (violet) and next-sibling (soft violet) links.
+	{ id: 'k-ab', d: route('a', 'b'), tone: 'violet' },
+	{ id: 'k-be', d: route('b', 'e'), tone: 'violet' },
+	{ id: 'k-bc', d: route('b', 'c'), tone: 'sib' },
+	{ id: 'k-cd', d: route('c', 'd'), tone: 'sib' },
+	// The walk over the children of A.
+	{ id: 'w-ab', d: route('a', 'b'), tone: 'flow' },
+	{ id: 'w-bc', d: route('b', 'c'), tone: 'flow' },
+	{ id: 'w-cd', d: route('c', 'd'), tone: 'flow' },
+	{ id: 'w-dn', d: route('d', 'nul'), tone: 'flow' },
+	// The climb through padres[]: E to B, then B to A.
+	{ id: 'up-eb', d: route('e', 'b'), tone: 'flow' },
+	{ id: 'up-ba', d: route('b', 'a'), tone: 'flow' },
+	// A bad index points outside the vector.
+	{ id: 'rt-bad', d: path([pt(3.6, -1.7), pt(4.6, -1.7)]), tone: 'magenta' },
+];
+
+// The parallel vectors on the deck: etiquetas[] behind, padres[] in front.
+const CELLS = [0, 1, 2, 3, 4];
+const parentsOf = [-1, 0, 0, 0, 1];
+const labelsOf = ['A', 'B', 'C', 'D', 'E'];
+const cellU = (k: number) => k * 0.9;
+const ROW_PARENTS = -1.7;
+const ROW_LABELS = -2.6;
+const parentCell = (k: number) => slab(cellU(k), ROW_PARENTS, 0.36, 0.36, CELL_H);
+const labelCell = (k: number) => slab(cellU(k), ROW_LABELS, 0.36, 0.36, CELL_H);
+
+// Where the travelling particle stops: just above the top of each node.
+const hover = (g: Slab, by = 20) => lift(g.center, by);
+const NULL_AT = at('nul');
+const anchors = [
+	{ id: 'a-root', ...hover(nodeOf('A')) },
+	{ id: 'a-b', ...hover(nodeOf('B')) },
+	{ id: 'a-c', ...hover(nodeOf('C')) },
+	{ id: 'a-d', ...hover(nodeOf('D')) },
+	{ id: 'a-e', ...hover(nodeOf('E')) },
+	{ id: 'a-null', ...lift(NULL_AT, 18) },
+];
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-tree', cx: 555, cy: 395, s: 1.4 },
+	{ id: 'shot-top', cx: 520, cy: 385, s: 1.65 },
+	{ id: 'shot-walk', cx: 515, cy: 410, s: 1.55 },
+	{ id: 'shot-vec', cx: 640, cy: 350, s: 1.15 },
+	{ id: 'shot-deck', cx: 702, cy: 320, s: 1.15 },
+	{ id: 'shot-climb', cx: 660, cy: 350, s: 1.25 },
+	{ id: 'shot-all', cx: 640, cy: 360, s: 1.0 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | Tone;
+	mono?: boolean;
+	check?: boolean;
+	lead?: Point;
+};
+const A_TOP = nodeOf('A').center;
+const D_AT = at('d');
+const chips: Chip[] = [
+	{ id: 'lb-nary', text: t('árbol N-ario: cero o más hijos por nodo', 'N-ary tree: zero or more children per node'), x: A_TOP.x + 20, y: A_TOP.y - 56, align: 'middle', tone: 'flow' },
+	{ id: 'lb-two', text: t('nodo binario: solo 2 enlaces', 'binary node: only 2 links'), x: A_TOP.x + 20, y: A_TOP.y - 56, align: 'middle', tone: 'plain' },
+	{ id: 'lb-nofit', text: t('D: no hay tercer enlace', 'D: no third link'), x: D_AT.x - 40, y: D_AT.y + 50, align: 'start', tone: 'magenta' },
+	{ id: 'lb-refs', text: `${names.firstChild} · ${names.nextSibling}`, x: A_TOP.x + 20, y: A_TOP.y - 56, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'lb-nobst', text: t('enlaces = relaciones, no comparaciones', 'links = relationships, not comparisons'), x: A_TOP.x + 20, y: A_TOP.y - 56, align: 'middle', tone: 'plain' },
+	{ id: 'lb-fc', text: names.firstChild, x: 580, y: 296, align: 'start', tone: 'violet', mono: true, lead: pt(0.75, 0) },
+	{ id: 'lb-ns', text: names.nextSibling, x: 520, y: 478, align: 'start', tone: 'violet', mono: true, lead: pt(1.5, 1.8) },
+	{ id: 'lb-done', text: t('hijo == null: fin del ciclo', 'child == null: loop ends'), x: 380, y: 522, align: 'start', tone: 'flow', mono: true },
+	{ id: 'lb-padres', text: `${names.parents}[]`, x: 560, y: 262, align: 'end', tone: 'plain', mono: true },
+	{ id: 'lb-etq', text: `${names.labels}[]`, x: 611, y: 232, align: 'end', tone: 'plain', mono: true },
+	{ id: 'lb-root', text: t('-1 = SIN_INDICE: sin padre', '-1 = NO_INDEX: no parent'), x: 605, y: 180, align: 'middle', tone: 'flow', lead: lift(parentCell(0).center, 8) },
+	{ id: 'lb-ok', text: t('índices válidos', 'valid indices'), x: 800, y: 432, align: 'middle', tone: 'violet', check: true },
+	{ id: 'lb-bad', text: 'IndexOutOfBoundsException', x: 930, y: 450, align: 'end', tone: 'magenta', mono: true },
+	{ id: 'lb-o1', text: `${names.parents}[${names.curr}]: O(1)`, x: 640, y: 150, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'lb-cycle', text: t('un ciclo: la subida nunca termina', 'a cycle: the climb never ends'), x: 560, y: 520, align: 'middle', tone: 'magenta' },
+	{ id: 'r-lcrs', text: t('2 referencias por nodo, cualquier cantidad de hijos', '2 references per node, any number of children'), x: 340, y: 556, align: 'start', tone: 'violet', check: true },
+	{ id: 'r-vec', text: t('vectores: padre en O(1) y mejor localidad', 'vectors: parent in O(1) and better locality'), x: 560, y: 150, align: 'start', tone: 'flow', check: true },
+	...nodes.map(
+		(node): Chip => ({ id: `ix-${node.index}`, text: `[${node.index}]`, x: node.g.center.x + 38, y: node.g.center.y + 18, align: 'start', tone: 'plain', mono: true }),
+	),
+	...[0, 1, 2].map(
+		(depth): Chip => ({ id: `dep-${depth}`, text: `${names.depth} = ${depth}`, x: 720, y: 474, align: 'start', tone: 'flow', mono: true }),
+	),
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + (chip.check ? 42 : 24));
+const chipLeft = (chip: Chip) =>
+	chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x;
+const chipJoin = (chip: Chip) =>
+	chip.align === 'end' ? chipLeft(chip) + chipWidth(chip) - 14 : chip.align === 'middle' ? chip.x : chipLeft(chip) + 14;
+
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="xn-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="xn-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="xn-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="xn-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xn-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xn-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the tree and its vectors, seen through the camera -->
+			<g clip-path="url(#xn-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + 150} cy={VP.y + 110} rx="420" ry="320" fill="url(#xn-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + VP.w - 60} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#xn-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- The deck of the vectors, behind the tree -->
+						<g data-el="deck">
+							<polygon class="xj-plate-shadow" points={deck.base} transform="translate(10 16)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={deck.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={deck.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={deck.top} fill="url(#xn-g-floor)"></polygon>
+							<text class="xj-floor-text" transform={floorMatrix(pt(-0.45, -1.45))}>{t('vectores paralelos', 'parallel vectors')}</text>
+						</g>
+
+						<!-- The floor of the tree -->
+						<g data-el="floor">
+							<polygon class="xj-plate-shadow" points={floor.base} transform="translate(14 22)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={floor.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={floor.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={floor.top} fill="url(#xn-g-floor)"></polygon>
+							<text class="xj-floor-text" transform={floorMatrix(pt(-0.45, 2.6))}>{t('árbol N-ario', 'N-ary tree')}</text>
+						</g>
+
+						<!-- N-ary edges: the fan from each parent to every child -->
+						{
+							edges.map((edge) => (
+								<g data-el={edge.id}>
+									<path class="mg-stroke xj-edge" pathLength="1" d={edge.d} />
+								</g>
+							))
+						}
+
+						<!-- Links, walks and climbs over the same floor -->
+						{
+							lines.map((item) => (
+								<g data-el={item.id} class:list={['xj-flowline', `xj-flowline--${item.tone}`]}>
+									<path class="mg-stroke xj-flowline-halo" pathLength="1" d={item.d} />
+									<path class="mg-stroke xj-flowline-core" pathLength="1" d={item.d} />
+								</g>
+							))
+						}
+
+						<!-- The end of the sibling chain -->
+						<g data-el="nul">
+							<ellipse class="xj-null" cx={NULL_AT.x} cy={NULL_AT.y} rx="26" ry="15"></ellipse>
+							<text class="xj-null-text" x={NULL_AT.x} y={NULL_AT.y + 4.5} text-anchor="middle">null</text>
+						</g>
+
+						<!-- Nodes, back to front, each one with its letter on top -->
+						{
+							nodes.map((node) => (
+								<g data-el={node.id}>
+									<polygon class="xj-shadow" points={node.g.base} transform="translate(7 9)" />
+									<polygon class="xj-face xj-face--l" points={node.g.leftFace} />
+									<polygon class="xj-face xj-face--r" points={node.g.rightFace} />
+									<polygon class="xj-face xj-face--t" points={node.g.top} fill="url(#xn-g-top)" />
+									<text class="xj-node-text" x={node.g.center.x} y={node.g.center.y + 5.5} text-anchor="middle">
+										{node.letter}
+									</text>
+								</g>
+							))
+						}
+						{
+							nodeLits.map((lit) => (
+								<g data-el={lit.id} class:list={['xj-lit', `xj-lit--${lit.tone}`]}>
+									<polygon class="xj-lit-halo" points={nodeOf(lit.letter).top} />
+									<polygon class="xj-lit-top" points={nodeOf(lit.letter).top} />
+									<polygon class="xj-lit-side" points={nodeOf(lit.letter).leftFace} />
+									<text class="xj-node-text xj-node-text--on" x={nodeOf(lit.letter).center.x} y={nodeOf(lit.letter).center.y + 5.5} text-anchor="middle">
+										{lit.letter}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- etiquetas[]: the back row of the deck -->
+						{
+							CELLS.map((k) => (
+								<g data-el={`lc-${k}`}>
+									<polygon class="xj-shadow" points={labelCell(k).base} transform="translate(5 7)" />
+									<polygon class="xj-face xj-face--l" points={labelCell(k).leftFace} />
+									<polygon class="xj-face xj-face--r" points={labelCell(k).rightFace} />
+									<polygon class="xj-face xj-face--t" points={labelCell(k).top} fill="url(#xn-g-top)" />
+									<text class="xj-cell-text" x={labelCell(k).center.x} y={labelCell(k).center.y + 5} text-anchor="middle">
+										"{labelsOf[k]}"
+									</text>
+								</g>
+							))
+						}
+
+						<!-- padres[]: the front row, with the shared index on its face -->
+						{
+							CELLS.map((k) => (
+								<g data-el={`pc-${k}`}>
+									<polygon class="xj-shadow" points={parentCell(k).base} transform="translate(5 7)" />
+									<polygon class="xj-face xj-face--l" points={parentCell(k).leftFace} />
+									<polygon class="xj-face xj-face--r" points={parentCell(k).rightFace} />
+									<polygon class="xj-face xj-face--t" points={parentCell(k).top} fill="url(#xn-g-top)" />
+									<text class="xj-face-text" transform={parentCell(k).faceMatrix} text-anchor="middle" y="4">
+										{k}
+									</text>
+								</g>
+							))
+						}
+						{
+							CELLS.map((k) => (
+								<g data-el={`pok-${k}`} class="xj-lit xj-lit--violet">
+									<polygon class="xj-lit-halo" points={parentCell(k).top} />
+									<polygon class="xj-lit-top" points={parentCell(k).top} />
+								</g>
+							))
+						}
+						{
+							CELLS.map((k) => (
+								<g data-el={`pon-${k}`} class="xj-lit xj-lit--flow">
+									<polygon class="xj-lit-halo" points={parentCell(k).top} />
+									<polygon class="xj-lit-top" points={parentCell(k).top} />
+								</g>
+							))
+						}
+						<g data-el="px-4" class="xj-lit xj-lit--magenta">
+							<polygon class="xj-lit-halo" points={parentCell(4).top}></polygon>
+							<polygon class="xj-lit-top" points={parentCell(4).top}></polygon>
+						</g>
+						{
+							CELLS.map((k) => (
+								<text data-el={`pv-${k}`} class="xj-cell-text" x={parentCell(k).center.x} y={parentCell(k).center.y + 5} text-anchor="middle">
+									{parentsOf[k]}
+								</text>
+							))
+						}
+						<text data-el="pv-bad" class="xj-cell-text xj-cell-text--bad" x={parentCell(4).center.x} y={parentCell(4).center.y + 5} text-anchor="middle">7</text>
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									{chip.lead && <line class="xj-lead" x1={chip.lead.x} y1={chip.lead.y} x2={chipJoin(chip)} y2={chip.y + (chip.lead.y > chip.y ? 12 : -12)} />}
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.check && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M20 6 9 17l-5-5" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.check ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The execution flow. Placement lives on the inner group: the player resets transforms on data-el. -->
+						<g data-el="p" class="xj-particle" data-x={anchors[0].x} data-y={anchors[0].y}>
+							<g>
+								<circle r="20" fill="url(#xn-g-particle)"></circle>
+								<circle class="xj-particle-core" r="4.5"></circle>
+							</g>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="330" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Recorrido', 'Walk')}</text>
+				<polygon class="xj-legend-object" points={`${VP.x + 122},${LEGEND_Y - 6} ${VP.x + 128},${LEGEND_Y} ${VP.x + 122},${LEGEND_Y + 6} ${VP.x + 116},${LEGEND_Y}`}></polygon>
+				<text x={VP.x + 136} y={LEGEND_Y + 4}>{t('Enlace', 'Link')}</text>
+				<circle class="xj-legend-bad" cx={VP.x + 210} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 222} y={LEGEND_Y + 4}>{t('Inválido', 'Invalid')}</text>
+			</g>
+
+			<!-- EDITOR: the source, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<!-- Line states sit behind the code -->
+				<rect data-el="hv-34" class="xj-bar xj-bar--violet" x={BAR.x} y={lineTop(3)} width={BAR.w} height={LINE_H * 2} rx="6"></rect>
+				<rect data-el="hx-6" class="xj-bar xj-bar--trail" x={BAR.x} y={lineTop(6)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(11)}>
+					<g>
+						<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+						<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+					</g>
+				</g>
+
+				<!-- First program: first-child / next-sibling links -->
+				<g data-el="ea" data-base="shown" class="xj-code">
+					<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.fileA}</text>
+					{
+						pageA.map((item) => (
+							<g data-el={`ea-${item.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(item.n)} text-anchor="end">
+									{item.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(item.n)} xml:space="preserve" set:html={item.html} />
+							</g>
+						))
+					}
+				</g>
+
+				<!-- Second program: parallel vectors, validation and the climb -->
+				<g data-el="eb" class="xj-code">
+					<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.fileB}</text>
+					{
+						pageB.map((item) => (
+							<g data-el={`eb-${item.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(item.n)} text-anchor="end">
+									{item.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(item.n)} xml:space="preserve" set:html={item.html} />
+							</g>
+						))
+					}
+					<g data-el="eb-11x">
+						<rect class="xj-bar xj-bar--trail" x={BAR.x} y={lineTop(11)} width={BAR.w} height={LINE_H} rx="6"></rect>
+						<text class="xj-gutter" x={GUTTER_X} y={lineBase(11)} text-anchor="end">11</text>
+						<text class="xj-mono" x={CODE_X} y={lineBase(11)} xml:space="preserve" set:html={badHtml}></text>
+					</g>
+				</g>
+
+				{
+					outputs.map((item) => (
+						<text data-el={item.id} class="xj-out" x={ED.x + 20} y={outY(item.row)} xml:space="preserve">
+							{item.text}
+						</text>
+					))
+				}
+				<g data-el="out-x" class="xj-out-bad">
+					<text x={ED.x + 20} y={outY(0)} xml:space="preserve">Exception in thread "main"</text>
+					<text x={ED.x + 20} y={outY(1)} xml:space="preserve">java.lang.IndexOutOfBoundsException: {strings.index}7</text>
+				</g>
+				{lineAnchors.map((anchor) => <circle data-anchor={anchor.id} cx={BAR_CX} cy={lineMid(anchor.n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue walk, magenta for what does not fit or is invalid, violet for the links
+	   and checks that solve it. Every rule below reads these tokens. */
+	:global(.anim-player[data-slug='arboles-n-arios-java']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='arboles-n-arios-java'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='arboles-n-arios-java'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='arboles-n-arios-java'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-object {
+		fill: var(--xj-violet);
+	}
+
+	.xj-legend-bad {
+		fill: var(--xj-magenta);
+	}
+
+	/* Platforms, nodes and cells */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-floor-text {
+		font-family: var(--font-body);
+		font-size: 15px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		fill: var(--xj-mist);
+		opacity: 0.85;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-node-text {
+		font-family: var(--font-body);
+		font-size: 16px;
+		font-weight: 800;
+		fill: var(--xj-white);
+	}
+
+	.xj-node-text--on {
+		fill: var(--xj-ink);
+	}
+
+	.xj-cell-text {
+		font-family: monospace;
+		font-size: 14px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-cell-text--bad {
+		fill: var(--xj-magenta-soft);
+	}
+
+	.xj-null {
+		fill: var(--xj-panel);
+		stroke: var(--xj-dim);
+		stroke-width: 1.5;
+	}
+
+	.xj-null-text {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-mist);
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* Routes */
+	.xj-edge {
+		fill: none;
+		stroke: var(--xj-mist);
+		stroke-width: 3;
+		stroke-opacity: 0.55;
+		stroke-linecap: round;
+	}
+
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--magenta {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-flowline--violet {
+		--xj-line: var(--xj-violet);
+	}
+
+	.xj-flowline--sib {
+		--xj-line: var(--xj-violet-soft);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3.5;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-lead {
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+		stroke-opacity: 0.7;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out,
+	.xj-out-bad text {
+		font-family: monospace;
+		font-size: 12.5px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-out-bad text {
+		fill: var(--xj-magenta-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-bar--trail {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.16;
+		stroke: var(--xj-magenta);
+		stroke-width: 1.5;
+	}
+
+	.xj-bar--violet {
+		fill: var(--xj-violet);
+		fill-opacity: 0.24;
+		stroke: var(--xj-violet);
+		stroke-width: 1.2;
+	}
+</style>
