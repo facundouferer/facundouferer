@@ -1,0 +1,1127 @@
+---
+/**
+ * Scene for "The journey of a search in a BST" (lesson java/18), a short film played
+ * on one persistent motion canvas. The captions and cues live in
+ * `src/data/animations/arboles-binarios-java.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: it shows the
+ * Java source and the cues slide a bar over the line being executed. The viewport on
+ * the right holds the camera: an isometric floor where the binary search tree grows
+ * along the two grid axes (left children down-left, right children down-right), a
+ * small `main()` pad with one module per call, a light blue particle (the execution
+ * flow), violet for the value found or the new leaf, and magenta for the degenerate
+ * chain.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * Its colors are the `--xj-*` tokens declared once in the style block; nothing else in
+ * the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/arboles-binarios-java';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Source code shown in the editor ───────────────────────────────────────
+// Identifiers are localized the same way the lesson does.
+const names = {
+	file: t('ArbolBinario.java', 'BinaryTree.java'),
+	node: t('NodoArbol', 'TreeNode'),
+	tree: t('ArbolBinario', 'BinaryTree'),
+	value: t('valor', 'value'),
+	left: t('izquierdo', 'left'),
+	right: t('derecho', 'right'),
+	root: t('raiz', 'root'),
+	nodeVar: t('nodo', 'node'),
+	treeVar: t('arbol', 'tree'),
+	search: t('buscar', 'search'),
+	insert: t('insertar', 'insert'),
+	inorder: t('inOrden', 'inOrder'),
+};
+
+// First program: the node, the BST property and the search.
+const sourceA = [
+	`class ${names.node} {`,
+	`    int ${names.value};`,
+	`    ${names.node} ${names.left}, ${names.right};`,
+	`    ${names.node}(int ${names.value}) { this.${names.value} = ${names.value}; }`,
+	'}',
+	t('// ABB: menores a la izquierda, mayores a la derecha', '// BST: smaller on the left, larger on the right'),
+	`class ${names.tree} {`,
+	`    ${names.node} ${names.root};`,
+	`    boolean ${names.search}(int ${names.value}) {`,
+	`        return ${names.search}(${names.root}, ${names.value});`,
+	'    }',
+	`    boolean ${names.search}(${names.node} ${names.nodeVar}, int ${names.value}) {`,
+	`        if (${names.nodeVar} == null) return false;`,
+	`        if (${names.value} == ${names.nodeVar}.${names.value}) return true;`,
+	`        return ${names.value} < ${names.nodeVar}.${names.value}`,
+	`            ? ${names.search}(${names.nodeVar}.${names.left}, ${names.value})`,
+	`            : ${names.search}(${names.nodeVar}.${names.right}, ${names.value});`,
+	'    }',
+	'}',
+	`System.out.println(${names.treeVar}.${names.search}(35)); // main`,
+].join('\n');
+
+// Second program: insertion at a null link and the in-order traversal.
+const sourceB = [
+	`class ${names.tree} { // ${t('continúa', 'continued')}`,
+	`    void ${names.insert}(int ${names.value}) {`,
+	`        ${names.root} = ${names.insert}(${names.root}, ${names.value});`,
+	'    }',
+	`    ${names.node} ${names.insert}(${names.node} ${names.nodeVar}, int ${names.value}) {`,
+	`        if (${names.nodeVar} == null) return new ${names.node}(${names.value});`,
+	`        if (${names.value} < ${names.nodeVar}.${names.value})`,
+	`            ${names.nodeVar}.${names.left} = ${names.insert}(${names.nodeVar}.${names.left}, ${names.value});`,
+	`        else if (${names.value} > ${names.nodeVar}.${names.value})`,
+	`            ${names.nodeVar}.${names.right} = ${names.insert}(${names.nodeVar}.${names.right}, ${names.value});`,
+	`        return ${names.nodeVar};`,
+	'    }',
+	`    void ${names.inorder}(${names.node} ${names.nodeVar}) {`,
+	`        if (${names.nodeVar} == null) return;`,
+	`        ${names.inorder}(${names.nodeVar}.${names.left});`,
+	`        System.out.print(${names.nodeVar}.${names.value} + " ");`,
+	`        ${names.inorder}(${names.nodeVar}.${names.right});`,
+	'    }',
+	'}',
+	`${names.treeVar}.${names.insert}(25); ${names.treeVar}.${names.inorder}(${names.treeVar}.${names.root}); // main`,
+].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const svgLines = (source: string) =>
+	highlightCode(source, 'java').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+
+const pageA = svgLines(sourceA);
+const pageB = svgLines(sourceB);
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 58;
+const GUTTER_X = 46;
+const CODE_TOP = 74;
+const LINE_H = 23;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 5;
+const CONSOLE_TOP = 556;
+const outY = (row: number) => 601 + row * LINE_H;
+const LINES = Array.from({ length: 20 }, (_, index) => index + 1);
+
+// Program output: `true` from the search, then the in-order walk.
+const outputs = [
+	{ id: 'out-1', row: 0, text: 'true' },
+	{ id: 'out-2', row: 0, text: '20 25 30 35 50 60 70 80' },
+];
+
+// Line states drawn behind the code.
+const bars = [
+	{ id: 'hv-a6', n: 6, tone: 'violet' },
+	{ id: 'hv-a14', n: 14, tone: 'violet' },
+	{ id: 'hx-a17', n: 17, tone: 'magenta' },
+	{ id: 'hv-b6', n: 6, tone: 'violet' },
+	{ id: 'hv-b16', n: 16, tone: 'violet' },
+];
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right (right children), +v down-left (left children), z is up.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 58;
+const EY = 33.5;
+const ORIGIN = { x: 480, y: 230 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const path = (points: Point[]) => 'M' + points.map((point) => `${point.x} ${point.y}`).join(' L');
+
+/** A box standing on the floor at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		outline: poly([back, right, down(right), down(front), down(left), left]),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		// Text on the left face follows its 30° edge.
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+type Slab = ReturnType<typeof slab>;
+/** Text lying flat on a floor, reading along +u. */
+const floorMatrix = (point: Point) => `matrix(0.866 0.5 -0.866 0.5 ${point.x} ${point.y})`;
+
+const NODE = { a: 0.34, h: 22 };
+const nodeBox = (u: number, v: number) => slab(u, v, NODE.a, NODE.a, NODE.h);
+const block = (u: number, v: number) => slab(u, v, 0.3, 0.3, 18);
+
+// The tree, back to front. Left children sit on +v, right children on +u.
+type TreeNode = { key: number; u: number; v: number; g: Slab };
+const tree: TreeNode[] = [
+	{ key: 50, u: 0, v: 0 },
+	{ key: 30, u: 0, v: 2.4 },
+	{ key: 70, u: 2.4, v: 0 },
+	{ key: 20, u: 0, v: 3.8 },
+	{ key: 35, u: 1.4, v: 2.4 },
+	{ key: 60, u: 2.4, v: 1.4 },
+	{ key: 80, u: 3.8, v: 0 },
+	{ key: 25, u: 1.1, v: 3.8 },
+].map((node) => ({ ...node, g: nodeBox(node.u, node.v) }));
+const at = (key: number) => tree.find((node) => node.key === key)!;
+const floorOf = (key: number) => pt(at(key).u, at(key).v);
+
+// Lit states on the same boxes: the flow passing through, the value found.
+const lits = [
+	{ id: 'n50-on', key: 50, tone: 'flow' },
+	{ id: 'n30-on', key: 30, tone: 'flow' },
+	{ id: 'n20-on', key: 20, tone: 'flow' },
+	{ id: 'n35-found', key: 35, tone: 'violet' },
+];
+
+// Links of the tree, drawn on the floor from parent to child.
+const edges = [
+	{ id: 'edge-50-30', from: 50, to: 30 },
+	{ id: 'edge-50-70', from: 50, to: 70 },
+	{ id: 'edge-30-20', from: 30, to: 20 },
+	{ id: 'edge-30-35', from: 30, to: 35 },
+	{ id: 'edge-70-60', from: 70, to: 60 },
+	{ id: 'edge-70-80', from: 70, to: 80 },
+	{ id: 'edge-20-25', from: 20, to: 25 },
+].map((edge) => ({ ...edge, d: path([floorOf(edge.from), floorOf(edge.to)]) }));
+
+// The main() pad: one module per call, each showing its editor line.
+const MAIN = { u: -2, v: -2 };
+const G = {
+	floorTree: slab(1.9, 1.9, 2.75, 2.75, 12, -12),
+	floorMain: slab(MAIN.u, MAIN.v, 0.85, 0.85, 10, -10),
+	search: block(-2.35, -1.65),
+	ins: block(-1.65, -2.35),
+	floorDeg: slab(8.3, -3, 2.65, 0.75, 12, -12),
+	zoneLeft: poly([pt(-0.6, 1.75, 1), pt(1.85, 1.75, 1), pt(1.85, 4.55, 1), pt(-0.6, 4.55, 1)]),
+	zoneRight: poly([pt(1.95, -0.6, 1), pt(4.55, -0.6, 1), pt(4.55, 1.85, 1), pt(1.95, 1.85, 1)]),
+};
+
+// Flow lines: the routes the execution actually takes.
+const flows = [
+	{ id: 'fl-call-root', d: path([pt(-2.35, -1.65), pt(0, 0)]) },
+	{ id: 'fl-50-30', d: path([floorOf(50), floorOf(30)]) },
+	{ id: 'fl-30-35', d: path([floorOf(30), floorOf(35)]) },
+	{ id: 'fl-call-ins', d: path([pt(-1.65, -2.35), pt(0, 0)]) },
+	{ id: 'fl-i-50-30', d: path([floorOf(50), floorOf(30)]) },
+	{ id: 'fl-i-30-20', d: path([floorOf(30), floorOf(20)]) },
+	{ id: 'fl-i-20-25', d: path([floorOf(20), floorOf(25)]) },
+];
+
+const gridLines = [
+	...[-0.5, 0.5, 1.5, 2.5, 3.5, 4.5].map((u) => path([pt(u, -0.85, 0.5), pt(u, 4.65, 0.5)])),
+	...[-0.5, 0.5, 1.5, 2.5, 3.5, 4.5].map((v) => path([pt(-0.85, v, 0.5), pt(4.65, v, 0.5)])),
+];
+
+// The degenerate chain: sorted inserts, every node a right child.
+const chain = [10, 20, 30, 40, 50].map((key, index) => ({ key, g: nodeBox(6.3 + index, -3), floor: pt(6.3 + index, -3) }));
+const chainRoute = path([pt(6.3, -3), pt(10.3, -3)]);
+
+// Where the flow stops: just above the top of each box.
+const hover = (g: Slab, by = 18) => lift(g.center, by);
+const anchors = [
+	{ id: 'a-call-search', ...hover(G.search, 16) },
+	{ id: 'a-call-ins', ...hover(G.ins, 16) },
+	...tree.map((node) => ({ id: `a-n${node.key}`, ...hover(node.g) })),
+];
+const START = anchors[0];
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-tree', cx: 480, cy: 350, s: 0.98 },
+	{ id: 'shot-invariant', cx: 480, cy: 370, s: 1.02 },
+	{ id: 'shot-root', cx: 470, cy: 215, s: 1.15 },
+	{ id: 'shot-left', cx: 415, cy: 330, s: 1.12 },
+	{ id: 'shot-deg', cx: 1135, cy: 405, s: 1.25 },
+	{ id: 'shot-insert', cx: 445, cy: 275, s: 1.02 },
+	{ id: 'shot-traversal', cx: 490, cy: 345, s: 0.98 },
+	{ id: 'shot-all', cx: 480, cy: 300, s: 0.92 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | 'flow' | 'magenta' | 'violet';
+	mono?: boolean;
+	check?: boolean;
+};
+const N50 = at(50).g.center;
+const chips: Chip[] = [
+	{ id: 'lb-root', text: t('raíz', 'root'), x: N50.x + 48, y: N50.y - 4, align: 'start', tone: 'flow' },
+	{ id: 'ch-less', text: '20 · 30 · 35 < 50', x: 300, y: 470, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'ch-greater', text: '60 · 70 · 80 > 50', x: 660, y: 470, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'ch-inv', text: t('se cumple en todo nodo', 'holds at every node'), x: 480, y: 515, align: 'middle', tone: 'violet', check: true },
+	{ id: 'ch-cmp-50', text: t('35 < 50 → izquierdo', '35 < 50 → left'), x: 432, y: 200, align: 'end', tone: 'flow', mono: true },
+	{ id: 'ch-discard-r', text: t('descartado: no se visita', 'discarded: never visited'), x: 640, y: 420, align: 'middle', tone: 'plain' },
+	{ id: 'ch-cmp-30', text: t('35 > 30 → derecho', '35 > 30 → right'), x: 292, y: 280, align: 'end', tone: 'flow', mono: true },
+	{ id: 'ch-found', text: t('encontrado: 3 comparaciones', 'found: 3 comparisons'), x: 468, y: 408, align: 'start', tone: 'violet', check: true },
+	{ id: 'ch-deg-order', text: t('inserto 10, 20, 30, 40, 50', 'insert 10, 20, 30, 40, 50'), x: 1100, y: 290, align: 'middle', tone: 'plain' },
+	{ id: 'ch-deg-on', text: t('O(n): un paso por nodo', 'O(n): one step per node'), x: 1170, y: 540, align: 'middle', tone: 'magenta' },
+	{ id: 'ch-null', text: `${names.nodeVar}.${names.right} == null`, x: 330, y: 445, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'ch-leaf-25', text: t('nueva hoja', 'new leaf'), x: 330, y: 480, align: 'middle', tone: 'violet', check: true },
+	{ id: 'ch-sorted', text: t('orden ascendente', 'ascending order'), x: 470, y: 525, align: 'middle', tone: 'violet', check: true },
+	{ id: 'r-inv', text: t('izquierdo < raíz < derecho', 'left < root < right'), x: 480, y: 455, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'r-log', text: t('balanceado: O(log n)', 'balanced: O(log n)'), x: 480, y: 490, align: 'middle', tone: 'violet' },
+	{ id: 'r-ord', text: t('inOrden → valores ordenados', 'inOrder → sorted values'), x: 480, y: 525, align: 'middle', tone: 'violet' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.6 : 6.7) + (chip.check ? 42 : 24));
+const chipLeft = (chip: Chip) => (chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x);
+
+// The three depth-first orders differ only in when the root is visited.
+const ORDERS = { x: 531, y: 410, w: 270 };
+const orderRows = [
+	{ text: t('preOrden:  raíz · izq · der', 'preOrder:  root · left · right'), on: false },
+	{ text: t('inOrden:   izq · raíz · der', 'inOrder:   left · root · right'), on: true },
+	{ text: t('postOrden: izq · der · raíz', 'postOrder: left · right · root'), on: false },
+];
+
+// In-order visiting badges: the order in which `inOrden` prints each value.
+const IN_ORDER = [20, 25, 30, 35, 50, 60, 70, 80];
+const badges = IN_ORDER.map((key, index) => ({ key, n: index + 1, ...at(key).g.center }));
+
+// The empty right link of 20, where 25 will hang.
+const SLOT = slab(at(25).u, at(25).v, NODE.a, NODE.a, 0, 1);
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="xjt-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="xjt-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="xjt-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="xjt-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xjt-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xjt-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the tree, seen through the camera -->
+			<g clip-path="url(#xjt-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + 150} cy={VP.y + 110} rx="420" ry="320" fill="url(#xjt-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + VP.w - 60} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#xjt-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- The degenerate chain, on its own floor far to the right -->
+						<g data-el="floor-deg">
+							<polygon class="xj-plate-shadow" points={G.floorDeg.base} transform="translate(10 16)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.floorDeg.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.floorDeg.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.floorDeg.top} fill="url(#xjt-g-floor)"></polygon>
+						</g>
+						<g data-el="rt-deg" class="xj-flowline xj-flowline--magenta">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={chainRoute}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={chainRoute}></path>
+						</g>
+						<g data-el="deg-chain" class="xj-mod xj-mod--magenta">
+							{
+								chain.map((link) => (
+									<>
+										<polygon class="xj-shadow" points={link.g.base} transform="translate(7 9)" />
+										<polygon class="xj-face xj-face--l" points={link.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={link.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={link.g.top} />
+										<text class="xj-face-text" transform={link.g.faceMatrix} text-anchor="middle" y="5">
+											{link.key}
+										</text>
+									</>
+								))
+							}
+						</g>
+
+						<!-- main(): the pad where each call starts -->
+						<g data-el="floor-main">
+							<polygon class="xj-plate-shadow" points={G.floorMain.base} transform="translate(10 16)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.floorMain.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.floorMain.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.floorMain.top} fill="url(#xjt-g-floor)"></polygon>
+							<text class="xj-floor-text" transform={floorMatrix(pt(MAIN.u + 0.05, MAIN.v + 0.7))}>main()</text>
+						</g>
+
+						<!-- The tree floor -->
+						<g data-el="floor-tree">
+							<polygon class="xj-plate-shadow" points={G.floorTree.base} transform="translate(14 22)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.floorTree.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.floorTree.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.floorTree.top} fill="url(#xjt-g-floor)"></polygon>
+							{gridLines.map((d) => <path class="xj-grid" d={d} />)}
+							<text class="xj-floor-text" transform={floorMatrix(pt(-0.7, 1.0))}>{t('ABB', 'BST')}</text>
+						</g>
+
+						<!-- The two halves of the BST property -->
+						<g data-el="zone-left">
+							<polygon class="xj-zone" points={G.zoneLeft}></polygon>
+						</g>
+						<g data-el="zone-right">
+							<polygon class="xj-zone" points={G.zoneRight}></polygon>
+						</g>
+
+						<!-- Links of the tree -->
+						{
+							edges.map((edge) => (
+								<g data-el={edge.id}>
+									<path class="mg-stroke xj-link" pathLength="1" d={edge.d} />
+								</g>
+							))
+						}
+
+						<!-- The routes the execution takes -->
+						{
+							flows.map((flow) => (
+								<g data-el={flow.id} class="xj-flowline">
+									<path class="mg-stroke xj-flowline-halo" pathLength="1" d={flow.d} />
+									<path class="mg-stroke xj-flowline-core" pathLength="1" d={flow.d} />
+								</g>
+							))
+						}
+
+						<!-- The empty right link of 20 -->
+						<g data-el="slot-null" class="xj-slot">
+							<polygon points={SLOT.top}></polygon>
+							<text x={SLOT.center.x} y={SLOT.center.y + 5} text-anchor="middle">null</text>
+						</g>
+
+						<!-- Modules of main(), each showing the editor line it runs -->
+						<g data-el="m-search" class="xj-mod">
+							<polygon class="xj-shadow" points={G.search.base} transform="translate(7 9)"></polygon>
+							<polygon class="xj-face xj-face--l" points={G.search.leftFace}></polygon>
+							<polygon class="xj-face xj-face--r" points={G.search.rightFace}></polygon>
+							<polygon class="xj-face xj-face--t" points={G.search.top} fill="url(#xjt-g-top)"></polygon>
+							<text class="xj-face-text" transform={G.search.faceMatrix} text-anchor="middle" y="4.5">20</text>
+							<text class="xj-call" x={G.search.center.x - 44} y={G.search.center.y - 8} text-anchor="end">{names.search}(35)</text>
+						</g>
+						<g data-el="m-search-on" class="xj-lit xj-lit--flow">
+							<polygon class="xj-lit-halo" points={G.search.top}></polygon>
+							<polygon class="xj-lit-top" points={G.search.top}></polygon>
+							<polygon class="xj-lit-side" points={G.search.leftFace}></polygon>
+							<text class="xj-face-text xj-face-text--on" transform={G.search.faceMatrix} text-anchor="middle" y="4.5">20</text>
+						</g>
+						<g data-el="m-ins" class="xj-mod">
+							<polygon class="xj-shadow" points={G.ins.base} transform="translate(7 9)"></polygon>
+							<polygon class="xj-face xj-face--l" points={G.ins.leftFace}></polygon>
+							<polygon class="xj-face xj-face--r" points={G.ins.rightFace}></polygon>
+							<polygon class="xj-face xj-face--t" points={G.ins.top} fill="url(#xjt-g-top)"></polygon>
+							<text class="xj-face-text" transform={G.ins.faceMatrix} text-anchor="middle" y="4.5">20</text>
+							<text class="xj-call" x={G.ins.center.x + 44} y={G.ins.center.y - 8}>{names.insert}(25)</text>
+						</g>
+						<g data-el="m-ins-on" class="xj-lit xj-lit--flow">
+							<polygon class="xj-lit-halo" points={G.ins.top}></polygon>
+							<polygon class="xj-lit-top" points={G.ins.top}></polygon>
+							<polygon class="xj-lit-side" points={G.ins.leftFace}></polygon>
+							<text class="xj-face-text xj-face-text--on" transform={G.ins.faceMatrix} text-anchor="middle" y="4.5">20</text>
+						</g>
+
+						<!-- The nodes, back to front: each box shows its value on the left face -->
+						{
+							tree.map((node) => (
+								<>
+									<g data-el={`n${node.key}`} class="xj-mod">
+										<polygon class="xj-shadow" points={node.g.base} transform="translate(7 9)" />
+										<polygon class="xj-face xj-face--l" points={node.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={node.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={node.g.top} fill="url(#xjt-g-top)" />
+										<text class="xj-face-text" transform={node.g.faceMatrix} text-anchor="middle" y="5">
+											{node.key}
+										</text>
+									</g>
+									{lits
+										.filter((lit) => lit.key === node.key)
+										.map((lit) => (
+											<g data-el={lit.id} class:list={['xj-lit', `xj-lit--${lit.tone}`]}>
+												<polygon class="xj-lit-halo" points={node.g.top} />
+												<polygon class="xj-lit-top" points={node.g.top} />
+												<polygon class="xj-lit-side" points={node.g.leftFace} />
+												<text class="xj-face-text xj-face-text--on" transform={node.g.faceMatrix} text-anchor="middle" y="5">
+													{node.key}
+												</text>
+											</g>
+										))}
+								</>
+							))
+						}
+
+						<!-- Discarded parts of the tree: never visited -->
+						<g data-el="veil-right">
+							<g class="xj-veil">
+								<path class="xj-veil-link" d={edges[4].d}></path>
+								<path class="xj-veil-link" d={edges[5].d}></path>
+								<polygon points={at(70).g.outline}></polygon>
+								<polygon points={at(60).g.outline}></polygon>
+								<polygon points={at(80).g.outline}></polygon>
+							</g>
+						</g>
+						<g data-el="veil-n20">
+							<g class="xj-veil">
+								<path class="xj-veil-link" d={edges[2].d}></path>
+								<polygon points={at(20).g.outline}></polygon>
+							</g>
+						</g>
+
+						<!-- In-order visiting order -->
+						{
+							badges.map((badge) => (
+								<g data-el={`ord-${badge.key}`} class="xj-badge">
+									<circle cx={badge.x + 30} cy={badge.y - 26} r="11" />
+									<text x={badge.x + 30} y={badge.y - 21.5} text-anchor="middle">
+										{badge.n}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The three traversals -->
+						<g data-el="ch-orders" class="xj-card">
+							<rect x={ORDERS.x} y={ORDERS.y} width={ORDERS.w} height="86" rx="14"></rect>
+							{
+								orderRows.map((row, index) => (
+									<text class:list={['xj-chip-mono', row.on && 'xj-chip-mono--on']} x={ORDERS.x + 16} y={ORDERS.y + 26 + index * 22} xml:space="preserve">
+										{row.text}
+									</text>
+								))
+							}
+						</g>
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.check && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M20 6 9 17l-5-5" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.check ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The execution flow. The player resets `transform` on `data-el`
+						     elements, so it is drawn at the origin and placed with data-x/y. -->
+						<g data-el="p" class="xj-particle" data-x={START.x} data-y={START.y}>
+							<circle r="20" fill="url(#xjt-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={VP.y + VP.h - 22} r="5"></circle>
+				<text x={VP.x + 38} y={VP.y + VP.h - 18}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<circle class="xj-legend-violet" cx={VP.x + 196} cy={VP.y + VP.h - 22} r="5"></circle>
+				<text x={VP.x + 208} y={VP.y + VP.h - 18}>{t('Encontrado o nuevo', 'Found or new')}</text>
+				<circle class="xj-legend-magenta" cx={VP.x + 370} cy={VP.y + VP.h - 22} r="5"></circle>
+				<text x={VP.x + 382} y={VP.y + VP.h - 18}>{t('Árbol degenerado', 'Degenerate tree')}</text>
+			</g>
+
+			<!-- EDITOR: the source, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.file}</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<!-- Line states sit behind the code -->
+				{bars.map((bar) => <rect data-el={bar.id} class={`xj-bar xj-bar--${bar.tone}`} x={BAR.x} y={lineTop(bar.n)} width={BAR.w} height={LINE_H} rx="6" />)}
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(20)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<!-- First program: the node, the property and the search -->
+				<g data-el="ea" data-base="shown" class="xj-code">
+					{
+						pageA.map((line) => (
+							<g data-el={`ea-${line.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				<!-- Second program: insertion and the in-order traversal -->
+				<g data-el="eb" class="xj-code">
+					{
+						pageB.map((line) => (
+							<g data-el={`eb-${line.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				{
+					outputs.map((line) => (
+						<text data-el={line.id} class="xj-out" x={ED.x + 20} y={outY(line.row)} xml:space="preserve">
+							{line.text}
+						</text>
+					))
+				}
+				{LINES.map((n) => <circle data-anchor={`ln-${n}`} cx={BAR_CX} cy={lineMid(n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this film only (DESIGN.md §8): a deep blue ground, a light blue
+	   execution flow, magenta for the degenerate chain and violet for the value found
+	   or the new leaf. Every rule below reads these tokens; no other color is written
+	   in this file. */
+	:global(.anim-player[data-slug='arboles-binarios-java']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='arboles-binarios-java'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='arboles-binarios-java'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='arboles-binarios-java'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-violet {
+		fill: var(--xj-violet);
+	}
+
+	.xj-legend-magenta {
+		fill: var(--xj-magenta);
+	}
+
+	/* Floors */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-grid {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 1;
+		opacity: 0.07;
+	}
+
+	.xj-floor-text {
+		font-family: var(--font-body);
+		font-size: 15px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		fill: var(--xj-mist);
+		opacity: 0.85;
+	}
+
+	.xj-zone {
+		fill: var(--xj-flow);
+		fill-opacity: 0.05;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.55;
+		stroke-width: 1.5;
+		stroke-dasharray: 7 6;
+		stroke-linejoin: round;
+	}
+
+	.xj-link {
+		fill: none;
+		stroke: var(--xj-steel-hi);
+		stroke-width: 3;
+		stroke-linecap: round;
+	}
+
+	/* Nodes and modules */
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-mod--magenta .xj-face {
+		stroke: var(--xj-magenta);
+	}
+
+	.xj-mod--magenta .xj-face--l {
+		fill: var(--xj-magenta-deep);
+	}
+
+	.xj-mod--magenta .xj-face--t {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.35;
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 14px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	.xj-call {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-flow-soft);
+	}
+
+	/* Lit states: the node the flow is on, or the value found */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* One flat layer, so the overlapping silhouettes dim the subtree evenly. */
+	.xj-veil {
+		opacity: 0.68;
+	}
+
+	.xj-veil polygon {
+		fill: var(--xj-ink);
+		stroke: var(--xj-ink);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-veil-link {
+		fill: none;
+		stroke: var(--xj-ink);
+		stroke-width: 7;
+		stroke-linecap: round;
+	}
+
+	.xj-slot polygon {
+		fill: var(--xj-violet);
+		fill-opacity: 0.12;
+		stroke: var(--xj-violet-soft);
+		stroke-width: 2;
+		stroke-dasharray: 6 5;
+		stroke-linejoin: round;
+	}
+
+	.xj-slot text {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-violet-soft);
+	}
+
+	/* Routes */
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--magenta {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	/* Visiting order badges */
+	.xj-badge circle {
+		fill: var(--xj-violet-deep);
+		stroke: var(--xj-violet);
+		stroke-width: 1.5;
+	}
+
+	.xj-badge text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-card {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip rect,
+	.xj-card rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		white-space: pre;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-chip-mono--on {
+		font-weight: 700;
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13.5px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op) {
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+		font-style: italic;
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-bar--magenta {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.24;
+		stroke: var(--xj-magenta);
+		stroke-width: 1.2;
+	}
+
+	.xj-bar--violet {
+		fill: var(--xj-violet);
+		fill-opacity: 0.24;
+		stroke: var(--xj-violet);
+		stroke-width: 1.2;
+	}
+</style>
