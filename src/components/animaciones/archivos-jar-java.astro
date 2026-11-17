@@ -1,0 +1,1125 @@
+---
+/**
+ * Scene for "The journey of data to disk and into a JAR" (lesson java/19), a short
+ * film played on one persistent motion canvas. The captions and cues live in
+ * `src/data/animations/archivos-jar-java.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: it shows
+ * the Java source, then the commands that package it, and the cues slide a bar over
+ * the line being executed. The viewport on the right holds the camera: an isometric
+ * system with the Heap (where the object lives), a BufferedWriter wrapping a
+ * FileWriter, the disk, and at the back the JAR with its manifest. The light blue
+ * packet is the CSV line of the object, magenta marks what is lost when the JVM
+ * stops and violet what keeps the data: try-with-resources, the disk and the JAR.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * Their colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/archivos-jar-java';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode, highlightLine } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Source code shown in the editor ───────────────────────────────────────
+// Identifiers and string literals are localized the same way the lesson does.
+const names = {
+	type: t('Producto', 'Product'),
+	file: t('catalogo.csv', 'catalog.csv'),
+	toCsv: t('aLineaCSV', 'toCSVLine'),
+};
+const strings = {
+	saved: t('Guardado en disco', 'Saved to disk'),
+};
+const product = `    ${names.type} p = new ${names.type}("Yerba", 3200, 45);`;
+
+const sourceA = ['public static void main(String[] args) {', product, '}'].join('\n');
+
+const sourceB = [
+	'public static void main(String[] args) throws IOException {',
+	product,
+	'    try (BufferedWriter out = new BufferedWriter(',
+	`        new FileWriter("${names.file}", StandardCharsets.UTF_8))) {`,
+	`        out.write(p.${names.toCsv}());`,
+	'    }',
+	`    System.out.println("${strings.saved}");`,
+	'}',
+].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const toSvg = (html: string) => html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>');
+const svgLines = (source: string) => highlightCode(source, 'java').map((html, index) => ({ n: index + 1, html: toSvg(html) }));
+
+const pageA = svgLines(sourceA);
+const pageB = svgLines(sourceB);
+/** Lines of the second program that are typed while the film runs; the rest arrive with the page. */
+const typedB = [3, 4, 5, 6, 7];
+
+// Packaging: the commands and the manifest the `e` flag writes into the JAR.
+const shell = [
+	{ n: 10, id: 'sh-10', kind: 'cmd', text: '$ javac -d bin *.java' },
+	{ n: 11, id: 'sh-11', kind: 'cmd', text: '$ jar cvfe app.jar Main -C bin .' },
+	{ n: 13, id: 'sh-13', kind: 'label', text: 'META-INF/MANIFEST.MF' },
+	{ n: 14, id: 'sh-14', kind: 'manifest', text: 'Manifest-Version: 1.0' },
+	{ n: 15, id: 'sh-15', kind: 'manifest', text: 'Main-Class: Main' },
+	{ n: 17, id: 'sh-17', kind: 'cmd', text: '$ java -jar app.jar' },
+].map((line) => ({ ...line, html: toSvg(highlightLine(line.text, line.kind === 'cmd' ? 'bash' : 'text')) }));
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 66;
+const GUTTER_X = 54;
+const CODE_TOP = 66;
+const LINE_H = 23;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 4.5;
+const CONSOLE_TOP = 552;
+const outY = (row: number) => 597 + row * LINE_H;
+
+// Lines the highlight bar travels to.
+const lineAnchors = [
+	{ id: 'l-2', n: 2 },
+	{ id: 'l-3', n: 3 },
+	{ id: 'l-5', n: 5 },
+	{ id: 'l-6', n: 6 },
+	{ id: 'l-7', n: 7 },
+	{ id: 'l-8', n: 8 },
+	{ id: 'l-10', n: 10 },
+	{ id: 'l-11', n: 11 },
+	{ id: 'l-17', n: 17 },
+];
+
+// Program output: the run from the editor, then the run from the JAR.
+const outputs = [
+	{ id: 'out-1', row: 0, text: strings.saved },
+	{ id: 'out-2', row: 1, text: strings.saved },
+];
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right (the way the data travels), +v down-left, z is up.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 54;
+const EY = 31;
+const ORIGIN = { x: 456, y: 323 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const path = (points: Point[]) => 'M' + points.map((point) => `${point.x} ${point.y}`).join(' L');
+
+/** A box standing on the floor at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		// Text on the left face follows its 30° edge.
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+/** Text lying flat on a floor, reading along +u. */
+const floorMatrix = (point: Point) => `matrix(0.866 0.5 -0.866 0.5 ${point.x} ${point.y})`;
+
+const JAR_V = -2.4;
+const G = {
+	floor: slab(2.3, -1.1, 3.4, 2.05, 12, -12),
+	heap: slab(0, 0, 0.6, 0.6, 10),
+	buf: slab(2.1, 0, 0.5, 0.5, 24),
+	fw: slab(3.3, 0, 0.32, 0.32, 18),
+	disk: slab(4.7, 0, 0.62, 0.62, 30),
+	jar: slab(2.7, JAR_V, 0.6, 0.45, 26),
+};
+type Slab = typeof G.floor;
+
+// Modules of the system, back to front. `face` is the editor line the module runs.
+type Tone = 'flow' | 'violet';
+type Module = { id: string; g: Slab; tone: Tone; face?: string; lit?: { id: string }; hot?: { id: string } };
+const modules: Module[] = [
+	{ id: 'm-jar', g: G.jar, tone: 'violet', lit: { id: 'jar-on' } },
+	{ id: 'm-heap', g: G.heap, tone: 'flow', face: '2', lit: { id: 'heap-on' }, hot: { id: 'heap-x' } },
+	{ id: 'm-buf', g: G.buf, tone: 'flow', face: '3', lit: { id: 'buf-on' } },
+	{ id: 'm-fw', g: G.fw, tone: 'flow', face: '4', lit: { id: 'fw-on' } },
+	{ id: 'm-disk', g: G.disk, tone: 'violet', lit: { id: 'disk-on' } },
+];
+
+// Routes on the floor: dim traces first, lit runs on top.
+const routes = {
+	toBuf: path([pt(0.6, 0), pt(1.6, 0)]),
+	toFw: path([pt(2.6, 0), pt(2.98, 0)]),
+	toDisk: path([pt(3.62, 0), pt(4.08, 0)]),
+	launch: path([pt(2.1, JAR_V), pt(0, JAR_V), pt(0, -0.6)]),
+};
+const tryZone = poly([pt(1.4, -0.82, 1), pt(3.84, -0.82, 1), pt(3.84, 0.82, 1), pt(1.4, 0.82, 1)]);
+const gridLines = [
+	...[-1, 0, 1, 2, 3, 4, 5].map((u) => path([pt(u, -3.1, 0.5), pt(u, 0.9, 0.5)])),
+	...[-3, -2, -1, 0].map((v) => path([pt(-1.05, v, 0.5), pt(5.65, v, 0.5)])),
+];
+
+// Where the travelling things stop: just above the top of each module.
+const hover = (g: Slab, by = 18) => lift(g.center, by);
+const OBJ = hover(G.heap, 22);
+const CLS_A = lift(pt(0.4, JAR_V), 22);
+const CLS_B = lift(pt(1.2, JAR_V), 22);
+const anchors = [
+	{ id: 'a-heap', ...hover(G.heap, 24) },
+	{ id: 'a-buf', ...hover(G.buf) },
+	{ id: 'a-fw', ...hover(G.fw) },
+	{ id: 'a-disk', ...hover(G.disk, 14) },
+	{ id: 'a-jar', ...hover(G.jar, 16) },
+];
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-heap', cx: 500, cy: 300, s: 1.6 },
+	{ id: 'shot-write', cx: 560, cy: 370, s: 1.3 },
+	{ id: 'shot-disk', cx: 640, cy: 410, s: 1.45 },
+	{ id: 'shot-jar', cx: 675, cy: 300, s: 1.38 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | 'flow' | 'magenta' | 'violet';
+	mono?: boolean;
+	check?: boolean;
+	lead?: Point;
+};
+const H = G.heap.center;
+const B = G.buf.center;
+const F = G.fw.center;
+const D = G.disk.center;
+const J = G.jar.center;
+const chips: Chip[] = [
+	{ id: 'lb-live', text: t('existe mientras main corre', 'exists while main runs'), x: H.x + 36, y: H.y - 74, align: 'start', tone: 'flow' },
+	{ id: 'lb-lost', text: t('el objeto se pierde', 'the object is lost'), x: H.x + 36, y: H.y - 74, align: 'start', tone: 'magenta' },
+	{ id: 'jvm-off', text: t('JVM detenida', 'JVM stopped'), x: H.x - 30, y: H.y + 72, align: 'end', tone: 'magenta' },
+	{ id: 'lb-utf', text: 'UTF-8', x: F.x - 24, y: F.y + 70, align: 'end', tone: 'flow', mono: true, lead: { x: F.x - 14, y: F.y + 24 } },
+	{ id: 'lb-wait', text: t('en el buffer', 'in the buffer'), x: B.x - 40, y: B.y + 90, align: 'end', tone: 'flow' },
+	{ id: 'lb-block', text: t('al disco: una vez por bloque', 'to disk: once per block'), x: B.x + 70, y: B.y - 96, align: 'middle', tone: 'plain' },
+	{ id: 'lb-close', text: 'close()', x: F.x + 18, y: F.y - 110, align: 'start', tone: 'violet', mono: true, check: true },
+	{ id: 'lb-keep', text: t('sobrevive al programa', 'survives the program'), x: D.x - 30, y: D.y + 112, align: 'end', tone: 'violet', check: true, lead: { x: D.x - 22, y: D.y + 40 } },
+	{ id: 'lb-zip', text: t('un ZIP con las clases', 'a ZIP with the classes'), x: J.x - 46, y: J.y - 62, align: 'end', tone: 'violet' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.6 : 6.7) + (chip.check ? 42 : 24));
+const chipLeft = (chip: Chip) => (chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x);
+
+// The decorator: an arc from FileWriter up into the BufferedWriter that wraps it.
+const DEC_FROM = lift(F, 6);
+const DEC_TO = lift(B, 8);
+const decArc = `M${DEC_FROM.x} ${DEC_FROM.y} C${DEC_FROM.x} ${DEC_FROM.y - 70} ${DEC_TO.x} ${DEC_TO.y - 70} ${DEC_TO.x} ${DEC_TO.y}`;
+const DEC_LABEL = { x: round((B.x + F.x) / 2 + 30), y: round(Math.min(B.y, F.y) - 86) };
+
+// The file once it is on disk, and the manifest inside the JAR.
+const FILE_CARD = { x: D.x - 265, y: D.y + 26, w: 184, h: 54 };
+const MF_CARD = { x: J.x - 30, y: J.y - 150, w: 196, h: 64 };
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="aj-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="aj-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="aj-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="aj-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="aj-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="aj-g-glow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.55"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="aj-g-glow-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.55"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the running system, seen through the camera -->
+			<g clip-path="url(#aj-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + 150} cy={VP.y + 110} rx="420" ry="320" fill="url(#aj-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + VP.w - 60} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#aj-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<g data-el="floor-main" data-base="shown">
+							<polygon class="xj-plate-shadow" points={G.floor.base} transform="translate(14 22)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.floor.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.floor.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.floor.top} fill="url(#aj-g-floor)"></polygon>
+							{gridLines.map((d) => <path class="xj-grid" d={d} />)}
+							<text class="xj-floor-text" transform={floorMatrix(pt(-0.62, 0.93))}>{t('Heap · memoria', 'Heap · memory')}</text>
+							<text class="xj-floor-text" transform={floorMatrix(pt(4.15, 0.93))}>{t('Disco', 'Disk')}</text>
+							<text class="xj-floor-text" transform={floorMatrix(pt(2.15, JAR_V + 0.78))}>app.jar</text>
+						</g>
+
+						<g data-el="try-zone">
+							<polygon class="xj-zone xj-zone--violet" points={tryZone}></polygon>
+							<text class="xj-floor-text xj-floor-text--violet" transform={floorMatrix(pt(1.45, 1))}>try ( … )</text>
+						</g>
+
+						<!-- Routes: the dim base first, the lit runs on top -->
+						<g data-el="rt-2"><path class="mg-stroke xj-trace" pathLength="1" d={routes.toFw}></path></g>
+						<g data-el="rt-3"><path class="mg-stroke xj-trace" pathLength="1" d={routes.toDisk}></path></g>
+						<g data-el="rt-1" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.toBuf}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.toBuf}></path>
+						</g>
+						<g data-el="fl-2" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.toFw}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.toFw}></path>
+						</g>
+						<g data-el="fl-3" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.toDisk}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.toDisk}></path>
+						</g>
+						<g data-el="rt-launch" class="xj-flowline xj-flowline--violet">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.launch}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.launch}></path>
+						</g>
+
+						<!-- Modules, back to front, each with its lit states -->
+						{
+							modules.map((module) => (
+								<>
+									<g data-el={module.id} class:list={['xj-mod', `xj-mod--${module.tone}`]}>
+										<polygon class="xj-shadow" points={module.g.base} transform="translate(7 9)" />
+										<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#aj-g-top)" />
+										{module.face && (
+											<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+												{module.face}
+											</text>
+										)}
+									</g>
+									{module.lit && (
+										<g data-el={module.lit.id} class:list={['xj-lit', `xj-lit--${module.tone}`]}>
+											<polygon class="xj-lit-halo" points={module.g.top} />
+											<polygon class="xj-lit-top" points={module.g.top} />
+											<polygon class="xj-lit-side" points={module.g.leftFace} />
+											{module.face && (
+												<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+													{module.face}
+												</text>
+											)}
+										</g>
+									)}
+									{module.hot && (
+										<g data-el={module.hot.id} class="xj-lit xj-lit--magenta">
+											<polygon class="xj-lit-halo" points={module.g.top} />
+											<polygon class="xj-lit-top" points={module.g.top} />
+											<polygon class="xj-lit-side" points={module.g.leftFace} />
+											{module.face && (
+												<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+													{module.face}
+												</text>
+											)}
+										</g>
+									)}
+								</>
+							))
+						}
+
+						<!-- The decorator: BufferedWriter wraps FileWriter -->
+						<g data-el="dec" class="xj-chip xj-chip--flow">
+							<path class="xj-dec" d={decArc}></path>
+							<rect x={DEC_LABEL.x - 118} y={DEC_LABEL.y - 14} width="236" height="44" rx="12"></rect>
+							<text class="xj-chip-text" x={DEC_LABEL.x} y={DEC_LABEL.y + 3} text-anchor="middle">{t('decorador: envuelve y agrega', 'decorator: wraps and adds')}</text>
+							<text class="xj-chip-mono" x={DEC_LABEL.x} y={DEC_LABEL.y + 20} text-anchor="middle">BufferedWriter(FileWriter)</text>
+						</g>
+
+						<!-- The file on disk: it outlives the program. The player resets `transform` on
+						     `data-el` elements, so every placement lives on an inner group. -->
+						<g data-el="file">
+							<g class="xj-file-card">
+								<polygon class="xj-sheet" points={slab(4.7, 0, 0.34, 0.26, 2, 30).top}></polygon>
+								<line class="xj-lead xj-lead--violet" x1={D.x - 34} y1={D.y + 22} x2={FILE_CARD.x + FILE_CARD.w - 16} y2={FILE_CARD.y}></line>
+								<rect x={FILE_CARD.x} y={FILE_CARD.y} width={FILE_CARD.w} height={FILE_CARD.h} rx="12"></rect>
+								<svg class="xj-icon" x={FILE_CARD.x + 12} y={FILE_CARD.y + 9} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+									<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+									<path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+									<path d="M16 13H8"></path>
+									<path d="M16 17H8"></path>
+								</svg>
+								<text class="xj-chip-mono xj-chip-mono--strong" x={FILE_CARD.x + 34} y={FILE_CARD.y + 22}>{names.file}</text>
+								<text class="xj-chip-mono xj-chip-mono--violet" x={FILE_CARD.x + 12} y={FILE_CARD.y + 43}>"Yerba";3200.00;45</text>
+							</g>
+						</g>
+
+						<!-- The manifest inside the JAR -->
+						<g data-el="mf" class="xj-card xj-card--violet">
+							<line class="xj-lead xj-lead--violet" x1={J.x + 4} y1={J.y - 6} x2={MF_CARD.x + 40} y2={MF_CARD.y + MF_CARD.h}></line>
+							<rect x={MF_CARD.x} y={MF_CARD.y} width={MF_CARD.w} height={MF_CARD.h} rx="12"></rect>
+							<text class="xj-card-kicker" x={MF_CARD.x + 14} y={MF_CARD.y + 20}>META-INF/MANIFEST.MF</text>
+							<text class="xj-chip-mono" x={MF_CARD.x + 14} y={MF_CARD.y + 45}>Main-Class: Main</text>
+						</g>
+						<g data-el="mf-on">
+							<rect class="xj-mf-hl" x={MF_CARD.x + 6} y={MF_CARD.y + 30} width={MF_CARD.w - 12} height="22" rx="7"></rect>
+							<svg class="xj-icon" x={MF_CARD.x + MF_CARD.w - 30} y={MF_CARD.y + 33} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+								<path d="M20 6 9 17l-5-5"></path>
+							</svg>
+						</g>
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									{chip.lead && <line class="xj-lead" x1={chip.lead.x} y1={chip.lead.y} x2={chipLeft(chip) + chipWidth(chip) - 14} y2={chip.y - 12} />}
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.check && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M20 6 9 17l-5-5" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.check ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The object in the Heap, and the outline it leaves when the JVM stops -->
+						<g data-el="obj-ghost">
+							<g class="xj-ghost" transform={`translate(${OBJ.x} ${OBJ.y})`}>
+								<polygon points="0,-19 17,-10 17,9 0,18 -17,9 -17,-10"></polygon>
+								<rect class="xj-tag" x="-44" y="-50" width="88" height="22" rx="11"></rect>
+								<text class="xj-tag-text" x="0" y="-34.5" text-anchor="middle">{names.type}</text>
+							</g>
+						</g>
+						<g data-el="obj">
+							<g class="xj-obj" transform={`translate(${OBJ.x} ${OBJ.y})`}>
+								<circle r="40" fill="url(#aj-g-glow)"></circle>
+								<polygon class="xj-cube xj-cube--l" points="-17,-10 0,-1 0,18 -17,9"></polygon>
+								<polygon class="xj-cube xj-cube--r" points="17,-10 0,-1 0,18 17,9"></polygon>
+								<polygon class="xj-cube xj-cube--t" points="0,-19 17,-10 0,-1 -17,-10"></polygon>
+								<rect class="xj-tag" x="-44" y="-50" width="88" height="22" rx="11"></rect>
+								<text class="xj-tag-text" x="0" y="-34.5" text-anchor="middle">{names.type}</text>
+							</g>
+						</g>
+
+						<!-- Compiled classes: they travel into the JAR -->
+						<g data-el="cls-a" class="xj-class" data-x={CLS_A.x} data-y={CLS_A.y}>
+							<polygon class="xj-cube xj-cube--l" points="-13,-8 0,-1 0,13 -13,6"></polygon>
+							<polygon class="xj-cube xj-cube--r" points="13,-8 0,-1 0,13 13,6"></polygon>
+							<polygon class="xj-cube xj-cube--t" points="0,-15 13,-8 0,-1 -13,-8"></polygon>
+							<text class="xj-class-text" x="0" y="-22" text-anchor="middle">Main.class</text>
+						</g>
+						<g data-el="cls-b" class="xj-class" data-x={CLS_B.x} data-y={CLS_B.y}>
+							<polygon class="xj-cube xj-cube--l" points="-13,-8 0,-1 0,13 -13,6"></polygon>
+							<polygon class="xj-cube xj-cube--r" points="13,-8 0,-1 0,13 13,6"></polygon>
+							<polygon class="xj-cube xj-cube--t" points="0,-15 13,-8 0,-1 -13,-8"></polygon>
+							<text class="xj-class-text" x="0" y="-22" text-anchor="middle">{names.type}.class</text>
+						</g>
+
+						<!-- The CSV line of the object: the packet that travels to the disk -->
+						<g data-el="pk" class="xj-packet" data-x={anchors[0].x} data-y={anchors[0].y}>
+							<circle r="24" fill="url(#aj-g-glow)"></circle>
+							<polygon class="xj-sheet xj-sheet--flow" points="0,-9 16,0 0,9 -16,0"></polygon>
+							<rect class="xj-tag xj-tag--flow" x="-40" y="-36" width="80" height="20" rx="10"></rect>
+							<text class="xj-tag-text" x="0" y="-21.5" text-anchor="middle">{t('línea CSV', 'CSV line')}</text>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={VP.y + VP.h - 22} r="5"></circle>
+				<text x={VP.x + 38} y={VP.y + VP.h - 18}>{t('Dato en memoria', 'Data in memory')}</text>
+				<polygon class="xj-legend-exc" points={`${VP.x + 182},${VP.y + VP.h - 28} ${VP.x + 188},${VP.y + VP.h - 22} ${VP.x + 182},${VP.y + VP.h - 16} ${VP.x + 176},${VP.y + VP.h - 22}`}></polygon>
+				<text x={VP.x + 196} y={VP.y + VP.h - 18}>{t('Se pierde', 'Lost')}</text>
+				<rect class="xj-legend-keep" x={VP.x + 290} y={VP.y + VP.h - 27} width="10" height="10" rx="2"></rect>
+				<text x={VP.x + 308} y={VP.y + VP.h - 18}>{t('Persiste', 'Persists')}</text>
+			</g>
+
+			<!-- EDITOR: the source, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>Main.java</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<!-- Line states sit behind the code -->
+				<rect data-el="hx-a3" class="xj-bar xj-bar--magenta" x={BAR.x} y={lineTop(3)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(1)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<!-- First program: the object only lives in memory -->
+				<g data-el="ea" data-base="shown" class="xj-code">
+					{
+						pageA.map((line) => (
+							<g data-el={`ea-${line.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				<!-- Second program: the object is written to a file -->
+				<g data-el="eb" class="xj-code">
+					{
+						pageB.map((line) =>
+							typedB.includes(line.n) ? (
+								<g data-el={`eb-${line.n}`}>
+									<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+										{line.n}
+									</text>
+									<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+								</g>
+							) : (
+								<>
+									<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+										{line.n}
+									</text>
+									<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+								</>
+							),
+						)
+					}
+				</g>
+
+				<!-- Packaging: the commands, and the manifest that `e` writes -->
+				<g class="xj-code">
+					{
+						shell.map((line) => (
+							<g data-el={line.id}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class:list={['xj-mono', `xj-sh--${line.kind}`]} x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				{
+					outputs.map((line) => (
+						<text data-el={line.id} class="xj-out" x={ED.x + 20} y={outY(line.row)} xml:space="preserve">
+							{line.text}
+						</text>
+					))
+				}
+				{lineAnchors.map((anchor) => <circle data-anchor={anchor.id} cx={BAR_CX} cy={lineMid(anchor.n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of the lesson films (DESIGN.md §8): a deep blue ground, a light blue
+	   for the data in memory, magenta for what is lost and violet for what keeps it.
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='archivos-jar-java']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='archivos-jar-java'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='archivos-jar-java'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='archivos-jar-java'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker,
+	.xj-card-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-card-kicker {
+		font-family: monospace;
+		letter-spacing: 0.02em;
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-exc {
+		fill: var(--xj-magenta);
+	}
+
+	.xj-legend-keep {
+		fill: var(--xj-violet);
+	}
+
+	/* Floor and modules */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-grid {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 1;
+		opacity: 0.07;
+	}
+
+	.xj-floor-text {
+		font-family: var(--font-body);
+		font-size: 15px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		fill: var(--xj-mist);
+		opacity: 0.85;
+	}
+
+	.xj-floor-text--violet {
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-zone {
+		fill: var(--xj-flow);
+		fill-opacity: 0.05;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.55;
+		stroke-width: 1.5;
+		stroke-dasharray: 7 6;
+		stroke-linejoin: round;
+	}
+
+	.xj-zone--violet {
+		fill: var(--xj-violet);
+		stroke: var(--xj-violet);
+		stroke-opacity: 0.75;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-mod--violet .xj-face {
+		stroke: var(--xj-violet);
+	}
+
+	.xj-mod--violet .xj-face--l {
+		fill: var(--xj-violet-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	/* Lit states: the module that is working, the one that keeps, the one that is lost */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* Routes */
+	.xj-trace {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 3;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--violet {
+		--xj-line: var(--xj-violet);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	.xj-dec {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 2;
+		stroke-dasharray: 5 5;
+		stroke-linecap: round;
+	}
+
+	/* Notes and cards */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet,
+	.xj-card--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect,
+	.xj-card rect,
+	.xj-file-card rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip, var(--xj-violet));
+		stroke-width: 1.5;
+	}
+
+	.xj-lead {
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+		stroke-opacity: 0.7;
+	}
+
+	.xj-lead--violet {
+		stroke: var(--xj-violet);
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-chip-mono--strong {
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-chip-mono--violet {
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-mf-hl {
+		fill: var(--xj-violet);
+		fill-opacity: 0.28;
+		stroke: var(--xj-violet-soft);
+		stroke-width: 1.2;
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* The object, its packet, the file and the classes */
+	.xj-cube {
+		stroke: var(--xj-flow-soft);
+		stroke-width: 1.2;
+		stroke-linejoin: round;
+	}
+
+	.xj-cube--t {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-cube--l {
+		fill: var(--xj-flow);
+	}
+
+	.xj-cube--r {
+		fill: var(--xj-steel-hi);
+	}
+
+	.xj-class .xj-cube {
+		stroke: var(--xj-mist);
+	}
+
+	.xj-class .xj-cube--t {
+		fill: var(--xj-white);
+	}
+
+	.xj-class .xj-cube--l {
+		fill: var(--xj-mist);
+	}
+
+	.xj-class .xj-cube--r {
+		fill: var(--xj-dim);
+	}
+
+	.xj-class-text {
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-tag {
+		fill: var(--xj-steel);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+	}
+
+	.xj-tag-text {
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-ghost polygon {
+		fill: none;
+		stroke: var(--xj-magenta);
+		stroke-width: 2;
+		stroke-dasharray: 5 4;
+		stroke-linejoin: round;
+	}
+
+	.xj-ghost .xj-tag {
+		fill: var(--xj-magenta-deep);
+		stroke: var(--xj-magenta);
+		stroke-dasharray: none;
+	}
+
+	.xj-ghost .xj-tag-text {
+		fill: var(--xj-magenta-soft);
+		text-decoration: line-through;
+	}
+
+	.xj-sheet {
+		fill: var(--xj-violet-soft);
+		stroke: var(--xj-violet);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-sheet--flow {
+		fill: var(--xj-flow-soft);
+		stroke: var(--xj-flow);
+	}
+
+	.xj-tag--flow {
+		fill: var(--xj-panel);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		font-size: 14px;
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.xj-sh--cmd {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-sh--label {
+		font-weight: 700;
+		fill: var(--xj-dim);
+	}
+
+	.xj-sh--manifest {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-bar--magenta {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.24;
+		stroke: var(--xj-magenta);
+		stroke-width: 1.2;
+	}
+</style>
