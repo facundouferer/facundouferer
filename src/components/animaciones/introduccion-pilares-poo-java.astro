@@ -1,0 +1,1199 @@
+---
+/**
+ * Scene for "The journey to an object: the four pillars of OOP" (lesson java/06),
+ * a short film played on one persistent motion canvas. The captions and cues live in
+ * `src/data/animations/introduccion-pilares-poo-java.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: it shows
+ * the Java source and the cues slide a bar over the line being executed. The
+ * viewport on the right holds the camera: an isometric system where procedural
+ * variables (`titular1`, `saldo1`) start loose and unprotected (magenta when
+ * corrupted with `-500`), then gather into `CuentaBancaria` (abstraction and
+ * encapsulation with `private double saldo` and `depositar()`), specialize in
+ * `CajaAhorro extends CuentaBancaria` (inheritance), and respond to
+ * `calcularInteres()` according to their real runtime type (polymorphism).
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/introduccion-pilares-poo-java';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Source code shown in the editor ───────────────────────────────────────
+// Identifiers and string literals are localized the same way the lesson does.
+const names = {
+	file: t('PilaresPOO.java', 'OopPillars.java'),
+	procClass: t('Procedimental', 'Procedural'),
+	holder1: t('titular1', 'holder1'),
+	balance1: t('saldo1', 'balance1'),
+	account: t('CuentaBancaria', 'BankAccount'),
+	savings: t('CajaAhorro', 'SavingsAccount'),
+	holder: t('titular', 'holder'),
+	balance: t('saldo', 'balance'),
+	deposit: t('depositar', 'deposit'),
+	amount: t('monto', 'amount'),
+	getBalance: t('getSaldo', 'getBalance'),
+	calcInterest: t('calcularInteres', 'calculateInterest'),
+	mainClass: t('MainPOO', 'OopMain'),
+};
+
+// First page: procedural chaos vs the abstracted CuentaBancaria class.
+const sourceA = [
+	`class ${names.procClass} {`,
+	'    public static void main(String[] args) {',
+	`        String ${names.holder1} = "Ana";`,
+	`        double ${names.balance1} = 1000;`,
+	`        // ${t('Sin control sobre los datos', 'No control over the data')}`,
+	`        ${names.balance1} = -500;`,
+	`        System.out.println(${names.balance1});`,
+	'    }',
+	'}',
+	'',
+	`class ${names.account} {`,
+	`    private String ${names.holder};`,
+	`    private double ${names.balance} = 1000;`,
+	`    public void ${names.deposit}(double ${names.amount}) {`,
+	`        if (${names.amount} > 0) {`,
+	`            this.${names.balance} += ${names.amount};`,
+	'        }',
+	'    }',
+	`    public double ${names.getBalance}() { return ${names.balance}; }`,
+	'}',
+].join('\n');
+
+// Second page: encapsulation, inheritance (`extends`) and polymorphism (`@Override`).
+const sourceB = [
+	`class ${names.account} {`,
+	`    private double ${names.balance} = 1000;`,
+	`    public void ${names.deposit}(double ${names.amount}) {`,
+	`        if (${names.amount} > 0) {`,
+	`            this.${names.balance} += ${names.amount};`,
+	'        }',
+	'    }',
+	`    public double ${names.calcInterest}() { return 0; }`,
+	'}',
+	`class ${names.savings} extends ${names.account} {`,
+	'    @Override',
+	`    public double ${names.calcInterest}() {`,
+	'        return 1300 * 0.10;',
+	'    }',
+	'}',
+	`public class ${names.mainClass} {`,
+	'    public static void main(String[] args) {',
+	`        ${names.account} c = new ${names.savings}();`,
+	`        System.out.println(c.${names.calcInterest}());`,
+	'    }',
+].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const svgLines = (source: string) =>
+	highlightCode(source, 'java').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+
+const pageA = svgLines(sourceA);
+const pageB = svgLines(sourceB);
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 64;
+const GUTTER_X = 50;
+const CODE_TOP = 74;
+const LINE_H = 23;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 5;
+const CONSOLE_TOP = 552;
+const outY = (row: number) => 597 + row * LINE_H;
+
+// Lines the highlight bar travels to (`ln-<n>`, valid for both programs).
+const lineAnchors = [3, 4, 5, 6, 7, 12, 17, 18].map((n) => ({ id: `ln-${n}`, n }));
+
+// Program output, one element per printed line of each run.
+const outputs = [
+	{ id: 'out-bad', row: 0, text: t('saldo1: -500.0 (corrupto)', 'balance1: -500.0 (corrupted)') },
+	{ id: 'out-enc', row: 0, text: t('saldo protegido: 1300.0', 'protected balance: 1300.0') },
+	{ id: 'out-poly', row: 1, text: t('interés CajaAhorro: 130.0', 'SavingsAccount interest: 130.0') },
+];
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right (the order of execution), +v down-left, z is up.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 58;
+const EY = 33.5;
+const ORIGIN = { x: 480, y: 290 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const path = (points: Point[]) => 'M' + points.map((point) => `${point.x} ${point.y}`).join(' L');
+
+/** A box standing on the floor at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		outline: poly([back, right, down(right), down(front), down(left), left]),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+/** Text lying flat on a floor, reading along +u. */
+const floorMatrix = (point: Point) => `matrix(0.866 0.5 -0.866 0.5 ${point.x} ${point.y})`;
+
+const MODULE_H = 18;
+const LEVEL_BASE = -220;
+const LEVEL_SUB = -350;
+const HEAP_ACC = { u: 2.9, v: -1.1 };
+const HEAP_SAV = { u: 3.5, v: 0.1 };
+
+const block = (u: number, v = 0, z = 0) => slab(u, v, 0.4, 0.4, MODULE_H, z);
+const G = {
+	floorProc: slab(0.5, 0, 1.8, 1.1, 12, -12),
+	t1: block(-0.6, 0, 0),
+	s1: block(0.5, 0, 0),
+	bad: block(1.6, 0, 0),
+
+	floorMain: slab(0.5, -0.3, 1.85, 1.25, 12, -12),
+	depBad: block(-0.5, 0, 0),
+	depOk: block(0.5, 0, 0),
+	savNew: block(1.4, -0.8, 0),
+	polyCall: block(1.6, 0.1, 0),
+
+	heap: slab(3.2, -0.5, 1.15, 1.15, 12, -12),
+
+	floorAcc: slab(0.7, 0, 1.4, 1.0, 10, LEVEL_BASE - 10),
+	dep4: block(0.1, 0, LEVEL_BASE),
+	dep5: block(1.2, 0, LEVEL_BASE),
+
+	floorSav: slab(2.6, 0.1, 1.25, 0.95, 10, LEVEL_SUB - 10),
+	sav12: block(2.6, 0.1, LEVEL_SUB),
+};
+type Slab = typeof G.floorProc;
+type Tone = 'flow' | 'violet' | 'magenta';
+
+// Routes across the system.
+const routes = {
+	procTrace: path([pt(-0.6, 0), pt(1.6, 0)]),
+	procStep1: path([pt(-0.6, 0), pt(0.5, 0)]),
+	procBad: path([pt(0.5, 0), pt(1.6, 0)]),
+
+	mainTrace: path([pt(-0.5, 0), pt(0.5, 0), pt(1.4, -0.8), pt(1.6, 0.1)]),
+	guardStep: path([pt(-0.5, 0), pt(0.5, 0)]),
+	rejectDrop: path([pt(-0.5, 0), G.dep4.center]),
+	depositDrop: path([pt(0.5, 0), G.dep5.center]),
+
+	extendsLink: path([G.sav12.center, G.dep5.center]),
+	refSav: path([pt(1.4, -0.8, 4), pt(HEAP_SAV.u - 0.3, HEAP_SAV.v, 4)]),
+	polyStep: path([pt(1.4, -0.8), pt(1.6, 0.1)]),
+	polyRef: path([pt(1.6, 0.1, 4), pt(HEAP_SAV.u - 0.25, HEAP_SAV.v, 4)]),
+	polyDrop: path([pt(HEAP_SAV.u, HEAP_SAV.v), G.sav12.center]),
+};
+const gridLines = [
+	...[-1, 0, 1, 2].map((u) => path([pt(u, -1.5, 0.5), pt(u, 0.8, 0.5)])),
+	...[-1.3, -0.7, -0.1, 0.5].map((v) => path([pt(-1.2, v, 0.5), pt(2.2, v, 0.5)])),
+];
+
+// Class platforms below `main`.
+type Lit = { id: string; g: Slab; tone: Tone; face?: string };
+type Platform = {
+	id: string;
+	g: Slab;
+	label: string;
+	labelAt: Point;
+	route: { id: string; d: string; tone: Tone };
+	modules: { g: Slab; face: string }[];
+	states: Lit[];
+};
+const platforms: Platform[] = [
+	{
+		id: 'floor-sav',
+		g: G.floorSav,
+		label: names.savings,
+		labelAt: pt(1.55, 0.9, LEVEL_SUB),
+		route: { id: 'rt-poly', d: routes.polyDrop, tone: 'violet' },
+		modules: [{ g: G.sav12, face: '12' }],
+		states: [{ id: 'sav12-on', g: G.sav12, tone: 'violet', face: '12' }],
+	},
+	{
+		id: 'floor-acc',
+		g: G.floorAcc,
+		label: names.account,
+		labelAt: pt(-0.55, 0.85, LEVEL_BASE),
+		route: { id: 'rt-dep', d: routes.depositDrop, tone: 'violet' },
+		modules: [
+			{ g: G.dep4, face: '4' },
+			{ g: G.dep5, face: '5' },
+		],
+		states: [
+			{ id: 'dep4-x', g: G.dep4, tone: 'magenta', face: '4' },
+			{ id: 'dep5-on', g: G.dep5, tone: 'flow', face: '5' },
+		],
+	},
+];
+
+// Modules of the top floors (procedural and OOP main).
+type Module = { id: string; g: Slab; face?: string; lit?: { id: string; tone?: Tone } };
+const modules: Module[] = [
+	{ id: 'm-t1', g: G.t1, face: '3', lit: { id: 't1-on' } },
+	{ id: 'm-s1', g: G.s1, face: '4', lit: { id: 's1-on' } },
+	{ id: 'm-bad', g: G.bad, face: '6', lit: { id: 'bad-on', tone: 'magenta' } },
+	{ id: 'm-dep-bad', g: G.depBad, face: '4' },
+	{ id: 'm-dep-ok', g: G.depOk, face: '5', lit: { id: 'dep-ok-on' } },
+	{ id: 'm-sav-new', g: G.savNew, face: '17', lit: { id: 'sav-new-on' } },
+	{ id: 'm-poly-call', g: G.polyCall, face: '18', lit: { id: 'poly-call-on' } },
+];
+
+// Particle stops above each module or heap object.
+const hover = (g: Slab, by = 16) => lift(g.center, by);
+const OBJ_ACC = lift(pt(HEAP_ACC.u, HEAP_ACC.v), 22);
+const OBJ_SAV = lift(pt(HEAP_SAV.u, HEAP_SAV.v), 22);
+const anchors = [
+	{ id: 'a-t1', ...hover(G.t1) },
+	{ id: 'a-s1', ...hover(G.s1) },
+	{ id: 'a-bad', ...hover(G.bad) },
+	{ id: 'a-dep-bad', ...hover(G.depBad) },
+	{ id: 'a-dep-ok', ...hover(G.depOk) },
+	{ id: 'a-dep5', ...hover(G.dep5) },
+	{ id: 'a-sav-new', ...hover(G.savNew) },
+	{ id: 'a-poly-call', ...hover(G.polyCall) },
+	{ id: 'a-sav-obj', ...lift(pt(HEAP_SAV.u - 0.4, HEAP_SAV.v), 14) },
+	{ id: 'a-sav12', ...hover(G.sav12) },
+];
+
+// Camera shots.
+const shots = [
+	{ id: 'shot-proc', cx: 560, cy: 295, s: 1.3 },
+	{ id: 'shot-account', cx: 615, cy: 430, s: 1.1 },
+	{ id: 'shot-encap', cx: 645, cy: 380, s: 1.18 },
+	{ id: 'shot-guard', cx: 585, cy: 410, s: 1.15 },
+	{ id: 'shot-inherit', cx: 640, cy: 485, s: 1.02 },
+	{ id: 'shot-poly', cx: 650, cy: 475, s: 1.0 },
+	{ id: 'shot-all', cx: 630, cy: 455, s: 0.9 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Floating notes and pillar badges.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | Tone;
+	mono?: boolean;
+	check?: boolean;
+	lead?: Point;
+};
+const tagChip = (id: string, text: string, tone: Chip['tone'], g: Slab): Chip => ({
+	id,
+	text,
+	x: g.center.x - 30,
+	y: g.center.y + 82,
+	align: 'end',
+	tone,
+	mono: true,
+	lead: { x: g.center.x - 20, y: g.center.y + 24 },
+});
+
+const chips: Chip[] = [
+	tagChip('lb-t1', `${names.holder1} = "Ana"`, 'plain', G.t1),
+	tagChip('lb-s1', `${names.balance1} = 1000`, 'plain', G.s1),
+	{
+		id: 'bad-chip',
+		text: `${names.balance1} = -500`,
+		x: G.bad.center.x + 28,
+		y: G.bad.center.y - 36,
+		align: 'start',
+		tone: 'magenta',
+		mono: true,
+	},
+	{
+		id: 'pil-1',
+		text: t('1. Abstracción', '1. Abstraction'),
+		x: 420,
+		y: 465,
+		align: 'start',
+		tone: 'flow',
+		check: true,
+	},
+	{
+		id: 'lb-abs',
+		text: t('estado + comportamiento', 'state + behavior'),
+		x: 420,
+		y: 497,
+		align: 'start',
+		tone: 'plain',
+	},
+	tagChip('lb-dep', `${names.deposit}(${names.amount})`, 'violet', G.dep5),
+	{
+		id: 'pil-2',
+		text: t('2. Encapsulamiento', '2. Encapsulation'),
+		x: OBJ_ACC.x - 55,
+		y: OBJ_ACC.y - 78,
+		align: 'start',
+		tone: 'violet',
+		check: true,
+	},
+	{
+		id: 'lb-priv',
+		text: `private double ${names.balance}`,
+		x: OBJ_ACC.x - 55,
+		y: OBJ_ACC.y + 52,
+		align: 'start',
+		tone: 'violet',
+		mono: true,
+	},
+	{
+		id: 'rej-chip',
+		text: t('monto <= 0: rechazado', 'amount <= 0: rejected'),
+		x: G.dep4.center.x - 16,
+		y: G.dep4.center.y - 44,
+		align: 'end',
+		tone: 'magenta',
+	},
+	{
+		id: 'pil-3',
+		text: t('3. Herencia', '3. Inheritance'),
+		x: 520,
+		y: 650,
+		align: 'start',
+		tone: 'flow',
+		check: true,
+	},
+	{
+		id: 'lb-ext',
+		text: `${names.savings} extends ${names.account}`,
+		x: 520,
+		y: 680,
+		align: 'start',
+		tone: 'plain',
+		mono: true,
+	},
+	{
+		id: 'pil-4',
+		text: t('4. Polimorfismo', '4. Polymorphism'),
+		x: OBJ_SAV.x - 36,
+		y: OBJ_SAV.y + 80,
+		align: 'start',
+		tone: 'violet',
+		check: true,
+	},
+	tagChip('lb-poly', `@Override ${names.calcInterest}()`, 'violet', G.sav12),
+	{
+		id: 'r-pillars',
+		text: t('4 pilares: modelar, proteger, reutilizar, variar', '4 pillars: model, protect, reuse, vary'),
+		x: 610,
+		y: 132,
+		align: 'middle',
+		tone: 'violet',
+		check: true,
+	},
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + (chip.check ? 42 : 24));
+const chipLeft = (chip: Chip) => (chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x);
+const chipJoin = (chip: Chip) => (chip.align === 'end' ? chipLeft(chip) + chipWidth(chip) - 14 : chip.align === 'middle' ? chip.x : chipLeft(chip) + 14);
+
+const shieldRing = slab(HEAP_ACC.u, HEAP_ACC.v, 0.55, 0.5, 0, 2).top;
+const scanRing = slab(HEAP_SAV.u, HEAP_SAV.v, 0.55, 0.5, 0, 2).top;
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="xp-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="xp-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="xp-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="xp-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xp-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xp-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xp-g-object">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.7"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the running system, seen through the camera -->
+			<g clip-path="url(#xp-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + 150} cy={VP.y + 110} rx="420" ry="320" fill="url(#xp-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + VP.w - 60} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#xp-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- Class platforms (CuentaBancaria and CajaAhorro) -->
+						{
+							platforms.map((platform) => (
+								<>
+									<g data-el={platform.id}>
+										<polygon class="xj-plate-shadow" points={platform.g.base} transform="translate(10 16)" />
+										<polygon class="xj-plate xj-plate--l" points={platform.g.leftFace} />
+										<polygon class="xj-plate xj-plate--r" points={platform.g.rightFace} />
+										<polygon class="xj-plate xj-plate--t" points={platform.g.top} fill="url(#xp-g-floor)" />
+										<text class="xj-floor-text" transform={floorMatrix(platform.labelAt)}>
+											{platform.label}
+										</text>
+										<g data-el={platform.route.id} class:list={['xj-flowline', `xj-flowline--${platform.route.tone}`]}>
+											<path class="mg-stroke xj-flowline-halo" pathLength="1" d={platform.route.d} />
+											<path class="mg-stroke xj-flowline-core" pathLength="1" d={platform.route.d} />
+										</g>
+										{platform.modules.map((module) => (
+											<>
+												<polygon class="xj-shadow" points={module.g.base} transform="translate(7 9)" />
+												<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+												<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+												<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#xp-g-top)" />
+												<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+													{module.face}
+												</text>
+											</>
+										))}
+									</g>
+									{platform.states.map((state) => (
+										<g data-el={state.id} class:list={['xj-lit', `xj-lit--${state.tone}`]}>
+											<polygon class="xj-lit-halo" points={state.g.top} />
+											<polygon class="xj-lit-top" points={state.g.top} />
+											<polygon class="xj-lit-side" points={state.g.leftFace} />
+											<text class="xj-face-text xj-face-text--on" transform={state.g.faceMatrix} text-anchor="middle" y="4.5">
+												{state.face}
+											</text>
+										</g>
+									))}
+								</>
+							))
+						}
+
+						<!-- Rejected negative deposit route and inheritance link -->
+						<g data-el="rt-rej" class="xj-flowline xj-flowline--magenta">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.rejectDrop}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.rejectDrop}></path>
+						</g>
+						<g data-el="fl-ext" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.extendsLink}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.extendsLink}></path>
+						</g>
+
+						<!-- Procedural floor and OOP main() floor -->
+						<g data-el="floor-proc">
+							<polygon class="xj-plate-shadow" points={G.floorProc.base} transform="translate(14 22)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.floorProc.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.floorProc.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.floorProc.top} fill="url(#xp-g-floor)"></polygon>
+							{gridLines.map((d) => <path class="xj-grid" d={d} />)}
+							<text class="xj-floor-text" transform={floorMatrix(pt(-1.1, 0.72))}>{names.procClass}</text>
+						</g>
+
+						<g data-el="floor-main">
+							<polygon class="xj-plate-shadow" points={G.floorMain.base} transform="translate(14 22)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.floorMain.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.floorMain.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.floorMain.top} fill="url(#xp-g-floor)"></polygon>
+							{gridLines.map((d) => <path class="xj-grid" d={d} />)}
+							<text class="xj-floor-text" transform={floorMatrix(pt(-1.15, 0.72))}>main()</text>
+						</g>
+
+						<g data-el="heap">
+							<polygon class="xj-plate-shadow" points={G.heap.base} transform="translate(10 16)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.heap.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.heap.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.heap.top} fill="url(#xp-g-floor)"></polygon>
+							<text class="xj-floor-text" transform={floorMatrix(pt(2.3, 0.42))}>heap</text>
+						</g>
+
+						<!-- Traces and flow lines -->
+						<g data-el="tr-proc"><path class="mg-stroke xj-trace" pathLength="1" d={routes.procTrace}></path></g>
+						<g data-el="tr-main"><path class="mg-stroke xj-trace" pathLength="1" d={routes.mainTrace}></path></g>
+						<g data-el="ref-sav"><path class="mg-stroke xj-ref" pathLength="1" d={routes.refSav}></path></g>
+
+						<g data-el="fl-proc-1" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.procStep1}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.procStep1}></path>
+						</g>
+						<g data-el="fl-proc-bad" class="xj-flowline xj-flowline--magenta">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.procBad}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.procBad}></path>
+						</g>
+						<g data-el="fl-guard-1" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.guardStep}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.guardStep}></path>
+						</g>
+						<g data-el="fl-poly-1" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.polyStep}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.polyStep}></path>
+						</g>
+						<g data-el="fl-ref-sav" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes.polyRef}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes.polyRef}></path>
+						</g>
+
+						<!-- Top floor modules and their lit states -->
+						{
+							modules.map((module) => (
+								<>
+									<g data-el={module.id} class="xj-mod">
+										<polygon class="xj-shadow" points={module.g.base} transform="translate(7 9)" />
+										<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#xp-g-top)" />
+										{module.face && (
+											<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+												{module.face}
+											</text>
+										)}
+									</g>
+									{module.lit && (
+										<g data-el={module.lit.id} class:list={['xj-lit', `xj-lit--${module.lit.tone ?? 'flow'}`]}>
+											<polygon class="xj-lit-halo" points={module.g.top} />
+											<polygon class="xj-lit-top" points={module.g.top} />
+											<polygon class="xj-lit-side" points={module.g.leftFace} />
+											{module.face && (
+												<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+													{module.face}
+												</text>
+											)}
+										</g>
+									)}
+								</>
+							))
+						}
+
+						<!-- Encapsulation shield and polymorphic scan ring -->
+						<polygon data-el="shield" class="xj-scan" points={shieldRing}></polygon>
+						<polygon data-el="o-scan" class="xj-scan" points={scanRing}></polygon>
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									{chip.lead && <line class="xj-lead" x1={chip.lead.x} y1={chip.lead.y} x2={chipJoin(chip)} y2={chip.y - 12} />}
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.check && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M20 6 9 17l-5-5" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.check ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Heap objects: CuentaBancaria and specialized CajaAhorro -->
+						<g data-el="obj-acc">
+							<g class="xj-object" transform={`translate(${OBJ_ACC.x} ${OBJ_ACC.y})`}>
+								<circle r="36" fill="url(#xp-g-object)"></circle>
+								<polygon class="xj-gem xj-gem--l" points="-15,-10.5 0,-2 0,15 -15,6.5"></polygon>
+								<polygon class="xj-gem xj-gem--r" points="15,-10.5 0,-2 0,15 15,6.5"></polygon>
+								<polygon class="xj-gem xj-gem--t" points="0,-19 15,-10.5 0,-2 -15,-10.5"></polygon>
+								<rect class="xj-tag" x="-64" y="-56" width="128" height="22" rx="11"></rect>
+								<text class="xj-tag-text" x="0" y="-40.5" text-anchor="middle">{names.account}</text>
+							</g>
+						</g>
+
+						<g data-el="obj-sav">
+							<g class="xj-object" transform={`translate(${OBJ_SAV.x} ${OBJ_SAV.y})`}>
+								<circle r="36" fill="url(#xp-g-object)"></circle>
+								<polygon class="xj-gem xj-gem--l" points="-15,-10.5 0,-2 0,15 -15,6.5"></polygon>
+								<polygon class="xj-gem xj-gem--r" points="15,-10.5 0,-2 0,15 15,6.5"></polygon>
+								<polygon class="xj-gem xj-gem--t" points="0,-19 15,-10.5 0,-2 -15,-10.5"></polygon>
+								<rect class="xj-tag" x="-64" y="-56" width="128" height="22" rx="11"></rect>
+								<text class="xj-tag-text" x="0" y="-40.5" text-anchor="middle">{names.savings}</text>
+							</g>
+						</g>
+
+						<!-- The execution flow particle -->
+						<g data-el="p" class="xj-particle" data-x={anchors[0].x} data-y={anchors[0].y}>
+							<circle r="20" fill="url(#xp-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="290" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<polygon class="xj-legend-object" points={`${VP.x + 190},${LEGEND_Y - 6} ${VP.x + 196},${LEGEND_Y} ${VP.x + 190},${LEGEND_Y + 6} ${VP.x + 184},${LEGEND_Y}`}></polygon>
+				<text x={VP.x + 204} y={LEGEND_Y + 4}>{t('Objeto encapsulado', 'Encapsulated object')}</text>
+			</g>
+
+			<!-- EDITOR: the source, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.file}</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<!-- Line states sit behind the code -->
+				<rect data-el="hx-6" class="xj-bar xj-bar--trail" x={BAR.x} y={lineTop(6)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<rect data-el="hv-2" class="xj-bar xj-bar--violet" x={BAR.x} y={lineTop(2)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<rect data-el="hv-12" class="xj-bar xj-bar--violet" x={BAR.x} y={lineTop(12)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(3)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<!-- First page: procedural variables vs CuentaBancaria abstraction -->
+				<g data-el="ea" data-base="shown" class="xj-code">
+					{
+						pageA.map((line) => (
+							<g data-el={`ea-${line.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				<!-- Second page: encapsulation, inheritance and polymorphism -->
+				<g data-el="eb" class="xj-code">
+					{
+						pageB.map((line) => (
+							<g data-el={`eb-${line.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				{
+					outputs.map((line) => (
+						<text data-el={line.id} class="xj-out" x={ED.x + 20} y={outY(line.row)} xml:space="preserve">
+							{line.text}
+						</text>
+					))
+				}
+				{lineAnchors.map((anchor) => <circle data-anchor={anchor.id} cx={BAR_CX} cy={lineMid(anchor.n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue execution flow, magenta for uncontrolled mutation and violet for the
+	   encapsulated object and its four pillars.
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='introduccion-pilares-poo-java']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='introduccion-pilares-poo-java'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='introduccion-pilares-poo-java'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='introduccion-pilares-poo-java'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-magenta {
+		stop-color: var(--xj-magenta);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-object {
+		fill: var(--xj-violet);
+	}
+
+	/* Levels and modules */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-grid {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 1;
+		opacity: 0.07;
+	}
+
+	.xj-floor-text {
+		font-family: var(--font-body);
+		font-size: 15px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		fill: var(--xj-mist);
+		opacity: 0.85;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	/* Lit states: the module that is running, or the one that failed */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* Routes */
+	.xj-trace {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 3;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-ref {
+		fill: none;
+		stroke: var(--xj-mist);
+		stroke-width: 2;
+		stroke-opacity: 0.7;
+		stroke-linecap: round;
+	}
+
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--magenta {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-flowline--violet {
+		--xj-line: var(--xj-violet);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	.xj-scan {
+		fill: var(--xj-violet);
+		fill-opacity: 0.12;
+		stroke: var(--xj-violet-soft);
+		stroke-width: 2.5;
+		stroke-linejoin: round;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-lead {
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+		stroke-opacity: 0.7;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* The object and the flow */
+	.xj-gem {
+		stroke: var(--xj-violet-soft);
+		stroke-width: 1.2;
+		stroke-linejoin: round;
+	}
+
+	.xj-gem--t {
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-gem--l {
+		fill: var(--xj-violet);
+	}
+
+	.xj-gem--r {
+		fill: var(--xj-violet-deep);
+	}
+
+	.xj-tag {
+		fill: var(--xj-violet-deep);
+		stroke: var(--xj-violet);
+		stroke-width: 1.5;
+	}
+
+	.xj-tag-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-bar--trail {
+		fill: none;
+		stroke: var(--xj-magenta);
+		stroke-width: 1.5;
+		stroke-dasharray: 6 5;
+	}
+
+	.xj-bar--violet {
+		fill: var(--xj-violet);
+		fill-opacity: 0.24;
+		stroke: var(--xj-violet);
+		stroke-width: 1.2;
+	}
+</style>
