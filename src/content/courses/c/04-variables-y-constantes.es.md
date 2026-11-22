@@ -7,513 +7,430 @@ lang: 'es'
 published: true
 ---
 
-Las **variables** y las **constantes** son la base de casi todo programa. Antes de pedir datos al usuario, antes de tomar decisiones y antes de repetir tareas, un programa necesita **guardar información**.
+Las **variables** y las **constantes** son la base de casi todo programa. Antes de pedir datos al usuario, antes de tomar decisiones y antes de repetir tareas, un programa necesita **guardar información** y darle un nombre.
 
-En C, esa información se guarda en memoria usando nombres que nosotros elegimos.
+## Objetivos
 
-En esta lección vas a aprender:
+Al terminar esta lección podrás:
 
-- qué es una variable
-- qué significa declarar, inicializar y asignar
-- cómo nombrar variables correctamente en C
-- qué tipos de datos básicos se usan con más frecuencia
-- qué es una constante y cuándo conviene usarla
+- explicar qué es una variable y qué significa declararla, inicializarla y asignarle un valor
+- reconocer por qué leer una variable sin inicializar es un error
+- elegir nombres válidos y claros para tus variables
+- escribir literales enteros, de punto flotante, de carácter y de cadena, con sus sufijos `u`, `l` y `f`
+- declarar constantes con `const` y con `#define`, y decidir cuándo conviene cada una
 
-> Idea clave: si no entendés bien variables y constantes, todo lo que viene después se vuelve más difícil. Esta parte es FUNDAMENTAL.
+**Requisitos previos:** lecciones 1 (*Introducción y estructura*), 2 (*Procesos y estados*) y 3 (*Compilación y enlazado*). Todos los programas se compilan con el comando del curso:
+
+```bash
+gcc -std=c23 -Wall -Wextra -Wpedantic programa.c -o programa
+```
 
 ## ¿Qué es una variable?
 
 Una **variable** es un espacio de memoria que tiene:
 
-1. un **tipo de dato**
-2. un **nombre**
-3. un **valor** que puede cambiar
+1. un **tipo de dato**, que indica qué clase de valor guarda
+2. un **nombre**, con el que el programa lo encuentra
+3. un **valor**, que puede cambiar mientras el programa se ejecuta
 
-Pensalo así: una variable es como una caja con una etiqueta.
-
-- La **etiqueta** es el nombre de la variable.
-- El **contenido** de la caja es el valor guardado.
-- El **tipo de dato** indica qué clase de valor puede guardarse ahí.
-
-Por ejemplo:
+Piensa en una caja con una etiqueta: la etiqueta es el nombre, el contenido es el valor y el tipo indica qué cosas caben en la caja.
 
 ```c
 int edad = 18;
 ```
 
-En esa línea:
-
-- `int` indica que la variable guardará un número entero
-- `edad` es el nombre de la variable
+- `int` indica que la variable guarda un número entero
+- `edad` es el nombre
 - `18` es el valor inicial
 
-## ¿Por qué necesitamos variables?
-
-Porque los programas trabajan con datos.
-
-Por ejemplo, un programa puede necesitar guardar:
-
-- la edad de una persona
-- el precio de un producto
-- la inicial de un nombre
-- la cantidad de alumnos en un curso
-
-Si no pudiéramos guardar esos valores, el programa no tendría con qué trabajar.
-
-Mirá este ejemplo:
-
-```c
-int cantidadAlumnos = 30;
-float precio = 1499.50;
-char inicial = 'F';
-```
-
-Ahí el programa está guardando tres datos distintos:
-
-- `cantidadAlumnos` guarda un entero
-- `precio` guarda un número con decimales
-- `inicial` guarda un único carácter
-
-## Variables y memoria
-
-Cuando un programa se ejecuta, usa memoria RAM.
-
-Cada variable ocupa una parte de esa memoria. Vos no necesitás saber todavía la dirección exacta donde queda guardada, pero sí entender la idea general: **cada variable reserva un lugar para almacenar un dato**.
-
-Podemos imaginarlo así:
+Un modelo mental útil para empezar:
 
 ```text
-edad              -> 18
-precio            -> 1499.50
-inicial           -> F
+edad      → 18
+precio    → 1499.50
+inicial   → F
 ```
 
-Esto NO significa que la memoria realmente se vea así, pero sirve como modelo mental para empezar.
+La memoria real no se ve así, pero la idea es correcta: **cada variable reserva un lugar para un dato y su nombre permite encontrarlo**.
 
-Lo importante es entender que el nombre de la variable le permite al programa encontrar el valor guardado.
+## Declarar, inicializar y asignar
 
-## Declarar una variable
+Estas tres ideas se parecen, pero no son lo mismo.
 
-**Declarar** una variable significa informarle al compilador que esa variable va a existir y qué tipo de dato va a almacenar.
-
-La forma general es:
-
-```c
-tipo nombreVariable;
-```
-
-Ejemplo:
+**Declarar** es anunciarle al compilador que la variable existe y qué tipo tiene:
 
 ```c
 int edad;
 ```
 
-Esta línea declara una variable llamada `edad` que podrá almacenar números enteros.
-
-Todavía no le dimos un valor. Solamente dijimos que esa variable existe.
-
-## Inicializar una variable
-
-**Inicializar** una variable significa darle un valor en el mismo momento en que se declara.
-
-Ejemplo:
+**Inicializar** es darle un valor en el mismo momento en que se declara:
 
 ```c
 int edad = 18;
 ```
 
-Acá pasan dos cosas al mismo tiempo:
-
-1. se declara la variable `edad`
-2. se le asigna el valor `18`
-
-Inicializar suele ser una muy buena práctica, porque hace el código más claro y evita usar variables sin un valor válido.
-
-## Asignar un valor
-
-**Asignar** un valor significa guardar un dato dentro de una variable que ya existe.
-
-Ejemplo:
+**Asignar** es guardar un valor en una variable que ya existe, con el operador `=`:
 
 ```c
 int edad;
 edad = 18;
+edad = 19;
 ```
 
-Primero declaramos la variable.
-Después le asignamos un valor.
+Después de esas líneas, `edad` vale `19`. La variable es la misma; su contenido cambió. Por eso se llama *variable*.
 
-Esto es distinto de inicializar, porque la inicialización ocurre en la misma línea de la declaración.
-
-## Declarar, inicializar y asignar: diferencia importante
-
-Estas tres ideas se parecen, pero NO son lo mismo.
-
-### Solo declaración
+Puedes declarar varias variables del mismo tipo en una línea, aunque una por línea suele leerse mejor:
 
 ```c
-int edad;
+int ancho = 3, alto = 4;
 ```
 
-La variable existe, pero todavía no recibe un valor por decisión nuestra.
+## Variables sin inicializar: un error real
 
-### Declaración con inicialización
+Esta es una de las reglas más importantes de la lección.
+
+Una variable local que se declara sin inicializar tiene un **valor indeterminado**. No vale cero ni ningún valor "por defecto": contiene lo que haya quedado en esa zona de memoria. **Leer ese valor antes de asignarle uno es un error de programa**, aunque compile y a veces parezca funcionar.
+
+<!-- c-check: skip -->
+```c
+#include <stdio.h>
+
+int main(void) {
+    int total;           // declarada, pero nunca inicializada
+    total = total + 10;  // ERROR: lee un valor indeterminado
+    printf("%d\n", total);
+    return 0;
+}
+```
+
+Con `-Wall` el compilador suele avisarte (`variable 'total' is uninitialized when used here`). Esa advertencia es un error de lógica: corrígela, no la ignores.
+
+La solución es simple: **inicializa cada variable con un valor que tenga sentido** para tu programa.
 
 ```c
-int edad = 18;
+int total = 0;
+double precio = 0.0;
+char inicial = ' ';
 ```
 
-La variable se crea y ya empieza con un valor.
+No siempre el valor inicial será cero, pero el programa siempre debe saber con qué valor empieza.
 
-### Asignación posterior
+## Reglas para nombrar variables
+
+Un nombre (en C se dice **identificador**):
+
+- puede usar letras, dígitos y guion bajo `_`
+- debe comenzar con una letra o con `_`
+- no puede comenzar con un dígito
+- no puede tener espacios ni guiones medios
+- no puede ser una palabra reservada (`int`, `float`, `return`, `const`...)
+- distingue mayúsculas de minúsculas: `edad` y `Edad` son nombres distintos
+
+Válidos:
+
+```text
+edad
+edadAlumno
+numero1
+precio_final
+```
+
+Inválidos:
+
+```text
+1edad          (empieza con un dígito)
+mi edad        (tiene un espacio)
+float          (palabra reservada)
+precio-final   (el guion medio es el operador resta)
+```
+
+> **Portabilidad:** los nombres que empiezan con guion bajo seguido de mayúscula (`_Total`) o con dos guiones bajos (`__total`) están reservados para el compilador y la biblioteca estándar. Evita empezar tus nombres con `_`.
+
+### Buenos nombres
+
+Que un nombre sea válido no significa que sea claro. Compara:
 
 ```c
-int edad;
-edad = 18;
+int x;
+float a;
 ```
 
-La variable se crea primero y recibe el valor después.
-
-Entender esta diferencia es importantísimo, porque en programación el momento en que un valor aparece también importa.
-
-## Tipos de datos básicos que vas a usar al comenzar
-
-En C, toda variable necesita un tipo. El tipo define qué clase de dato puede guardarse.
-
-Por ahora, los más importantes para empezar son estos:
-
-### `int`
-
-Se usa para números enteros, es decir, números sin parte decimal.
+con:
 
 ```c
-int cantidad = 25;
-int anio = 2026;
-int temperaturaMinima = 8;
+int cantidadAlumnos;
+float precioProducto;
 ```
 
-### `float`
+Un buen nombre describe el dato y evita que quien lee tenga que adivinar. Elige un estilo (`cantidadAlumnos` o `cantidad_alumnos`) y mantenlo en todo el programa.
 
-Se usa para números con decimales.
+## Literales
+
+Un **literal** es un valor escrito directamente en el código, como `18`, `3.5` o `'A'`. Cada literal tiene un tipo, y conocerlo evita sorpresas.
+
+### Literales enteros
 
 ```c
-float altura = 1.75;
-float precio = 2500.50;
-float promedio = 8.4;
+int decimal = 255;
+int hexadecimal = 0xFF;  // 255 en base 16
+int octal = 0377;        // 255 en base 8: ¡el 0 inicial cambia la base!
 ```
 
-### `char`
+Un `0` delante convierte el número en octal: `010` vale `8`, no `10`. No agregues ceros a la izquierda "para alinear".
 
-Se usa para guardar **un solo carácter**.
+Los **sufijos** cambian el tipo del literal:
+
+| Literal | Tipo |
+| --- | --- |
+| `100` | `int` |
+| `100u` | `unsigned int` |
+| `100l` | `long` |
+| `100ul` | `unsigned long` |
+| `100ll` | `long long` |
+
+Se pueden escribir en mayúscula (`100L`); de hecho `L` se recomienda porque `l` se confunde con `1`. Los tipos `unsigned` y `long` se estudian en la lección 5.
+
+### Literales de punto flotante
+
+```c
+double pi = 3.14159;     // sin sufijo: es double
+float gravedad = 9.81f;  // sufijo f: es float
+double grande = 1.5e6;   // notación científica: 1 500 000
+```
+
+Un literal con punto decimal y sin sufijo es `double`. Si lo guardas en un `float`, escribe el sufijo `f` para que el tipo del literal coincida con el de la variable.
+
+### Literales de carácter
+
+Un carácter va entre **comillas simples**:
 
 ```c
 char letra = 'A';
-char inicial = 'F';
-char simbolo = '#';
+char salto = '\n';      // secuencia de escape: salto de línea
+char comilla = '\'';    // una comilla simple
+char barra = '\\';      // una barra invertida
 ```
 
-Fijate en algo importante: los valores `char` se escriben entre **comillas simples**.
+`'7'` no es lo mismo que `7`: el primero es el carácter siete, el segundo es el número siete.
+
+### Literales de cadena
+
+Una cadena va entre **comillas dobles**: `"Hola, mundo\n"`. Ya la usaste con `printf`. Por ahora solo la usaremos para mostrar texto; cómo se guardan y manipulan las cadenas lo verás en la lección 21.
+
+> **C moderno (C23):** puedes separar los dígitos de un número largo con apóstrofes para leerlo mejor: `1'000'000` es lo mismo que `1000000`. C23 también incorpora al estándar los literales binarios: `0b1010` vale `10`.
+>
+> **Portabilidad:** antes de C23, los literales binarios eran una extensión de GCC y Clang, no C estándar, y los separadores de dígitos no existían. Con `-std=c17` no los uses.
+
+## Constantes
+
+Una **constante** es un dato que no debe cambiar durante la ejecución: los días de la semana, la cantidad de meses del año, un IVA fijo. Darle un nombre en lugar de escribir el número suelto ("número mágico") hace el código más claro y más fácil de cambiar.
+
+C ofrece dos herramientas: `const` y `#define`.
+
+### Constantes con `const`
 
 ```c
-char letra = 'A';
+const int DIAS_SEMANA = 7;
+const double IVA = 0.21;
 ```
 
-Eso representa un solo carácter.
+`const` crea un objeto con tipo que **no se puede modificar**. Si intentas asignarle un valor, el programa no compila:
 
-> Más adelante vas a ver cómo trabajar con texto completo. Por ahora alcanza con entender que `char` guarda un solo carácter.
+<!-- c-check: skip -->
+```c
+int main(void) {
+    const int DIAS_SEMANA = 7;
+    DIAS_SEMANA = 8;   // error: cannot assign to variable with const-qualified type
+    return 0;
+}
+```
 
-## Ejemplo completo y explicado
+Ese error es una ayuda: el compilador protege un valor que decidiste fijo.
 
-Mirá este programa simple:
+### Constantes con `#define`
 
 ```c
-int main() {
+#define MESES_ANIO 12
+#define PI 3.14159
+```
+
+`#define` es una directiva del **preprocesador** (la viste en la lección 3). Antes de compilar, el preprocesador reemplaza cada aparición de `MESES_ANIO` por el texto `12`. No crea ninguna variable: es una sustitución de texto. Por eso no lleva `=` ni `;`.
+
+Como es solo texto, una macro sin paréntesis puede dar resultados inesperados:
+
+```c
+#define LADO 2 + 3
+int area = LADO * LADO;   // se convierte en 2 + 3 * 2 + 3, que vale 11, no 25
+```
+
+La regla: si el valor de una macro es una expresión, ponlo entre paréntesis: `#define LADO (2 + 3)`.
+
+### ¿Cuándo conviene cada una?
+
+| | `const` | `#define` |
+| --- | --- | --- |
+| Qué es | un objeto con tipo | texto que se reemplaza antes de compilar |
+| Tipo | sí, el compilador lo verifica | no tiene tipo propio |
+| Alcance | respeta las llaves `{}` donde se declara | vale desde la línea del `#define` hasta el final del archivo |
+| Visible en el depurador | sí | no |
+
+Regla práctica:
+
+- prefiere **`const`** para valores con tipo que usa tu programa (`const double IVA = 0.21;`)
+- usa **`#define`** cuando necesitas una constante que el preprocesador o el compilador deban conocer antes de ejecutar, como el tamaño de un arreglo (lección 19), o para configurar la compilación
+
+Por convención, las constantes se escriben en MAYÚSCULAS con guiones bajos, sobre todo las macros, para que se distingan de las variables a simple vista.
+
+> **C moderno (C23):** C23 agrega `constexpr`, que declara constantes con tipo que el compilador conoce en tiempo de compilación, y reemplaza muchos usos de `#define`. Lo verás en detalle en el módulo avanzado (*C moderno y C23*); en este curso básico usamos `const` y `#define`.
+
+## Ejemplo completo
+
+```c
+#include <stdio.h>
+
+#define MESES_ANIO 12
+
+int main(void) {
+    const double IVA = 0.21;
     int edad = 18;
-    float altura = 1.72;
+    double precio = 1500.0;
     char inicial = 'F';
+
+    edad = edad + 1;   // asignación: ahora vale 19
+
+    printf("Edad: %d\n", edad);
+    printf("Inicial: %c\n", inicial);
+    printf("Precio con IVA: %f\n", precio + precio * IVA);
+    printf("Meses del año: %d\n", MESES_ANIO);
 
     return 0;
 }
 ```
 
-¿Qué está pasando ahí?
-
-- `edad` guarda un número entero
-- `altura` guarda un número decimal
-- `inicial` guarda un carácter
-
-El programa no muestra nada en pantalla todavía. Y está perfecto. En esta lección el objetivo no es mostrar datos, sino entender cómo se guardan.
-
-## El valor de una variable puede cambiar
-
-La palabra **variable** justamente indica que su valor puede variar.
-
-Ejemplo:
-
-```c
-int edad = 18;
-edad = 19;
-```
-
-Al final de ese fragmento, el valor guardado en `edad` es `19`.
-
-La variable sigue siendo la misma, pero su contenido cambió.
-
-Otro ejemplo:
-
-```c
-float precio = 1500.00;
-precio = 1750.00;
-```
-
-Ahora `precio` ya no vale `1500.00`, sino `1750.00`.
-
-## No uses variables sin darles un valor confiable
-
-Una de las malas costumbres más peligrosas al empezar es declarar una variable y usarla sin haberle asignado un valor claro.
-
-Por ejemplo:
-
-```c
-int edad;
-```
-
-Esa variable existe, sí. Pero si todavía no le diste un valor con una asignación, no deberías asumir que contiene un dato útil para tu programa.
-
-Por eso, cuando sea posible, conviene inicializar:
-
-```c
-int edad = 0;
-float precio = 0.0;
-char inicial = ' ';
-```
-
-No siempre el valor inicial será cero o un espacio, pero la idea importante es esta: **el programa debe saber con qué valor empieza a trabajar**.
-
-## Reglas para nombrar variables en C
-
-No se puede poner cualquier nombre. C tiene reglas.
-
-Un nombre de variable:
-
-- puede usar letras
-- puede usar números
-- puede usar guion bajo `_`
-- debe comenzar con una letra o con `_`
-- no puede comenzar con un número
-- no puede tener espacios
-- no puede ser una palabra reservada del lenguaje
-
-### Ejemplos válidos
-
-```c
-edad
-edadAlumno
-numero1
-_total
-precioFinal
-```
-
-### Ejemplos inválidos
-
-```c
-1edad
-mi edad
-float
-precio-final
-```
-
-¿Por qué son inválidos?
-
-- `1edad` empieza con número
-- `mi edad` tiene espacio
-- `float` es una palabra reservada del lenguaje
-- `precio-final` tiene un guion medio, y eso no forma parte del nombre
-
-## Buenas prácticas al nombrar variables
-
-Una cosa es que un nombre sea válido y otra muy distinta es que sea claro.
-
-Mirá estos ejemplos:
-
-```c
-int x;
-float a;
-char z;
-```
-
-Eso puede compilar, pero comunica muy poco.
-
-Ahora mirá esto:
-
-```c
-int cantidadAlumnos;
-float precioProducto;
-char inicialNombre;
-```
-
-Mucho mejor.
-
-Un buen nombre ayuda a entender el programa sin tener que adivinar.
-
-### Recomendaciones
-
-- usá nombres que describan el dato
-- evitá nombres demasiado cortos si no aportan claridad
-- mantené una forma de nombrar consistente
-
-## ¿Qué es una constante?
-
-Una **constante** es un dato cuyo valor no debe cambiar durante la ejecución del programa.
-
-Es decir:
-
-- una variable puede cambiar
-- una constante debe permanecer igual
-
-Esto sirve cuando hay valores fijos que tienen un significado importante en el programa.
-
-Por ejemplo:
-
-- la cantidad de días de la semana
-- la cantidad de meses del año
-- el valor aproximado de PI
-
-## Declarar constantes con `const`
-
-En C, una constante se puede declarar usando la palabra clave `const`.
-
-Ejemplo:
-
-```c
-const int diasSemana = 7;
-const int mesesAnio = 12;
-const float PI = 3.14159;
-```
-
-En estos casos, esos valores se definen para no ser modificados después.
-
-## Diferencia entre variable y constante
-
-Mirá este ejemplo:
-
-```c
-int edad = 18;
-const int diasSemana = 7;
-```
-
-- `edad` puede cambiar
-- `diasSemana` no debería cambiar
-
-Si más adelante en el código escribís:
-
-```c
-diasSemana = 8;
-```
-
-eso está mal, porque contradice la idea de haber declarado ese dato como constante.
-
-La enseñanza importante acá no es memorizar un error del compilador, sino entender el concepto: **si un valor no debe cambiar, declararlo como constante hace el programa más claro y más seguro**.
-
-## ¿Cuándo conviene usar una constante?
-
-Conviene usar una constante cuando un valor:
-
-- representa una regla fija
-- tiene el mismo significado durante todo el programa
-- no debería modificarse accidentalmente
-
-Ejemplo:
-
-```c
-const int cantidadRuedasBicicleta = 2;
-const int horasDia = 24;
-```
-
-Si esos valores son parte de la lógica del programa, declararlos como constantes comunica mejor la intención.
-
-## Ejemplo comparando variables y constantes
-
-```c
-int edad = 18;
-const int mesesAnio = 12;
-```
-
-En ese código:
-
-- `edad` representa un dato que podría cambiar
-- `mesesAnio` representa un dato fijo
-
-Esa diferencia conceptual es más importante que la sintaxis.
-
-## Errores comunes al empezar
-
-### 1. Confundir el nombre con el valor
-
-```c
-int edad = 18;
-```
-
-- `edad` es el nombre
-- `18` es el valor
-
-No son lo mismo.
-
-### 2. Creer que declarar es lo mismo que inicializar
-
-No.
-
-```c
-int edad;
-```
-
-Eso solo declara.
-
-```c
-int edad = 18;
-```
-
-Eso declara e inicializa.
-
-### 3. Usar nombres poco claros
-
-```c
-int a;
-int dato;
-```
-
-Eso dice muy poco.
-
-Es mejor:
-
-```c
-int cantidadEstudiantes;
-```
-
-### 4. Usar una variable sin haber decidido con qué valor empieza
-
-Cuando recién empezás, conviene que cada variable importante tenga un valor inicial claro.
-
-### 5. Declarar como variable algo que en realidad debería ser constante
-
-Si un valor no va a cambiar, usar `const` hace que el código exprese mejor su intención.
+`%d`, `%c` y `%f` le indican a `printf` cómo mostrar un entero, un carácter y un número con decimales. Los estudiarás a fondo en la lección 6.
+
+## Errores comunes
+
+1. **Leer una variable sin inicializar.** Su valor es indeterminado. Inicializa siempre.
+2. **Confundir declarar con inicializar.** `int edad;` solo declara; `int edad = 18;` declara e inicializa.
+3. **Escribir ceros a la izquierda.** `010` es octal y vale `8`.
+4. **Guardar un literal `double` en un `float` sin sufijo.** Escribe `9.81f`.
+5. **Macros sin paréntesis.** `#define LADO 2 + 3` rompe las cuentas.
+6. **Números mágicos.** Si un valor fijo tiene significado, dale un nombre con `const` o `#define`.
 
 ## Resumen
 
-- una **variable** guarda un dato que puede cambiar
-- una **constante** guarda un dato que no debe cambiar
-- en C, toda variable necesita un **tipo** y un **nombre**
-- **declarar** es crear la variable
-- **inicializar** es darle un valor al declararla
-- **asignar** es darle un valor después de haberla declarado
-- `int`, `float` y `char` son tipos básicos muy usados al comenzar
-- un buen nombre hace el código mucho más entendible
-- `const` se usa para representar valores fijos
+- una **variable** tiene tipo, nombre y un valor que puede cambiar
+- **declarar** crea la variable; **inicializar** le da valor al crearla; **asignar** le da valor después
+- una variable local sin inicializar tiene un valor **indeterminado**: leerlo es un error
+- los identificadores siguen reglas fijas y distinguen mayúsculas de minúsculas
+- cada **literal** tiene un tipo; los sufijos `u`, `l`, `ll` y `f` lo cambian
+- `const` crea una constante con tipo; `#define` hace una sustitución de texto
+- C23 agrega separadores de dígitos, literales binarios estándar y `constexpr`
 
-## Idea final
+## Ejercicios prácticos
 
-Cuando programás, no escribís código porque sí: le estás diciendo a la computadora **qué datos existen** y **cómo debe tratarlos**.
+### Ejercicio 1: predice la salida
 
-Las variables y las constantes son la primera gran herramienta para modelar esa información.
+Sin ejecutarlo, ¿qué muestra este programa?
 
-Si esto te queda claro, el resto del camino empieza a tener sentido.
+```c
+#include <stdio.h>
+
+#define BASE 4 + 1
+
+int main(void) {
+    int resultado = BASE * 2;
+    printf("%d\n", resultado);
+    return 0;
+}
+```
+
+<details><summary>Ver solución</summary>
+
+Muestra `6`, no `10`. El preprocesador reemplaza el texto y la expresión queda `4 + 1 * 2`, donde la multiplicación se resuelve primero: `4 + 2 = 6`. Corrección: `#define BASE (4 + 1)`, y así el resultado es `10`.
+
+</details>
+
+### Ejercicio 2: encuentra el error
+
+Este programa debería sumar tres precios, pero a veces muestra un número absurdo. ¿Por qué?
+
+<!-- c-check: skip -->
+```c
+#include <stdio.h>
+
+int main(void) {
+    double total;
+    total = total + 120.5;
+    total = total + 80.0;
+    total = total + 49.5;
+    printf("Total: %f\n", total);
+    return 0;
+}
+```
+
+<details><summary>Ver solución</summary>
+
+`total` no está inicializada: su valor es indeterminado y la primera suma lo lee. Es un error aunque compile. Corrección:
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    double total = 0.0;
+    total = total + 120.5;
+    total = total + 80.0;
+    total = total + 49.5;
+    printf("Total: %f\n", total);
+    return 0;
+}
+```
+
+Ahora muestra `Total: 250.000000`.
+
+</details>
+
+### Ejercicio 3: elige literales y constantes
+
+Reescribe estas líneas para que el tipo de cada literal coincida con el de la variable y los números fijos tengan nombre:
+
+```c
+float temperatura = 36.5;
+double precioFinal = 2000.0 + 2000.0 * 0.21;
+int dias = 7 * 4;
+```
+
+<details><summary>Ver solución</summary>
+
+```c
+#include <stdio.h>
+
+#define DIAS_SEMANA 7
+
+int main(void) {
+    const double IVA = 0.21;
+    const double PRECIO_BASE = 2000.0;
+
+    float temperatura = 36.5f;
+    double precioFinal = PRECIO_BASE + PRECIO_BASE * IVA;
+    int dias = DIAS_SEMANA * 4;
+
+    printf("%f %f %d\n", temperatura, precioFinal, dias);
+    return 0;
+}
+```
+
+El sufijo `f` hace que `36.5f` sea `float`. `IVA` y `PRECIO_BASE` son valores con tipo, por eso usan `const`; `DIAS_SEMANA` podría ser cualquiera de las dos.
+
+</details>
+
+### Ejercicio 4: nombres válidos
+
+¿Cuáles de estos identificadores son válidos en C? `total2`, `2total`, `precio_final`, `precio-final`, `return`, `Return`.
+
+<details><summary>Ver solución</summary>
+
+Válidos: `total2`, `precio_final` y `Return` (C distingue mayúsculas, así que `Return` no es la palabra reservada `return`, aunque usarlo sería confuso). Inválidos: `2total` (empieza con un dígito), `precio-final` (el guion es el operador resta) y `return` (palabra reservada).
+
+</details>

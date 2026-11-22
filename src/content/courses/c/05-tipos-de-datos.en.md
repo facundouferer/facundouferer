@@ -7,420 +7,428 @@ lang: 'en'
 published: true
 ---
 
-In previous lessons you saw that a C program needs a basic structure, can store information in variables, and can display or receive data.
+In the previous lesson you stored values in variables. Now a fundamental question appears:
 
-Now a FUNDAMENTAL question appears:
+> What kind of data am I really storing, and what can happen to it?
 
-> What kind of data am I really storing?
+In C it is not enough to say "I want to store a number". You have to say **what kind of number**, because the type decides which values fit, how much memory is used and what result operations produce.
 
-The answer to that question has to do with **data types**.
+## Objectives
 
-In C, it's not enough to say "I want to store a value." You also have to say **what type of value it is**.
+By the end of this lesson you will be able to:
 
-In this lesson you'll learn:
+- tell apart signed and `unsigned` integer types
+- distinguish the minimum ranges the standard guarantees from the actual sizes on your machine
+- look up limits with `<limits.h>` (`INT_MAX`) and sizes with `sizeof`, whose result is a `size_t` printed with `%zu`
+- choose between `float` and `double` knowing they are approximate
+- use `bool` both in basic C and in C23
+- predict an **implicit conversion** and write an **explicit conversion** with a cast such as `(double)`
+- recognize overflow of signed and unsigned integers
 
-- what a data type is
-- what primitive data types are
-- what the domain of each type is
-- what operations are valid depending on the type
-- how types relate to memory
-- what compound data is
-- what data structures are
-- what the difference is between static and dynamic structures
-- how constants and variables relate to data types
-
-> Key idea: the data type defines what a variable can store, what operations make sense on that value, and how it's represented in memory.
+**Prerequisites:** lessons 1 to 4, especially *Variables and constants* (literals and their suffixes).
 
 ## What is a data type?
 
-A **data type** is a classification that tells the language:
+A **data type** tells the compiler:
 
-- what kind of value will be stored
-- what operations can be done with that value
-- how much memory space it may need
-- how that content should be interpreted
+- which values a variable can hold (its **domain** or **range**)
+- how much memory it takes
+- how its bits are interpreted
+- which operations make sense and what result they produce
 
-For example, it's not the same to store:
+C's basic types are the **integer** types (`char`, `short`, `int`, `long`, `long long`), the **floating** types (`float`, `double`, `long double`) and the **boolean** type (`bool`).
 
-- an integer
-- a decimal number
-- a character
+## Integer types
 
-Even though they're all "data," they're not represented or handled the same way.
-
-## Why does C need data types?
-
-Because C is a language where data handling must be explicit.
-
-If you want to store an age, you'll normally use an integer.
-If you want to store a height, you'll probably use a decimal.
-If you want to store an initial, you'll use a character.
-
-That means the program needs to know in advance how to treat each value.
-
-## Primitive data types
-
-**Primitive types** are the basic types that the language offers to represent simple data.
-
-In a first stage, the most important ones are these:
-
-- `int`
-- `float`
-- `double`
-- `char`
-
-### `int`
-
-Used to represent integers, that is, numbers without a decimal part.
+Integers hold numbers without a fractional part. C offers several sizes:
 
 ```c
-int edad = 18;
-int cantidadAlumnos = 32;
-int anio = 2026;
+short       steps = 1200;
+int         age = 18;
+long        population = 46000000L;
+long long   diskBytes = 512000000000LL;
 ```
 
-### `float`
+### Signed and unsigned
 
-Used to represent numbers with decimals.
+Every integer type comes in two versions:
+
+- **signed** (the default): holds negatives, zero and positives
+- **`unsigned`**: holds only zero and positives, but reaches twice as high
 
 ```c
-float altura = 1.75;
-float precio = 1499.50;
-float promedio = 8.4;
+int temperature = -5;         // can be negative
+unsigned int visits = 3000u;  // never negative
 ```
 
-### `double`
+`unsigned` is meant for quantities that are never negative and for working with bits. For ordinary arithmetic, `int` is the natural choice: mixing signed and unsigned brings surprises, as you will see below.
 
-Also represents numbers with decimals, but with greater precision than `float`.
+### Guaranteed ranges and actual sizes
+
+The C standard **does not fix** the exact size of each type: it fixes a **guaranteed minimum** and an order (`short` ≤ `int` ≤ `long` ≤ `long long`). Each compiler and platform picks the actual size.
+
+| Type | Guaranteed minimum | Typical size on 64-bit Linux/macOS |
+| --- | --- | --- |
+| `char` | 8 bits | 8 bits |
+| `short` | 16 bits | 16 bits |
+| `int` | 16 bits | 32 bits |
+| `long` | 32 bits | 64 bits (32 bits on Windows) |
+| `long long` | 64 bits | 64 bits |
+
+Practical consequence: a program that needs to store 3,000,000,000 should not rely on `int` or `long`, because on some platforms they are too small. `long long` is guaranteed to fit it.
+
+> **Modern C (C23):** C23 requires signed integers to use **two's complement**, which every current machine already did. So a 32-bit `int` goes from −2,147,483,648 to 2,147,483,647 on every C23 compiler.
+
+### `<limits.h>`: your machine's limits
+
+Instead of memorizing numbers, look them up. The `<limits.h>` header defines constants with the actual limits:
 
 ```c
-double distancia = 12345.6789;
-double temperatura = 21.4567;
+#include <stdio.h>
+#include <limits.h>
+
+int main(void) {
+    printf("int:          from %d to %d\n", INT_MIN, INT_MAX);
+    printf("unsigned int: from 0 to %u\n", UINT_MAX);
+    printf("long long:    up to %lld\n", LLONG_MAX);
+    printf("bits per char: %d\n", CHAR_BIT);
+    return 0;
+}
 ```
 
-### `char`
+On a typical 64-bit machine it prints:
 
-Used to represent a single character.
+```text
+int:          from -2147483648 to 2147483647
+unsigned int: from 0 to 4294967295
+long long:    up to 9223372036854775807
+bits per char: 8
+```
+
+Notice the specifiers: `%d` for `int`, `%u` for `unsigned int`, `%lld` for `long long`. Each type has its own; lesson 6 gathers them in a table.
+
+## `sizeof` and `size_t`
+
+The **`sizeof`** operator returns how many bytes a type or a variable takes. It is computed at compile time, not at run time.
 
 ```c
-char inicial = 'F';
-char letra = 'A';
-char simbolo = '#';
+#include <stdio.h>
+
+int main(void) {
+    double height = 1.75;
+
+    printf("char:      %zu byte\n", sizeof(char));
+    printf("int:       %zu bytes\n", sizeof(int));
+    printf("long long: %zu bytes\n", sizeof(long long));
+    printf("height:    %zu bytes\n", sizeof height);
+    return 0;
+}
 ```
 
-Notice something important: a `char` represents **a single character**, not a full word.
+Important details:
 
-## Domain of each type
-
-The **domain** of a data type is the set of values that type can represent.
-
-Put more simply: each type has a range or universe of possible values.
-
-### Domain of `int`
-
-`int` represents integers.
-
-For example:
-
-- positive values
-- negative values
-- zero
+- `sizeof(char)` is **always 1**, by definition. Every other size is measured in "number of `char`s".
+- With a type you need parentheses: `sizeof(int)`. With a variable they are optional: `sizeof height`.
+- The result has type **`size_t`**: an unsigned integer meant for sizes and counts. It is printed with **`%zu`**. Using `%d` is a format error, and `-Wall` warns you.
 
 ```c
-int temperatura = -3;
-int cantidad = 0;
-int edad = 20;
+size_t bytes = sizeof(int);
 ```
 
-### Domain of `float` and `double`
+You will see `size_t` everywhere: in array sizes, string lengths and dynamic memory.
 
-`float` and `double` represent approximate real numbers, that is, values with a decimal part.
+## Floating types
+
+`float`, `double` and `long double` hold numbers with a fractional part, **approximately**.
+
+| Type | Typical precision | Literal |
+| --- | --- | --- |
+| `float` | about 6-7 decimal digits | `1.5f` |
+| `double` | about 15-16 decimal digits | `1.5` |
+| `long double` | same as or more than `double` | `1.5L` |
+
+Use `double` unless you have a reason to save memory: it is the type of decimal literals and the one math functions use.
+
+Being approximate has consequences. `0.1` has no exact binary representation:
 
 ```c
-float altura = 1.72;
-double distancia = 1500.3456;
+#include <stdio.h>
+
+int main(void) {
+    double sum = 0.1 + 0.2;
+    printf("%.17f\n", sum);
+    return 0;
+}
 ```
 
-### Domain of `char`
+It prints `0.30000000000000004`. That is why you should **not compare floating numbers with `==`**: check whether their difference is very small. And never use `float` or `double` for exact money: work in cents with integers.
 
-`char` represents a single character.
+## `char`: a small integer
+
+A `char` holds a character, but it is really a **small integer**: the character's numeric code. In ASCII, `'A'` is 65.
 
 ```c
-char letra = 'Z';
-char digito = '7';
-char simbolo = '*';
+#include <stdio.h>
+
+int main(void) {
+    char letter = 'A';
+    char next = letter + 1;
+
+    printf("%c is %d\n", letter, letter);
+    printf("The next one is %c\n", next);
+    return 0;
+}
 ```
 
-Be careful with this: `'7'` is not the same as `7`.
+It prints `A is 65` and `The next one is B`. With `%c` you see the character; with `%d`, its number.
 
-- `'7'` is a character
-- `7` is an integer
+> **Portability:** whether plain `char` is signed or not depends on the compiler. When you use it as a small number, write `signed char` or `unsigned char` explicitly.
 
-That completely changes the data type.
+## `bool`: true or false
 
-## Valid operations by type
+A boolean holds only two values: true or false. In C, `false` is `0` and `true` is `1`. Any nonzero value converted to `bool` becomes `true`.
 
-Not all types support the same operations in the same way.
-
-Here's one of the most important ideas of the lesson: **the data type determines which operations make sense**.
-
-### Valid operations with `int`
-
-With integers, it makes sense to do mathematical operations like:
-
-- adding
-- subtracting
-- multiplying
-- dividing
+> **Basic C:** C89 had no boolean type; people used `int` with 0 and 1. C99 added the `_Bool` type and the `<stdbool.h>` header, which defines the names `bool`, `true` and `false`. In C99 and C17 you must include it:
+>
+> ```c
+> #include <stdbool.h>
+>
+> bool passed = true;
+> ```
+>
+> **Modern C (C23):** `bool`, `true` and `false` are **keywords** of the language. They work without including anything, and `true` and `false` have type `bool`.
+>
+> **Portability:** if your code must also compile with `-std=c17` or earlier, include `<stdbool.h>`. In C23 including it is harmless.
 
 ```c
-int a = 10;
-int b = 5;
-int resultado = a + b;
+#include <stdio.h>
+
+int main(void) {
+    bool passed = true;
+    bool inDebt = 0;
+    bool something = 25;   // any nonzero value becomes true
+
+    printf("%d %d %d\n", passed, inDebt, something);
+    return 0;
+}
 ```
 
-### Valid operations with `float` and `double`
+It prints `1 0 1`.
 
-They also support mathematical operations.
+## Conversions between types
+
+When an expression mixes different types, C converts the values to a common type. There are two kinds of conversion.
+
+### Implicit conversion
+
+An **implicit conversion** is done by the compiler without you writing it. It happens in three main situations.
+
+**1. On assignment.** The value is converted to the type of the variable that receives it. From `double` to `int` the **fractional part is discarded** (truncated toward zero, not rounded):
 
 ```c
-float precio1 = 10.5;
-float precio2 = 2.5;
-float total = precio1 + precio2;
+double price = 9.99;
+int whole = price;    // whole is 9
+double real = 7;      // real is 7.0
 ```
 
-### Operations with `char`
+If you write the literal directly (`int whole = 9.99;`), Clang warns that the value changes: a hint that you probably did not want to lose the decimals.
 
-With `char`, the basic initial use isn't "doing math," but representing characters.
+**2. Integer promotions.** Before operating, types smaller than `int` (`char`, `short`, `bool`) are converted to `int`. That is why `'A' + 1` gives an `int` (66).
+
+**3. Usual arithmetic conversions.** If the two operands have different types, the one with the lower rank is converted to the higher one:
+
+- `int` with `double` → computed in `double`: `5 + 2.5` is `7.5`
+- `int` with `long` → computed in `long`
+- `int` with `unsigned int` → **computed in `unsigned int`**
+
+That last rule is the classic trap.
+
+### The trap of mixing signed and unsigned
+
+<!-- c-check: skip -->
+```c
+#include <stdio.h>
+
+int main(void) {
+    int minusOne = -1;
+    unsigned int one = 1u;
+
+    printf("%d\n", minusOne < one);   // prints 0: "false"
+    return 0;
+}
+```
+
+Mathematically −1 is less than 1, but the program says it is not. To compare, `minusOne` is converted to `unsigned int`, and −1 becomes the largest unsigned value (`UINT_MAX`, 4,294,967,295). With `-Wextra` the compiler warns: `comparison of integers of different signs`. Take it seriously: **do not mix signed and unsigned integers in a comparison**.
+
+### Explicit conversion (cast)
+
+An **explicit conversion** is one you request by writing the type in parentheses before the value. It is called a **cast**:
 
 ```c
-char inicial = 'F';
+(double)sum
+(int)3.75     // is 3
 ```
 
-Although internally a character has a numeric representation, when starting it's best to think of `char` as a type for storing **an individual symbol**.
-
-## When an operation doesn't make pedagogical sense
-
-Here's something important: not everything the language allows is suitable to teach from the start.
-
-For example, at more advanced levels you'll discover that certain types can participate in automatic conversions or more complex behaviors.
-
-But when starting, the correct thing is to understand this:
-
-- `int`, `float`, and `double` are used to work with numeric values
-- `char` is used to represent a character
-
-First we build the correct idea. Later there will be time to refine it.
-
-## Memory usage
-
-Each data type occupies space in memory.
-
-That means not all types store information the same way or with the same size.
-
-### Important idea about size
-
-The exact size of a type can depend on the implementation, the compiler, and the architecture where the program runs.
-
-In other words: it's NOT serious to teach that all sizes are absolutely fixed on any machine.
-
-However, to start, you can keep this idea:
-
-- `char` usually occupies less memory than `int`
-- `int` usually occupies less memory than `double`
-- the more complex or precise the data, the more memory it may require
-
-### Relationship between type and memory
-
-Choosing a type isn't just choosing a "technical name." It's also deciding:
-
-- what kind of value you want to represent
-- how much precision you need
-- how that value will be stored
-
-Later that will matter a lot when you work with larger structures and collections of data.
-
-## Conceptual memory example
-
-Think about these declarations:
+Its most frequent use is avoiding **integer division**. When both operands are integers, `/` discards the decimals:
 
 ```c
-char inicial = 'F';
-int edad = 18;
-double distancia = 1234.5678;
+#include <stdio.h>
+
+int main(void) {
+    int sum = 17;
+    int count = 4;
+
+    double wrong = sum / count;             // 17 / 4 is 4 (integer), then 4.0
+    double right = (double)sum / count;     // 17.0 / 4 is 4.25
+    double late = (double)(sum / count);    // the cast comes too late: 4.0
+
+    printf("%f %f %f\n", wrong, right, late);
+    return 0;
+}
 ```
 
-Although all three variables store data, they don't do it the same way.
+It prints `4.000000 4.250000 4.000000`. The cast must act **before** dividing: `(double)sum / count` converts `sum`, and then the usual arithmetic conversion converts `count` too.
 
-- `inicial` stores a single character
-- `edad` stores an integer
-- `distancia` stores a decimal number with greater precision
+## Overflow: when the value does not fit
 
-That's why it wouldn't make sense to assume all three occupy the same memory.
+Every integer type has a range. What happens if a computation goes outside it?
 
-## Data types: constants and variables
-
-Data types relate to both **variables** and **constants**.
-
-### Typed variable
+- **Unsigned integers:** the result **wraps around** (arithmetic modulo 2ⁿ). This is defined by the standard: `UINT_MAX + 1u` is `0`.
+- **Signed integers:** overflow is **undefined behavior**. The standard does not say what happens: the program may print a negative number, carry on with an absurd value, or behave differently when optimized. It is a bug.
 
 ```c
-int edad = 18;
+#include <stdio.h>
+#include <limits.h>
+
+int main(void) {
+    unsigned int counter = UINT_MAX;
+    counter = counter + 1u;
+    printf("%u\n", counter);   // 0: unsigned values wrap around
+    return 0;
+}
 ```
 
-Here:
+For an `int`, the fix is choosing a type with enough range (`long long`) or checking before operating. In lesson 7 you will see exactly what "undefined behavior" means.
 
-- `int` is the type
-- `edad` is the variable
-- `18` is the value
+## Beyond the basic types
 
-### Typed constant
+These types are used to build **derived types**: arrays (lesson 19), strings (lesson 21) and structures (lesson 22), which group several values. All of them rely on what you saw here: each element has a type, a size and a range.
 
-```c
-const int diasSemana = 7;
-```
+## Common mistakes
 
-Here:
-
-- `int` is still the data type
-- `diasSemana` is a constant
-- `7` is the fixed value
-
-The difference between variable and constant does NOT change the concept of type. What changes is whether that value can be modified or not.
-
-## What are compound data?
-
-So far we've talked about simple or basic data.
-
-But many times a single piece of data isn't enough.
-
-For example, a person might need:
-
-- name
-- age
-- height
-- initial
-
-That's no longer an isolated simple datum, but a set of related data.
-
-We can connect that general idea with **compound data**.
-
-A **compound datum** is data made up of several elements or a more complex organization than an individual primitive value.
-
-## Conceptual examples of compound data
-
-Without going into technical detail yet, some examples of compound data or structures that group data are:
-
-- arrays
-- character strings
-- records or structs
-- lists
-- stacks
-- queues
-- trees
-
-No need to master them now. The important thing is to understand that there are levels of organization more complex than a single `int` or a single `char`.
-
-## What is a data structure?
-
-A **data structure** is a way of organizing data to store, access, and work with it in an orderly fashion.
-
-In other words: it's not just about "having data," but about **how we organize it**.
-
-For example:
-
-- sometimes you want to store several values of the same type
-- other times you want to group different data that belongs to the same entity
-- other times you need an organization that facilitates certain operations
-
-That's precisely the territory of data structures.
-
-## Static and dynamic structures
-
-Data structures can be classified, in a general way, into **static** and **dynamic**.
-
-### Static structures
-
-Those whose size or capacity is fixed.
-
-The main idea is that their size is planned in advance.
-
-Later you'll see clear examples of this.
-
-### Dynamic structures
-
-Those whose organization can grow or change during program execution.
-
-This allows more flexibility, but also requires more careful handling.
-
-For now, no need to go deep. These two ideas are enough:
-
-- static: more fixed or predefined size
-- dynamic: more flexible size or organization during execution
-
-## Why does this distinction matter?
-
-Because it's not the same to store:
-
-- a single number
-- several numbers
-- a collection of elements whose size you already know
-- a collection whose size can change
-
-Each need calls for a different organization.
-
-And all of that starts, precisely, by first understanding what a simple data type is.
-
-## Common mistakes when starting
-
-### 1. Believing all data is the same
-
-No.
-
-It's not the same to store an integer, a decimal, or a character.
-
-### 2. Choosing a type without thinking about what it represents
-
-The type should be chosen based on the actual data you want to model.
-
-### 3. Confusing a character with a number
-
-```c
-char digito = '7';
-int numero = 7;
-```
-
-They don't represent the same thing.
-
-### 4. Thinking each type's size is universal and fixed
-
-In real programming, the exact size can depend on the environment.
-
-### 5. Mixing up the concept of type with that of variable
-
-The type describes the nature of the data.
-The variable is the name of the space where you store it.
+1. **Assuming `int` is 32 bits everywhere.** The standard guarantees 16. Check `<limits.h>`.
+2. **Printing `sizeof` with `%d`.** The result is a `size_t`: use `%zu`.
+3. **Dividing integers and expecting decimals.** `7 / 2` is `3`. Use `(double)7 / 2`.
+4. **Comparing signed and unsigned.** `-1 < 1u` is false.
+5. **Comparing `double` values with `==`.** `0.1 + 0.2 == 0.3` is false.
+6. **Overflowing an `int`.** It is undefined behavior, it does not "wrap around".
 
 ## Summary
 
-- a **data type** defines what kind of value can be stored
-- the most important primitive types when starting are `int`, `float`, `double`, and `char`
-- each type has a **domain** of possible values
-- not all types support the same operations with the same meaning
-- types are also related to **memory usage**
-- variables and constants always have a data type
-- in addition to primitive data, there are **compound data** and **data structures**
-- structures can be **static** or **dynamic**
+- integers can be signed or `unsigned`; the standard guarantees minimum ranges, not exact sizes
+- `<limits.h>` reports the actual limits (`INT_MAX`, `UINT_MAX`)
+- `sizeof` gives the size in bytes as a `size_t`, printed with `%zu`
+- `float` and `double` are approximate; prefer `double`
+- `char` is a small integer
+- `bool` comes from `<stdbool.h>` in C99/C17 and is a keyword in C23
+- an **implicit conversion** happens on assignment, in integer promotions and in the usual arithmetic conversions
+- an **explicit conversion** is written with a cast, such as `(double)`
+- unsigned overflow wraps around; signed overflow is undefined behavior
 
-## Final thought
+## Practice exercises
 
-When you choose a data type, you're not writing a technical word for no reason.
+### Exercise 1: predict the output
 
-You're making a design decision about:
+```c
+#include <stdio.h>
 
-- what the data represents
-- how it's stored
-- what can be done with it
-- how the program should interpret it
+int main(void) {
+    int a = 7;
+    int b = 2;
 
-And that, friend, is one of the most important foundations of all programming.
+    double x = a / b;
+    double y = (double)a / b;
+    double grade = 9.9;
+    int z = grade;
+
+    printf("%f %f %d\n", x, y, z);
+    return 0;
+}
+```
+
+<details><summary>Show solution</summary>
+
+It prints `3.000000 3.500000 9`.
+
+- `a / b` is an integer division: `3`, which is then converted to `3.0`.
+- `(double)a / b` converts `a` before dividing: `3.5`.
+- Assigning `grade` (9.9) to an `int` discards the fractional part: `9`.
+
+</details>
+
+### Exercise 2: find the bug
+
+This program computes the average of three grades, but with 7, 8 and 8 it prints `7.000000` instead of `7.666667`. The compiler also gives a warning. Fix both problems.
+
+<!-- c-check: skip -->
+```c
+#include <stdio.h>
+
+int main(void) {
+    int g1 = 7, g2 = 8, g3 = 8;
+    double average = (g1 + g2 + g3) / 3;
+    printf("Average: %f\n", average);
+    printf("Size of int: %d bytes\n", sizeof(int));
+    return 0;
+}
+```
+
+<details><summary>Show solution</summary>
+
+1. `(g1 + g2 + g3) / 3` is an integer division (`23 / 3` is `7`). You must convert before dividing.
+2. `sizeof` returns a `size_t`, printed with `%zu`, not `%d`.
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    int g1 = 7, g2 = 8, g3 = 8;
+    double average = (double)(g1 + g2 + g3) / 3;
+    printf("Average: %f\n", average);
+    printf("Size of int: %zu bytes\n", sizeof(int));
+    return 0;
+}
+```
+
+</details>
+
+### Exercise 3: predict the comparison
+
+What does each line print? Explain why.
+
+```c
+printf("%d\n", -1 < 1);
+printf("%d\n", -1 < 1u);
+printf("%d\n", (bool)-3);
+```
+
+<details><summary>Show solution</summary>
+
+- `-1 < 1` prints `1`: both are `int`, the comparison is the expected one.
+- `-1 < 1u` prints `0`: through the usual arithmetic conversion, `-1` is converted to `unsigned int` and becomes `UINT_MAX`, which is not less than 1.
+- `(bool)-3` prints `1`: any nonzero value converts to `true`.
+
+</details>
+
+### Exercise 4: the right type
+
+Choose the most suitable type for each piece of data and justify it: (a) the number of people on the planet (more than 8 billion); (b) whether a user is online; (c) the price of a product with cents, to display it; (d) the number of bytes a variable takes.
+
+<details><summary>Show solution</summary>
+
+- (a) `long long`: 8 billion does not fit in a 32-bit `int`, and `long` can be 32 bits on Windows.
+- (b) `bool`.
+- (c) `double` to display it; for exact money arithmetic, store the cents in an integer (`long long`).
+- (d) `size_t`, the type `sizeof` returns.
+
+</details>

@@ -7,495 +7,393 @@ lang: 'es'
 published: true
 ---
 
-Una vez que entendés qué tipos de datos existen, el siguiente paso natural es aprender **qué podés hacer con esos datos**.
+Ya sabes guardar datos, conocer su tipo y mostrarlos. El siguiente paso es **operar** con ellos: calcular, comparar y combinar condiciones. Para eso están los **operadores**.
 
-Ahí entran en juego los **operadores**.
+## Objetivos
 
-Un operador es un símbolo que le indica al programa qué acción debe realizar con uno o más valores.
+Al terminar esta lección podrás:
 
-En esta lección vas a aprender:
+- usar los operadores aritméticos, incluido `%`, y predecir el signo de su resultado
+- comparar valores con los operadores relacionales
+- combinar condiciones con `&&`, `||` y `!`, y aprovechar la evaluación en **cortocircuito**
+- usar la asignación compuesta y los operadores de incremento y decremento, prefijos y posfijos
+- leer expresiones aplicando precedencia y asociatividad
+- distinguir comportamiento definido, no especificado y **comportamiento indefinido**
+- reconocer los operadores a nivel de bits
 
-- qué es un operador
-- operadores matemáticos
-- operadores relacionales
-- operadores lógicos
-- operadores de asignación
-- precedencia entre operadores
+**Requisitos previos:** lecciones 1 a 6, en especial *Tipos de datos* (división entera, conversiones, desbordamiento) y *Entrada y salida* (`printf`).
 
-> Idea clave: los operadores son parte del lenguaje con el que construís expresiones. Si no entendés qué hace cada uno y en qué orden actúan, el código se vuelve confuso muy rápido.
+## Expresiones
 
-## ¿Qué es un operador?
+Una **expresión** es una combinación de valores, variables y operadores que produce un resultado: `5 + 3`, `edad + 1`, `nota >= 6`. Un **operador** es el símbolo que indica la operación; los valores sobre los que actúa se llaman **operandos**.
 
-Un **operador** es un símbolo que representa una operación.
+## Operadores aritméticos
 
-Por ejemplo, en matemáticas ya conocés símbolos como:
+| Operador | Operación | Ejemplo | Resultado |
+| --- | --- | --- | --- |
+| `+` | suma | `10 + 5` | `15` |
+| `-` | resta | `10 - 5` | `5` |
+| `*` | multiplicación | `4 * 3` | `12` |
+| `/` | división | `10 / 4` | `2` |
+| `%` | resto de la división entera | `10 % 4` | `2` |
 
-- `+`
-- `-`
-- `*`
-- `/`
+### División entera
 
-En programación pasa algo parecido, pero además existen operadores para:
+Si los dos operandos son enteros, `/` hace una **división entera**: descarta la parte decimal, truncando hacia cero. `7 / 2` es `3` y `-7 / 2` es `-3`. Si al menos uno es de punto flotante, la división conserva los decimales: `7 / 2.0` es `3.5`. Ya lo viste en la lección 5 con `(double)suma / cantidad`.
 
-- comparar valores
-- combinar condiciones lógicas
-- asignar valores a variables
+### El resto `%` y su signo
 
-## ¿Qué es una expresión?
+`%` solo funciona con enteros y devuelve lo que sobra de la división entera. C garantiza que siempre se cumple:
 
-Antes de seguir, necesitás esta idea.
-
-Una **expresión** es una combinación de valores, variables y operadores que produce un resultado.
-
-Por ejemplo:
-
-```c
-5 + 3
+```text
+(a / b) * b + a % b == a
 ```
 
-Eso es una expresión.
+Como la división trunca hacia cero, **el resto tiene el signo del dividendo** (el operando de la izquierda):
 
-También:
+| Expresión | Resultado |
+| --- | --- |
+| `7 % 3` | `1` |
+| `-7 % 3` | `-1` |
+| `7 % -3` | `1` |
+| `-7 % -3` | `-1` |
 
-```c
-edad + 1
-```
+Uso típico: `numero % 2` vale `0` si el número es par. Pero cuidado: para un impar negativo vale `-1`, no `1`. Para saber si un número es impar, compara `numero % 2 != 0`.
 
-Y también:
+> **Portabilidad:** antes de C99 el redondeo de `/` con negativos dependía del compilador. Desde C99, y por supuesto en C23, la división entera siempre trunca hacia cero.
 
-```c
-nota >= 6
-```
+Dividir un entero por cero (`x / 0` o `x % 0`) es comportamiento indefinido; más abajo verás qué significa eso.
 
-Los operadores forman parte de esas expresiones.
+## Operadores relacionales
 
-## Operadores matemáticos
+Comparan dos valores y dan `1` si la comparación es verdadera o `0` si es falsa. El resultado es un `int`.
 
-Los operadores matemáticos permiten realizar cálculos numéricos.
-
-Los más importantes al comenzar son estos:
-
-- `+` suma
-- `-` resta
-- `*` multiplicación
-- `/` división
-- `%` resto de una división entera
-
-## Suma `+`
+| Operador | Significado |
+| --- | --- |
+| `==` | igual a |
+| `!=` | distinto de |
+| `<` | menor que |
+| `>` | mayor que |
+| `<=` | menor o igual que |
+| `>=` | mayor o igual que |
 
 ```c
-int a = 10;
-int b = 5;
-int resultado = a + b;
+#include <stdio.h>
+
+int main(void) {
+    int nota = 7;
+
+    printf("%d\n", nota >= 6);   // 1
+    printf("%d\n", nota == 10);  // 0
+    return 0;
+}
 ```
 
-Acá, `resultado` vale `15`.
+No confundas `=` (asigna) con `==` (compara). `nota = 10` guarda 10 en `nota`; `nota == 10` pregunta si vale 10.
 
-## Resta `-`
+## Operadores lógicos
+
+Combinan condiciones. Tratan cualquier valor distinto de cero como verdadero y el cero como falso; su resultado es `1` o `0`.
+
+| Operador | Significado | Es verdadero cuando |
+| --- | --- | --- |
+| `&&` | "y" | los dos operandos son verdaderos |
+| `\|\|` | "o" | al menos uno es verdadero |
+| `!` | "no" | el operando es falso |
 
 ```c
-int a = 10;
-int b = 5;
-int resultado = a - b;
+edad >= 18 && edad <= 65     // entre 18 y 65 inclusive
+letra == 'a' || letra == 'A' // es la letra a, mayúscula o minúscula
+!(edad >= 18)                // no es mayor de edad
 ```
 
-Acá, `resultado` vale `5`.
+### Evaluación en cortocircuito
 
-## Multiplicación `*`
+`&&` y `||` evalúan **primero el operando izquierdo** y solo evalúan el derecho si hace falta:
+
+- en `a && b`, si `a` es falso, el resultado ya es falso: **`b` no se evalúa**
+- en `a || b`, si `a` es verdadero, el resultado ya es verdadero: **`b` no se evalúa**
+
+A esto se le llama evaluación en **cortocircuito**, y es una garantía del lenguaje, no una optimización opcional. Su uso práctico más importante es **proteger una operación peligrosa** con una condición previa:
 
 ```c
-int a = 4;
-int b = 3;
-int resultado = a * b;
+#include <stdio.h>
+
+int main(void) {
+    int total = 50;
+    int personas = 0;
+
+    // Si personas es 0, la división nunca se ejecuta.
+    int esCaro = personas != 0 && total / personas > 20;
+
+    printf("¿Más de 20 por persona? %d\n", esCaro);
+    return 0;
+}
 ```
 
-Acá, `resultado` vale `12`.
+Como `personas != 0` es falso, `&&` se detiene y `total / personas` no se calcula: no hay división por cero. **El orden importa**: `total / personas > 20 && personas != 0` dividiría primero.
 
-## División `/`
+## Asignación
 
-```c
-int a = 10;
-int b = 2;
-int resultado = a / b;
-```
-
-Acá, `resultado` vale `5`.
-
-### Atención con la división entre enteros
-
-Mirá este ejemplo:
-
-```c
-int resultado = 5 / 2;
-```
-
-Si trabajás con enteros, el resultado no conserva la parte decimal.
-
-O sea, en este contexto el resultado será `2`.
-
-Esto al principio sorprende muchísimo, pero hay que entenderlo bien: **el tipo de dato influye en el resultado de la operación**.
-
-## Resto `%`
-
-El operador `%` devuelve el resto de una división entera.
-
-```c
-int resto = 10 % 3;
-```
-
-Acá, `resto` vale `1`, porque:
-
-- `10 / 3` da `3`
-- sobra `1`
-
-Este operador solo tiene sentido con valores enteros en el nivel en que estamos trabajando.
-
-## Operadores de asignación
-
-Los operadores de asignación sirven para guardar un valor en una variable.
-
-El más importante y fundamental es:
-
-- `=` asignación simple
-
-## Asignación simple `=`
-
-```c
-int edad;
-edad = 18;
-```
-
-Acá, el operador `=` toma el valor `18` y lo guarda en la variable `edad`.
-
-Esto es IMPORTANTÍSIMO: en programación, `=` no significa lo mismo que en matemática escolar.
-
-En C:
-
-```c
-edad = 18;
-```
-
-no significa “edad es igual a 18” como una afirmación abstracta, sino:
-
-> guardá 18 dentro de la variable `edad`
-
-## Asignación usando el valor previo de la variable
+`=` guarda el valor de la derecha en la variable de la izquierda. Se lee "guarda en", no "es igual a":
 
 ```c
 int edad = 18;
-edad = edad + 1;
+edad = edad + 1;   // toma el valor actual, suma 1 y lo guarda: 19
 ```
 
-Esto puede leerse así:
+En C la asignación también es una expresión: su valor es el valor asignado. Por eso `a = b = 0;` funciona (guarda 0 en `b` y luego en `a`).
 
-1. tomá el valor actual de `edad`
-2. sumale `1`
-3. guardá el resultado nuevamente en `edad`
+### Asignación compuesta
 
-Al final, `edad` vale `19`.
+| Forma corta | Equivale a |
+| --- | --- |
+| `x += 5` | `x = x + 5` |
+| `x -= 3` | `x = x - 3` |
+| `x *= 2` | `x = x * 2` |
+| `x /= 4` | `x = x / 4` |
+| `x %= 3` | `x = x % 3` |
 
-## Operadores de asignación combinados
+## Incremento y decremento
 
-Además de `=`, existen formas abreviadas muy usadas:
+`++` suma 1 a una variable y `--` le resta 1. Cada uno tiene dos formas:
 
-- `+=`
-- `-=`
-- `*=`
-- `/=`
-- `%=`
-
-### `+=`
+- **prefija** (`++x`): primero incrementa, y la expresión vale el valor **nuevo**
+- **posfija** (`x++`): la expresión vale el valor **anterior**, y la variable se incrementa igual
 
 ```c
-int puntos = 10;
-puntos += 5;
+#include <stdio.h>
+
+int main(void) {
+    int a = 5;
+    int b = 5;
+
+    int x = ++a;   // a pasa a 6, x recibe 6
+    int y = b++;   // y recibe 5, b pasa a 6
+
+    printf("a=%d x=%d\n", a, x);
+    printf("b=%d y=%d\n", b, y);
+    return 0;
+}
 ```
 
-Equivale a:
+Salida:
 
+```text
+a=6 x=6
+b=6 y=5
+```
+
+Si solo quieres incrementar (`contador++;` en una línea sola), las dos formas dan lo mismo. La diferencia aparece cuando usas el valor de la expresión.
+
+## Precedencia y asociatividad
+
+Cuando una expresión tiene varios operadores, la **precedencia** decide cuál se agrupa primero, como en matemática: `2 + 3 * 4` es `2 + (3 * 4)`, que vale `14`.
+
+Si dos operadores tienen la misma precedencia, decide la **asociatividad**: la mayoría se agrupa de izquierda a derecha (`10 - 4 - 3` es `(10 - 4) - 3`, que vale `3`), pero los unarios y la asignación se agrupan de derecha a izquierda (`a = b = 0` es `a = (b = 0)`).
+
+De mayor a menor precedencia, los que usarás:
+
+| Nivel | Operadores | Asociatividad |
+| --- | --- | --- |
+| 1 | `x++` `x--` (posfijos) | izquierda a derecha |
+| 2 | `++x` `--x` `!` `~` `-` unario, cast `(tipo)`, `sizeof` | derecha a izquierda |
+| 3 | `*` `/` `%` | izquierda a derecha |
+| 4 | `+` `-` | izquierda a derecha |
+| 5 | `<<` `>>` | izquierda a derecha |
+| 6 | `<` `<=` `>` `>=` | izquierda a derecha |
+| 7 | `==` `!=` | izquierda a derecha |
+| 8 | `&` (bits) | izquierda a derecha |
+| 9 | `^` | izquierda a derecha |
+| 10 | `\|` (bits) | izquierda a derecha |
+| 11 | `&&` | izquierda a derecha |
+| 12 | `\|\|` | izquierda a derecha |
+| 13 | `?:` (lección 9) | derecha a izquierda |
+| 14 | `=` `+=` `-=` y demás asignaciones | derecha a izquierda |
+
+No hace falta memorizarla entera. Recuerda tres cosas: la aritmética va antes que las comparaciones, las comparaciones antes que `&&` y `||`, y la asignación va casi al final. **Ante la duda, usa paréntesis**: `(2 + 3) * 4` vale `20` y además se lee mejor.
+
+## Orden de evaluación: lo que la precedencia no dice
+
+La precedencia dice **cómo se agrupan** los operandos, no **en qué orden se calculan**. En `a * b + c * d`, la precedencia asegura que se suman los dos productos, pero el estándar no dice cuál de los dos productos se calcula primero. En la mayoría de los operadores, el orden de evaluación de los operandos **no está especificado**: cada compilador puede elegir.
+
+Las excepciones garantizan izquierda a derecha: `&&`, `||` (por eso existe el cortocircuito), `?:` y la coma.
+
+Mientras los operandos no tengan efectos secundarios, el orden no cambia el resultado. El problema aparece cuando una misma expresión **modifica** una variable y además la usa.
+
+## Definido, no especificado e indefinido
+
+El estándar de C clasifica lo que hace un programa en cuatro categorías:
+
+- **Definido:** el estándar dice exactamente qué pasa. `7 / 2` vale `3` en todos lados.
+- **Definido por la implementación:** cada compilador elige, pero debe documentarlo. El tamaño de `int` o si `char` tiene signo.
+- **No especificado:** hay varias opciones válidas y el compilador no tiene que avisar cuál toma. El orden de evaluación de los operandos de `+`.
+- **Comportamiento indefinido:** el estándar **no impone ningún requisito**. El programa puede dar un resultado absurdo, funcionar hoy y fallar mañana, o comportarse distinto con otra opción de optimización. Un programa con comportamiento indefinido es un programa incorrecto, aunque parezca funcionar.
+
+Ejemplos de comportamiento indefinido que ya puedes escribir:
+
+<!-- c-check: skip -->
 ```c
-puntos = puntos + 5;
+#include <stdio.h>
+#include <limits.h>
+
+int main(void) {
+    int i = 1;
+    i = i++ + 1;          // modifica i dos veces sin un orden definido
+
+    int grande = INT_MAX;
+    grande = grande + 1;  // desbordamiento de un entero con signo
+
+    int cero = 0;
+    int r = 10 / cero;    // división entera por cero
+
+    printf("%d %d %d\n", i, grande, r);
+    return 0;
+}
 ```
 
-### `-=`
+- `i = i++ + 1;` modifica `i` dos veces (con `++` y con `=`) sin que el estándar ordene esas modificaciones. Con `-Wall`, Clang avisa: `multiple unsequenced modifications to 'i'`. La versión correcta es simplemente `i = i + 2;` o `i += 2;`.
+- `INT_MAX + 1` desborda un `int`. A diferencia de los `unsigned`, no "da la vuelta" de forma garantizada.
+- Dividir por cero puede terminar el programa con un error.
 
-```c
-int stock = 20;
-stock -= 3;
-```
+La regla práctica: **no modifiques una variable más de una vez en la misma expresión, ni la leas en la misma expresión donde la modificas** (salvo con `&&`, `||`, `?:` o la coma de por medio). En la lección *Depuración y sanitizers* verás herramientas que detectan estos errores al ejecutar.
 
-Equivale a:
+## Operadores a nivel de bits
 
-```c
-stock = stock - 3;
-```
+Trabajan sobre los bits individuales de un entero. Úsalos con tipos `unsigned`:
 
-### `*=`
+| Operador | Operación | Ejemplo con `a = 12u` (1100) y `b = 10u` (1010) |
+| --- | --- | --- |
+| `&` | Y bit a bit | `a & b` es `8` (1000) |
+| `\|` | O bit a bit | `a \| b` es `14` (1110) |
+| `^` | O exclusivo | `a ^ b` es `6` (0110) |
+| `~` | complemento | invierte todos los bits |
+| `<<` | desplazamiento a la izquierda | `1u << 3` es `8` |
+| `>>` | desplazamiento a la derecha | `a >> 2` es `3` |
 
-```c
-int valor = 4;
-valor *= 2;
-```
+Un uso típico es consultar un bit: `numero & 1u` vale `1` si `numero` es impar.
 
-Equivale a:
+No confundas `&` con `&&` ni `|` con `||`: los primeros operan bit a bit y **no** hacen cortocircuito; los segundos combinan condiciones.
 
-```c
-valor = valor * 2;
-```
+## Errores comunes
 
-### `/=`
-
-```c
-int numero = 20;
-numero /= 4;
-```
-
-Equivale a:
-
-```c
-numero = numero / 4;
-```
-
-### `%=`
-
-```c
-int resto = 10;
-resto %= 3;
-```
-
-Equivale a:
-
-```c
-resto = resto % 3;
-```
-
-## ¿Qué son los operadores relacionales?
-
-Los operadores relacionales sirven para **comparar valores**.
-
-Se usan para responder preguntas como:
-
-- ¿es igual?
-- ¿es distinto?
-- ¿es mayor?
-- ¿es menor?
-
-Los principales son:
-
-- `==` igual que
-- `!=` distinto de
-- `>` mayor que
-- `<` menor que
-- `>=` mayor o igual que
-- `<=` menor o igual que
-
-## Ejemplos de operadores relacionales
-
-```c
-edad == 18
-edad != 18
-nota > 6
-precio < 1000
-cantidad >= 10
-cantidad <= 20
-```
-
-Aunque más adelante los vas a usar en estructuras como decisiones, por ahora lo importante es entender el significado de cada comparación.
-
-## Diferencia entre `=` y `==`
-
-Este es uno de los errores más comunes al empezar.
-
-- `=` asigna un valor
-- `==` compara dos valores
-
-Mirá la diferencia:
-
-```c
-edad = 18;
-```
-
-Eso asigna.
-
-```c
-edad == 18
-```
-
-Eso compara.
-
-No confundas estas dos cosas porque cambian por completo el sentido del código.
-
-## ¿Qué son los operadores lógicos?
-
-Los operadores lógicos permiten combinar o modificar expresiones relacionales.
-
-Los más importantes son:
-
-- `&&` significa “y”
-- `||` significa “o”
-- `!` significa “no” o negación
-
-## Operador lógico `&&`
-
-Se usa cuando querés que dos expresiones sean verdaderas al mismo tiempo.
-
-```c
-edad >= 18 && edad <= 65
-```
-
-La idea conceptual es:
-
-- la primera comparación debe cumplirse
-- y la segunda también
-
-## Operador lógico `||`
-
-Se usa cuando alcanza con que se cumpla al menos una de las expresiones.
-
-```c
-letra == 'a' || letra == 'A'
-```
-
-## Operador lógico `!`
-
-Se usa para negar una expresión.
-
-```c
-!(edad == 18)
-```
-
-Esto expresa la negación de esa comparación.
-
-## Importante: por ahora entendé el significado, no adelantes estructuras
-
-Los operadores relacionales y lógicos suelen usarse muchísimo junto con sentencias de decisión.
-
-Pero NO hace falta adelantarse a esa lección.
-
-En esta etapa lo importante es que entiendas qué significa cada operador y qué tipo de resultado conceptual produce una comparación o una combinación lógica.
-
-## Precedencia entre operadores
-
-Cuando una expresión tiene varios operadores, no siempre se evalúa de izquierda a derecha sin más.
-
-Existe un **orden de precedencia**, es decir, un orden de prioridad.
-
-Pensalo como las reglas de una cuenta matemática.
-
-Por ejemplo, en matemática sabés que la multiplicación tiene prioridad sobre la suma.
-
-En C ocurre algo parecido.
-
-## Regla general simplificada para empezar
-
-Sin entrar todavía en todas las reglas avanzadas, podés empezar con este orden general:
-
-1. paréntesis `()`
-2. operadores aritméticos como `*`, `/`, `%`
-3. operadores aritméticos como `+`, `-`
-4. operadores relacionales como `>`, `<`, `>=`, `<=`
-5. operadores de igualdad como `==`, `!=`
-6. operador lógico `&&`
-7. operador lógico `||`
-8. asignación `=` y operadores de asignación combinados
-
-Esta versión simplificada alcanza muy bien para empezar a leer expresiones.
-
-## Ejemplo de precedencia
-
-```c
-int resultado = 2 + 3 * 4;
-```
-
-Primero se resuelve:
-
-```c
-3 * 4
-```
-
-Después:
-
-```c
-2 + 12
-```
-
-Por lo tanto, `resultado` vale `14`.
-
-## Uso de paréntesis para dar claridad
-
-Si querés dejar más clara una expresión, usá paréntesis.
-
-```c
-int resultado = (2 + 3) * 4;
-```
-
-Ahora primero se resuelve:
-
-```c
-2 + 3
-```
-
-Y después se multiplica por `4`.
-
-El resultado será `20`.
-
-Los paréntesis no solo sirven para cambiar el orden. También sirven para hacer el código más claro al leerlo.
-
-## Errores comunes al empezar
-
-### 1. Confundir `=` con `==`
-
-Es el clásico error de principiante.
-
-- `=` asigna
-- `==` compara
-
-### 2. Olvidar la precedencia
-
-```c
-int resultado = 2 + 3 * 4;
-```
-
-Si asumís que esto da `20`, te equivocás.
-
-### 3. Creer que la división siempre conserva decimales
-
-```c
-int resultado = 5 / 2;
-```
-
-Con enteros, ese resultado no conserva la parte decimal.
-
-### 4. Usar operadores sin pensar en el tipo de dato
-
-El tipo de dato influye en la operación y en el resultado.
-
-### 5. Escribir expresiones demasiado confusas
-
-Cuando una expresión empieza a verse enredada, los paréntesis ayudan mucho a hacer explícita la intención.
+1. **Confundir `=` con `==`.**
+2. **Esperar decimales de una división entera.** `7 / 2` es `3`.
+3. **Suponer que `%` siempre es positivo.** `-7 % 3` es `-1`.
+4. **Poner la protección después de la operación.** `a / b > 2 && b != 0` divide antes de comprobar.
+5. **Modificar una variable dos veces en una expresión.** `i = i++ + 1;` es comportamiento indefinido.
+6. **Confiar en la precedencia en vez de usar paréntesis.** `x & 1 == 0` es `x & (1 == 0)`.
 
 ## Resumen
 
-- un **operador** es un símbolo que representa una acción sobre valores
-- los operadores matemáticos permiten hacer cálculos
-- los operadores relacionales permiten comparar valores
-- los operadores lógicos permiten combinar o negar comparaciones
-- los operadores de asignación permiten guardar resultados en variables
-- `=` y `==` no significan lo mismo
-- la **precedencia** define en qué orden se evalúan los operadores
-- los paréntesis ayudan a controlar y aclarar ese orden
+- `/` entre enteros trunca hacia cero; `%` da el resto con el signo del dividendo
+- los relacionales y lógicos dan `1` o `0`
+- `&&` y `||` evalúan de izquierda a derecha en **cortocircuito**: sirven para proteger operaciones
+- `++x` vale el valor nuevo; `x++` vale el valor anterior
+- la precedencia y la asociatividad deciden cómo se agrupa una expresión; los paréntesis la aclaran
+- el orden de evaluación de los operandos casi nunca está especificado
+- el **comportamiento indefinido** (como `i = i++ + 1;` o desbordar un `int`) hace incorrecto al programa
 
-## Idea final
+## Ejercicios prácticos
 
-Los operadores son el lenguaje interno con el que empezás a construir expresiones más potentes.
+### Ejercicio 1: predice la salida
 
-Pero ojo: no se trata solo de memorizar símbolos.
+```c
+#include <stdio.h>
 
-Se trata de entender:
+int main(void) {
+    int a = 3;
+    int b = a++ * 2;
+    int c = --a + 10 % 4;
+    int d = -9 / 2;
+    int e = -9 % 2;
 
-- qué hace cada operador
-- con qué tipo de datos tiene sentido usarlo
-- qué resultado produce
-- en qué orden actúa dentro de una expresión
+    printf("%d %d %d %d %d\n", a, b, c, d, e);
+    return 0;
+}
+```
 
-Si eso te queda claro, después las estructuras más complejas se entienden MUCHO mejor.
+<details><summary>Ver solución</summary>
+
+Muestra `3 6 5 -4 -1`.
+
+- `b = a++ * 2`: usa el valor anterior (3), `b` es `6`, y `a` pasa a 4.
+- `c = --a + 10 % 4`: `a` vuelve a 3; `10 % 4` es `2` (el `%` va antes que el `+`); `c` es `5`.
+- `-9 / 2` trunca hacia cero: `-4`.
+- `-9 % 2` tiene el signo del dividendo: `-1`. Comprobación: `(-4) * 2 + (-1) == -9`.
+
+</details>
+
+### Ejercicio 2: encuentra el error
+
+Esta línea debería calcular si el promedio por persona supera 100 sin dividir nunca por cero, pero falla cuando `personas` vale 0. Corrígela.
+
+```c
+int supera = total / personas > 100 && personas > 0;
+```
+
+<details><summary>Ver solución</summary>
+
+`&&` evalúa de izquierda a derecha, así que la división se hace antes de comprobar `personas`. Hay que invertir el orden para que el cortocircuito proteja la división:
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    int total = 500;
+    int personas = 0;
+
+    int supera = personas > 0 && total / personas > 100;
+
+    printf("%d\n", supera);
+    return 0;
+}
+```
+
+Si `personas` es 0, `personas > 0` es falso y `total / personas` no se evalúa.
+
+</details>
+
+### Ejercicio 3: encuentra el error de precedencia
+
+Se quiere mostrar `1` cuando `numero` es par, usando el bit menos significativo. ¿Por qué esta versión muestra siempre `0`?
+
+<!-- c-check: skip -->
+```c
+#include <stdio.h>
+
+int main(void) {
+    unsigned int numero = 8u;
+    printf("%d\n", numero & 1u == 0u);
+    return 0;
+}
+```
+
+<details><summary>Ver solución</summary>
+
+`==` tiene más precedencia que `&`, así que la expresión es `numero & (1u == 0u)`, es decir `numero & 0`, que siempre vale `0`. El compilador incluso avisa con `-Wall`. Corrección con paréntesis:
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    unsigned int numero = 8u;
+    printf("%d\n", (numero & 1u) == 0u);
+    return 0;
+}
+```
+
+</details>
+
+### Ejercicio 4: ¿definido o indefinido?
+
+Clasifica cada línea (supón `int i = 2;` antes de cada una) como comportamiento definido o indefinido, y da el valor final de `i` cuando esté definido: (a) `i = i + 1;` (b) `i++;` (c) `i = i++;` (d) `i += i * 3;`
+
+<details><summary>Ver solución</summary>
+
+- (a) Definido: `i` vale `3`.
+- (b) Definido: `i` vale `3`.
+- (c) Indefinido: `i` se modifica dos veces (con `++` y con `=`) sin un orden definido.
+- (d) Definido: `i` se lee en la expresión `i * 3` y se modifica una sola vez con `+=`; `i` vale `2 + 6 = 8`.
+
+</details>

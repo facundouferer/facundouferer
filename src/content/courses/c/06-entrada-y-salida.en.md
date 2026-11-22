@@ -7,627 +7,468 @@ lang: 'en'
 published: true
 ---
 
-So far you've seen that a program can store information in variables. But a program really starts to become useful when it can **display information** and also **receive data**.
+A program becomes useful when it can **display information** and **receive data**.
 
-That's what we call **output** and **input**.
+- **Output:** the program sends information outward, for example to the screen.
+- **Input:** the program receives information from outside, for example from the keyboard.
 
-- **Output**: when the program displays information outward, for example on the screen.
-- **Input**: when the program receives information from outside, for example when a person types with the keyboard.
+In C, the two basic tools are `printf` (output) and `scanf` (input), both from `<stdio.h>`.
 
-In this lesson you'll learn:
+## Objectives
 
-- what input and output mean in a program
-- how to display messages and values with `printf`
-- what format specifiers are
-- how to read simple data with `scanf`
-- why the `&` symbol sometimes appears
-- common mistakes when starting with input and output
+By the end of this lesson you will be able to:
 
-> Key idea: a program without input or output is like a person who thinks but doesn't speak or listen. It can have data inside, but it doesn't interact with anyone.
+- display text and values with `printf` using the right specifier for each type, including `%zu`
+- control the field width and the precision of the output
+- read data with `scanf` and explain informally why it needs `&`
+- use the value `scanf` returns to **validate** input (`if (scanf("%d", &age) != 1)`)
+- discard invalid input left pending with a `getchar` loop
 
-## What is data output?
+**Prerequisites:** lessons 1 to 5, especially *Data types* (`int`, `double`, `char`, `size_t`, `unsigned`).
 
-**Data output** occurs when the program sends information to the outside.
-
-In initial C programs, the most common output is displaying text or values on the screen.
-
-For example, a program can show:
-
-- a welcome message
-- the value of a variable
-- the result of a calculation
-
-In C, the most used function for this is `printf`.
-
-## `printf`: displaying information on screen
-
-The `printf()` function is used to print text on the screen.
-
-Example:
+## Output with `printf`
 
 ```c
 #include <stdio.h>
 
-int main() {
-    printf("Hola, mundo\n");
+int main(void) {
+    printf("Hello, world\n");
     return 0;
 }
 ```
 
-That program displays the message `Hola, mundo`.
+The text between double quotes is a string literal. `\n` is an **escape sequence** that represents a line break. Other useful ones:
 
-### What does `\n` mean?
+| Escape | Meaning |
+| --- | --- |
+| `\n` | line break |
+| `\t` | tab |
+| `\"` | double quote |
+| `\\` | backslash |
 
-Inside the text, this appears:
+`printf` does not add a line break by itself: if you do not write `\n`, the next output continues on the same line.
+
+## Displaying values: format specifiers
+
+To display the value of a variable, you leave a **format specifier** in the text, starting with `%`, and pass the value after the string:
 
 ```c
-\n
+int age = 18;
+printf("The age is %d\n", age);
 ```
 
-That represents a **newline**.
+`%d` reserves the place of an `int`; `printf` replaces it with the value of `age` and prints `The age is 18`.
 
-That means after displaying the text, the cursor moves to the next line.
-
-For example:
+You can use several specifiers; the values are used in the same order:
 
 ```c
-printf("First line\n");
-printf("Second line\n");
+printf("%d students, average %f\n", count, average);
 ```
 
-The output would be:
+### Specifier table
+
+| Type | Specifier in `printf` |
+| --- | --- |
+| `int` | `%d` |
+| `unsigned int` | `%u` |
+| `long` | `%ld` |
+| `long long` | `%lld` |
+| `size_t` (result of `sizeof`) | `%zu` |
+| `double` and `float` | `%f` (or `%e` for scientific notation) |
+| `char` | `%c` |
+| string literal | `%s` |
+| integer in hexadecimal | `%x` |
+| the `%` character | `%%` |
+
+**The specifier must match the type.** If it does not, the result is unpredictable: `printf` reads the bits of the value as if they belonged to another type. With `-Wall` the compiler checks the format string and warns (`format specifies type 'double' but the argument has type 'int'`).
+
+### Field width and precision
+
+Between the `%` and the letter you can say how the value looks:
+
+- **width**: minimum number of characters; padded with spaces on the left. `%5d`
+- **`-`**: left-aligns. `%-5d`
+- **`0`**: pads with zeros. `%05d`
+- **precision** (after a dot): number of decimals. `%.2f`
+- width and precision together: `%8.2f`
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    printf("[%5d]\n", 42);
+    printf("[%-5d]\n", 42);
+    printf("[%05d]\n", 42);
+    printf("[%.2f]\n", 3.14159);
+    printf("[%8.2f]\n", 3.14159);
+    printf("[%zu]\n", sizeof(double));
+    return 0;
+}
+```
+
+Output:
 
 ```text
-First line
-Second line
+[   42]
+[42   ]
+[00042]
+[3.14]
+[    3.14]
+[8]
 ```
 
-## `printf` displaying text only
-
-At first, `printf` can be used simply to display messages.
-
-```c
-printf("Welcome to the program\n");
-printf("C is a powerful language\n");
-```
-
-Notice the text goes in **double quotes**.
-
-That indicates we're writing a literal message to display on the screen.
-
-## Displaying the value of a variable
-
-`printf` isn't just for displaying fixed text. It can also show the value stored in a variable.
-
-Look at this example:
+Width is handy for aligned tables:
 
 ```c
 #include <stdio.h>
 
-int main() {
-    int edad = 18;
-    printf("The age is %d\n", edad);
+int main(void) {
+    printf("%-10s %6s\n", "Product", "Price");
+    printf("%-10s %6.2f\n", "Bread", 1.5);
+    printf("%-10s %6.2f\n", "Milk", 0.99);
+    printf("%-10s %6.2f\n", "Cheese", 12.75);
     return 0;
 }
 ```
-
-Here something new appears:
-
-```c
-%d
-```
-
-That's called a **format specifier**.
-
-## What is a format specifier?
-
-A format specifier tells `printf` what type of data to display in that part of the text.
-
-Think of it like this: inside the message we leave a reserved spot for the value of a variable to appear later.
-
-In this example:
-
-```c
-printf("The age is %d\n", edad);
-```
-
-- the text is `The age is `
-- `%d` tells `printf` that an integer goes there
-- `edad` is the variable whose value will be displayed
-
-If `edad` is `18`, the output will be:
 
 ```text
-The age is 18
+Product     Price
+Bread        1.50
+Milk         0.99
+Cheese      12.75
 ```
 
-## Most common specifiers when starting
+## Input with `scanf`
 
-For now, the most important ones are these:
-
-### `%d`
-
-Used to display `int` values.
-
-```c
-int cantidad = 25;
-printf("Quantity: %d\n", cantidad);
-```
-
-### `%f`
-
-Used to display `float` values.
-
-```c
-float altura = 1.75;
-printf("Height: %f\n", altura);
-```
-
-### `%c`
-
-Used to display `char` values.
-
-```c
-char inicial = 'F';
-printf("Initial: %c\n", inicial);
-```
-
-## Examples separated by data type
-
-### Displaying an integer
+`scanf` reads what the user types and stores it in variables:
 
 ```c
 #include <stdio.h>
 
-int main() {
-    int edad = 20;
-    printf("Age: %d\n", edad);
-    return 0;
-}
-```
-
-### Displaying a decimal
-
-```c
-#include <stdio.h>
-
-int main() {
-    float precio = 1499.50;
-    printf("Price: %f\n", precio);
-    return 0;
-}
-```
-
-### Displaying a character
-
-```c
-#include <stdio.h>
-
-int main() {
-    char letra = 'A';
-    printf("Letter: %c\n", letra);
-    return 0;
-}
-```
-
-## Mixing text and values
-
-One of the most useful things about `printf` is that it allows combining text with values.
-
-```c
-#include <stdio.h>
-
-int main() {
-    int edad = 18;
-    float altura = 1.72;
-    char inicial = 'F';
-
-    printf("Age: %d\n", edad);
-    printf("Height: %f\n", altura);
-    printf("Initial: %c\n", inicial);
-
-    return 0;
-}
-```
-
-This makes the program's information clear for whoever uses it.
-
-## What is data input?
-
-**Data input** occurs when the program receives information from the outside.
-
-In basic C programs, this usually happens when the user types data with the keyboard.
-
-For example, the program can ask for:
-
-- an age
-- a number
-- a letter
-- a price
-
-In C, one of the best-known functions for reading basic data is `scanf()`.
-
-## `scanf`: reading data entered by the user
-
-The `scanf()` function allows reading data that the user types.
-
-Example:
-
-```c
-#include <stdio.h>
-
-int main() {
-    int edad;
+int main(void) {
+    int age = 0;
 
     printf("Enter your age: ");
-    scanf("%d", &edad);
-
-    printf("You are %d years old\n", edad);
-
-    return 0;
-}
-```
-
-## What does this program do?
-
-Step by step:
-
-1. declares a variable called `edad`
-2. shows the message `Enter your age:`
-3. waits for the user to type a number
-4. stores that number in the variable `edad`
-5. displays the stored value
-
-This already allows real interaction between the user and the program.
-
-## The basic structure of `scanf`
-
-The general form is:
-
-```c
-scanf("specifier", &variable);
-```
-
-For example:
-
-```c
-scanf("%d", &edad);
-```
-
-Here:
-
-- `%d` indicates an integer is expected
-- `&edad` indicates where the read value will be stored
-
-## Why does `&` appear in `scanf`?
-
-Excellent question. And yes, this part tends to confuse at first.
-
-When you use `scanf`, the program needs to know **where to store** the data the user typed.
-
-That's why the `&` symbol appears before the variable name.
-
-At this stage, this idea is enough:
-
-> `&variable` allows `scanf` to work directly with that variable to store the read data there.
-
-No need to get into more advanced explanations yet.
-
-For now, stick with this practical rule:
-
-- with `scanf`, to read `int`, `float`, and `char`, you'll normally use `&` before the variable
-
-## Reading an integer with `scanf`
-
-```c
-#include <stdio.h>
-
-int main() {
-    int numero;
-
-    printf("Enter an integer: ");
-    scanf("%d", &numero);
-
-    printf("The number entered is %d\n", numero);
+    scanf("%d", &age);
+    printf("You are %d years old\n", age);
 
     return 0;
 }
 ```
 
-## Reading a decimal with `scanf`
+The general form is `scanf("specifiers", &variable1, &variable2, ...)`.
+
+### Why `&`?
+
+`printf` only needs **the value** of `age` to display it. `scanf`, on the other hand, has to **write** into `age`, and for that it needs to know where it is stored. `&age` means **"the address of the variable `age`"**: the place in memory where it lives. With that address, `scanf` can put the number it read there.
+
+For now this informal idea is enough. In lesson 25 (*Pointers and addresses*) you will see exactly what an address is and how to work with it.
+
+Forgetting the `&` is a serious bug: `scanf` would receive the variable's value instead of its address. `-Wall` catches it.
+
+### `scanf` specifiers
+
+They are almost the same as in `printf`, with one important difference:
+
+| Type | `scanf` | `printf` |
+| --- | --- | --- |
+| `int` | `%d` | `%d` |
+| `float` | `%f` | `%f` |
+| `double` | **`%lf`** | `%f` |
+| `char` | `" %c"` | `%c` |
+
+To read a `double` you use `%lf`. With `%f`, `scanf` would write a `float` where a `double` lives.
+
+## Validating input: the return value of `scanf`
+
+What happens if the program asks for an age and the user types `hello`? `scanf` cannot convert `hello` into an integer, so it **does not modify the variable**. If the program carries on as if nothing happened, it works with data that was never read.
+
+To notice, use what `scanf` **returns**: the number of variables it managed to fill.
+
+- `scanf("%d", &age)` returns `1` if it read an integer
+- it returns `0` if what was there was not an integer
+- it returns `EOF` (a negative value) if the input ended
+
+This is how you **validate** the read:
 
 ```c
 #include <stdio.h>
 
-int main() {
-    float precio;
-
-    printf("Enter a price: ");
-    scanf("%f", &precio);
-
-    printf("The price entered is %f\n", precio);
-
-    return 0;
-}
-```
-
-## Reading a character with `scanf`
-
-```c
-#include <stdio.h>
-
-int main() {
-    char inicial;
-
-    printf("Enter a letter: ");
-    scanf(" %c", &inicial);
-
-    printf("The letter entered is %c\n", inicial);
-
-    return 0;
-}
-```
-
-Notice this detail:
-
-```c
-" %c"
-```
-
-There's a space before `%c`.
-
-And it's not there for no reason.
-
-## A very common problem with `scanf` and `%c`
-
-When we first read a number and then a character, this often happens:
-
-- the program asks for a number
-- we type the number and press Enter
-- then the program asks for a letter
-- but it seems to "skip" reading the character
-
-Look at this example:
-
-```c
-#include <stdio.h>
-
-int main() {
-    int ruedas;
-    char inicialMarca;
-
-    printf("Enter the number of wheels: ");
-    scanf("%d", &ruedas);
-
-    printf("Enter the initial of the brand: ");
-    scanf("%c", &inicialMarca);
-
-    printf("Wheels: %d\n", ruedas);
-    printf("Initial: %c\n", inicialMarca);
-
-    return 0;
-}
-```
-
-At first glance it looks correct. But it can fail.
-
-## What's really happening?
-
-When you type a number like `4` and then press Enter, you're not just entering `4`.
-
-The newline produced by the Enter key is also registered.
-
-So, after this:
-
-```c
-scanf("%d", &ruedas);
-```
-
-the number is stored in `ruedas`, but the `\n` from Enter can remain in the input buffer.
-
-Then, when you do this:
-
-```c
-scanf("%c", &inicialMarca);
-```
-
-`scanf` takes the next available character.
-
-And that next character can be precisely the pending newline `\n`.
-
-That's why the program seems to "skip" the prompt, when in reality it did read something: it read the previous Enter as a valid character.
-
-## Simple solution
-
-The most common practical solution when starting is to write a space before `%c`.
-
-Like this:
-
-```c
-scanf(" %c", &inicialMarca);
-```
-
-That space tells `scanf` to ignore any whitespace before reading the actual character.
-
-### What does whitespace mean?
-
-It means blank characters, for example:
-
-- spaces
-- tabs
-- newlines
-
-So, if a `\n` from the previous Enter remains, that space makes `scanf` discard it and keep waiting for a real letter.
-
-## Fixed example
-
-```c
-#include <stdio.h>
-
-int main() {
-    int ruedas;
-    char inicialMarca;
-
-    printf("Enter the number of wheels: ");
-    scanf("%d", &ruedas);
-
-    printf("Enter the initial of the brand: ");
-    scanf(" %c", &inicialMarca);
-
-    printf("Wheels: %d\n", ruedas);
-    printf("Initial: %c\n", inicialMarca);
-
-    return 0;
-}
-```
-
-## Practical tip for beginners
-
-When you use `scanf` to read a `char`, this is a very good habit:
-
-```c
-scanf(" %c", &variableChar);
-```
-
-Not because there's always a problem, but because it avoids one of the most common mistakes when starting.
-
-## Relationship between types and specifiers
-
-There's a direct relationship between the data type and the specifier you use.
-
-### For displaying with `printf`
-
-- `int` → `%d`
-- `float` → `%f`
-- `char` → `%c`
-
-### For reading with `scanf`
-
-- `int` → `%d`
-- `float` → `%f`
-- `char` → `%c`
-
-You need to learn this well, because if you mix types and specifiers, the program stops behaving as you expect.
-
-## A complete input and output example
-
-```c
-#include <stdio.h>
-
-int main() {
-    int edad;
-    float altura;
-    char inicial;
+int main(void) {
+    int age = 0;
 
     printf("Enter your age: ");
-    scanf("%d", &edad);
+    if (scanf("%d", &age) != 1) {
+        printf("Error: an integer was expected.\n");
+        return 1;
+    }
 
-    printf("Enter your height: ");
-    scanf("%f", &altura);
-
-    printf("Enter the initial of your name: ");
-    scanf(" %c", &inicial);
-
-    printf("Age: %d\n", edad);
-    printf("Height: %f\n", altura);
-    printf("Initial: %c\n", inicial);
-
+    printf("You are %d years old\n", age);
     return 0;
 }
 ```
 
-This program:
+`if` runs the block between braces only when the condition is true; you will study it in lesson 8. Here the condition is "`scanf` did not return 1". In that case the program reports the problem and ends with `return 1`, which tells the system there was an error (`return 0` means success).
 
-- receives data from the user
-- stores it in variables
-- then displays it on the screen
+The professional rule is simple: **every time you call `scanf`, compare its result with the number of values you asked for**. If you read two numbers, compare with 2:
 
-Here you can clearly see how the lessons connect:
+```c
+if (scanf("%d %d", &width, &height) != 2)
+```
 
-- first you learned variables
-- now you see how to load them and how to display their content
+Validating the form is not the same as validating the content: `-5` is a valid integer for `scanf`, but not a valid age. You will do that second validation with `if` and operators (lessons 7 and 8).
 
-## Common mistakes when starting
+## Invalid input stays in the buffer
 
-### 1. Forgetting to include `stdio.h`
+What you type on the keyboard does not go straight to `scanf`: it is stored in an **input buffer**, a queue of characters that `scanf` consumes. When you press Enter, a `'\n'` is added at the end too.
 
-If you use `printf` or `scanf`, you need:
+When `scanf("%d", ...)` finds `hello`, it fails **without consuming those characters**. They stay in the buffer, and the next `scanf("%d", ...)` finds them again and fails again. If the program asked again and again, it would fail forever.
+
+The fix is to **discard the rest of the line** before reading again, one character at a time, with `getchar`:
+
+```c
+int c;
+while ((c = getchar()) != '\n' && c != EOF) {
+    // discard
+}
+```
+
+`getchar()` reads a single character from the buffer and returns it as an `int` (so it can also return `EOF`). The `while` loop repeats the read while the character is neither the line break nor the end of input. You will study `while` in lesson 11; for now use it as a recipe.
+
+Complete program: if the first read fails, it discards the line and gives a second chance.
 
 ```c
 #include <stdio.h>
+
+int main(void) {
+    int quantity = 0;
+    int c;
+
+    printf("Quantity: ");
+    if (scanf("%d", &quantity) != 1) {
+        while ((c = getchar()) != '\n' && c != EOF) {
+            // discard the rest of the invalid line
+        }
+        printf("Not a number. Try again: ");
+        if (scanf("%d", &quantity) != 1) {
+            printf("Invalid input.\n");
+            return 1;
+        }
+    }
+
+    printf("Quantity: %d\n", quantity);
+    return 0;
+}
 ```
 
-### 2. Forgetting the semicolon
+Asking again until the data is valid needs a loop; you will do it in the control flow module.
+
+A subtle case: if the user types `12abc`, `scanf("%d", ...)` reads `12`, returns `1` and leaves `abc` in the buffer. The read succeeded, but the rest of the line is still pending.
+
+## Reading a character: the space before `%c`
+
+`%d` and `%lf` skip leading spaces and line breaks automatically. `%c` does **not**: it reads the next character, whatever it is. That is why this program seems to skip the second question:
 
 ```c
-printf("Hello")
+#include <stdio.h>
+
+int main(void) {
+    int wheels = 0;
+    char initial = ' ';
+
+    printf("Number of wheels: ");
+    if (scanf("%d", &wheels) != 1) {
+        return 1;
+    }
+
+    printf("Brand initial: ");
+    if (scanf("%c", &initial) != 1) {   // reads the '\n' left by Enter
+        return 1;
+    }
+
+    printf("Wheels: %d, initial: %c\n", wheels, initial);
+    return 0;
+}
 ```
 
-That's wrong. In C, the statement must end with `;`.
-
-Correct:
+After typing `4` and Enter, the buffer holds `4\n`. `%d` consumes the `4`, and `%c` takes the `'\n'` without waiting. The fix is a space before `%c`, which tells `scanf` to discard all preceding whitespace:
 
 ```c
-printf("Hello");
+scanf(" %c", &initial);
 ```
 
-### 3. Using the wrong format specifier
-
-This is wrong:
+## Complete example
 
 ```c
-int edad = 18;
-printf("%f\n", edad);
+#include <stdio.h>
+
+int main(void) {
+    int age = 0;
+    double height = 0.0;
+    char initial = ' ';
+
+    printf("Age: ");
+    if (scanf("%d", &age) != 1) {
+        printf("Invalid age.\n");
+        return 1;
+    }
+
+    printf("Height in meters: ");
+    if (scanf("%lf", &height) != 1) {
+        printf("Invalid height.\n");
+        return 1;
+    }
+
+    printf("First initial: ");
+    if (scanf(" %c", &initial) != 1) {
+        printf("Could not read the initial.\n");
+        return 1;
+    }
+
+    printf("%-8s %d\n", "Age:", age);
+    printf("%-8s %.2f m\n", "Height:", height);
+    printf("%-8s %c\n", "Initial:", initial);
+    return 0;
+}
 ```
 
-Why? Because `edad` is `int`, and `%f` is used for `float`.
+## Common mistakes
 
-Correct would be:
-
-```c
-printf("%d\n", edad);
-```
-
-### 4. Forgetting `&` in `scanf`
-
-This is wrong:
-
-```c
-scanf("%d", edad);
-```
-
-Correct is:
-
-```c
-scanf("%d", &edad);
-```
-
-### 5. Wanting to read full text too early
-
-Many beginners want to move quickly to full names or phrases.
-
-But that's better to see calmly later, when the lesson on character strings appears.
-
-At this stage, the important thing is to master input and output of:
-
-- integers
-- decimals
-- characters
+1. **A specifier that does not match the type.** `printf("%d", 3.5)` or `printf("%d", sizeof(int))`. Use `%f` and `%zu`.
+2. **Reading a `double` with `%f`.** In `scanf`, `double` goes with `%lf`.
+3. **Forgetting `&` in `scanf`.** `scanf("%d", age)` is a serious bug.
+4. **Not checking what `scanf` returns.** The program continues with data that was never read.
+5. **Not discarding invalid input.** It stays in the buffer and makes the next read fail.
+6. **`%c` without a leading space** after reading a number.
 
 ## Summary
 
-- **output** allows the program to display information
-- **input** allows the program to receive information
-- `printf()` is used to display text and values on the screen
-- `scanf()` is used to read simple data entered by the user
-- `%d`, `%f`, and `%c` are fundamental specifiers when starting
-- in `scanf()`, `&` normally appears before the variable
-- input and output connect the program with its user
+- `printf` displays text and values; each type has its specifier (`%d`, `%u`, `%zu`, `%f`, `%c`, `%s`)
+- width (`%5d`), alignment (`%-5d`) and precision (`%.2f`) control how the output looks
+- `scanf` needs `&variable`, the address of the variable, to be able to write into it
+- `scanf` returns how many values it read: always compare it to **validate** the input
+- invalid input stays in the buffer; discard it with a `getchar` loop
+- `" %c"` avoids reading the pending line break
 
-## Final thought
+## Practice exercises
 
-When a program can display and receive data, it stops being a closed sequence of instructions and starts becoming an interactive tool.
+### Exercise 1: predict the output
 
-And that's a huge step.
+```c
+#include <stdio.h>
 
-Because programming isn't just about storing things in memory: it's also about being able to communicate with the user clearly.
+int main(void) {
+    int points = 7;
+    double average = 8.456;
+
+    printf("[%4d][%-4d][%03d]\n", points, points, points);
+    printf("[%.1f][%7.2f]\n", average, average);
+    printf("100%%\n");
+    return 0;
+}
+```
+
+<details><summary>Show solution</summary>
+
+```text
+[   7][7   ][007]
+[8.5][   8.46]
+100%
+```
+
+`%.1f` rounds to one decimal (8.456 → 8.5). `%7.2f` takes 7 characters in total, counting the dot. `%%` prints a `%`.
+
+</details>
+
+### Exercise 2: find the bugs
+
+This program compiles with warnings and does not work. Find the three bugs.
+
+<!-- c-check: skip -->
+```c
+#include <stdio.h>
+
+int main(void) {
+    double price = 0.0;
+    int units = 0;
+
+    printf("Price: ");
+    scanf("%f", &price);
+    printf("Units: ");
+    scanf("%d", units);
+
+    printf("Total: %d\n", price * units);
+    return 0;
+}
+```
+
+<details><summary>Show solution</summary>
+
+1. `price` is a `double`: `scanf` reads it with `%lf`.
+2. The `&` is missing in `scanf("%d", units)`.
+3. `price * units` is a `double`: it is printed with `%f`, not `%d`.
+
+You should also validate every read:
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    double price = 0.0;
+    int units = 0;
+
+    printf("Price: ");
+    if (scanf("%lf", &price) != 1) {
+        return 1;
+    }
+    printf("Units: ");
+    if (scanf("%d", &units) != 1) {
+        return 1;
+    }
+
+    printf("Total: %.2f\n", price * units);
+    return 0;
+}
+```
+
+</details>
+
+### Exercise 3: validated sum
+
+Write a program that asks for two integers in a single read, checks that both were read and prints their sum. If the input is not valid, it must print `Invalid input.` and end with `return 1`.
+
+<details><summary>Show solution</summary>
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    int a = 0;
+    int b = 0;
+
+    printf("Enter two integers: ");
+    if (scanf("%d %d", &a, &b) != 2) {
+        printf("Invalid input.\n");
+        return 1;
+    }
+
+    printf("%d + %d = %d\n", a, b, a + b);
+    return 0;
+}
+```
+
+It compares with `2` because two values were requested. If the user types `5 x`, `scanf` returns `1` and the program detects it.
+
+</details>
+
+### Exercise 4: what does `scanf` return?
+
+For `scanf("%d", &n)`, with `n` initialized to `0`, state what it returns, the value of `n` and what stays in the buffer for each input: (a) `25` and Enter; (b) `abc` and Enter; (c) `8kg` and Enter.
+
+<details><summary>Show solution</summary>
+
+- (a) It returns `1`, `n` is `25`, and `\n` stays in the buffer.
+- (b) It returns `0`, `n` is still `0`, and `abc\n` stays in the buffer: discard it with the `getchar` loop.
+- (c) It returns `1`, `n` is `8`, and `kg\n` stays in the buffer.
+
+</details>
