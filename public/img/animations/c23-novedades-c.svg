@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" role="img" aria-label="Un programa C con tres novedades de C23, cada una con su etiqueta: estándar, extensión u opcional">
+  <rect width="400" height="200" fill="#f1e8d9"/>
+  <rect x="28" y="34" width="190" height="132" rx="16" fill="#faf5ec" stroke="#2e2b25" stroke-width="2.5"/>
+  <g fill="none" stroke-linecap="round" stroke-width="4">
+    <path d="M46 64h58" stroke="#2e2b25" stroke-opacity="0.35"/>
+    <path d="M46 88h96" stroke="#7d9a76"/>
+    <path d="M46 112h74" stroke="#c0714a"/>
+    <path d="M46 136h110" stroke="#2e2b25" stroke-opacity="0.35"/>
+  </g>
+  <g fill="none" stroke-linecap="round" stroke-width="2.5">
+    <path d="M150 88h38" stroke="#7d9a76"/>
+    <path d="M128 112h60" stroke="#c0714a"/>
+  </g>
+  <g stroke-width="2.5" stroke-linejoin="round">
+    <rect x="236" y="50" width="136" height="30" rx="15" fill="#7d9a76" stroke="#7d9a76"/>
+    <rect x="236" y="100" width="136" height="30" rx="15" fill="#faf5ec" stroke="#c0714a"/>
+    <rect x="236" y="150" width="136" height="30" rx="15" fill="#faf5ec" stroke="#2e2b25"/>
+  </g>
+  <g font-family="monospace" font-size="13" font-weight="700" text-anchor="middle">
+    <text x="304" y="70" fill="#faf5ec">estándar</text>
+    <text x="304" y="120" fill="#c0714a">extensión</text>
+    <text x="304" y="170" fill="#2e2b25">opcional</text>
+  </g>
+  <g font-family="monospace" font-size="12" font-weight="700" fill="#2e2b25">
+    <text x="46" y="52">-std=c23</text>
+  </g>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" role="img" aria-label="El flujo llega a una bifurcación y toma un solo camino">
+  <rect width="400" height="200" fill="#f1e8d9"/>
+  <path d="M40 150l150-76 150 76-150 76z" fill="#faf5ec" stroke="#7d9a76" stroke-width="2.5" stroke-linejoin="round"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="4">
+    <path d="M90 140l70-36 50 26 70 36" stroke="#7d9a76"/>
+    <path d="M160 104l40-20 70 36 10 46" stroke="#2e2b25" stroke-opacity="0.25"/>
+  </g>
+  <g stroke-linejoin="round" stroke-width="2.5">
+    <path d="M144 104l16-8 16 8-16 8z" fill="#c0714a" stroke="#c0714a"/>
+    <path d="M198 130l12-6 12 6-12 6z" fill="#2e2b25" stroke="#2e2b25"/>
+    <path d="M188 84l12-6 12 6-12 6z" fill="#faf5ec" stroke="#2e2b25"/>
+  </g>
+  <circle cx="90" cy="140" r="7" fill="#7d9a76"/>
+  <rect x="232" y="30" width="140" height="30" rx="10" fill="#faf5ec" stroke="#c0714a" stroke-width="2.5"/>
+  <g font-family="monospace" font-size="12" font-weight="700" text-anchor="middle">
+    <text x="302" y="50" fill="#c0714a">if (x % 2 == 0)</text>
+    <text x="160" y="90" fill="#2e2b25">0 → falso</text>
+  </g>
+  <g font-family="monospace" font-size="11" font-weight="700" fill="#7d9a76">
+    <text x="232" y="160">else</text>
+  </g>
+</svg>

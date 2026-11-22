@@ -870,6 +870,336 @@ export const animations: Animation[] = [
 		minutes: 2,
 		lesson: { course: 'c', slug: 'ordenacion-de-arreglos' },
 	},
+	{
+		slug: 'listas-enlazadas-c',
+		image: '/img/animations/listas-enlazadas-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Nodos unidos por punteros',
+			en: 'Nodes linked by pointers',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre la lista enlazada: cada nodo se pide con malloc y apunta al siguiente, insertar al principio cambia la cabeza a través de un doble puntero, borrar reengancha los enlaces y destruir libera nodo por nodo.',
+			en: 'A two-minute short on the linked list: every node is allocated with malloc and points to the next, inserting at the front changes the head through a double pointer, deleting relinks the nodes, and destroying frees them one by one.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'estructuras-dinamicas-listas' },
+	},
+	{
+		slug: 'pilas-lifo-c',
+		image: '/img/animations/pilas-lifo-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'El último en entrar, el primero en salir',
+			en: 'Last in, first out',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre la pila: apilar y desapilar por el tope, el error de desapilar una pila vacía, la versión con arreglo que crece con realloc y el verificador de paréntesis balanceados.',
+			en: 'A two-minute short on the stack: push and pop at the top, the error of popping an empty stack, the array version that grows with realloc, and the balanced brackets checker.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'estructuras-dinamicas-pilas' },
+	},
+	{
+		slug: 'colas-fifo-c',
+		image: '/img/animations/colas-fifo-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'El primero en llegar, el primero en salir',
+			en: 'First come, first served',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre la cola: encolar por el final y desencolar por el frente, por qué el final debe volver a NULL cuando la cola se vacía y la cola circular sobre un arreglo.',
+			en: 'A two-minute short on the queue: enqueue at the rear and dequeue at the front, why the rear must go back to NULL when the queue empties, and the circular queue on an array.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'estructuras-dinamicas-colas' },
+	},
+	{
+		slug: 'arbol-busqueda-c',
+		image: '/img/animations/arbol-busqueda-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Un árbol que ordena al insertar',
+			en: 'A tree that sorts as it inserts',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre el árbol binario de búsqueda: insertar bajando a izquierda o derecha, buscar con la misma regla, los recorridos inorden, preorden y postorden, liberar en postorden y el árbol degenerado.',
+			en: 'A two-minute short on the binary search tree: inserting by going left or right, searching with the same rule, the inorder, preorder and postorder traversals, freeing in postorder, and the degenerate tree.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'arboles-binarios' },
+	},
+	{
+		slug: 'biblioteca-errores-c',
+		image: '/img/animations/biblioteca-errores-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Convertir sin confiar',
+			en: 'Converting without trusting',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre la biblioteca estándar y los errores: strtol con su puntero final y errno, códigos de retorno, perror y una única salida que libera los recursos en cada camino de error.',
+			en: 'A two-minute short on the standard library and errors: strtol with its end pointer and errno, return codes, perror, and a single exit that releases resources on every error path.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'biblioteca-estandar-y-errores' },
+	},
+	{
+		slug: 'archivos-persistencia-c',
+		image: '/img/animations/archivos-persistencia-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Del programa al disco y de vuelta',
+			en: 'From the program to disk and back',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre los archivos: fopen y su comprobación, escribir registros con fwrite y leerlos con fread contando lo que llegó, distinguir fin de archivo de un error y cerrar en todos los caminos.',
+			en: 'A two-minute short on files: fopen and its check, writing records with fwrite and reading them with fread counting what arrived, telling end of file from an error, and closing on every path.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'archivos' },
+	},
+	{
+		slug: 'c23-novedades-c',
+		image: '/img/animations/c23-novedades-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Lo nuevo de C23, con la etiqueta de cada cosa',
+			en: 'What is new in C23, labelled',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre C23: bool, nullptr, constexpr, typeof, atributos y #embed, y cómo distinguir qué es estándar, qué es una extensión de un compilador y qué es opcional.',
+			en: 'A two-minute short on C23: bool, nullptr, constexpr, typeof, attributes and #embed, and how to tell what is standard, what is a compiler extension and what is optional.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'c23-moderno' },
+	},
+	{
+		slug: 'macros-genericos-c',
+		image: '/img/animations/macros-genericos-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Texto que se reemplaza y código genérico',
+			en: 'Replaced text and generic code',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre el preprocesador: una macro reemplaza texto antes de compilar, por qué MAX(i++, j) evalúa dos veces, y cómo _Generic elige una función según el tipo.',
+			en: 'A two-minute short on the preprocessor: a macro replaces text before compiling, why MAX(i++, j) evaluates twice, and how _Generic picks a function by type.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'preprocesador-y-programacion-generica' },
+	},
+	{
+		slug: 'hilos-atomics-c',
+		image: '/img/animations/hilos-atomics-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Dos hilos, un contador',
+			en: 'Two threads, one counter',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre la concurrencia: dos hilos que incrementan el mismo contador pierden cuentas por una condición de carrera, y un mutex o una variable atómica lo arreglan.',
+			en: 'A two-minute short on concurrency: two threads incrementing the same counter lose counts through a race condition, and a mutex or an atomic variable fixes it.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'concurrencia-threads-y-atomics' },
+	},
+	{
+		slug: 'ideas-poo-c',
+		image: '/img/animations/ideas-poo-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Datos y operaciones juntos, sin clases',
+			en: 'Data and operations together, without classes',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre qué ideas de la programación orientada a objetos puede expresar C con un struct y funciones, y cuáles no tiene de forma nativa.',
+			en: 'A two-minute short on which object-oriented ideas C can express with a struct and functions, and which it lacks natively.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'introduccion-a-poo-en-c' },
+	},
+	{
+		slug: 'tipo-opaco-c',
+		image: '/img/animations/tipo-opaco-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Un tipo que esconde sus campos',
+			en: 'A type that hides its fields',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre los tipos opacos: el archivo de cabecera declara el tipo sin mostrar sus campos, solo las funciones del .c los tocan y crear y destruir cuidan la propiedad de la memoria.',
+			en: 'A two-minute short on opaque types: the header declares the type without showing its fields, only the functions in the .c touch them, and create and destroy take care of memory ownership.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'encapsulacion-y-abstraccion-en-c' },
+	},
+	{
+		slug: 'metodos-composicion-c',
+		image: '/img/animations/metodos-composicion-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Funciones que reciben el objeto',
+			en: 'Functions that receive the object',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre el diseño basado en struct: el puntero al objeto como primer parámetro, getters que no modifican, composición de structs y códigos de retorno.',
+			en: 'A two-minute short on struct-based design: the object pointer as the first parameter, getters that do not modify, composition of structs, and return codes.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'objetos-metodos-y-diseno-basado-en-struct' },
+	},
+	{
+		slug: 'tabla-operaciones-c',
+		image: '/img/animations/tabla-operaciones-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Una tabla de funciones decide',
+			en: 'A table of functions decides',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre el polimorfismo simulado: una tabla de punteros a funciones elige el área y el perímetro de cada figura, la base va como primer miembro y los límites de esta técnica.',
+			en: 'A two-minute short on simulated polymorphism: a table of function pointers picks the area and perimeter of each shape, the base goes first as a member, and the limits of this technique.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'polimorfismo-y-herencia-simulados-en-c' },
+	},
+	{
+		slug: 'programa-estructura-c',
+		image: '/img/animations/programa-estructura-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Las partes de un programa en C',
+			en: 'The parts of a C program',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre la estructura de un programa: la inclusión de stdio.h, la función main que devuelve un entero, las sentencias que se ejecutan en orden y los comentarios.',
+			en: 'A two-minute short on the structure of a program: including stdio.h, the main function returning an integer, statements running in order, and comments.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'introduccion-y-estructura' },
+	},
+	{
+		slug: 'algoritmo-estados-c',
+		image: '/img/animations/algoritmo-estados-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'El estado cambia paso a paso',
+			en: 'State changes step by step',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre los algoritmos como secuencias de acciones: el estado de las variables en cada paso, una tabla de seguimiento y el intercambio con una variable temporal.',
+			en: 'A two-minute short on algorithms as sequences of actions: the state of the variables at each step, a trace table, and swapping through a temporary variable.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'procesos-y-estados' },
+	},
+	{
+		slug: 'variables-constantes-c',
+		image: '/img/animations/variables-constantes-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Cajas con nombre y cajas que no cambian',
+			en: 'Named boxes and boxes that do not change',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre variables y constantes: declarar e inicializar, el valor indeterminado de una variable sin inicializar, literales con sufijo y la diferencia entre const y #define.',
+			en: 'A two-minute short on variables and constants: declaring and initializing, the indeterminate value of an uninitialized variable, suffixed literals, and the difference between const and #define.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'variables-y-constantes' },
+	},
+	{
+		slug: 'entrada-salida-c',
+		image: '/img/animations/entrada-salida-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Leer sin confiar',
+			en: 'Reading without trusting',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre la entrada y la salida: printf y sus especificadores, scanf y su valor de retorno, qué pasa con la entrada inválida que queda en el búfer y cómo descartarla.',
+			en: 'A two-minute short on input and output: printf and its specifiers, scanf and its return value, what happens to invalid input left in the buffer, and how to discard it.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'entrada-y-salida' },
+	},
+	{
+		slug: 'operadores-evaluacion-c',
+		image: '/img/animations/operadores-evaluacion-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'El orden en que se evalúa una expresión',
+			en: 'The order an expression is evaluated in',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre los operadores: precedencia y asociatividad, el cortocircuito de && y ||, el prefijo frente al sufijo en ++ y los casos que son comportamiento indefinido.',
+			en: 'A two-minute short on operators: precedence and associativity, the short-circuit of && and ||, prefix versus postfix ++, and the cases that are undefined behavior.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'operadores' },
+	},
+	{
+		slug: 'funciones-modulos-c',
+		image: '/img/animations/funciones-modulos-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'De un archivo a un proyecto de varios',
+			en: 'From one file to a multi-file project',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre la modularización: el prototipo en el .h con su guarda de inclusión, la definición en el .c, compilar cada archivo a un .o y enlazarlos.',
+			en: 'A two-minute short on modularization: the prototype in the .h with its include guard, the definition in the .c, compiling each file to a .o and linking them.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'modularizacion-subprogramas-y-funciones' },
+	},
+	{
+		slug: 'recursividad-pila-c',
+		image: '/img/animations/recursividad-pila-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Cada llamada apila un marco',
+			en: 'Every call stacks a frame',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre la recursividad: el caso base y el caso recursivo, la pila de llamadas que crece y se desarma en factorial(4), el costo de fibonacci y el desborde de la pila.',
+			en: 'A two-minute short on recursion: the base case and the recursive case, the call stack growing and unwinding in factorial(4), the cost of fibonacci, and stack overflow.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'recursividad' },
+	},
+	{
+		slug: 'pruebas-modulos-c',
+		image: '/img/animations/pruebas-modulos-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Un módulo bajo prueba',
+			en: 'A module under test',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre cómo probar un módulo en C: la compuerta assert y su mensaje, los casos límite, por qué NDEBUG hace desaparecer los assert, un ejecutor de pruebas con código de salida, make test y los tipos de ancho fijo de stdint.h para que el programa sea portable.',
+			en: 'A two-minute short on testing a C module: the assert gate and its message, boundary cases, why NDEBUG makes asserts disappear, a test runner with an exit status, make test and the fixed-width types of stdint.h that keep a program portable.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'pruebas-estilo-y-portabilidad' },
+	},
+	{
+		slug: 'depuracion-sanitizers-c',
+		image: '/img/animations/depuracion-sanitizers-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'El viaje de un error: depurar y vigilar la memoria',
+			en: 'The journey of a bug: debugging and watching memory',
+		},
+		description: {
+			es: 'Un corto de dos minutos que sigue a un error de una posición de más: el método de cinco pasos, las advertencias como primer depurador, un punto de parada con sus variables, el primer valor incorrecto y cómo AddressSanitizer y UndefinedBehaviorSanitizer lo detectan antes de la corrección.',
+			en: 'A two-minute short that follows an off-by-one bug: the five-step method, warnings as the first debugger, a breakpoint with its variables, the first wrong value, and how AddressSanitizer and UndefinedBehaviorSanitizer catch it before the fix.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'depuracion-y-sanitizers' },
+	},
 ];
 
 /**

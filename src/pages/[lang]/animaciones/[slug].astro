@@ -45,6 +45,33 @@ import ErroresMemoriaC from '../../../components/animaciones/errores-memoria-c.a
 import TiposConversionesC from '../../../components/animaciones/tipos-conversiones-c.astro';
 import PunterosArreglosC from '../../../components/animaciones/punteros-arreglos-c.astro';
 import MemoriaDinamicaC from '../../../components/animaciones/memoria-dinamica-c.astro';
+import OperadorTernarioC from '../../../components/animaciones/operador-ternario-c.astro';
+import SwitchBloquesC from '../../../components/animaciones/switch-bloques-c.astro';
+import DecisionesIfElseC from '../../../components/animaciones/decisiones-if-else-c.astro';
+import BucleForC from '../../../components/animaciones/bucle-for-c.astro';
+import DatosSecuencialesC from '../../../components/animaciones/datos-secuenciales-c.astro';
+import ArreglosIndicesC from '../../../components/animaciones/arreglos-indices-c.astro';
+import OperacionesArreglosC from '../../../components/animaciones/operaciones-arreglos-c.astro';
+import CadenasTerminadorC from '../../../components/animaciones/cadenas-terminador-c.astro';
+import BucleDoWhileC from '../../../components/animaciones/bucle-do-while-c.astro';
+import BusquedaBinariaC from '../../../components/animaciones/busqueda-binaria-c.astro';
+import RefinamientoAnidadosC from '../../../components/animaciones/refinamiento-anidados-c.astro';
+import BucleWhileC from '../../../components/animaciones/bucle-while-c.astro';
+import BibliotecaErroresC from '../../../components/animaciones/biblioteca-errores-c.astro';
+import ProgramaEstructuraC from '../../../components/animaciones/programa-estructura-c.astro';
+import PilasLifoC from '../../../components/animaciones/pilas-lifo-c.astro';
+import ColasFifoC from '../../../components/animaciones/colas-fifo-c.astro';
+import ArchivosPersistenciaC from '../../../components/animaciones/archivos-persistencia-c.astro';
+import AlgoritmoEstadosC from '../../../components/animaciones/algoritmo-estados-c.astro';
+import FuncionesModulosC from '../../../components/animaciones/funciones-modulos-c.astro';
+import PruebasModulosC from '../../../components/animaciones/pruebas-modulos-c.astro';
+import DepuracionSanitizersC from '../../../components/animaciones/depuracion-sanitizers-c.astro';
+import ArbolBusquedaC from '../../../components/animaciones/arbol-busqueda-c.astro';
+import EntradaSalidaC from '../../../components/animaciones/entrada-salida-c.astro';
+import ListasEnlazadasC from '../../../components/animaciones/listas-enlazadas-c.astro';
+import C23NovedadesC from '../../../components/animaciones/c23-novedades-c.astro';
+import HilosAtomicsC from '../../../components/animaciones/hilos-atomics-c.astro';
+import RecursividadPilaC from '../../../components/animaciones/recursividad-pila-c.astro';
 
 export function getStaticPaths() {
 	const paths: Array<{ params: { lang: Locale; slug: string } }> = [];
@@ -107,6 +134,33 @@ const componentMap: Record<string, any> = {
 	'tipos-conversiones-c': TiposConversionesC,
 	'punteros-arreglos-c': PunterosArreglosC,
 	'memoria-dinamica-c': MemoriaDinamicaC,
+	'operador-ternario-c': OperadorTernarioC,
+	'switch-bloques-c': SwitchBloquesC,
+	'decisiones-if-else-c': DecisionesIfElseC,
+	'bucle-for-c': BucleForC,
+	'datos-secuenciales-c': DatosSecuencialesC,
+	'arreglos-indices-c': ArreglosIndicesC,
+	'operaciones-arreglos-c': OperacionesArreglosC,
+	'cadenas-terminador-c': CadenasTerminadorC,
+	'bucle-do-while-c': BucleDoWhileC,
+	'busqueda-binaria-c': BusquedaBinariaC,
+	'refinamiento-anidados-c': RefinamientoAnidadosC,
+	'bucle-while-c': BucleWhileC,
+	'biblioteca-errores-c': BibliotecaErroresC,
+	'programa-estructura-c': ProgramaEstructuraC,
+	'pilas-lifo-c': PilasLifoC,
+	'colas-fifo-c': ColasFifoC,
+	'archivos-persistencia-c': ArchivosPersistenciaC,
+	'algoritmo-estados-c': AlgoritmoEstadosC,
+	'funciones-modulos-c': FuncionesModulosC,
+	'pruebas-modulos-c': PruebasModulosC,
+	'depuracion-sanitizers-c': DepuracionSanitizersC,
+	'arbol-busqueda-c': ArbolBusquedaC,
+	'entrada-salida-c': EntradaSalidaC,
+	'listas-enlazadas-c': ListasEnlazadasC,
+	'c23-novedades-c': C23NovedadesC,
+	'hilos-atomics-c': HilosAtomicsC,
+	'recursividad-pila-c': RecursividadPilaC,
 };
 
 const AnimationComponent = componentMap[slug];

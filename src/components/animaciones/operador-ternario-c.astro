@@ -1,0 +1,1237 @@
+---
+/**
+ * Scene for "An expression that chooses" (lesson c/09-operador-ternario,
+ * order: 9), a short film played on one persistent motion canvas. The captions
+ * and cues live in `src/data/animations/operador-ternario-c.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: the C
+ * program, with a bar that slides to the line being executed and the real output
+ * typed in the console below. The viewport on the right holds the camera. Every
+ * `?:` is the same machine: a condition cube (its editor line on the face) that
+ * forks into two branch plates, the value if true and the value if false. The
+ * verdict of the condition appears, only the chosen plate lights up, and its
+ * value leaves as a token into a variable box, a `printf` machine or another
+ * fork. The `100 / x` branch is sealed in magenta (never evaluated); the
+ * conversion of `90` to `double` happens in violet; a code card shows the
+ * equivalent `if-else` next to the fork of line 11.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/operador-ternario-c';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── The program shown in the editor ───────────────────────────────────────
+// Identifiers and string literals are the lesson's own, localized like it does.
+const names = {
+	min: t('menor', 'smaller'),
+	num: t('numero', 'number'),
+	sign: t('signo', 'sign'),
+	disc: t('conDescuento', 'discounted'),
+	price: t('precio', 'price'),
+	minText: t('El menor es', 'The smaller is'),
+	maxText: t('El mayor es', 'The larger is'),
+	pos: t('positivo', 'positive'),
+	neg: t('negativo', 'negative'),
+	zero: t('cero', 'zero'),
+	file: t('ternario.c', 'ternary.c'),
+};
+
+const program = [
+	'#include <stdio.h>',
+	'',
+	'int main(void) {',
+	'    int a = 12, b = 5;',
+	`    int ${names.min} = a < b ? a : b;`,
+	`    printf("${names.minText}: %d\\n", ${names.min});`,
+	`    printf("${names.maxText}: %d\\n", a > b ? a : b);`,
+	'    int x = 0;',
+	'    int r = x != 0 ? 100 / x : 0;',
+	`    int ${names.num} = -4;`,
+	`    const int ${names.sign} = ${names.num} >= 0 ? 1 : -1;`,
+	`    bool ${names.disc} = true;`,
+	`    double ${names.price} = ${names.disc} ? 90 : 99.5;`,
+	`    printf("%d %d %.1f\\n", r, ${names.sign}, ${names.price});`,
+	`    printf("%s\\n", ${names.num} > 0 ? "${names.pos}"`,
+	`           : ${names.num} < 0 ? "${names.neg}" : "${names.zero}");`,
+	'    return 0;',
+	'}',
+].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const lines = highlightCode(program, 'c').map((html, index) => ({
+	n: index + 1,
+	html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+}));
+
+// The real output of the program (cc -std=c23 -Wall -Wextra -Wpedantic), one line per print.
+const outputs = [
+	{ id: 'o-6', row: 0, text: `${names.minText}: 5` },
+	{ id: 'o-7', row: 1, text: `${names.maxText}: 12` },
+	{ id: 'o-14', row: 2, text: '0 -1 90.0' },
+	{ id: 'o-15', row: 3, text: names.neg },
+];
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 72;
+const GUTTER_X = 59;
+const CODE_TOP = 70;
+const LINE_H = 22;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 4.5;
+const CONSOLE_TOP = 482;
+const outY = (row: number) => 534 + row * 26;
+// Marked lines: the branch that must never run, and the nested chain (two lines).
+const WARN_LINES = [
+	{ id: 'warn-9', from: 9, to: 9 },
+	{ id: 'warn-15', from: 15, to: 16 },
+];
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const DU = { x: 20, y: 11.5 };
+const DV = { x: -20, y: 11.5 };
+const BH = 20;
+const round = (value: number) => Math.round(value * 10) / 10;
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const SKEW = (point: Point) => `matrix(0.866 0.5 0 1 ${point.x} ${point.y})`;
+
+/** A variable box: an isometric slab `n` units long whose top-face back corner is (ox, oy). */
+function box(ox: number, oy: number, n = 3) {
+	const P = (k: number, d = 0, z = 0): Point => ({
+		x: round(ox + k * DU.x + d * DV.x),
+		y: round(oy + k * DU.y + d * DV.y + z),
+	});
+	return {
+		top: poly([P(0), P(n), P(n, 1), P(0, 1)]),
+		front: poly([P(0, 1), P(n, 1), P(n, 1, BH), P(0, 1, BH)]),
+		end: poly([P(n), P(n, 1), P(n, 1, BH), P(n, 0, BH)]),
+		base: poly([P(0, 0, BH), P(n, 0, BH), P(n, 1, BH), P(0, 1, BH)]),
+		topCenter: P(n / 2, 0.5),
+		valueAt: { x: P(n / 2, 0.5).x, y: round(P(n / 2, 0.5).y + 4.5) },
+		labelAt: { x: P(0, 1).x, y: round(P(0).y - 10) },
+	};
+}
+type Box = ReturnType<typeof box>;
+type Tone = 'flow' | 'violet' | 'magenta';
+
+/** A cube whose top-face center is (cx, cy): the condition of a fork, or a machine. */
+const CS = 22;
+const CH = 24;
+const CY = round(CS * 0.575);
+function cube(cx: number, cy: number) {
+	return {
+		top: poly([
+			{ x: cx, y: cy - CY },
+			{ x: cx + CS, y: cy },
+			{ x: cx, y: cy + CY },
+			{ x: cx - CS, y: cy },
+		]),
+		left: poly([
+			{ x: cx - CS, y: cy },
+			{ x: cx, y: cy + CY },
+			{ x: cx, y: cy + CY + CH },
+			{ x: cx - CS, y: cy + CH },
+		]),
+		right: poly([
+			{ x: cx, y: cy + CY },
+			{ x: cx + CS, y: cy },
+			{ x: cx + CS, y: cy + CH },
+			{ x: cx, y: cy + CY + CH },
+		]),
+		base: poly([
+			{ x: cx, y: cy - CY + CH },
+			{ x: cx + CS, y: cy + CH },
+			{ x: cx, y: cy + CY + CH },
+			{ x: cx - CS, y: cy + CH },
+		]),
+		face: SKEW({ x: round(cx - CS / 2), y: round(cy + CY / 2 + CH / 2 + 4) }),
+		center: { x: cx, y: cy },
+		bottom: { x: cx, y: round(cy + CY + CH) },
+		topTip: { x: cx, y: round(cy - CY) },
+	};
+}
+type Cube = ReturnType<typeof cube>;
+
+/** A branch plate: a flat isometric tile centered on (cx, cy) with the branch written on top. */
+const PW = 44;
+const PH = 25;
+const PT = 8;
+function plate(cx: number, cy: number) {
+	return {
+		top: poly([
+			{ x: cx, y: cy - PH },
+			{ x: cx + PW, y: cy },
+			{ x: cx, y: cy + PH },
+			{ x: cx - PW, y: cy },
+		]),
+		side: poly([
+			{ x: cx - PW, y: cy },
+			{ x: cx, y: cy + PH },
+			{ x: cx + PW, y: cy },
+			{ x: cx + PW, y: cy + PT },
+			{ x: cx, y: cy + PH + PT },
+			{ x: cx - PW, y: cy + PT },
+		]),
+		center: { x: cx, y: cy },
+		tip: { x: cx, y: cy - PH },
+	};
+}
+type Plate = ReturnType<typeof plate>;
+const wire = (from: Point, to: Point) => `M${from.x} ${from.y} C${from.x} ${round(from.y + 26)} ${to.x} ${round(to.y - 30)} ${to.x} ${to.y}`;
+
+// ── Forks: every ternary of the program ───────────────────────────────────
+// `pick` is the plate the condition chooses. A chained fork has no false plate:
+// its false wire leads to the next fork.
+type Branch = { text: string; sub: string };
+type Fork = {
+	line: number;
+	g: Cube;
+	cond: string;
+	verdict: string;
+	verdictAt: Point;
+	t: Branch;
+	f?: Branch;
+	pick: 'true' | 'false';
+	next?: number;
+};
+const yes = t('si es verdadera', 'if true');
+const no = t('si es falsa', 'if false');
+const isTrue = t('verdadera', 'true');
+const isFalse = t('falsa', 'false');
+const forks: Fork[] = [
+	{ line: 5, g: cube(270, 90), cond: 'a < b', verdict: `12 < 5: ${isFalse}`, verdictAt: { x: 270, y: 240 }, t: { text: 'a', sub: yes }, f: { text: 'b', sub: no }, pick: 'false' },
+	{ line: 7, g: cube(660, 90), cond: 'a > b', verdict: `12 > 5: ${isTrue}`, verdictAt: { x: 660, y: 240 }, t: { text: 'a', sub: yes }, f: { text: 'b', sub: no }, pick: 'true' },
+	{ line: 9, g: cube(270, 330), cond: 'x != 0', verdict: `0 != 0: ${isFalse}`, verdictAt: { x: 300, y: 480 }, t: { text: '100 / x', sub: yes }, f: { text: '0', sub: no }, pick: 'false' },
+	{ line: 11, g: cube(660, 330), cond: `${names.num} >= 0`, verdict: `-4 >= 0: ${isFalse}`, verdictAt: { x: 660, y: 480 }, t: { text: '1', sub: yes }, f: { text: '-1', sub: no }, pick: 'false' },
+	{ line: 13, g: cube(270, 570), cond: names.disc, verdict: `true: ${isTrue}`, verdictAt: { x: 270, y: 720 }, t: { text: '90', sub: 'int' }, f: { text: '99.5', sub: 'double' }, pick: 'true' },
+	{ line: 15, g: cube(640, 560), cond: `${names.num} > 0`, verdict: `-4 > 0: ${isFalse}`, verdictAt: { x: 545, y: 522 }, t: { text: `"${names.pos}"`, sub: yes }, pick: 'false', next: 16 },
+	{ line: 16, g: cube(760, 620), cond: `${names.num} < 0`, verdict: `-4 < 0: ${isTrue}`, verdictAt: { x: 760, y: 778 }, t: { text: `"${names.neg}"`, sub: yes }, f: { text: `"${names.zero}"`, sub: no }, pick: 'true' },
+];
+const PLATE_DX = 62;
+const PLATE_DY = 80;
+const forkParts = forks.map((fork) => {
+	const tp = plate(fork.g.center.x - PLATE_DX, fork.g.center.y + PLATE_DY);
+	const fp = fork.f ? plate(fork.g.center.x + PLATE_DX, fork.g.center.y + PLATE_DY) : undefined;
+	const nextTip = fork.next ? forks.find((other) => other.line === fork.next)?.g.topTip : undefined;
+	const tWire = wire(fork.g.bottom, tp.tip);
+	const fWire = fp ? wire(fork.g.bottom, fp.tip) : nextTip ? wire(fork.g.bottom, nextTip) : '';
+	const picked: Plate | undefined = fork.pick === 'true' ? tp : fp;
+	return { fork, tp, fp, tWire, fWire, picked, pickWire: fork.pick === 'true' ? tWire : fWire };
+});
+
+// ── Boxes and machines ────────────────────────────────────────────────────
+type BoxSpec = { id: string; g: Box; name: string; type: string; value?: string };
+const B = {
+	a: box(80, 64),
+	b: box(80, 150),
+	min: box(400, 90),
+	x: box(80, 310),
+	r: box(400, 330),
+	num: box(500, 330),
+	sign: box(790, 330),
+	disc: box(80, 600),
+	price: box(400, 570),
+};
+// Declarations whose box is the module of their line.
+const declarations: { line: number; boxes: BoxSpec[] }[] = [
+	{
+		line: 4,
+		boxes: [
+			{ id: 'a', g: B.a, name: 'a', type: 'int', value: '12' },
+			{ id: 'b', g: B.b, name: 'b', type: 'int', value: '5' },
+		],
+	},
+	{ line: 8, boxes: [{ id: 'x', g: B.x, name: 'x', type: 'int', value: '0' }] },
+	{ line: 10, boxes: [{ id: 'num', g: B.num, name: names.num, type: 'int', value: '-4' }] },
+	{ line: 12, boxes: [{ id: 'disc', g: B.disc, name: names.disc, type: 'bool', value: 'true' }] },
+];
+// Boxes a fork fills: they belong to the module of the fork's line.
+const targets: Record<number, BoxSpec> = {
+	5: { id: 'min', g: B.min, name: names.min, type: 'int' },
+	9: { id: 'r', g: B.r, name: 'r', type: 'int' },
+	11: { id: 'sign', g: B.sign, name: names.sign, type: 'const int' },
+	13: { id: 'price', g: B.price, name: names.price, type: 'double' },
+};
+// printf (and return) machines. Lines 7 and 15 own theirs inside the fork module.
+type Machine = { line: number; g: Cube; label: string; own: boolean };
+const machines: Machine[] = [
+	{ line: 6, g: cube(510, 190), label: 'printf', own: true },
+	{ line: 7, g: cube(800, 110), label: 'printf', own: false },
+	{ line: 14, g: cube(490, 690), label: 'printf', own: true },
+	{ line: 15, g: cube(850, 520), label: 'printf', own: false },
+	{ line: 17, g: cube(130, 515), label: 'return 0', own: true },
+];
+const machineOf = (line: number) => machines.find((machine) => machine.line === line);
+
+// Where the particle stops (above a module) and where tokens start and land.
+const anchors = [
+	{ id: 'a-m4', ...lift(B.a.topCenter, 46) },
+	{ id: 'a-m8', ...lift(B.x.topCenter, 46) },
+	{ id: 'a-m10', ...lift(B.num.topCenter, 46) },
+	{ id: 'a-m12', ...lift(B.disc.topCenter, 46) },
+	...forks.map((fork) => ({ id: `a-m${fork.line}`, ...lift(fork.g.center, 60) })),
+	...machines.filter((machine) => machine.own).map((machine) => ({ id: `a-m${machine.line}`, ...lift(machine.g.center, 46) })),
+	...forkParts.filter((part) => part.picked).map((part) => ({ id: `a-k${part.fork.line}`, ...part.picked!.center })),
+	...machines.map((machine) => ({ id: `a-in${machine.line}`, ...machine.g.center })),
+	{ id: 'a-menor', ...B.min.topCenter },
+	{ id: 'a-r', ...B.r.topCenter },
+	{ id: 'a-signo', ...B.sign.topCenter },
+	{ id: 'a-precio', ...B.price.topCenter },
+	{ id: 'a-conv13', x: 410, y: 520 },
+];
+const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0, y: 0 };
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-all', cx: 480, cy: 400, s: 0.78 },
+	{ id: 'shot-parts', cx: 300, cy: 150, s: 1.35 },
+	{ id: 'shot-arg', cx: 600, cy: 150, s: 1.2 },
+	{ id: 'shot-lazy', cx: 270, cy: 380, s: 1.4 },
+	{ id: 'shot-ifelse', cx: 650, cy: 440, s: 1.15 },
+	{ id: 'shot-type', cx: 330, cy: 580, s: 1.3 },
+	{ id: 'shot-nested', cx: 700, cy: 630, s: 1.25 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Value tokens: one visual identity for "the value a ternary produced, on its way".
+type Token = { id: string; text: string; from: string; tone: Tone };
+const tokens: Token[] = [
+	{ id: 't-r5', text: '5', from: 'a-k5', tone: 'flow' },
+	{ id: 't-c6', text: '5', from: 'a-menor', tone: 'flow' },
+	{ id: 't-r7', text: '12', from: 'a-k7', tone: 'flow' },
+	{ id: 't-r9', text: '0', from: 'a-k9', tone: 'flow' },
+	{ id: 't-r11', text: '-1', from: 'a-k11', tone: 'flow' },
+	{ id: 't-90', text: '90', from: 'a-k13', tone: 'flow' },
+	{ id: 't-90d', text: '90.0', from: 'a-conv13', tone: 'violet' },
+	{ id: 't-c14a', text: '0', from: 'a-r', tone: 'flow' },
+	{ id: 't-c14b', text: '-1', from: 'a-signo', tone: 'flow' },
+	{ id: 't-c14c', text: '90.0', from: 'a-precio', tone: 'violet' },
+	{ id: 't-r16', text: `"${names.neg}"`, from: 'a-k16', tone: 'flow' },
+];
+const tokenWidth = (token: Token) => Math.round(token.text.length * 7.9 + 22);
+
+// Values a fork writes into its box.
+const values = [
+	{ id: 'v-menor', text: '5', at: B.min.valueAt },
+	{ id: 'v-r', text: '0', at: B.r.valueAt },
+	{ id: 'v-signo', text: '-1', at: B.sign.valueAt },
+	{ id: 'v-precio', text: '90.0', at: B.price.valueAt },
+];
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = { id: string; text: string; x: number; y: number; align: 'start' | 'end' | 'middle'; tone: 'plain' | Tone; mono?: boolean };
+const chips: Chip[] = [
+	...forks.map((fork): Chip => ({ id: `cv-${fork.line}`, text: fork.verdict, x: fork.verdictAt.x, y: fork.verdictAt.y, align: 'middle', tone: 'violet', mono: true })),
+	{ id: 'lb-value', text: t('?: elige un valor', '?: chooses a value'), x: 400, y: 40, align: 'middle', tone: 'flow' },
+	{ id: 'lb-expr', text: t('una expresión: va donde va un valor', 'an expression: it goes where a value goes'), x: 640, y: 40, align: 'middle', tone: 'flow' },
+	{ id: 'lb-lazy', text: t('no se evalúa', 'never evaluated'), x: 112, y: 420, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-const', text: t('const, en la misma línea', 'const, on the same line'), x: 820, y: 476, align: 'middle', tone: 'violet' },
+	{ id: 'lb-type', text: 'int, double → double', x: 410, y: 520, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'lb-chain', text: 'a ? b : (c ? d : e)', x: 720, y: 470, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'lb-elseif', text: t('más niveles → else if', 'more levels → else if'), x: 540, y: 760, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-ok', text: t('dos valores simples → ?:', 'two simple values → ?:'), x: 480, y: 10, align: 'middle', tone: 'violet' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + 24);
+const chipLeft = (chip: Chip) =>
+	chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x;
+
+// The equivalent if-else, written on a card next to the fork of line 11.
+const CARD = { x: 450, y: 500, w: 210, h: 140 };
+const cardLines = [
+	`int ${names.sign};`,
+	`if (${names.num} >= 0) {`,
+	`    ${names.sign} = 1;`,
+	'} else {',
+	`    ${names.sign} = -1;`,
+	'}',
+];
+const CARD_TOP = CARD.y + 40;
+const CARD_LH = 16;
+const cardLineY = (index: number) => CARD_TOP + index * CARD_LH;
+
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="ternary" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="ot-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="ot-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<radialGradient id="ot-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="ot-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="ot-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: every ternary as a fork, seen through the camera -->
+			<g clip-path="url(#ot-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#ot-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#ot-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- Declarations: each box is the module of its line -->
+						{
+							declarations.map((decl) => (
+								<>
+									<g data-el={`m-${decl.line}`} class="xj-mod">
+										{decl.boxes.map((spec) => (
+											<g>
+												<polygon class="xj-shadow" points={spec.g.base} transform="translate(6 8)" />
+												<polygon class="xj-face xj-face--l" points={spec.g.front} />
+												<polygon class="xj-face xj-face--r" points={spec.g.end} />
+												<polygon class="xj-face xj-face--t" points={spec.g.top} fill="url(#ot-g-top)" />
+												<text class="xj-name" x={spec.g.labelAt.x} y={spec.g.labelAt.y}>
+													{spec.name}
+													<tspan class="xj-type"> · {spec.type}</tspan>
+													<tspan class="xj-line"> · {decl.line}</tspan>
+												</text>
+												{spec.value && (
+													<text class="xj-value" x={spec.g.valueAt.x} y={spec.g.valueAt.y} text-anchor="middle">
+														{spec.value}
+													</text>
+												)}
+											</g>
+										))}
+									</g>
+									<g data-el={`on-${decl.line}`} class="xj-lit xj-lit--flow">
+										{decl.boxes.map((spec) => (
+											<g>
+												<polygon class="xj-lit-halo" points={spec.g.top} />
+												<polygon class="xj-lit-top xj-lit-top--soft" points={spec.g.top} />
+												<polygon class="xj-lit-side xj-lit-side--soft" points={spec.g.front} />
+											</g>
+										))}
+									</g>
+								</>
+							))
+						}
+
+						<!-- Forks: the condition cube, its two branch plates and the box or machine it feeds -->
+						{
+							forkParts.map((part) => {
+								const { fork } = part;
+								const target = targets[fork.line];
+								const machine = machineOf(fork.line);
+								return (
+									<>
+										<g data-el={`m-${fork.line}`} class="xj-mod">
+											<path class="xj-wire" d={part.tWire} />
+											{part.fWire && <path class="xj-wire" d={part.fWire} />}
+											{[
+												{ p: part.tp, b: fork.t, id: `pt-${fork.line}` },
+												...(part.fp && fork.f ? [{ p: part.fp, b: fork.f, id: `pf-${fork.line}` }] : []),
+											].map((item) => (
+												<g data-el={item.id} data-base="shown">
+													<g>
+														<polygon class="xj-plate-side" points={item.p.side} />
+														<polygon class="xj-plate" points={item.p.top} />
+														<text class="xj-branch" x={item.p.center.x} y={item.p.center.y + 4.5} text-anchor="middle">
+															{item.b.text}
+														</text>
+														<text class="xj-sub" x={item.p.center.x} y={item.p.center.y + PH + PT + 14} text-anchor="middle">
+															{item.b.sub}
+														</text>
+													</g>
+												</g>
+											))}
+											<g data-el={`c-${fork.line}`} data-base="shown">
+												<g>
+													<polygon class="xj-shadow" points={fork.g.base} transform="translate(6 8)" />
+													<polygon class="xj-face xj-face--l" points={fork.g.left} />
+													<polygon class="xj-face xj-face--r" points={fork.g.right} />
+													<polygon class="xj-face xj-face--t" points={fork.g.top} fill="url(#ot-g-top)" />
+													<text class="xj-face-text" transform={fork.g.face} text-anchor="middle">
+														{fork.line}
+													</text>
+													<text class="xj-op" x={fork.g.center.x} y={fork.g.center.y + 5} text-anchor="middle">
+														?
+													</text>
+													<text class="xj-cond" x={fork.g.center.x} y={fork.g.topTip.y - 14} text-anchor="middle">
+														{fork.cond}
+													</text>
+												</g>
+											</g>
+											{target && (
+												<g>
+													<polygon class="xj-shadow" points={target.g.base} transform="translate(6 8)" />
+													<polygon class="xj-face xj-face--l" points={target.g.front} />
+													<polygon class="xj-face xj-face--r" points={target.g.end} />
+													<polygon class="xj-face xj-face--t" points={target.g.top} fill="url(#ot-g-top)" />
+													<text class="xj-name" x={target.g.labelAt.x} y={target.g.labelAt.y}>
+														{target.name}
+														<tspan class="xj-type"> · {target.type}</tspan>
+													</text>
+												</g>
+											)}
+											{machine && (
+												<g>
+													<polygon class="xj-shadow" points={machine.g.base} transform="translate(6 8)" />
+													<polygon class="xj-face xj-face--l" points={machine.g.left} />
+													<polygon class="xj-face xj-face--r" points={machine.g.right} />
+													<polygon class="xj-face xj-face--t" points={machine.g.top} fill="url(#ot-g-top)" />
+													<text class="xj-machine" x={machine.g.center.x} y={machine.g.topTip.y - 12} text-anchor="middle">
+														{machine.label}
+													</text>
+												</g>
+											)}
+										</g>
+										<g data-el={`on-${fork.line}`} class="xj-lit xj-lit--violet">
+											<polygon class="xj-lit-halo" points={fork.g.top} />
+											<polygon class="xj-lit-top" points={fork.g.top} />
+											<polygon class="xj-lit-side" points={fork.g.left} />
+											<text class="xj-face-text xj-face-text--on" transform={fork.g.face} text-anchor="middle">
+												{fork.line}
+											</text>
+											<text class="xj-op xj-op--on" x={fork.g.center.x} y={fork.g.center.y + 5} text-anchor="middle">
+												?
+											</text>
+										</g>
+										<g data-el={`k-${fork.line}`} class="xj-pick">
+											<g>
+												<path class="mg-stroke xj-pick-halo" pathLength="1" d={part.pickWire} />
+												<path class="mg-stroke xj-pick-core" pathLength="1" d={part.pickWire} />
+												{part.picked && (
+													<>
+														<polygon class="xj-lit-halo" points={part.picked.top} />
+														<polygon class="xj-pick-top" points={part.picked.top} />
+														<text class="xj-branch xj-branch--on" x={part.picked.center.x} y={part.picked.center.y + 4.5} text-anchor="middle">
+															{fork.pick === 'true' ? fork.t.text : fork.f?.text}
+														</text>
+													</>
+												)}
+											</g>
+										</g>
+									</>
+								);
+							})
+						}
+
+						<!-- The branch of line 9 that never runs: sealed -->
+						<g data-el="seal-9" class="xj-seal">
+							<g>
+								<polygon class="xj-seal-ring" points={forkParts.find((part) => part.fork.line === 9)!.tp.top} />
+								<svg class="xj-icon" x={forkParts.find((part) => part.fork.line === 9)!.tp.center.x - 11} y={forkParts.find((part) => part.fork.line === 9)!.tp.tip.y - 30} width="22" height="22" viewBox="0 0 24 24" stroke-width="2.75">
+									<rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+									<path d="M7 11V7a5 5 0 0 1 10 0v4" />
+								</svg>
+							</g>
+						</g>
+
+						<!-- Machines of their own line: printf and return -->
+						{
+							machines
+								.filter((machine) => machine.own)
+								.map((machine) => (
+									<>
+										<g data-el={`m-${machine.line}`} class="xj-mod">
+											<polygon class="xj-shadow" points={machine.g.base} transform="translate(6 8)" />
+											<polygon class="xj-face xj-face--l" points={machine.g.left} />
+											<polygon class="xj-face xj-face--r" points={machine.g.right} />
+											<polygon class="xj-face xj-face--t" points={machine.g.top} fill="url(#ot-g-top)" />
+											<text class="xj-face-text" transform={machine.g.face} text-anchor="middle">
+												{machine.line}
+											</text>
+											<text class="xj-machine" x={machine.g.center.x} y={machine.g.topTip.y - 12} text-anchor="middle">
+												{machine.label}
+											</text>
+										</g>
+										<g data-el={`on-${machine.line}`} class="xj-lit xj-lit--flow">
+											<polygon class="xj-lit-halo" points={machine.g.top} />
+											<polygon class="xj-lit-top" points={machine.g.top} />
+											<polygon class="xj-lit-side" points={machine.g.left} />
+											<text class="xj-face-text xj-face-text--on" transform={machine.g.face} text-anchor="middle">
+												{machine.line}
+											</text>
+										</g>
+									</>
+								))
+						}
+						<!-- The equivalent if-else: a statement that chooses which assignment runs -->
+						<g data-el="card" class="xj-card">
+							<g>
+								<rect class="xj-card-ground" x={CARD.x} y={CARD.y} width={CARD.w} height={CARD.h} rx="14" />
+								<text class="xj-card-title" x={CARD.x + 14} y={CARD.y + 22}>
+									{t('if-else: elige instrucciones', 'if-else: chooses statements')}
+								</text>
+								{
+									cardLines.map((line, index) => (
+										<text class="xj-card-code" x={CARD.x + 14} y={cardLineY(index) + 4} xml:space="preserve">
+											{line}
+										</text>
+									))
+								}
+							</g>
+						</g>
+						<g data-el="card-hl" class="xj-card-hl">
+							<rect x={CARD.x + 6} y={cardLineY(4) - 9} width={CARD.w - 12} height={CARD_LH} rx="5" />
+						</g>
+
+						<!-- Values a fork wrote -->
+						{
+							values.map((value) => (
+								<text data-el={value.id} class="xj-value" x={value.at.x} y={value.at.y} text-anchor="middle">
+									{value.text}
+								</text>
+							))
+						}
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									<text class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'} x={chipLeft(chip) + chipWidth(chip) / 2} y={chip.y + 4.5} text-anchor="middle">
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Value tokens. Placement lives on the inner group: the player resets data-el transforms. -->
+						{
+							tokens.map((token) => (
+								<g data-el={token.id} data-x={at(token.from).x} data-y={at(token.from).y}>
+									<g class:list={['xj-token', `xj-token--${token.tone}`]}>
+										<rect class="xj-token-halo" x={-tokenWidth(token) / 2 - 5} y="-18" width={tokenWidth(token) + 10} height="36" rx="18" />
+										<rect class="xj-token-card" x={-tokenWidth(token) / 2} y="-13" width={tokenWidth(token)} height="26" rx="13" />
+										<text class="xj-token-text" x="0" y="4.5" text-anchor="middle">
+											{token.text}
+										</text>
+									</g>
+								</g>
+							))
+						}
+
+						<!-- The execution flow -->
+						<g data-el="p" class="xj-particle" data-x={at('a-m4').x} data-y={at('a-m4').y}>
+							<circle r="20" fill="url(#ot-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="420" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<rect class="xj-legend-pick" x={VP.x + 172} y={LEGEND_Y - 6} width="20" height="12" rx="3"></rect>
+				<text x={VP.x + 200} y={LEGEND_Y + 4}>{t('Rama elegida', 'Chosen branch')}</text>
+				<rect class="xj-legend-token" x={VP.x + 318} y={LEGEND_Y - 6} width="20" height="12" rx="6"></rect>
+				<text x={VP.x + 346} y={LEGEND_Y + 4}>{t('Valor', 'Value')}</text>
+			</g>
+
+			<!-- EDITOR: the program, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.file}</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(4)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<!-- Marked lines: the branch that must never run, and the nested chain -->
+				{
+					WARN_LINES.map((mark) => (
+						<g data-el={mark.id} class="xj-warn">
+							<rect x={ED.x + 4} y={lineTop(mark.from) + 2} width="4" height={(mark.to - mark.from + 1) * LINE_H - 4} rx="2" />
+							<svg class="xj-icon" x={ED.x + ED.w - 30} y={lineMid(mark.from) - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+								<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+								<path d="M12 9v4" />
+								<path d="M12 17h.01" />
+							</svg>
+						</g>
+					))
+				}
+
+				<!-- The program: written before it runs, so every line is visible -->
+				<g class="xj-code">
+					{
+						lines.map((line) => (
+							<g>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				<!-- Console: what each printf prints -->
+				{
+					outputs.map((out) => (
+						<text data-el={out.id} class="xj-out" x={ED.x + 20} y={outY(out.row)} xml:space="preserve">
+							{out.text}
+						</text>
+					))
+				}
+				{lines.map((line) => <circle data-anchor={`ln-${line.n}`} cx={BAR_CX} cy={lineMid(line.n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue execution flow, magenta for the problem (the branch that must never run,
+	   the hard-to-read chain) and violet for what resolves the choice (the verdict
+	   of the condition, the conversion to double).
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='operador-ternario-c']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='operador-ternario-c'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='operador-ternario-c'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='operador-ternario-c'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-pick {
+		fill: var(--xj-flow);
+		fill-opacity: 0.45;
+		stroke: var(--xj-flow-soft);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend-token {
+		fill: var(--xj-panel);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+	}
+
+	/* Boxes, cubes and plates */
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-plate {
+		fill: var(--xj-deep-hi);
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate-side {
+		fill: var(--xj-steel);
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.2;
+		stroke-linejoin: round;
+	}
+
+	.xj-wire {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+	}
+
+	.xj-name {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-type,
+	.xj-line {
+		font-size: 11px;
+		font-weight: 400;
+		fill: var(--xj-dim);
+	}
+
+	.xj-line {
+		font-family: var(--font-body);
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-value {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-branch {
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-branch--on {
+		fill: var(--xj-white);
+	}
+
+	.xj-sub {
+		font-family: var(--font-body);
+		font-size: 10.5px;
+		font-weight: 600;
+		fill: var(--xj-dim);
+	}
+
+	.xj-cond,
+	.xj-machine {
+		font-family: monospace;
+		font-size: 12.5px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-machine {
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	.xj-op {
+		font-family: monospace;
+		font-size: 15px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-op--on {
+		fill: var(--xj-ink);
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit, var(--xj-flow));
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top--soft {
+		fill-opacity: 0.18;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side--soft {
+		fill: var(--xj-lit);
+		fill-opacity: 0.25;
+	}
+
+	/* The chosen branch: its wire and its plate light up in the flow color */
+	.xj-pick-halo,
+	.xj-pick-core {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-linecap: round;
+	}
+
+	.xj-pick-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-pick-core {
+		stroke-width: 3;
+	}
+
+	.xj-pick-top {
+		fill: var(--xj-flow);
+		fill-opacity: 0.45;
+		stroke: var(--xj-flow-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	/* The branch that is never evaluated */
+	.xj-seal-ring {
+		fill: var(--xj-magenta-deep);
+		fill-opacity: 0.55;
+		stroke: var(--xj-magenta);
+		stroke-width: 2;
+		stroke-dasharray: 6 5;
+		stroke-linejoin: round;
+	}
+
+	/* The if-else card */
+	.xj-card-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.96;
+		stroke: var(--xj-violet);
+		stroke-width: 1.5;
+	}
+
+	.xj-card-title {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-card-code {
+		font-family: monospace;
+		font-size: 12px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-card-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.2;
+		stroke: var(--xj-flow);
+		stroke-width: 1.2;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink);
+	}
+
+	/* Value tokens and the flow */
+	.xj-token {
+		--xj-token: var(--xj-flow);
+		--xj-token-ink: var(--xj-flow-soft);
+	}
+
+	.xj-token--violet {
+		--xj-token: var(--xj-violet);
+		--xj-token-ink: var(--xj-violet-soft);
+	}
+
+	.xj-token-halo {
+		fill: var(--xj-token);
+		fill-opacity: 0.16;
+	}
+
+	.xj-token-card {
+		fill: var(--xj-ink);
+		stroke: var(--xj-token);
+		stroke-width: 2;
+	}
+
+	.xj-token-text {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-token-ink);
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+		font-weight: 700;
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-ann) {
+		fill: var(--xj-flow-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-warn rect {
+		fill: var(--xj-magenta);
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-magenta);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+</style>

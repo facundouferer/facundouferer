@@ -1,0 +1,1301 @@
+---
+/**
+ * Scene for "One path per condition" (lesson c/sentencia-if-else, order: 8), a short
+ * film played on one persistent motion canvas. The captions and cues live in
+ * `src/data/animations/decisiones-if-else-c.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: the lesson's
+ * programs, one page at a time, with a bar that slides to the running line and the
+ * real output typed in the console below. The viewport on the right holds the camera:
+ * one isometric district of track per program. A light blue particle is the flow of
+ * execution; every instruction is a module labelled with its editor line, and every
+ * `if` is a fork (violet) where the condition is evaluated and one branch is taken.
+ * The route the particle takes lights up behind it. Magenta marks what goes wrong:
+ * the assignment that changes the variable, the stray `;` that empties the `if`, and
+ * the division that the `&&` guard keeps from running.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/decisiones-if-else-c';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── The programs shown in the editor ──────────────────────────────────────
+// The lesson's own examples, with its identifiers and strings localized like it does.
+const names = {
+	number: t('numero', 'number'),
+	grade: t('nota', 'grade'),
+	age: t('edad', 'age'),
+	people: t('personas', 'people'),
+};
+
+type PageId = 'a' | 'b' | 'c' | 'd' | 'e';
+const programs: Record<PageId, { file: string; lines: string[] }> = {
+	a: {
+		file: t('par.c', 'even.c'),
+		lines: [
+			'#include <stdio.h>',
+			'',
+			'int main(void) {',
+			`    int ${names.number} = 5;`,
+			'',
+			`    if (${names.number} % 2 == 0) {`,
+			`        printf("${t('El número es par', 'The number is even')}\\n");`,
+			'    } else {',
+			`        printf("${t('El número es impar', 'The number is odd')}\\n");`,
+			'    }',
+			'',
+			'    return 0;',
+			'}',
+		],
+	},
+	b: {
+		file: t('nota.c', 'grade.c'),
+		lines: [
+			'#include <stdio.h>',
+			'',
+			'int main(void) {',
+			`    int ${names.grade} = 8;`,
+			'',
+			`    if (${names.grade} < 0 || ${names.grade} > 10) {`,
+			`        printf("${t('Nota inválida', 'Invalid grade')}\\n");`,
+			`    } else if (${names.grade} >= 9) {`,
+			`        printf("${t('Sobresaliente', 'Outstanding')}\\n");`,
+			`    } else if (${names.grade} >= 6) {`,
+			`        printf("${t('Aprobado', 'Pass')}\\n");`,
+			'    } else {',
+			`        printf("${t('Desaprobado', 'Fail')}\\n");`,
+			'    }',
+			'',
+			'    return 0;',
+			'}',
+		],
+	},
+	c: {
+		file: t('anidado.c', 'nested.c'),
+		lines: [
+			'#include <stdio.h>',
+			'',
+			'int main(void) {',
+			`    int ${names.number} = 0;`,
+			'',
+			`    if (${names.number} >= 0) {`,
+			`        if (${names.number} == 0) {`,
+			`            printf("${t('El número es cero', 'The number is zero')}\\n");`,
+			'        } else {',
+			`            printf("${t('El número es positivo', 'The number is positive')}\\n");`,
+			'        }',
+			'    } else {',
+			`        printf("${t('El número es negativo', 'The number is negative')}\\n");`,
+			'    }',
+			'',
+			'    return 0;',
+			'}',
+		],
+	},
+	d: {
+		file: t('votar.c', 'vote.c'),
+		lines: [
+			'#include <stdio.h>',
+			'',
+			'int main(void) {',
+			`    int ${names.age} = 12;`,
+			'',
+			`    if (${names.age} = 16);`,
+			'    {',
+			`        printf("${t('Puede votar', 'May vote')}\\n");`,
+			'    }',
+			'',
+			'    return 0;',
+			'}',
+		],
+	},
+	e: {
+		file: t('guarda.c', 'guard.c'),
+		lines: [
+			'#include <stdio.h>',
+			'',
+			'int main(void) {',
+			'    int total = 120;',
+			`    int ${names.people} = 0;`,
+			'',
+			`    if (${names.people} != 0 && total / ${names.people} > 50) {`,
+			`        printf("${t('Cada persona paga más de 50', 'Each person pays more than 50')}\\n");`,
+			'    } else {',
+			`        printf("${t('No hay personas o cada una paga 50 o menos', 'No people, or each pays 50 or less')}\\n");`,
+			'    }',
+			'',
+			'    return 0;',
+			'}',
+		],
+	},
+};
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const svgLines = (lines: string[]) =>
+	highlightCode(lines.join('\n'), 'c').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+const pages = (Object.keys(programs) as PageId[]).map((id) => ({ id, file: programs[id].file, lines: svgLines(programs[id].lines) }));
+const MAX_LINES = Math.max(...pages.map((page) => page.lines.length));
+
+// The real output of each program (cc -std=c23 -Wall -Wextra -Wpedantic, Apple clang).
+// The column of the warnings follows the localized identifier (`edad` / `age`).
+const col = (es: number) => (isEs ? es : es - 1);
+const consoleRows: { id: string; row: number; kind: 'out' | 'warn' | 'cont'; text: string }[] = [
+	{ id: 'out-a', row: 0, kind: 'out', text: t('El número es impar', 'The number is odd') },
+	{ id: 'out-b', row: 0, kind: 'out', text: t('Aprobado', 'Pass') },
+	{ id: 'out-c', row: 0, kind: 'out', text: t('El número es cero', 'The number is zero') },
+	{ id: 'w-d1', row: 0, kind: 'warn', text: `${programs.d.file}:6:${col(14)}: warning: using the result of an assignment as a` },
+	{ id: 'w-d1b', row: 1, kind: 'cont', text: '      condition without parentheses [-Wparentheses]' },
+	{ id: 'w-d2', row: 2, kind: 'warn', text: `${programs.d.file}:6:${col(19)}: warning: if statement has empty body [-Wempty-body]` },
+	{ id: 'out-d', row: 3, kind: 'out', text: t('Puede votar', 'May vote') },
+	{ id: 'out-e', row: 0, kind: 'out', text: t('No hay personas o cada una paga 50 o menos', 'No people, or each pays 50 or less') },
+];
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 72;
+const GUTTER_X = 59;
+const CODE_TOP = 70;
+const LINE_H = 22;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 5;
+const CONSOLE_TOP = 488;
+const outY = (row: number) => 538 + row * 22;
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right, +v down-left, z is up. Every program is a district:
+// a floor plate with rails on it. The trunk runs along +u; at a fork the true branch
+// leaves along -v and comes back on a parallel rail, the false branch stays on the trunk.
+type Point = { x: number; y: number };
+type UV = [number, number];
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 44;
+const EY = 25;
+const FLOOR = 10;
+const round = (value: number) => Math.round(value * 10) / 10;
+const iso = (o: Point, u: number, v: number, z = 0): Point => ({
+	x: round(o.x + (u - v) * EX),
+	y: round(o.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+
+/** A box standing at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(o: Point, u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = iso(o, u - a, v - b, top);
+	const right = iso(o, u + a, v - b, top);
+	const front = iso(o, u + a, v + b, top);
+	const left = iso(o, u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: iso(o, u, v, top),
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+type Slab = ReturnType<typeof slab>;
+type Tone = 'flow' | 'violet' | 'magenta';
+
+type StationKind = 'step' | 'fork' | 'gate';
+type StationSpec = { key: string; line: number; at: UV; kind: StationKind; tone?: Tone };
+type CellSpec = { id: string; name: string; at: UV; values: { id: string; text: string; tone: Tone }[] };
+type DistrictSpec = {
+	id: PageId;
+	origin: Point;
+	tag: string;
+	points: Record<string, UV>;
+	stations: StationSpec[];
+	rails: string[][];
+	runs: { id: string; via: string[]; tone?: Tone; dashed?: boolean }[];
+	cells: CellSpec[];
+};
+
+const districts: DistrictSpec[] = [
+	{
+		// if-else: one fork, two blocks, exactly one runs.
+		id: 'a',
+		origin: { x: 300, y: 120 },
+		tag: 'if / else',
+		points: { k7: [1.1, -1.8], k12: [3.7, -1.8] },
+		stations: [
+			{ key: '4', line: 4, at: [0, 0], kind: 'step' },
+			{ key: '6', line: 6, at: [1.1, 0], kind: 'fork' },
+			{ key: '7', line: 7, at: [1.1, -1.0], kind: 'step' },
+			{ key: '9', line: 9, at: [2.4, 0], kind: 'step' },
+			{ key: '12', line: 12, at: [3.7, 0], kind: 'step' },
+		],
+		rails: [
+			['4', '6', '9', '12'],
+			['6', '7', 'k7', 'k12', '12'],
+		],
+		runs: [
+			{ id: 'run-a-in', via: ['4', '6'] },
+			{ id: 'run-a-f1', via: ['6', '9'] },
+			{ id: 'run-a-f2', via: ['9', '12'] },
+		],
+		cells: [{ id: 'c-a', name: names.number, at: [0, 1.05], values: [{ id: 'v-a5', text: '5', tone: 'flow' }] }],
+	},
+	{
+		// else-if chain: successive forks, only the first true one runs.
+		id: 'b',
+		origin: { x: 760, y: 270 },
+		tag: 'else if',
+		points: { k7: [1.1, -1.8], k9: [2.3, -1.8], k11: [3.5, -1.8], kend: [5.9, -1.8] },
+		stations: [
+			{ key: '4', line: 4, at: [0, 0], kind: 'step' },
+			{ key: '6', line: 6, at: [1.1, 0], kind: 'fork' },
+			{ key: '7', line: 7, at: [1.1, -1.0], kind: 'step' },
+			{ key: '8', line: 8, at: [2.3, 0], kind: 'fork' },
+			{ key: '9', line: 9, at: [2.3, -1.0], kind: 'step' },
+			{ key: '10', line: 10, at: [3.5, 0], kind: 'fork' },
+			{ key: '11', line: 11, at: [3.5, -1.0], kind: 'step' },
+			{ key: '13', line: 13, at: [4.7, 0], kind: 'step' },
+			{ key: '16', line: 16, at: [5.9, 0], kind: 'step' },
+		],
+		rails: [
+			['4', '6', '8', '10', '13', '16'],
+			['6', '7', 'k7'],
+			['8', '9', 'k9'],
+			['10', '11', 'k11'],
+			['k7', 'kend', '16'],
+		],
+		runs: [
+			{ id: 'run-b-1', via: ['4', '6'] },
+			{ id: 'run-b-2', via: ['6', '8'] },
+			{ id: 'run-b-3', via: ['8', '10'] },
+			{ id: 'run-b-t', via: ['10', '11'] },
+			{ id: 'run-b-out', via: ['11', 'k11', 'kend', '16'] },
+		],
+		cells: [{ id: 'c-b', name: names.grade, at: [0, 1.05], values: [{ id: 'v-b8', text: '8', tone: 'flow' }] }],
+	},
+	{
+		// Nested: the inner fork sits on the true branch of the outer one.
+		id: 'c',
+		origin: { x: 300, y: 450 },
+		tag: t('if anidado', 'nested if'),
+		points: { k8: [3.5, -2.2], kj: [3.5, -1.1], kj2: [4.8, -1.1] },
+		stations: [
+			{ key: '4', line: 4, at: [0, 0], kind: 'step' },
+			{ key: '6', line: 6, at: [1.1, 0], kind: 'fork' },
+			{ key: '7', line: 7, at: [1.1, -1.1], kind: 'fork' },
+			{ key: '8', line: 8, at: [1.1, -2.2], kind: 'step' },
+			{ key: '10', line: 10, at: [2.3, -1.1], kind: 'step' },
+			{ key: '13', line: 13, at: [2.7, 0], kind: 'step' },
+			{ key: '16', line: 16, at: [4.8, 0], kind: 'step' },
+		],
+		rails: [
+			['4', '6', '13', '16'],
+			['6', '7', '10', 'kj', 'kj2', '16'],
+			['7', '8', 'k8', 'kj'],
+		],
+		runs: [
+			{ id: 'run-c-1', via: ['4', '6'] },
+			{ id: 'run-c-2', via: ['6', '7'] },
+			{ id: 'run-c-3', via: ['7', '8'] },
+			{ id: 'run-c-out', via: ['8', 'k8', 'kj', 'kj2', '16'] },
+		],
+		cells: [{ id: 'c-c', name: names.number, at: [0, 1.05], values: [{ id: 'v-c0', text: '0', tone: 'flow' }] }],
+	},
+	{
+		// Two bugs on one if: the assignment and the empty statement.
+		id: 'd',
+		origin: { x: 760, y: 590 },
+		tag: '=  ·  ;',
+		points: { s: [1.1, -1.0], ks: [2.2, -1.0], m: [2.2, 0] },
+		stations: [
+			{ key: '4', line: 4, at: [0, 0], kind: 'step' },
+			{ key: '6', line: 6, at: [1.1, 0], kind: 'fork', tone: 'magenta' },
+			{ key: '8', line: 8, at: [3.2, 0], kind: 'step', tone: 'magenta' },
+			{ key: '11', line: 11, at: [4.4, 0], kind: 'step' },
+		],
+		rails: [
+			['4', '6', 'm', '8', '11'],
+			['6', 's', 'ks', 'm'],
+		],
+		runs: [
+			{ id: 'run-d-in', via: ['4', '6'] },
+			{ id: 'run-d-t', via: ['6', 's'], tone: 'magenta' },
+			{ id: 'run-d-t2', via: ['s', 'ks', 'm', '8'], tone: 'magenta' },
+			{ id: 'run-d-f', via: ['6', 'm'], tone: 'magenta', dashed: true },
+			{ id: 'run-d-end', via: ['8', '11'] },
+		],
+		cells: [
+			{
+				id: 'c-d',
+				name: names.age,
+				at: [0, 1.05],
+				values: [
+					{ id: 'v-d12', text: '12', tone: 'flow' },
+					{ id: 'v-d16', text: '16', tone: 'magenta' },
+				],
+			},
+		],
+	},
+	{
+		// The && guard: two gates in series; the second never runs if the first is false.
+		id: 'e',
+		origin: { x: 330, y: 760 },
+		tag: '&&',
+		points: { k8: [5.0, -2.0], kf: [3.0, -1.0], mf: [3.0, 0] },
+		stations: [
+			{ key: '4', line: 4, at: [0, 0], kind: 'step' },
+			{ key: '5', line: 5, at: [0.9, 0], kind: 'step' },
+			{ key: '7', line: 7, at: [2.0, 0], kind: 'fork' },
+			{ key: '7b', line: 7, at: [2.0, -1.0], kind: 'gate', tone: 'magenta' },
+			{ key: '8', line: 8, at: [2.0, -2.0], kind: 'step' },
+			{ key: '10', line: 10, at: [3.9, 0], kind: 'step' },
+			{ key: '13', line: 13, at: [5.0, 0], kind: 'step' },
+		],
+		rails: [
+			['4', '5', '7', 'mf', '10', '13'],
+			['7', '7b', '8', 'k8', '13'],
+			['7b', 'kf', 'mf'],
+		],
+		runs: [
+			{ id: 'run-e-1', via: ['4', '5'] },
+			{ id: 'run-e-2', via: ['5', '7'] },
+			{ id: 'run-e-f', via: ['7', 'mf', '10'] },
+			{ id: 'run-e-end', via: ['10', '13'] },
+		],
+		cells: [
+			{ id: 'c-e1', name: 'total', at: [0, 1.05], values: [{ id: 'v-e120', text: '120', tone: 'flow' }] },
+			{ id: 'c-e2', name: names.people, at: [0.9, 1.05], values: [{ id: 'v-e0', text: '0', tone: 'flow' }] },
+		],
+	},
+];
+
+const district = (id: PageId) => districts.find((item) => item.id === id) ?? districts[0];
+const uvOf = (d: DistrictSpec, key: string): UV => d.stations.find((s) => s.key === key)?.at ?? d.points[key] ?? [0, 0];
+const railPoint = (d: DistrictSpec, key: string) => iso(d.origin, ...uvOf(d, key), FLOOR);
+const railPath = (d: DistrictSpec, keys: string[]) =>
+	keys.map((key, index) => `${index === 0 ? 'M' : 'L'}${railPoint(d, key).x} ${railPoint(d, key).y}`).join(' ');
+
+// Floor plates: a margin around every point of the district.
+const plates = districts.map((d) => {
+	const all = [...d.stations.map((s) => s.at), ...Object.values(d.points), ...d.cells.map((c) => c.at)];
+	const us = all.map(([u]) => u);
+	const vs = all.map(([, v]) => v);
+	const [u0, u1, v0, v1] = [Math.min(...us) - 0.6, Math.max(...us) + 0.6, Math.min(...vs) - 0.6, Math.max(...vs) + 0.6];
+	return { id: d.id, g: slab(d.origin, (u0 + u1) / 2, (v0 + v1) / 2, (u1 - u0) / 2, (v1 - v0) / 2, FLOOR, 0), u0, u1, v0, v1 };
+});
+
+// Modules: one per instruction, labelled with its editor line; forks are larger.
+type Module = { id: string; line: number; g: Slab; kind: StationKind; tone: Tone };
+const modules: Module[] = districts.flatMap((d) =>
+	d.stations.map((s) => {
+		const size = s.kind === 'step' ? 0.2 : 0.27;
+		return {
+			id: `${d.id}${s.key}`,
+			line: s.line,
+			kind: s.kind,
+			tone: s.tone ?? (s.kind === 'step' ? 'flow' : 'violet'),
+			g: slab(d.origin, s.at[0], s.at[1], size, size, s.kind === 'step' ? 14 : 18, FLOOR),
+		};
+	}),
+);
+const SEMI = slab(district('d').origin, 1.1, -1.0, 0.18, 0.18, 10, FLOOR);
+
+// Cells: a variable is a box with its name on the front and its value on top.
+const cells = districts.flatMap((d) => d.cells.map((c) => ({ ...c, g: slab(d.origin, c.at[0], c.at[1], 0.36, 0.36, 16, FLOOR) })));
+
+// Where the particle stops: above a module, or on a rail corner.
+const anchors = [
+	...modules.map((module) => ({ id: `a-${module.id}`, ...lift(module.g.center, 14) })),
+	...districts.flatMap((d) => Object.keys(d.points).map((key) => ({ id: `k-${d.id}-${key}`, ...lift(railPoint(d, key), 12) }))),
+	{ id: 'a-ds', ...lift(SEMI.center, 14) },
+];
+const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0, y: 0 };
+const mod = (id: string) => modules.find((module) => module.id === id) ?? modules[0];
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shotRect = (id: string, cx: number, cy: number, s: number) => ({
+	id,
+	x: round(cx - 640 / s),
+	y: round(cy - 360 / s),
+	w: round(1280 / s),
+	h: round(720 / s),
+});
+const plateBox = (id: PageId) => {
+	const p = plates.find((item) => item.id === id) ?? plates[0];
+	const d = district(id);
+	const corners = [iso(d.origin, p.u0, p.v0), iso(d.origin, p.u1, p.v0), iso(d.origin, p.u1, p.v1), iso(d.origin, p.u0, p.v1)];
+	const xs = corners.map((c) => c.x);
+	const ys = corners.map((c) => c.y);
+	return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys) - 60, y1: Math.max(...ys) + 20 };
+};
+const fitShot = (id: string, boxes: ReturnType<typeof plateBox>[], max = 1.6) => {
+	const x0 = Math.min(...boxes.map((b) => b.x0));
+	const x1 = Math.max(...boxes.map((b) => b.x1));
+	const y0 = Math.min(...boxes.map((b) => b.y0));
+	const y1 = Math.max(...boxes.map((b) => b.y1));
+	const s = Math.round(Math.min(max, (VP.w - 40) / (x1 - x0), (VP.h - 60) / (y1 - y0)) * 100) / 100;
+	return shotRect(id, (x0 + x1) / 2, (y0 + y1) / 2, s);
+};
+const focus = (id: string, point: Point, s: number) => shotRect(id, point.x, point.y, s);
+const shots = [
+	fitShot('shot-a', [plateBox('a')]),
+	fitShot('shot-b', [plateBox('b')]),
+	fitShot('shot-c', [plateBox('c')]),
+	fitShot('shot-d', [plateBox('d')]),
+	fitShot('shot-e', [plateBox('e')]),
+	focus('shot-a-fork', mod('a6').g.center, 2.1),
+	focus('shot-c-in', mod('c7').g.center, 1.9),
+	focus('shot-d-fork', { x: (mod('d6').g.center.x + mod('d8').g.center.x) / 2, y: mod('d6').g.center.y }, 1.9),
+	focus('shot-e-gate', { x: mod('e7').g.center.x, y: mod('e7b').g.center.y }, 1.9),
+	fitShot(
+		'shot-all',
+		districts.map((d) => plateBox(d.id)),
+		1,
+	),
+];
+
+// The nested if's own platform: a dashed ring around the inner fork and its branches.
+const NEST = (() => {
+	const o = district('c').origin;
+	return poly([iso(o, 0.6, -2.7, FLOOR), iso(o, 3.9, -2.7, FLOOR), iso(o, 3.9, -0.6, FLOOR), iso(o, 0.6, -0.6, FLOOR)]);
+})();
+
+// The assignment writes back into the variable: a route from the fork to the cell.
+const ASSIGN = (() => {
+	const from = mod('d6').g.center;
+	const cell = cells.find((c) => c.id === 'c-d')?.g.center ?? from;
+	return `M${from.x - 10} ${from.y + 8} Q${(from.x + cell.x) / 2 - 10} ${from.y + 60} ${cell.x + 20} ${cell.y - 6}`;
+})();
+
+// Floating notes, placed relative to a module or an anchor point.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | Tone;
+	mono?: boolean;
+	icon?: 'x' | 'lock' | 'check';
+};
+const below = (d: PageId, u: number, v: number) => iso(district(d).origin, u, v, FLOOR);
+const top = (id: string) => mod(id).g.center;
+const falseText = t('0 → falso', '0 → false');
+const trueText = t('1 → verdadero', '1 → true');
+const chips: Chip[] = [
+	// if-else
+	{ id: 'q-a6', text: `${names.number} % 2 == 0`, x: top('a6').x, y: top('a6').y - 62, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'r-a6', text: falseText, x: top('a6').x, y: top('a6').y - 34, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'skip-a7', text: t('se salta', 'skipped'), x: top('a7').x + 18, y: top('a7').y - 30, align: 'start', tone: 'plain', icon: 'x' },
+	// else-if chain
+	{ id: 'r-b6', text: falseText, x: below('b', 1.1, 0.9).x, y: below('b', 1.1, 0.9).y, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'r-b8', text: falseText, x: below('b', 2.3, 0.9).x, y: below('b', 2.3, 0.9).y, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'r-b10', text: trueText, x: below('b', 3.5, 0.9).x, y: below('b', 3.5, 0.9).y, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'skip-b13', text: t('no se evalúa', 'not evaluated'), x: top('b13').x, y: top('b13').y - 30, align: 'middle', tone: 'plain', icon: 'x' },
+	// nested
+	{ id: 'lb-nest', text: t('if interno', 'inner if'), x: below('c', 3.9, -2.7).x, y: below('c', 3.9, -2.7).y - 16, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'r-c6', text: trueText, x: below('c', 1.1, 0.9).x, y: below('c', 1.1, 0.9).y, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'r-c7', text: trueText, x: top('c7').x - 30, y: top('c7').y + 4, align: 'end', tone: 'violet', mono: true },
+	{ id: 'skip-c13', text: t('no se ejecuta', 'does not run'), x: top('c13').x, y: top('c13').y - 30, align: 'middle', tone: 'plain', icon: 'x' },
+	// bugs
+	{ id: 'q-d6', text: `${names.age} = 16`, x: below('d', 1.1, 0.95).x + 20, y: below('d', 1.1, 0.95).y, align: 'start', tone: 'magenta', mono: true },
+	{ id: 'r-d6', text: t('16 → siempre verdadero', '16 → always true'), x: below('d', 1.1, 0.95).x + 20, y: below('d', 1.1, 0.95).y + 30, align: 'start', tone: 'magenta', mono: true, icon: 'lock' },
+	{ id: 'lb-d-empty', text: t('sentencia vacía', 'empty statement'), x: top('d6').x + 10, y: SEMI.center.y - 36, align: 'end', tone: 'magenta' },
+	{ id: 'lb-d-always', text: t('se ejecuta siempre', 'always runs'), x: top('d8').x, y: top('d8').y - 32, align: 'middle', tone: 'magenta' },
+	{ id: 'fix-d', text: `if (${names.age} >= 16)`, x: top('d11').x, y: below('d', 4.4, 0.9).y + 6, align: 'middle', tone: 'violet', mono: true, icon: 'check' },
+	// guard
+	{ id: 'q-e7', text: `${names.people} != 0`, x: below('e', 2.0, 0.95).x + 24, y: below('e', 2.0, 0.95).y, align: 'start', tone: 'violet', mono: true },
+	{ id: 'r-e7', text: falseText, x: below('e', 2.0, 0.95).x + 24, y: below('e', 2.0, 0.95).y + 30, align: 'start', tone: 'violet', mono: true },
+	{ id: 'hz-e', text: `total / ${names.people}`, x: top('e7b').x - 30, y: top('e7b').y - 8, align: 'end', tone: 'magenta', mono: true },
+	{ id: 'skip-e', text: t('no se evalúa', 'not evaluated'), x: top('e7b').x - 30, y: top('e7b').y + 22, align: 'end', tone: 'plain', icon: 'x' },
+	// the whole map
+	{ id: 'lb-wall', text: '-Wall -Wextra', x: top('d11').x, y: below('d', 4.4, 0.9).y + 36, align: 'middle', tone: 'violet', mono: true },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + (chip.icon ? 42 : 24));
+const chipLeft = (chip: Chip) =>
+	chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x;
+
+// District tags, revealed when the camera pulls back over the whole map.
+const tags = districts.map((d) => {
+	const p = plates.find((item) => item.id === d.id) ?? plates[0];
+	const corner = iso(d.origin, p.u0, p.v1, 0);
+	return { id: `tag-${d.id}`, text: d.tag, x: corner.x, y: corner.y + 30 };
+});
+
+const LEGEND_Y = VP.y + VP.h - 22;
+const START = at('a-a4');
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="ie-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="ie-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="ie-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="ie-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="ie-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="ie-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: one district of track per program, seen through the camera -->
+			<g clip-path="url(#ie-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#ie-g-pool-violet)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#ie-g-pool-flow)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						{
+							districts.map((d) => {
+								const plate = plates.find((item) => item.id === d.id) ?? plates[0];
+								return (
+									<g data-el={`dist-${d.id}`}>
+										<polygon class="xj-plate-shadow" points={plate.g.base} transform="translate(12 18)" />
+										<polygon class="xj-plate xj-plate--l" points={plate.g.leftFace} />
+										<polygon class="xj-plate xj-plate--r" points={plate.g.rightFace} />
+										<polygon class="xj-plate xj-plate--t" points={plate.g.top} fill="url(#ie-g-floor)" />
+
+										{d.id === 'c' && (
+											<g data-el="nest-c" class="xj-zone">
+												<polygon points={NEST} />
+											</g>
+										)}
+
+										{/* The track: every path the program could take */}
+										{d.rails.map((rail) => (
+											<g class="xj-rail">
+												<path class="xj-rail-bed" d={railPath(d, rail)} />
+												<path class="xj-rail-line" d={railPath(d, rail)} />
+											</g>
+										))}
+
+										{/* The route actually taken lights up behind the particle */}
+										{d.runs.map((run) => (
+											<g data-el={run.id} class:list={['xj-run', `xj-run--${run.tone ?? 'flow'}`, { 'xj-run--dashed': run.dashed }]}>
+												<path class="mg-stroke xj-run-halo" pathLength="1" d={railPath(d, run.via)} />
+												<path class="mg-stroke xj-run-core" pathLength="1" d={railPath(d, run.via)} />
+											</g>
+										))}
+
+										{d.id === 'd' && (
+											<>
+												<polygon class="xj-slot" points={SEMI.top} />
+												<g data-el="fl-d-assign" class="xj-assign">
+													<path class="mg-stroke" pathLength="1" d={ASSIGN} />
+												</g>
+											</>
+										)}
+
+										{modules
+											.filter((module) => module.id.startsWith(d.id))
+											.map((module) => (
+												<>
+													<g data-el={`m-${module.id}`} data-base="shown" class:list={['xj-mod', `xj-mod--${module.kind}`, `xj-mod--${module.tone}`]}>
+														<polygon class="xj-shadow" points={module.g.base} transform="translate(5 7)" />
+														<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+														<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+														<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#ie-g-top)" />
+														<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4">
+															{module.line}
+														</text>
+													</g>
+													<g data-el={`on-${module.id}`} class:list={['xj-lit', `xj-lit--${module.tone}`]}>
+														<polygon class="xj-lit-halo" points={module.g.top} />
+														<polygon class="xj-lit-top" points={module.g.top} />
+														<polygon class="xj-lit-side" points={module.g.leftFace} />
+														<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4">
+															{module.line}
+														</text>
+													</g>
+												</>
+											))}
+
+										{d.id === 'd' && (
+											<g data-el="semi-d" class="xj-semi">
+												<polygon class="xj-shadow" points={SEMI.base} transform="translate(4 5)" />
+												<polygon class="xj-face xj-face--l" points={SEMI.leftFace} />
+												<polygon class="xj-face xj-face--r" points={SEMI.rightFace} />
+												<polygon class="xj-face xj-face--t" points={SEMI.top} />
+												<text class="xj-semi-text" x={SEMI.center.x} y={SEMI.center.y + 5} text-anchor="middle">
+													;
+												</text>
+											</g>
+										)}
+
+										{cells
+											.filter((c) => c.id.startsWith(`c-${d.id}`))
+											.map((c) => (
+												<g data-el={c.id} data-base="shown">
+													<polygon class="xj-shadow" points={c.g.base} transform="translate(5 7)" />
+													<polygon class="xj-cell xj-cell--l" points={c.g.leftFace} />
+													<polygon class="xj-cell xj-cell--r" points={c.g.rightFace} />
+													<polygon class="xj-cell xj-cell--t" points={c.g.top} />
+													<text class="xj-cell-name" transform={c.g.faceMatrix} text-anchor="middle" y="4">
+														{c.name}
+													</text>
+													{c.values.map((value) => (
+														<text data-el={value.id} class:list={['xj-value', `xj-value--${value.tone}`]} x={c.g.center.x} y={c.g.center.y + 6} text-anchor="middle">
+															{value.text}
+														</text>
+													))}
+												</g>
+											))}
+									</g>
+								);
+							})
+						}
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.icon === 'x' && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M18 6 6 18" />
+											<path d="m6 6 12 12" />
+										</svg>
+									)}
+									{chip.icon === 'lock' && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+											<path d="M7 11V7a5 5 0 0 1 10 0v4" />
+										</svg>
+									)}
+									{chip.icon === 'check' && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M20 6 9 17l-5-5" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.icon ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						{
+							tags.map((tag) => (
+								<g data-el={tag.id} class="xj-tag">
+									<text x={tag.x} y={tag.y} text-anchor="middle">
+										{tag.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The execution flow. Placement lives in data-x/data-y: the player resets data-el transforms. -->
+						<g data-el="p" class="xj-particle" data-x={START.x} data-y={START.y}>
+							<circle r="20" fill="url(#ie-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="420" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<rect class="xj-legend-fork" x={VP.x + 176} y={LEGEND_Y - 6} width="12" height="12" rx="3"></rect>
+				<text x={VP.x + 196} y={LEGEND_Y + 4}>{t('Bifurcación', 'Fork')}</text>
+				<rect class="xj-legend-bug" x={VP.x + 300} y={LEGEND_Y - 6} width="12" height="12" rx="3"></rect>
+				<text x={VP.x + 320} y={LEGEND_Y + 4}>{t('Error', 'Bug')}</text>
+			</g>
+
+			<!-- EDITOR: the lesson's programs, one page at a time, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<!-- The failing line of the buggy program -->
+				<g data-el="hx-d6" class="xj-hx">
+					<rect x={BAR.x} y={lineTop(6)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				</g>
+
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(4)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				{
+					pages.map((page) => (
+						<g data-el={`pg-${page.id}`} data-base={page.id === 'a' ? 'shown' : undefined} class="xj-code">
+							<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>
+								{page.file}
+							</text>
+							{page.lines.map((line) => (
+								<>
+									<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+										{line.n}
+									</text>
+									<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+								</>
+							))}
+						</g>
+					))
+				}
+
+				<!-- Console: the real output, typed as each line runs -->
+				{
+					consoleRows.map((row) => (
+						<text data-el={row.id} class:list={['xj-out', `xj-out--${row.kind}`]} x={ED.x + 20} y={outY(row.row)} xml:space="preserve">
+							{row.text}
+						</text>
+					))
+				}
+				{Array.from({ length: MAX_LINES }, (_, index) => index + 1).map((n) => <circle data-anchor={`ln-${n}`} cx={BAR_CX} cy={lineMid(n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue execution flow, violet for the forks that decide, and magenta for the
+	   bugs: the assignment, the empty statement and the guarded division.
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='decisiones-if-else-c']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='decisiones-if-else-c'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='decisiones-if-else-c'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='decisiones-if-else-c'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-fork {
+		fill: var(--xj-violet-deep);
+		stroke: var(--xj-violet);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend-bug {
+		fill: var(--xj-magenta-deep);
+		stroke: var(--xj-magenta);
+		stroke-width: 1.5;
+	}
+
+	/* District floors and their track */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-rail-bed,
+	.xj-rail-line {
+		fill: none;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-rail-bed {
+		stroke: var(--xj-ink);
+		stroke-opacity: 0.55;
+		stroke-width: 12;
+	}
+
+	.xj-rail-line {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 2;
+	}
+
+	.xj-run {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-run--magenta {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-run-halo,
+	.xj-run-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-run-halo {
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+	}
+
+	.xj-run-core {
+		stroke-width: 3;
+	}
+
+	.xj-run--dashed .xj-run-core {
+		stroke-dasharray: 0.03 0.025;
+	}
+
+	.xj-slot {
+		fill: none;
+		stroke: var(--xj-dim);
+		stroke-width: 1.5;
+		stroke-dasharray: 4 4;
+	}
+
+	.xj-assign path {
+		fill: none;
+		stroke: var(--xj-magenta);
+		stroke-width: 3;
+		stroke-linecap: round;
+	}
+
+	/* Modules: one per instruction; forks are larger and violet */
+	.xj-mod {
+		--xj-mod-edge: var(--xj-steel-hi);
+	}
+
+	.xj-mod--fork,
+	.xj-mod--gate {
+		--xj-mod-edge: var(--xj-violet);
+	}
+
+	.xj-mod--magenta {
+		--xj-mod-edge: var(--xj-magenta);
+	}
+
+	.xj-face {
+		stroke: var(--xj-mod-edge, var(--xj-steel-hi));
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	.xj-semi {
+		--xj-mod-edge: var(--xj-magenta);
+	}
+
+	.xj-semi .xj-face--t {
+		fill: var(--xj-magenta-deep);
+	}
+
+	.xj-semi-text {
+		font-family: monospace;
+		font-size: 18px;
+		font-weight: 700;
+		fill: var(--xj-magenta-soft);
+	}
+
+	/* Variables: a cell with its name on the front and its value on top */
+	.xj-cell {
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-cell--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-cell--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-cell--t {
+		fill: var(--xj-ink);
+	}
+
+	.xj-cell-name {
+		font-family: monospace;
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-value {
+		font-family: monospace;
+		font-size: 16px;
+		font-weight: 700;
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-value--magenta {
+		fill: var(--xj-magenta-soft);
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* The platform of the nested if */
+	.xj-zone polygon {
+		fill: var(--xj-violet);
+		fill-opacity: 0.08;
+		stroke: var(--xj-violet-soft);
+		stroke-width: 2;
+		stroke-dasharray: 8 7;
+		stroke-linejoin: round;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-chip-ink);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	.xj-tag text {
+		font-family: monospace;
+		font-size: 22px;
+		font-weight: 700;
+		fill: var(--xj-violet-soft);
+	}
+
+	/* The flow */
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-out--warn,
+	.xj-out--cont {
+		font-size: 12px;
+		fill: var(--xj-magenta-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type),
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-ann) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-hx rect {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.16;
+		stroke: var(--xj-magenta);
+		stroke-opacity: 0.7;
+		stroke-width: 1.2;
+	}
+</style>

@@ -1,0 +1,1084 @@
+---
+/**
+ * Scene for "A tree that sorts as it inserts" (lesson c/arboles-binarios, order: 33),
+ * a short film played on one persistent motion canvas. The captions and cues live in
+ * `src/data/animations/arbol-busqueda-c.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: the lesson's
+ * functions (insert, search, the three traversals, destroy), one at a time, with a bar
+ * that slides to the line being executed and the program output typed below. The
+ * viewport on the right holds the camera: the heap floor with the tree (a node is a
+ * block with its value on top and its address in front; a pointer is always an arrow
+ * from a socket of the parent to the child), the stack floor with the `main` plate that
+ * holds the root pointer and a small tower of frames, one per recursive call, and the
+ * floor of instructions with one module per line, labelled with its editor line.
+ * Magenta marks the empty spot (a `NULL` socket, the way a leak starts); violet marks
+ * what visits or releases a node. The light blue cursor is the node under examination.
+ * Addresses are short and fictional; real ones vary.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/arbol-busqueda-c';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── The functions shown in the editor ─────────────────────────────────────
+// The lesson's own functions, one editor view each. Identifiers are localized like
+// the lesson does.
+const n = {
+	node: t('Nodo', 'Node'),
+	root: t('raiz', 'root'),
+	value: t('dato', 'value'),
+	left: t('izquierdo', 'left'),
+	right: t('derecho', 'right'),
+	create: t('crear_nodo', 'create_node'),
+	insert: t('insertar', 'insert'),
+	find: t('buscar', 'find'),
+	inorder: t('inorden', 'inorder'),
+	preorder: t('preorden', 'preorder'),
+	postorder: t('postorden', 'postorder'),
+	destroy: t('destruir_arbol', 'destroy_tree'),
+};
+const insertSrc = [
+	`bool ${n.insert}(${n.node} **${n.root}, int ${n.value}) {`,
+	`    if (*${n.root} == NULL) {`,
+	`        *${n.root} = ${n.create}(${n.value});`,
+	`        return *${n.root} != NULL;`,
+	'    }',
+	`    if (${n.value} < (*${n.root})->${n.value}) {`,
+	`        return ${n.insert}(&(*${n.root})->${n.left}, ${n.value});`,
+	'    }',
+	`    if (${n.value} > (*${n.root})->${n.value}) {`,
+	`        return ${n.insert}(&(*${n.root})->${n.right}, ${n.value});`,
+	'    }',
+	'    return true;',
+	'}',
+].join('\n');
+const findSrc = [
+	`const ${n.node} *${n.find}(const ${n.node} *${n.root}, int ${n.value}) {`,
+	`    if (${n.root} == NULL || ${n.root}->${n.value} == ${n.value}) {`,
+	`        return ${n.root};`,
+	'    }',
+	`    if (${n.value} < ${n.root}->${n.value}) {`,
+	`        return ${n.find}(${n.root}->${n.left}, ${n.value});`,
+	'    }',
+	`    return ${n.find}(${n.root}->${n.right}, ${n.value});`,
+	'}',
+].join('\n');
+const walk = (name: string, order: 'in' | 'pre' | 'post') => {
+	const left = `        ${name}(${n.root}->${n.left});`;
+	const right = `        ${name}(${n.root}->${n.right});`;
+	const show = `        printf("%d ", ${n.root}->${n.value});`;
+	const body = order === 'in' ? [left, show, right] : order === 'pre' ? [show, left, right] : [left, right, show];
+	return [`void ${name}(const ${n.node} *${n.root}) {`, `    if (${n.root} != NULL) {`, ...body, '    }', '}'];
+};
+const travSrc = [...walk(n.inorder, 'in'), '', ...walk(n.preorder, 'pre'), '', ...walk(n.postorder, 'post')].join('\n');
+const freeSrc = [
+	`void ${n.destroy}(${n.node} *${n.root}) {`,
+	`    if (${n.root} == NULL) {`,
+	'        return;',
+	'    }',
+	`    ${n.destroy}(${n.root}->${n.left});`,
+	`    ${n.destroy}(${n.root}->${n.right});`,
+	`    free(${n.root});`,
+	'}',
+	'',
+	`${n.destroy}(${n.root});`,
+	`${n.root} = NULL;`,
+].join('\n');
+const orderSrc = (values: number[]) =>
+	[`${n.node} *${n.root} = NULL;`, ...values.map((value) => `${n.insert}(&${n.root}, ${value});`)].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const toLines = (source: string) =>
+	highlightCode(source, 'c').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+const programs = [
+	{ id: 'ed-ins', lines: toLines(insertSrc), base: 'shown' },
+	{ id: 'ed-find', lines: toLines(findSrc), base: undefined },
+	{ id: 'ed-trav', lines: toLines(travSrc), base: undefined },
+	{ id: 'ed-free', lines: toLines(freeSrc), base: undefined },
+	{ id: 'ed-lin', lines: toLines(orderSrc([10, 20, 30, 40, 50])), base: undefined },
+	{ id: 'ed-bal', lines: toLines(orderSrc([30, 10, 40, 20, 50])), base: undefined },
+];
+const FILE_NAME = t('arbol.c', 'tree.c');
+
+// Real output, from compiling the lesson's complete program with `cc -std=c23`.
+const outputs = [
+	{ id: 'o-s60', row: 0, text: t('¿Está el 60? sí', 'Is 60 there? yes') },
+	{ id: 'o-s65', row: 1, text: t('¿Está el 65? no', 'Is 65 there? no') },
+	{ id: 'o-in', row: 2, text: t('Inorden:   20 30 40 50 60 70 80', 'Inorder:   20 30 40 50 60 70 80') },
+	{ id: 'o-pre', row: 3, text: t('Preorden:  50 30 20 40 70 60 80', 'Preorder:  50 30 20 40 70 60 80') },
+	{ id: 'o-post', row: 4, text: t('Postorden: 20 40 30 60 80 70 50', 'Postorder: 20 40 30 60 80 70 50') },
+	{ id: 'o-free', row: 5, text: t('Altura después de destruir: 0', 'Height after destroying: 0') },
+];
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 72;
+const GUTTER_X = 59;
+const CODE_TOP = 66;
+const LINE_H = 19;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (line: number) => CODE_TOP + (line - 1) * LINE_H;
+const lineMid = (line: number) => lineTop(line) + LINE_H / 2;
+const lineBase = (line: number) => lineMid(line) + 4.5;
+const CONSOLE_TOP = 516;
+const outY = (row: number) => 564 + row * 19;
+const MAX_LINES = 23;
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right, +v down-left, z is up. The heap is the big floor in the
+// middle, the stack floor sits at its top left and the instructions at its bottom right.
+// Most things are placed by the screen point where the center of their top face lies.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 50;
+const EY = 29;
+const ORIGIN = { x: 610, y: 330 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+/** Grid coordinates (u, v) of a screen point `(x, y)` at height `z`. */
+const uv = (x: number, y: number, z = 0): [number, number] => {
+	const a = (x - ORIGIN.x) / EX;
+	const b = (y + z - ORIGIN.y) / EY;
+	return [(a + b) / 2, (b - a) / 2];
+};
+
+/** A box standing at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		corners: { back, right, front, left },
+		bottomFront: down(front),
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+type Slab = ReturnType<typeof slab>;
+/** The same box, placed by the screen point where the center of its top face lies. */
+function slabAt(x: number, y: number, a: number, b: number, h: number, z = 0) {
+	const [u, v] = uv(x, y, z + h);
+	return slab(u, v, a, b, h, z);
+}
+const below = (g: Slab) => ({ x: g.bottomFront.x, y: g.bottomFront.y + 20 });
+
+// Floors: the heap (top plane at height 0), the stack and the instructions.
+const HEAP = slabAt(610, 300, 3.9, 3.9, 14, -14);
+const STACK = slabAt(230, 150, 1.9, 1.3, 14, -14);
+const PROG = slabAt(850, 590, 2.3, 1.4, 14, -14);
+const floors = [
+	{ id: 'floor-heap', g: HEAP, label: t('Montículo (heap)', 'Heap'), at: { x: 610, y: below(HEAP).y } },
+	{ id: 'floor-stack', g: STACK, label: t('Pila (stack)', 'Stack'), at: below(STACK) },
+	{ id: 'floor-prog', g: PROG, label: t('Instrucciones', 'Instructions'), at: below(PROG) },
+];
+
+// The tree: a node is a block (value on top, fictional address in front, two sockets).
+const NODE_A = 0.27;
+const NODE_H = 14;
+type NodeSpec = { id: string; value: number; x: number; y: number; addr?: string };
+const makeNode = (spec: NodeSpec) => ({ ...spec, g: slabAt(spec.x, spec.y, NODE_A, NODE_A, NODE_H, 0) });
+type TreeNode = ReturnType<typeof makeNode>;
+const treeNodes = [
+	{ id: 'nd-50', value: 50, x: 610, y: 214, addr: '0x1000' },
+	{ id: 'nd-30', value: 30, x: 490, y: 276, addr: '0x1020' },
+	{ id: 'nd-70', value: 70, x: 730, y: 276, addr: '0x1040' },
+	{ id: 'nd-20', value: 20, x: 430, y: 338, addr: '0x1080' },
+	{ id: 'nd-40', value: 40, x: 550, y: 338, addr: '0x1060' },
+	{ id: 'nd-60', value: 60, x: 670, y: 338, addr: '0x10a0' },
+	{ id: 'nd-80', value: 80, x: 790, y: 338, addr: '0x10c0' },
+].map(makeNode);
+// A list: 10, 20, 30, 40, 50 inserted in order. A balanced tree: 30, 10, 40, 20, 50.
+const chainNodes = [
+	{ id: 'dn-10', value: 10, x: 440, y: 195 },
+	{ id: 'dn-20', value: 20, x: 482, y: 241 },
+	{ id: 'dn-30', value: 30, x: 524, y: 287 },
+	{ id: 'dn-40', value: 40, x: 566, y: 333 },
+	{ id: 'dn-50', value: 50, x: 608, y: 379 },
+].map(makeNode);
+const balNodes = [
+	{ id: 'bn-30', value: 30, x: 775, y: 205 },
+	{ id: 'bn-10', value: 10, x: 719, y: 267 },
+	{ id: 'bn-40', value: 40, x: 831, y: 267 },
+	{ id: 'bn-20', value: 20, x: 775, y: 329 },
+	{ id: 'bn-50', value: 50, x: 887, y: 329 },
+].map(makeNode);
+const byId = (list: TreeNode[], id: string) => list.find((item) => item.id === id) ?? list[0];
+
+/** An arrow from a socket (left or right corner) of the parent to the back corner of the child. */
+function edge(from: TreeNode, side: 'left' | 'right', to: TreeNode) {
+	const start = from.g.corners[side];
+	const tip = { x: to.g.corners.back.x, y: round(to.g.corners.back.y - 3) };
+	const end = { x: tip.x, y: tip.y - 10 };
+	const control = { x: tip.x, y: round(start.y + (end.y - start.y) * 0.4) };
+	return {
+		start,
+		d: `M${start.x} ${start.y} Q${control.x} ${control.y} ${end.x} ${end.y}`,
+		head: poly([tip, { x: tip.x - 6, y: end.y }, { x: tip.x + 6, y: end.y }]),
+	};
+}
+const edgeSpecs = [
+	{ id: 'ar-30', set: treeNodes, parent: 'nd-50', side: 'left' as const, child: 'nd-30' },
+	{ id: 'ar-70', set: treeNodes, parent: 'nd-50', side: 'right' as const, child: 'nd-70' },
+	{ id: 'ar-20', set: treeNodes, parent: 'nd-30', side: 'left' as const, child: 'nd-20' },
+	{ id: 'ar-40', set: treeNodes, parent: 'nd-30', side: 'right' as const, child: 'nd-40' },
+	{ id: 'ar-60', set: treeNodes, parent: 'nd-70', side: 'left' as const, child: 'nd-60' },
+	{ id: 'ar-80', set: treeNodes, parent: 'nd-70', side: 'right' as const, child: 'nd-80' },
+	{ id: 'dr-20', set: chainNodes, parent: 'dn-10', side: 'right' as const, child: 'dn-20' },
+	{ id: 'dr-30', set: chainNodes, parent: 'dn-20', side: 'right' as const, child: 'dn-30' },
+	{ id: 'dr-40', set: chainNodes, parent: 'dn-30', side: 'right' as const, child: 'dn-40' },
+	{ id: 'dr-50', set: chainNodes, parent: 'dn-40', side: 'right' as const, child: 'dn-50' },
+	{ id: 'br-10', set: balNodes, parent: 'bn-30', side: 'left' as const, child: 'bn-10' },
+	{ id: 'br-40', set: balNodes, parent: 'bn-30', side: 'right' as const, child: 'bn-40' },
+	{ id: 'br-20', set: balNodes, parent: 'bn-10', side: 'right' as const, child: 'bn-20' },
+	{ id: 'br-50', set: balNodes, parent: 'bn-40', side: 'right' as const, child: 'bn-50' },
+].map((spec) => ({ id: spec.id, ...edge(byId(spec.set, spec.parent), spec.side, byId(spec.set, spec.child)) }));
+
+// A node of the tree that is being visited or released: the same block, lit violet.
+const visited = treeNodes.map((node) => ({ id: `vs-${node.value}`, g: node.g, value: node.value }));
+
+// Where the cursor stops: just above a node, or on the socket that is about to be filled.
+const above = (node: TreeNode) => lift(node.g.center, 30);
+const holeAt = (node: TreeNode, side: 'left' | 'right') => node.g.corners[side];
+const N = (id: string) => byId(treeNodes, id);
+const holes = [
+	{ id: 'a-h30', at: holeAt(N('nd-50'), 'left') },
+	{ id: 'a-h70', at: holeAt(N('nd-50'), 'right') },
+	{ id: 'a-h40', at: holeAt(N('nd-30'), 'right') },
+	{ id: 'a-h65', at: holeAt(N('nd-60'), 'right') },
+];
+const anchors = [
+	...treeNodes.map((node) => ({ id: `a-${node.value}`, ...above(node) })),
+	...chainNodes.map((node) => ({ id: `da-${node.value}`, ...above(node) })),
+	...balNodes.map((node) => ({ id: `ba-${node.value}`, ...above(node) })),
+	...holes.map((hole) => ({ id: hole.id, ...hole.at })),
+];
+const start = anchors[0];
+
+// The slots a new node is hung on: a ring on the `NULL` socket, with the word next to it.
+const slots = [
+	{ id: 'sl-30', at: holeAt(N('nd-50'), 'left'), dir: -1 },
+	{ id: 'sl-70', at: holeAt(N('nd-50'), 'right'), dir: 1 },
+	{ id: 'sl-40', at: holeAt(N('nd-30'), 'right'), dir: 1 },
+];
+
+// The stack: `main` holds the root pointer, and each recursive call adds a frame on top.
+const MAIN = slabAt(320, 146, 0.36, 0.36, 16, 0);
+const [FU, FV] = uv(210, 150, 0);
+const frames = [0, 1, 2, 3].map((k) => ({ id: `fr-${k}`, k, g: slab(FU, FV, 0.8, 0.35, 18, k * 21) }));
+const frameLabels = [
+	{ id: 'li-0-null', k: 0, text: `*${n.root} → NULL` },
+	{ id: 'li-0-50', k: 0, text: `*${n.root} → 50` },
+	{ id: 'li-1-null', k: 1, text: `*${n.root} → NULL` },
+	{ id: 'li-1-30', k: 1, text: `*${n.root} → 30` },
+	{ id: 'li-2-null', k: 2, text: `*${n.root} → NULL` },
+	{ id: 'ls-0', k: 0, text: `${n.root} → 50` },
+	{ id: 'ls-1', k: 1, text: `${n.root} → 70` },
+	{ id: 'ls-2', k: 2, text: `${n.root} → 60` },
+	{ id: 'lv-0', k: 0, text: `${n.root} → 50` },
+	{ id: 'lv-1', k: 1, text: `${n.root} → 30` },
+	{ id: 'lv-2', k: 2, text: `${n.root} → 20` },
+	{ id: 'lv-3', k: 3, text: `${n.root} → NULL` },
+];
+
+// The pointer `raiz` of `main`: an arrow from its plate to the root node.
+function pointerPath(from: Point, to: Point, control: Point) {
+	const d = `M${from.x} ${from.y} Q${control.x} ${control.y} ${to.x} ${to.y}`;
+	const dx = to.x - control.x;
+	const dy = to.y - control.y;
+	const length = Math.hypot(dx, dy) || 1;
+	const ux = dx / length;
+	const uy = dy / length;
+	const base = { x: to.x - ux * 11, y: to.y - uy * 11 };
+	const head = poly([to, { x: round(base.x - uy * 6), y: round(base.y + ux * 6) }, { x: round(base.x + uy * 6), y: round(base.y - ux * 6) }]);
+	return { d, head };
+}
+const rootPointer = pointerPath(lift(MAIN.center, 14), { x: 597, y: 206 }, { x: 450, y: 118 });
+
+// Instruction modules: one per line the film runs, labelled with its editor line.
+const [PU, PV] = uv(850, 590, 0);
+const moduleSlot = (index: number) => slab(PU + ((index % 3) - 1) * 1.05, PV + (Math.floor(index / 3) - 1) * 0.85, 0.2, 0.2, 16, 0);
+const makeModules = (name: (line: number) => string, lines: number[]) => lines.map((line, index) => ({ id: name(line), line, g: moduleSlot(index) }));
+const modules = [
+	...makeModules((line) => `mi-${line}`, [2, 3, 6, 7, 9, 10]),
+	...makeModules((line) => `mf-${line}`, [2, 3, 5, 6, 8]),
+	...makeModules((line) => `mt-${line}`, [3, 4, 5, 11, 12, 13, 19, 20, 21]),
+	...makeModules((line) => `mr-${line}`, [5, 6, 7, 10, 11]),
+];
+
+// The result of each traversal grows as a strip of values above the heap.
+const STRIP_Y = 118;
+const stripChips = (name: (k: number) => string, values: number[]) =>
+	values.map((value, index) => ({ id: name(index + 1), text: String(value), x: 610 + (index - 3) * 50, y: STRIP_Y }));
+const strip = [
+	...stripChips((k) => `ri-${k}`, [20, 30, 40, 50, 60, 70, 80]),
+	...stripChips((k) => `rp-${k}`, [50, 30, 20, 40, 70, 60, 80]),
+	...stripChips((k) => `rq-${k}`, [20, 40, 30, 60, 80, 70, 50]),
+];
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-all', c: { x: 570, y: 340 }, s: 0.68 },
+	{ id: 'shot-calls', c: { x: 490, y: 235 }, s: 0.95 },
+	{ id: 'shot-tree', c: { x: 610, y: 290 }, s: 1.2 },
+	{ id: 'shot-chain', c: { x: 525, y: 290 }, s: 1.5 },
+	{ id: 'shot-bal', c: { x: 800, y: 290 }, s: 1.5 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.c.x - 640 / item.s),
+	y: round(item.c.y - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Floating notes, centered on `x`.
+type Tone = 'flow' | 'violet' | 'magenta';
+type Chip = { id: string; text: string; x: number; y: number; tone: 'plain' | Tone; mono?: boolean };
+const chips: Chip[] = [
+	{ id: 'tt-n', text: `${n.insert}(&${n.root}, 50)`, x: 210, y: 14, tone: 'flow', mono: true },
+	{ id: 'tt-a', text: `${n.insert}(&${n.root}, 30)`, x: 210, y: 14, tone: 'flow', mono: true },
+	{ id: 'tt-b', text: `${n.insert}(&${n.root}, 70)`, x: 210, y: 14, tone: 'flow', mono: true },
+	{ id: 'tt-i', text: `${n.insert}(&${n.root}, 40)`, x: 210, y: 14, tone: 'flow', mono: true },
+	{ id: 'tt-s', text: `${n.find}(${n.root}, 60)`, x: 210, y: 14, tone: 'flow', mono: true },
+	{ id: 'tt-v', text: `${n.inorder}(${n.root})`, x: 210, y: 14, tone: 'flow', mono: true },
+	{ id: 'tt-f', text: `${n.destroy}(${n.root})`, x: 210, y: 14, tone: 'violet', mono: true },
+	{ id: 'cm-1', text: `30 < 50 → ${n.left}`, x: 760, y: 168, tone: 'flow', mono: true },
+	{ id: 'cm-2', text: `70 > 50 → ${n.right}`, x: 760, y: 168, tone: 'flow', mono: true },
+	{ id: 'cm-3', text: `40 < 50 → ${n.left}`, x: 760, y: 168, tone: 'flow', mono: true },
+	{ id: 'cm-4', text: `40 > 30 → ${n.right}`, x: 395, y: 236, tone: 'flow', mono: true },
+	{ id: 'cm-5', text: `60 > 50 → ${n.right}`, x: 760, y: 168, tone: 'flow', mono: true },
+	{ id: 'cm-6', text: `60 < 70 → ${n.left}`, x: 825, y: 236, tone: 'flow', mono: true },
+	{ id: 'cm-7', text: t('60 == 60 → encontrado', '60 == 60 → found'), x: 700, y: 396, tone: 'violet', mono: true },
+	{ id: 'ch-no', text: t('NULL → el 65 no está', 'NULL → 65 is not there'), x: 770, y: 396, tone: 'magenta', mono: true },
+	{ id: 'ch-leak', text: t('free(raiz) primero: hijos perdidos', 'free(root) first: lost children'), x: 760, y: 168, tone: 'magenta', mono: true },
+	{ id: 'ch-lin', text: t('altura 5 · buscar 50: 5 nodos', 'height 5 · find 50: 5 nodes'), x: 530, y: 440, tone: 'magenta', mono: true },
+	{ id: 'ch-bal', text: t('altura 3 · buscar 50: 3 nodos', 'height 3 · find 50: 3 nodes'), x: 800, y: 420, tone: 'violet', mono: true },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + 24);
+const chipLeft = (chip: Chip) => chip.x - chipWidth(chip) / 2;
+
+const LEGEND_Y = VP.y + VP.h - 22;
+const nodeValue = (node: TreeNode) => ({ x: node.g.center.x, y: round(node.g.center.y + 4.5) });
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="bs-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="bs-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="bs-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="bs-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="bs-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="bs-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the heap with the tree, the stack and the instructions, seen through the camera -->
+			<g clip-path="url(#bs-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#bs-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#bs-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- Floors: the heap, the stack and the instructions -->
+						{
+							floors.map((floor) => (
+								<g data-el={floor.id}>
+									<polygon class="xj-plate-shadow" points={floor.g.base} transform="translate(12 18)" />
+									<polygon class="xj-plate xj-plate--l" points={floor.g.leftFace} />
+									<polygon class="xj-plate xj-plate--r" points={floor.g.rightFace} />
+									<polygon class="xj-plate xj-plate--t" points={floor.g.top} fill="url(#bs-g-floor)" />
+									<text class="xj-area-label" x={floor.at.x} y={floor.at.y} text-anchor="middle">
+										{floor.label}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The plate of `main` that holds the root pointer -->
+						<g data-el="v-raiz" class="xj-var">
+							<polygon class="xj-shadow" points={MAIN.base} transform="translate(6 8)" />
+							<polygon class="xj-face xj-face--l" points={MAIN.leftFace} />
+							<polygon class="xj-face xj-face--r" points={MAIN.rightFace} />
+							<polygon class="xj-face xj-face--t" points={MAIN.top} fill="url(#bs-g-top)" />
+							<text class="xj-var-name" x={MAIN.bottomFront.x} y={MAIN.bottomFront.y + 16} text-anchor="middle">
+								{n.root}
+							</text>
+						</g>
+						<g data-el="rv-null">
+							<text class="xj-val xj-val--magenta" x={MAIN.center.x} y={MAIN.center.y + 4} text-anchor="middle">NULL</text>
+						</g>
+						<g data-el="rv-root">
+							<text class="xj-val xj-val--flow" x={MAIN.center.x} y={MAIN.center.y + 4} text-anchor="middle">0x1000</text>
+						</g>
+						<g data-el="sl-50" class="xj-slot">
+							<ellipse cx={MAIN.center.x} cy={MAIN.center.y} rx="30" ry="17" />
+						</g>
+
+						<!-- The tower of frames: one per recursive call, each with the node its pointer examines -->
+						{
+							frames.map((frame) => (
+								<g data-el={frame.id}>
+									<polygon class="xj-shadow" points={frame.g.base} transform="translate(6 8)" />
+									<polygon class="xj-face xj-face--l" points={frame.g.leftFace} />
+									<polygon class="xj-face xj-face--r" points={frame.g.rightFace} />
+									<polygon class="xj-face xj-face--t" points={frame.g.top} fill="url(#bs-g-top)" />
+								</g>
+							))
+						}
+						{
+							frameLabels.map((label) => (
+								<g data-el={label.id}>
+									<text class="xj-frame-text" transform={frames[label.k].g.faceMatrix} text-anchor="middle" y="3.5">
+										{label.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The tree: blocks of the heap, back row first -->
+						{
+							[treeNodes, chainNodes, balNodes].flatMap((set) =>
+								set.map((node) => (
+									<g data-el={node.id} class="xj-tnode">
+										<polygon class="xj-shadow" points={node.g.base} transform="translate(5 7)" />
+										<polygon class="xj-face xj-face--l" points={node.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={node.g.rightFace} />
+										<polygon class="xj-node-top" points={node.g.top} />
+										<text class="xj-val" x={nodeValue(node).x} y={nodeValue(node).y} text-anchor="middle">
+											{node.value}
+										</text>
+										<circle class="xj-null" cx={node.g.corners.left.x} cy={node.g.corners.left.y} r="3.5" />
+										<circle class="xj-null" cx={node.g.corners.right.x} cy={node.g.corners.right.y} r="3.5" />
+										{node.addr && (
+											<text class="xj-addr" x={node.g.bottomFront.x} y={node.g.bottomFront.y + 11} text-anchor="middle">
+												{node.addr}
+											</text>
+										)}
+									</g>
+								))
+							)
+						}
+
+						<!-- The `izquierdo` and `derecho` pointers: one arrow per link, drawn when the node is hung -->
+						{
+							edgeSpecs.map((arrow) => (
+								<g data-el={arrow.id} class="xj-ptr">
+									<circle class="xj-socket" cx={arrow.start.x} cy={arrow.start.y} r="4.5" />
+									<path class="mg-stroke" pathLength="1" d={arrow.d} />
+									<polygon class="mg-head" points={arrow.head} />
+								</g>
+							))
+						}
+
+						<!-- The root pointer, from the plate of main into the heap -->
+						<g data-el="ptr-raiz" class="xj-ptr">
+							<path class="mg-stroke" pathLength="1" d={rootPointer.d} />
+							<polygon class="mg-head" points={rootPointer.head} />
+						</g>
+
+						<!-- The `NULL` socket a new node is hung on -->
+						{
+							slots.map((slot) => (
+								<g data-el={slot.id} class="xj-slot">
+									<circle cx={slot.at.x} cy={slot.at.y} r="9" />
+									<text class="xj-slot-text" x={slot.at.x + slot.dir * 15} y={slot.at.y + 4} text-anchor={slot.dir > 0 ? 'start' : 'end'}>
+										NULL
+									</text>
+								</g>
+							))
+						}
+
+						<!-- A node being visited or released -->
+						{
+							visited.map((item) => (
+								<g data-el={item.id} class="xj-lit">
+									<polygon class="xj-lit-halo" points={item.g.top} />
+									<polygon class="xj-lit-top" points={item.g.top} />
+									<polygon class="xj-lit-side" points={item.g.leftFace} />
+									<text class="xj-val xj-val--on" x={item.g.center.x} y={item.g.center.y + 4.5} text-anchor="middle">
+										{item.value}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Instruction modules: one per line, labelled with its editor line -->
+						{
+							modules.map((module) => (
+								<g data-el={module.id} class="xj-mod">
+									<polygon class="xj-shadow" points={module.g.base} transform="translate(6 8)" />
+									<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+									<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+									<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#bs-g-top)" />
+									<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+										{module.line}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The result of a traversal, value by value -->
+						{
+							strip.map((item) => (
+								<g data-el={item.id} class="xj-chip xj-chip--violet">
+									<rect x={item.x - 21} y={item.y - 13} width="42" height="26" rx="13" />
+									<text class="xj-chip-mono" x={item.x} y={item.y + 4.5} text-anchor="middle">
+										{item.text}
+									</text>
+								</g>
+							))
+						}
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									<text class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'} x={chip.x} y={chip.y + 4.5} text-anchor="middle">
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The cursor: the node under examination. Placement lives on data-x/y: the player resets data-el transforms. -->
+						<g data-el="p" class="xj-particle" data-x={start.x} data-y={start.y}>
+							<circle r="20" fill="url(#bs-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="400" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Cursor', 'Cursor')}</text>
+				<path class="xj-legend-ptr" d={`M${VP.x + 112} ${LEGEND_Y} H${VP.x + 130}`}></path>
+				<polygon class="xj-legend-head" points={`${VP.x + 136},${LEGEND_Y} ${VP.x + 128},${LEGEND_Y - 5} ${VP.x + 128},${LEGEND_Y + 5}`}></polygon>
+				<text x={VP.x + 144} y={LEGEND_Y + 4}>{t('Puntero', 'Pointer')}</text>
+				<rect class="xj-legend-cell" x={VP.x + 222} y={LEGEND_Y - 7} width="16" height="14" rx="3"></rect>
+				<text x={VP.x + 246} y={LEGEND_Y + 4}>{t('Nodo del heap', 'Heap node')}</text>
+			</g>
+
+			<!-- EDITOR: the functions of the lesson, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{FILE_NAME}</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 24}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(1)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				{
+					programs.map((program) => (
+						<g data-el={program.id} data-base={program.base} class="xj-code">
+							{program.lines.map((line) => (
+								<>
+									<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+										{line.n}
+									</text>
+									<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+								</>
+							))}
+						</g>
+					))
+				}
+
+				<!-- Console: what the program prints, as the lesson shows it -->
+				{
+					outputs.map((row) => (
+						<g data-el={row.id}>
+							<text class="xj-out" x={ED.x + 20} y={outY(row.row)} xml:space="preserve">
+								{row.text}
+							</text>
+						</g>
+					))
+				}
+				{Array.from({ length: MAX_LINES }, (_, index) => <circle data-anchor={`ln-${index + 1}`} cx={BAR_CX} cy={lineMid(index + 1)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue cursor and pointers, magenta for the empty spot (a NULL socket, a leak,
+	   the degenerate tree) and violet for what visits or releases a node.
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='arbol-busqueda-c']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='arbol-busqueda-c'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='arbol-busqueda-c'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='arbol-busqueda-c'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-ptr {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+	}
+
+	.xj-legend-head {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-cell {
+		fill: var(--xj-steel);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+	}
+
+	/* Floors, nodes, plates, frames and modules */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-area-label {
+		font-family: var(--font-body);
+		font-size: 14px;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-node-top {
+		fill: var(--xj-ink);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-null {
+		fill: none;
+		stroke: var(--xj-magenta);
+		stroke-width: 1.5;
+	}
+
+	.xj-addr {
+		font-family: monospace;
+		font-size: 8.5px;
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-val {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-val--flow {
+		fill: var(--xj-flow-soft);
+		font-size: 11px;
+	}
+
+	.xj-val--magenta {
+		fill: var(--xj-magenta-soft);
+		font-size: 11px;
+	}
+
+	.xj-val--on {
+		fill: var(--xj-ink);
+	}
+
+	.xj-var-name {
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-frame-text {
+		font-family: monospace;
+		font-size: 9.5px;
+		font-weight: 700;
+		fill: var(--xj-flow-soft);
+	}
+
+	/* The NULL socket a node is about to be hung on */
+	.xj-slot circle,
+	.xj-slot ellipse {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.18;
+		stroke: var(--xj-magenta);
+		stroke-width: 2;
+	}
+
+	.xj-slot-text {
+		font-family: monospace;
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--xj-magenta-soft);
+	}
+
+	/* A node being visited or released */
+	.xj-lit {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.85;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* Pointers: the arrow of each link and the root pointer */
+	.xj-ptr path {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+	}
+
+	.xj-ptr polygon {
+		fill: var(--xj-flow);
+	}
+
+	.xj-socket {
+		fill: var(--xj-flow);
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 12.5px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 11.5px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+		font-weight: 700;
+	}
+
+	.mg-canvas .xj-code :global(.tok-type) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 700;
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-ann) {
+		fill: var(--xj-magenta-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+</style>

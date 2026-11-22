@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" role="img" aria-label="Un árbol binario de búsqueda: los menores a la izquierda y los mayores a la derecha">
+  <rect width="400" height="200" fill="#f1e8d9"/>
+  <path d="M60 126l140-70 140 70-140 70z" fill="#faf5ec" stroke="#7d9a76" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M60 126v8l140 70 140-70v-8" fill="none" stroke="#7d9a76" stroke-width="2.5" stroke-linejoin="round"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M200 70Q150 74 134 100" stroke="#2e2b25" stroke-width="10" stroke-opacity="0.18"/>
+    <path d="M200 70Q250 74 266 100" stroke="#2e2b25" stroke-width="10" stroke-opacity="0.18"/>
+    <path d="M200 70Q150 74 134 100" stroke="#7d9a76" stroke-width="2.5"/>
+    <path d="M200 70Q250 74 266 100" stroke="#7d9a76" stroke-width="2.5"/>
+    <path d="M134 118Q108 122 100 140" stroke="#7d9a76" stroke-width="2.5"/>
+    <path d="M134 118Q160 122 168 140" stroke="#7d9a76" stroke-width="2.5"/>
+    <path d="M266 118Q240 122 232 140" stroke="#7d9a76" stroke-width="2.5"/>
+    <path d="M266 118Q292 122 300 140" stroke="#7d9a76" stroke-width="2.5"/>
+  </g>
+  <g stroke-linejoin="round" stroke-width="2.5">
+    <path d="M200 44l18 9-18 9-18-9z" fill="#c0714a" stroke="#2e2b25"/>
+    <path d="M200 62l18 9v10l-18-9z" fill="#2e2b25" stroke="#2e2b25"/>
+    <path d="M134 100l16 8-16 8-16-8z" fill="#faf5ec" stroke="#2e2b25"/>
+    <path d="M266 100l16 8-16 8-16-8z" fill="#faf5ec" stroke="#2e2b25"/>
+    <path d="M100 140l14 7-14 7-14-7z" fill="#c0714a" stroke="#2e2b25"/>
+    <path d="M168 140l14 7-14 7-14-7z" fill="#faf5ec" stroke="#2e2b25"/>
+    <path d="M232 140l14 7-14 7-14-7z" fill="#c0714a" stroke="#2e2b25"/>
+    <path d="M300 140l14 7-14 7-14-7z" fill="#faf5ec" stroke="#2e2b25"/>
+  </g>
+  <g font-family="monospace" font-weight="700" text-anchor="middle">
+    <text x="200" y="57" font-size="12" fill="#faf5ec">50</text>
+    <text x="134" y="112" font-size="11" fill="#2e2b25">30</text>
+    <text x="266" y="112" font-size="11" fill="#2e2b25">70</text>
+    <text x="100" y="151" font-size="10" fill="#faf5ec">20</text>
+    <text x="168" y="151" font-size="10" fill="#2e2b25">40</text>
+    <text x="232" y="151" font-size="10" fill="#faf5ec">60</text>
+    <text x="300" y="151" font-size="10" fill="#2e2b25">80</text>
+  </g>
+  <g font-family="monospace" font-weight="700" font-size="11" fill="#c0714a">
+    <text x="20" y="34">&lt; 50</text>
+    <text x="352" y="34" text-anchor="end">&gt; 50</text>
+  </g>
+  <circle cx="200" cy="70" r="5" fill="#7d9a76"/>
+</svg>

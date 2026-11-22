@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" role="img" aria-label="Un problema se divide en pasos y dos ciclos anidados recorren una tabla">
+  <rect width="400" height="200" fill="#f1e8d9"/>
+  <g stroke-linejoin="round" stroke-width="2.5">
+    <path d="M30 40l50-20 50 20-50 20z" fill="#faf5ec" stroke="#c0714a"/>
+    <path d="M30 40v6l50 20 50-20v-6" fill="none" stroke="#c0714a"/>
+  </g>
+  <g fill="none" stroke="#7d9a76" stroke-width="2.5" stroke-linecap="round">
+    <path d="M50 58c-10 14-10 28 0 34"/>
+    <path d="M50 58c-14 26-14 52 0 66"/>
+    <path d="M50 58c-18 38-18 78 0 98"/>
+  </g>
+  <g fill="#faf5ec" stroke="#7d9a76" stroke-width="2.5" stroke-linejoin="round">
+    <rect x="56" y="84" width="80" height="16" rx="5"/>
+    <rect x="56" y="116" width="80" height="16" rx="5"/>
+    <rect x="56" y="148" width="80" height="16" rx="5"/>
+  </g>
+  <g fill="#2e2b25">
+    <rect x="62" y="88" width="16" height="8" rx="2"/>
+    <rect x="84" y="88" width="16" height="8" rx="2"/>
+    <rect x="62" y="120" width="16" height="8" rx="2"/>
+    <rect x="62" y="152" width="16" height="8" rx="2"/>
+    <rect x="84" y="152" width="16" height="8" rx="2"/>
+    <rect x="106" y="152" width="16" height="8" rx="2"/>
+  </g>
+  <ellipse cx="220" cy="120" rx="58" ry="34" fill="none" stroke="#c0714a" stroke-width="5"/>
+  <ellipse cx="220" cy="114" rx="28" ry="16" fill="#faf5ec" stroke="#7d9a76" stroke-width="4"/>
+  <circle cx="248" cy="114" r="5" fill="#2e2b25"/>
+  <g font-family="monospace" font-size="11" font-weight="700" text-anchor="middle">
+    <g fill="#faf5ec" stroke="#7d9a76" stroke-width="2">
+      <rect x="296" y="60" width="22" height="18" rx="4"/>
+      <rect x="320" y="60" width="22" height="18" rx="4"/>
+      <rect x="344" y="60" width="22" height="18" rx="4"/>
+      <rect x="296" y="82" width="22" height="18" rx="4"/>
+      <rect x="320" y="82" width="22" height="18" rx="4"/>
+      <rect x="344" y="82" width="22" height="18" rx="4"/>
+      <rect x="296" y="104" width="22" height="18" rx="4"/>
+      <rect x="320" y="104" width="22" height="18" rx="4"/>
+      <rect x="344" y="104" width="22" height="18" rx="4"/>
+    </g>
+    <g fill="#2e2b25">
+      <text x="307" y="73">1</text><text x="331" y="73">2</text><text x="355" y="73">3</text>
+      <text x="307" y="95">2</text><text x="331" y="95">4</text><text x="355" y="95">6</text>
+      <text x="307" y="117">3</text><text x="331" y="117">6</text><text x="355" y="117">9</text>
+    </g>
+    <text x="220" y="180" fill="#c0714a">i</text>
+    <text x="220" y="118" fill="#7d9a76">j</text>
+  </g>
+</svg>
