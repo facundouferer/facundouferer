@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { DONE_STAGE, LESSONS, TAUGHT_AT, activityStage, orderOf } from './helpers/c-curriculum.mjs';
+import { ACTIVITIES_DONE_STAGE, LESSONS, TAUGHT_AT, activityStage, orderOf } from './helpers/c-curriculum.mjs';
 
 // S8 of odd/tasks/c-course-redesign.md: every C lesson has, in Spanish,
 // src/content/activities/c/<lesson>/autoevaluacion-<lesson>.es.md (a 10-12
@@ -28,7 +28,7 @@ function assertSequencing(lesson, content, name) {
 	}
 }
 
-for (const lesson of LESSONS.filter((lesson) => activityStage(lesson) <= DONE_STAGE)) {
+for (const lesson of LESSONS.filter((lesson) => activityStage(lesson) <= ACTIVITIES_DONE_STAGE)) {
 	test(`${lesson.slug} has a published Spanish self-assessment quiz`, async () => {
 		assert.ok(existsSync(quizPath(lesson)), `missing ${quizPath(lesson)}`);
 		const content = await readFile(quizPath(lesson), 'utf8');

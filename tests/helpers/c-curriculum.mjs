@@ -3,7 +3,9 @@
 // stages are not enforced yet.
 
 // C_DONE_STAGE lets a writer check a stage before it is marked done.
-export const DONE_STAGE = Number(process.env.C_DONE_STAGE ?? 1);
+export const DONE_STAGE = Number(process.env.C_DONE_STAGE ?? 4);
+// Activities (quizzes and projects) are enforced by the stage that delivers them.
+export const ACTIVITIES_DONE_STAGE = Number(process.env.C_ACTIVITIES_DONE_STAGE ?? 4);
 
 // [slug, stage that rewrites or creates it]
 const ORDER = [
