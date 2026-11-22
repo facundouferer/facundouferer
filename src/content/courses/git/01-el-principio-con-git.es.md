@@ -474,7 +474,7 @@ Si el historial no entra en la pantalla, Git lo muestra paginado: avanza con la 
 
 ## Errores comunes
 
-- **Olvidar `git add`**: `git commit` responde `nothing added to commit` o guarda solo lo que estaba preparado. Revisa con `git status` antes de cada commit.
+- **Olvidar `git add`**: `git commit` responde `no changes added to commit` (si solo modificaste archivos) o `nothing added to commit` (si solo hay archivos nuevos), o guarda solo lo que estaba preparado. Revisa con `git status` antes de cada commit.
 - **Hacer commit sin identidad**: si no configuraste `user.name` y `user.email`, Git se niega a crear el commit (`Author identity unknown`) o lo firma con datos adivinados a partir de tu sistema. Configura tu identidad antes del primer commit.
 - **Ejecutar `git init` en la carpeta equivocada**: hazlo dentro de la carpeta del proyecto, nunca en tu carpeta de usuario.
 - **Commits gigantes con mensajes vagos**: haz commits pequeños y frecuentes, cada uno con un mensaje claro.
