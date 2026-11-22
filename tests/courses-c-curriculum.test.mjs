@@ -101,6 +101,14 @@ const REQUIRED = {
 	'objetos-metodos-y-diseno-basado-en-struct': { all: ['->'], es: ['composición'], en: ['composition'] },
 	'polimorfismo-y-herencia-simulados-en-c': { all: ['(*'], es: ['límite'], en: ['limit'] },
 
+	// Stages 3 and 4
+	'introduccion-y-estructura': { all: ['#include <stdio.h>', 'int main(void)', 'C23'], es: ['estándar'], en: ['standard'] },
+	'procesos-y-estados': { all: [], es: ['algoritmo', 'estado'], en: ['algorithm', 'state'] },
+	'depuracion-y-sanitizers': { all: ['-g', '-fsanitize=address', '-fsanitize=undefined', 'gdb', 'lldb', 'break'], es: ['reproducir', 'aislar'], en: ['reproduce', 'isolate'] },
+	'pruebas-estilo-y-portabilidad': { all: ['assert(', 'NDEBUG'], es: ['prueba unitaria', 'portabilidad', 'convención'], en: ['unit test', 'portability', 'convention'] },
+	'c23-moderno': { all: ['constexpr', 'typeof', 'nullptr', '#embed', '_BitInt', '[[nodiscard]]', '-std=c23'], es: ['extensión'], en: ['extension'] },
+	'preprocesador-y-programacion-generica': { all: ['#define', '__VA_ARGS__', '_Generic', 'inline'], es: ['macro'], en: ['macro'] },
+	'concurrencia-threads-y-atomics': { all: ['<threads.h>', 'thrd_create', 'mtx_lock', 'atomic_int', 'pthread'], es: ['condición de carrera'], en: ['race condition'] },
 };
 
 const pathOf = (lesson, lang) => `${C_DIR}/${lesson.file}.${lang}.md`;
