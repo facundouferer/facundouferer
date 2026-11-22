@@ -58,22 +58,23 @@ Route column: "inline" or "delegated (parallel)" per the Writer trigger. Each le
 - [x] T1 (S4, S5, S10) inline: RED `tests/courses-c-curriculum.test.mjs` for the full target order (44 lessons, roadmap, exercises, sequencing bans); stage-1 lessons GREEN at stage end, later lessons tracked as pending in the test.
 - [x] T2 (S9, S10) inline: compile-check script `scripts/check-c-examples.mjs` (extracts ```c blocks, honors the fragment marker, compiles with the course flags in a `mktemp -d` dir) + test that skips without a compiler.
 - [x] T3 (S3, S4) inline: course policy: `index.md` roadmap reorder (modules 1-11, advanced labels), course description of the standard, `order` renumbering and file renames (slugs unchanged).
-- [ ] T4 (S4, S5) delegated (parallel): NEW `compilacion-y-enlazado`.
-- [ ] T5 (S4, S5) delegated (parallel): expand `tipos-de-datos`, `variables-y-constantes`, `entrada-y-salida`, `operadores`.
-- [ ] T6 (S3, S4, S5) delegated (parallel): correct `variables-parametros-y-pasaje` and expand `modularizacion-subprogramas-y-funciones` (`.h`/`.c`, guards, multi-file), `recursividad` (call stack).
-- [ ] T7 (S4, S5) delegated (parallel): NEW `punteros-y-direcciones`, `punteros-arreglos-y-estructuras`.
-- [ ] T8 (S4, S5) delegated (parallel): NEW `duracion-y-ciclo-de-vida`, `memoria-dinamica`, `propiedad-y-errores-de-memoria`.
-- [ ] T9 (S8) delegated (parallel): quiz + project for every lesson of modules 1-3 and 5-6 (incl. calculadora de consola).
-- [ ] T10 (S6) delegated (parallel): presentations compilación y enlazado, punteros y direcciones, punteros y arreglos, stack y heap, memoria dinámica, ciclo de vida; C types presentation replacing the JavaScript link; fix `paso_por_valor_y_referencia` wording.
-- [ ] T11 (S7) delegated (parallel, one writer per film): films for the 8 lessons of stage 1 with new or rewritten mechanisms (`compilacion-y-enlazado`, `tipos-de-datos`, `variables-parametros-y-pasaje`, `punteros-y-direcciones`, `punteros-arreglos-y-estructuras`, `duracion-y-ciclo-de-vida`, `memoria-dinamica`, `propiedad-y-errores-de-memoria`).
+- [x] T4 (S4, S5) delegated (parallel): NEW `compilacion-y-enlazado`. Commit d80d2de.
+- [x] T5 (S4, S5) delegated (parallel): expand `tipos-de-datos`, `variables-y-constantes`, `entrada-y-salida`, `operadores`.
+- [x] T6 (S3, S4, S5) delegated (parallel): correct `variables-parametros-y-pasaje` and expand `modularizacion-subprogramas-y-funciones` (`.h`/`.c`, guards, multi-file), `recursividad` (call stack).
+- [x] T7 (S4, S5) delegated (parallel): NEW `punteros-y-direcciones`, `punteros-arreglos-y-estructuras`.
+- [x] T8 (S4, S5) delegated (parallel): NEW `duracion-y-ciclo-de-vida`, `memoria-dinamica`, `propiedad-y-errores-de-memoria`.
+- [x] T9 (S8) delegated (parallel): quiz + project for every lesson of modules 1-3 and 5-6 (incl. calculadora de consola).
+- [x] T10 (S6) delegated (parallel): presentations compilación y enlazado, punteros y direcciones, punteros y arreglos, stack y heap, memoria dinámica, ciclo de vida; C types presentation replacing the JavaScript link; fix `paso_por_valor_y_referencia` wording.
+- [x] T11 (S7) delegated (parallel, one writer per film): films for the 8 lessons of stage 1 with new or rewritten mechanisms (`compilacion-y-enlazado`, `tipos-de-datos`, `variables-parametros-y-pasaje`, `punteros-y-direcciones`, `punteros-arreglos-y-estructuras`, `duracion-y-ciclo-de-vida`, `memoria-dinamica`, `propiedad-y-errores-de-memoria`).
 - [ ] T12 (S9, S10, S11 partial) inline: registration (catalog, maps, `AnimationTag` `'C'`, `paletteExceptions`, AGENTS.md), compile check green, suite, astro check, browser verification, stage PR.
 
 ### Stage 2: reorganize the path (report Etapa 2)
 
-- [ ] T13 (S4, S5) delegated (parallel): module 4 lessons: merge `manejo-de-estructuras-secuenciales-de-datos` into arrays, expand arrays (bounds), strings (capacity, safety), `concepto-de-estructuras` (`union`, `enum`, `typedef`, padding), search and sort (complexity).
+- [x] T13 (S4, S5) delegated (parallel): module 4 lessons: merge `manejo-de-estructuras-secuenciales-de-datos` into arrays, expand arrays (bounds), strings (capacity, safety), `concepto-de-estructuras` (`union`, `enum`, `typedef`, padding), search and sort (complexity).
+- [x] T13b (S4, S5) delegated: module 2 lessons 08-14 (blocks and scope, break/continue, sentinel, stepwise refinement). Done: commits 1b88629, 561aa38.
 - [ ] T14 (S4, S5) delegated (parallel): module 7 rewrite: lists, stacks, queues, binary trees with correct allocation, checks and release.
-- [ ] T15 (S4, S5) delegated (parallel): module 8: NEW `biblioteca-estandar-y-errores`, expand `archivos` (binary, `fread`/`fwrite`, errors).
-- [ ] T16 (S4, S5) delegated: module 11 reframing of the four OOP lessons as design techniques.
+- [x] T15 (S4, S5) delegated (parallel): module 8: NEW `biblioteca-estandar-y-errores`, expand `archivos` (binary, `fread`/`fwrite`, errors).
+- [x] T16 (S4, S5) delegated: module 11 reframing of the four OOP lessons as design techniques.
 - [ ] T17 (S8): quizzes + projects for modules 4, 7, 8, 11 (sistema de calificaciones, lista de tareas, biblioteca de estructuras de datos, agenda de contactos, motor de búsqueda simple).
 - [ ] T18 (S6): presentation estructuras enlazadas; review of the existing array, string and sort presentations against the rewritten lessons.
 - [ ] T19 (S7): films for module 2 (control flow), module 4 and module 7-8 lessons.
@@ -84,7 +85,7 @@ Route column: "inline" or "delegated (parallel)" per the Writer trigger. Each le
 - [ ] T21 (S4, S5): NEW `depuracion-y-sanitizers`, `pruebas-estilo-y-portabilidad`.
 - [ ] T22 (S8): quizzes + projects for module 9, final project sistema de inventario with rubric.
 - [ ] T23 (S6): presentation depuración; T-S3-PRES three modes (Aprender / Practicar / Evaluar) added to the C presentations, new ones first.
-- [ ] T24 (S7): films for module 9 and the remaining module 1 lessons.
+- [ ] T24 (S7): films for module 9 and the remaining lessons of modules 1 and 3 (01, 02, 04, 06, 07, 15, 17).
 - [ ] T25 inline: registration, checks, browser verification, stage PR.
 
 ### Stage 4: modern and advanced C (report Etapa 4)
@@ -104,3 +105,7 @@ Route column: "inline" or "delegated (parallel)" per the Writer trigger. Each le
 - L6 forecast: ~12 new lessons, ~20 rewritten lessons, 88 activities, 9 new presentations + reviews, 44 films. Films dominate (~80k lines); stage 1 alone is roughly 30-35k authored lines including its 8 films.
 - L7 (2026-11-22) user: "si, arranca con la etapa 1 y despues con todas las siguientes. quiero que termines todas las etapas y que seas autónoma en sus realizaciones para terminar toda la actuación."
 - L8 T1-T3: shared data in `tests/helpers/c-curriculum.mjs` (`DONE_STAGE`, `LESSONS`, `TAUGHT_AT`, `activityStage`); tests `courses-c-curriculum`, `activities-c`, `c-examples-compile`; `scripts/check-c-examples.mjs` (baseline: 140 programs, 12 fail in lessons 01, 04, 21, 16). 58 renames to the new numbering, roadmap regenerated with existing lessons only (`resolveRoadmap` throws on unknown slugs, so new lessons enter the roadmap when their file exists).
+- L9 T4-T8 done (commits d80d2de, the module 1 commit after it): curriculum 185/185, compile check green (lessons 03-07, 15-17, 25-29). Writers verified outputs by running the programs (ASan for 25-29). Known: intentionally wrong memory programs in 27/29 compile under Apple clang but GCC 12+ `-Wuse-after-free` may reject them; lesson 06 previews `if`/`while` as labelled recipes before lessons 8/11.
+- L10 T9a done (commit 44554c9): quizzes + projects for lessons 01, 02, 08-14. Stage 2 must fix `operador-ternario` using `char *` before lesson 25.
+- L11 Decisions: `tipos_de_datos_en_javascript` is a multi-language types comparison; moved to `javascript/tipos-de-datos` (S6). `paso_por_valor_y_referencia` uses pointer code and compares languages: wording fixed (C has no pass by reference) and moved to `punteros-y-direcciones` (it showed pointers at lesson 16). Catalog entries for the 8 stage-1 films and 7 presentations added by the parent before launching their writers; `highlightCode` gained `'c'` (commit f8088d5).
+- L12 Stage 1 content done: lessons (d80d2de, module 1 commit), activities (44554c9, c5201fa, 2672e5d), presentations (bcfc58a; layout test now counts one component per catalog entry), films (3c4e751, 91/91 film tests). T12 browser verification delegated to a verifier (port 4341). Stage 2 lessons done except 30-33: 08-10 (1b88629), 11-14 (561aa38), 18-21 (de2c49d), 22-24 (e8fb444), 34-35 (4614927), 41-44 (4f2ecf1); stage 3 lessons 01-02 (bcf125f). Activities test voseo regex made accent-aware. In flight: module 2 and 4 films, activities 18-24, 34-35, 41-44, lessons 30-33, 36-37, 38-40.
