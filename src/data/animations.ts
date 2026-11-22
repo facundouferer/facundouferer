@@ -1,6 +1,6 @@
 import type { LessonReference } from './presentations';
 
-export type AnimationTag = 'Java' | 'Git';
+export type AnimationTag = 'Java' | 'Git' | 'C';
 
 /**
  * A step-by-step explanatory animation. Unlike presentations, every animation
