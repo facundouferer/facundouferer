@@ -1,0 +1,2110 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+const t = (es: string, en: string) => (isEs ? es : en);
+
+type Kind = 'owner' | 'borrow' | 'dangling' | 'null' | 'value';
+type Slot = { name: string; value: string; kind: Kind; target?: string };
+type Frame = { label: string; vars: Slot[] };
+type Cell = { v: string; out?: boolean };
+type Block = {
+	id: string;
+	addr: string;
+	size: string;
+	label: string;
+	status: 'live' | 'freed' | 'leaked' | 'static';
+	owner?: string;
+	fields?: Slot[];
+	cells?: Cell[];
+	value?: string;
+};
+type Alert = { kind: 'error' | 'leak' | 'ok'; text: string };
+type State = { frames: Frame[]; blocks: Block[]; alert?: Alert };
+type Step = { lines: number[]; text: string; state: State };
+
+const ptr = (name: string, value: string, kind: Kind, target?: string): Slot => ({ name, value, kind, target });
+const val = (name: string, value: string): Slot => ({ name, value, kind: 'value' });
+const nul = (name: string): Slot => ({ name, value: 'NULL', kind: 'null' });
+
+/* ---------- Identifiers of the C programs, localized ---------- */
+
+const I = isEs
+	? { Node: 'Nodo', value: 'dato', next: 'siguiente', head: 'cabeza', create: 'crear_nodo', front: 'insertar_al_inicio', back: 'insertar_al_final', sorted: 'insertar_ordenado', find: 'buscar', del: 'eliminar', destroy: 'destruir_lista', print: 'imprimir_lista', length: 'longitud', nw: 'nuevo', last: 'ultimo', prev: 'anterior', cur: 'actual', first: 'primero', hit: 'encontrado', none: 'ausente', arr: 'arreglo', count: 'cantidad' }
+	: { Node: 'Node', value: 'value', next: 'next', head: 'head', create: 'create_node', front: 'insert_front', back: 'insert_back', sorted: 'insert_sorted', find: 'find', del: 'delete_value', destroy: 'destroy_list', print: 'print_list', length: 'length', nw: 'new_node', last: 'last', prev: 'previous', cur: 'current', first: 'first', hit: 'hit', none: 'none', arr: 'array', count: 'count' };
+const { Node: N, value: v, next: nx, head: h, create, front, back, sorted, find, del, destroy, print, length, nw, last, prev, cur, first, hit, none, arr, count } = I;
+const nextv = nx;
+
+const hdr = (stdio = false) => String.raw`${stdio ? '#include <stdio.h>\n' : ''}#include <stdlib.h>
+
+typedef struct ${N} {
+    int ${v};
+    struct ${N} *${nx};
+} ${N};
+
+`;
+
+const pCreate = String.raw`${N} *${create}(int ${v}) {
+    ${N} *${nw} = malloc(sizeof *${nw});
+    if (${nw} == NULL) {
+        return NULL;
+    }
+    ${nw}->${v} = ${v};
+    ${nw}->${nx} = NULL;
+    return ${nw};
+}
+
+`;
+
+const pFront = String.raw`bool ${front}(${N} **${h}, int ${v}) {
+    ${N} *${nw} = ${create}(${v});
+    if (${nw} == NULL) {
+        return false;
+    }
+    ${nw}->${nx} = *${h};
+    *${h} = ${nw};
+    return true;
+}
+
+`;
+
+const pBack = String.raw`bool ${back}(${N} **${h}, int ${v}) {
+    ${N} *${nw} = ${create}(${v});
+    if (${nw} == NULL) {
+        return false;
+    }
+    if (*${h} == NULL) {
+        *${h} = ${nw};
+        return true;
+    }
+    ${N} *${last} = *${h};
+    while (${last}->${nx} != NULL) {
+        ${last} = ${last}->${nx};
+    }
+    ${last}->${nx} = ${nw};
+    return true;
+}
+
+`;
+
+const pSorted = String.raw`bool ${sorted}(${N} **${h}, int ${v}) {
+    ${N} *${nw} = ${create}(${v});
+    if (${nw} == NULL) {
+        return false;
+    }
+    if (*${h} == NULL || ${v} <= (*${h})->${v}) {
+        ${nw}->${nx} = *${h};
+        *${h} = ${nw};
+        return true;
+    }
+    ${N} *${prev} = *${h};
+    while (${prev}->${nx} != NULL && ${prev}->${nx}->${v} < ${v}) {
+        ${prev} = ${prev}->${nx};
+    }
+    ${nw}->${nx} = ${prev}->${nx};
+    ${prev}->${nx} = ${nw};
+    return true;
+}
+
+`;
+
+const pFind = String.raw`const ${N} *${find}(const ${N} *${h}, int ${v}) {
+    for (const ${N} *${cur} = ${h}; ${cur} != NULL; ${cur} = ${cur}->${nx}) {
+        if (${cur}->${v} == ${v}) {
+            return ${cur};
+        }
+    }
+    return NULL;
+}
+
+`;
+
+const pLength = String.raw`size_t ${length}(const ${N} *${h}) {
+    size_t ${count} = 0;
+    for (const ${N} *${cur} = ${h}; ${cur} != NULL; ${cur} = ${cur}->${nx}) {
+        ${count}++;
+    }
+    return ${count};
+}
+
+`;
+
+const pPrint = String.raw`void ${print}(const ${N} *${h}) {
+    for (const ${N} *${cur} = ${h}; ${cur} != NULL; ${cur} = ${cur}->${nx}) {
+        printf("%d -> ", ${cur}->${v});
+    }
+    printf("NULL\n");
+}
+
+`;
+
+const pDel = String.raw`bool ${del}(${N} **${h}, int ${v}) {
+    ${N} *${cur} = *${h};
+    ${N} *${prev} = NULL;
+    while (${cur} != NULL && ${cur}->${v} != ${v}) {
+        ${prev} = ${cur};
+        ${cur} = ${cur}->${nx};
+    }
+    if (${cur} == NULL) {
+        return false;
+    }
+    if (${prev} == NULL) {
+        *${h} = ${cur}->${nx};
+    } else {
+        ${prev}->${nx} = ${cur}->${nx};
+    }
+    free(${cur});
+    return true;
+}
+
+`;
+
+const pDestroy = String.raw`void ${destroy}(${N} **${h}) {
+    ${N} *${cur} = *${h};
+    while (${cur} != NULL) {
+        ${N} *${nextv} = ${cur}->${nx};
+        free(${cur});
+        ${cur} = ${nextv};
+    }
+    *${h} = NULL;
+}
+
+`;
+
+const fail = String.raw`        ${destroy}(&${h});
+        return 1;
+    }`;
+const end = String.raw`    ${destroy}(&${h});
+    return 0;
+}`;
+
+const proto = String.raw`${N} *${create}(int ${v});   // ${t('definida en otro archivo', 'defined elsewhere')}
+
+`;
+
+const delMain = (n: number) => String.raw`int main(void) {
+    ${N} *${h} = NULL;
+    if (!${front}(&${h}, 9) || !${front}(&${h}, 7) || !${front}(&${h}, 3)) {
+${fail}
+    ${del}(&${h}, ${n});
+${end}`;
+
+const programs = {
+	first: String.raw`${hdr()}${pCreate}int main(void) {
+    ${N} *${h} = NULL;                 // ${t('lista vacía', 'empty list')}
+    ${N} *${first} = ${create}(3);
+    if (${first} == NULL) {
+        return 1;
+    }
+    ${h} = ${first};                   // ${t('la lista toma el nodo', 'the list takes the node')}
+    free(${h});
+    return 0;
+}`,
+	front: String.raw`${hdr()}${pCreate}${pFront}${pDestroy}int main(void) {
+    ${N} *${h} = NULL;
+    if (!${front}(&${h}, 7) || !${front}(&${h}, 3)) {
+${fail}
+${end}`,
+	back: String.raw`${hdr()}${pCreate}${pBack}${pDestroy}int main(void) {
+    ${N} *${h} = NULL;
+    if (!${back}(&${h}, 7) || !${back}(&${h}, 9)) {
+${fail}
+${end}`,
+	sorted: String.raw`${hdr()}${pCreate}${pSorted}${pDestroy}int main(void) {
+    ${N} *${h} = NULL;
+    if (!${sorted}(&${h}, 3) || !${sorted}(&${h}, 9) || !${sorted}(&${h}, 7)) {
+${fail}
+${end}`,
+	find: String.raw`${hdr(true)}${pCreate}${pFront}${pFind}${pLength}${pDestroy}int main(void) {
+    ${N} *${h} = NULL;
+    if (!${front}(&${h}, 9) || !${front}(&${h}, 7) || !${front}(&${h}, 3)) {
+${fail}
+    const ${N} *${hit} = ${find}(${h}, 9);
+    const ${N} *${none} = ${find}(${h}, 42);
+    printf("%zu %d %d\n", ${length}(${h}), ${hit} != NULL, ${none} != NULL);
+${end}`,
+	del: String.raw`${hdr()}${pCreate}${pFront}${pDel}${pDestroy}${delMain(7)}`,
+	delHead: String.raw`${hdr()}${pCreate}${pFront}${pDel}${pDestroy}${delMain(3)}`,
+	destroy: String.raw`${hdr()}${pCreate}${pFront}${pDestroy}int main(void) {
+    ${N} *${h} = NULL;
+    if (!${front}(&${h}, 7) || !${front}(&${h}, 3)) {
+${fail}
+${end}`,
+	compare: String.raw`${hdr()}${pCreate}${pFront}${pDestroy}int main(void) {
+    ${N} *${h} = NULL;
+    if (!${front}(&${h}, 9) || !${front}(&${h}, 7)) {
+${fail}
+    int ${arr}[4] = {7, 9};            // ${t('arreglo contiguo', 'contiguous array')}
+    size_t ${count} = 2;
+    for (size_t i = ${count}; i > 0; i--) {
+        ${arr}[i] = ${arr}[i - 1];     // ${t('correr cada elemento', 'shift every element')}
+    }
+    ${arr}[0] = 3;
+    ${count}++;
+    if (!${front}(&${h}, 3)) {         // ${t('lista: sin correr nada', 'list: nothing shifts')}
+${fail}
+${end}`,
+	asFront: String.raw`${hdr()}${proto}bool ${front}(${N} **${h}, int ${v}) {
+    ${N} *${nw} = ${create}(${v});
+    if (${nw} == NULL) {
+        return false;
+    }
+    *${h} = ${nw};
+    ${nw}->${nx} = *${h};
+    return true;
+}`,
+	asLeak: String.raw`${hdr()}bool ${del}(${N} **${h}, int ${v}) {
+    ${N} *${cur} = *${h};
+    ${N} *${prev} = NULL;
+    while (${cur} != NULL && ${cur}->${v} != ${v}) {
+        ${prev} = ${cur};
+        ${cur} = ${cur}->${nx};
+    }
+    if (${cur} == NULL) {
+        return false;
+    }
+    if (${prev} == NULL) {
+        *${h} = ${cur}->${nx};
+    } else {
+        ${prev}->${nx} = ${cur}->${nx};
+    }
+    return true;
+}`,
+	asUaf: String.raw`${hdr()}void ${destroy}(${N} *${h}) {
+    for (${N} *${cur} = ${h}; ${cur} != NULL; ${cur} = ${cur}->${nx}) {
+        free(${cur});
+    }
+}`,
+	asSorted: String.raw`${hdr()}${proto}${pSorted.trimEnd()}`,
+	asOutput: String.raw`${hdr(true)}${pCreate}${pFront}${pBack}${pPrint}${pDestroy}int main(void) {
+    ${N} *${h} = NULL;
+    if (!${front}(&${h}, 1) || !${back}(&${h}, 2) || !${front}(&${h}, 3)) {
+${fail}
+    ${print}(${h});
+${end}`,
+	asNoHead: String.raw`${hdr()}bool ${del}(${N} **${h}, int ${v}) {
+    ${N} *${cur} = *${h};
+    ${N} *${prev} = NULL;
+    while (${cur} != NULL && ${cur}->${v} != ${v}) {
+        ${prev} = ${cur};
+        ${cur} = ${cur}->${nx};
+    }
+    if (${cur} == NULL) {
+        return false;
+    }
+    ${prev}->${nx} = ${cur}->${nx};
+    free(${cur});
+    return true;
+}`,
+};
+
+type ProgramKey = keyof typeof programs;
+
+// Line number (1-based) of the first, nth or last line of a program containing needle.
+// Throws at build time if the needle is missing, so a step can never point at a wrong line.
+const at = (key: ProgramKey, needle: string, nth: number | 'last' = 1): number => {
+	const hits: number[] = [];
+	programs[key].split('\n').forEach((l, i) => {
+		if (l.includes(needle)) hits.push(i + 1);
+	});
+	const n = nth === 'last' ? hits.length : nth;
+	if (!hits[n - 1]) throw new Error(`line not found in ${key}: ${needle}`);
+	return hits[n - 1];
+};
+
+/* ---------- State builders ---------- */
+
+const ADDR: Record<string, string> = { A: '0x5010', B: '0x5080', C: '0x5030' };
+const LISTOWN = t('la lista', 'the list');
+const F = { value: t('dato', 'value'), next: t('siguiente', 'next') };
+
+type NodeOpts = { status?: Block['status']; owner?: string | null; kind?: Kind };
+const node = (id: string, value: string | number, next: string | null, o: NodeOpts = {}): Block => {
+	const status = o.status ?? 'live';
+	const nextField: Slot =
+		status === 'freed'
+			? val(F.next, next === null ? 'NULL' : ADDR[next])
+			: next === null
+				? nul(F.next)
+				: ptr(F.next, ADDR[next], o.kind ?? 'owner', next);
+	return {
+		id,
+		addr: ADDR[id],
+		size: '16 B',
+		label: N,
+		status,
+		owner: status === 'freed' || o.owner === null ? undefined : (o.owner ?? LISTOWN),
+		fields: [val(F.value, String(value)), nextField],
+	};
+};
+const ref = (name: string, to: string, kind: Kind = 'borrow') => ptr(name, ADDR[to], kind, to);
+const hd = (to: string | null, kind: Kind = 'owner') => (to === null ? nul(h) : ref(h, to, kind));
+const hRef = ptr(h, `&${h}`, 'borrow');
+const mainF = (...vars: Slot[]): Frame => ({ label: 'main', vars });
+const fr = (label: string, ...vars: Slot[]): Frame => ({ label, vars });
+const st = (frames: Frame[], blocks: Block[], alert?: Alert): State => ({ frames, blocks, alert });
+const noLeaks: Alert = { kind: 'ok', text: t('0 fugas · 0 dobles liberaciones', '0 leaks · 0 double frees') };
+const L379 = [node('A', 3, 'B'), node('B', 7, 'C'), node('C', 9, null)];
+
+/* ---------- 1. A node and the head ---------- */
+
+const s1a = st([mainF(nul(h))], []);
+const f1b = fr(create, val(F.value, '3'), ref(nw, 'A', 'owner'));
+const s1b = st([mainF(nul(h)), f1b], [node('A', '?', '?', { owner: nw })]);
+const s1c = st([mainF(nul(h)), f1b], [node('A', 3, null, { owner: nw })]);
+const s1d = st([mainF(nul(h), ref(first, 'A', 'owner'))], [node('A', 3, null, { owner: first })]);
+const s1e = st([mainF(hd('A'), ref(first, 'A'))], [node('A', 3, null)]);
+const s1f = st([mainF(hd('A', 'dangling'), ref(first, 'A', 'dangling'))], [node('A', 3, null, { status: 'freed' })]);
+
+/* ---------- 2. Insert at the head through a double pointer ---------- */
+
+const frontF = (...extra: Slot[]) => fr(front, hRef, val(F.value, '3'), ...extra);
+const f1 = st([mainF(hd('B'))], [node('B', 7, null)]);
+const f2 = st([mainF(hd('B')), frontF()], f1.blocks);
+const f3 = st([mainF(hd('B')), frontF(ref(nw, 'A', 'owner'))], [node('A', 3, null, { owner: nw }), node('B', 7, null)]);
+const f4 = st([mainF(hd('B')), frontF(ref(nw, 'A', 'owner'))], [node('A', 3, 'B', { owner: nw, kind: 'borrow' }), node('B', 7, null)]);
+const f5 = st([mainF(hd('A')), frontF(ref(nw, 'A'))], [node('A', 3, 'B'), node('B', 7, null)]);
+const f6 = st([mainF(hd('A'))], f5.blocks);
+
+/* ---------- 3. Insert at the tail ---------- */
+
+const backF = (value: string, ...extra: Slot[]) => fr(back, hRef, val(F.value, value), ...extra);
+const b1 = st([mainF(nul(h))], []);
+const b2 = st([mainF(nul(h)), backF('7', ref(nw, 'B', 'owner'))], [node('B', 7, null, { owner: nw })]);
+const b3 = st([mainF(hd('B')), backF('7', ref(nw, 'B'))], [node('B', 7, null)]);
+const b4 = st([mainF(hd('B')), backF('9', ref(nw, 'C', 'owner'))], [node('B', 7, null), node('C', 9, null, { owner: nw })]);
+const b5 = st([mainF(hd('B')), backF('9', ref(nw, 'C', 'owner'), ref(last, 'B'))], b4.blocks);
+const b6 = st([mainF(hd('B')), backF('9', ref(nw, 'C'), ref(last, 'B'))], [node('B', 7, 'C'), node('C', 9, null)]);
+const b7 = st([mainF(hd('B'))], b6.blocks);
+
+/* ---------- 4. Insert in order ---------- */
+
+const sortedF = (...extra: Slot[]) => fr(sorted, hRef, val(F.value, '7'), ...extra);
+const sA = [node('A', 3, 'C'), node('C', 9, null)];
+const o1 = st([mainF(hd('A'))], sA);
+const o2 = st([mainF(hd('A')), sortedF(ref(nw, 'B', 'owner'))], [...sA, node('B', 7, null, { owner: nw })]);
+const o3 = st([mainF(hd('A')), sortedF(ref(nw, 'B', 'owner'), ref(prev, 'A'))], o2.blocks);
+const o5 = st(o3.frames, [node('A', 3, 'C'), node('C', 9, null), node('B', 7, 'C', { owner: nw, kind: 'borrow' })]);
+const o6 = st([mainF(hd('A')), sortedF(ref(nw, 'B'), ref(prev, 'A'))], [node('A', 3, 'B'), node('B', 7, 'C'), node('C', 9, null)]);
+const o7 = st([mainF(hd('A'))], o6.blocks);
+
+/* ---------- 5. Search ---------- */
+
+const findF = (to: string | null) => fr(find, ref(h, 'A'), to === null ? nul(cur) : ref(cur, to), val(F.value, '9'));
+const q1 = st([mainF(hd('A'))], L379);
+const q2 = st([mainF(hd('A')), findF('A')], L379);
+const q3 = st([mainF(hd('A')), findF('B')], L379);
+const q4 = st([mainF(hd('A')), findF('C')], L379);
+const q5 = st([mainF(hd('A'), ref(hit, 'C'))], L379);
+const q6 = st([mainF(hd('A'), ref(hit, 'C'), nul(none))], L379);
+
+/* ---------- 6. Delete by value ---------- */
+
+const delF = (curVar: Slot, prevVar: Slot, value = '7') => fr(del, hRef, val(F.value, value), curVar, prevVar);
+const d1 = st([mainF(hd('A'))], L379);
+const d2 = st([mainF(hd('A')), delF(ref(cur, 'A'), nul(prev))], L379);
+const d3 = st([mainF(hd('A')), delF(ref(cur, 'B'), ref(prev, 'A'))], L379);
+const d4 = st(d3.frames, [node('A', 3, 'C'), node('B', 7, 'C', { owner: cur, kind: 'borrow' }), node('C', 9, null)]);
+const d5 = st([mainF(hd('A')), delF(ref(cur, 'B', 'dangling'), ref(prev, 'A'))], [node('A', 3, 'C'), node('B', 7, 'C', { status: 'freed' }), node('C', 9, null)]);
+const d6 = st([mainF(hd('A'))], [node('A', 3, 'C'), node('C', 9, null)]);
+const dh1 = st([mainF(hd('A')), delF(ref(cur, 'A'), nul(prev), '3')], L379);
+const dh2 = st([mainF(hd('B')), delF(ref(cur, 'A'), nul(prev), '3')], [node('A', 3, 'B', { owner: cur, kind: 'borrow' }), node('B', 7, 'C'), node('C', 9, null)]);
+
+/* ---------- 7. Destroy the list ---------- */
+
+const destroyF = (...vars: Slot[]) => fr(destroy, hRef, ...vars);
+const nodes2 = [node('A', 3, 'B'), node('B', 7, null)];
+const y1 = st([mainF(hd('A'))], nodes2);
+const y2 = st([mainF(hd('A')), destroyF(ref(cur, 'A'))], nodes2);
+const y3 = st([mainF(hd('A')), destroyF(ref(cur, 'A'), ref(nextv, 'B'))], nodes2);
+const y4 = st([mainF(hd('A', 'dangling')), destroyF(ref(cur, 'A', 'dangling'), ref(nextv, 'B'))], [node('A', 3, 'B', { status: 'freed' }), node('B', 7, null)]);
+const y5 = st([mainF(hd('A', 'dangling')), destroyF(ref(cur, 'B'), ref(nextv, 'B'))], y4.blocks);
+const y6 = st([mainF(hd('A', 'dangling')), destroyF(ref(cur, 'B', 'dangling'), nul(nextv))], [node('A', 3, 'B', { status: 'freed' }), node('B', 7, null, { status: 'freed' })]);
+const y7 = st([mainF(hd('A', 'dangling')), destroyF(nul(cur), nul(nextv))], y6.blocks);
+const y8 = st([mainF(nul(h))], y6.blocks, noLeaks);
+
+/* ---------- 8. Array against list ---------- */
+
+const arrB = (cells: string[], hi?: number): Block => ({
+	id: 'R',
+	addr: '0x2000',
+	size: '16 B',
+	label: 'int[4]',
+	status: 'live',
+	owner: 'main',
+	cells: cells.map((c, i) => ({ v: c, out: i === hi })),
+});
+const list79 = [node('B', 7, 'C'), node('C', 9, null)];
+const c1 = st([mainF(hd('B'), val(count, '2'))], [...list79, arrB(['7', '9', '0', '0'])]);
+const c2 = st([mainF(hd('B'), val(count, '2'), val('i', '2'))], [...list79, arrB(['7', '9', '9', '0'], 2)]);
+const c3 = st([mainF(hd('B'), val(count, '2'), val('i', '1'))], [...list79, arrB(['7', '7', '9', '0'], 1)]);
+const c4 = st([mainF(hd('B'), val(count, '3'))], [...list79, arrB(['3', '7', '9', '0'], 0)]);
+const c5 = st(
+	[mainF(hd('B'), val(count, '3')), fr(front, hRef, val(F.value, '3'), ref(nw, 'A', 'owner'))],
+	[node('A', 3, null, { owner: nw }), ...list79, arrB(['3', '7', '9', '0'])],
+);
+const c6 = st([mainF(hd('A'), val(count, '3'))], [node('A', 3, 'B'), ...list79, arrB(['3', '7', '9', '0'])]);
+
+/* ---------- Learn: one mechanism per slide, advanced step by step ---------- */
+
+type LearnSlide = { kicker: string; title: string; lead: string; program: ProgramKey; steps: Step[] };
+
+const learn: LearnSlide[] = [
+	{
+		kicker: t('Nodos', 'Nodes'),
+		title: t('Un nodo, un puntero a la cabeza', 'A node and a head pointer'),
+		lead: t(
+			'Una lista enlazada es una cadena de nodos. La variable cabeza guarda la dirección del primero; una lista vacía es una cabeza que vale NULL.',
+			'A linked list is a chain of nodes. The head variable holds the address of the first one; an empty list is a head that is NULL.',
+		),
+		program: 'first',
+		steps: [
+			{
+				lines: [at('first', `${N} *${h} = NULL`)],
+				text: t(
+					'cabeza vive en la pila de main y vale NULL: la lista está vacía. Todavía no existe ningún nodo.',
+					'head lives on the stack of main and is NULL: the list is empty. No node exists yet.',
+				),
+				state: s1a,
+			},
+			{
+				lines: [at('first', 'malloc')],
+				text: t(
+					'crear_nodo reserva un bloque del heap con malloc(sizeof *nuevo). Sus campos todavía no tienen valor: el dueño del bloque es la variable nuevo.',
+					'create_node allocates a heap block with malloc(sizeof *new_node). Its fields have no value yet: the owner of the block is the variable new_node.',
+				),
+				state: s1b,
+			},
+			{
+				lines: [at('first', `${nw}->${v} = ${v};`), at('first', `${nw}->${nx} = NULL;`)],
+				text: t(
+					'La función completa el nodo: dato vale 3 y siguiente vale NULL, porque todavía no hay nadie después de él.',
+					'The function fills in the node: value is 3 and next is NULL, because nothing follows it yet.',
+				),
+				state: s1c,
+			},
+			{
+				lines: [at('first', `return ${nw};`)],
+				text: t(
+					'crear_nodo devuelve la dirección y su marco desaparece. La propiedad pasa al llamador: ahora primero, en main, es la dueña de 0x5010.',
+					'create_node returns the address and its frame disappears. Ownership moves to the caller: now first, in main, owns 0x5010.',
+				),
+				state: s1d,
+			},
+			{
+				lines: [at('first', `${h} = ${first};`)],
+				text: t(
+					'cabeza = primero: la lista toma el nodo. Desde aquí el dueño es la lista y primero queda como un préstamo.',
+					'head = first: the list takes the node. From here the owner is the list and first is just a borrow.',
+				),
+				state: s1e,
+			},
+			{
+				lines: [at('first', `free(${h})`)],
+				text: t(
+					'Quien es dueño debe liberar: free(cabeza). Con más nodos hará falta destruir_lista, que se ve más adelante. Las dos variables quedan colgantes.',
+					'Whoever owns must free: free(head). With more nodes you will need destroy_list, shown later. Both variables are left dangling.',
+				),
+				state: s1f,
+			},
+		],
+	},
+	{
+		kicker: t('Insertar al inicio', 'Insert at the head'),
+		title: t('Por qué las funciones reciben Nodo **', 'Why the functions take Node **'),
+		lead: t(
+			'Insertar al inicio cambia la cabeza de main. Como C pasa los argumentos por valor, la función recibe la dirección de la variable: un Nodo **.',
+			'Inserting at the head changes main’s head. Since C passes arguments by value, the function receives the address of the variable: a Node **.',
+		),
+		program: 'front',
+		steps: [
+			{
+				lines: [at('front', `${front}(&${h}, 3)`)],
+				text: t(
+					'La lista ya tiene el 7. main llama a insertar_al_inicio(&cabeza, 3): pasa la dirección de su variable cabeza, no una copia.',
+					'The list already holds 7. main calls insert_front(&head, 3): it passes the address of its head variable, not a copy.',
+				),
+				state: f1,
+			},
+			{
+				lines: [at('front', `bool ${front}(`)],
+				text: t(
+					'Dentro, cabeza vale &cabeza. Con *cabeza la función lee y escribe la variable de main.',
+					'Inside, head is &head. With *head the function reads and writes main’s variable.',
+				),
+				state: f2,
+			},
+			{
+				lines: [at('front', `${create}(${v})`)],
+				text: t(
+					'Se crea el nodo 0x5010 con el 3. Todavía nadie lo enlaza: su dueño es nuevo.',
+					'Node 0x5010 is created holding 3. Nobody links it yet: its owner is new_node.',
+				),
+				state: f3,
+			},
+			{
+				lines: [at('front', `${nw}->${nx} = *${h};`)],
+				text: t(
+					'Primero el nodo nuevo apunta al que era el primero: nuevo->siguiente = *cabeza. Todavía no se perdió nada, porque cabeza sigue apuntando al 7.',
+					'First the new node points to the old first one: new_node->next = *head. Nothing is lost yet, because head still points to 7.',
+				),
+				state: f4,
+			},
+			{
+				lines: [at('front', `*${h} = ${nw};`)],
+				text: t(
+					'Después se cambia la cabeza de main: *cabeza = nuevo. Si lo hicieras en el orden contrario perderías la dirección del 7 y, con ella, el resto de la lista.',
+					'Then main’s head changes: *head = new_node. In the opposite order you would lose the address of 7 and, with it, the rest of the list.',
+				),
+				state: f5,
+			},
+			{
+				lines: [at('front', 'return true;')],
+				text: t(
+					'La función devuelve true y su marco desaparece. La lista es dueña del nodo nuevo: cabeza -> 3 -> 7 -> NULL.',
+					'The function returns true and its frame disappears. The list owns the new node: head -> 3 -> 7 -> NULL.',
+				),
+				state: f6,
+			},
+		],
+	},
+	{
+		kicker: t('Insertar al final', 'Insert at the tail'),
+		title: t('Llegar al último nodo', 'Reaching the last node'),
+		lead: t(
+			'Para insertar al final hay que recorrer hasta el nodo cuyo siguiente es NULL. Si la lista está vacía no hay último nodo: el nuevo pasa a ser la cabeza.',
+			'To insert at the tail you walk to the node whose next is NULL. If the list is empty there is no last node: the new one becomes the head.',
+		),
+		program: 'back',
+		steps: [
+			{
+				lines: [at('back', `${back}(&${h}, 7)`)],
+				text: t('La lista está vacía: cabeza vale NULL. main inserta el 7 al final.', 'The list is empty: head is NULL. main inserts 7 at the tail.'),
+				state: b1,
+			},
+			{
+				lines: [at('back', `if (*${h} == NULL)`)],
+				text: t(
+					'Se crea el nodo 0x5080. Como *cabeza es NULL, no hay último nodo al que colgarlo.',
+					'Node 0x5080 is created. Since *head is NULL, there is no last node to attach it to.',
+				),
+				state: b2,
+			},
+			{
+				lines: [at('back', `*${h} = ${nw};`)],
+				text: t(
+					'El nuevo nodo pasa a ser la cabeza y la función termina. Por eso esta función también recibe Nodo **.',
+					'The new node becomes the head and the function ends. That is why this function also takes Node **.',
+				),
+				state: b3,
+			},
+			{
+				lines: [at('back', `${create}(${v})`)],
+				text: t('Segunda llamada: se inserta el 9. Se crea el nodo 0x5030, de momento sin enlazar.', 'Second call: 9 is inserted. Node 0x5030 is created, not linked yet.'),
+				state: b4,
+			},
+			{
+				lines: [at('back', `${N} *${last} = *${h};`), at('back', `while (${last}->${nx} != NULL)`)],
+				text: t(
+					'ultimo empieza en la cabeza. Como ultimo->siguiente ya es NULL, el while no avanza: el 7 es el último nodo.',
+					'last starts at the head. Since last->next is already NULL, the while does not advance: 7 is the last node.',
+				),
+				state: b5,
+			},
+			{
+				lines: [at('back', `${last}->${nx} = ${nw};`)],
+				text: t(
+					'ultimo->siguiente = nuevo cuelga el nodo 9 del 7. El nuevo ya traía siguiente NULL desde crear_nodo, así que es el nuevo final.',
+					'last->next = new_node hangs node 9 from 7. The new node already had next NULL from create_node, so it is the new end.',
+				),
+				state: b6,
+			},
+			{
+				lines: [at('back', 'return true;', 'last')],
+				text: t('La función termina. La lista, dueña de ambos nodos, es cabeza -> 7 -> 9 -> NULL.', 'The function ends. The list, owner of both nodes, is head -> 7 -> 9 -> NULL.'),
+				state: b7,
+			},
+		],
+	},
+	{
+		kicker: t('Insertar en orden', 'Insert in order'),
+		title: t('Buscar el nodo anterior', 'Finding the previous node'),
+		lead: t(
+			'En una lista ordenada, el valor nuevo va justo antes del primer nodo mayor o igual. Hace falta el nodo anterior para poder colgarlo.',
+			'In a sorted list the new value goes right before the first node that is greater or equal. You need the previous node to hang it.',
+		),
+		program: 'sorted',
+		steps: [
+			{
+				lines: [at('sorted', `${sorted}(&${h}, 7)`)],
+				text: t(
+					'La lista ordenada tiene el 3 y el 9. main inserta el 7, que debe quedar entre los dos.',
+					'The sorted list holds 3 and 9. main inserts 7, which must end up between them.',
+				),
+				state: o1,
+			},
+			{
+				lines: [at('sorted', `${create}(${v})`)],
+				text: t('Se crea el nodo 0x5080 con el 7, todavía sin enlazar.', 'Node 0x5080 is created holding 7, not linked yet.'),
+				state: o2,
+			},
+			{
+				lines: [at('sorted', `*${h} == NULL || ${v} <= (*${h})->${v}`), at('sorted', `${N} *${prev} = *${h};`)],
+				text: t(
+					'7 no es menor o igual que 3, así que no va primero. anterior empieza en la cabeza.',
+					'7 is not less than or equal to 3, so it does not go first. previous starts at the head.',
+				),
+				state: o3,
+			},
+			{
+				lines: [at('sorted', `while (${prev}->${nx} != NULL`)],
+				text: t(
+					'La condición pregunta si el siguiente de anterior es menor que 7. El 9 no lo es, así que el while se detiene: el 7 va entre el 3 y el 9.',
+					'The condition asks whether the node after previous is smaller than 7. 9 is not, so the while stops: 7 goes between 3 and 9.',
+				),
+				state: o3,
+			},
+			{
+				lines: [at('sorted', `${nw}->${nx} = ${prev}->${nx};`)],
+				text: t(
+					'Primero se enlaza el resto: el 7 apunta al 9. Todavía se puede llegar al 9 desde el 3, así que no se perdió nada.',
+					'First the rest is linked: 7 points to 9. 9 is still reachable from 3, so nothing is lost.',
+				),
+				state: o5,
+			},
+			{
+				lines: [at('sorted', `${prev}->${nx} = ${nw};`)],
+				text: t(
+					'Después se cuelga el nodo nuevo: anterior->siguiente = nuevo. Ahora el 3 apunta al 7.',
+					'Then the new node is hung: previous->next = new_node. Now 3 points to 7.',
+				),
+				state: o6,
+			},
+			{
+				lines: [at('sorted', 'return true;', 'last')],
+				text: t('La función termina: cabeza -> 3 -> 7 -> 9 -> NULL, ordenada y con los tres nodos en manos de la lista.', 'The function ends: head -> 3 -> 7 -> 9 -> NULL, sorted, with all three nodes owned by the list.'),
+				state: o7,
+			},
+		],
+	},
+	{
+		kicker: t('Recorrer y buscar', 'Traverse and search'),
+		title: t('Un puntero auxiliar avanza nodo a nodo', 'A helper pointer walks node by node'),
+		lead: t(
+			'Recorrer no cambia la lista, así que alcanza con recibir la cabeza por valor. El puntero actual toma prestados los nodos, uno tras otro, hasta encontrar NULL.',
+			'Traversing does not change the list, so receiving the head by value is enough. The pointer current borrows the nodes one after another until it finds NULL.',
+		),
+		program: 'find',
+		steps: [
+			{
+				lines: [at('find', `${find}(${h}, 9)`)],
+				text: t(
+					'La lista es 3 -> 7 -> 9. main busca el 9 con buscar(cabeza, 9): pasa una copia de la cabeza porque solo va a leer.',
+					'The list is 3 -> 7 -> 9. main looks for 9 with find(head, 9): it passes a copy of the head because it will only read.',
+				),
+				state: q1,
+			},
+			{
+				lines: [at('find', `for (const ${N} *${cur} = ${h};`)],
+				text: t('actual empieza en la cabeza. El dato 3 no es el 9, así que el for avanza.', 'current starts at the head. The value 3 is not 9, so the for loop advances.'),
+				state: q2,
+			},
+			{
+				lines: [at('find', `for (const ${N} *${cur} = ${h};`)],
+				text: t('actual = actual->siguiente: ahora apunta al nodo 7, que tampoco es el 9. Para llegar al tercer nodo hubo que pasar por los dos primeros.', 'current = current->next: it now points to node 7, which is not 9 either. To reach the third node you had to pass through the first two.'),
+				state: q3,
+			},
+			{
+				lines: [at('find', `if (${cur}->${v} == ${v})`), at('find', `return ${cur};`)],
+				text: t('El nodo 9 coincide y la búsqueda se detiene: devuelve la dirección de ese nodo.', 'Node 9 matches and the search stops: it returns the address of that node.'),
+				state: q4,
+			},
+			{
+				lines: [at('find', `*${hit} = `)],
+				text: t(
+					'main recibe 0x5030 en encontrado. Es un préstamo (const Nodo *): el nodo sigue siendo de la lista y main no debe liberarlo.',
+					'main receives 0x5030 in hit. It is a borrow (const Node *): the node still belongs to the list and main must not free it.',
+				),
+				state: q5,
+			},
+			{
+				lines: [at('find', `*${none} = `)],
+				text: t(
+					'Buscar el 42 recorre toda la lista, llega a NULL y devuelve NULL. Quien llama debe comprobarlo antes de usar el resultado. longitud usa el mismo recorrido para contar los nodos.',
+					'Looking for 42 walks the whole list, reaches NULL and returns NULL. The caller must check it before using the result. length uses the same traversal to count the nodes.',
+				),
+				state: q6,
+			},
+		],
+	},
+	{
+		kicker: t('Eliminar', 'Delete'),
+		title: t('Desenganchar primero, liberar después', 'Unlink first, free afterwards'),
+		lead: t(
+			'Eliminar tiene tres casos: el valor está en la cabeza, está en el medio o al final, o no está. Aquí se sigue el caso del medio; la práctica retoma los otros dos.',
+			'Deleting has three cases: the value is at the head, in the middle or at the end, or it is missing. Here you follow the middle case; the practice mode picks up the other two.',
+		),
+		program: 'del',
+		steps: [
+			{
+				lines: [at('del', `${del}(&${h}, 7)`)],
+				text: t('La lista es 3 -> 7 -> 9 y main elimina el 7, que está en el medio.', 'The list is 3 -> 7 -> 9 and main deletes 7, which is in the middle.'),
+				state: d1,
+			},
+			{
+				lines: [at('del', `${N} *${cur} = *${h};`), at('del', `${N} *${prev} = NULL;`)],
+				text: t(
+					'actual empieza en el primer nodo y anterior vale NULL: todavía no hay nodo anterior.',
+					'current starts at the first node and previous is NULL: there is no previous node yet.',
+				),
+				state: d2,
+			},
+			{
+				lines: [at('del', `while (${cur} != NULL && ${cur}->${v} != ${v})`)],
+				text: t(
+					'El while avanza los dos punteros juntos hasta que actual apunta al 7. anterior se queda un nodo atrás: es el 3.',
+					'The while advances both pointers together until current points to 7. previous stays one node behind: it is 3.',
+				),
+				state: d3,
+			},
+			{
+				lines: [at('del', `${prev}->${nx} = ${cur}->${nx};`)],
+				text: t(
+					'anterior no es NULL, así que se salta al nodo: anterior->siguiente = actual->siguiente. El 3 ahora apunta al 9, pero el bloque del 7 sigue reservado y tiene dueño: actual.',
+					'previous is not NULL, so the node is skipped: previous->next = current->next. 3 now points to 9, but the block of 7 is still allocated and owned by current.',
+				),
+				state: d4,
+			},
+			{
+				lines: [at('del', `free(${cur});`)],
+				text: t(
+					'Recién ahora se libera con free(actual). Si lo hicieras antes de leer actual->siguiente, leerías memoria liberada. actual queda colgante.',
+					'Only now is it freed with free(current). Freeing before reading current->next would read freed memory. current is left dangling.',
+				),
+				state: d5,
+			},
+			{
+				lines: [at('del', 'return true;', 'last')],
+				text: t('La función devuelve true y desaparece su marco: cabeza -> 3 -> 9 -> NULL. Si el valor no hubiera estado, devolvería false y la lista no cambiaría.', 'The function returns true and its frame disappears: head -> 3 -> 9 -> NULL. Had the value been missing, it would return false and the list would not change.'),
+				state: d6,
+			},
+		],
+	},
+	{
+		kicker: t('Destruir', 'Destroy'),
+		title: t('Guardar el siguiente antes de liberar', 'Save the next node before freeing'),
+		lead: t(
+			'La lista es dueña de todos sus nodos: destruir_lista los libera uno por uno. El detalle es guardar la dirección del siguiente antes de cada free.',
+			'The list owns all of its nodes: destroy_list frees them one by one. The detail is saving the address of the next node before each free.',
+		),
+		program: 'destroy',
+		steps: [
+			{
+				lines: [at('destroy', `${destroy}(&${h});`, 'last')],
+				text: t('La lista tiene dos nodos, 3 y 7. main termina y destruye la lista con destruir_lista(&cabeza).', 'The list has two nodes, 3 and 7. main finishes and destroys the list with destroy_list(&head).'),
+				state: y1,
+			},
+			{
+				lines: [at('destroy', `${N} *${cur} = *${h};`)],
+				text: t('actual empieza en la cabeza.', 'current starts at the head.'),
+				state: y2,
+			},
+			{
+				lines: [at('destroy', `${N} *${nextv} = ${cur}->${nx};`)],
+				text: t('Se guarda el siguiente, 0x5080, antes de tocar el nodo actual.', 'The next node, 0x5080, is saved before touching the current one.'),
+				state: y3,
+			},
+			{
+				lines: [at('destroy', `free(${cur});`)],
+				text: t(
+					'free(actual) libera el nodo 3. actual y la cabeza de main guardan una dirección que ya no existe: son punteros colgantes. Sin el paso anterior se habría perdido el camino al 7.',
+					'free(current) frees node 3. current and main’s head hold an address that no longer exists: they are dangling pointers. Without the previous step the path to 7 would be lost.',
+				),
+				state: y4,
+			},
+			{
+				lines: [at('destroy', `${cur} = ${nextv};`)],
+				text: t('actual = siguiente: el recorrido continúa en el nodo 7.', 'current = next: the traversal continues at node 7.'),
+				state: y5,
+			},
+			{
+				lines: [at('destroy', `${N} *${nextv} = ${cur}->${nx};`), at('destroy', `free(${cur});`)],
+				text: t(
+					'Segunda vuelta: el siguiente del 7 es NULL, y se libera el nodo 7.',
+					'Second iteration: the next of 7 is NULL, and node 7 is freed.',
+				),
+				state: y6,
+			},
+			{
+				lines: [at('destroy', `${cur} = ${nextv};`), at('destroy', `while (${cur} != NULL)`)],
+				text: t('actual vale NULL y el while termina. Los dos nodos ya fueron liberados.', 'current is NULL and the while ends. Both nodes have been freed.'),
+				state: y7,
+			},
+			{
+				lines: [at('destroy', `*${h} = NULL;`)],
+				text: t(
+					'Por último, *cabeza = NULL deja la variable de main como una lista vacía y válida, en lugar de colgante. Cada nodo se liberó exactamente una vez.',
+					'Finally, *head = NULL leaves main’s variable as a valid empty list instead of dangling. Every node was freed exactly once.',
+				),
+				state: y8,
+			},
+		],
+	},
+	{
+		kicker: t('Costos', 'Costs'),
+		title: t('Correr datos frente a cambiar punteros', 'Shifting data against changing pointers'),
+		lead: t(
+			'Insertar al inicio de un arreglo obliga a correr todos los elementos: O(n). En la lista basta con cambiar dos punteros: O(1). A cambio, acceder al elemento i en la lista cuesta O(n).',
+			'Inserting at the start of an array forces every element to shift: O(n). In the list it takes two pointer changes: O(1). In exchange, reaching element i in the list costs O(n).',
+		),
+		program: 'compare',
+		steps: [
+			{
+				lines: [at('compare', `${arr}[4] = {7, 9}`)],
+				text: t(
+					'Los mismos valores, 7 y 9, en dos estructuras: una lista con dos nodos dispersos en el heap y un arreglo de cuatro enteros contiguos en la pila de main (0x2000 es ilustrativa).',
+					'The same values, 7 and 9, in two structures: a list with two nodes scattered on the heap and an array of four contiguous ints on main’s stack (0x2000 is illustrative).',
+				),
+				state: c1,
+			},
+			{
+				lines: [at('compare', `${arr}[i] = ${arr}[i - 1]`)],
+				text: t('Para poner el 3 al inicio del arreglo hay que hacer lugar: el 9 se copia una posición a la derecha.', 'To put 3 at the start of the array you have to make room: 9 is copied one position to the right.'),
+				state: c2,
+			},
+			{
+				lines: [at('compare', `${arr}[i] = ${arr}[i - 1]`)],
+				text: t('Después se copia el 7. Con n elementos son n copias: el costo crece con n.', 'Then 7 is copied. With n elements that is n copies: the cost grows with n.'),
+				state: c3,
+			},
+			{
+				lines: [at('compare', `${arr}[0] = 3;`)],
+				text: t('Recién ahora se escribe el 3 en la primera posición. El arreglo movió todos sus datos.', 'Only now is 3 written in the first position. The array moved all of its data.'),
+				state: c4,
+			},
+			{
+				lines: [at('compare', `${front}(&${h}, 3)`, 'last')],
+				text: t('En la lista, insertar_al_inicio crea el nodo 0x5010 con el 3. Los nodos 7 y 9 no se tocan.', 'In the list, insert_front creates node 0x5010 holding 3. Nodes 7 and 9 are not touched.'),
+				state: c5,
+			},
+			{
+				lines: [at('compare', `${nw}->${nx} = *${h};`), at('compare', `*${h} = ${nw};`)],
+				text: t(
+					'Dos asignaciones de punteros y listo: ningún dato se movió. A cambio, para llegar al tercer elemento la lista tiene que recorrer dos nodos y el arreglo lo hace con arreglo[2].',
+					'Two pointer assignments and done: no data moved. In exchange, to reach the third element the list has to walk two nodes while the array just uses array[2].',
+				),
+				state: c6,
+			},
+		],
+	},
+];
+
+/* ---------- Practice: predict the next state ---------- */
+
+type PracticeItem = {
+	program: ProgramKey;
+	line: number;
+	prompt: string;
+	options: string[];
+	correct: number;
+	reason: string;
+	before: State;
+	after: State;
+};
+
+const practice: PracticeItem[] = [
+	{
+		program: 'front',
+		line: at('front', `${nw}->${nx} = *${h};`),
+		prompt: t('Después de ejecutar esta línea, ¿a qué apunta nuevo->siguiente?', 'After this line runs, what does new_node->next point to?'),
+		options: [t('A NULL', 'To NULL'), t('Al antiguo primero (0x5080)', 'To the old first node (0x5080)'), t('A sí mismo (0x5010)', 'To itself (0x5010)')],
+		correct: 1,
+		reason: t(
+			'*cabeza todavía vale 0x5080, la dirección del antiguo primer nodo. Así el nodo nuevo guarda el camino al resto antes de que la cabeza cambie.',
+			'*head still holds 0x5080, the address of the old first node. That way the new node keeps the path to the rest before the head changes.',
+		),
+		before: f3,
+		after: f4,
+	},
+	{
+		program: 'back',
+		line: at('back', `${last}->${nx} = ${nw};`),
+		prompt: t('Después de esta línea, ¿cuál es el último nodo de la lista?', 'After this line, which node is the last one in the list?'),
+		options: [t('0x5080, el nodo 7', '0x5080, node 7'), t('0x5030, el nodo 9', '0x5030, node 9'), t('Ninguno: la lista queda circular', 'None: the list becomes circular')],
+		correct: 1,
+		reason: t(
+			'El nodo 9 conserva el siguiente NULL que le puso crear_nodo, así que es el nuevo final. El 7 ahora apunta a él.',
+			'Node 9 keeps the next NULL that create_node gave it, so it is the new end. Node 7 now points to it.',
+		),
+		before: b6,
+		after: b7,
+	},
+	{
+		program: 'sorted',
+		line: at('sorted', `${prev}->${nx} = ${nw};`),
+		prompt: t('Después de esta línea, ¿en qué orden se recorren los valores desde la cabeza?', 'After this line, in which order are the values visited from the head?'),
+		options: ['3 -> 9 -> NULL', '3 -> 7 -> 9 -> NULL', '7 -> 3 -> 9 -> NULL'],
+		correct: 1,
+		reason: t(
+			'El 3 ahora apunta al 7 y el 7 ya apuntaba al 9: la lista quedó ordenada. Sin la línea anterior, que enlaza el resto, el 9 se habría perdido.',
+			'3 now points to 7 and 7 already pointed to 9: the list is sorted. Without the previous line, which links the rest, 9 would have been lost.',
+		),
+		before: o5,
+		after: o6,
+	},
+	{
+		program: 'del',
+		line: at('del', `${prev}->${nx} = ${cur}->${nx};`),
+		prompt: t('Después de esta línea, ¿qué pasa con el nodo 7?', 'After this line, what happens to node 7?'),
+		options: [
+			t('Sigue enlazado en la lista', 'It is still linked in the list'),
+			t('Sale de la lista, pero sigue reservado: falta liberarlo', 'It leaves the list but is still allocated: it still has to be freed'),
+			t('Ya está liberado', 'It is already freed'),
+		],
+		correct: 1,
+		reason: t(
+			'Saltarlo solo cambia un puntero. El bloque sigue reservado y actual es su único dueño: si la función terminara aquí, sería una fuga. Falta free(actual).',
+			'Skipping it only changes one pointer. The block is still allocated and current is its only owner: if the function ended here, it would be a leak. free(current) is still missing.',
+		),
+		before: d3,
+		after: d4,
+	},
+	{
+		program: 'delHead',
+		line: at('delHead', `*${h} = ${cur}->${nx};`),
+		prompt: t('Con eliminar(&cabeza, 3), después de esta línea, ¿a qué apunta cabeza?', 'With delete_value(&head, 3), after this line, what does head point to?'),
+		options: [t('A NULL', 'To NULL'), t('Al nodo 7 (0x5080)', 'To node 7 (0x5080)'), t('Al nodo 3 (0x5010)', 'To node 3 (0x5010)')],
+		correct: 1,
+		reason: t(
+			'anterior vale NULL, así que el nodo a eliminar es la cabeza. Hay que cambiar *cabeza para que apunte al segundo nodo; después se libera el 3.',
+			'previous is NULL, so the node to delete is the head. *head has to change to point to the second node; then 3 is freed.',
+		),
+		before: dh1,
+		after: dh2,
+	},
+	{
+		program: 'destroy',
+		line: at('destroy', `free(${cur});`),
+		prompt: t('Después de free(actual), ¿en qué estado queda la cabeza de main?', 'After free(current), what state is main’s head in?'),
+		options: [
+			t('Válida: free la actualiza', 'Valid: free updates it'),
+			t('Colgante: guarda 0x5010, un bloque que ya no existe', 'Dangling: it holds 0x5010, a block that no longer exists'),
+			t('Vale NULL', 'It is NULL'),
+		],
+		correct: 1,
+		reason: t(
+			'free nunca cambia ningún puntero. Por eso destruir_lista termina con *cabeza = NULL: deja la lista vacía y válida.',
+			'free never changes any pointer. That is why destroy_list ends with *head = NULL: it leaves the list empty and valid.',
+		),
+		before: y3,
+		after: y4,
+	},
+];
+
+/* ---------- Assess: no hints, graded at the end ---------- */
+
+type AssessItem = { prompt: string; snippet: string; options: string[]; correct: number; reason: string };
+
+const assess: AssessItem[] = [
+	{
+		prompt: t('¿Qué hace esta versión de insertar_al_inicio?', 'What does this version of insert_front do?'),
+		snippet: programs.asFront,
+		options: [
+			t('Funciona igual que la correcta', 'It works the same as the correct one'),
+			t('El nodo nuevo apunta a sí mismo y se pierde el resto de la lista', 'The new node points to itself and the rest of the list is lost'),
+			t('No compila', 'It does not compile'),
+			t('Solo falla con la lista vacía', 'It only fails with an empty list'),
+		],
+		correct: 1,
+		reason: t(
+			'Al asignar primero *cabeza = nuevo, la línea siguiente lee la cabeza ya cambiada: nuevo->siguiente = nuevo. El antiguo primer nodo y todo lo que sigue quedan inalcanzables: una fuga.',
+			'Assigning *head = new_node first makes the next line read the already changed head: new_node->next = new_node. The old first node and everything after it become unreachable: a leak.',
+		),
+	},
+	{
+		prompt: t('¿Qué error de memoria tiene eliminar?', 'Which memory error does delete_value have?'),
+		snippet: programs.asLeak,
+		options: [t('Fuga de memoria', 'Memory leak'), t('Uso después de liberar', 'Use after free'), t('Doble liberación', 'Double free'), t('Ninguno: es correcta', 'None: it is correct')],
+		correct: 0,
+		reason: t(
+			'El nodo queda fuera de la lista, pero nadie lo libera: falta free(actual). Una lista que es dueña de sus nodos tiene que liberar el que elimina.',
+			'The node leaves the list, but nobody frees it: free(current) is missing. A list that owns its nodes must free the one it deletes.',
+		),
+	},
+	{
+		prompt: t('¿Qué informa AddressSanitizer al ejecutar destruir?', 'What does AddressSanitizer report when destroy runs?'),
+		snippet: programs.asUaf,
+		options: [
+			'heap-use-after-free',
+			t('LeakSanitizer: detected memory leaks', 'LeakSanitizer: detected memory leaks'),
+			t('attempting double-free', 'attempting double-free'),
+			t('Nada: es correcta', 'Nothing: it is correct'),
+		],
+		correct: 0,
+		reason: t(
+			'La expresión de avance del for, actual = actual->siguiente, se ejecuta después de free(actual): lee un campo de un nodo ya liberado. Hay que guardar el siguiente antes de liberar.',
+			'The for loop’s advance expression, current = current->next, runs after free(current): it reads a field of an already freed node. The next node must be saved before freeing.',
+		),
+	},
+	{
+		prompt: t('La lista es 2 -> 8 -> 9. ¿Dónde queda el 5 después de insertar_ordenado(&cabeza, 5)?', 'The list is 2 -> 8 -> 9. Where does 5 end up after insert_sorted(&head, 5)?'),
+		snippet: programs.asSorted,
+		options: [t('Al inicio', 'At the start'), t('Entre el 2 y el 8', 'Between 2 and 8'), t('Entre el 8 y el 9', 'Between 8 and 9'), t('Al final', 'At the end')],
+		correct: 1,
+		reason: t(
+			'5 no es menor o igual que 2, así que no va primero. El while avanza mientras el siguiente sea menor que 5: el 8 no lo es, y anterior se detiene en el 2. El 5 se cuelga después del 2.',
+			'5 is not less than or equal to 2, so it does not go first. The while advances while the next node is smaller than 5: 8 is not, so previous stops at 2. 5 is hung after 2.',
+		),
+	},
+	{
+		prompt: t('¿Qué imprime este programa?', 'What does this program print?'),
+		snippet: programs.asOutput,
+		options: ['1 -> 2 -> 3 -> NULL', '3 -> 1 -> 2 -> NULL', '3 -> 2 -> 1 -> NULL', '2 -> 1 -> 3 -> NULL'],
+		correct: 1,
+		reason: t(
+			'Inserta 1 al inicio (1), 2 al final (1 -> 2) y 3 al inicio (3 -> 1 -> 2). La lista se imprime desde la cabeza.',
+			'It inserts 1 at the head (1), 2 at the tail (1 -> 2) and 3 at the head (3 -> 1 -> 2). The list is printed from the head.',
+		),
+	},
+	{
+		prompt: t('Con la lista 3 -> 7 -> 9, ¿qué pasa al llamar eliminar(&cabeza, 3)?', 'With the list 3 -> 7 -> 9, what happens when delete_value(&head, 3) is called?'),
+		snippet: programs.asNoHead,
+		options: [
+			t('Elimina el 3 correctamente', 'It deletes 3 correctly'),
+			t('Escribe a través de un puntero NULL: anterior vale NULL', 'It writes through a NULL pointer: previous is NULL'),
+			t('Elimina el 7 por error', 'It deletes 7 by mistake'),
+			t('Fuga: el 3 no se libera', 'Leak: 3 is not freed'),
+		],
+		correct: 1,
+		reason: t(
+			'El 3 es la cabeza, así que anterior sigue en NULL y anterior->siguiente desreferencia NULL. Falta el caso de la cabeza: if (anterior == NULL) *cabeza = actual->siguiente.',
+			'3 is the head, so previous is still NULL and previous->next dereferences NULL. The head case is missing: if (previous == NULL) *head = current->next.',
+		),
+	},
+];
+
+const labels = {
+	kind: {
+		owner: t('dueño', 'owner'),
+		borrow: t('préstamo', 'borrow'),
+		dangling: t('colgante', 'dangling'),
+		null: 'NULL',
+		value: '',
+	},
+	status: {
+		live: t('vivo', 'live'),
+		freed: t('liberado', 'freed'),
+		leaked: t('fuga: sin dueño', 'leak: no owner'),
+		static: t('estático: no vino de malloc', 'static: not from malloc'),
+	},
+	ownerPrefix: t('Dueño: ', 'Owner: '),
+	stepOf: t('Paso {n} de {m}', 'Step {n} of {m}'),
+	correct: t('Correcto. ', 'Correct. '),
+	wrong: t('No es así. ', 'Not quite. '),
+	showAfter: t('Ver transición', 'Show transition'),
+	showBefore: t('Volver al estado anterior', 'Back to the previous state'),
+	score: t('Respondiste bien {n} de {m}.', 'You got {n} of {m} right.'),
+	yourAnswer: t('Tu respuesta: ', 'Your answer: '),
+	noAnswer: t('sin responder', 'no answer'),
+	rightAnswer: t('Respuesta correcta: ', 'Correct answer: '),
+	answered: t('Respondidas: {n} de {m}', 'Answered: {n} of {m}'),
+	modes: { learn: t('Aprender', 'Learn'), practice: t('Practicar', 'Practice'), assess: t('Evaluar', 'Assess') },
+};
+
+const data = {
+	learn: learn.map((s) => ({ steps: s.steps })),
+	practice: practice.map((p) => ({ before: p.before, after: p.after, correct: p.correct, reason: p.reason, options: p.options })),
+	assess: assess.map((a) => ({ correct: a.correct, reason: a.reason, options: a.options, prompt: a.prompt })),
+	labels,
+};
+const dataJson = JSON.stringify(data).replace(/</g, '\\u003c');
+
+const lines = (src: string) => src.split('\n');
+const modes = [
+	{ id: 'learn', label: labels.modes.learn },
+	{ id: 'practice', label: labels.modes.practice },
+	{ id: 'assess', label: labels.modes.assess },
+];
+---
+
+<div class="le-screen" data-presentation="estructuras-enlazadas-c" data-lang={lang}>
+	<div class="le-shell">
+		<nav class="le-nav" aria-label={t('Controles de navegación', 'Navigation controls')}>
+			<div class="le-seg" role="radiogroup" aria-label={t('Modo de la presentación', 'Presentation mode')}>
+				{
+					modes.map((m, i) => (
+						<label class="le-seg-opt">
+							<input type="radio" name="leMode" value={m.id} checked={i === 0} />
+							<span>{m.label}</span>
+						</label>
+					))
+				}
+			</div>
+			<div class="le-nav-group">
+				<button class="le-btn" id="lePrevBtn" aria-label={t('Diapositiva anterior', 'Previous slide')} disabled>
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="m15 18-6-6 6-6"></path>
+					</svg>
+					<span>{t('Anterior', 'Previous')}</span>
+				</button>
+				<span class="le-counter" id="leCounter" aria-live="polite">{labels.modes.learn} · 1 / {learn.length}</span>
+				<button class="le-btn" id="leNextBtn" aria-label={t('Siguiente diapositiva', 'Next slide')}>
+					<span>{t('Siguiente', 'Next')}</span>
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="m9 18 6-6-6-6"></path>
+					</svg>
+				</button>
+			</div>
+		</nav>
+
+		<main class="le-viewport">
+			<!-- Aprender / Learn -->
+			<div class="le-mode" data-mode="learn">
+				{
+					learn.map((s, i) => (
+						<section class:list={['le-slide', { 'is-active': i === 0 }]} data-slide={i + 1} data-kind="learn" data-index={i}>
+							<div class="le-head">
+								<span class="le-kicker">{t('Aprender', 'Learn')} · {s.kicker}</span>
+								<h2 class="le-title">{s.title}</h2>
+								<p class="le-lead">{s.lead}</p>
+							</div>
+							<div class="le-grid">
+								<pre class="le-code" aria-label={t('Código del programa', 'Program code')}><code>{lines(programs[s.program]).map((l, n) => <span class="le-line" data-line={n + 1}><span class="le-ln" aria-hidden="true">{n + 1}</span>{l || ' '}</span>)}</code></pre>
+								<div class="le-mem" data-mem>
+									<div class="le-col">
+										<span class="le-col-label">{t('Pila (variables)', 'Stack (variables)')}</span>
+										<div data-stack></div>
+									</div>
+									<div class="le-col">
+										<span class="le-col-label">{t('Bloques (heap)', 'Blocks (heap)')}</span>
+										<div data-heap></div>
+									</div>
+									<svg class="le-arrows" aria-hidden="true"></svg>
+								</div>
+							</div>
+							<div class="le-alert" data-alert hidden></div>
+							<div class="le-steps">
+								<button class="le-btn" data-act="prev" aria-label={t('Paso anterior', 'Previous step')}>
+									<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+										<path d="m15 18-6-6 6-6"></path>
+									</svg>
+								</button>
+								<span class="le-step-label" data-step-label></span>
+								<button class="le-btn le-btn-primary" data-act="next" aria-label={t('Siguiente paso', 'Next step')}>
+									<span>{t('Siguiente paso', 'Next step')}</span>
+									<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+										<path d="m9 18 6-6-6-6"></path>
+									</svg>
+								</button>
+								<button class="le-btn" data-act="reset" aria-label={t('Reiniciar los pasos', 'Restart the steps')}>
+									<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+										<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+										<path d="M3 3v5h5"></path>
+									</svg>
+								</button>
+							</div>
+							<p class="le-explain" data-explain aria-live="polite"></p>
+						</section>
+					))
+				}
+				<p class="le-note">{t('Las direcciones (0x5010, 0x5080…) son ilustrativas: cambian en cada ejecución.', 'Addresses (0x5010, 0x5080…) are illustrative: they change on every run.')}</p>
+			</div>
+
+			<!-- Practicar / Practice -->
+			<div class="le-mode" data-mode="practice" hidden>
+				{
+					practice.map((p, i) => (
+						<section class:list={['le-slide', { 'is-active': i === 0 }]} data-slide={i + 1} data-kind="practice" data-index={i}>
+							<div class="le-head">
+								<span class="le-kicker">{t('Practicar', 'Practice')} · {t('Predice el siguiente estado', 'Predict the next state')}</span>
+								<h2 class="le-title">{p.prompt}</h2>
+							</div>
+							<div class="le-grid">
+								<pre class="le-code" aria-label={t('Código del programa', 'Program code')}><code>{lines(programs[p.program]).map((l, n) => <span class:list={['le-line', { 'is-current': n + 1 === p.line }]} data-line={n + 1}><span class="le-ln" aria-hidden="true">{n + 1}</span>{l || ' '}</span>)}</code></pre>
+								<div class="le-mem" data-mem>
+									<div class="le-col">
+										<span class="le-col-label">{t('Pila (variables)', 'Stack (variables)')}</span>
+										<div data-stack></div>
+									</div>
+									<div class="le-col">
+										<span class="le-col-label">{t('Bloques (heap)', 'Blocks (heap)')}</span>
+										<div data-heap></div>
+									</div>
+									<svg class="le-arrows" aria-hidden="true"></svg>
+								</div>
+							</div>
+							<div class="le-options" role="group" aria-label={t('Opciones', 'Options')}>
+								{p.options.map((o, k) => (
+									<button class="le-opt" data-opt={k}>{o}</button>
+								))}
+							</div>
+							<p class="le-feedback" data-feedback aria-live="polite"></p>
+							<button class="le-btn" data-act="transition" disabled>{labels.showAfter}</button>
+						</section>
+					))
+				}
+			</div>
+
+			<!-- Evaluar / Assess -->
+			<div class="le-mode" data-mode="assess" hidden>
+				{
+					assess.map((a, i) => (
+						<section class:list={['le-slide', { 'is-active': i === 0 }]} data-slide={i + 1} data-kind="assess" data-index={i}>
+							<div class="le-head">
+								<span class="le-kicker">{t('Evaluar', 'Assess')} · {t('Pregunta', 'Question')} {i + 1} / {assess.length}</span>
+								<h2 class="le-title">{a.prompt}</h2>
+							</div>
+							<pre class="le-code le-code-static"><code>{lines(a.snippet).map((l, n) => <span class="le-line"><span class="le-ln" aria-hidden="true">{n + 1}</span>{l || ' '}</span>)}</code></pre>
+							<div class="le-options" role="group" aria-label={t('Opciones', 'Options')}>
+								{a.options.map((o, k) => (
+									<button class="le-opt" data-pick={k} aria-pressed="false">{o}</button>
+								))}
+							</div>
+						</section>
+					))
+				}
+				<section class="le-slide" data-slide={assess.length + 1} data-kind="result">
+					<div class="le-head">
+						<span class="le-kicker">{t('Evaluar', 'Assess')} · {t('Resultado', 'Result')}</span>
+						<h2 class="le-title">{t('Califica tus respuestas', 'Grade your answers')}</h2>
+						<p class="le-lead" data-answered></p>
+					</div>
+					<div class="le-steps">
+						<button class="le-btn le-btn-primary" data-act="grade">{t('Calificar', 'Grade')}</button>
+						<button class="le-btn" data-act="retry">{t('Reiniciar la evaluación', 'Restart the assessment')}</button>
+					</div>
+					<div aria-live="polite">
+						<p class="le-score" data-score></p>
+						<ol class="le-results" data-results></ol>
+					</div>
+				</section>
+			</div>
+		</main>
+	</div>
+</div>
+
+<script is:inline type="application/json" id="leData" set:html={dataJson}></script>
+
+<style>
+	.le-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.le-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.le-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	.le-viewport {
+		flex: 1;
+	}
+
+	@media (min-width: 1440px) { .le-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .le-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .le-viewport { zoom: 1.25; } }
+
+	.le-nav {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-3) var(--space-6);
+		background: var(--color-surface);
+	}
+
+	.le-nav-group {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	/* Segmented control ported from Organic/styles.css (.seg / .seg-opt). */
+	.le-seg {
+		display: inline-flex;
+		overflow: hidden;
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+		background: var(--color-bg);
+	}
+
+	.le-seg-opt {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		padding: var(--space-2) var(--space-4);
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.le-seg-opt input {
+		position: absolute;
+		opacity: 0;
+		width: 0;
+		height: 0;
+		pointer-events: none;
+	}
+
+	.le-seg-opt + .le-seg-opt { border-left: 1px solid var(--color-divider); }
+	.le-seg-opt:has(input:checked) { background: var(--color-accent); color: var(--color-bg); }
+	.le-seg-opt:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+	.le-seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+	.le-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+		cursor: pointer;
+		transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+	}
+
+	.le-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.le-btn:focus-visible,
+	.le-opt:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 2px;
+	}
+
+	.le-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.le-btn-primary {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.le-btn-primary:hover:not(:disabled) {
+		background: var(--color-accent-600);
+		border-color: var(--color-accent-600);
+		color: var(--color-bg);
+	}
+
+	.le-counter {
+		font-size: 13px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.le-mode[hidden] { display: none; }
+
+	.le-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		width: 100%;
+	}
+
+	.le-slide.is-active {
+		display: block;
+		animation: leFade 0.25s ease-out;
+	}
+
+	@keyframes leFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.le-head { margin-bottom: var(--space-4); }
+
+	.le-kicker {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.le-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 26px;
+		line-height: 1.2;
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.le-lead {
+		font-size: 15px;
+		line-height: 1.5;
+		margin: 0;
+		max-width: 72ch;
+		color: color-mix(in srgb, var(--color-text) 75%, transparent);
+	}
+
+	.le-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+		gap: var(--space-4);
+		align-items: start;
+	}
+
+	.le-code {
+		position: relative;
+		margin: 0;
+		max-height: 420px;
+		overflow: auto;
+		padding: var(--space-3) 0;
+		background: var(--color-surface);
+		border-radius: var(--radius-lg);
+		font-family: monospace;
+		font-size: 12.5px;
+		line-height: 1.55;
+	}
+
+	.le-code-static {
+		max-height: none;
+		margin-bottom: var(--space-4);
+	}
+
+	.le-line {
+		display: block;
+		padding: 0 var(--space-3) 0 0;
+		white-space: pre;
+		transition: background 0.2s ease;
+	}
+
+	.le-line.is-current {
+		background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+		box-shadow: inset 3px 0 0 var(--color-accent);
+	}
+
+	.le-ln {
+		display: inline-block;
+		width: 3.5ch;
+		margin-right: var(--space-2);
+		text-align: right;
+		color: var(--color-neutral-600);
+		user-select: none;
+	}
+
+	.le-mem {
+		position: relative;
+		display: grid;
+		grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+		gap: var(--space-8);
+		padding: var(--space-4) var(--space-8) var(--space-4) var(--space-4);
+		background: var(--color-surface);
+		border-radius: var(--radius-lg);
+		min-height: 220px;
+	}
+
+	.le-col { display: flex; flex-direction: column; gap: var(--space-2); }
+
+	.le-col > div { display: flex; flex-direction: column; gap: var(--space-3); }
+
+	.le-col-label {
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-neutral-600);
+	}
+
+	.le-arrows {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+		pointer-events: none;
+	}
+
+</style>
+
+<style is:global>
+	/* Elements built by the script carry no scope attribute, so their styles live here. */
+	.le-arrows path { fill: none; stroke-width: 2.25; stroke-linecap: round; }
+	.le-arrows path.is-head { stroke-linejoin: round; }
+	.le-arrows .k-owner { stroke: var(--color-accent-2-700); }
+	.le-arrows .k-borrow { stroke: var(--color-accent-2); stroke-dasharray: 6 5; }
+	.le-arrows .k-dangling { stroke: var(--color-accent); stroke-dasharray: 3 5; }
+	.le-arrows .is-head { stroke-dasharray: none; }
+
+	.le-frame {
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+		padding: var(--space-2) var(--space-3);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.le-frame-label {
+		display: block;
+		font-size: 11px;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		margin-bottom: var(--space-1);
+		font-family: monospace;
+	}
+
+	.le-var,
+	.le-field {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-1) var(--space-2);
+		padding: var(--space-1) 0;
+		font-size: 13px;
+	}
+
+	.le-var-name { font-family: monospace; font-weight: 700; }
+	.le-var-value { font-family: monospace; }
+
+	.le-tag {
+		font-size: 11px;
+		font-weight: 700;
+		padding: 0 var(--space-2);
+		border-radius: 999px;
+		background: var(--color-neutral-200);
+		color: var(--color-neutral-800);
+	}
+
+	[data-kind='owner'] > .le-tag { background: var(--color-accent-2-100); color: var(--color-accent-2-800); }
+	[data-kind='borrow'] > .le-tag { background: var(--color-accent-2-100); color: var(--color-accent-2-700); }
+	[data-kind='dangling'] > .le-tag { background: var(--color-accent-100); color: var(--color-accent-800); }
+	[data-kind='dangling'] > .le-var-value { color: var(--color-accent-700); text-decoration: line-through; }
+
+	.le-block {
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+		border: 2px solid var(--color-accent-2);
+		padding: var(--space-2) var(--space-3);
+		transition: border-color 0.3s ease, opacity 0.3s ease, background 0.3s ease;
+	}
+
+	.le-block[data-status='freed'] {
+		border-style: dashed;
+		border-color: var(--color-neutral-400);
+		opacity: 0.6;
+	}
+
+	.le-block[data-status='leaked'] {
+		border-color: var(--color-accent);
+		background: var(--color-accent-100);
+	}
+
+	.le-block[data-status='static'] {
+		border-color: var(--color-neutral-400);
+	}
+
+	.le-block-head {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: var(--space-2);
+		font-size: 12px;
+	}
+
+	.le-block-addr { font-family: monospace; font-weight: 700; }
+	.le-block-meta { color: var(--color-neutral-600); }
+
+	.le-block-status {
+		display: block;
+		font-size: 11px;
+		font-weight: 700;
+		margin-top: var(--space-1);
+		color: var(--color-accent-2-700);
+	}
+
+	.le-block[data-status='freed'] .le-block-status { color: var(--color-neutral-600); }
+	.le-block[data-status='leaked'] .le-block-status { color: var(--color-accent-800); }
+	.le-block[data-status='static'] .le-block-status { color: var(--color-neutral-600); }
+
+	.le-block-value {
+		font-family: monospace;
+		font-size: 14px;
+		margin-top: var(--space-1);
+	}
+
+	.le-cells { display: flex; gap: var(--space-1); margin-top: var(--space-2); }
+
+	.le-cell {
+		min-width: 2.2em;
+		padding: var(--space-1);
+		text-align: center;
+		font-family: monospace;
+		font-size: 13px;
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+	}
+
+	.le-cell.is-out {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		outline: 2px dashed var(--color-accent-700);
+		outline-offset: 2px;
+	}
+
+	.le-flash .le-block,
+	.le-flash .le-frame {
+		animation: lePulse 0.6s ease-out;
+	}
+
+	@keyframes lePulse {
+		from { transform: scale(0.97); opacity: 0.4; }
+		to { transform: scale(1); opacity: 1; }
+	}
+
+	.le-alert {
+		margin-top: var(--space-3);
+		padding: var(--space-2) var(--space-4);
+		border-radius: var(--radius-md);
+		font-family: monospace;
+		font-size: 13px;
+		background: var(--color-accent-100);
+		color: var(--color-accent-800);
+	}
+
+	.le-alert[data-kind='ok'] { background: var(--color-accent-2-100); color: var(--color-accent-2-800); }
+
+	.le-steps {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-3);
+		margin-top: var(--space-4);
+	}
+
+	.le-step-label { font-size: 13px; font-weight: 700; color: var(--color-neutral-600); }
+
+	.le-explain {
+		margin: var(--space-3) 0 0;
+		max-width: 80ch;
+		font-size: 15px;
+		line-height: 1.55;
+	}
+
+	.le-note {
+		padding: 0 var(--space-8) var(--space-4);
+		margin: 0;
+		font-size: 12px;
+		color: var(--color-neutral-600);
+	}
+
+	.le-options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-top: var(--space-4);
+	}
+
+	.le-opt {
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 14px;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+		cursor: pointer;
+	}
+
+	.le-opt:hover:not(:disabled) { border-color: var(--color-accent); color: var(--color-accent-700); }
+	.le-opt:disabled { cursor: default; }
+	.le-opt[aria-pressed='true'] { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-bg); }
+	.le-opt.is-right { background: var(--color-accent-2-100); border-color: var(--color-accent-2-700); color: var(--color-accent-2-800); }
+	.le-opt.is-wrong { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-800); }
+
+	.le-feedback {
+		min-height: 1.5em;
+		margin: var(--space-3) 0;
+		max-width: 80ch;
+		font-size: 15px;
+		line-height: 1.55;
+	}
+
+	.le-score {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 22px;
+		margin: var(--space-4) 0 var(--space-2);
+	}
+
+	.le-results {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		padding-left: var(--space-6);
+		max-width: 80ch;
+		font-size: 14px;
+		line-height: 1.5;
+	}
+
+	.le-results li.is-right::marker { color: var(--color-accent-2-700); }
+	.le-results li.is-wrong::marker { color: var(--color-accent); }
+	.le-results strong { display: block; }
+
+	@media (max-width: 900px) {
+		.le-grid { grid-template-columns: minmax(0, 1fr); }
+		.le-code { max-height: 260px; }
+	}
+
+	@media (max-width: 640px) {
+		.le-nav { padding: var(--space-3) var(--space-4); }
+		.le-slide { padding: var(--space-4); }
+		.le-note { padding: 0 var(--space-4) var(--space-4); }
+		.le-title { font-size: 21px; }
+		.le-mem { grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+		.le-btn span { display: none; }
+	}
+</style>
+
+<script>
+	type Kind = 'owner' | 'borrow' | 'dangling' | 'null' | 'value';
+	type Slot = { name: string; value: string; kind: Kind; target?: string };
+	type Block = {
+		id: string;
+		addr: string;
+		size: string;
+		label: string;
+		status: 'live' | 'freed' | 'leaked' | 'static';
+		owner?: string;
+		fields?: Slot[];
+		cells?: { v: string; out?: boolean }[];
+		value?: string;
+	};
+	type State = { frames: { label: string; vars: Slot[] }[]; blocks: Block[]; alert?: { kind: string; text: string } };
+	type Data = {
+		learn: { steps: { lines: number[]; text: string; state: State }[] }[];
+		practice: { before: State; after: State; correct: number; reason: string; options: string[] }[];
+		assess: { correct: number; reason: string; options: string[]; prompt: string }[];
+		labels: {
+			kind: Record<Kind, string>;
+			status: Record<Block['status'], string>;
+			ownerPrefix: string;
+			stepOf: string;
+			correct: string;
+			wrong: string;
+			showAfter: string;
+			showBefore: string;
+			score: string;
+			yourAnswer: string;
+			noAnswer: string;
+			rightAnswer: string;
+			answered: string;
+			modes: Record<string, string>;
+		};
+	};
+
+	const screen = document.querySelector<HTMLElement>('.le-screen');
+	const dataEl = document.getElementById('leData');
+
+	if (screen && dataEl?.textContent) {
+		const data = JSON.parse(dataEl.textContent) as Data;
+		const L = data.labels;
+		const SVG_NS = 'http://www.w3.org/2000/svg';
+		const fill = (tpl: string, n: number, m: number) => tpl.replace('{n}', String(n)).replace('{m}', String(m));
+
+		function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
+			const node = document.createElement(tag);
+			if (cls) node.className = cls;
+			if (text !== undefined) node.textContent = text;
+			return node;
+		}
+
+		function slotRow(slot: Slot, cls: string) {
+			const row = el('div', cls);
+			row.dataset.kind = slot.kind;
+			if (slot.target && slot.kind !== 'null') row.dataset.target = slot.target;
+			row.append(el('span', 'le-var-name', slot.name), el('span', 'le-var-value', slot.value));
+			const tag = L.kind[slot.kind];
+			if (tag) row.append(el('span', 'le-tag', tag));
+			return row;
+		}
+
+		function drawArrows(mem: HTMLElement) {
+			const svg = mem.querySelector('svg');
+			if (!svg) return;
+			svg.replaceChildren();
+			const box = mem.getBoundingClientRect();
+			if (!box.width || !mem.offsetWidth) return;
+			// CSS zoom on the viewport scales client rects; normalize back to layout pixels.
+			const scale = box.width / mem.offsetWidth;
+			svg.setAttribute('viewBox', `0 0 ${mem.offsetWidth} ${mem.offsetHeight}`);
+			mem.querySelectorAll<HTMLElement>('[data-target]').forEach((src) => {
+				const target = mem.querySelector<HTMLElement>(`[data-block="${src.dataset.target}"]`);
+				if (!target) return;
+				const r = src.getBoundingClientRect();
+				const tr = target.getBoundingClientRect();
+				const sx = (r.right - box.left) / scale;
+				const sy = (r.top + r.height / 2 - box.top) / scale;
+				const tl = (tr.left - box.left) / scale;
+				const trr = (tr.right - box.left) / scale;
+				const ty = (tr.top - box.top) / scale + 16;
+				let d: string;
+				let head: string;
+				if (tl > sx + 12) {
+					const dx = Math.max(24, (tl - sx) / 2);
+					d = `M ${sx} ${sy} C ${sx + dx} ${sy}, ${tl - dx} ${ty}, ${tl - 2} ${ty}`;
+					head = `M ${tl - 10} ${ty - 6} L ${tl - 2} ${ty} L ${tl - 10} ${ty + 6}`;
+				} else {
+					const ex = Math.max(sx, trr) + 26;
+					d = `M ${sx} ${sy} C ${ex} ${sy}, ${ex} ${ty}, ${trr + 2} ${ty}`;
+					head = `M ${trr + 10} ${ty - 6} L ${trr + 2} ${ty} L ${trr + 10} ${ty + 6}`;
+				}
+				const kind = `k-${src.dataset.kind}`;
+				const line = document.createElementNS(SVG_NS, 'path');
+				line.setAttribute('d', d);
+				line.setAttribute('class', kind);
+				const tip = document.createElementNS(SVG_NS, 'path');
+				tip.setAttribute('d', head);
+				tip.setAttribute('class', `${kind} is-head`);
+				svg.append(line, tip);
+			});
+		}
+
+		function renderState(slide: HTMLElement, state: State, flash = false) {
+			const mem = slide.querySelector<HTMLElement>('[data-mem]');
+			const stack = mem?.querySelector<HTMLElement>('[data-stack]');
+			const heap = mem?.querySelector<HTMLElement>('[data-heap]');
+			if (!mem || !stack || !heap) return;
+			stack.replaceChildren(
+				...state.frames.map((f) => {
+					const frame = el('div', 'le-frame');
+					frame.append(el('span', 'le-frame-label', f.label));
+					f.vars.forEach((v) => frame.append(slotRow(v, 'le-var')));
+					return frame;
+				}),
+			);
+			heap.replaceChildren(
+				...state.blocks.map((b) => {
+					const block = el('div', 'le-block');
+					block.dataset.block = b.id;
+					block.dataset.status = b.status;
+					const head = el('div', 'le-block-head');
+					head.append(el('span', 'le-block-addr', b.addr), el('span', 'le-block-meta', `${b.label} · ${b.size}`));
+					block.append(head);
+					const status = b.owner ? `${L.status[b.status]} · ${L.ownerPrefix}${b.owner}` : L.status[b.status];
+					block.append(el('span', 'le-block-status', status));
+					b.fields?.forEach((f) => block.append(slotRow(f, 'le-field')));
+					if (b.cells) {
+						const cells = el('div', 'le-cells');
+						b.cells.forEach((c) => cells.append(el('span', c.out ? 'le-cell is-out' : 'le-cell', c.v)));
+						block.append(cells);
+					}
+					if (b.value !== undefined) block.append(el('div', 'le-block-value', b.value));
+					return block;
+				}),
+			);
+			const alert = slide.querySelector<HTMLElement>('[data-alert]');
+			if (alert) {
+				alert.hidden = !state.alert;
+				alert.textContent = state.alert?.text ?? '';
+				alert.dataset.kind = state.alert?.kind ?? '';
+			}
+			mem.classList.remove('le-flash');
+			if (flash) {
+				void mem.offsetWidth;
+				mem.classList.add('le-flash');
+			}
+			requestAnimationFrame(() => drawArrows(mem));
+		}
+
+		/* ---- Learn ---- */
+		const learnStep = data.learn.map(() => 0);
+
+		function renderLearn(slide: HTMLElement) {
+			const i = Number(slide.dataset.index);
+			const steps = data.learn[i].steps;
+			const s = learnStep[i];
+			const step = steps[s];
+			slide.querySelectorAll<HTMLElement>('.le-line').forEach((line) => {
+				line.classList.toggle('is-current', step.lines.includes(Number(line.dataset.line)));
+			});
+			const code = slide.querySelector<HTMLElement>('.le-code');
+			const first = slide.querySelector<HTMLElement>(`.le-line[data-line="${step.lines[0]}"]`);
+			if (code && first) code.scrollTop = Math.max(0, first.offsetTop - code.clientHeight / 3);
+			const label = slide.querySelector('[data-step-label]');
+			if (label) label.textContent = fill(L.stepOf, s + 1, steps.length);
+			const explain = slide.querySelector('[data-explain]');
+			if (explain) explain.textContent = step.text;
+			(slide.querySelector('[data-act="prev"]') as HTMLButtonElement).disabled = s === 0;
+			(slide.querySelector('[data-act="next"]') as HTMLButtonElement).disabled = s === steps.length - 1;
+			renderState(slide, step.state, true);
+		}
+
+		screen.querySelectorAll<HTMLElement>('.le-slide[data-kind="learn"]').forEach((slide) => {
+			const i = Number(slide.dataset.index);
+			const max = data.learn[i].steps.length - 1;
+			slide.querySelector('[data-act="prev"]')?.addEventListener('click', () => {
+				learnStep[i] = Math.max(0, learnStep[i] - 1);
+				renderLearn(slide);
+			});
+			slide.querySelector('[data-act="next"]')?.addEventListener('click', () => {
+				learnStep[i] = Math.min(max, learnStep[i] + 1);
+				renderLearn(slide);
+			});
+			slide.querySelector('[data-act="reset"]')?.addEventListener('click', () => {
+				learnStep[i] = 0;
+				renderLearn(slide);
+			});
+		});
+
+		/* ---- Practice ---- */
+		const showingAfter = data.practice.map(() => false);
+
+		function renderPractice(slide: HTMLElement) {
+			const i = Number(slide.dataset.index);
+			const item = data.practice[i];
+			renderState(slide, showingAfter[i] ? item.after : item.before, showingAfter[i]);
+		}
+
+		screen.querySelectorAll<HTMLElement>('.le-slide[data-kind="practice"]').forEach((slide) => {
+			const i = Number(slide.dataset.index);
+			const item = data.practice[i];
+			const opts = slide.querySelectorAll<HTMLButtonElement>('[data-opt]');
+			const feedback = slide.querySelector('[data-feedback]');
+			const transition = slide.querySelector<HTMLButtonElement>('[data-act="transition"]');
+			opts.forEach((btn) => {
+				btn.addEventListener('click', () => {
+					const pick = Number(btn.dataset.opt);
+					const ok = pick === item.correct;
+					opts.forEach((o) => {
+						o.disabled = true;
+						if (Number(o.dataset.opt) === item.correct) o.classList.add('is-right');
+					});
+					if (!ok) btn.classList.add('is-wrong');
+					if (feedback) feedback.textContent = (ok ? L.correct : L.wrong) + item.reason;
+					if (transition) transition.disabled = false;
+				});
+			});
+			transition?.addEventListener('click', () => {
+				showingAfter[i] = !showingAfter[i];
+				transition.textContent = showingAfter[i] ? L.showBefore : L.showAfter;
+				renderPractice(slide);
+			});
+		});
+
+		/* ---- Assess ---- */
+		const answers: (number | null)[] = data.assess.map(() => null);
+		const resultSlide = screen.querySelector<HTMLElement>('.le-slide[data-kind="result"]');
+
+		function updateAnswered() {
+			const el2 = resultSlide?.querySelector('[data-answered]');
+			if (el2) el2.textContent = fill(L.answered, answers.filter((a) => a !== null).length, answers.length);
+		}
+
+		screen.querySelectorAll<HTMLElement>('.le-slide[data-kind="assess"]').forEach((slide) => {
+			const i = Number(slide.dataset.index);
+			const opts = slide.querySelectorAll<HTMLButtonElement>('[data-pick]');
+			opts.forEach((btn) => {
+				btn.addEventListener('click', () => {
+					answers[i] = Number(btn.dataset.pick);
+					opts.forEach((o) => o.setAttribute('aria-pressed', String(o === btn)));
+					updateAnswered();
+				});
+			});
+		});
+
+		resultSlide?.querySelector('[data-act="grade"]')?.addEventListener('click', () => {
+			const list = resultSlide!.querySelector('[data-results]');
+			const score = resultSlide!.querySelector('[data-score]');
+			let right = 0;
+			const items = data.assess.map((q, i) => {
+				const a = answers[i];
+				const ok = a === q.correct;
+				if (ok) right++;
+				const li = el('li', ok ? 'is-right' : 'is-wrong');
+				li.append(
+					el('strong', '', q.prompt),
+					el('span', '', `${L.yourAnswer}${a === null ? L.noAnswer : q.options[a]}. `),
+					el('span', '', `${L.rightAnswer}${q.options[q.correct]}. `),
+					el('span', '', q.reason),
+				);
+				return li;
+			});
+			list?.replaceChildren(...items);
+			if (score) score.textContent = fill(L.score, right, data.assess.length);
+		});
+
+		resultSlide?.querySelector('[data-act="retry"]')?.addEventListener('click', () => {
+			answers.fill(null);
+			screen.querySelectorAll('[data-pick]').forEach((o) => o.setAttribute('aria-pressed', 'false'));
+			resultSlide!.querySelector('[data-results]')?.replaceChildren();
+			const score = resultSlide!.querySelector('[data-score]');
+			if (score) score.textContent = '';
+			updateAnswered();
+			showSlide(1);
+		});
+
+		/* ---- Modes and slide navigation ---- */
+		const prevBtn = document.getElementById('lePrevBtn') as HTMLButtonElement | null;
+		const nextBtn = document.getElementById('leNextBtn') as HTMLButtonElement | null;
+		const counter = document.getElementById('leCounter');
+		const current: Record<string, number> = { learn: 1, practice: 1, assess: 1 };
+		let mode = 'learn';
+
+		function panel() {
+			return screen!.querySelector<HTMLElement>(`.le-mode[data-mode="${mode}"]`);
+		}
+
+		function showSlide(target: number) {
+			const slides = panel()?.querySelectorAll<HTMLElement>('.le-slide');
+			if (!slides || target < 1 || target > slides.length) return;
+			current[mode] = target;
+			slides.forEach((s) => s.classList.toggle('is-active', Number(s.dataset.slide) === target));
+			const active = slides[target - 1];
+			if (counter) counter.textContent = `${L.modes[mode]} · ${target} / ${slides.length}`;
+			if (prevBtn) prevBtn.disabled = target === 1;
+			if (nextBtn) nextBtn.disabled = target === slides.length;
+			if (active.dataset.kind === 'learn') renderLearn(active);
+			if (active.dataset.kind === 'practice') renderPractice(active);
+			if (active.dataset.kind === 'result') updateAnswered();
+		}
+
+		screen.querySelectorAll<HTMLInputElement>('input[name="leMode"]').forEach((input) => {
+			input.addEventListener('change', () => {
+				if (!input.checked) return;
+				mode = input.value;
+				screen.querySelectorAll<HTMLElement>('.le-mode').forEach((p) => {
+					p.hidden = p.dataset.mode !== mode;
+				});
+				showSlide(current[mode]);
+			});
+		});
+
+		prevBtn?.addEventListener('click', () => showSlide(current[mode] - 1));
+		nextBtn?.addEventListener('click', () => showSlide(current[mode] + 1));
+
+		window.addEventListener('keydown', (e) => {
+			const target = e.target as HTMLElement | null;
+			if (target && (target.closest('input, textarea, select') || target.isContentEditable)) return;
+			if (e.key === 'ArrowRight') showSlide(current[mode] + 1);
+			if (e.key === 'ArrowLeft') showSlide(current[mode] - 1);
+		});
+
+		window.addEventListener('resize', () => {
+			const mem = panel()?.querySelector<HTMLElement>('.le-slide.is-active [data-mem]');
+			if (mem) drawArrows(mem);
+		});
+
+		showSlide(1);
+	}
+</script>

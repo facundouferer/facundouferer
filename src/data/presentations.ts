@@ -874,6 +874,19 @@ export const presentations: Presentation[] = [
 		slug: 'ciclo-de-vida-objetos-c',
 		lesson: { course: 'c', slug: 'propiedad-y-errores-de-memoria' },
 	},
+	{
+		file: 'listas.c',
+		image: '/img/presentations/estructuras-enlazadas-c.svg',
+		tag: { es: 'C', en: 'C' },
+		tagClass: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20',
+		title: { es: 'Estructuras enlazadas', en: 'Linked structures' },
+		description: {
+			es: 'Nodos, enlaces y punteros: insertar, buscar, borrar y liberar una lista enlazada, en modos aprender, practicar y evaluar.',
+			en: 'Nodes, links and pointers: inserting, searching, deleting and freeing a linked list, in learn, practice and assess modes.',
+		},
+		slug: 'estructuras-enlazadas-c',
+		lesson: { course: 'c', slug: 'estructuras-dinamicas-listas' },
+	},
 ];
 
 /**

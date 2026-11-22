@@ -1,0 +1,360 @@
+---
+/**
+ * "Practicar" and "Evaluar" modes for a presentation (the "Aprender" mode is
+ * the deck above it). Items come from `src/data/presentation-practice/<slug>.ts`.
+ * Every string is server-rendered; the client script only toggles attributes.
+ *
+ * - Practicar: answering an item shows its feedback and the reason right away.
+ * - Evaluar: nothing is revealed until "Calificar", which marks every item and
+ *   shows the score.
+ */
+import { Code } from 'astro:components';
+import { useTranslations, type Locale } from '../i18n/utils';
+import { renderInlineCode } from '../utils/renderInlineCode';
+import type { Localized, PracticeItem, PracticeSet } from '../data/presentation-practice/types';
+
+type Props = {
+	lang: Locale;
+	slug: string;
+	set: PracticeSet;
+};
+
+const { lang, slug, set } = Astro.props;
+const t = useTranslations(lang);
+
+const text = (value: Localized) => value[lang];
+const codeOf = (item: PracticeItem) => (typeof item.code === 'string' ? item.code : item.code?.[lang]);
+
+const modes = [
+	{ id: 'practice', label: t('presentationPractice.practice'), hint: t('presentationPractice.practiceHint'), items: set.practice },
+	{ id: 'assess', label: t('presentationPractice.assess'), hint: t('presentationPractice.assessHint'), items: set.assess },
+] as const;
+---
+
+<section class="pp" id="practicar" data-presentation-practice data-mode="practice" aria-labelledby={`pp-title-${slug}`}>
+	<header class="pp-header">
+		<span class="kicker">{t('presentationPractice.goTo')}</span>
+		<h2 class="pp-title" id={`pp-title-${slug}`}>{t('presentationPractice.title')}</h2>
+		<p class="pp-intro">{t('presentationPractice.intro')}</p>
+
+		<div class="pp-seg" role="radiogroup" aria-label={t('presentationPractice.modes')}>
+			{
+				modes.map((mode) => (
+					<label class="pp-seg-option">
+						<input type="radio" name={`pp-mode-${slug}`} value={mode.id} checked={mode.id === 'practice'} data-pp-mode />
+						<span>{mode.label}</span>
+					</label>
+				))
+			}
+		</div>
+	</header>
+
+	{
+		modes.map((mode) => (
+			<div class="pp-panel" data-pp-panel={mode.id} hidden={mode.id !== 'practice'}>
+				<p class="pp-hint">{mode.hint}</p>
+
+				{mode.items.map((item, index) => (
+					<fieldset class="pp-item" data-pp-item data-correct={item.correct}>
+						<legend set:html={`${index + 1}. ${renderInlineCode(text(item.prompt))}`} />
+
+						{codeOf(item) && (
+							<div class="pp-code">
+								<Code code={codeOf(item) as string} lang="c" />
+							</div>
+						)}
+
+						<div class="pp-options" role="radiogroup" aria-label={text(item.prompt).replace(/`/g, '')}>
+							{item.options.map((option) => (
+								<label class="radio" data-option={option.id}>
+									<input type="radio" name={`pp-${mode.id}-${slug}-${item.id}`} value={option.id} />
+									<span class="dot" />
+									<span set:html={renderInlineCode(text(option.text))} />
+								</label>
+							))}
+						</div>
+
+						<div class="pp-result" aria-live="polite">
+							<span class="tag tag-accent-2 pp-tag-correct">{t('presentationPractice.correct')}</span>
+							<span class="tag tag-outline pp-tag-incorrect">{t('presentationPractice.incorrect')}</span>
+							<span class="tag tag-neutral pp-tag-unanswered">{t('presentationPractice.unanswered')}</span>
+							<p class="pp-correct-answer">
+								<strong>{t('presentationPractice.correctAnswer')}:</strong>{' '}
+								<span set:html={renderInlineCode(text(item.options.find((option) => option.id === item.correct)!.text))} />
+							</p>
+							<p class="pp-explanation">
+								<strong>{t('presentationPractice.why')}:</strong> <span set:html={renderInlineCode(text(item.explanation))} />
+							</p>
+						</div>
+					</fieldset>
+				))}
+
+				<div class="pp-actions">
+					{mode.id === 'assess' && (
+						<button type="button" class="btn btn-primary" data-pp-grade>
+							{t('presentationPractice.grade')}
+						</button>
+					)}
+					<button type="button" class="btn btn-secondary" data-pp-retry hidden={mode.id === 'assess'}>
+						{t('presentationPractice.retry')}
+					</button>
+				</div>
+
+				<p class="pp-score" data-pp-score hidden tabindex="-1">
+					{t('presentationPractice.score')}: <span data-pp-score-value /> {t('presentationPractice.of')} {mode.items.length}
+				</p>
+			</div>
+		))
+	}
+</section>
+
+<script>
+	function setupPractice(): void {
+		document.querySelectorAll<HTMLElement>('[data-presentation-practice]').forEach((root) => {
+			if (root.dataset.bound === 'true') return;
+			root.dataset.bound = 'true';
+
+			const panels = root.querySelectorAll<HTMLElement>('[data-pp-panel]');
+
+			root.querySelectorAll<HTMLInputElement>('[data-pp-mode]').forEach((radio) => {
+				radio.addEventListener('change', () => {
+					root.dataset.mode = radio.value;
+					panels.forEach((panel) => {
+						panel.hidden = panel.dataset.ppPanel !== radio.value;
+					});
+				});
+			});
+
+			panels.forEach((panel) => {
+				const instant = panel.dataset.ppPanel === 'practice';
+				const items = panel.querySelectorAll<HTMLElement>('[data-pp-item]');
+				const gradeBtn = panel.querySelector<HTMLButtonElement>('[data-pp-grade]');
+				const retryBtn = panel.querySelector<HTMLButtonElement>('[data-pp-retry]');
+				const scoreEl = panel.querySelector<HTMLElement>('[data-pp-score]');
+				const scoreValue = panel.querySelector<HTMLElement>('[data-pp-score-value]');
+
+				const chosen = (item: HTMLElement) => item.querySelector<HTMLInputElement>('input[type="radio"]:checked')?.value;
+
+				function mark(item: HTMLElement) {
+					const answer = chosen(item);
+					item.dataset.graded = 'true';
+					item.dataset.result = !answer ? 'unanswered' : answer === item.dataset.correct ? 'correct' : 'incorrect';
+				}
+
+				function score() {
+					const correct = [...items].filter((item) => item.dataset.result === 'correct').length;
+					if (scoreValue) scoreValue.textContent = String(correct);
+					scoreEl?.removeAttribute('hidden');
+				}
+
+				if (instant) {
+					items.forEach((item) => {
+						item.addEventListener('change', () => {
+							mark(item);
+							item.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach((input) => {
+								input.disabled = true;
+							});
+							const answered = [...items].every((it) => it.dataset.graded === 'true');
+							if (answered) score();
+						});
+					});
+				}
+
+				gradeBtn?.addEventListener('click', () => {
+					items.forEach(mark);
+					score();
+					gradeBtn.hidden = true;
+					retryBtn?.removeAttribute('hidden');
+					scoreEl?.focus();
+				});
+
+				retryBtn?.addEventListener('click', () => {
+					items.forEach((item) => {
+						item.removeAttribute('data-graded');
+						item.removeAttribute('data-result');
+						item.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach((input) => {
+							input.checked = false;
+							input.disabled = false;
+						});
+					});
+					scoreEl?.setAttribute('hidden', '');
+					if (!instant) {
+						gradeBtn?.removeAttribute('hidden');
+						retryBtn.hidden = true;
+					}
+				});
+			});
+		});
+	}
+
+	setupPractice();
+	document.addEventListener('astro:page-load', setupPractice);
+</script>
+
+<style>
+	.pp {
+		width: min(100%, 60rem);
+		margin: 0 auto;
+		padding: var(--space-8) var(--space-6) calc(var(--space-8) * 2);
+	}
+
+	.pp-header {
+		margin-bottom: var(--space-4);
+	}
+
+	.pp-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.pp-intro,
+	.pp-hint {
+		margin: 0 0 var(--space-3);
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+
+	/* Segmented mode switch (Organic .seg pattern, scoped to this component). */
+	.pp-seg {
+		display: inline-flex;
+		padding: var(--space-1);
+		gap: var(--space-1);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-pill, 999px);
+	}
+
+	.pp-seg-option {
+		position: relative;
+		cursor: pointer;
+	}
+
+	.pp-seg-option input {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		cursor: pointer;
+	}
+
+	.pp-seg-option span {
+		display: block;
+		padding: var(--space-2) var(--space-4);
+		border-radius: var(--radius-pill, 999px);
+		font-weight: 600;
+		color: var(--color-text);
+	}
+
+	.pp-seg-option:has(input:checked) span {
+		background: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.pp-seg-option:has(input:focus-visible) span {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 2px;
+	}
+
+	.pp-panel[hidden] {
+		display: none;
+	}
+
+	.pp-item {
+		min-width: 0;
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		padding: var(--space-4);
+		margin: 0 0 var(--space-4);
+		background: var(--color-surface);
+	}
+
+	.pp-item legend {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 1.05rem;
+		padding: 0 var(--space-2);
+	}
+
+	.pp-item :global(code) {
+		background: var(--color-bg);
+		padding: 0.1em 0.35em;
+		border-radius: var(--radius-sm);
+		font-size: 0.92em;
+	}
+
+	.pp-code {
+		margin: var(--space-3) 0 var(--space-2);
+		overflow-x: auto;
+	}
+
+	.pp-code :global(pre) {
+		margin: 0;
+		padding: var(--space-3);
+		border-radius: var(--radius-md);
+		font-size: 0.85rem;
+	}
+
+	.pp-code :global(code) {
+		background: none;
+		padding: 0;
+	}
+
+	.pp-options {
+		display: grid;
+		gap: var(--space-2);
+		margin: var(--space-2) 0;
+	}
+
+	.pp-result {
+		display: none;
+		margin-top: var(--space-3);
+		padding-top: var(--space-3);
+		border-top: 1px dashed var(--color-divider);
+	}
+
+	.pp-item[data-graded='true'] .pp-result {
+		display: block;
+	}
+
+	.pp-tag-correct,
+	.pp-tag-incorrect,
+	.pp-tag-unanswered {
+		display: none;
+	}
+
+	.pp-item[data-result='correct'] .pp-tag-correct,
+	.pp-item[data-result='incorrect'] .pp-tag-incorrect,
+	.pp-item[data-result='unanswered'] .pp-tag-unanswered {
+		display: inline-flex;
+	}
+
+	.pp-correct-answer,
+	.pp-explanation {
+		margin: var(--space-2) 0 0;
+		font-size: 0.9rem;
+	}
+
+	.pp-actions {
+		display: flex;
+		gap: var(--space-2);
+		margin-top: var(--space-4);
+	}
+
+	/* .btn sets display: inline-flex, which overrides the UA [hidden] rule. */
+	.pp-actions [hidden],
+	.pp-score[hidden] {
+		display: none !important;
+	}
+
+	.pp-score {
+		margin-top: var(--space-4);
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 1.2rem;
+	}
+
+	@media (width < 640px) {
+		.pp {
+			padding-inline: var(--space-3);
+		}
+	}
+</style>
