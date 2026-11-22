@@ -2,7 +2,8 @@
 // DONE_STAGE: the last finished stage of the redesign; lessons of later
 // stages are not enforced yet.
 
-export const DONE_STAGE = 1;
+// C_DONE_STAGE lets a writer check a stage before it is marked done.
+export const DONE_STAGE = Number(process.env.C_DONE_STAGE ?? 1);
 
 // [slug, stage that rewrites or creates it]
 const ORDER = [
@@ -74,6 +75,8 @@ export const LESSONS = ORDER.map(([slug, stage], index) => ({
 // Topics a lesson must not use yet, keyed by the lesson that teaches them.
 // Each entry is [regex, description].
 export const TAUGHT_AT = [
+	['arreglos-unidimensionales-y-multidimensionales', /\b(?:int|char|double|float|long|short|unsigned|bool)\s+[A-Za-z_]\w*\s*\[[^\]]*\]\s*(?:=|;|\[)/, 'array declarations'],
+	['concepto-de-estructuras', /\bstruct\s+[A-Za-z_]\w*\s*\{/, 'struct definitions'],
 	['punteros-y-direcciones', /\b(?:int|char|double|float|long|short|unsigned|void|bool)\s*\*+\s*[A-Za-z_]/, 'pointer declarations'],
 	['punteros-arreglos-y-estructuras', /->/, 'the -> operator'],
 	['memoria-dinamica', /\b(?:malloc|calloc|realloc|free)\s*\(/, 'dynamic memory calls'],

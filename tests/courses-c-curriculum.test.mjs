@@ -75,6 +75,32 @@ const REQUIRED = {
 		es: ['fuga', 'doble liberación', 'uso después de liberar', 'propiedad'],
 		en: ['leak', 'double free', 'use after free', 'ownership'],
 	},
+	// Stage 2
+	'sentencia-if-else': { all: ['else if'], es: ['condición'], en: ['condition'] },
+	'operador-ternario': { all: [' ? ', ' : '], es: ['expresión'], en: ['expression'] },
+	'sentencia-switch-y-bloques-de-codigo': { all: ['switch', 'case', 'break', 'default'], es: ['alcance', 'bloque'], en: ['scope', 'block'] },
+	'sentencia-while': { all: ['while ('], es: ['centinela'], en: ['sentinel'] },
+	'sentencia-for': { all: ['for ('], es: ['contador'], en: ['counter'] },
+	'sentencia-do-while': { all: ['do {', 'break', 'continue'], es: ['al menos una vez'], en: ['at least once'] },
+	'programacion-esquematica-y-sentencias-anidadas': { all: [], es: ['refinamiento'], en: ['refinement'] },
+	'manejo-de-estructuras-secuenciales-de-datos': { all: [], es: ['arreglo'], en: ['array'] },
+	'arreglos-unidimensionales-y-multidimensionales': { all: ['sizeof', '[3][4]'], es: ['índice', 'límite'], en: ['index', 'bound'] },
+	'operaciones-con-arreglos': { all: ['size_t'], es: ['recorr'], en: ['travers'] },
+	'cadenas-de-caracteres-y-operaciones': { all: ["'\\0'", 'strlen', 'fgets', 'snprintf'], es: ['capacidad'], en: ['capacity'] },
+	'concepto-de-estructuras': { all: ['struct', 'union', 'enum', 'typedef'], es: ['relleno'], en: ['padding'] },
+	'busqueda-en-arreglos': { all: ['O(log n)', 'O(n)'], es: ['búsqueda binaria', 'complejidad'], en: ['binary search', 'complexity'] },
+	'ordenacion-de-arreglos': { all: ['O(n'], es: ['complejidad', 'estable'], en: ['complexity', 'stable'] },
+	'estructuras-dinamicas-listas': { all: ['malloc(', 'free(', 'NULL', '->'], es: ['nodo'], en: ['node'] },
+	'estructuras-dinamicas-pilas': { all: ['malloc(', 'free(', '->'], es: ['pila', 'apilar'], en: ['stack', 'push'] },
+	'estructuras-dinamicas-colas': { all: ['malloc(', 'free(', '->'], es: ['cola', 'encolar'], en: ['queue', 'enqueue'] },
+	'arboles-binarios': { all: ['malloc(', 'free(', '->'], es: ['recorrido', 'árbol binario de búsqueda'], en: ['traversal', 'binary search tree'] },
+	'biblioteca-estandar-y-errores': { all: ['strtol', 'errno', '<ctype.h>', 'EOF'], es: ['código de retorno'], en: ['return code'] },
+	archivos: { all: ['fopen', 'fclose', 'fread', 'fwrite', 'ferror', 'NULL'], es: ['binario'], en: ['binary'] },
+	'introduccion-a-poo-en-c': { all: ['struct'], es: ['abstracción'], en: ['abstraction'] },
+	'encapsulacion-y-abstraccion-en-c': { all: ['.h', 'typedef struct'], es: ['opaco'], en: ['opaque'] },
+	'objetos-metodos-y-diseno-basado-en-struct': { all: ['->'], es: ['composición'], en: ['composition'] },
+	'polimorfismo-y-herencia-simulados-en-c': { all: ['(*'], es: ['límite'], en: ['limit'] },
+
 };
 
 const pathOf = (lesson, lang) => `${C_DIR}/${lesson.file}.${lang}.md`;
