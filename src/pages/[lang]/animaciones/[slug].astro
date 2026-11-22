@@ -72,6 +72,12 @@ import ListasEnlazadasC from '../../../components/animaciones/listas-enlazadas-c
 import C23NovedadesC from '../../../components/animaciones/c23-novedades-c.astro';
 import HilosAtomicsC from '../../../components/animaciones/hilos-atomics-c.astro';
 import RecursividadPilaC from '../../../components/animaciones/recursividad-pila-c.astro';
+import VariablesConstantesC from '../../../components/animaciones/variables-constantes-c.astro';
+import IdeasPooC from '../../../components/animaciones/ideas-poo-c.astro';
+import OperadoresEvaluacionC from '../../../components/animaciones/operadores-evaluacion-c.astro';
+import TipoOpacoC from '../../../components/animaciones/tipo-opaco-c.astro';
+import MetodosComposicionC from '../../../components/animaciones/metodos-composicion-c.astro';
+import TablaOperacionesC from '../../../components/animaciones/tabla-operaciones-c.astro';
 
 export function getStaticPaths() {
 	const paths: Array<{ params: { lang: Locale; slug: string } }> = [];
@@ -161,6 +167,12 @@ const componentMap: Record<string, any> = {
 	'c23-novedades-c': C23NovedadesC,
 	'hilos-atomics-c': HilosAtomicsC,
 	'recursividad-pila-c': RecursividadPilaC,
+	'variables-constantes-c': VariablesConstantesC,
+	'ideas-poo-c': IdeasPooC,
+	'operadores-evaluacion-c': OperadoresEvaluacionC,
+	'tipo-opaco-c': TipoOpacoC,
+	'metodos-composicion-c': MetodosComposicionC,
+	'tabla-operaciones-c': TablaOperacionesC,
 };
 
 const AnimationComponent = componentMap[slug];

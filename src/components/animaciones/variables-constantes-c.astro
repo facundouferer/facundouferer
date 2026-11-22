@@ -1,0 +1,1182 @@
+---
+/**
+ * Scene for "Named boxes and boxes that do not change" (lesson
+ * c/variables-y-constantes, order: 4), a short film played on one persistent motion
+ * canvas. The captions and cues live in `src/data/animations/variables-constantes-c.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay that shows the
+ * lesson's programs one at a time (the complete example, the uninitialized variable,
+ * suffixed literals, the `const` assignment and the unparenthesized macro), each with a
+ * bar that slides to the running line and the real output typed in the console below.
+ * The viewport on the right holds the camera and an isometric world per program. A
+ * variable is a box with a tag (its type and its name) and its value rests on top as a
+ * pill; every instruction has a module on the rail that shows its editor line. The
+ * light blue particle is the flow of execution; magenta marks the bug and the refusal
+ * (the indeterminate "?", the assignment to a constant, the wrong result); violet marks
+ * what handles it (the lock, the preprocessor, the fix).
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/variables-constantes-c';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── The programs shown in the editor ──────────────────────────────────────
+// All of them come from the lesson, with its identifiers localized like it does. The
+// `bug` program is the lesson's, the `const` one drops the long comment (the compiler's
+// message is typed in the console instead), and the `lit` one gathers the literal lines.
+type Program = 'main' | 'bug' | 'lit' | 'const' | 'macro';
+const PROGRAMS: Program[] = ['main', 'bug', 'lit', 'const', 'macro'];
+// Lines of each program, the lines that have a module on the rail, and console rows.
+const SHAPE = {
+	main: { lines: 19, modules: [3, 6, 7, 8, 9, 11, 13, 14, 15, 16], outputs: 4 },
+	bug: { lines: 8, modules: [4, 5, 6], outputs: 2 },
+	lit: { lines: 11, modules: [4, 5, 6, 7, 8, 9], outputs: 2 },
+	const: { lines: 5, modules: [2, 3], outputs: 2 },
+	macro: { lines: 9, modules: [3, 6, 7], outputs: 1 },
+};
+
+const n = {
+	iva: t('IVA', 'TAX_RATE'),
+	age: t('edad', 'age'),
+	price: t('precio', 'price'),
+	initial: t('inicial', 'initial'),
+	months: t('MESES_ANIO', 'MONTHS_PER_YEAR'),
+	decimal: t('decimal', 'decimal'),
+	count: t('cantidad', 'count'),
+	gravity: t('gravedad', 'gravity'),
+	days: t('DIAS_SEMANA', 'DAYS_PER_WEEK'),
+	result: t('resultado', 'result'),
+};
+const files: Record<Program, string> = {
+	main: 'variables.c',
+	bug: t('sin-inicializar.c', 'uninitialized.c'),
+	lit: t('literales.c', 'literals.c'),
+	const: t('constante.c', 'constant.c'),
+	macro: t('macro.c', 'macro.c'),
+};
+/** A line of code with its comment aligned on column `col`. */
+const commented = (code: string, comment: string, col = 33) => `${code.padEnd(col)}// ${comment}`;
+
+const sources: Record<Program, string[]> = {
+	main: [
+		'#include <stdio.h>',
+		'',
+		`#define ${n.months} 12`,
+		'',
+		'int main(void) {',
+		`    const double ${n.iva} = 0.21;`,
+		`    int ${n.age} = 18;`,
+		`    double ${n.price} = 1500.0;`,
+		`    char ${n.initial} = 'F';`,
+		'',
+		`    ${n.age} = ${n.age} + 1;   // ${t('asignación: ahora vale 19', 'assignment: now it is 19')}`,
+		'',
+		`    printf("${t('Edad', 'Age')}: %d\\n", ${n.age});`,
+		`    printf("${t('Inicial', 'Initial')}: %c\\n", ${n.initial});`,
+		`    printf("${t('Precio con IVA', 'Price with tax')}: %f\\n", ${n.price} + ${n.price} * ${n.iva});`,
+		`    printf("${t('Meses del año', 'Months per year')}: %d\\n", ${n.months});`,
+		'',
+		'    return 0;',
+		'}',
+	],
+	bug: [
+		'#include <stdio.h>',
+		'',
+		'int main(void) {',
+		commented('    int total;', t('declarada, pero nunca inicializada', 'declared, but never initialized'), 25),
+		commented('    total = total + 10;', t('ERROR: lee un valor indeterminado', 'BUG: reads an indeterminate value'), 25),
+		'    printf("%d\\n", total);',
+		'    return 0;',
+		'}',
+	],
+	lit: [
+		'#include <stdio.h>',
+		'',
+		'int main(void) {',
+		commented(`    int ${n.decimal} = 255;`, t('sin sufijo: int', 'no suffix: int'), 34),
+		commented(`    unsigned int ${n.count} = 100u;`, t('sufijo u: unsigned int', 'u suffix: unsigned int'), 34),
+		commented('    double pi = 3.14159;', t('sin sufijo: double', 'no suffix: double'), 34),
+		commented(`    float ${n.gravity} = 9.81f;`, t('sufijo f: float', 'f suffix: float'), 34),
+		`    printf("%d %u\\n", ${n.decimal}, ${n.count});`,
+		`    printf("%.5f %.2f\\n", pi, ${n.gravity});`,
+		'    return 0;',
+		'}',
+	],
+	const: ['int main(void) {', `    const int ${n.days} = 7;`, `    ${n.days} = 8;`, '    return 0;', '}'],
+	macro: [
+		'#include <stdio.h>',
+		'',
+		'#define BASE 4 + 1',
+		'',
+		'int main(void) {',
+		`    int ${n.result} = BASE * 2;`,
+		`    printf("%d\\n", ${n.result});`,
+		'    return 0;',
+		'}',
+	],
+};
+for (const program of PROGRAMS) {
+	if (sources[program].length !== SHAPE[program].lines) throw new Error(`${program} has ${sources[program].length} lines`);
+}
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const listing = (program: Program) =>
+	highlightCode(sources[program].join('\n'), 'c').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+
+// The real output of each program (compiled with cc -std=c23 -Wall -Wextra -Wpedantic;
+// the compiler messages are wrapped to fit the console, word for word).
+const outputs: Record<Program, string[]> = {
+	main: [`${t('Edad', 'Age')}: 19`, `${t('Inicial', 'Initial')}: F`, `${t('Precio con IVA', 'Price with tax')}: 1815.000000`, `${t('Meses del año', 'Months per year')}: 12`],
+	bug: [`${files.bug}:5:13: warning: variable 'total' is`, '    uninitialized when used here [-Wuninitialized]'],
+	lit: ['255 100', '3.14159 9.81'],
+	const: [`${files.const}:3:${t('17', '19')}: error: cannot assign to variable`, `    '${n.days}' with const-qualified type 'const int'`],
+	macro: ['6'],
+};
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 72;
+const GUTTER_X = 59;
+const CODE_TOP = 72;
+const LINE_H = 24;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (line: number) => CODE_TOP + (line - 1) * LINE_H;
+const lineMid = (line: number) => lineTop(line) + LINE_H / 2;
+const lineBase = (line: number) => lineMid(line) + 5;
+const CONSOLE_TOP = 548;
+const outY = (row: number) => 598 + row * 24;
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right, +v down-left, z is up. Things are placed by the
+// screen point of their footprint center (`ground`), converted back to the grid.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 50;
+const EY = 29;
+const ORIGIN = { x: 640, y: 330 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const grid = (ground: Point) => {
+	const du = (ground.x - ORIGIN.x) / EX;
+	const dv = (ground.y - ORIGIN.y) / EY;
+	return { u: (du + dv) / 2, v: (dv - du) / 2 };
+};
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+
+/** A box whose footprint is centered on `ground`: half-extents `a` (u) and `b` (v), height `h`. */
+function slab(ground: Point, a: number, b: number, h: number, z = 0) {
+	const { u, v } = grid(ground);
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+type Slab = ReturnType<typeof slab>;
+type Tone = 'flow' | 'violet' | 'magenta';
+
+// Modules: one per instruction, on the rail, labelled with its editor line.
+const RAIL_Y = 560;
+const RAIL_GAP = 52;
+const RAIL_CENTER: Record<Program, number> = { main: 624, bug: 640, lit: 624, const: 640, macro: 640 };
+const MODULE_TONE: Record<string, Tone> = { 'main-3': 'violet', 'macro-3': 'violet', 'bug-5': 'magenta', 'const-3': 'magenta', 'macro-6': 'magenta' };
+const blockAt = (ground: Point): Slab => slab(ground, 0.2, 0.2, 14);
+const modules = PROGRAMS.flatMap((program) =>
+	SHAPE[program].modules.map((line, index, all) => ({
+		program,
+		line,
+		tone: (MODULE_TONE[`${program}-${line}`] ?? 'flow') as Tone,
+		g: blockAt({ x: round(RAIL_CENTER[program] + (index - (all.length - 1) / 2) * RAIL_GAP), y: RAIL_Y }),
+	})),
+);
+
+// Variables: boxes on a shelf. The tag above each one says its type and its name.
+type BoxDef = { id: string; world: Program; ground: Point; type: string; name: string; tone: 'edge' | 'violet' | 'magenta' };
+const SHELF: Point[] = [
+	{ x: 456, y: 392 },
+	{ x: 568, y: 416 },
+	{ x: 680, y: 392 },
+	{ x: 792, y: 416 },
+];
+const SOLO: Point = { x: 640, y: 400 };
+const boxDefs: BoxDef[] = [
+	{ id: 'b-iva', world: 'main', ground: SHELF[0], type: 'const double', name: n.iva, tone: 'violet' },
+	{ id: 'b-edad', world: 'main', ground: SHELF[1], type: 'int', name: n.age, tone: 'edge' },
+	{ id: 'b-precio', world: 'main', ground: SHELF[2], type: 'double', name: n.price, tone: 'edge' },
+	{ id: 'b-inicial', world: 'main', ground: SHELF[3], type: 'char', name: n.initial, tone: 'edge' },
+	{ id: 'b-total', world: 'bug', ground: SOLO, type: 'int', name: 'total', tone: 'magenta' },
+	{ id: 'b-dec', world: 'lit', ground: SHELF[0], type: 'int', name: n.decimal, tone: 'edge' },
+	{ id: 'b-n', world: 'lit', ground: SHELF[1], type: 'unsigned int', name: n.count, tone: 'edge' },
+	{ id: 'b-pi', world: 'lit', ground: SHELF[2], type: 'double', name: 'pi', tone: 'edge' },
+	{ id: 'b-g', world: 'lit', ground: SHELF[3], type: 'float', name: n.gravity, tone: 'edge' },
+	{ id: 'b-days', world: 'const', ground: SOLO, type: 'const int', name: n.days, tone: 'violet' },
+];
+const BOX_H = 24;
+const boxes = boxDefs.map((box) => {
+	const tagWidth = Math.round(Math.max(box.type.length, box.name.length) * 7.2 + 22);
+	return { ...box, g: slab(box.ground, 0.55, 0.55, BOX_H), tagWidth, tagY: box.ground.y - 86 };
+});
+const boxOf = (key: string) => boxes.find((box) => box.id === `b-${key}`)!;
+
+// The preprocessor: a larger module for `#define`, with the ghost of the box it never makes.
+const STATION = slab({ x: 904, y: 212 }, 0.75, 0.75, 34);
+const GHOST_GROUND: Point = { x: 904, y: 392 };
+const GHOST = slab(GHOST_GROUND, 0.55, 0.55, BOX_H);
+const GHOST_TAG = { y: GHOST_GROUND.y - 86, w: Math.round(Math.max(8, n.months.length) * 7.2 + 22) };
+
+// Where the particle stops and where value tokens rest.
+const anchors = [
+	...modules.map((module) => ({ id: `a-m-${module.program}-${module.line}`, ...lift(module.g.center, 16) })),
+	...boxes.map((box) => ({ id: `a-b-${box.id.slice(2)}`, ...lift(box.g.center, 4) })),
+	{ id: 'a-st', ...lift(STATION.center, 4) },
+	{ id: 'a-try', x: SOLO.x - 66, y: SOLO.y - 40 },
+	{ id: 'a-lo-1', x: 560, y: 360 },
+	{ id: 'a-lo-2', x: 722, y: 372 },
+	{ id: 'a-lo-3', x: 700, y: 440 },
+];
+const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0, y: 0 };
+const moduleAt = (program: Program, line: number) => at(`a-m-${program}-${line}`);
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-shelf', cx: 624, cy: 440, s: 1.15 },
+	{ id: 'shot-bug', cx: 640, cy: 420, s: 1.35 },
+	{ id: 'shot-lit', cx: 624, cy: 440, s: 1.15 },
+	{ id: 'shot-const', cx: 640, cy: 420, s: 1.35 },
+	{ id: 'shot-define', cx: 680, cy: 410, s: 1.0 },
+	{ id: 'shot-trap', cx: 700, cy: 390, s: 1.05 },
+	{ id: 'shot-pull', cx: 680, cy: 390, s: 1.0 },
+	{ id: 'shot-all', cx: 680, cy: 380, s: 0.88 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Routes: an instruction writes into its box (or reads from it, or is refused).
+const arc = (from: Point, to: Point, rise: number) =>
+	`M${from.x} ${from.y} Q${round((from.x + to.x) / 2)} ${round(Math.min(from.y, to.y) - rise)} ${to.x} ${to.y}`;
+/** The point of the front edge of a box, where a wire reaches it without crossing its faces. */
+const frontOf = (key: string): Point => ({ x: boxOf(key).ground.x, y: boxOf(key).ground.y + 26 });
+const writes = (program: Program, line: number, key: string, rise = 30) => arc(lift(moduleAt(program, line), 4), frontOf(key), rise);
+type Route = { id: string; world: Program; tone: Tone; d: string };
+const routes: Route[] = [
+	{ id: 'fl-main-6', world: 'main', tone: 'flow', d: writes('main', 6, 'iva') },
+	{ id: 'fl-main-7', world: 'main', tone: 'flow', d: writes('main', 7, 'edad') },
+	{ id: 'fl-main-8', world: 'main', tone: 'flow', d: writes('main', 8, 'precio') },
+	{ id: 'fl-main-9', world: 'main', tone: 'flow', d: writes('main', 9, 'inicial') },
+	{ id: 'fl-main-11', world: 'main', tone: 'violet', d: writes('main', 11, 'edad', 56) },
+	{ id: 'fl-bug-5', world: 'bug', tone: 'magenta', d: arc(frontOf('total'), lift(moduleAt('bug', 5), 4), 20) },
+	{ id: 'fl-lit-4', world: 'lit', tone: 'flow', d: writes('lit', 4, 'dec') },
+	{ id: 'fl-lit-5', world: 'lit', tone: 'flow', d: writes('lit', 5, 'n') },
+	{ id: 'fl-lit-6', world: 'lit', tone: 'flow', d: writes('lit', 6, 'pi') },
+	{ id: 'fl-lit-7', world: 'lit', tone: 'flow', d: writes('lit', 7, 'g') },
+	{ id: 'fl-const-2', world: 'const', tone: 'flow', d: writes('const', 2, 'days') },
+	{ id: 'fl-const-3', world: 'const', tone: 'magenta', d: arc(lift(moduleAt('const', 3), 4), at('a-try'), 60) },
+	{ id: 'fl-x-in', world: 'macro', tone: 'violet', d: arc({ x: 742, y: 318 }, { x: 842, y: 230 }, 30) },
+	{ id: 'fl-x-out', world: 'macro', tone: 'violet', d: arc({ x: 862, y: 258 }, { x: 746, y: 384 }, 30) },
+];
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = {
+	id: string;
+	world: Program;
+	text: string;
+	x: number;
+	y: number;
+	tone: 'plain' | Tone;
+	mono?: boolean;
+	icon?: 'arrow';
+};
+const chips: Chip[] = [
+	{ id: 'lb-decl', world: 'main', text: t('declarar: reserva la caja', 'declare: reserves the box'), x: 568, y: 262, tone: 'flow' },
+	{ id: 'lb-init', world: 'main', text: t('inicializar: primer valor', 'initialize: first value'), x: 568, y: 262, tone: 'violet' },
+	{ id: 'lb-assign', world: 'main', text: t('asignar: valor nuevo', 'assign: new value'), x: 568, y: 262, tone: 'violet' },
+	{ id: 'lb-nobox', world: 'main', text: t('sin caja', 'no box'), x: GHOST_GROUND.x, y: GHOST_GROUND.y + 54, tone: 'violet' },
+	{ id: 'lb-empty', world: 'bug', text: t('sin valor', 'no value'), x: 640, y: 466, tone: 'plain' },
+	{ id: 'lb-indet', world: 'bug', text: t('valor indeterminado', 'indeterminate value'), x: 640, y: 466, tone: 'magenta' },
+	{ id: 'lb-noread', world: 'bug', text: t('leerlo es un error', 'reading it is a bug'), x: 640, y: 494, tone: 'magenta' },
+	{ id: 'fx-init', world: 'bug', text: 'int total = 0;', x: 640, y: 466, tone: 'violet', mono: true },
+	{ id: 'ty-dec', world: 'lit', text: t('literal: int', 'literal: int'), x: SHELF[0].x, y: SHELF[0].y + 46, tone: 'flow' },
+	{ id: 'ty-n', world: 'lit', text: t('literal: unsigned int', 'literal: unsigned int'), x: SHELF[1].x, y: SHELF[1].y + 46, tone: 'violet' },
+	{ id: 'ty-pi', world: 'lit', text: t('literal: double', 'literal: double'), x: SHELF[2].x, y: SHELF[2].y + 46, tone: 'flow' },
+	{ id: 'ty-g', world: 'lit', text: t('literal: float', 'literal: float'), x: SHELF[3].x, y: SHELF[3].y + 46, tone: 'violet' },
+	{ id: 'lb-suffix', world: 'lit', text: t('el sufijo cambia el tipo', 'the suffix changes the type'), x: 680, y: 262, tone: 'violet' },
+	{ id: 'lb-fixed', world: 'const', text: t('candado: valor fijo', 'lock: fixed value'), x: 640, y: 466, tone: 'violet' },
+	{ id: 'er-const', world: 'const', text: t('asignar: error de compilación', 'assign: compile error'), x: 640, y: 494, tone: 'magenta' },
+	{ id: 'x-src', world: 'macro', text: 'BASE * 2', x: 690, y: 318, tone: 'plain', mono: true },
+	{ id: 'x-exp', world: 'macro', text: '4 + 1 * 2', x: 690, y: 384, tone: 'magenta', mono: true },
+	{ id: 'x-calc', world: 'macro', text: '1 * 2 = 2,  4 + 2 = 6', x: 690, y: 450, tone: 'magenta', mono: true },
+	{ id: 'x-fix', world: 'macro', text: '#define BASE (4 + 1)', x: 690, y: 318, tone: 'violet', mono: true },
+	{ id: 'x-ok', world: 'macro', text: '(4 + 1) * 2 = 10', x: 690, y: 384, tone: 'violet', mono: true },
+	{ id: 'pf-c-h', world: 'main', text: 'const', x: 560, y: 120, tone: 'violet', mono: true },
+	{ id: 'pf-c-1', world: 'main', text: t('tiene tipo', 'has a type'), x: 560, y: 154, tone: 'violet' },
+	{ id: 'pf-c-2', world: 'main', text: t('respeta las llaves { }', 'respects braces { }'), x: 560, y: 186, tone: 'violet' },
+	{ id: 'pf-c-3', world: 'main', text: t('el depurador lo ve', 'the debugger sees it'), x: 560, y: 218, tone: 'violet' },
+	{ id: 'pf-d-h', world: 'main', text: '#define', x: 800, y: 120, tone: 'magenta', mono: true },
+	{ id: 'pf-d-1', world: 'main', text: t('sin tipo propio', 'no type of its own'), x: 800, y: 154, tone: 'magenta' },
+	{ id: 'pf-d-2', world: 'main', text: t('hasta el final del archivo', 'to the end of the file'), x: 800, y: 186, tone: 'magenta' },
+	{ id: 'pf-d-3', world: 'main', text: t('el depurador no lo ve', 'invisible to the debugger'), x: 800, y: 218, tone: 'magenta' },
+	{ id: 'pf-when', world: 'main', text: t('#define: lo que el preprocesador debe saber', '#define: what the preprocessor must know'), x: 680, y: 262, tone: 'violet', icon: 'arrow' },
+];
+const PP_CHIP: Chip = { id: 'lb-pp', world: 'main', text: t('preprocesador', 'preprocessor'), x: 904, y: 100, tone: 'violet' };
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + (chip.icon ? 42 : 24));
+const chipLeft = (chip: Chip) => chip.x - chipWidth(chip) / 2;
+
+// Icons (Lucide, stroke 2.75): the lock of a constant and the refusal of an assignment.
+const icons = [
+	{ id: 'lk-days', world: 'const' as Program, kind: 'lock', tone: 'violet', x: SOLO.x + 80, y: SOLO.y - 60, size: 32 },
+	{ id: 'ban-days', world: 'const' as Program, kind: 'ban', tone: 'magenta', x: SOLO.x, y: SOLO.y - 30, size: 46 },
+];
+
+// Value tokens: one visual identity for "a value" (a pill). `dashed` marks text that
+// the preprocessor swaps, `suffix` the letters that change a literal's type.
+type Token = { id: string; world: Program; text: string; suffix?: string; tone: 'flow' | 'violet' | 'magenta' | 'dim'; home: string; dashed?: boolean };
+const tokens: Token[] = [
+	{ id: 'tk-iva', world: 'main', text: '0.21', tone: 'violet', home: 'a-m-main-6' },
+	{ id: 'tk-e18', world: 'main', text: '18', tone: 'flow', home: 'a-m-main-7' },
+	{ id: 'tk-e19', world: 'main', text: '19', tone: 'flow', home: 'a-m-main-11' },
+	{ id: 'tk-precio', world: 'main', text: '1500.0', tone: 'flow', home: 'a-m-main-8' },
+	{ id: 'tk-inicial', world: 'main', text: "'F'", tone: 'flow', home: 'a-m-main-9' },
+	{ id: 'tx-src', world: 'main', text: n.months, tone: 'violet', home: 'a-m-main-16', dashed: true },
+	{ id: 'tx-out', world: 'main', text: '12', tone: 'violet', home: 'a-st', dashed: true },
+	{ id: 'lo-1', world: 'bug', text: '7', tone: 'dim', home: 'a-lo-1' },
+	{ id: 'lo-2', world: 'bug', text: '-3', tone: 'dim', home: 'a-lo-2' },
+	{ id: 'lo-3', world: 'bug', text: '91', tone: 'dim', home: 'a-lo-3' },
+	{ id: 'tk-q', world: 'bug', text: '?', tone: 'magenta', home: 'a-b-total' },
+	{ id: 'tk-zero', world: 'bug', text: '0', tone: 'violet', home: 'a-m-bug-4' },
+	{ id: 'tk-dec', world: 'lit', text: '255', tone: 'flow', home: 'a-m-lit-4' },
+	{ id: 'tk-n', world: 'lit', text: '100', suffix: 'u', tone: 'flow', home: 'a-m-lit-5' },
+	{ id: 'tk-pi', world: 'lit', text: '3.14159', tone: 'flow', home: 'a-m-lit-6' },
+	{ id: 'tk-g', world: 'lit', text: '9.81', suffix: 'f', tone: 'flow', home: 'a-m-lit-7' },
+	{ id: 'tk-days', world: 'const', text: '7', tone: 'violet', home: 'a-m-const-2' },
+	{ id: 'tk-try', world: 'const', text: '8', tone: 'magenta', home: 'a-m-const-3' },
+];
+const tokenWidth = (token: Token) => Math.max(44, Math.round((token.text.length + (token.suffix?.length ?? 0)) * 9.2 + 26));
+
+// Failing lines of the editor are marked with a magenta bar.
+const marks = [
+	{ id: 'hx-bug-5', program: 'bug' as Program, line: 5 },
+	{ id: 'hx-const-3', program: 'const' as Program, line: 3 },
+	{ id: 'hx-macro-6', program: 'macro' as Program, line: 6 },
+];
+
+const LEGEND_Y = VP.y + VP.h - 22;
+const firstLine = (program: Program) => (program === 'main' ? 6 : SHAPE[program].modules[0]);
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="vc-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="vc-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<radialGradient id="vc-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="vc-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="vc-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the isometric world, seen through the camera -->
+			<g clip-path="url(#vc-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#vc-g-pool-violet)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#vc-g-pool-flow)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- The rail the instructions sit on -->
+						<path class="xj-track" d={`M380 ${RAIL_Y} H980`}></path>
+
+						<!-- The preprocessor: where the text of a #define is swapped -->
+						<g data-el="st-pp">
+							<polygon class="xj-shadow" points={STATION.base} transform="translate(8 11)" />
+							<polygon class="xj-station xj-station--l" points={STATION.leftFace} />
+							<polygon class="xj-station xj-station--r" points={STATION.rightFace} />
+							<polygon class="xj-station xj-station--t" points={STATION.top} fill="url(#vc-g-top)" />
+							<text class="xj-face-text" transform={STATION.faceMatrix} text-anchor="middle" y="4">#define</text>
+						</g>
+						<g data-el="on-st" class="xj-lit xj-lit--violet">
+							<polygon class="xj-lit-halo" points={STATION.top} />
+							<polygon class="xj-lit-top" points={STATION.top} />
+							<polygon class="xj-lit-side" points={STATION.leftFace} />
+							<text class="xj-face-text xj-face-text--on" transform={STATION.faceMatrix} text-anchor="middle" y="4">#define</text>
+						</g>
+						<g data-el={PP_CHIP.id} class:list={['xj-chip', `xj-chip--${PP_CHIP.tone}`]}>
+							<rect x={chipLeft(PP_CHIP)} y={PP_CHIP.y - 12} width={chipWidth(PP_CHIP)} height="24" rx="12" />
+							<text class="xj-chip-text" x={PP_CHIP.x} y={PP_CHIP.y + 4.5} text-anchor="middle">{PP_CHIP.text}</text>
+						</g>
+
+						<!-- One world per program: its boxes, modules, routes, notes and values -->
+						{
+							PROGRAMS.map((program) => (
+								<g data-el={`w-${program}`}>
+									{
+										program === 'main' && (
+											<g data-el="gh-def" class="xj-ghost">
+												<polygon class="xj-ghost-plate" points={GHOST.base} />
+												<rect class="xj-tag-box xj-tag-box--ghost" x={GHOST_GROUND.x - GHOST_TAG.w / 2} y={GHOST_TAG.y - 18} width={GHOST_TAG.w} height="36" rx="9" />
+												<text class="xj-tag-type" x={GHOST_GROUND.x} y={GHOST_TAG.y - 3} text-anchor="middle">{t('sin tipo', 'no type')}</text>
+												<text class="xj-tag-name" x={GHOST_GROUND.x} y={GHOST_TAG.y + 12} text-anchor="middle">{n.months}</text>
+											</g>
+										)
+									}
+									{
+										boxes
+											.filter((box) => box.world === program)
+											.map((box) => (
+												<g data-el={box.id} class={`xj-box xj-box--${box.tone}`}>
+													<polygon class="xj-shadow" points={box.g.base} transform="translate(6 9)" />
+													<polygon class="xj-cell xj-cell--l" points={box.g.leftFace} />
+													<polygon class="xj-cell xj-cell--r" points={box.g.rightFace} />
+													<polygon class="xj-cell xj-cell--t" points={box.g.top} />
+													<rect class="xj-tag-box" x={box.ground.x - box.tagWidth / 2} y={box.tagY - 18} width={box.tagWidth} height="36" rx="9" />
+													<text class="xj-tag-type" x={box.ground.x} y={box.tagY - 3} text-anchor="middle">{box.type}</text>
+													<text class="xj-tag-name" x={box.ground.x} y={box.tagY + 12} text-anchor="middle">{box.name}</text>
+												</g>
+											))
+									}
+									{
+										modules
+											.filter((module) => module.program === program)
+											.map((module) => (
+												<>
+													<g data-el={`m-${program}-${module.line}`} class="xj-mod">
+														<polygon class="xj-shadow" points={module.g.base} transform="translate(5 7)" />
+														<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+														<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+														<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#vc-g-top)" />
+														<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4">
+															{module.line}
+														</text>
+													</g>
+													<g data-el={`on-${program}-${module.line}`} class:list={['xj-lit', `xj-lit--${module.tone}`]}>
+														<polygon class="xj-lit-halo" points={module.g.top} />
+														<polygon class="xj-lit-top" points={module.g.top} />
+														<polygon class="xj-lit-side" points={module.g.leftFace} />
+														<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4">
+															{module.line}
+														</text>
+													</g>
+												</>
+											))
+									}
+									{
+										routes
+											.filter((route) => route.world === program)
+											.map((route) => (
+												<g data-el={route.id} class:list={['xj-flowline', `xj-flowline--${route.tone}`]}>
+													<path class="mg-stroke xj-flowline-halo" pathLength="1" d={route.d} />
+													<path class="mg-stroke xj-flowline-core" pathLength="1" d={route.d} />
+												</g>
+											))
+									}
+									{
+										icons
+											.filter((icon) => icon.world === program)
+											.map((icon) => (
+												<g data-el={icon.id} class:list={['xj-sign', `xj-sign--${icon.tone}`]}>
+													<svg class="xj-sign-icon" x={icon.x - icon.size / 2} y={icon.y - icon.size / 2} width={icon.size} height={icon.size} viewBox="0 0 24 24" stroke-width="2.75">
+														{
+															icon.kind === 'lock' ? (
+																<>
+																	<rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+																	<path d="M7 11V7a5 5 0 0 1 10 0v4" />
+																</>
+															) : (
+																<>
+																	<circle cx="12" cy="12" r="10" />
+																	<path d="m4.9 4.9 14.2 14.2" />
+																</>
+															)
+														}
+													</svg>
+												</g>
+											))
+									}
+									{
+										chips
+											.filter((chip) => chip.world === program)
+											.map((chip) => (
+												<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+													<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+													{chip.icon === 'arrow' && (
+														<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+															<path d="M5 12h14" />
+															<path d="m12 5 7 7-7 7" />
+														</svg>
+													)}
+													<text
+														class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+														x={chip.x + (chip.icon ? 9 : 0)}
+														y={chip.y + 4.5}
+														text-anchor="middle"
+													>
+														{chip.text}
+													</text>
+												</g>
+											))
+									}
+									<!-- Value tokens. Placement lives on the inner group: the player resets data-el transforms. -->
+									{
+										tokens
+											.filter((token) => token.world === program)
+											.map((token) => {
+												const w = tokenWidth(token);
+												return (
+													<g data-el={token.id} data-x={at(token.home).x} data-y={at(token.home).y}>
+														<g class:list={['xj-token', `xj-token--${token.tone}`, token.dashed && 'xj-token--text']}>
+															<rect class="xj-token-halo" x={-w / 2 - 5} y="-19" width={w + 10} height="38" rx="19" />
+															<rect class="xj-token-card" x={-w / 2} y="-14" width={w} height="28" rx="14" />
+															<text class={token.dashed ? 'xj-token-text xj-token-text--mono' : 'xj-token-text'} x="0" y="5.5" text-anchor="middle">
+																{token.text}{token.suffix && <tspan class="xj-token-suffix">{token.suffix}</tspan>}
+															</text>
+														</g>
+													</g>
+												);
+											})
+									}
+								</g>
+							))
+						}
+
+						<!-- The execution flow: it goes from module to module -->
+						<g data-el="p" class="xj-particle" data-x={moduleAt('main', 6).x} data-y={moduleAt('main', 6).y}>
+							<circle r="20" fill="url(#vc-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="420" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Flujo / ejecución', 'Flow / execution')}</text>
+				<rect class="xj-legend-token" x={VP.x + 172} y={LEGEND_Y - 7} width="20" height="14" rx="7"></rect>
+				<text x={VP.x + 200} y={LEGEND_Y + 4}>{t('Un valor', 'A value')}</text>
+				<rect class="xj-legend-slot" x={VP.x + 290} y={LEGEND_Y - 6} width="22" height="12" rx="3"></rect>
+				<text x={VP.x + 320} y={LEGEND_Y + 4}>{t('Una caja', 'A box')}</text>
+			</g>
+
+			<!-- EDITOR: the lesson's programs, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(firstLine('main'))}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				{
+					PROGRAMS.map((program) => (
+						<>
+							<g data-el={`ed-${program}`} class="xj-code">
+								<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{files[program]}</text>
+								{
+									marks
+										.filter((mark) => mark.program === program)
+										.map((mark) => (
+											<g data-el={mark.id} class="xj-hx">
+												<rect x={BAR.x} y={lineTop(mark.line)} width={BAR.w} height={LINE_H} rx="6"></rect>
+											</g>
+										))
+								}
+								{
+									listing(program).map((line) => (
+										<g>
+											<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+												{line.n}
+											</text>
+											<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+										</g>
+									))
+								}
+							</g>
+							<g data-el={`co-${program}`}>
+								{
+									outputs[program].map((row, index) => (
+										<text data-el={`out-${program}-${index + 1}`} class="xj-out" x={ED.x + 20} y={outY(index)} xml:space="preserve">
+											{row}
+										</text>
+									))
+								}
+							</g>
+						</>
+					))
+				}
+				{PROGRAMS.flatMap((program) => Array.from({ length: SHAPE[program].lines }, (_, index) => <circle data-anchor={`ln-${program}-${index + 1}`} cx={BAR_CX} cy={lineMid(index + 1)} r="1" fill="none" />))}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue flow and values, magenta for the bug and the refusal (the indeterminate
+	   value, the assignment to a constant, the wrong result) and violet for what
+	   handles it (the lock, the preprocessor, the fix). Every rule below reads these
+	   tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='variables-constantes-c']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='variables-constantes-c'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='variables-constantes-c'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='variables-constantes-c'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-track {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 3;
+		stroke-dasharray: 3 9;
+		stroke-linecap: round;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-token {
+		fill: var(--xj-ink);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend-slot {
+		fill: var(--xj-deep-hi);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+	}
+
+	/* Modules */
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	/* The preprocessor */
+	.xj-station {
+		stroke: var(--xj-violet);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-station--l {
+		fill: var(--xj-violet-deep);
+	}
+
+	.xj-station--r {
+		fill: var(--xj-deep);
+	}
+
+	/* Variables: a box with its tag (type and name); the value rests on top */
+	.xj-box {
+		--xj-box: var(--xj-flow);
+	}
+
+	.xj-box--violet {
+		--xj-box: var(--xj-violet);
+	}
+
+	.xj-box--magenta {
+		--xj-box: var(--xj-magenta);
+	}
+
+	.xj-cell {
+		stroke: var(--xj-box);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-cell--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-cell--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-cell--t {
+		fill: var(--xj-ink);
+	}
+
+	.xj-tag-box {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-box, var(--xj-edge));
+		stroke-width: 1.5;
+	}
+
+	.xj-tag-box--ghost {
+		stroke: var(--xj-violet);
+		stroke-dasharray: 5 5;
+	}
+
+	.xj-tag-type {
+		font-family: monospace;
+		font-size: 10.5px;
+		fill: var(--xj-dim);
+	}
+
+	.xj-tag-name {
+		font-family: monospace;
+		font-size: 12.5px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	/* The box a #define never makes */
+	.xj-ghost-plate {
+		fill: none;
+		stroke: var(--xj-violet-soft);
+		stroke-width: 2;
+		stroke-dasharray: 8 7;
+		stroke-linejoin: round;
+	}
+
+	/* Lock and refusal */
+	.xj-sign {
+		--xj-sign: var(--xj-violet-soft);
+	}
+
+	.xj-sign--magenta {
+		--xj-sign: var(--xj-magenta);
+	}
+
+	.xj-sign-icon {
+		fill: none;
+		stroke: var(--xj-sign);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* Routes */
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--violet {
+		--xj-line: var(--xj-violet);
+	}
+
+	.xj-flowline--magenta {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-chip-ink);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* Value tokens and the flow */
+	.xj-token {
+		--xj-token: var(--xj-flow);
+		--xj-token-ink: var(--xj-flow-soft);
+	}
+
+	.xj-token--violet {
+		--xj-token: var(--xj-violet);
+		--xj-token-ink: var(--xj-violet-soft);
+	}
+
+	.xj-token--magenta {
+		--xj-token: var(--xj-magenta);
+		--xj-token-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-token--dim {
+		--xj-token: var(--xj-dim);
+		--xj-token-ink: var(--xj-mist);
+	}
+
+	.xj-token-halo {
+		fill: var(--xj-token);
+		fill-opacity: 0.18;
+	}
+
+	.xj-token-card {
+		fill: var(--xj-ink);
+		stroke: var(--xj-token);
+		stroke-width: 2;
+	}
+
+	.xj-token--text .xj-token-card {
+		stroke-dasharray: 6 4;
+	}
+
+	.xj-token-text {
+		font-family: monospace;
+		font-size: 15px;
+		font-weight: 700;
+		fill: var(--xj-token-ink);
+	}
+
+	.xj-token-text--mono {
+		font-size: 13px;
+	}
+
+	.xj-token-suffix {
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type),
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-ann) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-hx rect {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.16;
+		stroke: var(--xj-magenta);
+		stroke-opacity: 0.7;
+		stroke-width: 1.2;
+	}
+</style>

@@ -394,7 +394,16 @@ Optional course roadmap (`roadmap` field, mindmap-style learning path):
   locales. A course with no `roadmap` field renders nothing there — no
   heading, no empty block. The Java and Git courses have one today; other
   courses are unaffected. The Git curriculum (six lessons, order and roadmap) is
-  pinned by `tests/courses-git-curriculum.test.mjs`.
+  pinned by `tests/courses-git-curriculum.test.mjs`. The C course ("C — De Cero a
+  Profesional", 44 lessons in 11 modules, the last two optional) has a roadmap too:
+  its order, required topics per lesson and sequencing bans (no pointer declarations
+  before lesson 25, no `->` before 26, no `malloc` before 28, no arrays before 19,
+  no `struct` before 22) live in `tests/helpers/c-curriculum.mjs` and
+  `tests/courses-c-curriculum.test.mjs`. The course uses ISO C23 with
+  `gcc -std=c23 -Wall -Wextra -Wpedantic`; every complete program in a C lesson is
+  compiled by `scripts/check-c-examples.mjs` (a ```` ```c ```` block with `main`;
+  wrong-on-purpose programs go after `<!-- c-check: skip -->`) and the test
+  `tests/c-examples-compile.test.mjs` runs it when a C compiler is installed.
 - Each node is bilingual: `title` (Spanish) / `title_en` (English), plus
   optional one-sentence `description` / `description_en`.
 - Each node declares EITHER `lessons` (a flat list of lesson frontmatter
@@ -481,6 +490,17 @@ Where this renders:
   secondary line under the card title.
 
 Verification: `node --test tests/presentations-lessons.test.mjs`.
+
+Report §7 of the C redesign asks for three modes per presentation: **Aprender**
+(the deck), **Practicar** (predict the next state, instant feedback with the reason)
+and **Evaluar** (no hints, graded at the end). The eight newer C decks implement the
+three modes inside the deck; every older C deck gets Practicar and Evaluar from
+`src/data/presentation-practice/<deck-slug>.ts` (`export const practice: PracticeSet`,
+types in `types.ts`, bilingual items, 5-8 per mode, code compiled and run), rendered
+under the deck by `src/components/PresentationPractice.astro`. Both presentation pages
+pick the file with `import.meta.glob`, so a new data file needs no registration.
+Verification: `node --test tests/presentation-practice.test.mjs` (also compiles the
+complete C programs of the items; mark wrong-on-purpose ones `/* c-check: skip */`).
 
 #### Activities (`src/content/activities`)
 
@@ -684,6 +704,13 @@ The Git course has one film per lesson and no step-by-step animation (catalog ta
 (`bajar-y-subir-cambios`), `pull-requests-git` (`ramas-y-pull-requests`) and
 `rebase-git` (`rebase-y-buenas-practicas`). Their editor shows the terminal session
 (bash) instead of Java code.
+
+The C course has one film per lesson (catalog tag `C`, 44 films, slugs ending in `-c`,
+e.g. `compilacion-enlazado-c`, `punteros-direcciones-c`, `memoria-dinamica-c`,
+`errores-memoria-c`, `listas-enlazadas-c`, `hilos-atomics-c`, `tabla-operaciones-c`);
+the catalog entry names the lesson (`lesson: { course: 'c', slug }`). Their editor
+shows C highlighted with `highlightCode(source, 'c')` and the console types the real
+output of the program compiled with `cc -std=c23 -Wall -Wextra -Wpedantic`.
 
 Adding an animation: register it in the catalog, write its script and scenes, import
 and map the component in both detail pages, add the thumbnail, and cover it with a
