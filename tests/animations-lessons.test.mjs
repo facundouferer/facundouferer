@@ -217,6 +217,12 @@ test('new animation components contain no raw hex colors (tokens only)', async (
 		'archivos-jar-java.astro',
 		'concurrencia-hilos-java.astro',
 		'jdbc-java.astro',
+		'tres-estados-git.astro',
+		'deshacer-cambios-git.astro',
+		'ramas-conflictos-git.astro',
+		'sincronizacion-remota-git.astro',
+		'pull-requests-git.astro',
+		'rebase-git.astro',
 	]);
 	const files = [
 		'src/components/animations/AnimationPlayer.astro',
