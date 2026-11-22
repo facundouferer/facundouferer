@@ -1,0 +1,1084 @@
+---
+/**
+ * Scene for "A copy travels to the function" (lesson c/variables-parametros-y-pasaje,
+ * order: 16), a short film played on one persistent motion canvas. The captions and
+ * cues live in `src/data/animations/pasaje-por-valor-c.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: the lesson's
+ * program, with a bar that slides to the running line and the real output typed in
+ * the console below. The viewport on the right holds the camera: the call stack as
+ * stacked isometric frames. The frame of `main` sits at the bottom with its variable
+ * `numero`; each call pushes a frame on top with its parameter, and pops it when it
+ * returns. Every instruction is a module labelled with its editor line. A value token
+ * is the one visual identity for "a value that travels": light blue for the copy a
+ * parameter receives, violet for the result `return` brings back. Magenta marks the
+ * change that is lost with the frame. A `static` local lives on a fixed shelf outside
+ * the frames.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/pasaje-por-valor-c';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── The program shown in the editor ───────────────────────────────────────
+// Identifiers and strings are the lesson's own, localized like it does.
+const names = {
+	file: t('valor.c', 'value.c'),
+	twice: t('duplicar', 'double_it'),
+	doubled: t('duplicado', 'doubled'),
+	next: t('siguiente_turno', 'next_ticket'),
+	counter: t('contador', 'counter'),
+	number: t('numero', 'number'),
+};
+const source = [
+	'#include <stdio.h>',
+	'',
+	`void ${names.twice}(int x) {`,
+	'    x = x * 2;',
+	`    printf("${t('Dentro de duplicar', 'Inside double_it')}: x = %d\\n", x);`,
+	'}',
+	`int ${names.doubled}(int x) { return x * 2; }`,
+	`int ${names.next}(void) {`,
+	`    static int ${names.counter} = 0;`,
+	`    ${names.counter} = ${names.counter} + 1;`,
+	`    return ${names.counter};`,
+	'}',
+	'int main(void) {',
+	`    int ${names.number} = 5;`,
+	`    ${names.twice}(${names.number});`,
+	`    printf("${t('En main', 'In main')}: ${names.number} = %d\\n", ${names.number});`,
+	`    ${names.number} = ${names.doubled}(${names.number});`,
+	`    printf("${names.number} = %d\\n", ${names.number});`,
+	`    printf("${t('Turno', 'Ticket')} %d\\n", ${names.next}());`,
+	`    printf("${t('Turno', 'Ticket')} %d\\n", ${names.next}());`,
+	'    return 0;',
+	'}',
+].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const lines = highlightCode(source, 'c').map((html, index) => ({
+	n: index + 1,
+	html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+}));
+
+// The real output of the program (compiled with cc -std=c23 -Wall -Wextra -Wpedantic).
+const outputs = [
+	`${t('Dentro de duplicar', 'Inside double_it')}: x = 10`,
+	`${t('En main', 'In main')}: ${names.number} = 5`,
+	`${names.number} = 10`,
+	`${t('Turno', 'Ticket')} 1`,
+	`${t('Turno', 'Ticket')} 2`,
+];
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 72;
+const GUTTER_X = 59;
+const CODE_TOP = 70;
+const LINE_H = 21;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 5;
+const CONSOLE_TOP = 548;
+const outY = (row: number) => 598 + row * 21;
+
+/** A scope bracket in the gutter: from the first to the last line where a name is visible. */
+const bracket = (from: number, to: number) => {
+	const top = lineTop(from) + 3;
+	const bottom = lineTop(to) + LINE_H - 3;
+	return `M38 ${top} H31 V${bottom} H38`;
+};
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right, +v down-left, z is up. The frames of the call stack
+// are plates stacked along z; the shelf of static data floats apart, to the right.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 56;
+const EY = 32;
+const ORIGIN = { x: 560, y: 470 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+
+/** A box standing at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		front,
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+type Slab = ReturnType<typeof slab>;
+type Tone = 'flow' | 'violet' | 'magenta';
+
+/** The outline of a scope: a dashed ring around a frame's plate. */
+const ring = (a: number, b: number, z: number) => poly([pt(-a, -b, z), pt(a, -b, z), pt(a, b, z), pt(-a, b, z)]);
+
+// Frames of the call stack: main at the bottom, the called function on top.
+const FRAME_Z = 200;
+const MAIN = slab(0, 0, 2.0, 1.1, 16, 0);
+const TOP = slab(0, 0, 1.5, 0.9, 16, FRAME_Z);
+const TOP_Z = FRAME_Z + 16;
+const SHELF = slab(2.4, -2.0, 0.9, 0.65, 14, 110);
+const SHELF_Z = 124;
+const POLE = { top: pt(2.4, -2.0, 110), bottom: pt(2.4, -2.0, 0) };
+
+// Cells: a variable is a box in its frame, its name on the front and its value on top.
+const cell = (u: number, v: number, z: number, a = 0.5) => slab(u, v, a, a, 18, z);
+const CELL_NUM = cell(-0.95, -0.6, 16);
+const CELL_X = cell(-0.75, -0.2, TOP_Z);
+const CELL_CNT = cell(2.05, -2.0, SHELF_Z, 0.45);
+const N = CELL_NUM.center;
+const X = CELL_X.center;
+const C = CELL_CNT.center;
+
+// Modules: one per instruction, labelled with its editor line.
+type Module = { line: number; g: Slab; tone: Tone };
+const block = (u: number, v: number, z: number) => slab(u, v, 0.18, 0.18, 14, z);
+const mainModules: Module[] = [14, 15, 16, 17, 18, 19, 20, 21].map((line, index) => ({
+	line,
+	tone: line === 17 ? 'violet' : 'flow',
+	g: block(-1.6 + index * 0.48, 0.55, 16),
+}));
+const topModule = (line: number, index: number, tone: Tone): Module => ({ line, tone, g: block(0.3 + index * 0.48, 0.5, TOP_Z) });
+const frames = [
+	{
+		id: 'f-dup',
+		label: `${names.twice}(int x)`,
+		cell: { id: 'c-x', values: [{ id: 'x-5', text: '5', tone: 'flow' as Tone }, { id: 'x-10', text: '10', tone: 'magenta' as Tone }] },
+		modules: [topModule(4, 0, 'magenta'), topModule(5, 1, 'flow')],
+	},
+	{
+		id: 'f-dpo',
+		label: `${names.doubled}(int x)`,
+		cell: { id: 'c-x2', values: [{ id: 'x2-5', text: '5', tone: 'flow' as Tone }] },
+		modules: [topModule(7, 0, 'violet')],
+	},
+	{
+		id: 'f-sig',
+		label: `${names.next}(void)`,
+		cell: null,
+		modules: [topModule(10, 0, 'violet'), topModule(11, 1, 'violet')],
+	},
+];
+const shelfModule: Module = { line: 9, tone: 'violet', g: block(2.95, -1.75, SHELF_Z) };
+const allModules = [...mainModules, ...frames.flatMap((frame) => frame.modules), shelfModule];
+
+// Where the particle stops (just above a module) and where value tokens rest.
+const anchors = [
+	...allModules.map((module) => ({ id: `a-m${module.line}`, ...lift(module.g.center, 16) })),
+	{ id: 'a-num', ...lift(N, 4) },
+	{ id: 'a-x', ...lift(X, 4) },
+];
+const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0, y: 0 };
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-main', cx: 560, cy: 470, s: 1.35 },
+	{ id: 'shot-stack', cx: 600, cy: 380, s: 1.1 },
+	{ id: 'shot-top', cx: 560, cy: 290, s: 1.45 },
+	{ id: 'shot-scope', cx: 600, cy: 380, s: 1.05 },
+	{ id: 'shot-shelf', cx: 680, cy: 340, s: 1.12 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Routes: the copy going up into the parameter, the result coming back down, and the
+// static counter reached from the frame of its function.
+const routes = [
+	{
+		id: 'fl-copy',
+		tone: 'flow',
+		d: `M${N.x - 34} ${N.y - 18} C${N.x - 120} ${N.y - 40} ${X.x - 130} ${X.y + 30} ${X.x - 42} ${X.y + 10}`,
+	},
+	{
+		id: 'fl-ret',
+		tone: 'violet',
+		d: `M${X.x + 42} ${X.y + 10} C${X.x + 170} ${X.y + 60} ${N.x + 170} ${N.y - 70} ${N.x + 42} ${N.y - 12}`,
+	},
+	{
+		id: 'fl-static',
+		tone: 'violet',
+		d: `M${at('a-m10').x + 20} ${at('a-m10').y - 6} Q${(at('a-m10').x + C.x) / 2 + 20} ${C.y - 120} ${C.x - 22} ${C.y - 14}`,
+	},
+];
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | Tone;
+	mono?: boolean;
+	icon?: 'arrow' | 'map-pin';
+};
+const SIDE = { x: MAIN.center.x + 186, y: MAIN.center.y + 16 };
+const chips: Chip[] = [
+	{ id: 'stack-tag', text: t('Pila de llamadas', 'Call stack'), x: ORIGIN.x, y: 610, align: 'middle', tone: 'plain' },
+	{ id: 'lb-copy', text: t('una copia del valor', 'a copy of the value'), x: X.x, y: X.y - 52, align: 'middle', tone: 'flow' },
+	{ id: 'lb-same', text: t(`${names.number} sigue en 5`, `${names.number} is still 5`), x: SIDE.x, y: SIDE.y, align: 'start', tone: 'flow', mono: true },
+	{ id: 'scope-x', text: t('x: solo en duplicar', 'x: only in double_it'), x: X.x, y: X.y - 66, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'scope-num', text: t(`${names.number}: solo en main`, `${names.number}: only in main`), x: SIDE.x, y: SIDE.y, align: 'start', tone: 'flow', mono: true },
+	{ id: 'no-x', text: t('x no existe en main', 'x does not exist in main'), x: 684, y: 372, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-gone', text: t('x ya no existe', 'x no longer exists'), x: TOP.center.x, y: TOP.center.y, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-value', text: t('siempre por valor', 'always by value'), x: SIDE.x, y: SIDE.y, align: 'start', tone: 'flow' },
+	{ id: 'lb-ret', text: 'return', x: X.x + 150, y: (X.y + N.y) / 2, align: 'start', tone: 'violet', mono: true },
+	{ id: 'lb-once', text: t('= 0: una sola vez', '= 0: only once'), x: SHELF.center.x + 14, y: 452, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'lb-keep', text: t('conserva su valor', 'keeps its value'), x: SHELF.center.x + 14, y: 452, align: 'middle', tone: 'violet' },
+	{ id: 'addr', text: t('su dirección', 'its address'), x: N.x - 62, y: N.y - 30, align: 'end', tone: 'violet', icon: 'map-pin' },
+	{ id: 'lb-next', text: 'punteros-y-direcciones', x: ORIGIN.x, y: 646, align: 'middle', tone: 'violet', mono: true, icon: 'arrow' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + (chip.icon ? 42 : 24));
+const chipLeft = (chip: Chip) =>
+	chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x;
+
+// Value tokens: one visual identity for "a value that travels".
+const tokens = [
+	{ id: 'tk-copy', text: '5', tone: 'flow' },
+	{ id: 'tk-copy2', text: '5', tone: 'flow' },
+	{ id: 'tk-ret', text: '10', tone: 'violet' },
+];
+
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="pv-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="pv-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="pv-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="pv-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="pv-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="pv-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the call stack, seen through the camera -->
+			<g clip-path="url(#pv-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#pv-g-pool-violet)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#pv-g-pool-flow)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- The shelf of static data: outside every frame, alive for the whole run -->
+						<g data-el="shelf">
+							<path class="xj-pole" d={`M${POLE.bottom.x} ${POLE.bottom.y} V${POLE.top.y}`}></path>
+							<polygon class="xj-plate-shadow" points={SHELF.base} transform="translate(10 14)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={SHELF.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={SHELF.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t xj-plate--static" points={SHELF.top} fill="url(#pv-g-floor)"></polygon>
+							<g class="xj-chip xj-chip--violet">
+								<rect x={SHELF.center.x - 72} y={C.y - 70} width="144" height="24" rx="12"></rect>
+								<text class="xj-chip-text" x={SHELF.center.x} y={C.y - 53.5} text-anchor="middle">{t('datos estáticos', 'static data')}</text>
+							</g>
+							<g data-el="m-9" data-base="shown" class="xj-mod">
+								<polygon class="xj-shadow" points={shelfModule.g.base} transform="translate(5 7)"></polygon>
+								<polygon class="xj-face xj-face--l" points={shelfModule.g.leftFace}></polygon>
+								<polygon class="xj-face xj-face--r" points={shelfModule.g.rightFace}></polygon>
+								<polygon class="xj-face xj-face--t" points={shelfModule.g.top} fill="url(#pv-g-top)"></polygon>
+								<text class="xj-face-text" transform={shelfModule.g.faceMatrix} text-anchor="middle" y="4">9</text>
+							</g>
+							<g data-el="on-9" class="xj-lit xj-lit--violet">
+								<polygon class="xj-lit-halo" points={shelfModule.g.top}></polygon>
+								<polygon class="xj-lit-top" points={shelfModule.g.top}></polygon>
+								<polygon class="xj-lit-side" points={shelfModule.g.leftFace}></polygon>
+								<text class="xj-face-text xj-face-text--on" transform={shelfModule.g.faceMatrix} text-anchor="middle" y="4">9</text>
+							</g>
+							<g data-el="c-cnt" data-base="shown">
+								<polygon class="xj-cell xj-cell--l" points={CELL_CNT.leftFace}></polygon>
+								<polygon class="xj-cell xj-cell--r" points={CELL_CNT.rightFace}></polygon>
+								<polygon class="xj-cell xj-cell--t xj-cell--violet" points={CELL_CNT.top}></polygon>
+								<text class="xj-cell-name" transform={CELL_CNT.faceMatrix} text-anchor="middle" y="4">{names.counter}</text>
+								<text data-el="cnt-0" class="xj-value xj-value--violet" x={C.x} y={C.y + 6} text-anchor="middle">0</text>
+								<text data-el="cnt-1" class="xj-value xj-value--violet" x={C.x} y={C.y + 6} text-anchor="middle">1</text>
+								<text data-el="cnt-2" class="xj-value xj-value--violet" x={C.x} y={C.y + 6} text-anchor="middle">2</text>
+							</g>
+						</g>
+
+						<!-- The frame of main, at the bottom of the stack -->
+						<g data-el="zone-main" class="xj-zone xj-zone--flow">
+							<polygon points={ring(2.3, 1.4, 16)}></polygon>
+						</g>
+						<g data-el="f-main">
+							<polygon class="xj-plate-shadow" points={MAIN.base} transform="translate(12 18)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={MAIN.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={MAIN.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={MAIN.top} fill="url(#pv-g-floor)"></polygon>
+							<text class="xj-frame-name" transform={MAIN.faceMatrix} text-anchor="middle" y="4">main</text>
+						</g>
+						<g data-el="c-num">
+							<polygon class="xj-shadow" points={CELL_NUM.base} transform="translate(5 7)"></polygon>
+							<polygon class="xj-cell xj-cell--l" points={CELL_NUM.leftFace}></polygon>
+							<polygon class="xj-cell xj-cell--r" points={CELL_NUM.rightFace}></polygon>
+							<polygon class="xj-cell xj-cell--t" points={CELL_NUM.top}></polygon>
+							<text class="xj-cell-name" transform={CELL_NUM.faceMatrix} text-anchor="middle" y="4">{names.number}</text>
+							<text data-el="num-5" class="xj-value" x={N.x} y={N.y + 6} text-anchor="middle">5</text>
+							<text data-el="num-10" class="xj-value xj-value--violet" x={N.x} y={N.y + 6} text-anchor="middle">10</text>
+						</g>
+						{
+							mainModules.map((module) => (
+								<>
+									<g data-el={`m-${module.line}`} class="xj-mod">
+										<polygon class="xj-shadow" points={module.g.base} transform="translate(5 7)" />
+										<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#pv-g-top)" />
+										<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4">
+											{module.line}
+										</text>
+									</g>
+									<g data-el={`on-${module.line}`} class:list={['xj-lit', `xj-lit--${module.tone}`]}>
+										<polygon class="xj-lit-halo" points={module.g.top} />
+										<polygon class="xj-lit-top" points={module.g.top} />
+										<polygon class="xj-lit-side" points={module.g.leftFace} />
+										<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4">
+											{module.line}
+										</text>
+									</g>
+								</>
+							))
+						}
+
+						<!-- The frame of the called function, pushed on top and popped on return -->
+						<g data-el="zone-dup" class="xj-zone xj-zone--violet">
+							<polygon points={ring(1.8, 1.2, TOP_Z)}></polygon>
+						</g>
+						{
+							frames.map((frame) => (
+								<g data-el={frame.id}>
+									<polygon class="xj-plate-shadow" points={TOP.base} transform="translate(12 18)" />
+									<polygon class="xj-plate xj-plate--l" points={TOP.leftFace} />
+									<polygon class="xj-plate xj-plate--r" points={TOP.rightFace} />
+									<polygon class="xj-plate xj-plate--t" points={TOP.top} fill="url(#pv-g-floor)" />
+									<text class="xj-frame-name" transform={TOP.faceMatrix} text-anchor="middle" y="4">
+										{frame.label}
+									</text>
+									{frame.cell && (
+										<g data-el={frame.cell.id} data-base="shown">
+											<polygon class="xj-shadow" points={CELL_X.base} transform="translate(5 7)" />
+											<polygon class="xj-cell xj-cell--l" points={CELL_X.leftFace} />
+											<polygon class="xj-cell xj-cell--r" points={CELL_X.rightFace} />
+											<polygon class="xj-cell xj-cell--t" points={CELL_X.top} />
+											<text class="xj-cell-name" transform={CELL_X.faceMatrix} text-anchor="middle" y="4">
+												x
+											</text>
+											{frame.cell.values.map((value) => (
+												<text data-el={value.id} class:list={['xj-value', `xj-value--${value.tone}`]} x={X.x} y={X.y + 6} text-anchor="middle">
+													{value.text}
+												</text>
+											))}
+										</g>
+									)}
+									{frame.modules.map((module) => (
+										<>
+											<g data-el={`m-${module.line}`} data-base="shown" class="xj-mod">
+												<polygon class="xj-shadow" points={module.g.base} transform="translate(5 7)" />
+												<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+												<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+												<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#pv-g-top)" />
+												<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4">
+													{module.line}
+												</text>
+											</g>
+											<g data-el={`on-${module.line}`} class:list={['xj-lit', `xj-lit--${module.tone}`]}>
+												<polygon class="xj-lit-halo" points={module.g.top} />
+												<polygon class="xj-lit-top" points={module.g.top} />
+												<polygon class="xj-lit-side" points={module.g.leftFace} />
+												<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4">
+													{module.line}
+												</text>
+											</g>
+										</>
+									))}
+								</g>
+							))
+						}
+
+						<!-- Routes: the copy that goes up, the result that comes back, the static counter -->
+						{
+							routes.map((route) => (
+								<g data-el={route.id} class:list={['xj-flowline', `xj-flowline--${route.tone}`]}>
+									<path class="mg-stroke xj-flowline-halo" pathLength="1" d={route.d} />
+									<path class="mg-stroke xj-flowline-core" pathLength="1" d={route.d} />
+								</g>
+							))
+						}
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.icon === 'arrow' && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M5 12h14" />
+											<path d="m12 5 7 7-7 7" />
+										</svg>
+									)}
+									{chip.icon === 'map-pin' && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+											<circle cx="12" cy="10" r="3" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.icon ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Value tokens. Placement lives on the inner group: the player resets data-el transforms. -->
+						{
+							tokens.map((token) => (
+								<g data-el={token.id} data-x={at('a-num').x} data-y={at('a-num').y}>
+									<g class:list={['xj-token', `xj-token--${token.tone}`]}>
+										<rect class="xj-token-halo" x="-25" y="-19" width="50" height="38" rx="19" />
+										<rect class="xj-token-card" x="-20" y="-14" width="40" height="28" rx="14" />
+										<text class="xj-token-text" x="0" y="5.5" text-anchor="middle">
+											{token.text}
+										</text>
+									</g>
+								</g>
+							))
+						}
+
+						<!-- The execution flow -->
+						<g data-el="p" class="xj-particle" data-x={at('a-m14').x} data-y={at('a-m14').y}>
+							<circle r="20" fill="url(#pv-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="440" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<rect class="xj-legend-token" x={VP.x + 172} y={LEGEND_Y - 7} width="20" height="14" rx="7"></rect>
+				<text x={VP.x + 200} y={LEGEND_Y + 4}>{t('Copia de un valor', 'A copied value')}</text>
+				<rect class="xj-legend-frame" x={VP.x + 330} y={LEGEND_Y - 6} width="22" height="12" rx="3"></rect>
+				<text x={VP.x + 360} y={LEGEND_Y + 4}>{t('Marco', 'Frame')}</text>
+			</g>
+
+			<!-- EDITOR: the lesson's program, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.file}</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<!-- The line that changes only the copy -->
+				<g data-el="hx-4" class="xj-hx">
+					<rect x={BAR.x} y={lineTop(4)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				</g>
+
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(14)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<!-- Scope brackets: where x and the caller's variable can be named -->
+				<g data-el="sc-x" class="xj-scope xj-scope--violet">
+					<path class="mg-stroke" pathLength="1" d={bracket(3, 6)}></path>
+				</g>
+				<g data-el="sc-num" class="xj-scope xj-scope--flow">
+					<path class="mg-stroke" pathLength="1" d={bracket(14, 22)}></path>
+				</g>
+
+				<g data-el="ed" data-base="shown" class="xj-code">
+					{
+						lines.map((line) => (
+							<g>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				<!-- Console: the real output, typed as each line runs -->
+				{
+					outputs.map((row, index) => (
+						<text data-el={`out-${index + 1}`} class="xj-out" x={ED.x + 20} y={outY(index)} xml:space="preserve">
+							{row}
+						</text>
+					))
+				}
+				{lines.map((line) => <circle data-anchor={`ln-${line.n}`} cx={BAR_CX} cy={lineMid(line.n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue execution flow and copied values, magenta for the change that is lost
+	   with the frame, and violet for what resolves it (return, static).
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='pasaje-por-valor-c']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='pasaje-por-valor-c'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='pasaje-por-valor-c'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='pasaje-por-valor-c'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-token {
+		fill: var(--xj-ink);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend-frame {
+		fill: var(--xj-deep-hi);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	/* Frames, shelf and modules */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate--static {
+		stroke: var(--xj-violet);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-pole {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 3;
+		stroke-linecap: round;
+	}
+
+	.xj-frame-name {
+		font-family: monospace;
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	/* Variables: a cell with its name on the front and its value on top */
+	.xj-cell {
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-cell--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-cell--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-cell--t {
+		fill: var(--xj-ink);
+	}
+
+	.xj-cell--violet {
+		stroke: var(--xj-violet);
+	}
+
+	.xj-cell-name {
+		font-family: monospace;
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-value {
+		font-family: monospace;
+		font-size: 17px;
+		font-weight: 700;
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-value--violet {
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-value--magenta {
+		fill: var(--xj-magenta-soft);
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* Scopes */
+	.xj-zone polygon {
+		fill: none;
+		stroke: var(--xj-zone);
+		stroke-width: 2;
+		stroke-dasharray: 8 7;
+		stroke-linejoin: round;
+	}
+
+	.xj-zone--flow {
+		--xj-zone: var(--xj-flow);
+	}
+
+	.xj-zone--violet {
+		--xj-zone: var(--xj-violet-soft);
+	}
+
+	/* Routes */
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--violet {
+		--xj-line: var(--xj-violet);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-chip-ink);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* Value tokens and the flow */
+	.xj-token {
+		--xj-token: var(--xj-flow);
+		--xj-token-ink: var(--xj-flow-soft);
+	}
+
+	.xj-token--violet {
+		--xj-token: var(--xj-violet);
+		--xj-token-ink: var(--xj-violet-soft);
+	}
+
+	.xj-token-halo {
+		fill: var(--xj-token);
+		fill-opacity: 0.18;
+	}
+
+	.xj-token-card {
+		fill: var(--xj-ink);
+		stroke: var(--xj-token);
+		stroke-width: 2;
+	}
+
+	.xj-token-text {
+		font-family: monospace;
+		font-size: 15px;
+		font-weight: 700;
+		fill: var(--xj-token-ink);
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type),
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-ann) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-hx rect {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.16;
+		stroke: var(--xj-magenta);
+		stroke-opacity: 0.7;
+		stroke-width: 1.2;
+	}
+
+	.xj-scope {
+		--xj-scope: var(--xj-flow);
+	}
+
+	.xj-scope--violet {
+		--xj-scope: var(--xj-violet-soft);
+	}
+
+	.xj-scope path {
+		fill: none;
+		stroke: var(--xj-scope);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+</style>

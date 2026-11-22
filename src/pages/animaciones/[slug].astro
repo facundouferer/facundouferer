@@ -37,6 +37,14 @@ import PullRequestsGit from '../../components/animaciones/pull-requests-git.astr
 import RebaseGit from '../../components/animaciones/rebase-git.astro';
 import AlgoritmiaComplejidadJava from '../../components/animaciones/algoritmia-complejidad-java.astro';
 import ArbolesNAriosJava from '../../components/animaciones/arboles-n-arios-java.astro';
+import CompilacionEnlazadoC from '../../components/animaciones/compilacion-enlazado-c.astro';
+import PunterosDireccionesC from '../../components/animaciones/punteros-direcciones-c.astro';
+import DuracionCicloVidaC from '../../components/animaciones/duracion-ciclo-vida-c.astro';
+import PasajePorValorC from '../../components/animaciones/pasaje-por-valor-c.astro';
+import ErroresMemoriaC from '../../components/animaciones/errores-memoria-c.astro';
+import TiposConversionesC from '../../components/animaciones/tipos-conversiones-c.astro';
+import PunterosArreglosC from '../../components/animaciones/punteros-arreglos-c.astro';
+import MemoriaDinamicaC from '../../components/animaciones/memoria-dinamica-c.astro';
 
 export function getStaticPaths() {
 	return animations.map((animation) => ({
@@ -87,6 +95,14 @@ const componentMap: Record<string, any> = {
 	'rebase-git': RebaseGit,
 	'algoritmia-complejidad-java': AlgoritmiaComplejidadJava,
 	'arboles-n-arios-java': ArbolesNAriosJava,
+	'compilacion-enlazado-c': CompilacionEnlazadoC,
+	'punteros-direcciones-c': PunterosDireccionesC,
+	'duracion-ciclo-vida-c': DuracionCicloVidaC,
+	'pasaje-por-valor-c': PasajePorValorC,
+	'errores-memoria-c': ErroresMemoriaC,
+	'tipos-conversiones-c': TiposConversionesC,
+	'punteros-arreglos-c': PunterosArreglosC,
+	'memoria-dinamica-c': MemoriaDinamicaC,
 };
 
 const AnimationComponent = componentMap[slug];

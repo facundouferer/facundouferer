@@ -1,0 +1,1332 @@
+---
+/**
+ * Scene for "The journey of hello.c to an executable" (lesson c/compilacion-y-enlazado),
+ * a short film played on one persistent motion canvas. The captions and cues live in
+ * `src/data/animations/compilacion-enlazado-c.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: it shows the
+ * C source, a bar over the line being processed and, under it, the terminal with the
+ * commands of the lesson and what they print. The viewport on the right holds the
+ * camera: an isometric build line with four stations (preprocessor, compiler,
+ * assembler, linker), the C standard library on a shelf and a pad where the program
+ * runs. One object travels the line, the program file, and changes state at each
+ * station: source, preprocessed text, assembly, object file and executable.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * Its colors are the `--xj-*` tokens declared once in the style block; nothing else
+ * in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/compilacion-enlazado-c';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Source code shown in the editor ───────────────────────────────────────
+// Identifiers, file names and string literals are localized the same way the lesson does.
+const names = {
+	file: t('programa.c', 'program.c'),
+	asm: t('programa.s', 'program.s'),
+	obj: t('programa.o', 'program.o'),
+	exe: t('programa', 'program'),
+	macro: t('SALUDO', 'GREETING'),
+	greeting: t('Hola, C', 'Hello, C'),
+	hello: t('Hola', 'Hello'),
+};
+
+const sourceA = [
+	'#include <stdio.h>',
+	'',
+	`#define ${names.macro} "${names.greeting}"`,
+	'',
+	'int main(void) {',
+	`    printf(${names.macro} "\\n");`,
+	'    return 0;',
+	'}',
+].join('\n');
+
+const sourceB = ['#include <stdio.h>', '', 'int main(void) {', `    prinft("${names.hello}\\n");`, '    return 0;', '}'].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const svgLines = (source: string) =>
+	highlightCode(source, 'c').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+
+const pageA = svgLines(sourceA);
+const pageB = svgLines(sourceB);
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 64;
+const GUTTER_X = 50;
+const CODE_TOP = 74;
+const LINE_H = 23;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 5;
+const TERM_TOP = 300;
+const rowY = (row: number) => TERM_TOP + 52 + row * 24;
+
+// Lines the highlight bar travels to (`la-*` on the first program, `lb-*` on the second).
+const lineAnchors = [
+	{ id: 'la-3', n: 3 },
+	{ id: 'la-5', n: 5 },
+	{ id: 'la-6', n: 6 },
+	{ id: 'la-7', n: 7 },
+	{ id: 'la-8', n: 8 },
+	{ id: 'lb-3', n: 3 },
+	{ id: 'lb-4', n: 4 },
+];
+
+// Terminal: the commands of the lesson and what they print, one element per row.
+type Kind = 'cmd' | 'out' | 'cmt' | 'err' | 'note';
+const term: { id: string; row: number; kind: Kind; text: string }[] = [
+	{ id: 'ta-0', row: 0, kind: 'cmd', text: `$ gcc ${names.file} -o ${names.exe}` },
+	{ id: 'tb-0', row: 0, kind: 'cmd', text: `$ gcc -E ${names.file}` },
+	{ id: 'tb-1', row: 1, kind: 'cmt', text: t('# … cientos de líneas que trajo stdio.h …', '# … hundreds of lines brought in by stdio.h …') },
+	{ id: 'tb-2', row: 2, kind: 'out', text: 'int main(void) {' },
+	{ id: 'tb-3', row: 3, kind: 'out', text: `    printf("${names.greeting}" "\\n");` },
+	{ id: 'tb-4', row: 4, kind: 'out', text: '    return 0;' },
+	{ id: 'tb-5', row: 5, kind: 'out', text: '}' },
+	{ id: 'tc-0', row: 0, kind: 'cmd', text: `$ gcc -S ${names.file}` },
+	{ id: 'tc-1', row: 1, kind: 'cmt', text: t(`# genera ${names.asm}`, `# produces ${names.asm}`) },
+	{ id: 'tc-2', row: 2, kind: 'cmd', text: `$ gcc -std=c23 -c ${names.file}` },
+	{ id: 'tc-3', row: 3, kind: 'cmt', text: t(`# genera ${names.obj}`, `# produces ${names.obj}`) },
+	{ id: 'tc-4', row: 4, kind: 'cmd', text: `$ gcc ${names.obj} -o ${names.exe}` },
+	{ id: 'tc-5', row: 5, kind: 'cmt', text: t(`# genera el ejecutable ${names.exe}`, `# produces the executable ${names.exe}`) },
+	{ id: 'tc-6', row: 6, kind: 'cmd', text: `$ ./${names.exe}` },
+	{ id: 'tc-7', row: 7, kind: 'out', text: names.greeting },
+	{ id: 'td-0', row: 0, kind: 'cmd', text: `$ gcc -std=c23 -Wall -Wextra -Wpedantic -g ${names.file} -o ${names.exe}` },
+	{ id: 'td-1', row: 1, kind: 'out', text: `${names.file}: In function 'main':` },
+	{ id: 'td-2', row: 2, kind: 'err', text: `${names.file}:4:5: error: implicit declaration of function` },
+	{ id: 'td-3', row: 3, kind: 'err', text: "    'prinft'; did you mean 'printf'?" },
+	{ id: 'td-4', row: 4, kind: 'out', text: `    4 |     prinft("${names.hello}\\n");` },
+	{ id: 'td-5', row: 5, kind: 'err', text: '      |     ^~~~~~' },
+	{ id: 'td-6', row: 6, kind: 'cmt', text: t("# con -std=c89: undefined reference to 'prinft'", "# with -std=c89: undefined reference to 'prinft'") },
+	{ id: 'td-7', row: 7, kind: 'note', text: t('# -Wall -Wextra -Wpedantic: advertencias activadas', '# -Wall -Wextra -Wpedantic: warnings turned on') },
+];
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right (the order of the build), +v down-left, z is up.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 52;
+const EY = 30;
+const ORIGIN = { x: 489, y: 290 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const path = (points: Point[]) => 'M' + points.map((point) => `${point.x} ${point.y}`).join(' L');
+
+/** A box whose base center is `base`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function box(base: Point, a: number, b: number, h: number) {
+	const at = (du: number, dv: number, z: number): Point => ({
+		x: round(base.x + (du - dv) * EX),
+		y: round(base.y + (du + dv) * EY - z),
+	});
+	const back = at(-a, -b, h);
+	const right = at(a, -b, h);
+	const front = at(a, b, h);
+	const left = at(-a, b, h);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		at,
+		h,
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		// Silhouette of the whole box, for the veil that dims what never runs.
+		outline: poly([back, right, down(right), down(front), down(left), left]),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: at(0, 0, h),
+		/** Highest point of the box on screen, where its tag hangs above. */
+		peak: back.y,
+		// Text on the left face follows its 30° edge.
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+		/** Horizontal page lines across both visible faces, every `gap` units. */
+		pages: (gap: number) => {
+			const lines: string[] = [];
+			for (let z = gap; z < h - 1; z += gap) lines.push(path([at(-a, b, z), at(a, b, z), at(a, -b, z)]));
+			return lines;
+		},
+	};
+}
+type Box = ReturnType<typeof box>;
+const slab = (u: number, v: number, a: number, b: number, h: number, z = 0) => box(pt(u, v, z), a, b, h);
+/** Text lying flat on the floor, reading along +u. */
+const floorMatrix = (point: Point) => `matrix(0.866 0.5 -0.866 0.5 ${point.x} ${point.y})`;
+/** Text lying flat on the floor, reading along -v (from the front edge toward a station). */
+const labelMatrix = (point: Point) => `matrix(0.866 -0.5 0.866 0.5 ${point.x} ${point.y})`;
+
+// Positions along the build line.
+const U = { start: -0.3, pre: 0.9, cc: 2.1, as: 3.3, ld: 4.5, pad: 5.8 };
+const LIB = { u: 4.5, v: -1.5 };
+const LAMP = { u: 2.1, v: -1.35 };
+const STATION_H = 24;
+const station = (u: number) => slab(u, 0, 0.4, 0.4, STATION_H);
+const G = {
+	floor: slab(2.75, -0.15, 3.55, 2.05, 12, -12),
+	tray: slab(U.start, 0, 0.36, 0.36, 6),
+	pre: station(U.pre),
+	cc: station(U.cc),
+	as: station(U.as),
+	ld: station(U.ld),
+	pad: slab(U.pad, 0, 0.5, 0.5, 8),
+	lib: slab(LIB.u, LIB.v, 0.5, 0.36, 18),
+	post: slab(LAMP.u, LAMP.v, 0.07, 0.07, 74),
+};
+const LAMP_HEAD = pt(LAMP.u, LAMP.v, 84);
+
+// The four stations, back to front. `face` is the gcc option that stops after that stage.
+const stations = [
+	{ id: 'st-pre', lit: 'pre-on', g: G.pre, u: U.pre, face: '-E', label: t('preprocesador', 'preprocessor') },
+	{ id: 'st-cc', lit: 'cc-on', g: G.cc, u: U.cc, face: '-S', label: t('compilador', 'compiler') },
+	{ id: 'st-as', lit: 'as-on', g: G.as, u: U.as, face: '-c', label: t('ensamblador', 'assembler') },
+	{ id: 'st-ld', lit: 'ld-on', g: G.ld, u: U.ld, face: 'ld', label: t('enlazador', 'linker') },
+];
+
+// Routes on the floor: the belt and its lit runs, one per stretch.
+const belt = (from: number, to: number) => path([pt(from, 0, 1), pt(to, 0, 1)]);
+const routes = [
+	{ id: 'fl-1', d: belt(U.start, U.pre) },
+	{ id: 'fl-2', d: belt(U.pre, U.cc) },
+	{ id: 'fl-3', d: belt(U.cc, U.as) },
+	{ id: 'fl-4', d: belt(U.as, U.ld) },
+	{ id: 'fl-5', d: belt(U.ld, U.pad) },
+];
+const beltAll = belt(U.start, U.pad);
+const libRoute = path([pt(LIB.u, LIB.v + 0.36, 1), pt(U.ld, -0.4, 1)]);
+const cutAt = U.cc + 0.6;
+const cut = [path([pt(cutAt, -0.22, 2), pt(cutAt, 0.22, 2)]), path([pt(cutAt + 0.12, -0.22, 2), pt(cutAt + 0.12, 0.22, 2)])];
+// In old C the typo slipped past the compiler and only the linker caught it.
+const c89From = pt(U.cc, 0, 64);
+const c89To = pt(U.ld, 0, 64);
+const c89Route = `M${c89From.x} ${c89From.y} Q${round((c89From.x + c89To.x) / 2)} ${round(Math.min(c89From.y, c89To.y) - 56)} ${c89To.x} ${c89To.y}`;
+const gridLines = [
+	...[0, 1, 2, 3, 4, 5, 6].map((u) => path([pt(u, -2.1, 0.5), pt(u, 1.8, 0.5)])),
+	...[-2, -1, 0, 1].map((v) => path([pt(-0.7, v, 0.5), pt(6.2, v, 0.5)])),
+];
+
+// ── The travelling file: one object, one state per stage ──────────────────
+// Drawn around its own base (0, 0); the player moves the whole group.
+const O = { x: 0, y: 0 };
+const D = {
+	src: box(O, 0.3, 0.22, 5),
+	pre: box(O, 0.3, 0.22, 30),
+	asm: box(O, 0.3, 0.22, 14),
+	obj: box(O, 0.3, 0.3, 26),
+};
+const SOCK = { du: 0.1, dv: 0.1 };
+const sockBase = D.obj.at(SOCK.du, SOCK.dv, D.obj.h);
+const sock = box(sockBase, 0.1, 0.1, 0);
+const inset = box(sockBase, 0.09, 0.09, 7);
+const piece = box(O, 0.09, 0.09, 8);
+const header = box(O, 0.26, 0.2, 10);
+const tagY = (g: Box) => g.peak - 20;
+const tagW = (text: string) => Math.round(text.length * 7.6 + 22);
+const topText = (g: Box) => floorMatrix(g.at(-0.24, 0.02, g.h));
+
+// Where things stop: on top of each station, on the pad, on the shelf.
+const anchors = [
+	{ id: 'a-start', ...pt(U.start, 0, 6) },
+	{ id: 'a-pre', ...pt(U.pre, 0, STATION_H) },
+	{ id: 'a-cc', ...pt(U.cc, 0, STATION_H) },
+	{ id: 'a-as', ...pt(U.as, 0, STATION_H) },
+	{ id: 'a-ld', ...pt(U.ld, 0, STATION_H) },
+	{ id: 'a-run', ...pt(U.pad, 0, 8) },
+	{ id: 'a-hdr', ...pt(U.pre, 0, STATION_H + 130) },
+	{ id: 'a-lib', ...pt(LIB.u, LIB.v, 18) },
+	{ id: 'a-sock', ...pt(U.ld + SOCK.du, SOCK.dv, STATION_H + D.obj.h) },
+];
+const anchorOf = (id: string) => anchors.find((anchor) => anchor.id === id) ?? anchors[0];
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-start', cx: 500, cy: 250, s: 1.6 },
+	{ id: 'shot-line', cx: 640, cy: 365, s: 1.02 },
+	{ id: 'shot-pre', cx: 545, cy: 250, s: 1.5 },
+	{ id: 'shot-cc', cx: 612, cy: 290, s: 1.5 },
+	{ id: 'shot-as', cx: 668, cy: 330, s: 1.5 },
+	{ id: 'shot-ld', cx: 752, cy: 360, s: 1.35 },
+	{ id: 'shot-run', cx: 800, cy: 420, s: 1.45 },
+	{ id: 'shot-err', cx: 655, cy: 330, s: 1.15 },
+	{ id: 'shot-lamp', cx: 640, cy: 275, s: 1.35 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | 'flow' | 'magenta' | 'violet';
+	mono?: boolean;
+	icon?: 'check' | 'alert';
+	lead?: Point;
+};
+const CC_TOP = G.cc.center;
+const AS_TOP = G.as.center;
+const LIB_TOP = G.lib.center;
+const PAD_TOP = G.pad.center;
+const PRE_TOP = G.pre.center;
+const RUN = anchorOf('a-run');
+const flagX = LAMP_HEAD.x + 24;
+const flagChip = (id: string, text: string, row: number): Chip => ({ id, text, x: flagX, y: LAMP_HEAD.y - 30 + row * 26, align: 'start', tone: 'violet', mono: true });
+const chips: Chip[] = [
+	{ id: 'mac', text: `${names.macro} → "${names.greeting}"`, x: PRE_TOP.x, y: PRE_TOP.y - 96, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'chk', text: t('sintaxis y tipos', 'syntax and types'), x: CC_TOP.x, y: CC_TOP.y - 96, align: 'middle', tone: 'flow', icon: 'check' },
+	{ id: 'say', text: names.greeting, x: RUN.x + 50, y: RUN.y - 26, align: 'start', tone: 'flow', mono: true, lead: { x: RUN.x + 24, y: RUN.y - 22 } },
+	{ id: 'k-src', text: t(`${names.file} · fuente`, `${names.file} · source`), x: G.tray.center.x, y: G.tray.center.y - 36, align: 'middle', tone: 'plain' },
+	{ id: 'k-obj', text: t(`${names.obj} · objeto`, `${names.obj} · object`), x: AS_TOP.x, y: AS_TOP.y - 75, align: 'middle', tone: 'plain' },
+	{ id: 'k-exe', text: t(`${names.exe} · ejecutable`, `${names.exe} · executable`), x: PAD_TOP.x, y: PAD_TOP.y + 50, align: 'middle', tone: 'flow' },
+	{ id: 'err', text: `${names.file}:4:5: error`, x: CC_TOP.x, y: CC_TOP.y - 96, align: 'middle', tone: 'magenta', mono: true },
+	{ id: 'no-o', text: t(`no se genera ${names.obj}`, `no ${names.obj} is produced`), x: AS_TOP.x, y: AS_TOP.y - 75, align: 'middle', tone: 'magenta' },
+	{ id: 'c89-note', text: 'C89: undefined reference', x: round((c89From.x + c89To.x) / 2) + 45, y: CC_TOP.y - 103, align: 'middle', tone: 'magenta', mono: true },
+	flagChip('w-1', '-std=c23', 0),
+	flagChip('w-2', '-Wall', 1),
+	flagChip('w-3', '-Wextra', 2),
+	flagChip('w-4', '-Wpedantic', 3),
+	{ id: 'w-note', text: t('warning: se genera igual', 'warning: still produced'), x: LAMP_HEAD.x - 22, y: LAMP_HEAD.y - 28, align: 'end', tone: 'violet', icon: 'alert' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.6 : 6.7) + (chip.icon ? 42 : 24));
+const chipLeft = (chip: Chip) => (chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x);
+
+const start = anchorOf('a-start');
+const hdrStart = anchorOf('a-hdr');
+const libTop = anchorOf('a-lib');
+const LIB_LABEL = t('biblioteca estándar', 'standard library');
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="build" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="ce-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="ce-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="ce-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="ce-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="ce-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="ce-g-lamp">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.6"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="ce-g-run">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.45"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the build line, seen through the camera -->
+			<g clip-path="url(#ce-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + 150} cy={VP.y + 110} rx="420" ry="320" fill="url(#ce-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + VP.w - 60} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#ce-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- The floor of the build line -->
+						<g data-el="floor" data-base="shown">
+							<polygon class="xj-plate-shadow" points={G.floor.base} transform="translate(14 22)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={G.floor.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={G.floor.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={G.floor.top} fill="url(#ce-g-floor)"></polygon>
+							{gridLines.map((d) => <path class="xj-grid" d={d} />)}
+							<text class="xj-floor-text" transform={floorMatrix(pt(-0.65, -1.95))}>gcc</text>
+						</g>
+
+						<!-- The standard library: a shelf behind the linker, with the code of printf -->
+						<g data-el="lib" class="xj-mod xj-mod--violet">
+							<polygon class="xj-shadow" points={G.lib.base} transform="translate(7 9)"></polygon>
+							<polygon class="xj-face xj-face--l" points={G.lib.leftFace}></polygon>
+							<polygon class="xj-face xj-face--r" points={G.lib.rightFace}></polygon>
+							<polygon class="xj-face xj-face--t" points={G.lib.top} fill="url(#ce-g-top)"></polygon>
+							<text class="xj-face-text" transform={G.lib.faceMatrix} text-anchor="middle" y="4.5">libc</text>
+							<g class="xj-chip xj-chip--violet">
+								<rect x={LIB_TOP.x - (LIB_LABEL.length * 6.7 + 24) / 2} y={LIB_TOP.y - 58} width={LIB_LABEL.length * 6.7 + 24} height="24" rx="12"></rect>
+								<text class="xj-chip-text" x={LIB_TOP.x} y={LIB_TOP.y - 41.5} text-anchor="middle">{LIB_LABEL}</text>
+							</g>
+						</g>
+						<g data-el="lib-on" class="xj-lit xj-lit--violet">
+							<polygon class="xj-lit-halo" points={G.lib.top}></polygon>
+							<polygon class="xj-lit-top" points={G.lib.top}></polygon>
+							<polygon class="xj-lit-side" points={G.lib.leftFace}></polygon>
+							<text class="xj-face-text xj-face-text--on" transform={G.lib.faceMatrix} text-anchor="middle" y="4.5">libc</text>
+						</g>
+
+						<!-- The warning light, behind the compiler -->
+						<g data-el="lamp">
+							<polygon class="xj-shadow" points={G.post.base} transform="translate(5 7)"></polygon>
+							<polygon class="xj-face xj-face--l" points={G.post.leftFace}></polygon>
+							<polygon class="xj-face xj-face--r" points={G.post.rightFace}></polygon>
+							<circle class="xj-lamp-head" cx={LAMP_HEAD.x} cy={LAMP_HEAD.y} r="12"></circle>
+						</g>
+						<g data-el="lamp-on">
+							<circle cx={LAMP_HEAD.x} cy={LAMP_HEAD.y} r="70" fill="url(#ce-g-lamp)"></circle>
+							<circle class="xj-lamp-lit" cx={LAMP_HEAD.x} cy={LAMP_HEAD.y} r="12"></circle>
+							<circle class="xj-lamp-ring" cx={LAMP_HEAD.x} cy={LAMP_HEAD.y} r="20"></circle>
+						</g>
+
+						<!-- The belt: the dim base first, the lit runs on top -->
+						<g data-el="belt"><path class="mg-stroke xj-trace" pathLength="1" d={beltAll}></path></g>
+						{
+							routes.map((route) => (
+								<g data-el={route.id} class="xj-flowline">
+									<path class="mg-stroke xj-flowline-halo" pathLength="1" d={route.d} />
+									<path class="mg-stroke xj-flowline-core" pathLength="1" d={route.d} />
+								</g>
+							))
+						}
+						<g data-el="fl-lib" class="xj-flowline xj-flowline--violet">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={libRoute}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={libRoute}></path>
+						</g>
+
+						<!-- Where the source file waits -->
+						<g data-el="tray" data-base="shown">
+							<polygon class="xj-shadow" points={G.tray.base} transform="translate(5 7)"></polygon>
+							<polygon class="xj-face xj-face--l" points={G.tray.leftFace}></polygon>
+							<polygon class="xj-face xj-face--r" points={G.tray.rightFace}></polygon>
+							<polygon class="xj-face xj-face--t" points={G.tray.top} fill="url(#ce-g-top)"></polygon>
+						</g>
+
+						<!-- The four stations, each with its stage name on the floor and its lit states -->
+						{
+							stations.map((item) => (
+								<>
+									<g data-el={item.id} class="xj-mod">
+										<text class="xj-floor-text" transform={labelMatrix(pt(item.u + 0.08, 1.78))}>
+											{item.label}
+										</text>
+										<polygon class="xj-shadow" points={item.g.base} transform="translate(7 9)" />
+										<polygon class="xj-face xj-face--l" points={item.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={item.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={item.g.top} fill="url(#ce-g-top)" />
+										<text class="xj-face-text" transform={item.g.faceMatrix} text-anchor="middle" y="4.5">
+											{item.face}
+										</text>
+									</g>
+									<g data-el={item.lit} class="xj-lit xj-lit--flow">
+										<polygon class="xj-lit-halo" points={item.g.top} />
+										<polygon class="xj-lit-top" points={item.g.top} />
+										<polygon class="xj-lit-side" points={item.g.leftFace} />
+										<text class="xj-face-text xj-face-text--on" transform={item.g.faceMatrix} text-anchor="middle" y="4.5">
+											{item.face}
+										</text>
+									</g>
+								</>
+							))
+						}
+						<g data-el="cc-x" class="xj-lit xj-lit--magenta">
+							<polygon class="xj-lit-halo" points={G.cc.top}></polygon>
+							<polygon class="xj-lit-top" points={G.cc.top}></polygon>
+							<polygon class="xj-lit-side" points={G.cc.leftFace}></polygon>
+							<text class="xj-face-text xj-face-text--on" transform={G.cc.faceMatrix} text-anchor="middle" y="4.5">-S</text>
+						</g>
+
+						<!-- The pad where the executable runs -->
+						<g data-el="pad" class="xj-mod">
+							<polygon class="xj-shadow" points={G.pad.base} transform="translate(7 9)"></polygon>
+							<polygon class="xj-face xj-face--l" points={G.pad.leftFace}></polygon>
+							<polygon class="xj-face xj-face--r" points={G.pad.rightFace}></polygon>
+							<polygon class="xj-face xj-face--t" points={G.pad.top} fill="url(#ce-g-top)"></polygon>
+						</g>
+						<g data-el="run-on" class="xj-lit xj-lit--flow">
+							<ellipse cx={PAD_TOP.x} cy={PAD_TOP.y - 20} rx="90" ry="60" fill="url(#ce-g-run)"></ellipse>
+							<polygon class="xj-lit-halo" points={G.pad.top}></polygon>
+							<polygon class="xj-lit-side" points={G.pad.leftFace}></polygon>
+						</g>
+
+						<!-- After the compile error: nothing past the compiler runs -->
+						<g data-el="veil">
+							<g class="xj-veil">
+								<polygon points={G.as.outline}></polygon>
+								<polygon points={G.ld.outline}></polygon>
+								<polygon points={G.pad.outline}></polygon>
+							</g>
+						</g>
+						<g data-el="cut" class="xj-cut">
+							{cut.map((d) => <path d={d} />)}
+						</g>
+						<g data-el="c89" class="xj-flowline xj-flowline--magenta xj-flowline--ghost">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={c89Route}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={c89Route}></path>
+						</g>
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									{chip.lead && <line class="xj-lead" x1={chip.lead.x} y1={chip.lead.y} x2={chipLeft(chip) + 12} y2={chip.y} />}
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.icon === 'check' && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M20 6 9 17l-5-5" />
+										</svg>
+									)}
+									{chip.icon === 'alert' && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+											<path d="M12 9v4" />
+											<path d="M12 17h.01" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.icon ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The program file: one object for the whole journey. The player moves the
+						     outer group; each state is an inner element drawn around the file's base. -->
+						<g data-el="doc" data-x={start.x} data-y={start.y}>
+							<g data-el="d-src" data-base="shown">
+								<polygon class="xj-doc xj-doc--l" points={D.src.leftFace}></polygon>
+								<polygon class="xj-doc xj-doc--r" points={D.src.rightFace}></polygon>
+								<polygon class="xj-doc xj-doc--t" points={D.src.top}></polygon>
+								{[-0.12, 0, 0.12].map((dv) => <path class="xj-doc-line" d={path([D.src.at(-0.2, dv, 5), D.src.at(0.14, dv, 5)])} />)}
+								<g class="xj-tag-group">
+									<rect class="xj-tag" x={-tagW(names.file) / 2} y={tagY(D.src) - 11} width={tagW(names.file)} height="22" rx="11"></rect>
+									<text class="xj-tag-text" y={tagY(D.src) + 4.5} text-anchor="middle">{names.file}</text>
+								</g>
+							</g>
+							<g data-el="d-pre">
+								<polygon class="xj-doc xj-doc--l" points={D.pre.leftFace}></polygon>
+								<polygon class="xj-doc xj-doc--r" points={D.pre.rightFace}></polygon>
+								<polygon class="xj-doc xj-doc--t" points={D.pre.top}></polygon>
+								{D.pre.pages(5).map((d) => <path class="xj-page" d={d} />)}
+								<g class="xj-tag-group">
+									<rect class="xj-tag" x={-tagW(t('texto C · cientos de líneas', 'C text · hundreds of lines')) / 2} y={tagY(D.pre) - 11} width={tagW(t('texto C · cientos de líneas', 'C text · hundreds of lines'))} height="22" rx="11"></rect>
+									<text class="xj-tag-text" y={tagY(D.pre) + 4.5} text-anchor="middle">{t('texto C · cientos de líneas', 'C text · hundreds of lines')}</text>
+								</g>
+							</g>
+							<g data-el="d-asm">
+								<polygon class="xj-doc xj-doc--l" points={D.asm.leftFace}></polygon>
+								<polygon class="xj-doc xj-doc--r" points={D.asm.rightFace}></polygon>
+								<polygon class="xj-doc xj-doc--t" points={D.asm.top}></polygon>
+								<text class="xj-top-text" transform={topText(D.asm)}>mov call ret</text>
+								<g class="xj-tag-group">
+									<rect class="xj-tag" x={-tagW(names.asm) / 2} y={tagY(D.asm) - 11} width={tagW(names.asm)} height="22" rx="11"></rect>
+									<text class="xj-tag-text" y={tagY(D.asm) + 4.5} text-anchor="middle">{names.asm}</text>
+								</g>
+							</g>
+							<g data-el="d-obj">
+								<polygon class="xj-bin xj-bin--l" points={D.obj.leftFace}></polygon>
+								<polygon class="xj-bin xj-bin--r" points={D.obj.rightFace}></polygon>
+								<polygon class="xj-bin xj-bin--t" points={D.obj.top}></polygon>
+								<text class="xj-bits" transform={D.obj.faceMatrix} text-anchor="middle" y="4">0110</text>
+								<g class="xj-tag-group">
+									<rect class="xj-tag" x={-tagW(names.obj) / 2} y={tagY(D.obj) - 11} width={tagW(names.obj)} height="22" rx="11"></rect>
+									<text class="xj-tag-text" y={tagY(D.obj) + 4.5} text-anchor="middle">{names.obj}</text>
+								</g>
+							</g>
+							<!-- The call to printf, still without code: an open socket -->
+							<g data-el="sock">
+								<polygon class="xj-sock" points={sock.top}></polygon>
+								<g class="xj-tag-group xj-tag-group--open">
+									<rect class="xj-tag" x={34} y={sockBase.y - 30} width={tagW('printf ?')} height="22" rx="11"></rect>
+									<text class="xj-tag-text" x={34 + tagW('printf ?') / 2} y={sockBase.y - 14.5} text-anchor="middle">printf ?</text>
+								</g>
+							</g>
+							<g data-el="d-exe">
+								<polygon class="xj-bin xj-bin--l" points={D.obj.leftFace}></polygon>
+								<polygon class="xj-bin xj-bin--r" points={D.obj.rightFace}></polygon>
+								<polygon class="xj-bin xj-bin--t xj-bin--ready" points={D.obj.top}></polygon>
+								<text class="xj-bits" transform={D.obj.faceMatrix} text-anchor="middle" y="4">0110</text>
+								<polygon class="xj-piece xj-piece--l" points={inset.leftFace}></polygon>
+								<polygon class="xj-piece xj-piece--r" points={inset.rightFace}></polygon>
+								<polygon class="xj-piece xj-piece--t" points={inset.top}></polygon>
+								<g class="xj-tag-group xj-tag-group--ready">
+									<rect class="xj-tag" x={-tagW(names.exe) / 2} y={tagY(D.obj) - 11} width={tagW(names.exe)} height="22" rx="11"></rect>
+									<text class="xj-tag-text" y={tagY(D.obj) + 4.5} text-anchor="middle">{names.exe}</text>
+								</g>
+							</g>
+							<g data-el="d-bad">
+								<polygon class="xj-doc xj-doc--l" points={D.pre.leftFace}></polygon>
+								<polygon class="xj-doc xj-doc--r" points={D.pre.rightFace}></polygon>
+								<polygon class="xj-doc xj-doc--t" points={D.pre.top}></polygon>
+								{D.pre.pages(5).map((d) => <path class="xj-page" d={d} />)}
+								<g class="xj-bad">
+									<polygon class="xj-lit-halo" points={D.pre.top}></polygon>
+									<polygon class="xj-lit-top" points={D.pre.top}></polygon>
+									<polygon class="xj-lit-side" points={D.pre.leftFace}></polygon>
+								</g>
+								<g class="xj-tag-group xj-tag-group--bad">
+									<rect class="xj-tag" x={-tagW(t('error en la línea 4', 'error on line 4')) / 2} y={tagY(D.pre) - 11} width={tagW(t('error en la línea 4', 'error on line 4'))} height="22" rx="11"></rect>
+									<text class="xj-tag-text" y={tagY(D.pre) + 4.5} text-anchor="middle">{t('error en la línea 4', 'error on line 4')}</text>
+								</g>
+							</g>
+						</g>
+
+						<!-- stdio.h: the header the preprocessor pastes into the file -->
+						<g data-el="hdr" data-x={hdrStart.x} data-y={hdrStart.y}>
+							<polygon class="xj-hdr xj-hdr--l" points={header.leftFace}></polygon>
+							<polygon class="xj-hdr xj-hdr--r" points={header.rightFace}></polygon>
+							<polygon class="xj-hdr xj-hdr--t" points={header.top}></polygon>
+							{header.pages(3).map((d) => <path class="xj-page" d={d} />)}
+							<g class="xj-tag-group xj-tag-group--plain">
+								<rect class="xj-tag" x={-tagW('stdio.h') / 2} y={tagY(header) - 11} width={tagW('stdio.h')} height="22" rx="11"></rect>
+								<text class="xj-tag-text" y={tagY(header) + 4.5} text-anchor="middle">stdio.h</text>
+							</g>
+						</g>
+
+						<!-- printf: its code lives in the standard library until the linker takes it -->
+						<g data-el="pc" data-x={libTop.x} data-y={libTop.y}>
+							<polygon class="xj-piece xj-piece--l" points={piece.leftFace}></polygon>
+							<polygon class="xj-piece xj-piece--r" points={piece.rightFace}></polygon>
+							<polygon class="xj-piece xj-piece--t" points={piece.top}></polygon>
+							<g class="xj-tag-group xj-tag-group--ready">
+								<rect class="xj-tag" x={-tagW('printf') / 2} y={tagY(piece) - 11} width={tagW('printf')} height="22" rx="11"></rect>
+								<text class="xj-tag-text" y={tagY(piece) + 4.5} text-anchor="middle">printf</text>
+							</g>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-flow" x={VP.x + 20} y={VP.y + VP.h - 28} width="12" height="12" rx="3"></rect>
+				<text x={VP.x + 40} y={VP.y + VP.h - 18}>{t('El archivo del programa', 'The program file')}</text>
+				<rect class="xj-legend-lib" x={VP.x + 220} y={VP.y + VP.h - 28} width="12" height="12" rx="3"></rect>
+				<text x={VP.x + 240} y={VP.y + VP.h - 18}>{t('Lo que lo completa', 'What completes it')}</text>
+				<rect class="xj-legend-exc" x={VP.x + 400} y={VP.y + VP.h - 28} width="12" height="12" rx="3"></rect>
+				<text x={VP.x + 420} y={VP.y + VP.h - 18}>Error</text>
+			</g>
+
+			<!-- EDITOR: the source, with the line being processed highlighted, and the terminal -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.file}</text>
+				<path class="xj-rule" d={`M${ED.x} ${TERM_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={TERM_TOP + 22}>TERMINAL</text>
+
+				<!-- Line states sit behind the code -->
+				<rect data-el="hx-b4" class="xj-bar xj-bar--magenta" x={BAR.x} y={lineTop(4)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(1)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<!-- First program: the lesson's hello program -->
+				<g data-el="ea" data-base="shown" class="xj-code">
+					{
+						pageA.map((line) => (
+							<g data-el={`ea-${line.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				<!-- Second program: the same call, misspelled -->
+				<g data-el="eb" class="xj-code">
+					{
+						pageB.map((line) => (
+							<>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</>
+						))
+					}
+				</g>
+
+				{
+					term.map((line) => (
+						<text data-el={line.id} class:list={['xj-term', `xj-term--${line.kind}`]} x={ED.x + 20} y={rowY(line.row)} xml:space="preserve">
+							{line.text}
+						</text>
+					))
+				}
+				{lineAnchors.map((anchor) => <circle data-anchor={anchor.id} cx={BAR_CX} cy={lineMid(anchor.n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of the films only (DESIGN.md §8): a deep blue ground, light blue for the
+	   normal flow, magenta for the problem and violet for what resolves it.
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='compilacion-enlazado-c']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='compilacion-enlazado-c'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='compilacion-enlazado-c'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='compilacion-enlazado-c'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-lib {
+		fill: var(--xj-violet);
+	}
+
+	.xj-legend-exc {
+		fill: var(--xj-magenta);
+	}
+
+	/* Floor, stations and shelf */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-grid {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 1;
+		opacity: 0.07;
+	}
+
+	.xj-floor-text {
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		fill: var(--xj-mist);
+		opacity: 0.85;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-mod--violet .xj-face {
+		stroke: var(--xj-violet);
+	}
+
+	.xj-mod--violet .xj-face--l {
+		fill: var(--xj-violet-deep);
+	}
+
+	.xj-face-text {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	/* Lit states: the station at work, the one that stopped the file, the library */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta,
+	.xj-bad {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-bad .xj-lit-side {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.85;
+	}
+
+	/* One flat layer, so the overlapping silhouettes dim evenly. */
+	.xj-veil {
+		opacity: 0.62;
+	}
+
+	.xj-veil polygon {
+		fill: var(--xj-ink);
+		stroke: var(--xj-ink);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lamp-head {
+		fill: var(--xj-steel);
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+	}
+
+	.xj-lamp-lit {
+		fill: var(--xj-violet-soft);
+		stroke: var(--xj-white);
+		stroke-width: 1.5;
+	}
+
+	.xj-lamp-ring {
+		fill: none;
+		stroke: var(--xj-violet);
+		stroke-width: 2;
+		stroke-opacity: 0.7;
+	}
+
+	/* Routes */
+	.xj-trace {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 3;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--magenta {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-flowline--violet {
+		--xj-line: var(--xj-violet);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	/* A road not taken: what would happen with an old standard. */
+	.xj-flowline--ghost .xj-flowline-core {
+		stroke-width: 2;
+		stroke-opacity: 0.7;
+	}
+
+	.xj-cut path {
+		fill: none;
+		stroke: var(--xj-magenta);
+		stroke-width: 4;
+		stroke-linecap: round;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-lead {
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+		stroke-opacity: 0.7;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* The program file in its text states: source, preprocessed, assembly */
+	.xj-doc {
+		stroke-width: 1.2;
+		stroke-linejoin: round;
+	}
+
+	.xj-doc--t {
+		fill: var(--xj-flow-soft);
+		stroke: var(--xj-flow);
+	}
+
+	.xj-doc--l {
+		fill: var(--xj-flow);
+		stroke: var(--xj-flow-soft);
+	}
+
+	.xj-doc--r {
+		fill: var(--xj-steel-hi);
+		stroke: var(--xj-flow);
+	}
+
+	.xj-doc-line {
+		fill: none;
+		stroke: var(--xj-steel);
+		stroke-width: 2;
+		stroke-linecap: round;
+	}
+
+	.xj-page {
+		fill: none;
+		stroke: var(--xj-deep);
+		stroke-width: 1;
+		stroke-opacity: 0.55;
+	}
+
+	.xj-top-text {
+		font-family: monospace;
+		font-size: 9px;
+		font-weight: 700;
+		fill: var(--xj-deep);
+	}
+
+	/* The program file in its binary states: object file and executable */
+	.xj-bin {
+		stroke: var(--xj-flow);
+		stroke-width: 1.2;
+		stroke-linejoin: round;
+	}
+
+	.xj-bin--t {
+		fill: var(--xj-steel-hi);
+	}
+
+	.xj-bin--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-bin--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-bin--ready {
+		stroke: var(--xj-flow-soft);
+		stroke-width: 2;
+	}
+
+	.xj-bits {
+		font-family: monospace;
+		font-size: 10px;
+		font-weight: 700;
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-sock {
+		fill: var(--xj-ink);
+		fill-opacity: 0.6;
+		stroke: var(--xj-white);
+		stroke-width: 1.5;
+		stroke-dasharray: 3 3;
+	}
+
+	/* What the library provides: violet, like everything that completes the program */
+	.xj-piece {
+		stroke: var(--xj-violet-soft);
+		stroke-width: 1.2;
+		stroke-linejoin: round;
+	}
+
+	.xj-piece--t {
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-piece--l {
+		fill: var(--xj-violet);
+	}
+
+	.xj-piece--r {
+		fill: var(--xj-violet-deep);
+	}
+
+	.xj-hdr {
+		stroke: var(--xj-mist);
+		stroke-width: 1.2;
+		stroke-linejoin: round;
+	}
+
+	.xj-hdr--t {
+		fill: var(--xj-white);
+	}
+
+	.xj-hdr--l {
+		fill: var(--xj-mist);
+	}
+
+	.xj-hdr--r {
+		fill: var(--xj-dim);
+	}
+
+	/* Tags that name the file in each state */
+	.xj-tag-group {
+		--xj-tag: var(--xj-flow);
+		--xj-tag-fill: var(--xj-deep);
+	}
+
+	.xj-tag-group--ready {
+		--xj-tag: var(--xj-violet);
+		--xj-tag-fill: var(--xj-violet-deep);
+	}
+
+	.xj-tag-group--bad {
+		--xj-tag: var(--xj-magenta);
+		--xj-tag-fill: var(--xj-magenta-deep);
+	}
+
+	.xj-tag-group--open {
+		--xj-tag: var(--xj-white);
+		--xj-tag-fill: var(--xj-ink);
+	}
+
+	.xj-tag-group--plain {
+		--xj-tag: var(--xj-mist);
+		--xj-tag-fill: var(--xj-panel);
+	}
+
+	.xj-tag {
+		fill: var(--xj-tag-fill);
+		stroke: var(--xj-tag);
+		stroke-width: 1.5;
+	}
+
+	.xj-tag-group--open .xj-tag {
+		stroke-dasharray: 4 3;
+	}
+
+	.xj-tag-text {
+		font-family: monospace;
+		font-size: 12.5px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono {
+		font-family: monospace;
+		font-size: 14px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-term {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-term--cmd {
+		fill: var(--xj-white);
+	}
+
+	.xj-term--out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-term--cmt {
+		fill: var(--xj-dim);
+	}
+
+	.xj-term--err {
+		fill: var(--xj-magenta-soft);
+	}
+
+	.xj-term--note {
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-ann) {
+		fill: var(--xj-flow-soft);
+		font-weight: 700;
+	}
+
+	.mg-canvas .xj-code :global(.tok-type) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-bar--magenta {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.24;
+		stroke: var(--xj-magenta);
+		stroke-width: 1.2;
+	}
+</style>

@@ -540,6 +540,336 @@ export const animations: Animation[] = [
 		minutes: 2,
 		lesson: { course: 'git', slug: 'rebase-y-buenas-practicas' },
 	},
+	{
+		slug: 'compilacion-enlazado-c',
+		image: '/img/animations/compilacion-enlazado-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'El viaje de hola.c hasta el ejecutable',
+			en: 'The journey of hello.c to an executable',
+		},
+		description: {
+			es: 'Un corto de dos minutos que sigue a un programa por el preprocesador, el compilador, el ensamblador y el enlazador: qué hace cada etapa, qué es un archivo .o, de dónde sale printf y en qué etapa falla un error de compilación y uno de enlazado.',
+			en: 'A two-minute short that follows a program through the preprocessor, the compiler, the assembler and the linker: what each stage does, what an .o file is, where printf comes from, and which stage a compile error and a link error stop.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'compilacion-y-enlazado' },
+	},
+	{
+		slug: 'tipos-conversiones-c',
+		image: '/img/animations/tipos-conversiones-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Cajas de bits: tipos, tamaños y conversiones',
+			en: 'Boxes of bits: types, sizes and conversions',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre cómo cada tipo ocupa una caja de tamaño distinto: sizeof y size_t, el límite de un int, la vuelta de un unsigned, la división entera frente a un cast a double y la trampa de comparar con signo y sin signo.',
+			en: 'A two-minute short on how every type takes a box of a different size: sizeof and size_t, the limit of an int, an unsigned wrapping around, integer division versus a cast to double, and the trap of comparing signed and unsigned.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'tipos-de-datos' },
+	},
+	{
+		slug: 'pasaje-por-valor-c',
+		image: '/img/animations/pasaje-por-valor-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Una copia viaja a la función',
+			en: 'A copy travels to the function',
+		},
+		description: {
+			es: 'Un corto de dos minutos que muestra la pila de llamadas: cada llamada recibe una copia de sus argumentos, por eso la función no puede cambiar la variable de quien llama; alcance de las variables y un contador static que sobrevive entre llamadas.',
+			en: 'A two-minute short that shows the call stack: every call gets a copy of its arguments, so the function cannot change the caller\'s variable; variable scope and a static counter that survives between calls.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'variables-parametros-y-pasaje' },
+	},
+	{
+		slug: 'punteros-direcciones-c',
+		image: '/img/animations/punteros-direcciones-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Una dirección que apunta',
+			en: 'An address that points',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre la memoria como celdas numeradas: &x da la dirección, un puntero la guarda, *p lee y escribe a través de ella, intercambiar recibe direcciones para cambiar las variables de quien llama y NULL no apunta a nada.',
+			en: 'A two-minute short on memory as numbered cells: &x gives the address, a pointer stores it, *p reads and writes through it, swap receives addresses to change the caller\'s variables, and NULL points to nothing.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'punteros-y-direcciones' },
+	},
+	{
+		slug: 'punteros-arreglos-c',
+		image: '/img/animations/punteros-arreglos-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Caminar un arreglo con un puntero',
+			en: 'Walking an array with a pointer',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre la aritmética de punteros: p + 1 avanza sizeof del elemento, a[i] es *(a + i), pasar un arreglo a una función pasa un puntero al primer elemento y el operador -> llega al campo de una estructura.',
+			en: 'A two-minute short on pointer arithmetic: p + 1 moves by the element size, a[i] is *(a + i), passing an array to a function passes a pointer to its first element, and the -> operator reaches a struct field.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'punteros-arreglos-y-estructuras' },
+	},
+	{
+		slug: 'duracion-ciclo-vida-c',
+		image: '/img/animations/duracion-ciclo-vida-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Lo que nace y muere en la pila',
+			en: 'What is born and dies on the stack',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre la duración de almacenamiento: las variables automáticas nacen y mueren con su bloque, las estáticas viven todo el programa y devolver la dirección de una variable local deja un puntero colgante.',
+			en: 'A two-minute short on storage duration: automatic variables are born and die with their block, static ones live for the whole program, and returning the address of a local variable leaves a dangling pointer.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'duracion-y-ciclo-de-vida' },
+	},
+	{
+		slug: 'memoria-dinamica-c',
+		image: '/img/animations/memoria-dinamica-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Pedir y devolver memoria',
+			en: 'Asking for memory and giving it back',
+		},
+		description: {
+			es: 'Un corto de dos minutos en el montículo: malloc reserva un bloque y puede devolver NULL, el arreglo crece con realloc usando un puntero temporal y free devuelve el bloque cuando ya no se usa.',
+			en: 'A two-minute short on the heap: malloc reserves a block and may return NULL, the array grows with realloc through a temporary pointer, and free gives the block back when it is no longer used.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'memoria-dinamica' },
+	},
+	{
+		slug: 'errores-memoria-c',
+		image: '/img/animations/errores-memoria-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Quién libera este bloque',
+			en: 'Who frees this block',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre la propiedad de la memoria: quién reserva, quién usa y quién libera, y los errores que aparecen cuando nadie lo sabe: fuga de memoria, uso después de liberar y doble liberación, detectados con AddressSanitizer.',
+			en: 'A two-minute short on memory ownership: who allocates, who uses and who frees, and the errors that appear when nobody knows: memory leaks, use after free and double free, caught by AddressSanitizer.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'propiedad-y-errores-de-memoria' },
+	},
+	{
+		slug: 'decisiones-if-else-c',
+		image: '/img/animations/decisiones-if-else-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Un camino según la condición',
+			en: 'One path per condition',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre cómo el programa elige un camino: if, else, cadenas de else if, condiciones anidadas y los errores clásicos de = frente a == y del punto y coma después del if.',
+			en: 'A two-minute short on how a program picks a path: if, else, else if chains, nested conditions and the classic mistakes of = versus == and a semicolon after the if.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'sentencia-if-else' },
+	},
+	{
+		slug: 'operador-ternario-c',
+		image: '/img/animations/operador-ternario-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Una expresión que elige',
+			en: 'An expression that chooses',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre el operador condicional: una expresión que vale una de dos ramas, cuándo aclara el código y cuándo lo complica.',
+			en: 'A two-minute short on the conditional operator: an expression worth one of two branches, when it makes code clearer and when it makes it harder.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'operador-ternario' },
+	},
+	{
+		slug: 'switch-bloques-c',
+		image: '/img/animations/switch-bloques-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'El salto del switch y la vida de un bloque',
+			en: 'The switch jump and the life of a block',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre cómo switch salta a la etiqueta case que coincide, qué hace break, la caída intencional con [[fallthrough]] y el alcance de las variables de un bloque.',
+			en: 'A two-minute short on how switch jumps to the matching case label, what break does, deliberate fall-through with [[fallthrough]], and the scope of block variables.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'sentencia-switch-y-bloques-de-codigo' },
+	},
+	{
+		slug: 'bucle-while-c',
+		image: '/img/animations/bucle-while-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Repetir mientras se cumpla',
+			en: 'Repeat while it holds',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre el ciclo while: la condición se evalúa primero, contadores y acumuladores, el valor centinela que termina la lectura y cómo nace un ciclo infinito.',
+			en: 'A two-minute short on the while loop: the condition is checked first, counters and accumulators, the sentinel value that ends the input, and how an infinite loop is born.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'sentencia-while' },
+	},
+	{
+		slug: 'bucle-for-c',
+		image: '/img/animations/bucle-for-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Las tres partes del for',
+			en: 'The three parts of for',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre el ciclo for: inicialización, condición y actualización, el alcance del contador, contar hacia atrás y el error de un paso de más.',
+			en: 'A two-minute short on the for loop: initialization, condition and update, the scope of the counter, counting down, and the off-by-one error.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'sentencia-for' },
+	},
+	{
+		slug: 'bucle-do-while-c',
+		image: '/img/animations/bucle-do-while-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Primero hacer, después preguntar',
+			en: 'Do first, ask later',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre do-while: el cuerpo se ejecuta al menos una vez, la validación de una entrada y un menú, y adónde saltan break y continue.',
+			en: 'A two-minute short on do-while: the body runs at least once, validating an input and a menu, and where break and continue jump.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'sentencia-do-while' },
+	},
+	{
+		slug: 'refinamiento-anidados-c',
+		image: '/img/animations/refinamiento-anidados-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Del problema al programa, paso a paso',
+			en: 'From problem to program, step by step',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre el refinamiento sucesivo: un enunciado que se divide en pasos, el pseudocódigo que se vuelve C y dos ciclos anidados recorriendo una tabla.',
+			en: 'A two-minute short on stepwise refinement: a statement split into steps, pseudocode that becomes C, and two nested loops walking a table.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'programacion-esquematica-y-sentencias-anidadas' },
+	},
+	{
+		slug: 'datos-secuenciales-c',
+		image: '/img/animations/datos-secuenciales-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Datos en fila',
+			en: 'Data in a row',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre por qué agrupar datos en secuencia: acceso secuencial frente a acceso directo y tamaño fijo frente a tamaño que crece, como puente hacia los arreglos.',
+			en: 'A two-minute short on why we group data in a sequence: sequential versus direct access and fixed versus growing size, as a bridge to arrays.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'manejo-de-estructuras-secuenciales-de-datos' },
+	},
+	{
+		slug: 'arreglos-indices-c',
+		image: '/img/animations/arreglos-indices-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Celdas contiguas e índices',
+			en: 'Contiguous cells and indexes',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre los arreglos: celdas contiguas numeradas desde 0, el límite que no se debe cruzar, cuántos elementos calcula sizeof y una matriz guardada fila por fila.',
+			en: 'A two-minute short on arrays: contiguous cells numbered from 0, the bound that must not be crossed, how many elements sizeof computes, and a matrix stored row by row.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'arreglos-unidimensionales-y-multidimensionales' },
+	},
+	{
+		slug: 'operaciones-arreglos-c',
+		image: '/img/animations/operaciones-arreglos-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Recorrer, insertar y borrar',
+			en: 'Traverse, insert and delete',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre las operaciones con arreglos: recorrer para sumar y buscar el máximo, insertar corriendo los elementos a la derecha y borrar corriéndolos a la izquierda.',
+			en: 'A two-minute short on array operations: traversing to sum and find the maximum, inserting by shifting elements right, and deleting by shifting them left.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'operaciones-con-arreglos' },
+	},
+	{
+		slug: 'cadenas-terminador-c',
+		image: '/img/animations/cadenas-terminador-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'La cadena y su terminador',
+			en: 'The string and its terminator',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre las cadenas de C: un arreglo de char que termina en el carácter nulo, la diferencia entre capacidad y longitud, leer con fgets y copiar sin desbordar.',
+			en: 'A two-minute short on C strings: a char array that ends in the null character, capacity versus length, reading with fgets, and copying without overflowing.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'cadenas-de-caracteres-y-operaciones' },
+	},
+	{
+		slug: 'estructuras-registros-c',
+		image: '/img/animations/estructuras-registros-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Un registro con campos',
+			en: 'A record with fields',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre struct: un registro con campos de distintos tipos, el acceso con punto, un arreglo de registros, la copia al pasarlo a una función, enum para nombrar valores y el relleno que agrega el compilador.',
+			en: 'A two-minute short on struct: a record with fields of different types, access with a dot, an array of records, the copy made when passing it to a function, enum to name values, and the padding the compiler adds.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'concepto-de-estructuras' },
+	},
+	{
+		slug: 'busqueda-binaria-c',
+		image: '/img/animations/busqueda-binaria-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Partir la búsqueda a la mitad',
+			en: 'Halving the search',
+		},
+		description: {
+			es: 'Un corto de dos minutos que compara la búsqueda lineal con la binaria: revisar uno por uno frente a descartar la mitad en cada paso, por qué la binaria exige un arreglo ordenado y cuántos pasos da cada una.',
+			en: 'A two-minute short that compares linear and binary search: checking one by one versus discarding half at each step, why binary search needs a sorted array, and how many steps each takes.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'busqueda-en-arreglos' },
+	},
+	{
+		slug: 'ordenamiento-comparado-c',
+		image: '/img/animations/ordenamiento-comparado-c.svg',
+		tag: { es: 'C', en: 'C' },
+		title: {
+			es: 'Tres maneras de ordenar',
+			en: 'Three ways to sort',
+		},
+		description: {
+			es: 'Un corto de dos minutos sobre burbuja, selección e inserción sobre el mismo arreglo: qué compara e intercambia cada una, cuántas operaciones hacen, cuál es estable y cuándo conviene cada una.',
+			en: 'A two-minute short on bubble, selection and insertion sort on the same array: what each one compares and swaps, how many operations they do, which one is stable, and when each fits.',
+		},
+		minutes: 2,
+		lesson: { course: 'c', slug: 'ordenacion-de-arreglos' },
+	},
 ];
 
 /**

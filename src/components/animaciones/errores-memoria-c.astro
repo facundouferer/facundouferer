@@ -1,0 +1,1081 @@
+---
+/**
+ * Scene for "Who frees this block" (lesson c/propiedad-y-errores-de-memoria), a
+ * short film played on one persistent motion canvas. The captions and cues live in
+ * `src/data/animations/errores-memoria-c.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: the source
+ * code, with a bar that slides to the line being executed, the failing line marked in
+ * magenta and the program output typed in the console below. The viewport on the
+ * right holds the camera: main's stack cell, the heap with its blocks (address on the
+ * front edge, value on top) and one module per instruction in front of them, labelled
+ * with its editor line. A pointer is a light blue arrow; ownership is a violet key
+ * that sits with the owner. First the lesson's Persona program (create, borrow,
+ * destroy), then the lesson's `puntaje` program in three versions that break the rule
+ * on the same block: a leak, a double free and a use after free, which
+ * AddressSanitizer reports. Addresses are short and fictional; real ones vary.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/errores-memoria-c';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── The programs shown in the editor ──────────────────────────────────────
+// Both are the lesson's own, with its identifiers localized like the lesson does.
+const n = {
+	person: t('Persona', 'Person'),
+	create: t('crear_persona', 'create_person'),
+	print: t('imprimir_persona', 'print_person'),
+	destroy: t('destruir_persona', 'destroy_person'),
+	ana: t('ana', 'ann'),
+	name: t('nombre', 'name'),
+	age: t('edad', 'age'),
+	score: t('puntaje', 'score'),
+};
+
+// Program A: the create / borrow / destroy contract, with ownership in the comments.
+const programA = [
+	`// ${t('Propiedad: el llamador es dueño del resultado.', 'Ownership: the caller owns the result.')}`,
+	`${n.person} *${n.create}(const char *${n.name}, int ${n.age});`,
+	`// ${t('Propiedad: solo toma prestada p.', 'Ownership: only borrows p.')}`,
+	`void ${n.print}(const ${n.person} *p);`,
+	`// ${t('Libera la persona y todo lo que le pertenece.', 'Frees the person and everything it owns.')}`,
+	`void ${n.destroy}(${n.person} *p);`,
+	'',
+	'int main(void) {',
+	`    ${n.person} *${n.ana} = ${n.create}("${t('Ana', 'Ann')}", 31);`,
+	`    if (${n.ana} == NULL) {`,
+	'        return 1;',
+	'    }',
+	`    ${`${n.print}(${n.ana});`.padEnd(31)}// ${t('préstamo', 'borrowing')}`,
+	`    ${`${n.destroy}(${n.ana});`.padEnd(31)}// ${t('main libera', 'main frees')}`,
+	`    ${n.ana} = NULL;`,
+	'    return 0;',
+	'}',
+].join('\n');
+
+// Program B: the lesson's `puntaje` program. Lines 10 and 11 change between versions.
+const programB = [
+	'#include <stdio.h>',
+	'#include <stdlib.h>',
+	'',
+	'int main(void) {',
+	`    int *${n.score} = malloc(sizeof *${n.score});`,
+	`    if (${n.score} == NULL) {`,
+	'        return 1;',
+	'    }',
+	`    *${n.score} = 100;`,
+	'',
+	'',
+	'    return 0;',
+	'}',
+].join('\n');
+const printLine = `    printf("%d\\n", *${n.score});`;
+const freeLine = `    free(${n.score});`;
+const COMMENT_COL = printLine.length + 2;
+const withComment = (code: string, comment: string) => `${code.padEnd(COMMENT_COL)}// ${comment}`;
+const variants = [
+	{ id: 'b10-print', line: 10, code: printLine },
+	{ id: 'b10-free', line: 10, code: freeLine },
+	{ id: 'b11-leak', line: 11, code: withComment(`    ${n.score} = NULL;`, t('ERROR: fuga', 'ERROR: leak')) },
+	{ id: 'b11-dfree', line: 11, code: withComment(freeLine, t('ERROR: ya estaba liberado', 'ERROR: already freed')) },
+	{ id: 'b11-uaf', line: 11, code: withComment(printLine, t('ERROR: el bloque ya no existe', 'ERROR: the block no longer exists')) },
+];
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const toSvg = (html: string) => html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>');
+const linesA = highlightCode(programA, 'c').map((html, index) => ({ n: index + 1, html: toSvg(html) }));
+const linesB = highlightCode(programB, 'c').map((html, index) => ({ n: index + 1, html: toSvg(html) }));
+const variantLines = variants.map((variant) => ({ ...variant, html: toSvg(highlightCode(variant.code, 'c')[0]) }));
+
+// What each version prints: real runs of the lesson's programs (`cc -std=c23`). The
+// double free shows glibc's message on Linux; the ASan report is the lesson's.
+type Row = { id: string; text: string; tone?: 'err' | 'small' };
+const consoles: { id: string; rows: Row[] }[] = [
+	{ id: 'out-a', rows: [{ id: 'oa-1', text: `${t('Ana', 'Ann')} (31)` }] },
+	{ id: 'out-leak', rows: [{ id: 'ol-1', text: '100' }] },
+	{
+		id: 'out-df',
+		rows: [
+			{ id: 'od-1', text: 'free(): double free detected in tcache 2', tone: 'err' },
+			{ id: 'od-2', text: 'Aborted (core dumped)', tone: 'err' },
+		],
+	},
+	{ id: 'out-uaf', rows: [{ id: 'ou-1', text: '4', tone: 'err' }] },
+	{
+		id: 'out-as',
+		rows: [
+			{ id: 'os-1', text: '$ gcc -std=c23 -g -fsanitize=address programa.c -o programa', tone: 'small' },
+			{ id: 'os-2', text: '$ ./programa', tone: 'small' },
+			{ id: 'os-3', text: '==1572==ERROR: AddressSanitizer: heap-use-after-free', tone: 'err' },
+			{ id: 'os-4', text: 'READ of size 4 at 0x602000000950 thread T0', tone: 'small' },
+			{ id: 'os-5', text: '    #0 0x0001021988dc in main programa.c:11', tone: 'small' },
+			{ id: 'os-6', text: 'freed by thread T0 here:', tone: 'small' },
+			{ id: 'os-7', text: '    #1 0x00010219888c in main programa.c:10', tone: 'small' },
+			{ id: 'os-8', text: 'previously allocated by thread T0 here:', tone: 'small' },
+			{ id: 'os-9', text: '    #1 0x000102198804 in main programa.c:5', tone: 'small' },
+			{ id: 'os-10', text: 'SUMMARY: AddressSanitizer: heap-use-after-free programa.c:11 in main', tone: 'err' },
+		],
+	},
+];
+const rowClass = (row: Row) => (row.tone ? `xj-out xj-out--${row.tone}` : 'xj-out');
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 72;
+const GUTTER_X = 59;
+const CODE_TOP = 74;
+const LINE_H = 23;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (line: number) => CODE_TOP + (line - 1) * LINE_H;
+const lineMid = (line: number) => lineTop(line) + LINE_H / 2;
+const lineBase = (line: number) => lineMid(line) + 5;
+const CONSOLE_TOP = 478;
+const outY = (row: number) => 530 + row * 17.5;
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right, +v down-left, z is up. The stack lies on the left of
+// the horizontal diagonal and the heap on the right; the modules stand in a row in front.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 56;
+const EY = 32;
+const ORIGIN = { x: 440, y: 250 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+
+/** A box standing on the floor at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		left,
+		right,
+		front,
+		bottom: down(front),
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+type Slab = ReturnType<typeof slab>;
+type Tone = 'flow' | 'violet' | 'magenta';
+
+// The two regions of memory this lesson works with.
+const STACK = slab(-1.7, 1.7, 0.8, 0.8, 14, -14);
+const HEAP = slab(1.4, -1.4, 1.1, 1.1, 14, -14);
+const plates = [
+	{ id: 'z-stack', g: STACK, label: t('Pila: main', 'Stack: main'), x: STACK.center.x, labelY: 338 },
+	{ id: 'z-heap', g: HEAP, label: t('Heap (montículo)', 'Heap'), x: HEAP.center.x + 70, labelY: 340 },
+];
+
+// Main's pointer variable, and the heap blocks. One slot holds the Persona block and,
+// later, the `int` block of the second program: the same place, the same identity.
+const CELL = slab(-1.7, 1.7, 0.5, 0.32, 18);
+const SLOT = slab(1.0, -0.7, 0.45, 0.3, 20);
+const NAME = slab(2.0, -1.7, 0.3, 0.25, 16);
+type Cell = { id: string; g: Slab; face: string; tone: Tone };
+const cells: Cell[] = [
+	{ id: 'cell-a', g: CELL, face: n.ana, tone: 'flow' },
+	{ id: 'cell-b', g: CELL, face: n.score, tone: 'flow' },
+	{ id: 'blk-p', g: SLOT, face: '0x1000', tone: 'flow' },
+	{ id: 'blk-n', g: NAME, face: '0x1010', tone: 'flow' },
+	{ id: 'blk-b', g: SLOT, face: '0x1000', tone: 'flow' },
+];
+// Values written on top of a cell; a value change swaps one text for another.
+// `shown` values appear with their cell; the others wait for an `enter` cue.
+type Value = { id?: string; cell: string; text: string; shown: boolean };
+const values: Value[] = [
+	{ id: 'val-a', cell: 'cell-a', text: '0x1000', shown: true },
+	{ id: 'val-a-null', cell: 'cell-a', text: 'NULL', shown: false },
+	{ id: 'val-b', cell: 'cell-b', text: '0x1000', shown: true },
+	{ id: 'val-b-null', cell: 'cell-b', text: 'NULL', shown: false },
+	{ id: 'val-q', cell: 'blk-b', text: '?', shown: true },
+	{ id: 'val-100', cell: 'blk-b', text: '100', shown: false },
+	{ cell: 'blk-p', text: `${n.age} 31`, shown: true },
+	{ cell: 'blk-n', text: `"${t('Ana', 'Ann')}"`, shown: true },
+];
+// States of a block: released (dashed ghost) and the magenta of an error on it.
+const freed = [
+	{ id: 'free-p', g: SLOT },
+	{ id: 'free-n', g: NAME },
+	{ id: 'free-b', g: SLOT },
+];
+const errorStates = [
+	{ id: 'leak-b', g: SLOT },
+	{ id: 'hit-b', g: SLOT },
+];
+
+// Modules: one per instruction that runs, with its editor line on the face. Program
+// A's row leaves when program B arrives, and B's row takes the same places.
+const COLS = [-1.5, -0.9, -0.3, 0.3, 0.9, 1.5];
+const ROW = 2.5;
+const block = (k: number) => slab(k + ROW, -k + ROW, 0.2, 0.2, 16);
+type Module = { id: string; lit: string; anchor: string; line: number; tone: Tone; g: Slab };
+const mod = (id: string, line: number, col: number, tone: Tone): Module => ({
+	id,
+	lit: id.replace('m-', 'on-'),
+	anchor: id.replace('m-', 'a-m'),
+	line,
+	tone,
+	g: block(COLS[col]),
+});
+const modules: Module[] = [
+	mod('m-a9', 9, 0, 'violet'),
+	mod('m-a10', 10, 1, 'flow'),
+	mod('m-a13', 13, 2, 'flow'),
+	mod('m-a14', 14, 3, 'violet'),
+	mod('m-a15', 15, 4, 'flow'),
+	mod('m-a16', 16, 5, 'flow'),
+	mod('m-b5', 5, 0, 'violet'),
+	mod('m-b6', 6, 1, 'flow'),
+	mod('m-b9', 9, 2, 'flow'),
+	mod('m-b10', 10, 3, 'flow'),
+	mod('m-b11', 11, 4, 'magenta'),
+	mod('m-b12', 12, 5, 'flow'),
+];
+const modAt = (id: string) => modules.find((module) => module.id === id)?.g.center ?? { x: 0, y: 0 };
+
+// Where the particle stops (just above a module) and where the key rests.
+const anchors = [
+	...modules.map((module) => ({ id: module.anchor, ...lift(module.g.center, 16) })),
+	{ id: 'a-key-own', ...lift(CELL.center, 40) },
+	{ id: 'a-key-blk', ...lift(SLOT.center, 40) },
+];
+const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0, y: 0 };
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-all', cx: 452, cy: 300, s: 1.08 },
+	{ id: 'shot-heap', cx: 585, cy: 270, s: 1.35 },
+	{ id: 'shot-wide', cx: 455, cy: 330, s: 0.9 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Arrows. A pointer is always a light blue arrow; the borrow is dashed (no key), the
+// dangling pointer and the bad read turn magenta.
+function arrow(from: Point, ctrl: Point, to: Point) {
+	const dx = to.x - ctrl.x;
+	const dy = to.y - ctrl.y;
+	const len = Math.hypot(dx, dy) || 1;
+	const ux = dx / len;
+	const uy = dy / len;
+	const baseX = to.x - ux * 11;
+	const baseY = to.y - uy * 11;
+	const stem = { x: round(to.x - ux * 8), y: round(to.y - uy * 8) };
+	return {
+		d: `M${from.x} ${from.y} Q${ctrl.x} ${ctrl.y} ${stem.x} ${stem.y}`,
+		head: poly([
+			{ x: round(to.x), y: round(to.y) },
+			{ x: round(baseX - uy * 6), y: round(baseY + ux * 6) },
+			{ x: round(baseX + uy * 6), y: round(baseY - ux * 6) },
+		]),
+	};
+}
+const cellTip = { x: round(CELL.right.x - 6), y: round(CELL.right.y - 4) };
+const slotIn = { x: round(SLOT.left.x - 4), y: round(SLOT.left.y - 2) };
+const ptrMain = arrow(cellTip, { x: 392, y: 140 }, slotIn);
+const ptrName = arrow({ x: round(SLOT.right.x - 4), y: round(SLOT.right.y - 6) }, { x: 598, y: 206 }, { x: round(NAME.left.x + 2), y: round(NAME.left.y - 4) });
+const m13 = lift(modAt('m-a13'), 22);
+const m11 = lift(modAt('m-b11'), 22);
+const slotFront = { x: round(SLOT.front.x - 8), y: round(SLOT.bottom.y + 6) };
+const ptrBorrow = arrow(m13, { x: 470, y: 330 }, slotFront);
+const readBad = arrow(m11, { x: 566, y: 340 }, { x: round(SLOT.front.x + 4), y: round(SLOT.bottom.y + 6) });
+const pointers = [
+	{ id: 'ptr-a', tone: 'flow', ...ptrMain },
+	{ id: 'ptr-n', tone: 'flow', ...ptrName },
+	{ id: 'ptr-b', tone: 'flow', ...ptrMain },
+	{ id: 'ptr-bad', tone: 'magenta', ...ptrMain },
+	{ id: 'ptr-borrow', tone: 'borrow', ...ptrBorrow },
+	{ id: 'rd-b', tone: 'magenta', ...readBad },
+];
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | Tone;
+	mono?: boolean;
+};
+const STATE_Y = round(SLOT.bottom.y + 32);
+const ASAN = { x: 462, y: 146, w: 276, h: 202 };
+const chips: Chip[] = [
+	{ id: 'lb-borrow', text: t('préstamo', 'borrow'), x: 404, y: 322, align: 'middle', tone: 'flow' },
+	{ id: 'lb-leak', text: t('reservado, sin dueño', 'allocated, no owner'), x: SLOT.center.x, y: STATE_Y, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-df', text: 'free × 2', x: SLOT.center.x, y: STATE_Y, align: 'middle', tone: 'magenta', mono: true },
+	{ id: 'lb-uaf', text: t('uso después de liberar', 'use after free'), x: SLOT.center.x + 40, y: STATE_Y, align: 'middle', tone: 'magenta' },
+	{ id: 'as-5', text: 'allocated · 5', x: modAt('m-b5').x, y: 366, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'as-10', text: 'freed · 10', x: modAt('m-b10').x, y: 462, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'as-11', text: 'READ · 11', x: modAt('m-b11').x, y: 366, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'as-df', text: 'attempting double-free', x: ASAN.x + ASAN.w - 8, y: ASAN.y - 24, align: 'end', tone: 'violet', mono: true },
+	{ id: 'r-own', text: t('un bloque, un dueño, un free', 'one block, one owner, one free'), x: 440, y: 516, align: 'middle', tone: 'violet' },
+	{ id: 'r-zero', text: t('cero dueños: fuga', 'zero owners: leak'), x: 330, y: 552, align: 'middle', tone: 'magenta' },
+	{ id: 'r-two', text: t('dos dueños: doble liberación', 'two owners: double free'), x: 550, y: 552, align: 'middle', tone: 'magenta' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + 24);
+const chipLeft = (chip: Chip) =>
+	chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x;
+
+const KEY_TEXT = t('dueño', 'owner');
+const KEY_W = Math.round(KEY_TEXT.length * 7.2 + 46);
+const ASAN_TEXT = 'AddressSanitizer';
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="em-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="em-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="em-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="em-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="em-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="em-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the stack, the heap and the modules, seen through the camera -->
+			<g clip-path="url(#em-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#em-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#em-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- The stack and the heap -->
+						{
+							plates.map((plate) => (
+								<g data-el={plate.id}>
+									<polygon class="xj-plate-shadow" points={plate.g.base} transform="translate(12 18)" />
+									<polygon class="xj-plate xj-plate--l" points={plate.g.leftFace} />
+									<polygon class="xj-plate xj-plate--r" points={plate.g.rightFace} />
+									<polygon class="xj-plate xj-plate--t" points={plate.g.top} fill="url(#em-g-floor)" />
+									<text class="xj-area-label" x={plate.x} y={plate.labelY} text-anchor="middle">
+										{plate.label}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- AddressSanitizer: a guard around the heap that watches every access -->
+						<g data-el="asan" class="xj-asan">
+							<path
+								class="mg-stroke xj-asan-frame"
+								pathLength="1"
+								d={`M${ASAN.x + 22} ${ASAN.y} H${ASAN.x + ASAN.w - 22} Q${ASAN.x + ASAN.w} ${ASAN.y} ${ASAN.x + ASAN.w} ${ASAN.y + 22} V${ASAN.y + ASAN.h - 22} Q${ASAN.x + ASAN.w} ${ASAN.y + ASAN.h} ${ASAN.x + ASAN.w - 22} ${ASAN.y + ASAN.h} H${ASAN.x + 22} Q${ASAN.x} ${ASAN.y + ASAN.h} ${ASAN.x} ${ASAN.y + ASAN.h - 22} V${ASAN.y + 22} Q${ASAN.x} ${ASAN.y} ${ASAN.x + 22} ${ASAN.y} Z`}
+							></path>
+							<g class="xj-chip xj-chip--violet">
+								<rect x={ASAN.x + 14} y={ASAN.y - 13} width={ASAN_TEXT.length * 7.9 + 44} height="26" rx="13"></rect>
+								<svg class="xj-icon" x={ASAN.x + 24} y={ASAN.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+									<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
+								</svg>
+								<text class="xj-chip-mono" x={ASAN.x + 48} y={ASAN.y + 4.5}>{ASAN_TEXT}</text>
+							</g>
+						</g>
+
+						<!-- Memory cells: the stack variable and the heap blocks (address on the front, value on top) -->
+						{
+							cells.map((cell) => (
+								<g data-el={cell.id}>
+									<polygon class="xj-shadow" points={cell.g.base} transform="translate(6 8)" />
+									<polygon class="xj-face xj-face--l" points={cell.g.leftFace} />
+									<polygon class="xj-face xj-face--r" points={cell.g.rightFace} />
+									<polygon class="xj-face xj-face--t" points={cell.g.top} fill="url(#em-g-top)" />
+									<text class="xj-face-text" transform={cell.g.faceMatrix} text-anchor="middle" y="4">
+										{cell.face}
+									</text>
+									{values
+										.filter((value) => value.cell === cell.id)
+										.map((value) => (
+											<g data-el={value.id} data-base={value.shown ? 'shown' : undefined}>
+												<text class:list={['xj-value', value.text === 'NULL' && 'xj-value--null']} x={cell.g.center.x} y={cell.g.center.y + 4.5} text-anchor="middle">
+													{value.text}
+												</text>
+											</g>
+										))}
+								</g>
+							))
+						}
+
+						<!-- Block states: released, and an error on it -->
+						{
+							freed.map((state) => (
+								<g data-el={state.id} class="xj-freed">
+									<polygon class="xj-freed-face" points={state.g.leftFace} />
+									<polygon class="xj-freed-face" points={state.g.rightFace} />
+									<polygon class="xj-freed-top" points={state.g.top} />
+								</g>
+							))
+						}
+						{
+							errorStates.map((state) => (
+								<g data-el={state.id} class="xj-lit xj-lit--magenta">
+									<polygon class="xj-lit-halo" points={state.g.top} />
+									<polygon class="xj-lit-top xj-lit-top--soft" points={state.g.top} />
+								</g>
+							))
+						}
+
+						<!-- Instruction modules, labelled with their editor line -->
+						{
+							modules.map((module) => (
+								<>
+									<g data-el={module.id} class="xj-mod">
+										<polygon class="xj-shadow" points={module.g.base} transform="translate(6 8)" />
+										<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#em-g-top)" />
+										<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+											{module.line}
+										</text>
+									</g>
+									<g data-el={module.lit} class:list={['xj-lit', `xj-lit--${module.tone}`]}>
+										<polygon class="xj-lit-halo" points={module.g.top} />
+										<polygon class="xj-lit-top" points={module.g.top} />
+										<polygon class="xj-lit-side" points={module.g.leftFace} />
+										<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+											{module.line}
+										</text>
+									</g>
+								</>
+							))
+						}
+
+						<!-- Pointers: one arrow identity; dashed for a borrow, magenta when it goes wrong -->
+						{
+							pointers.map((pointer) => (
+								<g data-el={pointer.id} class:list={['xj-ptr', `xj-ptr--${pointer.tone}`]}>
+									<path class="mg-stroke xj-ptr-halo" pathLength="1" d={pointer.d} />
+									<path class="mg-stroke xj-ptr-core" pathLength="1" d={pointer.d} />
+									<polygon class="mg-head xj-ptr-head" points={pointer.head} />
+								</g>
+							))
+						}
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									<text class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'} x={chipLeft(chip) + chipWidth(chip) / 2} y={chip.y + 4.5} text-anchor="middle">
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Ownership: the key sits with the owner. Placement lives on the inner group: the player resets data-el transforms. -->
+						<g data-el="key" data-x={at('a-key-blk').x} data-y={at('a-key-blk').y}>
+							<g class="xj-key">
+								<rect class="xj-key-halo" x={-KEY_W / 2 - 5} y="-18" width={KEY_W + 10} height="36" rx="18"></rect>
+								<rect class="xj-key-card" x={-KEY_W / 2} y="-13" width={KEY_W} height="26" rx="13"></rect>
+								<svg class="xj-icon" x={-KEY_W / 2 + 10} y="-8" width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+									<path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path>
+									<circle cx="16.5" cy="7.5" r=".5"></circle>
+								</svg>
+								<text class="xj-key-text" x={-KEY_W / 2 + 32} y="4.5">{KEY_TEXT}</text>
+							</g>
+						</g>
+
+						<!-- The execution flow -->
+						<g data-el="p" class="xj-particle" data-x={at('a-ma9').x} data-y={at('a-ma9').y}>
+							<circle r="20" fill="url(#em-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="430" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<path class="xj-legend-ptr" d={`M${VP.x + 172} ${LEGEND_Y} h18`}></path>
+				<text x={VP.x + 198} y={LEGEND_Y + 4}>{t('Puntero', 'Pointer')}</text>
+				<rect class="xj-legend-key" x={VP.x + 280} y={LEGEND_Y - 7} width="20" height="14" rx="7"></rect>
+				<text x={VP.x + 308} y={LEGEND_Y + 4}>{t('Propiedad', 'Ownership')}</text>
+			</g>
+
+			<!-- EDITOR: the source, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text data-el="file-a" data-base="shown" class="xj-file" x={ED.x + 76} y={ED.y + 25}>{t('persona.c', 'person.c')}</text>
+				<text data-el="file-b" class="xj-file" x={ED.x + 76} y={ED.y + 25}>programa.c</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 24}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<rect data-el="err-11" class="xj-bar--magenta" x={BAR.x} y={lineTop(11)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(9)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<!-- Program A: create, borrow, destroy -->
+				<g data-el="code-a" data-base="shown" class="xj-code">
+					{
+						linesA.map((line) => (
+							<>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</>
+						))
+					}
+				</g>
+
+				<!-- Program B: the lesson's `puntaje` program; lines 10 and 11 change per version -->
+				<g data-el="code-b" class="xj-code">
+					{
+						linesB.map((line) => (
+							<>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</>
+						))
+					}
+				</g>
+				{
+					variantLines.map((variant) => (
+						<g data-el={variant.id} class="xj-code">
+							<text class="xj-mono" x={CODE_X} y={lineBase(variant.line)} xml:space="preserve" set:html={variant.html} />
+						</g>
+					))
+				}
+
+				<!-- Console: the output of the version that just ran -->
+				{
+					consoles.map((block) => (
+						<g data-el={block.id} data-base="shown">
+							{block.rows.map((row, index) => (
+								<text data-el={row.id} class={rowClass(row)} x={ED.x + 20} y={outY(index)} xml:space="preserve">
+									{row.text}
+								</text>
+							))}
+						</g>
+					))
+				}
+				{Array.from({ length: 17 }, (_, index) => index + 1).map((line) => <circle data-anchor={`ln-${line}`} cx={BAR_CX} cy={lineMid(line)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue execution flow and pointers, magenta for a memory error, and violet for
+	   what resolves it (the owner's key, AddressSanitizer).
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='errores-memoria-c']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='errores-memoria-c'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='errores-memoria-c'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='errores-memoria-c'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-ptr {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 3;
+		stroke-linecap: round;
+	}
+
+	.xj-legend-key {
+		fill: var(--xj-panel);
+		stroke: var(--xj-violet);
+		stroke-width: 1.5;
+	}
+
+	/* Memory regions and cells */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-area-label {
+		font-family: var(--font-body);
+		font-size: 14px;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	.xj-value {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-value--null {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-freed-face,
+	.xj-freed-top {
+		fill: var(--xj-ink);
+		fill-opacity: 0.78;
+		stroke: var(--xj-dim);
+		stroke-width: 1.5;
+		stroke-dasharray: 5 4;
+		stroke-linejoin: round;
+	}
+
+	.xj-freed-top {
+		fill-opacity: 0.86;
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top--soft {
+		fill-opacity: 0.2;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* Pointers */
+	.xj-ptr {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-ptr--magenta {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-ptr-halo,
+	.xj-ptr-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-ptr-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.18;
+	}
+
+	.xj-ptr-core {
+		stroke-width: 3;
+	}
+
+	.xj-ptr--borrow .xj-ptr-core {
+		stroke-dasharray: 0.03 0.025;
+	}
+
+	.xj-ptr-head {
+		fill: var(--xj-line);
+	}
+
+	/* AddressSanitizer */
+	.xj-asan-frame {
+		fill: var(--xj-violet);
+		fill-opacity: 0.06;
+		stroke: var(--xj-violet);
+		stroke-width: 2.5;
+		stroke-linejoin: round;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* The ownership key and the flow */
+	.xj-key-halo {
+		fill: var(--xj-violet);
+		fill-opacity: 0.2;
+	}
+
+	.xj-key-card {
+		fill: var(--xj-violet-deep);
+		stroke: var(--xj-violet);
+		stroke-width: 2;
+	}
+
+	.xj-key-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-out--small {
+		font-size: 12px;
+	}
+
+	.xj-out--err {
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-magenta-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type),
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-ann) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-bar--magenta {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.24;
+		stroke: var(--xj-magenta);
+		stroke-width: 1.2;
+	}
+</style>
