@@ -9,7 +9,8 @@ import { DONE_STAGE, LESSONS, TAUGHT_AT, activityStage, orderOf } from './helper
 // question quiz mixing concepts, output prediction and error detection) and
 // one code project, both using only topics taught up to that lesson.
 
-const VOSEO = /\b(tenés|podés|querés|hacés|sabés|ejecutás|escribís|usás|agregás|creás|compilás|declarás|hacé|ejecutá|probá|mirá|elegí|fijate|imaginá|construí|implementá|escribí|compilá|usá|creá|agregá|definí|declará|recordá|pensá|completá|validá|mostrá|leé|guardá)\b/i;
+// Whole words only: \b treats accented letters as non-word characters.
+const VOSEO = /(?<!\p{L})(tenés|podés|querés|hacés|sabés|ejecutás|escribís|usás|agregás|creás|compilás|declarás|hacé|ejecutá|probá|mirá|elegí|fijate|imaginá|construí|implementá|escribí|compilá|usá|creá|agregá|definí|declará|recordá|pensá|completá|validá|mostrá|leé|guardá)(?!\p{L})/iu;
 
 const dir = (lesson) => `src/content/activities/c/${lesson.slug}`;
 const quizPath = (lesson) => `${dir(lesson)}/autoevaluacion-${lesson.slug}.es.md`;
