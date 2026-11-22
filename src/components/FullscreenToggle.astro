@@ -1,0 +1,162 @@
+---
+/**
+ * Fullscreen button for a player (animations, presentations).
+ *
+ * It puts its closest `[data-fullscreen-root]` ancestor in fullscreen, so the
+ * root decides what fills the monitor and styles itself with `:fullscreen`.
+ * Both labels are server-rendered; the script only flips `aria-pressed`. The
+ * button stays hidden where the browser cannot put an element in fullscreen
+ * (for example Safari on iPhone).
+ */
+import { useTranslations, type Locale } from '../i18n/utils';
+
+type Props = {
+	lang: Locale;
+	class?: string;
+};
+
+const { lang, class: className } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<button
+	type="button"
+	class:list={['btn btn-ghost fullscreen-toggle', className]}
+	data-fullscreen-toggle
+	aria-pressed="false"
+	hidden
+>
+	<svg
+		class="fullscreen-icon-enter"
+		aria-hidden="true"
+		xmlns="http://www.w3.org/2000/svg"
+		width="18"
+		height="18"
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2.75"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+	>
+		<path d="M8 3H5a2 2 0 0 0-2 2v3" />
+		<path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+		<path d="M3 16v3a2 2 0 0 0 2 2h3" />
+		<path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+	</svg>
+	<svg
+		class="fullscreen-icon-exit"
+		aria-hidden="true"
+		xmlns="http://www.w3.org/2000/svg"
+		width="18"
+		height="18"
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2.75"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+	>
+		<path d="M8 3v3a2 2 0 0 1-2 2H3" />
+		<path d="M21 8h-3a2 2 0 0 1-2-2V3" />
+		<path d="M3 16h3a2 2 0 0 1 2 2v3" />
+		<path d="M16 21v-3a2 2 0 0 1 2-2h3" />
+	</svg>
+	<span class="fullscreen-label fullscreen-label-enter">{t('fullscreen.enter')}</span>
+	<span class="fullscreen-label fullscreen-label-exit">{t('fullscreen.exit')}</span>
+</button>
+
+<script>
+	type WebkitDocument = Document & {
+		webkitFullscreenEnabled?: boolean;
+		webkitFullscreenElement?: Element | null;
+		webkitExitFullscreen?: () => void;
+	};
+	type WebkitElement = HTMLElement & { webkitRequestFullscreen?: () => void };
+
+	const doc = document as WebkitDocument;
+
+	const isEnabled = () => Boolean(doc.fullscreenEnabled || doc.webkitFullscreenEnabled);
+	const currentElement = () => doc.fullscreenElement ?? doc.webkitFullscreenElement ?? null;
+
+	function enter(root: WebkitElement) {
+		if (root.requestFullscreen) {
+			root.requestFullscreen().catch(() => {});
+		} else {
+			root.webkitRequestFullscreen?.();
+		}
+	}
+
+	function exit() {
+		if (doc.exitFullscreen) {
+			doc.exitFullscreen().catch(() => {});
+		} else {
+			doc.webkitExitFullscreen?.();
+		}
+	}
+
+	function sync() {
+		const active = currentElement();
+		document.querySelectorAll<HTMLButtonElement>('[data-fullscreen-toggle]').forEach((button) => {
+			const root = button.closest('[data-fullscreen-root]');
+			button.setAttribute('aria-pressed', String(Boolean(root) && root === active));
+		});
+	}
+
+	function setup() {
+		const enabled = isEnabled();
+		document.querySelectorAll<HTMLButtonElement>('[data-fullscreen-toggle]').forEach((button) => {
+			button.hidden = !enabled;
+		});
+		sync();
+	}
+
+	document.addEventListener('click', (event) => {
+		const button = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-fullscreen-toggle]');
+		if (!button) return;
+		const root = button.closest<WebkitElement>('[data-fullscreen-root]');
+		if (!root) return;
+		if (currentElement() === root) {
+			exit();
+		} else {
+			enter(root);
+		}
+	});
+	document.addEventListener('fullscreenchange', sync);
+	document.addEventListener('webkitfullscreenchange', sync);
+
+	setup();
+	document.addEventListener('astro:page-load', setup);
+</script>
+
+<style>
+	.fullscreen-toggle[hidden] {
+		display: none;
+	}
+
+	.fullscreen-icon-exit,
+	.fullscreen-label-exit {
+		display: none;
+	}
+
+	.fullscreen-toggle[aria-pressed='true'] .fullscreen-icon-enter,
+	.fullscreen-toggle[aria-pressed='true'] .fullscreen-label-enter {
+		display: none;
+	}
+
+	.fullscreen-toggle[aria-pressed='true'] .fullscreen-icon-exit,
+	.fullscreen-toggle[aria-pressed='true'] .fullscreen-label-exit {
+		display: inline;
+	}
+
+	/* On narrow screens the icon carries the button; the label stays for assistive tech. */
+	@media (width < 520px) {
+		.fullscreen-label {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+		}
+	}
+</style>

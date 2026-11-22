@@ -10,6 +10,7 @@
  */
 import { getCollection } from 'astro:content';
 import { getLessonForAnimation } from '../../data/animations';
+import FullscreenToggle from '../FullscreenToggle.astro';
 import { useTranslations, type Locale } from '../../i18n/utils';
 import { highlightCode } from '../../utils/highlightCode';
 import { renderInlineCode } from '../../utils/renderInlineCode';
@@ -48,7 +49,7 @@ const lessonHref = lessonRef
 	: undefined;
 ---
 
-<section class="anim-player" data-anim-player data-slug={slug} data-total={total}>
+<section class="anim-player" data-fullscreen-root data-anim-player data-slug={slug} data-total={total}>
 	<!-- The visible chrome is kept to the animation itself; the title stays for assistive tech and the outline. -->
 	<h1 class="anim-visually-hidden">{title}</h1>
 
@@ -230,6 +231,7 @@ const lessonHref = lessonRef
 			<p class="anim-counter text-muted" aria-live="polite" aria-atomic="true">
 				{t('animations.stepCounter.label')} <span data-anim-current>1</span> {t('animations.stepCounter.of')} {total}
 			</p>
+			<FullscreenToggle lang={lang} />
 			{
 				lessonHref && (
 					<a class="btn btn-ghost anim-back" href={lessonHref} title={lesson?.data.title} data-anim-back>
@@ -748,6 +750,16 @@ const lessonHref = lessonRef
 		grid-template-rows: 1fr auto;
 		gap: var(--space-4);
 		padding-block: var(--space-3) var(--space-3);
+	}
+
+	/* Fullscreen: the player fills the monitor; the stage takes the free height
+	   and the scene scales with it. */
+	.anim-player:fullscreen {
+		height: 100dvh;
+		box-sizing: border-box;
+		padding: var(--space-4) var(--space-6);
+		background: var(--color-bg);
+		overflow-y: auto;
 	}
 
 	/* Off-screen text for assistive tech: the page title and the live announcer. */

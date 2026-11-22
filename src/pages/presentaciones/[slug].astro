@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getLangFromUrl } from '../../i18n/utils';
 import { presentations } from '../../data/presentations';
 import PresentationLessonLink from '../../components/PresentationLessonLink.astro';
+import FullscreenToggle from '../../components/FullscreenToggle.astro';
 
 import ArbolesBinarios from '../../components/presentaciones/arboles-binarios.astro';
 import ArreglosEnC from '../../components/presentaciones/arreglos-en-c.astro';
@@ -133,14 +134,59 @@ const PresentationComponent = componentMap[slug];
 	enPath={`/en/presentaciones/${slug}`}
 	canonicalPath={`/presentaciones/${slug}`}
 >
-	<div class="presentation-lesson-link-wrap">
-		<PresentationLessonLink presentationSlug={pres.slug} locale={lang} />
+	<div class="presentation-frame" data-fullscreen-root>
+		<div class="presentation-toolbar">
+			<div class="presentation-lesson-link-wrap">
+				<PresentationLessonLink presentationSlug={pres.slug} locale={lang} />
+			</div>
+			<FullscreenToggle lang={lang} class="presentation-fullscreen" />
+		</div>
+		<PresentationComponent lang={lang} />
 	</div>
-	<PresentationComponent lang={lang} />
 </BaseLayout>
 
 <style>
+	.presentation-toolbar {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: var(--space-3);
+		padding-right: var(--space-6);
+	}
+
 	.presentation-lesson-link-wrap {
+		flex: 1;
+		min-width: 0;
 		padding: var(--space-3) var(--space-6) 0 var(--space-8);
+	}
+
+	.presentation-toolbar :global(.presentation-fullscreen) {
+		margin-left: auto;
+		flex-shrink: 0;
+	}
+
+	/* Fullscreen: the deck fills the monitor (it sizes itself from
+	   --site-header-height) and the toggle floats in the bottom corner. */
+	.presentation-frame:fullscreen {
+		--site-header-height: 0px;
+		overflow-y: auto;
+		background: var(--color-bg);
+	}
+
+	.presentation-frame:fullscreen .presentation-lesson-link-wrap {
+		display: none;
+	}
+
+	.presentation-frame:fullscreen .presentation-toolbar {
+		position: fixed;
+		right: var(--space-4);
+		bottom: var(--space-4);
+		z-index: 10;
+		padding: 0;
+	}
+
+	.presentation-frame:fullscreen :global(.presentation-fullscreen) {
+		background: var(--color-surface);
+		box-shadow: var(--shadow-md);
 	}
 </style>
