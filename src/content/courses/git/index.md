@@ -10,18 +10,25 @@ image: '/img/courses/git/logo.svg'
 published: true
 featured: false
 roadmap:
-  - title: 'Fundamentos y flujo de trabajo'
-    title_en: 'Fundamentals and workflow'
-    description: 'Primeros pasos con Git, control de versiones local y sincronización con repositorios remotos.'
-    description_en: 'First steps with Git, local version control and synchronization with remote repositories.'
+  - title: 'Trabajo local'
+    title_en: 'Local work'
+    description: 'Commits, cómo deshacer cambios, ramas, fusiones y conflictos en tu propia computadora.'
+    description_en: 'Commits, undoing changes, branches, merges and conflicts on your own computer.'
     lessons:
       - 'el-principio-con-git'
-      - 'bajar-y-subir-cambios'
-  - title: 'Ramas, conflictos y buenas prácticas'
-    title_en: 'Branches, conflicts and best practices'
-    description: 'Gestión de ramas, resolución de conflictos, rebase y flujo de trabajo profesional.'
-    description_en: 'Branch management, conflict resolution, rebase and professional workflow.'
-    lessons:
+      - 'deshacer-cambios'
       - 'conflictos'
+  - title: 'Colaboración con remotos'
+    title_en: 'Collaborating with remotes'
+    description: 'Sincronización con GitHub, autenticación y trabajo en equipo con ramas y Pull Requests.'
+    description_en: 'Syncing with GitHub, authentication and teamwork with branches and Pull Requests.'
+    lessons:
+      - 'bajar-y-subir-cambios'
+      - 'ramas-y-pull-requests'
+  - title: 'Historial profesional'
+    title_en: 'Professional history'
+    description: 'Rebase, historial limpio y buenas prácticas de la industria.'
+    description_en: 'Rebase, a clean history and industry best practices.'
+    lessons:
       - 'rebase-y-buenas-practicas'
 ---

@@ -392,8 +392,9 @@ Optional course roadmap (`roadmap` field, mindmap-style learning path):
   nodes rendered as a collapsible tree (`CourseRoadmap.astro`) at the top of
   the course page, between `.course-header` and `.lessons-section`, in both
   locales. A course with no `roadmap` field renders nothing there — no
-  heading, no empty block. Only the Java course has one today; other courses
-  are unaffected.
+  heading, no empty block. The Java and Git courses have one today; other
+  courses are unaffected. The Git curriculum (six lessons, order and roadmap) is
+  pinned by `tests/courses-git-curriculum.test.mjs`.
 - Each node is bilingual: `title` (Spanish) / `title_en` (English), plus
   optional one-sentence `description` / `description_en`.
 - Each node declares EITHER `lessons` (a flat list of lesson frontmatter
@@ -675,6 +676,14 @@ as their only animation: `metodos-funciones-java`, `algoritmia-complejidad-java`
 `constructores-encapsulamiento-java`, `arrays-objetos-java`, `tad-listas-java`,
 `tad-pilas-colas-java`, `arboles-binarios-java`, `arboles-n-arios-java`, `grafos-java`,
 `archivos-jar-java`, `concurrencia-hilos-java` and `jdbc-java`.
+
+The Git course has one film per lesson and no step-by-step animation (catalog tag
+`Git`, `AnimationTag` in `src/data/animations.ts`): `tres-estados-git`
+(`el-principio-con-git`), `deshacer-cambios-git` (`deshacer-cambios`),
+`ramas-conflictos-git` (`conflictos`), `sincronizacion-remota-git`
+(`bajar-y-subir-cambios`), `pull-requests-git` (`ramas-y-pull-requests`) and
+`rebase-git` (`rebase-y-buenas-practicas`). Their editor shows the terminal session
+(bash) instead of Java code.
 
 Adding an animation: register it in the catalog, write its script and scenes, import
 and map the component in both detail pages, add the thumbnail, and cover it with a

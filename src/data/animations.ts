@@ -1,6 +1,6 @@
 import type { LessonReference } from './presentations';
 
-export type AnimationTag = 'Java';
+export type AnimationTag = 'Java' | 'Git';
 
 /**
  * A step-by-step explanatory animation. Unlike presentations, every animation
@@ -449,6 +449,96 @@ export const animations: Animation[] = [
 		},
 		minutes: 2,
 		lesson: { course: 'java', slug: '26-arboles-n-arios-y-representacion-con-vectores' },
+	},
+	{
+		slug: 'tres-estados-git',
+		image: '/img/animations/tres-estados-git.svg',
+		tag: { es: 'Git', en: 'Git' },
+		title: {
+			es: 'El viaje de un archivo por las tres zonas de Git',
+			en: 'The journey of a file through Git\'s three zones',
+		},
+		description: {
+			es: 'Un corto de dos minutos que sigue a hola.txt por el Working Directory, el Staging Area y el repositorio: git add, git commit, qué comparan git diff y git diff --staged, cómo sacar un cambio con git restore --staged y cómo se encadenan los commits.',
+			en: 'A two-minute short that follows hello.txt through the Working Directory, the Staging Area and the repository: git add, git commit, what git diff and git diff --staged compare, how git restore --staged takes a change out, and how commits chain.',
+		},
+		minutes: 2,
+		lesson: { course: 'git', slug: 'el-principio-con-git' },
+	},
+	{
+		slug: 'deshacer-cambios-git',
+		image: '/img/animations/deshacer-cambios-git.svg',
+		tag: { es: 'Git', en: 'Git' },
+		title: {
+			es: 'El viaje de HEAD: deshacer sin perder trabajo',
+			en: 'The journey of HEAD: undoing without losing work',
+		},
+		description: {
+			es: 'Un corto de dos minutos que sigue a HEAD sobre una cadena de commits: restore descarta, amend reemplaza, revert agrega un commit inverso, reset mueve HEAD en sus tres modos y reflog recupera lo perdido.',
+			en: 'A two-minute short that follows HEAD along a chain of commits: restore discards, amend replaces, revert adds an inverse commit, reset moves HEAD in its three modes and reflog recovers what was lost.',
+		},
+		minutes: 2,
+		lesson: { course: 'git', slug: 'deshacer-cambios' },
+	},
+	{
+		slug: 'ramas-conflictos-git',
+		image: '/img/animations/ramas-conflictos-git.svg',
+		tag: { es: 'Git', en: 'Git' },
+		title: {
+			es: 'El viaje de dos ramas: del fast-forward al conflicto',
+			en: 'The journey of two branches: from fast-forward to conflict',
+		},
+		description: {
+			es: 'Un corto de dos minutos que muestra las ramas como etiquetas que se mueven, un merge fast-forward, un merge commit con dos padres y cómo se resuelve un conflicto en la misma línea.',
+			en: 'A two-minute short showing branches as moving labels, a fast-forward merge, a merge commit with two parents and how a conflict on the same line is resolved.',
+		},
+		minutes: 2,
+		lesson: { course: 'git', slug: 'conflictos' },
+	},
+	{
+		slug: 'sincronizacion-remota-git',
+		image: '/img/animations/sincronizacion-remota-git.svg',
+		tag: { es: 'Git', en: 'Git' },
+		title: {
+			es: 'El viaje de un commit hasta GitHub y de vuelta',
+			en: 'The journey of a commit to GitHub and back',
+		},
+		description: {
+			es: 'Un corto de dos minutos que sigue un commit de Ana hasta el remoto con push, su llegada a la copia de Beto con fetch y pull, y por qué un push es rechazado cuando el remoto avanzó.',
+			en: 'A two-minute short that follows a commit from Ana to the remote with push, its arrival in Bob\'s copy with fetch and pull, and why a push is rejected when the remote moved ahead.',
+		},
+		minutes: 2,
+		lesson: { course: 'git', slug: 'bajar-y-subir-cambios' },
+	},
+	{
+		slug: 'pull-requests-git',
+		image: '/img/animations/pull-requests-git.svg',
+		tag: { es: 'Git', en: 'Git' },
+		title: {
+			es: 'El viaje de un Pull Request: de la rama a main',
+			en: 'The journey of a Pull Request: from a branch to main',
+		},
+		description: {
+			es: 'Un corto de dos minutos que sigue una rama de trabajo publicada en GitHub, el Pull Request que pide integrarla, la revisión, la actualización con origin/main y la limpieza después del merge.',
+			en: 'A two-minute short that follows a feature branch pushed to GitHub, the Pull Request that asks to integrate it, the review, the update with origin/main and the cleanup after the merge.',
+		},
+		minutes: 2,
+		lesson: { course: 'git', slug: 'ramas-y-pull-requests' },
+	},
+	{
+		slug: 'rebase-git',
+		image: '/img/animations/rebase-git.svg',
+		tag: { es: 'Git', en: 'Git' },
+		title: {
+			es: 'El viaje de un rebase: commits que se vuelven a aplicar',
+			en: 'The journey of a rebase: commits replayed on a new base',
+		},
+		description: {
+			es: 'Un corto de dos minutos que muestra cómo rebase vuelve a aplicar tus commits sobre origin/main con hashes nuevos, cómo se detiene ante un conflicto y por qué se publica con --force-with-lease.',
+			en: 'A two-minute short showing how rebase replays your commits on top of origin/main with new hashes, how it stops on a conflict and why the result is pushed with --force-with-lease.',
+		},
+		minutes: 2,
+		lesson: { course: 'git', slug: 'rebase-y-buenas-practicas' },
 	},
 ];
 

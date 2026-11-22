@@ -1,0 +1,1224 @@
+---
+/**
+ * Scene for "The journey of a commit to GitHub and back" (lesson
+ * git/bajar-y-subir-cambios, order: 4), a short film played on one persistent
+ * motion canvas. The captions and cues live in
+ * `src/data/animations/sincronizacion-remota-git.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: it is the
+ * terminal session of the lesson, one command per line, and the cues type each
+ * command, slide a bar onto it and type its real output below. The viewport on
+ * the right holds the camera: three isometric platforms, Ana's computer, the
+ * remote on GitHub (`origin`) and Beto's computer. A commit is always the same
+ * rounded node with its short hash; a copy of it travels along the pipes on
+ * every push, clone, fetch and pull. `main` is a solid tag and `origin/main` a
+ * dashed one (a snapshot of the remote). Every command has a module on the
+ * platform of the person who runs it, labeled with its editor line. Magenta marks
+ * the problem (the rejected push), violet what resolves it (the merge commit).
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/sincronizacion-remota-git';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── Names, messages and hashes, localized exactly as the lesson does ──────
+const names = {
+	repo: t('mi-proyecto', 'my-project'),
+	bob: t('beto', 'bob'),
+	Bob: t('Beto', 'Bob'),
+	tasks: t('tareas.txt', 'tasks.txt'),
+};
+const msg = {
+	c2: t('Agrega lista de tareas', 'Add task list'),
+	c3: t('Agrega tarea de SSH', 'Add SSH task'),
+	b: t('Cambia el título del README', 'Change the README title'),
+};
+const h = {
+	c1: t('8e2a90d', '66bc8a9'),
+	c2: t('670e72e', 'dc45f56'),
+	c3: t('1bc10be', '426e552'),
+	b: t('b47f806', '810de32'),
+	m: t('0a7d96a', 'e9d7ba4'),
+};
+const url = `git@github.com:ana/${names.repo}.git`;
+const to = `To github.com:ana/${names.repo}.git`;
+const from = `From github.com:ana/${names.repo}`;
+
+// ── Terminal session shown in the editor: who runs each command, and the command ──
+const session: { who: 'ana' | 'bob'; cmd: string }[] = [
+	{ who: 'ana', cmd: `git remote add origin ${url}` },
+	{ who: 'ana', cmd: 'git push -u origin main' },
+	{ who: 'bob', cmd: `git clone ${url} ${names.bob}` },
+	{ who: 'bob', cmd: `git add ${names.tasks}` },
+	{ who: 'bob', cmd: `git commit -m "${msg.c2}"` },
+	{ who: 'bob', cmd: 'git push' },
+	{ who: 'ana', cmd: 'git status' },
+	{ who: 'ana', cmd: 'git fetch' },
+	{ who: 'ana', cmd: 'git status' },
+	{ who: 'ana', cmd: 'git pull' },
+	{ who: 'ana', cmd: `git add ${names.tasks}` },
+	{ who: 'ana', cmd: `git commit -m "${msg.c3}"` },
+	{ who: 'ana', cmd: 'git push' },
+	{ who: 'bob', cmd: 'git add README.md' },
+	{ who: 'bob', cmd: `git commit -m "${msg.b}"` },
+	{ who: 'bob', cmd: 'git push' },
+	{ who: 'bob', cmd: 'git config --global pull.rebase false' },
+	{ who: 'bob', cmd: 'git pull' },
+	{ who: 'bob', cmd: 'git push' },
+];
+const prompts = { ana: 'ana', bob: names.bob };
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const commandLines = highlightCode(session.map((line) => line.cmd).join('\n'), 'bash').map((html, index) => ({
+	n: index + 1,
+	who: session[index].who,
+	html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+}));
+
+// Real Git output of each command (lesson text, shortened where it does not fit).
+// The id is `o-<editor line>-<row>`.
+const outputs: { id: string; text: string }[] = [
+	{ id: 'o-2-0', text: to },
+	{ id: 'o-2-1', text: ' * [new branch]      main -> main' },
+	{ id: 'o-2-2', text: "branch 'main' set up to track 'origin/main'." },
+	{ id: 'o-3-0', text: `Cloning into '${names.bob}'...` },
+	{ id: 'o-5-0', text: `[main ${h.c2}] ${msg.c2}` },
+	{ id: 'o-5-1', text: ' 1 file changed, 1 insertion(+)' },
+	{ id: 'o-6-0', text: to },
+	{ id: 'o-6-1', text: `   ${h.c1}..${h.c2}  main -> main` },
+	{ id: 'o-7-0', text: 'On branch main' },
+	{ id: 'o-7-1', text: "Your branch is up to date with 'origin/main'." },
+	{ id: 'o-8-0', text: from },
+	{ id: 'o-8-1', text: `   ${h.c1}..${h.c2}  main       -> origin/main` },
+	{ id: 'o-9-0', text: 'On branch main' },
+	{ id: 'o-9-1', text: "Your branch is behind 'origin/main' by 1 commit," },
+	{ id: 'o-9-2', text: 'and can be fast-forwarded.' },
+	{ id: 'o-10-0', text: `Updating ${h.c1}..${h.c2}` },
+	{ id: 'o-10-1', text: 'Fast-forward' },
+	{ id: 'o-10-2', text: ` ${names.tasks} | 1 +` },
+	{ id: 'o-12-0', text: `[main ${h.c3}] ${msg.c3}` },
+	{ id: 'o-12-1', text: ' 1 file changed, 1 insertion(+)' },
+	{ id: 'o-13-0', text: to },
+	{ id: 'o-13-1', text: `   ${h.c2}..${h.c3}  main -> main` },
+	{ id: 'o-15-0', text: `[main ${h.b}] ${msg.b}` },
+	{ id: 'o-15-1', text: ' 1 file changed, 1 insertion(+), 1 deletion(-)' },
+	{ id: 'o-16-0', text: to },
+	{ id: 'o-16-1', text: ' ! [rejected]        main -> main (fetch first)' },
+	{ id: 'o-16-2', text: `error: failed to push some refs to 'github.com:ana/${names.repo}.git'` },
+	{ id: 'o-16-3', text: "hint: 'git pull' before pushing again." },
+	{ id: 'o-18-0', text: from },
+	{ id: 'o-18-1', text: `   ${h.c2}..${h.c3}  main       -> origin/main` },
+	{ id: 'o-18-2', text: "Merge made by the 'ort' strategy." },
+	{ id: 'o-18-3', text: ` ${names.tasks} | 1 +` },
+	{ id: 'o-19-0', text: to },
+	{ id: 'o-19-1', text: `   ${h.c3}..${h.m}  main -> main` },
+];
+const outputRow = (id: string) => Number(id.split('-')[2]);
+const outputFailed = (id: string) => id === 'o-16-1' || id === 'o-16-2';
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const GUTTER_X = 54;
+const PROMPT_X = 60;
+const CODE_X = 104;
+const CODE_TOP = 72;
+const LINE_H = 21;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 5;
+const CONSOLE_TOP = 490;
+const outY = (row: number) => CONSOLE_TOP + 46 + row * LINE_H;
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Three platforms seen from above: the remote at the back, Ana's computer at the
+// front left and Beto's at the front right. Each platform is an isometric slab
+// whose long diagonal runs across the screen, so a chain of commits reads left
+// to right, oldest first.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const round = (value: number) => Math.round(value * 10) / 10;
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const path = (points: Point[]) => 'M' + points.map((point) => `${point.x} ${point.y}`).join(' L');
+
+/** An isometric slab: its top face is a rhombus of half-diagonals `hw` and `hh`, standing `h` tall. */
+function slab(cx: number, cy: number, hw: number, hh: number, h: number) {
+	const back = { x: cx, y: cy - hh };
+	const right = { x: cx + hw, y: cy };
+	const front = { x: cx, y: cy + hh };
+	const left = { x: cx - hw, y: cy };
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		back,
+		right,
+		front,
+		left,
+	};
+}
+
+type Plat = 'ana' | 'rem' | 'beto';
+const HW = 160;
+const HH = 91;
+const P: Record<Plat, Point> = {
+	rem: { x: 640, y: 200 },
+	ana: { x: 440, y: 470 },
+	beto: { x: 840, y: 470 },
+};
+const floors = {
+	ana: slab(P.ana.x, P.ana.y, HW, HH, 14),
+	rem: slab(P.rem.x, P.rem.y, HW, HH, 14),
+	beto: slab(P.beto.x, P.beto.y, HW, HH, 14),
+};
+/** A point on the segment from `a` to `b`. */
+const along = (a: Point, b: Point, k: number): Point => ({ x: round(a.x + (b.x - a.x) * k), y: round(a.y + (b.y - a.y) * k) });
+
+// Commit slots: four columns, oldest on the left. The front row holds a commit made
+// apart from the others (Beto's README change before he brought in Ana's work).
+const SLOT_X = [-111, -37, 37, 111];
+const ROW = { main: -34, front: -2 };
+const NODE = { w: 62, h: 22 };
+type Node = { id: string; plat: Plat; slot: number; row: 'main' | 'front'; hash: string; tone: 'flow' | 'violet' };
+const nodes: Node[] = [
+	{ id: 'ana-c1', plat: 'ana', slot: 0, row: 'main', hash: h.c1, tone: 'flow' },
+	{ id: 'ana-c2', plat: 'ana', slot: 1, row: 'main', hash: h.c2, tone: 'flow' },
+	{ id: 'ana-c3', plat: 'ana', slot: 2, row: 'main', hash: h.c3, tone: 'flow' },
+	{ id: 'rem-c1', plat: 'rem', slot: 0, row: 'main', hash: h.c1, tone: 'flow' },
+	{ id: 'rem-c2', plat: 'rem', slot: 1, row: 'main', hash: h.c2, tone: 'flow' },
+	{ id: 'rem-c3', plat: 'rem', slot: 2, row: 'main', hash: h.c3, tone: 'flow' },
+	{ id: 'rem-b', plat: 'rem', slot: 2, row: 'front', hash: h.b, tone: 'flow' },
+	{ id: 'rem-m', plat: 'rem', slot: 3, row: 'main', hash: h.m, tone: 'violet' },
+	{ id: 'beto-c1', plat: 'beto', slot: 0, row: 'main', hash: h.c1, tone: 'flow' },
+	{ id: 'beto-c2', plat: 'beto', slot: 1, row: 'main', hash: h.c2, tone: 'flow' },
+	{ id: 'beto-c3', plat: 'beto', slot: 2, row: 'main', hash: h.c3, tone: 'flow' },
+	{ id: 'beto-b', plat: 'beto', slot: 2, row: 'front', hash: h.b, tone: 'flow' },
+	{ id: 'beto-m', plat: 'beto', slot: 3, row: 'main', hash: h.m, tone: 'violet' },
+];
+const spot = (plat: Plat, slot: number, row: 'main' | 'front', dy = 0, dx = 0): Point => ({
+	x: P[plat].x + SLOT_X[slot] + dx,
+	y: P[plat].y + ROW[row] + dy,
+});
+const nodeAt = (id: string) => {
+	const node = nodes.find((item) => item.id === id);
+	return node ? spot(node.plat, node.slot, node.row) : { x: 0, y: 0 };
+};
+
+// Parent links, drawn from the parent's right edge to the child's left edge.
+const linkPairs: [string, string, string][] = [
+	['lk-ana-12', 'ana-c1', 'ana-c2'],
+	['lk-ana-23', 'ana-c2', 'ana-c3'],
+	['lk-rem-12', 'rem-c1', 'rem-c2'],
+	['lk-rem-23', 'rem-c2', 'rem-c3'],
+	['lk-rem-2b', 'rem-c2', 'rem-b'],
+	['lk-rem-3m', 'rem-c3', 'rem-m'],
+	['lk-rem-bm', 'rem-b', 'rem-m'],
+	['lk-beto-12', 'beto-c1', 'beto-c2'],
+	['lk-beto-23', 'beto-c2', 'beto-c3'],
+	['lk-beto-2b', 'beto-c2', 'beto-b'],
+	['lk-beto-3m', 'beto-c3', 'beto-m'],
+	['lk-beto-bm', 'beto-b', 'beto-m'],
+];
+const links = linkPairs.map(([id, a, b]) => {
+	const pa = nodeAt(a);
+	const pb = nodeAt(b);
+	return { id, d: path([{ x: pa.x + NODE.w / 2, y: pa.y }, { x: pb.x - NODE.w / 2, y: pb.y }]) };
+});
+
+// Where the branch tags stand: `main` just above its commit, `origin/main` above that.
+// Beto's `main` on his front-row commit stands to its left.
+const TAG = { main: -27, origin: -49 };
+const spots: { id: string; x: number; y: number }[] = [
+	{ id: 's-ana-m0', ...spot('ana', 0, 'main', TAG.main) },
+	{ id: 's-ana-m1', ...spot('ana', 1, 'main', TAG.main) },
+	{ id: 's-ana-m2', ...spot('ana', 2, 'main', TAG.main) },
+	{ id: 's-ana-o0', ...spot('ana', 0, 'main', TAG.origin) },
+	{ id: 's-ana-o1', ...spot('ana', 1, 'main', TAG.origin) },
+	{ id: 's-ana-o2', ...spot('ana', 2, 'main', TAG.origin) },
+	{ id: 's-rem-m0', ...spot('rem', 0, 'main', TAG.main) },
+	{ id: 's-rem-m1', ...spot('rem', 1, 'main', TAG.main) },
+	{ id: 's-rem-m2', ...spot('rem', 2, 'main', TAG.main) },
+	{ id: 's-rem-m3', ...spot('rem', 3, 'main', TAG.main) },
+	{ id: 's-beto-m0', ...spot('beto', 0, 'main', TAG.main) },
+	{ id: 's-beto-m1', ...spot('beto', 1, 'main', TAG.main) },
+	{ id: 's-beto-mb', ...spot('beto', 2, 'front', 0, -63) },
+	{ id: 's-beto-m3', ...spot('beto', 3, 'main', TAG.main) },
+	{ id: 's-beto-o0', ...spot('beto', 0, 'main', TAG.origin) },
+	{ id: 's-beto-o1', ...spot('beto', 1, 'main', TAG.origin) },
+	{ id: 's-beto-o2', ...spot('beto', 2, 'main', TAG.origin) },
+	{ id: 's-beto-o3', ...spot('beto', 3, 'main', TAG.origin) },
+];
+const spotAt = (id: string) => spots.find((item) => item.id === id) ?? { x: 0, y: 0 };
+
+// Branch tags. Placement lives on the inner group: the player resets data-el transforms.
+type Tag = { id: string; text: string; kind: 'local' | 'remote'; start: string };
+const tags: Tag[] = [
+	{ id: 'ana-main', text: 'main', kind: 'local', start: 's-ana-m0' },
+	{ id: 'ana-origin', text: 'origin/main', kind: 'remote', start: 's-ana-o0' },
+	{ id: 'rem-main', text: 'main', kind: 'local', start: 's-rem-m0' },
+	{ id: 'beto-main', text: 'main', kind: 'local', start: 's-beto-m0' },
+	{ id: 'beto-origin', text: 'origin/main', kind: 'remote', start: 's-beto-o0' },
+];
+const tagWidth = (tag: Tag) => Math.round(tag.text.length * 6.7 + 18);
+
+// Command modules: one per editor line, on the platform of whoever runs it, in a row
+// along the two front edges of the slab.
+const moduleLines: Record<'ana' | 'beto', { left: number[]; right: number[] }> = {
+	ana: { left: [1, 2, 7, 8, 9], right: [10, 11, 12, 13] },
+	beto: { left: [3, 4, 5, 6, 14], right: [15, 16, 17, 18, 19] },
+};
+const LEFT_T = [0.3, 0.45, 0.6, 0.75, 0.9];
+const RIGHT_T = [0.1, 0.25, 0.4, 0.55, 0.7];
+const MOD = { hw: 11, hh: 6.3, h: 11 };
+const modules = (['ana', 'beto'] as const)
+	.flatMap((plat) => {
+		const floor = floors[plat];
+		const left = moduleLines[plat].left.map((n, index) => ({ n, plat, at: along(floor.left, floor.front, LEFT_T[index]) }));
+		const right = moduleLines[plat].right.map((n, index) => ({ n, plat, at: along(floor.front, floor.right, RIGHT_T[index]) }));
+		return [...left, ...right];
+	})
+	.map((module) => {
+		const base = { x: module.at.x, y: round(module.at.y - 8) };
+		const g = slab(base.x, round(base.y - MOD.h), MOD.hw, MOD.hh, MOD.h);
+		return { ...module, base, g, top: round(base.y - MOD.h) };
+	})
+	.sort((a, b) => a.base.y - b.base.y);
+const toneOf = (n: number) => (n === 16 ? 'magenta' : n === 17 || n === 18 ? 'violet' : 'flow');
+
+// The pipes between each computer and the remote: from the back edge of the computer
+// to the front edge of the remote.
+const PORT = {
+	ana: along(floors.ana.back, floors.ana.right, 0.5),
+	remA: along(floors.rem.left, floors.rem.front, 0.3),
+	remB: along(floors.rem.front, floors.rem.right, 0.5),
+	beto: along(floors.beto.left, floors.beto.back, 0.4),
+};
+const routes = {
+	anaUp: path([PORT.ana, PORT.remA]),
+	anaDown: path([PORT.remA, PORT.ana]),
+	betoUp: path([PORT.beto, PORT.remB]),
+	betoDown: path([PORT.remB, PORT.beto]),
+};
+
+// Anchors: each commit node (`a-<node>`), each module (`a-m-<line>`), the pipe ends and the tag spots.
+const anchors: { id: string; x: number; y: number }[] = [
+	...nodes.map((node) => ({ id: `a-${node.id}`, ...nodeAt(node.id) })),
+	...modules.map((module) => ({ id: `a-m-${module.n}`, x: module.base.x, y: round(module.base.y - 36) })),
+	{ id: 'a-port-ana', ...PORT.ana },
+	{ id: 'a-port-rem-a', ...PORT.remA },
+	{ id: 'a-port-rem-b', ...PORT.remB },
+	{ id: 'a-port-beto', ...PORT.beto },
+	...spots,
+];
+const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0, y: 0 };
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-ana', cx: 468, cy: 430, s: 1.4 },
+	{ id: 'shot-beto', cx: 762, cy: 430, s: 1.4 },
+	{ id: 'shot-ana-rem', cx: 560, cy: 340, s: 1.0 },
+	{ id: 'shot-beto-rem', cx: 698, cy: 340, s: 1.0 },
+	{ id: 'shot-all', cx: 640, cy: 350, s: 0.86 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Commit copies in transit: the same node, with a halo, travelling along a pipe.
+type Packet = { id: string; hash: string; tone: 'flow' | 'violet' | 'magenta'; startAt: string };
+const packets: Packet[] = [
+	{ id: 'pk-push1', hash: h.c1, tone: 'flow', startAt: 'a-ana-c1' },
+	{ id: 'pk-clone', hash: h.c1, tone: 'flow', startAt: 'a-rem-c1' },
+	{ id: 'pk-push2', hash: h.c2, tone: 'flow', startAt: 'a-beto-c2' },
+	{ id: 'pk-fetch', hash: h.c2, tone: 'flow', startAt: 'a-rem-c2' },
+	{ id: 'pk-push3', hash: h.c3, tone: 'flow', startAt: 'a-ana-c3' },
+	{ id: 'pk-rej', hash: h.b, tone: 'magenta', startAt: 'a-beto-b' },
+	{ id: 'pk-pull', hash: h.c3, tone: 'flow', startAt: 'a-rem-c3' },
+	{ id: 'pk-push4b', hash: h.b, tone: 'flow', startAt: 'a-beto-b' },
+	{ id: 'pk-push4m', hash: h.m, tone: 'violet', startAt: 'a-beto-m' },
+];
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | 'flow' | 'violet' | 'magenta';
+	mono?: boolean;
+	icon?: 'check' | 'x';
+};
+const NOTE_ANA = { x: 400, y: 352 };
+const NOTE_ANA2 = { x: 400, y: 322 };
+const NOTE_BETO = { x: 880, y: 352 };
+const NOTE_BETO2 = { x: 880, y: 322 };
+const NOTE_REM = { x: 640, y: 92 };
+const NOTE_REM2 = { x: 640, y: 62 };
+const SLOT = { x: 640, y: 656 };
+const chips: Chip[] = [
+	{ id: 'ch-origin', text: `origin = github.com:ana/${names.repo}`, x: 572, y: 366, align: 'start', tone: 'flow', mono: true },
+	{ id: 'ch-track', text: t('main sigue a origin/main', 'main tracks origin/main'), ...NOTE_ANA, align: 'middle', tone: 'flow', icon: 'check' },
+	{ id: 'ch-clone', text: t('todo el historial', 'the whole history'), ...NOTE_BETO, align: 'middle', tone: 'flow', icon: 'check' },
+	{ id: 'ch-uptodate', text: t('"al día"', '"up to date"'), ...NOTE_ANA, align: 'middle', tone: 'plain' },
+	{ id: 'ch-stale', text: t('origin/main: la foto de antes', 'origin/main: the old snapshot'), ...NOTE_ANA2, align: 'middle', tone: 'plain' },
+	{ id: 'ch-files', text: t('main y archivos: sin cambios', 'main and files: unchanged'), ...NOTE_ANA, align: 'middle', tone: 'flow', icon: 'check' },
+	{ id: 'ch-behind', text: t('atrás por 1 commit', 'behind by 1 commit'), ...NOTE_ANA2, align: 'middle', tone: 'plain' },
+	{ id: 'ch-ff', text: 'fast-forward', ...NOTE_ANA, align: 'middle', tone: 'flow', mono: true, icon: 'check' },
+	{ id: 'ch-rejected', text: '[rejected] (fetch first)', ...NOTE_REM, align: 'middle', tone: 'magenta', mono: true, icon: 'x' },
+	{ id: 'ch-lost', text: t(`se perdería ${h.c3}`, `${h.c3} would be lost`), ...NOTE_REM2, align: 'middle', tone: 'magenta' },
+	{ id: 'ch-merge', text: 'pull.rebase false: merge', ...NOTE_BETO, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'ch-parents', text: t('merge commit: 2 padres', 'merge commit: 2 parents'), ...NOTE_BETO2, align: 'middle', tone: 'violet', icon: 'check' },
+	{ id: 'ch-accepted', text: t('aceptado: fast-forward', 'accepted: fast-forward'), ...NOTE_REM, align: 'middle', tone: 'violet', icon: 'check' },
+	{ id: 'r-push', text: t('push: sube commits', 'push: uploads commits'), ...NOTE_ANA, align: 'middle', tone: 'flow' },
+	{ id: 'r-fetch', text: t('fetch: solo mueve origin/main', 'fetch: only moves origin/main'), ...NOTE_ANA2, align: 'middle', tone: 'flow' },
+	{ id: 'r-pull', text: t('pull: fetch + merge', 'pull: fetch + merge'), ...NOTE_BETO, align: 'middle', tone: 'flow' },
+	{ id: 'r-rule', text: t('push rechazado: pull y después push', 'push rejected: pull, then push'), ...SLOT, align: 'middle', tone: 'violet', icon: 'check' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + (chip.icon ? 42 : 24));
+const chipLeft = (chip: Chip) =>
+	chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x;
+
+// Labels under each platform.
+const labels = [
+	{ id: 'lb-ana', text: 'Ana', icon: 'laptop', x: P.ana.x, y: P.ana.y + HH + 40 },
+	{ id: 'lb-beto', text: names.Bob, icon: 'laptop', x: P.beto.x, y: P.beto.y + HH + 40 },
+	{ id: 'lb-rem', text: 'GitHub · origin', icon: 'cloud', x: P.rem.x - 10, y: P.rem.y + HH + 38 },
+];
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="xs-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="xs-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="xs-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="xs-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xs-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="xs-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the two computers and the remote, seen through the camera -->
+			<g clip-path="url(#xs-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#xs-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#xs-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- The remote on GitHub, at the back -->
+						<g data-el="floor-rem">
+							<polygon class="xj-plate-shadow" points={floors.rem.base} transform="translate(12 18)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={floors.rem.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={floors.rem.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t xj-plate--remote" points={floors.rem.top} fill="url(#xs-g-floor)"></polygon>
+						</g>
+
+						<!-- The pipes between each computer and the remote -->
+						<g data-el="tr-ana">
+							<path class="mg-stroke xj-pipe" pathLength="1" d={routes.anaUp}></path>
+							<path class="mg-stroke xj-trace" pathLength="1" d={routes.anaUp}></path>
+						</g>
+						<g data-el="tr-beto">
+							<path class="mg-stroke xj-pipe" pathLength="1" d={routes.betoUp}></path>
+							<path class="mg-stroke xj-trace" pathLength="1" d={routes.betoUp}></path>
+						</g>
+						{
+							[
+								{ id: 'fl-ana-up', d: routes.anaUp, tone: 'flow' },
+								{ id: 'fl-ana-down', d: routes.anaDown, tone: 'flow' },
+								{ id: 'fl-beto-up', d: routes.betoUp, tone: 'flow' },
+								{ id: 'fl-beto-down', d: routes.betoDown, tone: 'flow' },
+								{ id: 'fl-rej', d: routes.betoUp, tone: 'magenta' },
+								{ id: 'fl-merge', d: routes.betoUp, tone: 'violet' },
+							].map((line) => (
+								<g data-el={line.id} class:list={['xj-flowline', `xj-flowline--${line.tone}`]}>
+									<path class="mg-stroke xj-flowline-halo" pathLength="1" d={line.d} />
+									<path class="mg-stroke xj-flowline-core" pathLength="1" d={line.d} />
+								</g>
+							))
+						}
+
+						<!-- The two computers, each with one module per command it runs -->
+						{
+							[
+								{ id: 'floor-ana', plat: 'ana' as const },
+								{ id: 'floor-beto', plat: 'beto' as const },
+							].map(({ id, plat }) => (
+								<g data-el={id}>
+									<polygon class="xj-plate-shadow" points={floors[plat].base} transform="translate(12 18)" />
+									<polygon class="xj-plate xj-plate--l" points={floors[plat].leftFace} />
+									<polygon class="xj-plate xj-plate--r" points={floors[plat].rightFace} />
+									<polygon class="xj-plate xj-plate--t" points={floors[plat].top} fill="url(#xs-g-floor)" />
+									{modules
+										.filter((module) => module.plat === plat)
+										.map((module) => (
+											<g class="xj-mod">
+												<polygon class="xj-shadow" points={module.g.base} transform="translate(4 5)" />
+												<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+												<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+												<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#xs-g-top)" />
+												<text class="xj-mod-text" x={module.base.x} y={module.top + 3.5} text-anchor="middle">
+													{module.n}
+												</text>
+											</g>
+										))}
+								</g>
+							))
+						}
+						{
+							modules.map((module) => (
+								<g data-el={`on-${module.n}`} class:list={['xj-lit', `xj-lit--${toneOf(module.n)}`]}>
+									<polygon class="xj-lit-halo" points={module.g.top} />
+									<polygon class="xj-lit-top" points={module.g.top} />
+									<polygon class="xj-lit-side" points={module.g.leftFace} />
+									<text class="xj-mod-text xj-mod-text--on" x={module.base.x} y={module.top + 3.5} text-anchor="middle">
+										{module.n}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Parent links between commits -->
+						{
+							links.map((link) => (
+								<g data-el={link.id}>
+									<path class="mg-stroke xj-link" pathLength="1" d={link.d} />
+								</g>
+							))
+						}
+
+						<!-- Commits: always the same rounded node with its short hash -->
+						<g data-el="rem-c3-bad" class="xj-ring">
+							<rect
+								x={nodeAt('rem-c3').x - NODE.w / 2 - 6}
+								y={nodeAt('rem-c3').y - NODE.h / 2 - 6}
+								width={NODE.w + 12}
+								height={NODE.h + 12}
+								rx="17"></rect>
+						</g>
+						{
+							nodes.map((node) => (
+								<g data-el={node.id} class:list={['xj-node', `xj-node--${node.tone}`]}>
+									<rect x={nodeAt(node.id).x - NODE.w / 2} y={nodeAt(node.id).y - NODE.h / 2} width={NODE.w} height={NODE.h} rx="11" />
+									<text x={nodeAt(node.id).x} y={nodeAt(node.id).y + 4} text-anchor="middle">
+										{node.hash}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Branch tags. Placement lives on the inner group: the player resets data-el transforms. -->
+						{
+							tags.map((tag) => (
+								<g data-el={tag.id} data-x={spotAt(tag.start).x} data-y={spotAt(tag.start).y}>
+									<g class:list={['xj-tag', `xj-tag--${tag.kind}`]}>
+										<rect x={-tagWidth(tag) / 2} y="-9" width={tagWidth(tag)} height="18" rx="9" />
+										<text x="0" y="3.8" text-anchor="middle">
+											{tag.text}
+										</text>
+									</g>
+								</g>
+							))
+						}
+
+						<!-- Labels under each platform -->
+						{
+							labels.map((label) => (
+								<g data-el={label.id} class="xj-label">
+									<svg class="xj-label-icon" x={label.x - label.text.length * 4.6 - 26} y={label.y - 11} width="20" height="20" viewBox="0 0 24 24" stroke-width="2.75">
+										{label.icon === 'laptop' ? (
+											<path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16" />
+										) : (
+											<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
+										)}
+									</svg>
+									<text x={label.x + 12} y={label.y + 5} text-anchor="middle">
+										{label.text}
+									</text>
+								</g>
+							))
+						}
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.icon === 'check' && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M20 6 9 17l-5-5" />
+										</svg>
+									)}
+									{chip.icon === 'x' && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M18 6 6 18" />
+											<path d="m6 6 12 12" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.icon ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Commit copies in transit. Placement lives on the inner group. -->
+						{
+							packets.map((packet) => (
+								<g data-el={packet.id} data-x={at(packet.startAt).x} data-y={at(packet.startAt).y}>
+									<g class:list={['xj-packet', `xj-packet--${packet.tone}`]}>
+										<rect class="xj-packet-halo" x={-NODE.w / 2 - 6} y={-NODE.h / 2 - 6} width={NODE.w + 12} height={NODE.h + 12} rx="17" />
+										<rect class="xj-packet-card" x={-NODE.w / 2} y={-NODE.h / 2} width={NODE.w} height={NODE.h} rx="11" />
+										<text class="xj-packet-text" x="0" y="4" text-anchor="middle">
+											{packet.hash}
+										</text>
+									</g>
+								</g>
+							))
+						}
+
+						<!-- The execution flow -->
+						<g data-el="p" class="xj-particle" data-x={at('a-m-1').x} data-y={at('a-m-1').y}>
+							<circle r="18" fill="url(#xs-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="396" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Comando', 'Command')}</text>
+				<rect class="xj-legend-node" x={VP.x + 112} y={LEGEND_Y - 6} width="22" height="12" rx="6"></rect>
+				<text x={VP.x + 142} y={LEGEND_Y + 4}>Commit</text>
+				<rect class="xj-legend-local" x={VP.x + 204} y={LEGEND_Y - 6} width="22" height="12" rx="6"></rect>
+				<text x={VP.x + 234} y={LEGEND_Y + 4}>main</text>
+				<rect class="xj-legend-remote" x={VP.x + 284} y={LEGEND_Y - 6} width="22" height="12" rx="6"></rect>
+				<text x={VP.x + 314} y={LEGEND_Y + 4}>origin/main</text>
+			</g>
+
+			<!-- EDITOR: the terminal session, with the running command highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{t('terminal · ana y beto', 'terminal · ana and bob')}</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<!-- Line states sit behind the commands -->
+				<rect data-el="hx-16" class="xj-bar xj-bar--trail" x={BAR.x} y={lineTop(16)} width={BAR.w} height={LINE_H} rx="6"></rect>
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(1)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 3} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<g class="xj-code">
+					{
+						commandLines.map((line) => (
+							<g data-el={`e-${line.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class:list={['xj-prompt', `xj-prompt--${line.who}`]} x={PROMPT_X} y={lineBase(line.n)}>
+									{prompts[line.who]}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				{
+					outputs.map((line) => (
+						<text
+							data-el={line.id}
+							class:list={['xj-out', { 'xj-out--err': outputFailed(line.id) }]}
+							x={ED.x + 20}
+							y={outY(outputRow(line.id))}
+							xml:space="preserve"
+						>
+							{line.text}
+						</text>
+					))
+				}
+				{session.map((_, index) => <circle data-anchor={`ln-${index + 1}`} cx={BAR_CX} cy={lineMid(index + 1)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue for the normal flow, magenta for the problem (the rejected push) and
+	   violet for what resolves it (the merge commit).
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='sincronizacion-remota-git']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='sincronizacion-remota-git'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='sincronizacion-remota-git'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='sincronizacion-remota-git'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-node {
+		fill: var(--xj-ink);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend-local {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-legend-remote {
+		fill: none;
+		stroke: var(--xj-mist);
+		stroke-width: 1.5;
+		stroke-dasharray: 4 3;
+	}
+
+	/* Platforms and command modules */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate--remote {
+		stroke: var(--xj-steel-hi);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.2;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-mod-text {
+		font-family: var(--font-body);
+		font-size: 10px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mod-text--on {
+		fill: var(--xj-ink);
+	}
+
+	.xj-label text {
+		font-family: var(--font-body);
+		font-size: 15px;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		fill: var(--xj-mist);
+	}
+
+	.xj-label-icon {
+		fill: none;
+		stroke: var(--xj-mist);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 10;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.6;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.2;
+		stroke-linejoin: round;
+	}
+
+	/* Commits, links and branch tags */
+	.xj-node {
+		--xj-node: var(--xj-flow);
+		--xj-node-ink: var(--xj-flow-soft);
+	}
+
+	.xj-node--violet {
+		--xj-node: var(--xj-violet);
+		--xj-node-ink: var(--xj-violet-soft);
+	}
+
+	.xj-node rect {
+		fill: var(--xj-ink);
+		stroke: var(--xj-node);
+		stroke-width: 2;
+	}
+
+	.xj-node text,
+	.xj-tag text {
+		font-family: monospace;
+		font-size: 11.5px;
+		font-weight: 700;
+		fill: var(--xj-node-ink);
+	}
+
+	.xj-link {
+		fill: none;
+		stroke: var(--xj-mist);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+	}
+
+	.xj-tag--local rect {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-tag--local text {
+		fill: var(--xj-ink);
+	}
+
+	.xj-tag--remote rect {
+		fill: var(--xj-panel);
+		stroke: var(--xj-mist);
+		stroke-width: 1.5;
+		stroke-dasharray: 4 3;
+	}
+
+	.xj-tag--remote text {
+		fill: var(--xj-mist);
+	}
+
+	.xj-ring rect {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.16;
+		stroke: var(--xj-magenta);
+		stroke-width: 2;
+		stroke-dasharray: 6 4;
+	}
+
+	/* Routes */
+	.xj-trace {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 3;
+		stroke-linecap: round;
+	}
+
+	.xj-pipe {
+		fill: none;
+		stroke: var(--xj-steel);
+		stroke-width: 16;
+		stroke-opacity: 0.55;
+		stroke-linecap: round;
+	}
+
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--magenta {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-flowline--violet {
+		--xj-line: var(--xj-violet);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* Commit copies in transit and the flow */
+	.xj-packet {
+		--xj-card: var(--xj-flow);
+		--xj-card-ink: var(--xj-flow-soft);
+	}
+
+	.xj-packet--magenta {
+		--xj-card: var(--xj-magenta);
+		--xj-card-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-packet--violet {
+		--xj-card: var(--xj-violet);
+		--xj-card-ink: var(--xj-violet-soft);
+	}
+
+	.xj-packet-halo {
+		fill: var(--xj-card);
+		fill-opacity: 0.18;
+	}
+
+	.xj-packet-card {
+		fill: var(--xj-ink);
+		stroke: var(--xj-card);
+		stroke-width: 2;
+	}
+
+	.xj-packet-text {
+		font-family: monospace;
+		font-size: 11.5px;
+		font-weight: 700;
+		fill: var(--xj-card-ink);
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		font-size: 12.5px;
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-out--err {
+		fill: var(--xj-magenta-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.xj-prompt {
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+	}
+
+	.xj-prompt--ana {
+		fill: var(--xj-flow);
+	}
+
+	.xj-prompt--bob {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-cmd) {
+		fill: var(--xj-white);
+		font-weight: 700;
+	}
+
+	.mg-canvas .xj-code :global(.tok-flag) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-var) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-bar--trail {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.12;
+		stroke: var(--xj-magenta);
+		stroke-width: 1.5;
+		stroke-dasharray: 6 5;
+	}
+</style>
