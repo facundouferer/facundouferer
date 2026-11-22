@@ -77,7 +77,7 @@ export const LESSONS = ORDER.map(([slug, stage], index) => ({
 export const TAUGHT_AT = [
 	['arreglos-unidimensionales-y-multidimensionales', /\b(?:int|char|double|float|long|short|unsigned|bool)\s+[A-Za-z_]\w*\s*\[[^\]]*\]\s*(?:=|;|\[)/, 'array declarations'],
 	['concepto-de-estructuras', /\bstruct\s+[A-Za-z_]\w*\s*\{/, 'struct definitions'],
-	['punteros-y-direcciones', /\b(?:int|char|double|float|long|short|unsigned|void|bool)\s*\*+\s*[A-Za-z_]/, 'pointer declarations'],
+	['punteros-y-direcciones', /(?<!\*\*)\b(?:int|char|double|float|long|short|unsigned|void|bool)\s*\*+\s*[A-Za-z_]/, 'pointer declarations'],
 	['punteros-arreglos-y-estructuras', /->/, 'the -> operator'],
 	['memoria-dinamica', /\b(?:malloc|calloc|realloc|free)\s*\(/, 'dynamic memory calls'],
 ];
