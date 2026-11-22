@@ -474,7 +474,7 @@ If the history does not fit on the screen, Git shows it in a pager: move forward
 
 ## Common mistakes
 
-- **Forgetting `git add`**: `git commit` answers `nothing added to commit` or saves only what was staged. Check with `git status` before every commit.
+- **Forgetting `git add`**: `git commit` answers `no changes added to commit` (if you only modified files) or `nothing added to commit` (if there are only new files), or saves only what was staged. Check with `git status` before every commit.
 - **Committing without an identity**: if you did not set `user.name` and `user.email`, Git refuses to create the commit (`Author identity unknown`) or signs it with data guessed from your system. Set your identity before the first commit.
 - **Running `git init` in the wrong folder**: run it inside the project folder, never in your home folder.
 - **Huge commits with vague messages**: make small, frequent commits, each with a clear message.

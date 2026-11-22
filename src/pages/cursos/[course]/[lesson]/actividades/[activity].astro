@@ -360,6 +360,8 @@ const quizGradingData =
 	}
 
 	.quiz-question {
+		/* A fieldset defaults to min-width: min-content; let code scroll instead. */
+		min-width: 0;
 		border: 1px solid var(--color-divider);
 		border-radius: var(--radius-md);
 		padding: var(--space-4);
