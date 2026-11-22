@@ -1,5 +1,5 @@
 ---
-title: 'POO en C'
+title: 'Diseño de software en C: ideas de la POO'
 course: 'c'
 slug: 'introduccion-a-poo-en-c'
 order: 41
@@ -7,281 +7,282 @@ lang: 'es'
 published: true
 ---
 
-Acá hay que decir la verdad técnica completa: **C no es un lenguaje orientado a objetos de forma nativa**.
+Esta lección abre el módulo complementario **Diseño de software en C**. Es optativo: no hace falta para dominar el lenguaje, pero te muestra cómo se organizan programas grandes escritos en C, como bibliotecas, sistemas operativos o motores de juegos.
 
-No tiene clases, herencia ni métodos como mecanismos incorporados del lenguaje al estilo de C++ o Java.
+Hay que empezar por la verdad técnica completa: **C es un lenguaje procedural**. No es un lenguaje orientado a objetos y no tiene clases, herencia ni métodos como mecanismos del lenguaje. Lo que vas a estudiar en este módulo son **técnicas de diseño** que toman prestadas algunas ideas de la programación orientada a objetos (POO) y las construyen con herramientas que ya conoces: `struct`, funciones, punteros, punteros a función y módulos `.h`/`.c`. Cada técnica tiene un costo y un límite, y parte del trabajo es saber cuándo no usarla.
 
-Entonces, ¿por qué hablar de POO en C?
+## Objetivos
 
-Porque muchas de las ideas de la programación orientada a objetos pueden **modelarse** en C usando:
+- Explicar por qué C es un lenguaje procedural y qué significa "diseñar con ideas de la POO" en C.
+- Entender la **abstracción** como diseñar un tipo alrededor de sus operaciones.
+- Distinguir las ideas de la POO que C puede expresar (datos + funciones, interfaces) de las que no tiene de forma nativa (clases, herencia, despacho virtual, control de acceso).
+- Comparar el enfoque estructurado con el enfoque orientado a objetos sobre el mismo problema.
+- Decidir cuándo vale la pena este estilo y cuándo un diseño más simple es mejor.
 
-- `struct`
-- funciones
-- punteros
-- organización modular
+**Requisitos previos:** `modularizacion-subprogramas-y-funciones` (`.h`/`.c`), `concepto-de-estructuras`, `punteros-arreglos-y-estructuras` (`->` y punteros a función), `memoria-dinamica` y `propiedad-y-errores-de-memoria`.
 
-En esta lección vas a aprender:
+## Programación estructurada y programación orientada a objetos
 
-- qué es POO a nivel conceptual
-- por qué C no la implementa de forma nativa
-- cómo puede simularse en C
-- diferencia entre programación estructurada y programación orientada a objetos
-- beneficios de aplicar programación orientada a objetos
-- qué ideas sí tiene sentido estudiar en este contexto
-
-## ¿Qué es la programación orientada a objetos?
-
-La **programación orientada a objetos** organiza el software alrededor de objetos que combinan:
-
-- **estado**
-- **comportamiento**
-
-El estado son los datos.
-El comportamiento son las operaciones que pueden hacerse sobre esos datos.
-
-## Pilares de la programación orientada a objetos
-
-Cuando se habla de POO, normalmente aparecen cuatro pilares clásicos:
-
-- encapsulación
-- abstracción
-- herencia
-- polimorfismo
-
-Estos pilares NO significan “cuatro palabras para memorizar”. Significan cuatro ideas de diseño.
-
-### 1. Encapsulación
-
-La **encapsulación** consiste en agrupar datos y operaciones relacionadas.
-
-La idea es que una entidad mantenga juntos:
-
-- su estado
-- las operaciones que actúan sobre ese estado
-
-En C, esto puede aproximarse combinando `struct` con funciones relacionadas.
-
-### 2. Abstracción
-
-La **abstracción** consiste en mostrar lo importante y ocultar detalles innecesarios.
-
-Por ejemplo, al usar una cuenta bancaria te interesa saber que puede depositar o extraer dinero, no todos los detalles internos de implementación.
-
-### 3. Herencia
-
-La **herencia** permite construir nuevos tipos a partir de otros, reutilizando y extendiendo características.
-
-En C no existe como mecanismo nativo del lenguaje, pero algunas ideas parecidas pueden simularse mediante composición de estructuras.
-
-### 4. Polimorfismo
-
-El **polimorfismo** permite que una misma idea general de operación adopte comportamientos distintos según el contexto.
-
-En C tampoco existe como mecanismo orientado a objetos nativo, pero ciertas aproximaciones pueden construirse usando punteros a función.
-
-## Importante sobre los pilares en C
-
-Acá hay que ser MUY precisos:
-
-- los pilares de la POO existen como conceptos de diseño
-- C no los implementa de manera nativa como lo hacen lenguajes orientados a objetos puros o híbridos
-- en C se estudian como ideas que pueden modelarse o simularse parcialmente
-
-Por eso, cuando en este curso hablamos de pilares de POO en C, hablamos de:
-
-- **conceptos fundamentales de POO**
-- y de **cómo aproximarlos con herramientas reales de C**
-
-## Diferencia entre programación estructurada y programación orientada a objetos
-
-Esta parte es IMPORTANTÍSIMA, porque muchos estudiantes escuchan “POO” y creen que es solo otra sintaxis. No. Es otra forma de organizar el pensamiento del programa.
+Muchos estudiantes escuchan "POO" y creen que es solo otra sintaxis. No lo es: es otra forma de organizar el diseño del programa.
 
 ### Programación estructurada
 
-La programación estructurada organiza la solución principalmente alrededor de:
-
-- secuencia
-- decisión
-- iteración
-- funciones o procedimientos
-
-El foco suele estar en **las acciones** que el programa realiza.
-
-O sea: pensamos mucho en el flujo del algoritmo.
-
-Por ejemplo:
-
-- leer datos
-- procesar datos
-- mostrar resultados
+La programación estructurada organiza la solución alrededor de secuencia, decisión, iteración y funciones. El foco está en **las acciones**: leer datos, procesarlos, mostrar resultados. Pensamos sobre todo en el flujo del algoritmo. Es el estilo que usaste durante todo el curso.
 
 ### Programación orientada a objetos
 
-La programación orientada a objetos organiza la solución alrededor de **entidades** que tienen:
+La POO organiza la solución alrededor de **entidades** que tienen datos propios (su **estado**) y operaciones asociadas a esos datos (su **comportamiento**). El foco ya no está solo en "qué pasos hacer", sino también en "qué entidades existen y cómo se comportan".
 
-- datos propios
-- operaciones asociadas a esos datos
-
-El foco ya no está solo en “qué pasos hacer”, sino también en **qué objetos existen en el problema y cómo se comportan**.
-
-### Diferencia conceptual corta
-
-- en programación estructurada, el centro suele ser el **algoritmo**
-- en programación orientada a objetos, el centro suele ser el **modelo de objetos**
-
-### Ejemplo intuitivo
+### El mismo problema, dos miradas
 
 Supongamos un sistema de cuentas bancarias.
 
-#### En enfoque estructurado
+- **Enfoque estructurado:** leer saldo, depositar monto, extraer monto, mostrar saldo. La atención está en los pasos del proceso.
+- **Enfoque orientado a objetos:** existe una **Cuenta**; la cuenta tiene un saldo; la cuenta puede depositar y extraer. La atención está en la entidad y en lo que se le puede pedir.
 
-Podrías pensar algo así:
+Una no reemplaza a la otra. Dentro de cada operación de una cuenta sigue habiendo secuencia, decisiones y ciclos. La diferencia está en **cómo se agrupa** el programa.
 
-- leer saldo
-- depositar monto
-- extraer monto
-- mostrar saldo
+## Abstracción: diseñar alrededor de las operaciones
 
-La atención está puesta en las operaciones del proceso.
+La idea de la POO que más le sirve a un programador de C es la **abstracción**: mostrar lo importante y ocultar lo innecesario. En la práctica significa diseñar un tipo **a partir de las operaciones que ofrece**, no a partir de sus campos.
 
-#### En enfoque orientado a objetos
+Antes de escribir `struct Cuenta { ... }`, te preguntas: ¿qué necesita hacer quien use una cuenta?
 
-Pensarías más bien en:
+- crear una cuenta con un saldo inicial;
+- depositar;
+- extraer, sin quedar en negativo;
+- consultar el saldo.
 
-- existe una **Cuenta**
-- la cuenta tiene un **saldo**
-- la cuenta puede **depositar**
-- la cuenta puede **extraer**
+Esa lista es la **interfaz** del tipo. Los campos son un detalle de implementación que podría cambiar (por ejemplo, guardar centavos en un `long long` en vez de pesos en un `double`) sin que cambie el código que usa la cuenta.
 
-Ahora la atención está puesta en la entidad y en su comportamiento.
+Ya aplicaste esta idea sin nombrarla: cuando usas `FILE *` con `fopen`, `fprintf` y `fclose`, nunca miras qué campos tiene `FILE`. Solo usas sus operaciones.
 
-## ¿Quiere decir que una reemplaza a la otra?
+## Los cuatro pilares, vistos desde C
 
-No.
+Cuando se habla de POO aparecen cuatro ideas clásicas. No son palabras para memorizar: son ideas de diseño. Esto es lo que C permite hacer con cada una:
 
-Y esto hay que decirlo bien.
+| Idea de la POO | En un lenguaje orientado a objetos | En C |
+| --- | --- | --- |
+| Encapsulación | clases que agrupan datos y métodos | `struct` + funciones del mismo módulo |
+| Abstracción | interfaces públicas | archivo `.h` con las operaciones, tipos opacos |
+| Herencia | `extends`, clases derivadas | no existe; se simula con composición de `struct` |
+| Polimorfismo | métodos virtuales | no existe; se simula con punteros a función |
 
-La programación orientada a objetos NO elimina la programación estructurada. De hecho:
+### Lo que C sí puede expresar
 
-- sigue habiendo secuencia
-- sigue habiendo decisiones
-- sigue habiendo iteraciones
-- sigue habiendo funciones
+- **Datos + funciones:** una `struct` guarda el estado y un grupo de funciones con un prefijo común (`cuenta_depositar`, `cuenta_extraer`) forma su comportamiento.
+- **Interfaces:** un `.h` declara qué se puede hacer y el `.c` decide cómo. Con un puntero a función, además, puedes elegir en tiempo de ejecución qué operación se ejecuta.
 
-La diferencia está en **cómo se organiza el diseño general del programa**.
+### Lo que C no tiene de forma nativa
 
-## Beneficios de la aplicación de la programación orientada a objetos
+- **Clases:** no hay una unidad del lenguaje que agrupe datos y funciones. La agrupación es una convención tuya.
+- **Herencia:** no hay tipos derivados. Puedes poner una `struct` dentro de otra, pero el compilador no sabe que una "es" la otra.
+- **Despacho virtual:** no hay métodos que se elijan solos según el tipo real del objeto. Si lo quieres, armas a mano una tabla de punteros a función.
+- **Control de acceso:** no hay `private` ni `public`. Lo más parecido es ocultar la definición de la `struct` en el `.c` (lección siguiente) y marcar las funciones auxiliares como `static`.
 
-La POO se volvió importante porque ayuda a organizar mejor muchos sistemas complejos.
+Por eso, si alguien dice "C es orientado a objetos igual que Java", está equivocado. Lo correcto es: "en C se pueden aplicar algunas ideas de la POO, con trabajo manual y sin ayuda del compilador".
 
-### 1. Mejor modelado del problema
+## Un primer ejemplo: datos + funciones
 
-Permite representar entidades del mundo del problema de manera más natural.
-
-Por ejemplo:
-
-- Cuenta
-- Alumno
-- Producto
-- Rectángulo
-
-Eso hace que el programa se parezca más a lo que intenta modelar.
-
-### 2. Mayor organización del código
-
-Cuando los datos y las operaciones relacionadas se agrupan, el código suele quedar más claro.
-
-En vez de tener lógica dispersa, cada entidad concentra mejor su responsabilidad.
-
-### 3. Mejor mantenimiento
-
-Un diseño orientado a objetos bien pensado suele facilitar cambios futuros.
-
-¿Por qué? Porque si una responsabilidad está bien localizada, es más fácil modificarla sin romper todo lo demás.
-
-### 4. Reutilización
-
-Cuando una estructura o diseño está bien armado, muchas ideas pueden reutilizarse en distintas partes del sistema o incluso en otros proyectos.
-
-### 5. Mayor claridad conceptual
-
-La POO ayuda a pensar el software en términos de componentes con identidad propia.
-
-Eso no siempre hace el código “más corto”, pero muchas veces sí lo hace **más entendible**.
-
-## Ojo: la POO NO resuelve todo mágicamente
-
-Acá también hay que ser honestos.
-
-La programación orientada a objetos no es una solución mágica.
-
-Un mal diseño orientado a objetos puede ser peor que un diseño estructurado simple y claro.
-
-Los beneficios aparecen cuando:
-
-- el problema realmente lo justifica
-- el diseño está bien pensado
-- no se fuerza POO donde no hace falta
-
-## ¿Qué falta en C?
-
-En C no hay:
-
-- clases
-- objetos nativos
-- métodos ligados al tipo como mecanismo del lenguaje
-- herencia nativa
-- polimorfismo nativo
-
-Entonces, si alguien te dice “C es orientado a objetos igual que Java”, eso es incorrecto.
-
-## ¿Qué sí puede hacerse en C?
-
-Puede construirse un diseño con inspiración orientada a objetos.
-
-Por ejemplo:
-
-- representar una entidad con `struct`
-- definir funciones que trabajen sobre esa estructura
-- ocultar detalles mediante módulos
-- simular polimorfismo con punteros a función
-
-## Primer ejemplo conceptual
+Este programa modela una cuenta con una `struct` y funciones que reciben un puntero a ella. El saldo se guarda en centavos con un entero, porque `float` y `double` no representan exactamente valores como 0,10.
 
 ```c
+#include <stdbool.h>
+#include <stdio.h>
+
 struct Cuenta {
-    float saldo;
+    long long saldo_centavos;
 };
 
-void depositar(struct Cuenta* cuenta, float monto) {
-    cuenta->saldo = cuenta->saldo + monto;
+void cuenta_iniciar(struct Cuenta *cuenta, long long saldo_inicial) {
+    cuenta->saldo_centavos = saldo_inicial;
+}
+
+bool cuenta_depositar(struct Cuenta *cuenta, long long monto) {
+    if (monto <= 0) {
+        return false;
+    }
+    cuenta->saldo_centavos += monto;
+    return true;
+}
+
+bool cuenta_extraer(struct Cuenta *cuenta, long long monto) {
+    if (monto <= 0 || monto > cuenta->saldo_centavos) {
+        return false;
+    }
+    cuenta->saldo_centavos -= monto;
+    return true;
+}
+
+long long cuenta_saldo(const struct Cuenta *cuenta) {
+    return cuenta->saldo_centavos;
+}
+
+int main(void) {
+    struct Cuenta cuenta;
+    cuenta_iniciar(&cuenta, 10000);
+
+    cuenta_depositar(&cuenta, 2550);
+    if (!cuenta_extraer(&cuenta, 50000)) {
+        printf("Extraccion rechazada: saldo insuficiente\n");
+    }
+    printf("Saldo: %lld centavos\n", cuenta_saldo(&cuenta));
+    return 0;
 }
 ```
 
-Acá ya aparece una idea parecida a objeto:
+Salida:
 
-- la estructura `Cuenta` representa el estado
-- la función `depositar` representa comportamiento
+```text
+Extraccion rechazada: saldo insuficiente
+Saldo: 12550 centavos
+```
 
-## Entonces, ¿es POO real?
+Observa tres decisiones de diseño:
 
-No en sentido nativo del lenguaje.
+- Cada función recibe **un puntero a la cuenta** como primer parámetro. C pasa ese puntero por valor, como cualquier argumento, pero a través de la copia de la dirección la función modifica la cuenta original.
+- `cuenta_saldo` recibe `const struct Cuenta *`: promete no modificarla.
+- Las reglas ("no se deposita un monto negativo", "no se extrae más de lo que hay") viven **dentro** de las operaciones, no repartidas por `main`.
 
-Pero sí es una forma válida de enseñar y aplicar ideas orientadas a objetos dentro de C.
+Pero hay un problema: nada impide que `main` escriba `cuenta.saldo_centavos = -500;` y se salte todas las reglas. C no tiene control de acceso. En la lección siguiente vas a resolverlo con un **tipo opaco**.
+
+## ¿Cuándo vale la pena este estilo?
+
+Diseñar alrededor de operaciones tiene beneficios reales:
+
+- **Modelado:** el programa se parece al problema (Cuenta, Alumno, Producto).
+- **Organización:** cada tipo concentra su responsabilidad en un solo módulo.
+- **Mantenimiento:** puedes cambiar la representación interna sin tocar a quien usa el tipo.
+- **Reutilización:** un módulo bien definido se lleva a otro proyecto sin cambios.
+
+Y también tiene costos en C, que en otros lenguajes paga el compilador por ti:
+
+- más código: funciones de creación y destrucción, comprobaciones, convenciones de nombres;
+- más memoria dinámica cuando ocultas la representación, con su responsabilidad de liberar;
+- más indirección (punteros, punteros a función) y menos ayuda del compilador para detectar errores.
+
+Una regla práctica: úsalo cuando un tipo tiene **reglas que proteger** (invariantes) o cuando **varias partes del programa** lo usan. Para un programa corto, una `struct` simple con dos funciones es mejor que una arquitectura imitada de Java. Un mal diseño "orientado a objetos" puede ser peor que un diseño estructurado claro.
+
+## Qué viene en el módulo
+
+- `encapsulacion-y-abstraccion-en-c`: tipos opacos, funciones de creación y destrucción, invariantes.
+- `objetos-metodos-y-diseno-basado-en-struct`: operaciones con el objeto como primer parámetro, composición y manejo de errores.
+- `polimorfismo-y-herencia-simulados-en-c`: tablas de operaciones con punteros a función, estructuras base y los límites de simular herencia.
 
 ## Resumen
 
-- la programación estructurada pone mucho foco en el algoritmo y el flujo
-- la programación orientada a objetos pone mucho foco en las entidades y su comportamiento
-- la POO ayuda a modelar mejor ciertos problemas, organizar código y mejorar mantenimiento
-- C no es un lenguaje orientado a objetos nativo
-- aun así, puede modelar conceptos de POO
-- `struct` + funciones + punteros permiten construir diseños con estilo orientado a objetos
+- C es un lenguaje procedural; este módulo enseña técnicas de diseño inspiradas en la POO, no "POO en C".
+- La programación estructurada pone el foco en el algoritmo; la POO, en las entidades y su comportamiento. Una no elimina a la otra.
+- **Abstracción** es diseñar un tipo a partir de sus operaciones, no de sus campos.
+- C expresa datos + funciones e interfaces; no tiene clases, herencia, despacho virtual ni control de acceso nativos.
+- Estas técnicas cuestan código, memoria e indirección: úsalas cuando el problema lo justifique.
 
-## Idea final
+## Ejercicios prácticos
 
-En C, aprender POO no significa aprender “clases mágicas ocultas”.
+### Ejercicio 1: ¿qué tiene C de forma nativa?
 
-Significa aprender a construir abstracciones con las herramientas reales del lenguaje.
+Clasifica cada afirmación como verdadera o falsa y justifica en una línea:
 
-Y entender la diferencia con la programación estructurada te ayuda a ver que no estás cambiando solo la sintaxis: estás cambiando la manera de pensar el diseño del programa.
+1. C tiene la palabra clave `class`.
+2. Una `struct` y funciones que reciben un puntero a ella pueden modelar estado y comportamiento.
+3. C impide que el código de `main` modifique un campo de una `struct` cuya definición conoce.
+4. C elige automáticamente qué función ejecutar según el tipo real de un objeto.
+
+<details><summary>Ver solución</summary>
+
+1. Falsa: C no tiene clases.
+2. Verdadera: es la técnica básica de este módulo.
+3. Falsa: si la definición está visible, cualquier código puede escribir sus campos; no hay `private`.
+4. Falsa: no hay despacho virtual; se simula a mano con punteros a función.
+
+</details>
+
+### Ejercicio 2: diseñar alrededor de las operaciones
+
+Un programa necesita un **termostato** que guarde una temperatura objetivo entre 10 y 30 grados. Antes de escribir campos, escribe la lista de operaciones que ofrecería y la regla que esas operaciones deben proteger.
+
+<details><summary>Ver solución</summary>
+
+Una posible interfaz:
+
+- `termostato_iniciar(t, objetivo)`: fija el objetivo inicial (si está fuera de rango, lo ajusta o falla).
+- `termostato_subir(t)` y `termostato_bajar(t)`: cambian el objetivo de a un grado.
+- `termostato_objetivo(t)`: consulta el valor sin modificarlo (recibe `const`).
+
+La regla que protegen: el objetivo siempre queda entre 10 y 30. Como todas las modificaciones pasan por estas funciones, alcanza con comprobarla dentro de ellas.
+
+</details>
+
+### Ejercicio 3: implementa el termostato
+
+Escribe el termostato del ejercicio anterior con una `struct` y funciones que reciben un puntero a ella. `termostato_subir` devuelve `false` si ya está en 30. Pruébalo subiendo 25 veces desde 20.
+
+<details><summary>Ver solución</summary>
+
+```c
+#include <stdbool.h>
+#include <stdio.h>
+
+struct Termostato {
+    int objetivo;
+};
+
+bool termostato_iniciar(struct Termostato *t, int objetivo) {
+    if (objetivo < 10 || objetivo > 30) {
+        return false;
+    }
+    t->objetivo = objetivo;
+    return true;
+}
+
+bool termostato_subir(struct Termostato *t) {
+    if (t->objetivo >= 30) {
+        return false;
+    }
+    t->objetivo++;
+    return true;
+}
+
+bool termostato_bajar(struct Termostato *t) {
+    if (t->objetivo <= 10) {
+        return false;
+    }
+    t->objetivo--;
+    return true;
+}
+
+int termostato_objetivo(const struct Termostato *t) {
+    return t->objetivo;
+}
+
+int main(void) {
+    struct Termostato t;
+    if (!termostato_iniciar(&t, 20)) {
+        return 1;
+    }
+    int rechazos = 0;
+    for (int i = 0; i < 25; i++) {
+        if (!termostato_subir(&t)) {
+            rechazos++;
+        }
+    }
+    printf("Objetivo: %d, rechazos: %d\n", termostato_objetivo(&t), rechazos);
+    termostato_bajar(&t);
+    printf("Despues de bajar: %d\n", termostato_objetivo(&t));
+    return 0;
+}
+```
+
+Muestra `Objetivo: 30, rechazos: 15` y luego `Despues de bajar: 29`.
+
+</details>
+
+### Ejercicio 4: ¿vale la pena?
+
+Para cada caso, decide si conviene diseñar un tipo con interfaz propia o basta con código directo: (a) un programa de 40 líneas que promedia cinco notas; (b) una biblioteca de colas de impresión que usan tres módulos distintos de un sistema.
+
+<details><summary>Ver solución</summary>
+
+(a) Código directo: no hay reglas que proteger ni varios usuarios; una interfaz agregaría código sin beneficio. (b) Tipo con interfaz: varios módulos lo usan, la cola tiene invariantes (orden, capacidad) y su representación podría cambiar sin afectar a los usuarios.
+
+</details>
