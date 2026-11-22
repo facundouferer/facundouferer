@@ -109,8 +109,8 @@ for (const [line, rows] of Object.entries(outputRows)) {
 
 // ── Editor geometry (canvas units, outside the camera) ────────────────────
 const ED = { x: 20, y: 20, w: 580, h: 680 };
-const CODE_X = 68;
-const GUTTER_X = 54;
+const CODE_X = 72;
+const GUTTER_X = 59;
 const CODE_TOP = 74;
 const LINE_H = 23;
 const BAR = { x: 28, w: 564 };
@@ -216,15 +216,20 @@ const links = (['g', 'a'] as const).flatMap((floor) =>
 // ── Branch labels and HEAD: tags that slide from commit to commit ─────────
 const TAG_H = 22;
 const tagWidth = (text: string) => Math.round(text.length * 7.3 + 20);
-// `main` and `origin/main` sit to the right of their commit, side by side when they
-// share it; a feature branch hangs in front of its commit, below the hash.
-type Side = 'right' | 'after-main' | 'front';
+// `main` sits to the right of its commit and `origin/main` beside it; where that
+// would hit the command modules (first commit) it sits to the left, and at the
+// last commit it hangs below `main` to stay inside the frame. A feature branch
+// hangs in front of its commit, below the hash; on Ana's first two commits it
+// hangs to the right so it does not cover her floor label.
+type Side = 'right' | 'left' | 'below-main' | 'front' | 'front-right';
 const tagAt = (floor: 'g' | 'a', key: string, text: string, side: Side): Point => {
 	const at = spot(floor, key);
 	const w = tagWidth(text);
 	if (side === 'front') return { x: round(at.x - 70), y: round(at.y + 42) };
-	const left = at.x + 24 + (side === 'after-main' ? tagWidth('main') + 6 : 0);
-	return { x: round(left + w / 2), y: round(at.y - 8) };
+	if (side === 'front-right') return { x: round(at.x + 20 + w / 2), y: round(at.y + 42) };
+	if (side === 'left') return { x: round(at.x - 24 - w / 2), y: round(at.y - 8) };
+	if (side === 'below-main') return { x: round(at.x + 36 + w / 2), y: round(at.y - 8 + TAG_H + 4) };
+	return { x: round(at.x + 24 + w / 2), y: round(at.y - 8) };
 };
 const headOver = (point: Point): Point => ({ x: point.x, y: round(point.y - TAG_H - 2) });
 
@@ -238,11 +243,11 @@ const TAGS = {
 const stops = [
 	{ id: 'ta-main-0', ...tagAt('a', '0', TAGS.main, 'right') },
 	{ id: 'ta-main-29d', ...tagAt('a', '29d', TAGS.main, 'right') },
-	{ id: 'ta-om-0', ...tagAt('a', '0', TAGS.om, 'after-main') },
+	{ id: 'ta-om-0', ...tagAt('a', '0', TAGS.om, 'left') },
 	{ id: 'ta-om-258', ...tagAt('a', '258', TAGS.om, 'right') },
-	{ id: 'ta-om-29d', ...tagAt('a', '29d', TAGS.om, 'after-main') },
-	{ id: 'ta-feat-0', ...tagAt('a', '0', TAGS.feat, 'front') },
-	{ id: 'ta-feat-b4e', ...tagAt('a', 'b4e', TAGS.feat, 'front') },
+	{ id: 'ta-om-29d', ...tagAt('a', '29d', TAGS.om, 'below-main') },
+	{ id: 'ta-feat-0', ...tagAt('a', '0', TAGS.feat, 'front-right') },
+	{ id: 'ta-feat-b4e', ...tagAt('a', 'b4e', TAGS.feat, 'front-right') },
 	{ id: 'ta-feat-330', ...tagAt('a', '330', TAGS.feat, 'front') },
 	{ id: 'ta-feat-cb2', ...tagAt('a', 'cb2', TAGS.feat, 'front') },
 	{ id: 'tg-main-0', ...tagAt('g', '0', TAGS.main, 'right') },
@@ -293,7 +298,7 @@ const modules: Module[] = [
 ];
 
 // ── Cards, notes and anchors ──────────────────────────────────────────────
-const PR = { x: 758, y: 88, w: 200, h: 58 };
+const PR = { x: 742, y: 88, w: 200, h: 58 };
 const PR_LINK = (() => {
 	const from = pt(2.6, 0.75);
 	const ctrl = pt(4.2, 0.95);
@@ -429,7 +434,7 @@ const LEGEND_Y = VP.y + VP.h - 22;
 							<polygon class="xj-plate xj-plate--l" points={FLOORS.hub.leftFace}></polygon>
 							<polygon class="xj-plate xj-plate--r" points={FLOORS.hub.rightFace}></polygon>
 							<polygon class="xj-plate xj-plate--t" points={FLOORS.hub.top} fill="url(#xp-g-floor)"></polygon>
-							<text class="xj-floor-text" transform={floorMatrix(pt(-0.6, 1.16))}>{`GitHub · ${t('equipo/sitio', 'team/website')}`}</text>
+							<text class="xj-floor-text" transform={floorMatrix(pt(2.3, -1.0))}>{`GitHub · ${t('equipo/sitio', 'team/website')}`}</text>
 						</g>
 
 						<!-- Beto's clone, which still remembers the deleted branch -->

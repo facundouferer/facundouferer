@@ -232,7 +232,7 @@ const shots = [
 	{ id: 'shot-local', cx: 490, cy: 520, s: 1.0 },
 	{ id: 'shot-remote', cx: 560, cy: 220, s: 1.05 },
 	{ id: 'shot-push', cx: 520, cy: 360, s: 0.9 },
-	{ id: 'shot-conflict', cx: 718, cy: 600, s: 1.1 },
+	{ id: 'shot-conflict', cx: 705, cy: 600, s: 0.98 },
 ].map((item) => ({
 	id: item.id,
 	x: round(item.cx - 640 / item.s),
@@ -279,18 +279,18 @@ const chips: Chip[] = [
 	{ id: 'lb-beto', text: t('cambio de Beto', "Beto's change"), x: N.rc.x - 34, y: N.rc.y + 34, align: 'end', tone: 'plain' },
 	{ id: 'lb-parent', text: t(`padre nuevo: ${hash.main}`, `new parent: ${hash.main}`), x: N.ld2.x + 34, y: N.ld2.y + 20, align: 'start', tone: 'flow', mono: true },
 	{ id: 'lb-conflict', text: 'CONFLICT: config.js', x: N.le2.x + 64, y: N.le2.y + 222, align: 'start', tone: 'magenta', mono: true, icon: 'x' },
-	{ id: 'lb-old', text: t('commits viejos', 'old commits'), x: N.ld.x, y: N.ld.y - 40, align: 'middle', tone: 'plain' },
+	{ id: 'lb-old', text: t('commits viejos', 'old commits'), x: N.ld.x - 36, y: N.ld.y - 26, align: 'end', tone: 'plain' },
 	{ id: 'lb-rejected', text: t('rechazado: non-fast-forward', 'rejected: non-fast-forward'), x: N.re.x, y: N.re.y + 80, align: 'middle', tone: 'magenta', icon: 'x' },
-	{ id: 'lb-nopull', text: t('git pull traería los viejos', 'git pull brings the old ones back'), x: N.le.x + 96, y: N.le.y + 34, align: 'middle', tone: 'magenta', icon: 'x' },
+	{ id: 'lb-nopull', text: t('git pull traería los viejos', 'git pull brings the old ones back'), x: N.le.x + 96, y: N.le.y + 47, align: 'middle', tone: 'magenta', icon: 'x' },
 	{ id: 'lb-mate', text: t('commit de un compañero', "a teammate's commit"), x: N.rx.x, y: N.rx.y + 82, align: 'middle', tone: 'plain' },
 	{ id: 'lb-force', text: t('--force: lo borraría', '--force: would delete it'), x: N.rx.x, y: N.rx.y + 112, align: 'middle', tone: 'magenta', icon: 'x' },
 	{ id: 'lb-stale', text: t('rechazado: stale info', 'rejected: stale info'), x: N.rx.x, y: N.rx.y + 112, align: 'middle', tone: 'violet', icon: 'check' },
 	{ id: 'lb-match', text: `${hash.e} = ${hash.e}`, x: N.re.x, y: N.re.y + 80, align: 'middle', tone: 'violet', mono: true, icon: 'check' },
 	{ id: 'lb-forced', text: 'forced update', x: N.re.x + 98, y: N.re.y + 44, align: 'middle', tone: 'violet', mono: true, icon: 'check' },
-	{ id: 'lb-pr', text: t('Pull Request actualizado', 'Pull Request updated'), x: N.re2.x, y: N.re2.y + 42, align: 'middle', tone: 'violet', icon: 'check' },
-	{ id: 'r-linear', text: t('historial lineal, hashes nuevos', 'linear history, new hashes'), x: N.le2.x - 20, y: N.le2.y + 90, align: 'middle', tone: 'flow', icon: 'check' },
-	{ id: 'r-gold', text: t('regla de oro: nunca en ramas compartidas', 'golden rule: never on shared branches'), x: 520, y: 76, align: 'middle', tone: 'violet' },
-	{ id: 'r-lease', text: t('--force-with-lease, nunca --force', '--force-with-lease, never --force'), x: 520, y: 108, align: 'middle', tone: 'violet', icon: 'check' },
+	{ id: 'lb-pr', text: t('Pull Request actualizado', 'Pull Request updated'), x: N.re2.x + 110, y: N.re2.y + 42, align: 'middle', tone: 'violet', icon: 'check' },
+	{ id: 'r-linear', text: t('historial lineal, hashes nuevos', 'linear history, new hashes'), x: N.le2.x + 40, y: N.le2.y + 90, align: 'middle', tone: 'flow', icon: 'check' },
+	{ id: 'r-gold', text: t('regla de oro: nunca en ramas compartidas', 'golden rule: never on shared branches'), x: 664, y: 76, align: 'middle', tone: 'violet' },
+	{ id: 'r-lease', text: t('--force-with-lease, nunca --force', '--force-with-lease, never --force'), x: 664, y: 108, align: 'middle', tone: 'violet', icon: 'check' },
 ];
 const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + (chip.icon ? 42 : 24));
 const chipLeft = (chip: Chip) =>
