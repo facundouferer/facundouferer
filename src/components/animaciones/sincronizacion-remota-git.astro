@@ -133,7 +133,7 @@ const outputFailed = (id: string) => id === 'o-16-1' || id === 'o-16-2';
 
 // ── Editor geometry (canvas units, outside the camera) ────────────────────
 const ED = { x: 20, y: 20, w: 580, h: 680 };
-const GUTTER_X = 48;
+const GUTTER_X = 54;
 const PROMPT_X = 60;
 const CODE_X = 104;
 const CODE_TOP = 72;
@@ -308,8 +308,8 @@ const toneOf = (n: number) => (n === 16 ? 'magenta' : n === 17 || n === 18 ? 'vi
 // The pipes between each computer and the remote: from the back edge of the computer
 // to the front edge of the remote.
 const PORT = {
-	ana: along(floors.ana.back, floors.ana.right, 0.6),
-	remA: along(floors.rem.left, floors.rem.front, 0.5),
+	ana: along(floors.ana.back, floors.ana.right, 0.5),
+	remA: along(floors.rem.left, floors.rem.front, 0.3),
 	remB: along(floors.rem.front, floors.rem.right, 0.5),
 	beto: along(floors.beto.left, floors.beto.back, 0.4),
 };
@@ -334,10 +334,10 @@ const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0,
 
 // Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
 const shots = [
-	{ id: 'shot-ana', cx: 440, cy: 430, s: 1.4 },
-	{ id: 'shot-beto', cx: 840, cy: 430, s: 1.4 },
+	{ id: 'shot-ana', cx: 468, cy: 430, s: 1.4 },
+	{ id: 'shot-beto', cx: 762, cy: 430, s: 1.4 },
 	{ id: 'shot-ana-rem', cx: 560, cy: 340, s: 1.0 },
-	{ id: 'shot-beto-rem', cx: 720, cy: 340, s: 1.0 },
+	{ id: 'shot-beto-rem', cx: 698, cy: 340, s: 1.0 },
 	{ id: 'shot-all', cx: 640, cy: 350, s: 0.86 },
 ].map((item) => ({
 	id: item.id,
@@ -406,7 +406,7 @@ const chipLeft = (chip: Chip) =>
 const labels = [
 	{ id: 'lb-ana', text: 'Ana', icon: 'laptop', x: P.ana.x, y: P.ana.y + HH + 40 },
 	{ id: 'lb-beto', text: names.Bob, icon: 'laptop', x: P.beto.x, y: P.beto.y + HH + 40 },
-	{ id: 'lb-rem', text: 'GitHub · origin', icon: 'cloud', x: P.rem.x, y: P.rem.y + HH + 38 },
+	{ id: 'lb-rem', text: 'GitHub · origin', icon: 'cloud', x: P.rem.x - 10, y: P.rem.y + HH + 38 },
 ];
 const LEGEND_Y = VP.y + VP.h - 22;
 ---
@@ -664,7 +664,7 @@ const LEGEND_Y = VP.y + VP.h - 22;
 				<rect data-el="hx-16" class="xj-bar xj-bar--trail" x={BAR.x} y={lineTop(16)} width={BAR.w} height={LINE_H} rx="6"></rect>
 				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(1)}>
 					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
-					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+					<path d={`M${-BAR.w / 2 + 3} -5 l7 5 l-7 5 z`}></path>
 				</g>
 
 				<g class="xj-code">

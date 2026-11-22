@@ -130,9 +130,9 @@ const pages = [sessionPage('a', sessionA), sessionPage('b', sessionB), sessionPa
 
 // ── Editor geometry (canvas units, outside the camera) ────────────────────
 const ED = { x: 20, y: 20, w: 580, h: 680 };
-const GUTTER_X = 54;
+const GUTTER_X = 58;
 const PROMPT_X = 68;
-const CMD_X = 84;
+const CMD_X = 86;
 const CODE_TOP = 70;
 const LINE_H = 24;
 const BAR = { x: 28, w: 564 };
@@ -309,7 +309,7 @@ const shots = [
 	{ id: 'shot-start', cx: ORIGIN.x + 112, cy: ORIGIN.y - 44, s: 1.35 },
 	{ id: 'shot-a', cx: ORIGIN.x + 168, cy: ORIGIN.y - 52, s: 1.28 },
 	{ id: 'shot-b', cx: ORIGIN.x + 214, cy: ORIGIN.y + 80, s: 0.82 },
-	{ id: 'shot-c', cx: ORIGIN.x + 410, cy: ORIGIN.y + 184, s: 0.88 },
+	{ id: 'shot-c', cx: ORIGIN.x + 443, cy: ORIGIN.y + 184, s: 0.84 },
 	{ id: 'shot-all', cx: ORIGIN.x + 396, cy: ORIGIN.y + 148, s: 0.7 },
 ].map((item) => ({
 	id: item.id,
@@ -412,7 +412,7 @@ const LEGEND_Y = VP.y + VP.h - 22;
 							<polygon class="xj-plate xj-plate--l" points={F.repo.leftFace}></polygon>
 							<polygon class="xj-plate xj-plate--r" points={F.repo.rightFace}></polygon>
 							<polygon class="xj-plate xj-plate--t" points={F.repo.top} fill="url(#xg-g-floor)"></polygon>
-							<text class="xj-floor-text" transform={floorMatrix(pt(-0.9, 2.75))}>{t('Repositorio', 'Repository')}</text>
+							<text class="xj-floor-text" transform={floorMatrix(pt(5.6, 2.75))}>{t('Repositorio', 'Repository')}</text>
 						</g>
 
 						<!-- Parent links, born with each commit -->

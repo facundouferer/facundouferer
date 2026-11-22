@@ -159,8 +159,8 @@ const merge = timed(
 );
 const conflict = timed(
 	say(
-		'`saludo-formal` y `main` cambian la misma línea de `saludo.txt`.',
-		'`formal-greeting` and `main` change the same line of `greeting.txt`.',
+		'`saludo-formal` y `main` cambian, cada una en su commit, la misma línea de `saludo.txt`.',
+		'`formal-greeting` and `main` each change, in their own commit, the same line of `greeting.txt`.',
 	),
 	say(
 		'Git no adivina cuál es la buena: detiene la fusión con `CONFLICT`.',
@@ -404,14 +404,14 @@ export const script: AnimationScript = {
 					{ at: 5200, do: 'enter', el: 'c-f' },
 					label(5300, 't-main', 'f', 1, 700),
 					head(5300, 'f', 1, 700),
-					...run(conflict.start(1) + 900, 'c', 7),
-					{ at: conflict.start(1) + 1500, do: 'enter', el: 'g-m2', dur: 700 },
-					type(conflict.start(1) + 1700, 'c', 8, 500),
-					type(conflict.start(1) + 2200, 'c', 9, 600),
-					{ at: conflict.start(1) + 2300, do: 'enter', el: 'c-m2-wait' },
-					{ at: conflict.start(1) + 2500, do: 'enter', el: 'hxc-8' },
-					{ at: conflict.start(1) + 2900, do: 'enter', el: 'lb-conflict' },
-					{ at: conflict.start(1) + 3700, do: 'pulse', el: 'c-m2-wait' },
+					...run(conflict.start(1) + 300, 'c', 7),
+					{ at: conflict.start(1) + 900, do: 'enter', el: 'g-m2', dur: 700 },
+					type(conflict.start(1) + 1100, 'c', 8, 500),
+					type(conflict.start(1) + 1600, 'c', 9, 600),
+					{ at: conflict.start(1) + 1700, do: 'enter', el: 'c-m2-wait' },
+					{ at: conflict.start(1) + 1900, do: 'enter', el: 'hxc-8' },
+					{ at: conflict.start(1) + 2300, do: 'enter', el: 'lb-conflict' },
+					{ at: conflict.start(1) + 3100, do: 'pulse', el: 'c-m2-wait' },
 					{ at: conflict.start(2), do: 'exit', el: 'fv-amplia', dur: 400 },
 					{ at: conflict.start(2) + 300, do: 'enter', el: 'fv-markers' },
 					...[1, 2, 3, 4, 5].map((row): MotionCue => ({ at: conflict.start(2) + 300 + row * 330, do: 'type', el: `fvm-${row}`, dur: 300 })),
