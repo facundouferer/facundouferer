@@ -1,0 +1,1550 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+
+// Identifiers are localized like the lesson does: programa / SALUDO / sin_usar in
+// Spanish, program / GREETING / unused in English.
+const f = isEs ? 'programa' : 'program';
+const macro = isEs ? 'SALUDO' : 'GREETING';
+const hello = isEs ? 'Hola, C' : 'Hello, C';
+const unusedVar = isEs ? 'sin_usar' : 'unused';
+const courseCmd = `gcc -std=c23 -Wall -Wextra -Wpedantic -g ${f}.c -o ${f}`;
+
+type Tone = 'ok' | 'stop' | 'warn' | 'muted';
+type Part = { t: string; k?: string };
+type Panel =
+	| { kind: 'code' | 'term'; label: string; body?: string; parts?: Part[]; hl?: string }
+	| { kind: 'files'; label: string; items: { name: string; note: string; tone: Tone }[] };
+type Step = { stage: number; status: 'run' | 'stop' | 'warn'; warnAt?: number; text: string; panels: Panel[] };
+type LearnSlide = { kicker: string; title: string; lead: string; steps: Step[] };
+
+const stations = [
+	{ name: isEs ? 'Fuente' : 'Source', file: `${f}.c` },
+	{ name: isEs ? 'Preprocesador' : 'Preprocessor', file: isEs ? 'texto C (-E)' : 'C text (-E)' },
+	{ name: isEs ? 'Compilador' : 'Compiler', file: `${f}.s (-S)` },
+	{ name: isEs ? 'Ensamblador' : 'Assembler', file: `${f}.o (-c)` },
+	{ name: isEs ? 'Enlazador' : 'Linker', file: isEs ? '+ biblioteca' : '+ library' },
+	{ name: isEs ? 'Ejecutable' : 'Executable', file: f },
+];
+
+const srcCode = `#include <stdio.h>
+
+#define ${macro} "${hello}"
+
+int main(void) {
+    printf(${macro} "\\n");
+    return 0;
+}`;
+
+const includedCode = `${isEs ? '… contenido de stdio.h (declara printf, entre muchas otras cosas) …' : '… contents of stdio.h (declares printf, among many other things) …'}
+
+#define ${macro} "${hello}"
+
+int main(void) {
+    printf(${macro} "\\n");
+    return 0;
+}`;
+
+const preprocessedCode = `${isEs ? '… cientos de líneas traídas de stdio.h …' : '… hundreds of lines brought from stdio.h …'}
+
+int main(void) {
+    printf("${hello}" "\\n");
+    return 0;
+}`;
+
+const asmCode = `main:
+    ${isEs ? '… (fragmento ilustrativo)' : '… (illustrative fragment)'}
+    mov     …
+    call    printf
+    …
+    ret`;
+
+const typoCode = `#include <stdio.h>
+
+int main(void) {
+    prinft("${isEs ? 'Hola' : 'Hello'}\\n");
+    return 0;
+}`;
+
+const stdoiCode = `#include <stdoi.h>
+
+int main(void) {
+    return 0;
+}`;
+
+const semicolonCode = `#include <stdio.h>
+
+int main(void) {
+    printf("${isEs ? 'Hola' : 'Hello'}\\n")
+    return 0;
+}`;
+
+const warnCode = `#include <stdio.h>
+
+int main(void) {
+    int ${unusedVar} = 0;
+    printf("%d\\n", 3.5);
+    return 0;
+}`;
+
+const fixedCode = `#include <stdio.h>
+
+int main(void) {
+    printf("%f\\n", 3.5);
+    return 0;
+}`;
+
+const exitCode = `#include <stdio.h>
+
+int main(void) {
+    printf("${isEs ? 'Algo salió mal' : 'Something went wrong'}\\n");
+    return 3;
+}`;
+
+const stdoiMsg = 'fatal error: stdoi.h: No such file or directory';
+const typoMsg = `${f}.c:4:5: error: implicit declaration of function 'prinft'; did you mean 'printf'? [-Wimplicit-function-declaration]`;
+const linkMsg = `/usr/bin/ld: /tmp/ccA1b2C3.o: in function \`main':
+${f}.c:(.text+0x10): undefined reference to \`prinft'
+collect2: error: ld returned 1 exit status`;
+const warnMsg = `${f}.c:5:14: warning: format '%d' expects argument of type 'int', but argument 2 has type 'double' [-Wformat=]
+${f}.c:4:9: warning: unused variable '${unusedVar}' [-Wunused-variable]`;
+const werrorMsg = `${f}.c:5:14: error: format '%d' expects argument of type 'int', but argument 2 has type 'double' [-Werror=format=]
+${f}.c:4:9: error: unused variable '${unusedVar}' [-Werror=unused-variable]
+cc1: all warnings being treated as errors`;
+
+const anatomyParts = (hl: string): Panel => ({
+	kind: 'term',
+	label: isEs ? 'Mensaje de GCC 14' : 'GCC 14 message',
+	hl,
+	parts: [
+		{ t: `${f}.c`, k: 'file' },
+		{ t: ':' },
+		{ t: '4', k: 'line' },
+		{ t: ':' },
+		{ t: '5', k: 'col' },
+		{ t: ': ' },
+		{ t: 'error', k: 'type' },
+		{ t: ': ' },
+		{ t: "implicit declaration of function 'prinft'; did you mean 'printf'?", k: 'desc' },
+		{ t: ' ' },
+		{ t: '[-Wimplicit-function-declaration]', k: 'flag' },
+		{ t: `\n    4 |     prinft("${isEs ? 'Hola' : 'Hello'}\\n");\n      |     ^~~~~~\n      |     printf` },
+	],
+});
+
+const commandParts = (hl: string): Panel => ({
+	kind: 'term',
+	label: isEs ? 'El comando del curso' : 'The course command',
+	hl,
+	parts: [
+		{ t: 'gcc' },
+		{ t: ' ' },
+		{ t: '-std=c23', k: 'std' },
+		{ t: ' ' },
+		{ t: '-Wall -Wextra -Wpedantic', k: 'warn' },
+		{ t: ' ' },
+		{ t: '-g', k: 'g' },
+		{ t: ' ' },
+		{ t: `${f}.c`, k: 'src' },
+		{ t: ' ' },
+		{ t: `-o ${f}`, k: 'out' },
+	],
+});
+
+const learnSlides: LearnSlide[] = [
+	{
+		kicker: isEs ? 'El recorrido completo' : 'The whole journey',
+		title: isEs ? 'Del código fuente al ejecutable' : 'From source code to executable',
+		lead: isEs
+			? `Cuando escribes gcc ${f}.c -o ${f} parece que ocurre una sola cosa, pero gcc coordina cuatro etapas. Avanza paso a paso y mira cómo se transforma el archivo en cada estación.`
+			: `When you type gcc ${f}.c -o ${f} it looks like a single thing happens, but gcc coordinates four stages. Step through and watch the file change at every station.`,
+		steps: [
+			{
+				stage: 0,
+				status: 'run',
+				text: isEs
+					? `Partimos de ${f}.c: texto C que escribes tú. La computadora no ejecuta ese texto.`
+					: `We start from ${f}.c: C text that you write. The computer does not run that text.`,
+				panels: [{ kind: 'code', label: `${f}.c`, body: srcCode }],
+			},
+			{
+				stage: 1,
+				status: 'run',
+				text: isEs
+					? `El preprocesador atiende las directivas que empiezan con #: trae stdio.h y reemplaza ${macro}. Con -E, gcc se detiene aquí.`
+					: `The preprocessor handles the directives that start with #: it brings in stdio.h and replaces ${macro}. With -E, gcc stops here.`,
+				panels: [{ kind: 'term', label: `$ gcc -E ${f}.c`, body: preprocessedCode }],
+			},
+			{
+				stage: 2,
+				status: 'run',
+				text: isEs
+					? `El compilador comprueba sintaxis y tipos y traduce a ensamblador. Con -S deja ${f}.s.`
+					: `The compiler checks syntax and types and translates to assembly. With -S it leaves ${f}.s.`,
+				panels: [{ kind: 'term', label: `$ gcc -S ${f}.c → ${f}.s`, body: asmCode }],
+			},
+			{
+				stage: 3,
+				status: 'run',
+				text: isEs
+					? `El ensamblador produce código máquina y lo guarda en ${f}.o. La opción -c significa "compila pero no enlaces".`
+					: `The assembler produces machine code and stores it in ${f}.o. The -c option means "compile but do not link".`,
+				panels: [
+					{
+						kind: 'files',
+						label: `$ gcc -std=c23 -c ${f}.c`,
+						items: [
+							{ name: `${f}.o`, note: isEs ? 'código máquina de main' : 'machine code of main', tone: 'ok' },
+							{ name: 'printf', note: isEs ? 'referencia sin resolver: ¿dónde está su código?' : 'unresolved reference: where is its code?', tone: 'warn' },
+						],
+					},
+				],
+			},
+			{
+				stage: 4,
+				status: 'run',
+				text: isEs
+					? 'El enlazador une el objeto con la biblioteca estándar de C, donde está el código de printf, y produce el ejecutable.'
+					: 'The linker joins the object file with the C standard library, where the code of printf lives, and produces the executable.',
+				panels: [
+					{
+						kind: 'files',
+						label: `$ gcc ${f}.o -o ${f}`,
+						items: [
+							{ name: `${f}.o`, note: isEs ? 'tu código máquina' : 'your machine code', tone: 'muted' },
+							{ name: isEs ? 'biblioteca estándar de C' : 'C standard library', note: isEs ? 'aporta el código de printf' : 'provides the code of printf', tone: 'muted' },
+							{ name: f, note: isEs ? 'ejecutable' : 'executable', tone: 'ok' },
+						],
+					},
+				],
+			},
+			{
+				stage: 5,
+				status: 'run',
+				text: isEs
+					? 'Ahora sí se puede ejecutar. Sin -o, el ejecutable se llamaría a.out.'
+					: 'Now it can run. Without -o, the executable would be called a.out.',
+				panels: [{ kind: 'term', label: isEs ? 'Terminal' : 'Terminal', body: `$ ./${f}\n${hello}` }],
+			},
+		],
+	},
+	{
+		kicker: isEs ? 'Etapa 1 · gcc -E' : 'Stage 1 · gcc -E',
+		title: isEs ? 'Preprocesado: el texto antes del compilador' : 'Preprocessing: the text before the compiler',
+		lead: isEs
+			? 'El preprocesador trabaja sobre el texto. Atiende las directivas (#include, #define) y entrega al compilador un texto C sin ellas.'
+			: 'The preprocessor works on the text. It handles the directives (#include, #define) and hands the compiler C text without them.',
+		steps: [
+			{
+				stage: 0,
+				status: 'run',
+				text: isEs
+					? 'Las líneas que empiezan con # son directivas para el preprocesador, no instrucciones de C.'
+					: 'Lines that start with # are directives for the preprocessor, not C statements.',
+				panels: [{ kind: 'code', label: `${f}.c`, body: srcCode }],
+			},
+			{
+				stage: 1,
+				status: 'run',
+				text: isEs
+					? '#include <stdio.h> se reemplaza por el contenido completo de la cabecera stdio.h, que declara printf.'
+					: '#include <stdio.h> is replaced by the whole contents of the header stdio.h, which declares printf.',
+				panels: [{ kind: 'code', label: isEs ? 'Después de #include' : 'After #include', body: includedCode }],
+			},
+			{
+				stage: 1,
+				status: 'run',
+				text: isEs
+					? `#define creó la macro ${macro}: cada aparición se sustituye por "${hello}" y la directiva desaparece. El compilador nunca ve macros.`
+					: `#define created the macro ${macro}: every occurrence is replaced by "${hello}" and the directive disappears. The compiler never sees macros.`,
+				panels: [{ kind: 'term', label: isEs ? `$ gcc -E ${f}.c (final de la salida)` : `$ gcc -E ${f}.c (end of the output)`, body: preprocessedCode }],
+			},
+			{
+				stage: 1,
+				status: 'run',
+				text: isEs
+					? 'Dos cadenas literales seguidas se unen en una sola: el programa imprime una única cadena.'
+					: 'Two string literals in a row are joined into one: the program prints a single string.',
+				panels: [
+					{ kind: 'code', label: isEs ? 'Equivale a' : 'Is equivalent to', body: `printf("${hello}" "\\n");\n/* = */\nprintf("${hello}\\n");` },
+				],
+			},
+		],
+	},
+	{
+		kicker: isEs ? 'Etapa 2 · gcc -S' : 'Stage 2 · gcc -S',
+		title: isEs ? 'Compilación: reglas del lenguaje y ensamblador' : 'Compilation: language rules and assembly',
+		lead: isEs
+			? 'El compilador analiza el texto preprocesado y lo traduce a ensamblador, las instrucciones de bajo nivel de tu procesador.'
+			: 'The compiler analyzes the preprocessed text and translates it to assembly, the low-level instructions of your processor.',
+		steps: [
+			{
+				stage: 1,
+				status: 'run',
+				text: isEs ? 'El compilador recibe el texto que dejó el preprocesador.' : 'The compiler receives the text the preprocessor left.',
+				panels: [{ kind: 'code', label: isEs ? 'Texto preprocesado' : 'Preprocessed text', body: preprocessedCode }],
+			},
+			{
+				stage: 2,
+				status: 'run',
+				text: isEs
+					? 'Comprueba que el texto respete las reglas del lenguaje. Es la etapa donde aparecen la mayoría de los errores y advertencias.'
+					: 'It checks that the text follows the language rules. This is the stage where most errors and warnings appear.',
+				panels: [
+					{
+						kind: 'files',
+						label: isEs ? 'Verificaciones' : 'Checks',
+						items: [
+							{ name: isEs ? 'Sintaxis' : 'Syntax', note: isEs ? '¿cada instrucción termina en ;?' : 'does every statement end with ;?', tone: 'ok' },
+							{ name: isEs ? 'Tipos' : 'Types', note: isEs ? '¿printf está declarada y recibe lo que espera?' : 'is printf declared and does it get what it expects?', tone: 'ok' },
+						],
+					},
+				],
+			},
+			{
+				stage: 2,
+				status: 'run',
+				text: isEs
+					? `Traduce a ensamblador y deja ${f}.s, con instrucciones como mov, call o ret. Depende del procesador (x86-64, ARM, etc.).`
+					: `It translates to assembly and leaves ${f}.s, with instructions such as mov, call or ret. It depends on the processor (x86-64, ARM, etc.).`,
+				panels: [{ kind: 'term', label: `${f}.s`, body: asmCode }],
+			},
+		],
+	},
+	{
+		kicker: isEs ? 'Etapas 3 y 4 · gcc -c y enlazado' : 'Stages 3 and 4 · gcc -c and linking',
+		title: isEs ? 'Objeto y ejecutable: ¿de dónde sale printf?' : 'Object and executable: where does printf come from?',
+		lead: isEs
+			? 'Un archivo objeto ya es código máquina, pero todavía no se puede ejecutar. El enlazador completa lo que falta.'
+			: 'An object file is already machine code, but it cannot run yet. The linker supplies what is missing.',
+		steps: [
+			{
+				stage: 3,
+				status: 'run',
+				text: isEs
+					? `${f}.o contiene el código máquina de main, pero llama a printf sin saber dónde está su código.`
+					: `${f}.o holds the machine code of main, but it calls printf without knowing where its code is.`,
+				panels: [
+					{
+						kind: 'files',
+						label: `${f}.o`,
+						items: [
+							{ name: 'main', note: isEs ? 'código máquina listo' : 'machine code ready', tone: 'ok' },
+							{ name: 'printf', note: isEs ? 'referencia sin resolver' : 'unresolved reference', tone: 'warn' },
+						],
+					},
+				],
+			},
+			{
+				stage: 4,
+				status: 'run',
+				text: isEs
+					? 'El enlazador busca printf en los archivos objeto y en las bibliotecas. Lo encuentra en la biblioteca estándar de C.'
+					: 'The linker looks for printf in the object files and in the libraries. It finds it in the C standard library.',
+				panels: [
+					{
+						kind: 'files',
+						label: isEs ? 'Enlazador' : 'Linker',
+						items: [
+							{ name: `${f}.o`, note: isEs ? 'necesita printf' : 'needs printf', tone: 'muted' },
+							{ name: isEs ? 'biblioteca estándar de C' : 'C standard library', note: isEs ? 'printf encontrado' : 'printf found', tone: 'ok' },
+						],
+					},
+				],
+			},
+			{
+				stage: 5,
+				status: 'run',
+				text: isEs
+					? `El resultado, ${f}, es código máquina enlazado con las bibliotecas: binario y ejecutable.`
+					: `The result, ${f}, is machine code linked with the libraries: binary and executable.`,
+				panels: [
+					{
+						kind: 'files',
+						label: isEs ? 'Fuente, objeto y ejecutable' : 'Source, object and executable',
+						items: [
+							{ name: `${f}.c`, note: isEs ? 'código fuente · texto · no se ejecuta' : 'source code · text · does not run', tone: 'muted' },
+							{ name: `${f}.o`, note: isEs ? 'código máquina sin enlazar · binario · no se ejecuta' : 'unlinked machine code · binary · does not run', tone: 'muted' },
+							{ name: f, note: isEs ? 'código máquina enlazado · binario · se ejecuta' : 'linked machine code · binary · runs', tone: 'ok' },
+						],
+					},
+				],
+			},
+			{
+				stage: 5,
+				status: 'run',
+				text: isEs
+					? 'Con varios archivos .c, cada uno se compila por separado a su .o y el enlazador los une al final. Si cambias uno, solo recompilas ese.'
+					: 'With several .c files, each one is compiled separately to its .o and the linker joins them at the end. If you change one, you only recompile that one.',
+				panels: [
+					{
+						kind: 'files',
+						label: isEs ? 'Varios archivos' : 'Several files',
+						items: [
+							{ name: 'a.c → a.o', note: isEs ? 'gcc -c a.c' : 'gcc -c a.c', tone: 'muted' },
+							{ name: 'b.c → b.o', note: isEs ? 'gcc -c b.c' : 'gcc -c b.c', tone: 'muted' },
+							{ name: `a.o + b.o → ${f}`, note: isEs ? 'el enlazador los une' : 'the linker joins them', tone: 'ok' },
+						],
+					},
+				],
+			},
+		],
+	},
+	{
+		kicker: isEs ? 'Errores' : 'Errors',
+		title: isEs ? '¿Qué etapa falló?' : 'Which stage failed?',
+		lead: isEs
+			? 'Un error puede aparecer en distintas etapas, y el mensaje te dice cuál. Mira dónde se detiene la tubería en cada caso.'
+			: 'An error can appear at different stages, and the message tells you which one. Watch where the pipeline stops in each case.',
+		steps: [
+			{
+				stage: 1,
+				status: 'stop',
+				text: isEs
+					? 'El preprocesador no encuentra la cabecera stdoi.h y se detiene: no llega nada al compilador.'
+					: 'The preprocessor cannot find the header stdoi.h and stops: nothing reaches the compiler.',
+				panels: [
+					{ kind: 'code', label: `${f}.c`, body: stdoiCode },
+					{ kind: 'term', label: isEs ? 'Preprocesado' : 'Preprocessing', body: stdoiMsg },
+				],
+			},
+			{
+				stage: 2,
+				status: 'stop',
+				text: isEs
+					? 'En C23, llamar a una función no declarada es un error de compilación: el compilador se detiene antes de generar el objeto.'
+					: 'In C23, calling an undeclared function is a compile error: the compiler stops before producing the object file.',
+				panels: [
+					{ kind: 'code', label: `${f}.c`, body: typoCode },
+					{ kind: 'term', label: `$ ${courseCmd}`, body: typoMsg },
+				],
+			},
+			{
+				stage: 4,
+				status: 'stop',
+				text: isEs
+					? 'En C antiguo (C89) el compilador solo advierte y el objeto se genera. Es el enlazador quien busca prinft y no encuentra su código.'
+					: 'In old C (C89) the compiler only warns and the object file is produced. It is the linker that looks for prinft and cannot find its code.',
+				panels: [
+					{ kind: 'code', label: `${f}.c`, body: typoCode },
+					{ kind: 'term', label: `$ gcc -std=c89 ${f}.c -o ${f}`, body: linkMsg },
+				],
+			},
+			{
+				stage: 4,
+				status: 'stop',
+				text: isEs
+					? 'Un error de enlazado lo informa ld, no menciona una línea de tu código y habla de símbolos o referencias no definidas.'
+					: 'A link error is reported by ld, does not mention a line of your code and talks about undefined symbols or references.',
+				panels: [
+					{
+						kind: 'files',
+						label: isEs ? 'Cómo se ve cada uno' : 'What each one looks like',
+						items: [
+							{ name: isEs ? 'Preprocesado' : 'Preprocessing', note: 'fatal error: stdoi.h: No such file or directory', tone: 'stop' },
+							{ name: isEs ? 'Compilación' : 'Compilation', note: isEs ? 'archivo:línea:columna: error: …' : 'file:line:column: error: …', tone: 'stop' },
+							{ name: isEs ? 'Enlazado' : 'Linking', note: 'undefined reference to … / Undefined symbols', tone: 'stop' },
+						],
+					},
+				],
+			},
+		],
+	},
+	{
+		kicker: isEs ? 'Diagnósticos' : 'Diagnostics',
+		title: isEs ? 'Cómo leer un mensaje del compilador' : 'How to read a compiler message',
+		lead: isEs
+			? 'Cada mensaje sigue el formato archivo:línea:columna: tipo: descripción. Recorre sus partes una por una.'
+			: 'Every message follows the format file:line:column: kind: description. Walk through its parts one by one.',
+		steps: [
+			{ stage: 2, status: 'stop', text: isEs ? `${f}.c es el archivo donde está el problema.` : `${f}.c is the file where the problem is.`, panels: [anatomyParts('file')] },
+			{ stage: 2, status: 'stop', text: isEs ? '4 es la línea del problema.' : '4 is the line of the problem.', panels: [anatomyParts('line')] },
+			{
+				stage: 2,
+				status: 'stop',
+				text: isEs ? '5 es la columna: el carácter donde empieza prinft. Debajo, el compilador la marca con ^.' : '5 is the column: the character where prinft starts. Below, the compiler marks it with ^.',
+				panels: [anatomyParts('col')],
+			},
+			{
+				stage: 2,
+				status: 'stop',
+				text: isEs ? 'error indica que no se generó ningún archivo. Si dijera warning, el archivo sí se habría generado.' : 'error means no file was produced. If it said warning, the file would have been produced.',
+				panels: [anatomyParts('type')],
+			},
+			{
+				stage: 2,
+				status: 'stop',
+				text: isEs ? 'La descripción explica el problema y, a veces, sugiere la corrección: did you mean printf?' : 'The description explains the problem and sometimes suggests the fix: did you mean printf?',
+				panels: [anatomyParts('desc')],
+			},
+			{
+				stage: 2,
+				status: 'stop',
+				text: isEs
+					? 'Entre corchetes aparece la opción que controla ese diagnóstico. Corrige siempre el primer error de la lista: muchas veces los siguientes son consecuencia de él.'
+					: 'Between brackets is the option that controls that diagnostic. Always fix the first error in the list: the following ones are often a consequence of it.',
+				panels: [anatomyParts('flag')],
+			},
+		],
+	},
+	{
+		kicker: isEs ? 'Advertencias' : 'Warnings',
+		title: isEs ? 'Compila, pero algo anda mal' : 'It compiles, but something is wrong',
+		lead: isEs
+			? 'Una advertencia indica algo que el lenguaje permite pero que casi seguro es un error. El archivo se genera igual, y por eso son peligrosas.'
+			: 'A warning points at something the language allows but that is almost certainly a mistake. The file is produced anyway, and that is why warnings are dangerous.',
+		steps: [
+			{
+				stage: 0,
+				status: 'run',
+				text: isEs ? 'Este programa compila, pero tiene dos problemas.' : 'This program compiles, but it has two problems.',
+				panels: [{ kind: 'code', label: `${f}.c`, body: warnCode }],
+			},
+			{
+				stage: 5,
+				status: 'warn',
+				warnAt: 2,
+				text: isEs
+					? 'Con -Wall -Wextra -Wpedantic aparecen los dos problemas. Son warning: el ejecutable sí se generó.'
+					: 'With -Wall -Wextra -Wpedantic both problems show up. They are warnings: the executable was produced.',
+				panels: [{ kind: 'term', label: `$ ${courseCmd}`, body: warnMsg }],
+			},
+			{
+				stage: 5,
+				status: 'warn',
+				warnAt: 2,
+				text: isEs
+					? 'La primera es grave: %d espera un int y 3.5 es un double, así que ese printf es comportamiento indefinido. La segunda marca una variable que nunca se usa.'
+					: 'The first one is serious: %d expects an int and 3.5 is a double, so that printf is undefined behavior. The second one flags a variable that is never used.',
+				panels: [
+					{
+						kind: 'files',
+						label: isEs ? 'Qué significan' : 'What they mean',
+						items: [
+							{ name: '-Wformat', note: isEs ? '%d con un double: puede imprimir cualquier cosa' : '%d with a double: it may print anything', tone: 'stop' },
+							{ name: '-Wunused-variable', note: isEs ? `${unusedVar} se declara y nunca se usa` : `${unusedVar} is declared and never used`, tone: 'warn' },
+						],
+					},
+				],
+			},
+			{
+				stage: 2,
+				status: 'stop',
+				text: isEs
+					? '-Werror convierte cada advertencia en un error: no se genera el ejecutable hasta que la corrijas.'
+					: '-Werror turns every warning into an error: the executable is not produced until you fix it.',
+				panels: [{ kind: 'term', label: `$ ${courseCmd} -Werror`, body: werrorMsg }],
+			},
+			{
+				stage: 5,
+				status: 'run',
+				text: isEs
+					? 'Con %f y sin la variable, compila sin ninguna advertencia. Un programa del curso está terminado cuando compila así.'
+					: 'With %f and without the variable, it compiles without a single warning. A course program is finished when it compiles like this.',
+				panels: [
+					{ kind: 'code', label: `${f}.c`, body: fixedCode },
+					{ kind: 'term', label: `$ ${courseCmd}`, body: isEs ? '(sin advertencias)' : '(no warnings)' },
+				],
+			},
+		],
+	},
+	{
+		kicker: isEs ? 'Política del curso' : 'Course policy',
+		title: isEs ? 'El comando del curso y el estado de salida' : 'The course command and the exit status',
+		lead: isEs
+			? 'Este curso usa ISO C23 y compila siempre con el mismo comando. Cada opción tiene un propósito.'
+			: 'This course uses ISO C23 and always compiles with the same command. Every option has a purpose.',
+		steps: [
+			{
+				stage: 5,
+				status: 'run',
+				text: isEs ? '-std=c23 compila según el estándar ISO C23. Con compiladores anteriores a GCC 14 o Clang 18, usa -std=c2x.' : '-std=c23 compiles according to the ISO C23 standard. With compilers older than GCC 14 or Clang 18, use -std=c2x.',
+				panels: [commandParts('std')],
+			},
+			{
+				stage: 5,
+				status: 'run',
+				text: isEs
+					? '-Wall activa las advertencias comunes, -Wextra agrega otras y -Wpedantic avisa de todo lo que no es C estándar, como las extensiones del compilador.'
+					: '-Wall enables the common warnings, -Wextra adds more and -Wpedantic flags everything that is not standard C, such as compiler extensions.',
+				panels: [commandParts('warn')],
+			},
+			{
+				stage: 5,
+				status: 'run',
+				text: isEs ? '-g guarda información de depuración, que usarás más adelante con un depurador.' : '-g stores debugging information, which you will use later with a debugger.',
+				panels: [commandParts('g')],
+			},
+			{
+				stage: 5,
+				status: 'run',
+				text: isEs ? `${f}.c es el archivo fuente y -o ${f} el nombre del ejecutable.` : `${f}.c is the source file and -o ${f} the name of the executable.`,
+				panels: [commandParts('out')],
+			},
+			{
+				stage: 5,
+				status: 'run',
+				text: isEs
+					? 'El return de main es el estado de salida: 0 significa "terminé bien" y otro valor indica un problema. En Linux o macOS, echo $? lo muestra.'
+					: 'The return value of main is the exit status: 0 means "finished fine" and any other value signals a problem. On Linux or macOS, echo $? shows it.',
+				panels: [
+					{ kind: 'code', label: `${f}.c`, body: exitCode },
+					{ kind: 'term', label: isEs ? 'Terminal' : 'Terminal', body: `$ ./${f}\n${isEs ? 'Algo salió mal' : 'Something went wrong'}\n$ echo $?\n3` },
+				],
+			},
+		],
+	},
+];
+
+type PracticeItem = {
+	code: string;
+	command: string;
+	question: string;
+	options: string[];
+	correct: number;
+	stop: number;
+	status: 'run' | 'stop' | 'warn';
+	reason: string;
+	outcome: Panel;
+};
+
+const practiceItems: PracticeItem[] = [
+	{
+		code: srcCode,
+		command: `gcc -std=c23 -c ${f}.c`,
+		question: isEs ? '¿Qué archivo aparece al terminar este comando?' : 'Which file appears when this command finishes?',
+		options: [`${f}.s`, `${f}.o`, isEs ? `${f} (ejecutable)` : `${f} (executable)`, isEs ? 'Ningún archivo' : 'No file'],
+		correct: 1,
+		stop: 3,
+		status: 'run',
+		reason: isEs
+			? `-c significa "compila pero no enlaces": preprocesa, compila y ensambla, y se detiene con ${f}.o.`
+			: `-c means "compile but do not link": it preprocesses, compiles and assembles, and stops with ${f}.o.`,
+		outcome: { kind: 'files', label: isEs ? 'Resultado' : 'Result', items: [{ name: `${f}.o`, note: isEs ? 'archivo objeto, aún no ejecutable' : 'object file, not runnable yet', tone: 'ok' }] },
+	},
+	{
+		code: srcCode,
+		command: `gcc -E ${f}.c`,
+		question: isEs ? '¿Cómo queda la línea de printf en la salida?' : 'What does the printf line look like in the output?',
+		options: [`printf(${macro} "\\n");`, `printf("${hello}" "\\n");`, `call    printf`, isEs ? 'No hay salida: -E genera un objeto' : 'No output: -E produces an object file'],
+		correct: 1,
+		stop: 1,
+		status: 'run',
+		reason: isEs
+			? `-E se detiene después del preprocesado: la macro ${macro} ya fue sustituida y la directiva #define desapareció.`
+			: `-E stops after preprocessing: the macro ${macro} was already replaced and the #define directive is gone.`,
+		outcome: { kind: 'term', label: isEs ? 'Final de la salida' : 'End of the output', body: preprocessedCode },
+	},
+	{
+		code: stdoiCode,
+		command: courseCmd,
+		question: isEs ? '¿Qué etapa detiene a gcc?' : 'Which stage stops gcc?',
+		options: [isEs ? 'Preprocesado' : 'Preprocessing', isEs ? 'Compilación' : 'Compilation', isEs ? 'Enlazado' : 'Linking', isEs ? 'Ninguna: se genera el ejecutable' : 'None: the executable is produced'],
+		correct: 0,
+		stop: 1,
+		status: 'stop',
+		reason: isEs
+			? 'El preprocesador no encuentra el archivo stdoi.h (falta de tipeo en stdio.h) y se detiene con un fatal error. No se genera ningún archivo.'
+			: 'The preprocessor cannot find the file stdoi.h (a typo for stdio.h) and stops with a fatal error. No file is produced.',
+		outcome: { kind: 'term', label: isEs ? 'Mensaje' : 'Message', body: stdoiMsg },
+	},
+	{
+		code: semicolonCode,
+		command: courseCmd,
+		question: isEs ? '¿Qué etapa lo detiene y qué archivo queda?' : 'Which stage stops it and which file is left?',
+		options: [
+			isEs ? 'Compilación; no se genera ningún archivo' : 'Compilation; no file is produced',
+			isEs ? `Enlazado; queda ${f}.o` : `Linking; ${f}.o is left`,
+			isEs ? `Compila con una advertencia; queda ${f}` : `It compiles with a warning; ${f} is left`,
+		],
+		correct: 0,
+		stop: 2,
+		status: 'stop',
+		reason: isEs
+			? 'Falta el ; al final de la línea 4: es un error de sintaxis, que detecta el compilador. Como es un error, no se genera ningún archivo.'
+			: 'The ; at the end of line 4 is missing: it is a syntax error, detected by the compiler. Since it is an error, no file is produced.',
+		outcome: { kind: 'term', label: isEs ? 'Mensaje de GCC' : 'GCC message', body: `${f}.c:4:${isEs ? '21' : '22'}: error: expected ';' before 'return'` },
+	},
+	{
+		code: typoCode,
+		command: `gcc -std=c89 ${f}.c -o ${f}`,
+		question: isEs
+			? 'Con GCC y un estándar antiguo, el compilador solo advierte por prinft. ¿Dónde se detiene?'
+			: 'With GCC and an old standard, the compiler only warns about prinft. Where does it stop?',
+		options: [isEs ? 'Preprocesado' : 'Preprocessing', isEs ? 'Compilación' : 'Compilation', isEs ? 'Enlazado' : 'Linking'],
+		correct: 2,
+		stop: 4,
+		status: 'stop',
+		reason: isEs
+			? 'La compilación termina y se genera el objeto, pero el enlazador busca el código de prinft en los objetos y en las bibliotecas y no lo encuentra: undefined reference.'
+			: 'Compilation finishes and the object file is produced, but the linker looks for the code of prinft in the object files and libraries and cannot find it: undefined reference.',
+		outcome: { kind: 'term', label: isEs ? 'Mensaje del enlazador' : 'Linker message', body: linkMsg },
+	},
+	{
+		code: warnCode,
+		command: `${courseCmd} -Werror`,
+		question: isEs ? '¿Qué pasa con el ejecutable?' : 'What happens to the executable?',
+		options: [
+			isEs ? 'Se genera, con dos advertencias' : 'It is produced, with two warnings',
+			isEs ? 'No se genera: las advertencias se tratan como errores' : 'It is not produced: warnings are treated as errors',
+			isEs ? 'Falla el enlazado: falta printf' : 'Linking fails: printf is missing',
+		],
+		correct: 1,
+		stop: 2,
+		status: 'stop',
+		reason: isEs
+			? 'Sin -Werror habría dos advertencias y el ejecutable se generaría. Con -Werror cada advertencia es un error, así que el compilador no genera nada hasta que las corrijas.'
+			: 'Without -Werror there would be two warnings and the executable would be produced. With -Werror every warning is an error, so the compiler produces nothing until you fix them.',
+		outcome: { kind: 'term', label: isEs ? 'Mensaje de GCC' : 'GCC message', body: werrorMsg },
+	},
+];
+
+type AssessItem = { prompt: string; code?: string; options: string[]; correct: number };
+
+const assessItems: AssessItem[] = [
+	{
+		prompt: isEs ? '¿Qué tipo de problema informa este mensaje?' : 'What kind of problem does this message report?',
+		code: linkMsg,
+		options: [isEs ? 'Error de preprocesado' : 'Preprocessing error', isEs ? 'Error de compilación' : 'Compile error', isEs ? 'Error de enlazado' : 'Link error', isEs ? 'Advertencia' : 'Warning'],
+		correct: 2,
+	},
+	{
+		prompt: isEs ? '¿Qué indica este mensaje?' : 'What does this message tell you?',
+		code: `${f}.c:5:14: warning: format '%d' expects argument of type 'int', but argument 2 has type 'double' [-Wformat=]`,
+		options: [
+			isEs ? 'Un error de compilación: no hay ejecutable' : 'A compile error: there is no executable',
+			isEs ? 'Una advertencia: el ejecutable se generó, pero hay que corregirla' : 'A warning: the executable was produced, but it must be fixed',
+			isEs ? 'Un error de enlazado en la línea 5' : 'A link error on line 5',
+		],
+		correct: 1,
+	},
+	{
+		prompt: isEs ? `Quieres obtener solo el archivo objeto de ${f}.c. ¿Qué comando usas?` : `You want only the object file of ${f}.c. Which command do you use?`,
+		options: [`gcc -std=c23 -E ${f}.c`, `gcc -std=c23 -S ${f}.c`, `gcc -std=c23 -c ${f}.c`, `gcc ${f}.o -o ${f}`],
+		correct: 2,
+	},
+	{
+		prompt: isEs ? '¿Dónde está el código de printf y qué etapa lo agrega a tu programa?' : 'Where is the code of printf and which stage adds it to your program?',
+		options: [
+			isEs ? 'En stdio.h; lo agrega el preprocesador' : 'In stdio.h; the preprocessor adds it',
+			isEs ? 'En la biblioteca estándar de C; lo agrega el enlazador' : 'In the C standard library; the linker adds it',
+			isEs ? 'Lo genera el compilador al traducir a ensamblador' : 'The compiler generates it when translating to assembly',
+		],
+		correct: 1,
+	},
+	{
+		prompt: isEs ? 'Compilaste y obtuviste este mensaje. ¿Qué es correcto?' : 'You compiled and got this message. What is correct?',
+		code: `${isEs ? 'saludo' : 'greeting'}.c:6:21: error: expected ';' after expression`,
+		options: [
+			isEs ? 'Línea 21, columna 6; el ejecutable se generó' : 'Line 21, column 6; the executable was produced',
+			isEs ? 'Línea 6, columna 21; no se generó el ejecutable' : 'Line 6, column 21; the executable was not produced',
+			isEs ? 'Línea 6, columna 21; el ejecutable se generó con una advertencia' : 'Line 6, column 21; the executable was produced with a warning',
+		],
+		correct: 1,
+	},
+	{
+		prompt: isEs ? '¿Cuál es el comando con el que se compila todo programa del curso?' : 'Which command compiles every program of the course?',
+		options: [`gcc ${f}.c`, courseCmd, `gcc -std=c17 -Wall ${f}.c -o ${f}`, `gcc -std=c23 -c -g ${f}.c`],
+		correct: 1,
+	},
+];
+
+const learnTotal = learnSlides.length;
+const practiceTotal = practiceItems.length;
+const assessTotal = assessItems.length + 1;
+---
+
+<div
+	class="lk-screen"
+	data-presentation="compilacion-y-enlazado-c"
+	data-lang={lang}
+	data-total-learn={learnTotal}
+	data-total-practice={practiceTotal}
+	data-total-assess={assessTotal}
+>
+	<div class="lk-shell">
+		<nav class="lk-nav" aria-label={isEs ? 'Controles de la presentación' : 'Presentation controls'}>
+			<div class="lk-seg" role="radiogroup" aria-label={isEs ? 'Modo' : 'Mode'}>
+				<label class="lk-seg-opt">
+					<input type="radio" name="lkMode" value="learn" checked />
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></svg>
+					{isEs ? 'Aprender' : 'Learn'}
+				</label>
+				<label class="lk-seg-opt">
+					<input type="radio" name="lkMode" value="practice" />
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></svg>
+					{isEs ? 'Practicar' : 'Practice'}
+				</label>
+				<label class="lk-seg-opt">
+					<input type="radio" name="lkMode" value="assess" />
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+					{isEs ? 'Evaluar' : 'Assess'}
+				</label>
+			</div>
+			<div class="lk-nav-controls">
+				<button class="btn btn-secondary" type="button" id="lkPrevBtn" aria-label={isEs ? 'Diapositiva anterior' : 'Previous slide'} disabled>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+					<span>{isEs ? 'Anterior' : 'Previous'}</span>
+				</button>
+				<span class="lk-counter" id="lkCounter" aria-live="polite">1 / {learnTotal}</span>
+				<button class="btn btn-secondary" type="button" id="lkNextBtn" aria-label={isEs ? 'Diapositiva siguiente' : 'Next slide'}>
+					<span>{isEs ? 'Siguiente' : 'Next'}</span>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+				</button>
+			</div>
+		</nav>
+
+		<main class="lk-viewport">
+			{
+				learnSlides.map((slide, si) => (
+					<section class:list={['lk-slide', { 'is-active': si === 0 }]} data-mode="learn" data-slide={si + 1} data-steps={slide.steps.length}>
+						<div class="lk-header">
+							<span class="kicker">{slide.kicker}</span>
+							<h2 class="lk-title">{slide.title}</h2>
+							<p class="lk-lead">{slide.lead}</p>
+						</div>
+						<div class="lk-card">
+							<ol class="lk-pipe" aria-label={isEs ? 'Etapas de gcc' : 'gcc stages'}>
+								{stations.map((st, i) => (
+									<li class="lk-station" data-station={i}>
+										<span class="lk-station-name">{st.name}</span>
+										<span class="lk-station-file">{st.file}</span>
+									</li>
+								))}
+							</ol>
+							<div class="lk-states">
+								{slide.steps.map((step, i) => (
+									<div class="lk-state" data-step={i} data-stage={step.stage} data-status={step.status} data-warn-at={step.warnAt ?? ''} hidden={i > 0}>
+										<div class="lk-panels">
+											{step.panels.map((panel) =>
+												panel.kind === 'files' ? (
+													<div class="lk-panel">
+														<span class="lk-panel-label">{panel.label}</span>
+														<ul class="lk-files">
+															{panel.items.map((item) => (
+																<li class:list={['lk-file', `is-${item.tone}`]}>
+																	<span class="lk-file-name">{item.name}</span>
+																	<span class="lk-file-note">{item.note}</span>
+																</li>
+															))}
+														</ul>
+													</div>
+												) : (
+													<div class="lk-panel">
+														<span class="lk-panel-label">{panel.label}</span>
+														<pre class:list={['lk-code', { 'is-term': panel.kind === 'term' }]}><code>{panel.parts ? panel.parts.map((p) => <span class:list={[{ 'lk-hl': p.k !== undefined && p.k === panel.hl }]}>{p.t}</span>) : panel.body}</code></pre>
+													</div>
+												),
+											)}
+										</div>
+										<p class="lk-explain">{step.text}</p>
+									</div>
+								))}
+							</div>
+							<div class="lk-stepbar">
+								<button class="btn btn-secondary lk-step-prev" type="button" aria-label={isEs ? 'Paso anterior' : 'Previous step'} disabled>
+									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+									{isEs ? 'Paso anterior' : 'Previous step'}
+								</button>
+								<span class="lk-step-count" aria-live="polite">{isEs ? 'Paso' : 'Step'} 1 / {slide.steps.length}</span>
+								<button class="btn btn-primary lk-step-next" type="button" aria-label={isEs ? 'Paso siguiente' : 'Next step'}>
+									{isEs ? 'Paso siguiente' : 'Next step'}
+									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+								</button>
+							</div>
+						</div>
+					</section>
+				))
+			}
+
+			{
+				practiceItems.map((item, pi) => (
+					<section class="lk-slide" data-mode="practice" data-slide={pi + 1} data-stop={item.stop} data-status={item.status}>
+						<div class="lk-header">
+							<span class="kicker">{isEs ? `Practicar · ${pi + 1} de ${practiceTotal}` : `Practice · ${pi + 1} of ${practiceTotal}`}</span>
+							<h2 class="lk-title">{isEs ? 'Predice el siguiente estado' : 'Predict the next state'}</h2>
+							<p class="lk-lead">{item.question}</p>
+						</div>
+						<div class="lk-card lk-split">
+							<div class="lk-panels">
+								<div class="lk-panel">
+									<span class="lk-panel-label">{`${f}.c`}</span>
+									<pre class="lk-code"><code>{item.code}</code></pre>
+								</div>
+								<div class="lk-panel">
+									<span class="lk-panel-label">{isEs ? 'Comando' : 'Command'}</span>
+									<pre class="lk-code is-term"><code>{`$ ${item.command}`}</code></pre>
+								</div>
+							</div>
+							<div class="lk-practice-side">
+								<ol class="lk-pipe is-compact" aria-label={isEs ? 'Etapas de gcc' : 'gcc stages'}>
+									{stations.map((st, i) => (
+										<li class="lk-station" data-station={i}>
+											<span class="lk-station-name">{st.name}</span>
+										</li>
+									))}
+								</ol>
+								<div class="lk-options" role="group" aria-label={isEs ? 'Opciones' : 'Options'}>
+									{item.options.map((opt, oi) => (
+										<button class="btn btn-secondary lk-opt" type="button" data-correct={oi === item.correct ? 'true' : 'false'}>
+											<code>{opt}</code>
+										</button>
+									))}
+								</div>
+								<p class="lk-feedback" aria-live="polite" />
+								<p class="lk-reason" hidden>{item.reason}</p>
+								<div class="lk-outcome" hidden>
+									{item.outcome.kind === 'files' ? (
+										<div class="lk-panel">
+											<span class="lk-panel-label">{item.outcome.label}</span>
+											<ul class="lk-files">
+												{item.outcome.items.map((it) => (
+													<li class:list={['lk-file', `is-${it.tone}`]}>
+														<span class="lk-file-name">{it.name}</span>
+														<span class="lk-file-note">{it.note}</span>
+													</li>
+												))}
+											</ul>
+										</div>
+									) : (
+										<div class="lk-panel">
+											<span class="lk-panel-label">{item.outcome.label}</span>
+											<pre class="lk-code is-term"><code>{item.outcome.body}</code></pre>
+										</div>
+									)}
+								</div>
+								<div class="lk-practice-actions" hidden>
+									<button class="btn btn-ghost lk-replay" type="button">
+										<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+										{isEs ? 'Ver la transición otra vez' : 'Replay the transition'}
+									</button>
+									<button class="btn btn-ghost lk-retry" type="button">{isEs ? 'Intentar de nuevo' : 'Try again'}</button>
+								</div>
+							</div>
+						</div>
+					</section>
+				))
+			}
+
+			{
+				assessItems.map((item, ai) => (
+					<section class="lk-slide" data-mode="assess" data-slide={ai + 1}>
+						<div class="lk-header">
+							<span class="kicker">{isEs ? `Evaluar · pregunta ${ai + 1} de ${assessItems.length}` : `Assess · question ${ai + 1} of ${assessItems.length}`}</span>
+							<h2 class="lk-title">{item.prompt}</h2>
+							<p class="lk-lead">{isEs ? 'Sin pistas: elige una respuesta. La calificación aparece al final.' : 'No hints: pick one answer. Grading happens at the end.'}</p>
+						</div>
+						<div class="lk-card">
+							{item.code && <pre class="lk-code is-term lk-assess-code"><code>{item.code}</code></pre>}
+							<fieldset class="lk-question" data-question={ai + 1}>
+								<legend class="lk-sr">{item.prompt}</legend>
+								{item.options.map((opt, oi) => (
+									<label class="radio lk-answer">
+										<input type="radio" name={`lkQ${ai + 1}`} value={oi} data-correct={oi === item.correct ? 'true' : 'false'} />
+										<span class="dot" />
+										<code>{opt}</code>
+									</label>
+								))}
+							</fieldset>
+						</div>
+					</section>
+				))
+			}
+			<section class="lk-slide" data-mode="assess" data-slide={assessTotal}>
+				<div class="lk-header">
+					<span class="kicker">{isEs ? 'Evaluar · resultado' : 'Assess · result'}</span>
+					<h2 class="lk-title">{isEs ? 'Califica tu evaluación' : 'Grade your assessment'}</h2>
+					<p class="lk-lead">{isEs ? 'Las preguntas sin responder cuentan como incorrectas.' : 'Unanswered questions count as wrong.'}</p>
+				</div>
+				<div class="lk-card">
+					<div class="lk-toolbar">
+						<button class="btn btn-primary" type="button" id="lkGradeBtn">{isEs ? 'Calificar' : 'Grade'}</button>
+						<button class="btn btn-secondary" type="button" id="lkResetAssessBtn">{isEs ? 'Repetir la evaluación' : 'Retake the assessment'}</button>
+					</div>
+					<p class="lk-score" id="lkScore" aria-live="polite"></p>
+					<ol class="lk-results" id="lkResults"></ol>
+				</div>
+			</section>
+		</main>
+	</div>
+</div>
+
+<style>
+	.lk-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.lk-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.lk-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .lk-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .lk-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .lk-viewport { zoom: 1.25; } }
+
+	.lk-viewport {
+		flex: 1;
+	}
+
+	.lk-nav {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-3) var(--space-6);
+		background: var(--color-surface);
+	}
+
+	.lk-nav-controls {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	/* Segmented control, ported from Organic/styles.css (.seg / .seg-opt). */
+	.lk-seg {
+		display: inline-flex;
+		overflow: hidden;
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+		background: var(--color-bg);
+	}
+
+	.lk-seg-opt {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 7px 12px;
+		font-size: 13px;
+		cursor: pointer;
+	}
+
+	.lk-seg-opt input {
+		position: absolute;
+		opacity: 0;
+		width: 0;
+		height: 0;
+		pointer-events: none;
+	}
+
+	.lk-seg-opt + .lk-seg-opt { border-left: 1px solid var(--color-divider); }
+	.lk-seg-opt:has(input:checked) { background: var(--color-accent); color: var(--color-bg); }
+	.lk-seg-opt:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+	.lk-seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+	.lk-counter,
+	.lk-step-count {
+		font-size: 13px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.lk-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 1100px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.lk-slide.is-active {
+		display: block;
+		animation: lkFade 0.25s ease-out;
+	}
+
+	@keyframes lkFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.lk-header { margin-bottom: var(--space-4); }
+
+	.lk-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 26px;
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.lk-lead {
+		font-size: 15px;
+		line-height: 1.5;
+		margin: 0;
+		max-width: 72ch;
+		color: color-mix(in srgb, var(--color-text) 72%, transparent);
+	}
+
+	.lk-card {
+		background: var(--color-surface);
+		border-radius: var(--radius-lg);
+		padding: var(--space-6);
+		box-shadow: var(--shadow-sm);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	/* Pipeline strip */
+	.lk-pipe {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+		gap: var(--space-2);
+	}
+
+	.lk-station {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+		border: 2px solid transparent;
+		transition: background 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
+	}
+
+	.lk-station-name { font-size: 12px; font-weight: 700; }
+
+	.lk-station-file {
+		font-family: monospace;
+		font-size: 11px;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.lk-station.is-done { background: var(--color-accent-2-100); color: var(--color-accent-2-800); }
+	.lk-station.is-current { border-color: var(--color-accent); background: var(--color-accent-100); color: var(--color-accent-800); }
+	.lk-station.is-stop { border-color: var(--color-accent-700); background: var(--color-accent-200); color: var(--color-accent-900); }
+	.lk-station.is-warn { border-style: dashed; border-color: var(--color-accent-500); }
+	.lk-station.is-blocked { opacity: 0.45; }
+
+	.lk-pipe.is-compact { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+	.lk-states { min-height: 220px; }
+
+	.lk-state:not([hidden]) {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		animation: lkFade 0.25s ease-out;
+	}
+
+	.lk-panels {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: var(--space-3);
+	}
+
+	.lk-panel {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		min-width: 0;
+	}
+
+	.lk-panel-label {
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--color-neutral-700);
+		font-family: monospace;
+	}
+
+	.lk-code {
+		margin: 0;
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-neutral-100);
+		border-radius: var(--radius-md);
+		font-family: monospace;
+		font-size: 13px;
+		line-height: 1.55;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+
+	.lk-code.is-term {
+		background: var(--color-neutral-900);
+		color: var(--color-neutral-100);
+	}
+
+	.lk-hl {
+		background: var(--color-accent-300);
+		color: var(--color-accent-900);
+		border-radius: 4px;
+		padding: 0 2px;
+	}
+
+	.lk-files {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.lk-file {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-1) var(--space-3);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+		border-left: 4px solid var(--color-neutral-400);
+	}
+
+	.lk-file-name { font-family: monospace; font-size: 13px; font-weight: 700; }
+	.lk-file-note { font-size: 13px; color: var(--color-neutral-700); }
+	.lk-file.is-ok { border-left-color: var(--color-accent-2); }
+	.lk-file.is-warn { border-left-color: var(--color-accent-400); }
+	.lk-file.is-stop { border-left-color: var(--color-accent-700); }
+
+	.lk-explain {
+		margin: 0;
+		font-size: 15px;
+		line-height: 1.5;
+		max-width: 75ch;
+	}
+
+	.lk-stepbar,
+	.lk-toolbar,
+	.lk-practice-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	/* Practice */
+	.lk-split {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: var(--space-6);
+	}
+
+	.lk-split > .lk-panels { grid-template-columns: 1fr; align-content: start; }
+
+	.lk-practice-side {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.lk-options {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-2);
+	}
+
+	.lk-opt code,
+	.lk-answer code {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: normal;
+		text-align: left;
+	}
+
+	.lk-opt.is-right { background: var(--color-accent-2-100); border-color: var(--color-accent-2); color: var(--color-accent-2-800); }
+	.lk-opt.is-wrong { background: var(--color-accent-200); border-color: var(--color-accent-700); color: var(--color-accent-900); }
+	.lk-opt:disabled { cursor: default; }
+	.lk-opt.is-right:disabled,
+	.lk-opt.is-wrong:disabled { opacity: 1; }
+
+	.lk-feedback { margin: 0; font-weight: 700; min-height: 1.5em; }
+	.lk-feedback.is-right { color: var(--color-accent-2-700); }
+	.lk-feedback.is-wrong { color: var(--color-accent-700); }
+	.lk-reason { margin: 0; font-size: 14px; line-height: 1.5; }
+
+	/* Assess */
+	.lk-question {
+		border: 0;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.lk-sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+	}
+
+	.lk-score {
+		margin: 0;
+		font-family: var(--font-heading);
+		font-size: 22px;
+		min-height: 1.4em;
+	}
+
+	.lk-results {
+		margin: 0;
+		padding-left: var(--space-6);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		font-size: 14px;
+		line-height: 1.5;
+	}
+
+	.lk-results .is-right { color: var(--color-accent-2-700); }
+	.lk-results .is-wrong { color: var(--color-accent-700); }
+
+	@media (max-width: 760px) {
+		.lk-nav { padding: var(--space-3) var(--space-4); }
+		.lk-slide { padding: var(--space-4); }
+		.lk-card { padding: var(--space-4); }
+		.lk-title { font-size: 21px; }
+		.lk-pipe { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+		.lk-split { grid-template-columns: 1fr; }
+		.lk-panels { grid-template-columns: 1fr; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.lk-slide.is-active,
+		.lk-state:not([hidden]) { animation: none; }
+		.lk-station { transition: none; }
+	}
+</style>
+
+<script>
+	const screen = document.querySelector<HTMLElement>('.lk-screen');
+
+	if (screen) {
+		const isEs = screen.dataset.lang !== 'en';
+		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const totals: Record<string, number> = {
+			learn: Number(screen.dataset.totalLearn),
+			practice: Number(screen.dataset.totalPractice),
+			assess: Number(screen.dataset.totalAssess),
+		};
+		const position: Record<string, number> = { learn: 1, practice: 1, assess: 1 };
+		let mode = 'learn';
+
+		const prevBtn = screen.querySelector<HTMLButtonElement>('#lkPrevBtn');
+		const nextBtn = screen.querySelector<HTMLButtonElement>('#lkNextBtn');
+		const counter = screen.querySelector<HTMLElement>('#lkCounter');
+		const slides = screen.querySelectorAll<HTMLElement>('.lk-slide');
+
+		function showSlide(target: number) {
+			const total = totals[mode];
+			if (target < 1 || target > total) return;
+			position[mode] = target;
+			slides.forEach((s) => {
+				s.classList.toggle('is-active', s.dataset.mode === mode && Number(s.dataset.slide) === target);
+			});
+			if (counter) counter.textContent = `${target} / ${total}`;
+			if (prevBtn) prevBtn.disabled = target === 1;
+			if (nextBtn) nextBtn.disabled = target === total;
+		}
+
+		screen.querySelectorAll<HTMLInputElement>('input[name="lkMode"]').forEach((radio) => {
+			radio.addEventListener('change', () => {
+				if (!radio.checked) return;
+				mode = radio.value;
+				showSlide(position[mode]);
+			});
+		});
+
+		prevBtn?.addEventListener('click', () => showSlide(position[mode] - 1));
+		nextBtn?.addEventListener('click', () => showSlide(position[mode] + 1));
+
+		window.addEventListener('keydown', (e) => {
+			const target = e.target as HTMLElement | null;
+			if (target && target.closest('input, textarea, select')) return;
+			if (e.key === 'ArrowRight') showSlide(position[mode] + 1);
+			if (e.key === 'ArrowLeft') showSlide(position[mode] - 1);
+		});
+
+		// Pipeline strip: paint every station for a given stage and status.
+		function paintPipe(pipe: HTMLElement, stage: number, status: string, warnAt: number | null) {
+			pipe.querySelectorAll<HTMLElement>('.lk-station').forEach((station) => {
+				const i = Number(station.dataset.station);
+				station.classList.toggle('is-done', i < stage);
+				station.classList.toggle('is-current', i === stage);
+				station.classList.toggle('is-stop', status === 'stop' && i === stage);
+				station.classList.toggle('is-blocked', status === 'stop' && i > stage);
+				station.classList.toggle('is-warn', warnAt !== null && i === warnAt);
+			});
+		}
+
+		function clearPipe(pipe: HTMLElement) {
+			pipe.querySelectorAll<HTMLElement>('.lk-station').forEach((station) => {
+				station.classList.remove('is-done', 'is-current', 'is-stop', 'is-blocked', 'is-warn');
+			});
+		}
+
+		// Learn: step control inside each slide.
+		screen.querySelectorAll<HTMLElement>('.lk-slide[data-mode="learn"]').forEach((slide) => {
+			const total = Number(slide.dataset.steps);
+			const states = slide.querySelectorAll<HTMLElement>('.lk-state');
+			const pipe = slide.querySelector<HTMLElement>('.lk-pipe');
+			const stepPrev = slide.querySelector<HTMLButtonElement>('.lk-step-prev');
+			const stepNext = slide.querySelector<HTMLButtonElement>('.lk-step-next');
+			const stepCount = slide.querySelector<HTMLElement>('.lk-step-count');
+			let step = 0;
+
+			function render() {
+				states.forEach((state) => {
+					state.hidden = Number(state.dataset.step) !== step;
+				});
+				const current = states[step];
+				if (pipe && current) {
+					const warnAt = current.dataset.warnAt ? Number(current.dataset.warnAt) : null;
+					paintPipe(pipe, Number(current.dataset.stage), current.dataset.status ?? 'run', warnAt);
+				}
+				if (stepCount) stepCount.textContent = `${isEs ? 'Paso' : 'Step'} ${step + 1} / ${total}`;
+				if (stepPrev) stepPrev.disabled = step === 0;
+				if (stepNext) stepNext.disabled = step === total - 1;
+			}
+
+			stepPrev?.addEventListener('click', () => {
+				if (step > 0) step -= 1;
+				render();
+			});
+			stepNext?.addEventListener('click', () => {
+				if (step < total - 1) step += 1;
+				render();
+			});
+			render();
+		});
+
+		// Practice: predict, get feedback, watch the transition.
+		screen.querySelectorAll<HTMLElement>('.lk-slide[data-mode="practice"]').forEach((slide) => {
+			const stop = Number(slide.dataset.stop);
+			const status = slide.dataset.status ?? 'run';
+			const pipe = slide.querySelector<HTMLElement>('.lk-pipe');
+			const options = slide.querySelectorAll<HTMLButtonElement>('.lk-opt');
+			const feedback = slide.querySelector<HTMLElement>('.lk-feedback');
+			const reason = slide.querySelector<HTMLElement>('.lk-reason');
+			const outcome = slide.querySelector<HTMLElement>('.lk-outcome');
+			const actions = slide.querySelector<HTMLElement>('.lk-practice-actions');
+			const replay = slide.querySelector<HTMLButtonElement>('.lk-replay');
+			const retry = slide.querySelector<HTMLButtonElement>('.lk-retry');
+			let timers: number[] = [];
+
+			function playTransition() {
+				if (!pipe) return;
+				timers.forEach((t) => window.clearTimeout(t));
+				timers = [];
+				if (reduceMotion) {
+					paintPipe(pipe, stop, status, null);
+					return;
+				}
+				clearPipe(pipe);
+				for (let i = 0; i <= stop; i += 1) {
+					timers.push(window.setTimeout(() => paintPipe(pipe, i, i === stop ? status : 'run', null), 380 * (i + 1)));
+				}
+			}
+
+			function reset() {
+				timers.forEach((t) => window.clearTimeout(t));
+				timers = [];
+				if (pipe) clearPipe(pipe);
+				options.forEach((o) => {
+					o.disabled = false;
+					o.classList.remove('is-right', 'is-wrong');
+				});
+				if (feedback) {
+					feedback.textContent = '';
+					feedback.classList.remove('is-right', 'is-wrong');
+				}
+				if (reason) reason.hidden = true;
+				if (outcome) outcome.hidden = true;
+				if (actions) actions.hidden = true;
+			}
+
+			options.forEach((option) => {
+				option.addEventListener('click', () => {
+					const right = option.dataset.correct === 'true';
+					options.forEach((o) => {
+						o.disabled = true;
+						if (o.dataset.correct === 'true') o.classList.add('is-right');
+					});
+					if (!right) option.classList.add('is-wrong');
+					if (feedback) {
+						feedback.textContent = right ? (isEs ? 'Correcto.' : 'Correct.') : (isEs ? 'No es así.' : 'Not quite.');
+						feedback.classList.toggle('is-right', right);
+						feedback.classList.toggle('is-wrong', !right);
+					}
+					if (reason) reason.hidden = false;
+					if (outcome) outcome.hidden = false;
+					if (actions) actions.hidden = false;
+					playTransition();
+				});
+			});
+
+			replay?.addEventListener('click', playTransition);
+			retry?.addEventListener('click', reset);
+		});
+
+		// Assess: grade at the end.
+		const gradeBtn = screen.querySelector<HTMLButtonElement>('#lkGradeBtn');
+		const resetAssessBtn = screen.querySelector<HTMLButtonElement>('#lkResetAssessBtn');
+		const score = screen.querySelector<HTMLElement>('#lkScore');
+		const results = screen.querySelector<HTMLElement>('#lkResults');
+		const questions = screen.querySelectorAll<HTMLFieldSetElement>('.lk-question');
+
+		gradeBtn?.addEventListener('click', () => {
+			if (!results || !score) return;
+			results.replaceChildren();
+			let right = 0;
+			questions.forEach((q) => {
+				const chosen = q.querySelector<HTMLInputElement>('input:checked');
+				const correct = q.querySelector<HTMLInputElement>('input[data-correct="true"]');
+				const correctText = correct?.closest('label')?.querySelector('code')?.textContent ?? '';
+				const ok = chosen?.dataset.correct === 'true';
+				if (ok) right += 1;
+				const li = document.createElement('li');
+				const verdict = document.createElement('strong');
+				verdict.className = ok ? 'is-right' : 'is-wrong';
+				verdict.textContent = ok
+					? (isEs ? 'Correcta. ' : 'Correct. ')
+					: chosen
+						? (isEs ? 'Incorrecta. ' : 'Wrong. ')
+						: (isEs ? 'Sin responder. ' : 'Unanswered. ');
+				li.append(verdict, `${isEs ? 'Respuesta correcta' : 'Correct answer'}: ${correctText}`);
+				results.append(li);
+			});
+			score.textContent = `${isEs ? 'Puntaje' : 'Score'}: ${right} / ${questions.length}`;
+		});
+
+		resetAssessBtn?.addEventListener('click', () => {
+			questions.forEach((q) => q.querySelectorAll<HTMLInputElement>('input').forEach((i) => (i.checked = false)));
+			if (score) score.textContent = '';
+			results?.replaceChildren();
+			position.assess = 1;
+			showSlide(1);
+		});
+
+		showSlide(1);
+	}
+</script>

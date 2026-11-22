@@ -55,6 +55,13 @@ import SincronizacionRemotaPullPushGit from '../../../components/presentaciones/
 import RamasMergeConflictosGit from '../../../components/presentaciones/ramas-merge-conflictos-git.astro';
 import RebaseBuenasPracticasGit from '../../../components/presentaciones/rebase-buenas-practicas-git.astro';
 import LoQueLaIaNoPuedeHacerPorNosotros from '../../../components/presentaciones/lo-que-la-ia-no-puede-hacer-por-nosotros.astro';
+import CompilacionYEnlazadoC from '../../../components/presentaciones/compilacion-y-enlazado-c.astro';
+import TiposSizeofConversionesC from '../../../components/presentaciones/tipos-sizeof-conversiones-c.astro';
+import PunterosYDireccionesC from '../../../components/presentaciones/punteros-y-direcciones-c.astro';
+import PunterosYArreglosC from '../../../components/presentaciones/punteros-y-arreglos-c.astro';
+import StackYHeapC from '../../../components/presentaciones/stack-y-heap-c.astro';
+import MemoriaDinamicaPasoAPaso from '../../../components/presentaciones/memoria-dinamica-paso-a-paso.astro';
+import CicloDeVidaObjetosC from '../../../components/presentaciones/ciclo-de-vida-objetos-c.astro';
 
 export function getStaticPaths() {
 	const paths: Array<{ params: { lang: Locale; slug: string } }> = [];
@@ -125,6 +132,13 @@ const componentMap: Record<string, any> = {
 	'ramas-merge-conflictos-git': RamasMergeConflictosGit,
 	'rebase-buenas-practicas-git': RebaseBuenasPracticasGit,
 	'lo-que-la-ia-no-puede-hacer-por-nosotros': LoQueLaIaNoPuedeHacerPorNosotros,
+	'compilacion-y-enlazado-c': CompilacionYEnlazadoC,
+	'tipos-sizeof-conversiones-c': TiposSizeofConversionesC,
+	'punteros-y-direcciones-c': PunterosYDireccionesC,
+	'punteros-y-arreglos-c': PunterosYArreglosC,
+	'stack-y-heap-c': StackYHeapC,
+	'memoria-dinamica-paso-a-paso': MemoriaDinamicaPasoAPaso,
+	'ciclo-de-vida-objetos-c': CicloDeVidaObjetosC,
 };
 
 const PresentationComponent = componentMap[slug];

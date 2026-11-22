@@ -1,0 +1,2245 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+const t = (es: string, en: string) => (isEs ? es : en);
+// C programs shown in the deck. Each pair has the same line structure in both
+// languages, so the step line numbers below apply to either one.
+const code = (es: string, en: string) => (isEs ? es : en);
+
+type Kind = 'owner' | 'borrow' | 'dangling' | 'null' | 'value';
+type Slot = { name: string; value: string; kind: Kind; target?: string };
+type Frame = { label: string; vars: Slot[] };
+type Cell = { v: string; out?: boolean };
+type Block = {
+	id: string;
+	addr: string;
+	size: string;
+	label: string;
+	status: 'live' | 'freed' | 'leaked' | 'static';
+	owner?: string;
+	fields?: Slot[];
+	cells?: Cell[];
+	value?: string;
+};
+type Alert = { kind: 'error' | 'leak' | 'ok'; text: string };
+type State = { frames: Frame[]; blocks: Block[]; alert?: Alert };
+type Step = { lines: number[]; text: string; state: State };
+
+const ptr = (name: string, value: string, kind: Kind, target?: string): Slot => ({ name, value, kind, target });
+const val = (name: string, value: string): Slot => ({ name, value, kind: 'value' });
+const nul = (name: string): Slot => ({ name, value: 'NULL', kind: 'null' });
+
+const programs = {
+	persona: code(
+		String.raw`#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    char *nombre;
+    int edad;
+} Persona;
+
+// Crea una persona con una copia de nombre.
+// Propiedad: el llamador es dueño del resultado y debe liberarlo con
+// destruir_persona. Devuelve NULL si no hay memoria.
+Persona *crear_persona(const char *nombre, int edad) {
+    Persona *p = malloc(sizeof *p);
+    if (p == NULL) {
+        return NULL;
+    }
+    size_t largo = strlen(nombre) + 1;
+    p->nombre = malloc(largo);
+    if (p->nombre == NULL) {
+        free(p);                   // deshacer lo que ya se reservó
+        return NULL;
+    }
+    memcpy(p->nombre, nombre, largo);
+    p->edad = edad;
+    return p;
+}
+
+// Libera la persona y todo lo que le pertenece. Acepta NULL.
+void destruir_persona(Persona *p) {
+    if (p == NULL) {
+        return;
+    }
+    free(p->nombre);               // primero las partes...
+    free(p);                       // ...después el contenedor
+}
+
+// Propiedad: solo toma prestada p.
+void imprimir_persona(const Persona *p) {
+    printf("%s (%d)\n", p->nombre, p->edad);
+}
+
+int main(void) {
+    Persona *ana = crear_persona("Ana", 31);
+    if (ana == NULL) {
+        fprintf(stderr, "No hay memoria suficiente\n");
+        return 1;
+    }
+    imprimir_persona(ana);         // préstamo
+    destruir_persona(ana);         // main era la dueña: main libera
+    ana = NULL;
+    return 0;
+}`,
+		String.raw`#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    char *name;
+    int age;
+} Person;
+
+// Creates a person with a copy of name.
+// Ownership: the caller owns the result and must release it with
+// destroy_person. Returns NULL if out of memory.
+Person *create_person(const char *name, int age) {
+    Person *p = malloc(sizeof *p);
+    if (p == NULL) {
+        return NULL;
+    }
+    size_t length = strlen(name) + 1;
+    p->name = malloc(length);
+    if (p->name == NULL) {
+        free(p);                   // undo what was already allocated
+        return NULL;
+    }
+    memcpy(p->name, name, length);
+    p->age = age;
+    return p;
+}
+
+// Frees the person and everything it owns. Accepts NULL.
+void destroy_person(Person *p) {
+    if (p == NULL) {
+        return;
+    }
+    free(p->name);                 // first the parts...
+    free(p);                       // ...then the container
+}
+
+// Ownership: only borrows p.
+void print_person(const Person *p) {
+    printf("%s (%d)\n", p->name, p->age);
+}
+
+int main(void) {
+    Person *ann = create_person("Ann", 31);
+    if (ann == NULL) {
+        fprintf(stderr, "Not enough memory\n");
+        return 1;
+    }
+    print_person(ann);             // borrowing
+    destroy_person(ann);           // main was the owner: main frees
+    ann = NULL;
+    return 0;
+}`,
+	),
+	transfer: code(
+		String.raw`#include <stdio.h>
+#include <stdlib.h>
+
+#define CAPACIDAD_AGENDA 8
+
+typedef struct {
+    int edad;
+} Persona;
+
+typedef struct {
+    Persona *personas[CAPACIDAD_AGENDA];
+    size_t cantidad;
+} Agenda;
+
+// Propiedad: si devuelve true, la agenda pasa a ser dueña de p y el llamador
+// no debe liberarla. Si devuelve false, el llamador sigue siendo el dueño.
+bool agenda_agregar(Agenda *a, Persona *p) {
+    if (a->cantidad == CAPACIDAD_AGENDA) {
+        return false;
+    }
+    a->personas[a->cantidad] = p;
+    a->cantidad++;
+    return true;
+}
+
+int main(void) {
+    Agenda agenda = { .cantidad = 0 };
+    Persona *p = malloc(sizeof *p);
+    if (p == NULL) {
+        return 1;
+    }
+    p->edad = 31;
+    if (!agenda_agregar(&agenda, p)) {
+        free(p);                   // la agenda no la aceptó: sigue siendo nuestra
+        return 1;
+    }
+    printf("%d\n", p->edad);       // préstamo: la agenda la mantiene viva
+    for (size_t i = 0; i < agenda.cantidad; i++) {
+        free(agenda.personas[i]);  // la agenda libera lo que le pertenece
+        agenda.personas[i] = NULL;
+    }
+    agenda.cantidad = 0;
+    return 0;
+}`,
+		String.raw`#include <stdio.h>
+#include <stdlib.h>
+
+#define CONTACTS_CAPACITY 8
+
+typedef struct {
+    int age;
+} Person;
+
+typedef struct {
+    Person *people[CONTACTS_CAPACITY];
+    size_t count;
+} Contacts;
+
+// Ownership: if it returns true, the contacts become the owner of p and the
+// caller must not free it. If it returns false, the caller is still the owner.
+bool contacts_add(Contacts *c, Person *p) {
+    if (c->count == CONTACTS_CAPACITY) {
+        return false;
+    }
+    c->people[c->count] = p;
+    c->count++;
+    return true;
+}
+
+int main(void) {
+    Contacts contacts = { .count = 0 };
+    Person *p = malloc(sizeof *p);
+    if (p == NULL) {
+        return 1;
+    }
+    p->age = 31;
+    if (!contacts_add(&contacts, p)) {
+        free(p);                   // not accepted: it is still ours
+        return 1;
+    }
+    printf("%d\n", p->age);        // borrowing: the contacts keep it alive
+    for (size_t i = 0; i < contacts.count; i++) {
+        free(contacts.people[i]);  // the contacts free what they own
+        contacts.people[i] = NULL;
+    }
+    contacts.count = 0;
+    return 0;
+}`,
+	),
+	leak: code(
+		String.raw`#include <stdio.h>
+#include <stdlib.h>
+
+int main(void) {
+    for (int i = 0; i < 3; i++) {
+        char *linea = malloc(32);
+        if (linea == NULL) {
+            return 1;
+        }
+        snprintf(linea, 32, "Linea %d", i);
+        printf("%s\n", linea);
+    }                              // linea muere aquí; el bloque, no
+    return 0;
+}`,
+		String.raw`#include <stdio.h>
+#include <stdlib.h>
+
+int main(void) {
+    for (int i = 0; i < 3; i++) {
+        char *line = malloc(32);
+        if (line == NULL) {
+            return 1;
+        }
+        snprintf(line, 32, "Line %d", i);
+        printf("%s\n", line);
+    }                              // line dies here; the block does not
+    return 0;
+}`,
+	),
+	doubleFree: code(
+		String.raw`#include <stdlib.h>
+
+int main(void) {
+    int *datos = malloc(4 * sizeof *datos);
+    if (datos == NULL) {
+        return 1;
+    }
+    int *alias = datos;            // dos punteros, un solo bloque
+    free(datos);
+    free(alias);                   // ERROR: el bloque ya estaba liberado
+    return 0;
+}`,
+		String.raw`#include <stdlib.h>
+
+int main(void) {
+    int *data = malloc(4 * sizeof *data);
+    if (data == NULL) {
+        return 1;
+    }
+    int *alias = data;             // two pointers, one block
+    free(data);
+    free(alias);                   // ERROR: the block was already freed
+    return 0;
+}`,
+	),
+	useAfterFree: code(
+		String.raw`#include <stdio.h>
+#include <stdlib.h>
+
+int main(void) {
+    int *puntaje = malloc(sizeof *puntaje);
+    if (puntaje == NULL) {
+        return 1;
+    }
+    *puntaje = 100;
+    free(puntaje);
+    printf("%d\n", *puntaje);      // ERROR: el bloque ya no existe
+    return 0;
+}`,
+		String.raw`#include <stdio.h>
+#include <stdlib.h>
+
+int main(void) {
+    int *score = malloc(sizeof *score);
+    if (score == NULL) {
+        return 1;
+    }
+    *score = 100;
+    free(score);
+    printf("%d\n", *score);        // ERROR: the block no longer exists
+    return 0;
+}`,
+	),
+	dangling: code(
+		String.raw`#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    char *nombre;
+} Persona;
+
+int main(void) {
+    Persona *p = malloc(sizeof *p);
+    if (p == NULL) {
+        return 1;
+    }
+    p->nombre = malloc(4);
+    if (p->nombre == NULL) {
+        free(p);
+        return 1;
+    }
+    strcpy(p->nombre, "Ana");
+
+    char *nombre = p->nombre;      // préstamo
+    free(p->nombre);
+    free(p);                       // el dueño desaparece
+    printf("%s\n", nombre);        // ERROR: nombre es colgante
+    return 0;
+}`,
+		String.raw`#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    char *name;
+} Person;
+
+int main(void) {
+    Person *p = malloc(sizeof *p);
+    if (p == NULL) {
+        return 1;
+    }
+    p->name = malloc(4);
+    if (p->name == NULL) {
+        free(p);
+        return 1;
+    }
+    strcpy(p->name, "Ann");
+
+    char *name = p->name;          // borrow
+    free(p->name);
+    free(p);                       // the owner goes away
+    printf("%s\n", name);          // ERROR: name is dangling
+    return 0;
+}`,
+	),
+	overflow: code(
+		String.raw`#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main(void) {
+    const char *nombre = "Ana";
+    char *copia = malloc(strlen(nombre));    // ERROR: falta el lugar del '\0'
+    if (copia == NULL) {
+        return 1;
+    }
+    strcpy(copia, nombre);                   // escribe 4 bytes en un bloque de 3
+    printf("%s\n", copia);
+    free(copia);
+    return 0;
+}`,
+		String.raw`#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main(void) {
+    const char *name = "Ann";
+    char *copy = malloc(strlen(name));       // ERROR: no room for the '\0'
+    if (copy == NULL) {
+        return 1;
+    }
+    strcpy(copy, name);                      // writes 4 bytes into a 3-byte block
+    printf("%s\n", copy);
+    free(copy);
+    return 0;
+}`,
+	),
+	realloc: code(
+		String.raw`#include <stdlib.h>
+
+int main(void) {
+    size_t capacidad = 4;
+    int *datos = malloc(capacidad * sizeof *datos);
+    if (datos == NULL) {
+        return 1;
+    }
+    capacidad *= 2;
+    datos = realloc(datos, capacidad * sizeof *datos);   // ERROR si falla
+    if (datos == NULL) {
+        return 1;                  // el bloque original quedó sin dueño
+    }
+    free(datos);
+    return 0;
+}`,
+		String.raw`#include <stdlib.h>
+
+int main(void) {
+    size_t capacity = 4;
+    int *data = malloc(capacity * sizeof *data);
+    if (data == NULL) {
+        return 1;
+    }
+    capacity *= 2;
+    data = realloc(data, capacity * sizeof *data);   // ERROR if it fails
+    if (data == NULL) {
+        return 1;                  // the original block was left without an owner
+    }
+    free(data);
+    return 0;
+}`,
+	),
+};
+
+type ProgramKey = keyof typeof programs;
+
+/* ---------- Learn: one mechanism per slide, advanced step by step ---------- */
+
+const nm = isEs ? 'nombre' : 'name';
+const pName = isEs ? '"Ana\\0"' : '"Ann\\0"';
+const ana = isEs ? 'ana' : 'ann';
+const personaLbl = isEs ? 'Persona' : 'Person';
+const ownedByPerson = t('la persona 0x1000', 'the person 0x1000');
+
+// Persona program states
+const ps1: State = {
+	frames: [{ label: 'main', vars: [] }, { label: t('crear_persona', 'create_person'), vars: [ptr('p', '0x1000', 'owner', 'P')] }],
+	blocks: [{ id: 'P', addr: '0x1000', size: '16 B', label: personaLbl, status: 'live', owner: 'p', fields: [val(nm, '?'), val(t('edad', 'age'), '?')] }],
+};
+const ps2: State = {
+	frames: ps1.frames,
+	blocks: [
+		{ id: 'P', addr: '0x1000', size: '16 B', label: personaLbl, status: 'live', owner: 'p', fields: [ptr(nm, '0x2000', 'owner', 'N'), val(t('edad', 'age'), '31')] },
+		{ id: 'N', addr: '0x2000', size: '4 B', label: 'char[4]', status: 'live', owner: ownedByPerson, value: pName },
+	],
+};
+const ps3: State = {
+	frames: [{ label: 'main', vars: [ptr(ana, '0x1000', 'owner', 'P')] }],
+	blocks: [{ ...ps2.blocks[0], owner: ana }, ps2.blocks[1]],
+};
+const ps4: State = {
+	frames: [ps3.frames[0], { label: t('imprimir_persona', 'print_person'), vars: [ptr('p', '0x1000', 'borrow', 'P')] }],
+	blocks: ps3.blocks,
+};
+const ps5: State = {
+	frames: ps3.frames,
+	blocks: [
+		{ ...ps3.blocks[0], fields: [ptr(nm, '0x2000', 'dangling', 'N'), val(t('edad', 'age'), '31')] },
+		{ ...ps3.blocks[1], status: 'freed', owner: undefined },
+	],
+};
+const ps6: State = {
+	frames: [{ label: 'main', vars: [ptr(ana, '0x1000', 'dangling', 'P')] }],
+	blocks: [{ ...ps5.blocks[0], status: 'freed', owner: undefined }, ps5.blocks[1]],
+};
+const ps7: State = {
+	frames: [{ label: 'main', vars: [nul(ana)] }],
+	blocks: ps6.blocks,
+	alert: { kind: 'ok', text: t('0 fugas · 0 dobles liberaciones', '0 leaks · 0 double frees') },
+};
+
+// Transfer program states
+const ag = isEs ? 'agenda' : 'contacts';
+const agSlot = isEs ? 'agenda.personas[0]' : 'contacts.people[0]';
+const agCount = isEs ? 'agenda.cantidad' : 'contacts.count';
+const ageField = t('edad', 'age');
+const ts1: State = {
+	frames: [{ label: 'main', vars: [val(agCount, '0'), ptr('p', '0x1000', 'owner', 'T')] }],
+	blocks: [{ id: 'T', addr: '0x1000', size: '4 B', label: personaLbl, status: 'live', owner: 'p', fields: [val(ageField, '?')] }],
+};
+const ts2: State = {
+	frames: ts1.frames,
+	blocks: [{ ...ts1.blocks[0], fields: [val(ageField, '31')] }],
+};
+const ts3: State = {
+	frames: [{ label: 'main', vars: [ptr(agSlot, '0x1000', 'owner', 'T'), val(agCount, '1'), ptr('p', '0x1000', 'borrow', 'T')] }],
+	blocks: [{ ...ts2.blocks[0], owner: ag }],
+};
+const ts5: State = {
+	frames: [{ label: 'main', vars: [nul(agSlot), val(agCount, '1'), ptr('p', '0x1000', 'dangling', 'T')] }],
+	blocks: [{ ...ts3.blocks[0], status: 'freed', owner: undefined }],
+};
+
+// Leak program states
+const ln = isEs ? 'linea' : 'line';
+const lineText = (i: number) => (isEs ? `"Linea ${i}"` : `"Line ${i}"`);
+const leakBlock = (id: string, addr: string, i: number, status: Block['status'], owner?: string): Block => ({
+	id,
+	addr,
+	size: '32 B',
+	label: 'char[32]',
+	status,
+	owner,
+	value: lineText(i),
+});
+const ls1: State = {
+	frames: [{ label: 'main', vars: [val('i', '0'), ptr(ln, '0x1000', 'owner', 'A')] }],
+	blocks: [{ ...leakBlock('A', '0x1000', 0, 'live', ln), value: '?' }],
+};
+const ls2: State = { frames: ls1.frames, blocks: [leakBlock('A', '0x1000', 0, 'live', ln)] };
+const ls3: State = { frames: [{ label: 'main', vars: [val('i', '0')] }], blocks: [leakBlock('A', '0x1000', 0, 'leaked')] };
+const ls4: State = {
+	frames: [{ label: 'main', vars: [val('i', '1'), ptr(ln, '0x1040', 'owner', 'B')] }],
+	blocks: [leakBlock('A', '0x1000', 0, 'leaked'), { ...leakBlock('B', '0x1040', 1, 'live', ln), value: '?' }],
+};
+const ls5: State = {
+	frames: [{ label: 'main', vars: [val('i', '1')] }],
+	blocks: [leakBlock('A', '0x1000', 0, 'leaked'), leakBlock('B', '0x1040', 1, 'leaked')],
+};
+const ls6: State = {
+	frames: [{ label: 'main', vars: [] }],
+	blocks: [leakBlock('A', '0x1000', 0, 'leaked'), leakBlock('B', '0x1040', 1, 'leaked'), leakBlock('C', '0x1080', 2, 'leaked')],
+	alert: { kind: 'leak', text: 'LeakSanitizer: Direct leak of 96 byte(s) in 3 object(s)' },
+};
+
+// Double free states
+const dt = isEs ? 'datos' : 'data';
+const dfBlock: Block = { id: 'D', addr: '0x1000', size: '16 B', label: 'int[4]', status: 'live', owner: dt, value: '? ? ? ?' };
+const ds1: State = { frames: [{ label: 'main', vars: [ptr(dt, '0x1000', 'owner', 'D')] }], blocks: [dfBlock] };
+const ds2: State = { frames: [{ label: 'main', vars: [ptr(dt, '0x1000', 'owner', 'D'), ptr('alias', '0x1000', 'borrow', 'D')] }], blocks: [dfBlock] };
+const ds3: State = {
+	frames: [{ label: 'main', vars: [ptr(dt, '0x1000', 'dangling', 'D'), ptr('alias', '0x1000', 'dangling', 'D')] }],
+	blocks: [{ ...dfBlock, status: 'freed', owner: undefined }],
+};
+const ds4: State = { ...ds3, alert: { kind: 'error', text: 'AddressSanitizer: attempting double-free on 0x1000' } };
+
+// Use after free states
+const sc = isEs ? 'puntaje' : 'score';
+const uBlock: Block = { id: 'U', addr: '0x1000', size: '4 B', label: 'int', status: 'live', owner: sc, value: '?' };
+const us1: State = { frames: [{ label: 'main', vars: [ptr(sc, '0x1000', 'owner', 'U')] }], blocks: [uBlock] };
+const us2: State = { frames: us1.frames, blocks: [{ ...uBlock, value: '100' }] };
+const us3: State = {
+	frames: [{ label: 'main', vars: [ptr(sc, '0x1000', 'dangling', 'U')] }],
+	blocks: [{ ...uBlock, value: '100', status: 'freed', owner: undefined }],
+};
+const us4: State = { ...us3, alert: { kind: 'error', text: 'AddressSanitizer: heap-use-after-free · READ of size 4 · programa.c:11' } };
+
+// Dangling borrow states
+const dgP = (status: Block['status'], field: Slot): Block => ({
+	id: 'P',
+	addr: '0x1000',
+	size: '8 B',
+	label: personaLbl,
+	status,
+	owner: status === 'live' ? 'p' : undefined,
+	fields: [field],
+});
+const dgN = (status: Block['status']): Block => ({
+	id: 'N',
+	addr: '0x2000',
+	size: '4 B',
+	label: 'char[4]',
+	status,
+	owner: status === 'live' ? ownedByPerson : undefined,
+	value: pName,
+});
+const gs1: State = { frames: [{ label: 'main', vars: [ptr('p', '0x1000', 'owner', 'P')] }], blocks: [dgP('live', val(nm, '?'))] };
+const gs2: State = { frames: gs1.frames, blocks: [dgP('live', ptr(nm, '0x2000', 'owner', 'N')), dgN('live')] };
+const gs3: State = {
+	frames: [{ label: 'main', vars: [ptr('p', '0x1000', 'owner', 'P'), ptr(nm, '0x2000', 'borrow', 'N')] }],
+	blocks: gs2.blocks,
+};
+const gs4: State = {
+	frames: [{ label: 'main', vars: [ptr('p', '0x1000', 'owner', 'P'), ptr(nm, '0x2000', 'dangling', 'N')] }],
+	blocks: [dgP('live', ptr(nm, '0x2000', 'dangling', 'N')), dgN('freed')],
+};
+const gs5: State = {
+	frames: [{ label: 'main', vars: [ptr('p', '0x1000', 'dangling', 'P'), ptr(nm, '0x2000', 'dangling', 'N')] }],
+	blocks: [dgP('freed', ptr(nm, '0x2000', 'dangling', 'N')), dgN('freed')],
+};
+const gs6: State = { ...gs5, alert: { kind: 'error', text: 'AddressSanitizer: heap-use-after-free · programa.c:24' } };
+
+// Off-by-one overflow states
+const cp = isEs ? 'copia' : 'copy';
+const letters = isEs ? ['A', 'n', 'a'] : ['A', 'n', 'n'];
+const literal: Block = {
+	id: 'L',
+	addr: '0x0400',
+	size: '4 B',
+	label: t('literal de cadena', 'string literal'),
+	status: 'static',
+	cells: [...letters.map((v) => ({ v })), { v: '\\0' }],
+};
+const os1: State = { frames: [{ label: 'main', vars: [ptr(nm, '0x0400', 'borrow', 'L')] }], blocks: [literal] };
+const os2: State = {
+	frames: [{ label: 'main', vars: [ptr(nm, '0x0400', 'borrow', 'L'), ptr(cp, '0x1000', 'owner', 'C')] }],
+	blocks: [literal, { id: 'C', addr: '0x1000', size: '3 B', label: 'char[3]', status: 'live', owner: cp, cells: [{ v: '?' }, { v: '?' }, { v: '?' }] }],
+};
+const os3: State = {
+	frames: os2.frames,
+	blocks: [literal, { ...os2.blocks[1], cells: [...letters.map((v) => ({ v })), { v: '\\0', out: true }] }],
+	alert: { kind: 'error', text: 'AddressSanitizer: heap-buffer-overflow · WRITE of size 4 · located 0 bytes after 3-byte region' },
+};
+const os4: State = {
+	frames: [{ label: 'main', vars: [ptr(nm, '0x0400', 'borrow', 'L'), ptr(cp, '0x1000', 'dangling', 'C')] }],
+	blocks: [literal, { ...os3.blocks[1], status: 'freed', owner: undefined }],
+};
+
+// realloc states
+const cap = isEs ? 'capacidad' : 'capacity';
+const rBlock: Block = { id: 'R', addr: '0x1000', size: '16 B', label: 'int[4]', status: 'live', owner: dt, value: '? ? ? ?' };
+const rs1: State = { frames: [{ label: 'main', vars: [val(cap, '4'), ptr(dt, '0x1000', 'owner', 'R')] }], blocks: [rBlock] };
+const rs2: State = { frames: [{ label: 'main', vars: [val(cap, '8'), ptr(dt, '0x1000', 'owner', 'R')] }], blocks: [rBlock] };
+const rs3: State = { frames: [{ label: 'main', vars: [val(cap, '8'), nul(dt)] }], blocks: [{ ...rBlock, status: 'leaked', owner: undefined }] };
+const rs4: State = { ...rs3, alert: { kind: 'leak', text: t('Fuga: 16 bytes sin dueño en 0x1000', 'Leak: 16 bytes without an owner at 0x1000') } };
+
+type LearnSlide = { kicker: string; title: string; lead: string; program: ProgramKey; steps: Step[] };
+
+const learn: LearnSlide[] = [
+	{
+		kicker: t('Propiedad', 'Ownership'),
+		title: t('Un bloque, un dueño: crear, prestar, destruir', 'One block, one owner: create, borrow, destroy'),
+		lead: t(
+			'En cada momento, cada bloque tiene exactamente un dueño. Sigue los dos bloques de una persona desde crear_persona hasta destruir_persona.',
+			'At every moment, every block has exactly one owner. Follow the two blocks of a person from create_person to destroy_person.',
+		),
+		program: 'persona',
+		steps: [
+			{
+				lines: [14],
+				text: t(
+					'crear_persona reserva la estructura con malloc. El bloque 0x1000 existe desde ahora y su único dueño es p, la variable local de crear_persona.',
+					'create_person allocates the structure with malloc. Block 0x1000 exists from now on and its only owner is p, the local variable of create_person.',
+				),
+				state: ps1,
+			},
+			{
+				lines: [19, 24, 25],
+				text: t(
+					'Un segundo bloque guarda la copia del nombre. Su dueño no es una variable sino la persona: el campo nombre apunta a 0x2000.',
+					'A second block holds the copy of the name. Its owner is not a variable but the person: the name field points to 0x2000.',
+				),
+				state: ps2,
+			},
+			{
+				lines: [26, 44],
+				text: t(
+					'crear_persona devuelve p y su marco desaparece. La propiedad pasa al llamador, como dice el comentario: ahora ana, en main, es la dueña de 0x1000.',
+					'create_person returns p and its frame disappears. Ownership moves to the caller, as the comment says: now ann, in main, owns 0x1000.',
+				),
+				state: ps3,
+			},
+			{
+				lines: [49, 40],
+				text: t(
+					'imprimir_persona recibe una copia de la dirección. Es un préstamo (const Persona *): lee la persona mientras main la mantiene viva y nunca la libera.',
+					'print_person receives a copy of the address. It is a borrow (const Person *): it reads the person while main keeps it alive and never frees it.',
+				),
+				state: ps4,
+			},
+			{
+				lines: [50, 34],
+				text: t(
+					'main llama a destruir_persona, que libera primero las partes: free(p->nombre). El bloque 0x2000 deja de existir y el campo nombre queda colgante; la persona sigue siendo válida.',
+					'main calls destroy_person, which frees the parts first: free(p->name). Block 0x2000 stops existing and the name field is left dangling; the person is still valid.',
+				),
+				state: ps5,
+			},
+			{
+				lines: [35],
+				text: t(
+					'Después, free(p) libera el contenedor, en orden inverso al de la creación. ana todavía guarda 0x1000: es un puntero colgante.',
+					'Then free(p) releases the container, in the reverse order of creation. ann still holds 0x1000: it is a dangling pointer.',
+				),
+				state: ps6,
+			},
+			{
+				lines: [51],
+				text: t(
+					'ana = NULL deja el puntero en un estado que se puede comprobar. Cada bloque tuvo un solo dueño y se liberó exactamente una vez.',
+					'ann = NULL leaves the pointer in a state you can check. Every block had a single owner and was freed exactly once.',
+				),
+				state: ps7,
+			},
+		],
+	},
+	{
+		kicker: t('Propiedad', 'Ownership'),
+		title: t('Transferir la propiedad', 'Transferring ownership'),
+		lead: t(
+			'Una función puede quedarse con un bloque. Después de la transferencia, el puntero del llamador sigue apuntando al bloque, pero ya es solo un préstamo.',
+			'A function can keep a block. After the transfer, the caller’s pointer still points to the block, but it is only a borrow now.',
+		),
+		program: 'transfer',
+		steps: [
+			{
+				lines: [28],
+				text: t('main reserva una persona: p es su dueño.', 'main allocates a person: p is its owner.'),
+				state: ts1,
+			},
+			{
+				lines: [32],
+				text: t('p modifica el bloque que le pertenece: edad vale 31.', 'p modifies the block it owns: age is 31.'),
+				state: ts2,
+			},
+			{
+				lines: [33, 21, 22, 23],
+				text: t(
+					'agenda_agregar guarda la dirección y devuelve true. Desde ahora la agenda es la dueña; p sigue apuntando al mismo bloque, pero solo como préstamo.',
+					'contacts_add stores the address and returns true. From now on the contacts are the owner; p still points to the same block, but only as a borrow.',
+				),
+				state: ts3,
+			},
+			{
+				lines: [37],
+				text: t(
+					'Leer p->edad es un préstamo válido: la agenda mantiene vivo el bloque. Imprime 31.',
+					'Reading p->age is a valid borrow: the contacts keep the block alive. It prints 31.',
+				),
+				state: ts3,
+			},
+			{
+				lines: [39, 40],
+				text: t(
+					'La agenda libera lo que le pertenece y anota NULL. p ya es colgante: el llamador no debe usarlo ni liberarlo.',
+					'The contacts free what they own and store NULL. p is now dangling: the caller must neither use it nor free it.',
+				),
+				state: ts5,
+			},
+		],
+	},
+	{
+		kicker: t('Error 1', 'Error 1'),
+		title: t('Fuga de memoria', 'Memory leak'),
+		lead: t(
+			'Una fuga ocurre cuando se pierde la última dirección de un bloque sin haberlo liberado: el bloque queda reservado sin dueño.',
+			'A leak happens when the last address of a block is lost without freeing it: the block stays allocated without an owner.',
+		),
+		program: 'leak',
+		steps: [
+			{ lines: [6], text: t('Primera vuelta: malloc reserva 32 bytes y linea es su dueño.', 'First iteration: malloc allocates 32 bytes and line is its owner.'), state: ls1 },
+			{ lines: [10, 11], text: t('El bloque se llena y se imprime. Todo es válido.', 'The block is filled and printed. Everything is valid.'), state: ls2 },
+			{
+				lines: [12],
+				text: t(
+					'Termina la vuelta: linea deja de existir, pero el bloque no. Nadie guarda ya su dirección: es una fuga.',
+					'The iteration ends: line stops existing, but the block does not. Nobody holds its address anymore: it is a leak.',
+				),
+				state: ls3,
+			},
+			{ lines: [6], text: t('Segunda vuelta: un bloque nuevo en 0x1040. El anterior sigue perdido.', 'Second iteration: a new block at 0x1040. The previous one is still lost.'), state: ls4 },
+			{ lines: [12], text: t('Otra vuelta, otra fuga.', 'Another iteration, another leak.'), state: ls5 },
+			{
+				lines: [13],
+				text: t(
+					'Al terminar quedan 3 bloques de 32 bytes sin dueño: 96 bytes, que LeakSanitizer informa como Direct leak. Corrección: free(linea); antes de cerrar la vuelta.',
+					'At the end, 3 blocks of 32 bytes have no owner: 96 bytes, reported by LeakSanitizer as a Direct leak. Fix: free(line); before closing the iteration.',
+				),
+				state: ls6,
+			},
+		],
+	},
+	{
+		kicker: t('Error 2', 'Error 2'),
+		title: t('Doble liberación', 'Double free'),
+		lead: t(
+			'Dos punteros apuntan al mismo bloque y los dos se creen dueños. Uno lo libera y el otro intenta liberarlo de nuevo.',
+			'Two pointers point to the same block and both believe they are the owner. One frees it and the other tries to free it again.',
+		),
+		program: 'doubleFree',
+		steps: [
+			{ lines: [4], text: t('datos es el dueño de un bloque de 4 enteros.', 'data owns a block of 4 integers.'), state: ds1 },
+			{ lines: [8], text: t('alias copia la dirección: dos punteros, un solo bloque. alias debería ser solo un préstamo.', 'alias copies the address: two pointers, one block. alias should only be a borrow.'), state: ds2 },
+			{
+				lines: [9],
+				text: t(
+					'free(datos) libera el bloque, pero no cambia ningún puntero: datos y alias siguen guardando 0x1000 y los dos quedan colgantes.',
+					'free(data) releases the block, but it changes no pointer: data and alias still hold 0x1000 and both are left dangling.',
+				),
+				state: ds3,
+			},
+			{
+				lines: [10],
+				text: t(
+					'free(alias) intenta liberar un bloque que ya no existe: comportamiento indefinido. Corrección: un único dueño; solo datos libera y alias es un préstamo.',
+					'free(alias) tries to free a block that no longer exists: undefined behavior. Fix: a single owner; only data frees and alias is a borrow.',
+				),
+				state: ds4,
+			},
+		],
+	},
+	{
+		kicker: t('Error 3', 'Error 3'),
+		title: t('Uso después de liberar', 'Use after free'),
+		lead: t(
+			'Leer o escribir un bloque que ya fue liberado. A veces "funciona", y eso no prueba nada.',
+			'Reading or writing a block that was already freed. Sometimes it "works", and that proves nothing.',
+		),
+		program: 'useAfterFree',
+		steps: [
+			{ lines: [5], text: t('puntaje es el dueño de un entero en el montículo.', 'score owns an integer on the heap.'), state: us1 },
+			{ lines: [9], text: t('Se escribe 100 en el bloque.', '100 is written into the block.'), state: us2 },
+			{
+				lines: [10],
+				text: t(
+					'free(puntaje): el bloque deja de existir. puntaje sigue guardando 0x1000, pero ahora es colgante.',
+					'free(score): the block stops existing. score still holds 0x1000, but now it is dangling.',
+				),
+				state: us3,
+			},
+			{
+				lines: [11],
+				text: t(
+					'Leer *puntaje es un uso después de liberar. El informe de ASan dice qué pasó (línea 11), cuándo se liberó (línea 10) y dónde se reservó (línea 5). Corrección: usar el valor antes del free y asignar puntaje = NULL.',
+					'Reading *score is a use after free. The ASan report says what happened (line 11), when it was freed (line 10) and where it was allocated (line 5). Fix: use the value before free and set score = NULL.',
+				),
+				state: us4,
+			},
+		],
+	},
+	{
+		kicker: t('Error 4', 'Error 4'),
+		title: t('Préstamo colgante después de free', 'Dangling borrow after free'),
+		lead: t(
+			'Un préstamo que sobrevive a su dueño: nombre toma prestado un bloque que pertenece a la persona, y la persona se destruye antes de usarlo.',
+			'A borrow that outlives its owner: name borrows a block that belongs to the person, and the person is destroyed before it is used.',
+		),
+		program: 'dangling',
+		steps: [
+			{ lines: [10], text: t('p es el dueño de la persona.', 'p owns the person.'), state: gs1 },
+			{ lines: [14, 19], text: t('La persona es dueña del bloque del nombre, que guarda "Ana".', 'The person owns the name block, which holds "Ann".'), state: gs2 },
+			{ lines: [21], text: t('nombre toma prestado ese bloque: es un préstamo válido mientras la persona lo mantenga vivo.', 'name borrows that block: it is a valid borrow while the person keeps it alive.'), state: gs3 },
+			{ lines: [22], text: t('Se libera el bloque del nombre: el campo y el préstamo quedan colgantes.', 'The name block is freed: the field and the borrow are left dangling.'), state: gs4 },
+			{ lines: [23], text: t('El dueño desaparece. El préstamo nombre sobrevivió a su dueño.', 'The owner goes away. The borrow name outlived its owner.'), state: gs5 },
+			{
+				lines: [24],
+				text: t(
+					'Usar nombre es un uso después de liberar a través de otro puntero. Corrección: un préstamo nunca vive más que el dueño; usa nombre antes de liberar o haz una copia propia.',
+					'Using name is a use after free through another pointer. Fix: a borrow never outlives its owner; use name before freeing or make your own copy.',
+				),
+				state: gs6,
+			},
+		],
+	},
+	{
+		kicker: t('Error 6', 'Error 6'),
+		title: t('Desborde por uno en el heap', 'Off-by-one heap overflow'),
+		lead: t(
+			'Reservar un byte menos de lo necesario escribe fuera del bloque. El caso típico: olvidar el lugar del terminador.',
+			'Allocating one byte less than needed writes outside the block. The typical case: forgetting the room for the terminator.',
+		),
+		program: 'overflow',
+		steps: [
+			{
+				lines: [6],
+				text: t(
+					'nombre apunta a un literal de cadena: 4 bytes contando el terminador. Ese literal no vino de malloc, así que nunca se libera.',
+					'name points to a string literal: 4 bytes counting the terminator. That literal did not come from malloc, so it is never freed.',
+				),
+				state: os1,
+			},
+			{
+				lines: [7],
+				text: t(
+					'strlen(nombre) vale 3 porque no cuenta el \\0. El bloque tiene 3 bytes: uno menos de lo necesario.',
+					'strlen(name) is 3 because it does not count the \\0. The block has 3 bytes: one less than needed.',
+				),
+				state: os2,
+			},
+			{
+				lines: [11],
+				text: t(
+					'strcpy copia 4 bytes: el \\0 cae justo después del final del bloque. Casi siempre "funciona", hasta que pisa datos internos del montículo.',
+					'strcpy copies 4 bytes: the \\0 lands right after the end of the block. It almost always "works", until it overwrites the heap’s internal data.',
+				),
+				state: os3,
+			},
+			{
+				lines: [13],
+				text: t(
+					'El bloque se libera, pero el daño ya ocurrió. Corrección: malloc(strlen(nombre) + 1). En arreglos, recorre con i < n.',
+					'The block is freed, but the damage is done. Fix: malloc(strlen(name) + 1). For arrays, loop with i < n.',
+				),
+				state: os4,
+			},
+		],
+	},
+	{
+		kicker: t('Error 7', 'Error 7'),
+		title: t('Puntero perdido después de realloc', 'Lost pointer after realloc'),
+		lead: t(
+			'Mientras realloc funciona, no pasa nada. Cuando falla, devuelve NULL y p = realloc(p, ...) pierde la única dirección del bloque original.',
+			'While realloc succeeds, nothing happens. When it fails, it returns NULL and p = realloc(p, ...) loses the only address of the original block.',
+		),
+		program: 'realloc',
+		steps: [
+			{ lines: [5], text: t('datos es el dueño de un bloque de 4 enteros.', 'data owns a block of 4 integers.'), state: rs1 },
+			{ lines: [9], text: t('Se quiere duplicar la capacidad.', 'We want to double the capacity.'), state: rs2 },
+			{
+				lines: [10],
+				text: t(
+					'Supón que realloc falla: devuelve NULL y esa NULL se guarda en datos. El bloque original sigue reservado, pero nadie tiene su dirección.',
+					'Suppose realloc fails: it returns NULL and that NULL is stored in data. The original block is still allocated, but nobody holds its address.',
+				),
+				state: rs3,
+			},
+			{
+				lines: [12],
+				text: t(
+					'El programa sale por el camino de error con una fuga, justo cuando falta memoria. Corrección: guarda el resultado en un puntero temporal (nuevo) y asigna datos = nuevo solo si no es NULL.',
+					'The program leaves through the error path with a leak, exactly when memory is scarce. Fix: store the result in a temporary pointer (bigger) and set data = bigger only if it is not NULL.',
+				),
+				state: rs4,
+			},
+		],
+	},
+];
+
+/* ---------- Practice: predict the next state ---------- */
+
+type PracticeItem = {
+	program: ProgramKey;
+	line: number;
+	prompt: string;
+	options: string[];
+	correct: number;
+	reason: string;
+	before: State;
+	after: State;
+};
+
+const stateOpts = [t('Válido (préstamo)', 'Valid (borrow)'), t('Colgante', 'Dangling'), 'NULL'];
+
+const practice: PracticeItem[] = [
+	{
+		program: 'doubleFree',
+		line: 9,
+		prompt: t('Después de ejecutar la línea 9, ¿en qué estado queda alias?', 'After line 9 runs, what state is alias in?'),
+		options: stateOpts,
+		correct: 1,
+		reason: t(
+			'free no cambia el valor de ningún puntero. alias sigue guardando 0x1000, pero ese bloque ya no existe: es colgante.',
+			'free changes the value of no pointer. alias still holds 0x1000, but that block no longer exists: it is dangling.',
+		),
+		before: ds2,
+		after: ds3,
+	},
+	{
+		program: 'transfer',
+		line: 33,
+		prompt: t('agenda_agregar devuelve true en la línea 33. ¿Qué es p después de esa línea?', 'contacts_add returns true on line 33. What is p after that line?'),
+		options: [t('Sigue siendo el dueño', 'Still the owner'), t('Un préstamo válido', 'A valid borrow'), t('Un puntero colgante', 'A dangling pointer')],
+		correct: 1,
+		reason: t(
+			'Con true, la agenda pasa a ser la dueña. p sigue apuntando a un bloque vivo, así que puede leerlo, pero nunca liberarlo.',
+			'With true, the contacts become the owner. p still points to a live block, so it may read it, but never free it.',
+		),
+		before: ts2,
+		after: ts3,
+	},
+	{
+		program: 'leak',
+		line: 12,
+		prompt: t('Al llegar a la línea 12 en la primera vuelta, ¿qué le pasa al bloque 0x1000?', 'When the first iteration reaches line 12, what happens to block 0x1000?'),
+		options: [
+			t('Se libera automáticamente', 'It is freed automatically'),
+			t('Queda reservado sin dueño: fuga', 'It stays allocated without an owner: a leak'),
+			t('Sigue teniendo como dueño a linea', 'line is still its owner'),
+		],
+		correct: 1,
+		reason: t(
+			'Solo la variable linea tiene duración automática; el bloque del montículo vive hasta que alguien llame a free. Al morir linea, nadie guarda su dirección.',
+			'Only the variable line has automatic storage duration; the heap block lives until someone calls free. When line dies, nobody holds its address.',
+		),
+		before: ls2,
+		after: ls3,
+	},
+	{
+		program: 'persona',
+		line: 34,
+		prompt: t('Después de la línea 34, ¿qué puntero sigue siendo válido?', 'After line 34, which pointer is still valid?'),
+		options: ['p', isEs ? 'p->nombre' : 'p->name', t('Ninguno de los dos', 'Neither')],
+		correct: 0,
+		reason: t(
+			'Solo se liberó el bloque del nombre. La persona sigue viva hasta la línea 35: por eso se libera en orden inverso, primero las partes y después el contenedor.',
+			'Only the name block was freed. The person stays alive until line 35: that is why the order is reversed, first the parts and then the container.',
+		),
+		before: ps3,
+		after: ps5,
+	},
+	{
+		program: 'overflow',
+		line: 7,
+		prompt: t('Después de la línea 7, ¿cuántos bytes tiene el bloque de copia?', 'After line 7, how many bytes does the copy block have?'),
+		options: ['3', '4', '32'],
+		correct: 0,
+		reason: t(
+			'strlen no cuenta el terminador: devuelve 3. Para copiar "Ana" hacen falta 4 bytes, así que strcpy escribirá uno fuera del bloque.',
+			'strlen does not count the terminator: it returns 3. Copying "Ann" needs 4 bytes, so strcpy will write one outside the block.',
+		),
+		before: os1,
+		after: os2,
+	},
+	{
+		program: 'realloc',
+		line: 10,
+		prompt: t('Si realloc falla en la línea 10, ¿qué pasa con el bloque 0x1000?', 'If realloc fails on line 10, what happens to block 0x1000?'),
+		options: [
+			t('realloc lo libera', 'realloc frees it'),
+			t('Sigue reservado, pero nadie tiene su dirección: fuga', 'It stays allocated, but nobody holds its address: a leak'),
+			t('datos sigue apuntando a él', 'data still points to it'),
+		],
+		correct: 1,
+		reason: t(
+			'Cuando realloc falla, el bloque original queda intacto. Pero su resultado, NULL, pisó la única copia de la dirección.',
+			'When realloc fails, the original block is left untouched. But its result, NULL, overwrote the only copy of the address.',
+		),
+		before: rs2,
+		after: rs3,
+	},
+];
+
+/* ---------- Assess: no hints, graded at the end ---------- */
+
+type AssessItem = { prompt: string; snippet: string; options: string[]; correct: number; reason: string };
+
+const errorOpts = [
+	t('Fuga de memoria', 'Memory leak'),
+	t('Doble liberación', 'Double free'),
+	t('Uso después de liberar', 'Use after free'),
+	t('Desborde por uno en el heap', 'Off-by-one heap overflow'),
+	t('Liberar memoria que no vino de malloc', 'Freeing memory not obtained from malloc'),
+];
+
+const assess: AssessItem[] = [
+	{
+		prompt: t('¿Quién debe liberar el resultado de duplicar?', 'Who must free the result of duplicate?'),
+		snippet: code(
+			String.raw`// Devuelve una copia nueva de texto. Devuelve NULL si no hay memoria.
+char *duplicar(const char *texto);`,
+			String.raw`// Returns a new copy of text. Returns NULL if out of memory.
+char *duplicate(const char *text);`,
+		),
+		options: [t('El llamador', 'The caller'), t('duplicar', 'duplicate'), t('Nadie: se libera solo', 'Nobody: it is freed automatically')],
+		correct: 0,
+		reason: t(
+			'Una función que devuelve memoria nueva transfiere la propiedad al llamador, que debe liberarla con free.',
+			'A function that returns new memory transfers ownership to the caller, who must free it with free.',
+		),
+	},
+	{
+		prompt: t('La llamada devolvió false. ¿Quién debe liberar texto?', 'The call returned false. Who must free text?'),
+		snippet: code(
+			String.raw`// Si devuelve true, la lista se queda con texto.
+bool lista_agregar(Lista *l, char *texto);`,
+			String.raw`// If it returns true, the list keeps text.
+bool list_add(List *l, char *text);`,
+		),
+		options: [t('La lista', 'The list'), t('El llamador', 'The caller'), t('Nadie', 'Nobody')],
+		correct: 1,
+		reason: t(
+			'La transferencia solo ocurre con true. Con false, el llamador sigue siendo el dueño y debe liberarlo.',
+			'The transfer only happens with true. With false, the caller is still the owner and must free it.',
+		),
+	},
+	{
+		prompt: t('¿Qué error de memoria tiene este programa?', 'Which memory error does this program have?'),
+		snippet: code(
+			String.raw`#include <stdlib.h>
+
+int main(void) {
+    char *texto = malloc(16);
+    if (texto == NULL) {
+        return 1;
+    }
+    char *otro = texto;
+    free(otro);
+    free(texto);
+    return 0;
+}`,
+			String.raw`#include <stdlib.h>
+
+int main(void) {
+    char *text = malloc(16);
+    if (text == NULL) {
+        return 1;
+    }
+    char *other = text;
+    free(other);
+    free(text);
+    return 0;
+}`,
+		),
+		options: errorOpts,
+		correct: 1,
+		reason: t(
+			'otro y texto apuntan al mismo bloque y los dos lo liberan. Debe haber un único dueño.',
+			'other and text point to the same block and both free it. There must be a single owner.',
+		),
+	},
+	{
+		prompt: t('¿Qué error de memoria tiene este programa?', 'Which memory error does this program have?'),
+		snippet: code(
+			String.raw`#include <stdlib.h>
+
+int main(void) {
+    size_t n = 5;
+    int *notas = malloc(n * sizeof *notas);
+    if (notas == NULL) {
+        return 1;
+    }
+    for (size_t i = 0; i <= n; i++) {
+        notas[i] = 0;
+    }
+    free(notas);
+    return 0;
+}`,
+			String.raw`#include <stdlib.h>
+
+int main(void) {
+    size_t n = 5;
+    int *grades = malloc(n * sizeof *grades);
+    if (grades == NULL) {
+        return 1;
+    }
+    for (size_t i = 0; i <= n; i++) {
+        grades[i] = 0;
+    }
+    free(grades);
+    return 0;
+}`,
+		),
+		options: errorOpts,
+		correct: 3,
+		reason: t(
+			'Con i <= n, la última vuelta escribe en la posición 5 de un bloque de 5 enteros: justo después del final. Hay que recorrer con i < n.',
+			'With i <= n, the last iteration writes at index 5 of a block of 5 integers: right after the end. Loop with i < n.',
+		),
+	},
+	{
+		prompt: t('¿Qué error de memoria tiene este programa?', 'Which memory error does this program have?'),
+		snippet: code(
+			String.raw`#include <stdlib.h>
+
+int main(void) {
+    int valores[3] = { 1, 2, 3 };
+    int *p = valores;
+    free(p);
+    return 0;
+}`,
+			String.raw`#include <stdlib.h>
+
+int main(void) {
+    int values[3] = { 1, 2, 3 };
+    int *p = values;
+    free(p);
+    return 0;
+}`,
+		),
+		options: errorOpts,
+		correct: 4,
+		reason: t(
+			'p apunta a un arreglo con duración automática. Solo se puede pasar a free lo que devolvieron malloc, calloc o realloc (o NULL).',
+			'p points to an array with automatic storage duration. You may only pass to free what malloc, calloc or realloc returned (or NULL).',
+		),
+	},
+	{
+		prompt: t('Si realloc falla, ¿qué error aparece?', 'If realloc fails, which error appears?'),
+		snippet: code(
+			String.raw`#include <stdlib.h>
+
+int main(void) {
+    int *datos = malloc(8 * sizeof *datos);
+    if (datos == NULL) {
+        return 1;
+    }
+    datos = realloc(datos, 16 * sizeof *datos);
+    if (datos == NULL) {
+        return 1;
+    }
+    free(datos);
+    return 0;
+}`,
+			String.raw`#include <stdlib.h>
+
+int main(void) {
+    int *data = malloc(8 * sizeof *data);
+    if (data == NULL) {
+        return 1;
+    }
+    data = realloc(data, 16 * sizeof *data);
+    if (data == NULL) {
+        return 1;
+    }
+    free(data);
+    return 0;
+}`,
+		),
+		options: errorOpts,
+		correct: 0,
+		reason: t(
+			'NULL pisa la única dirección del bloque original, que queda sin dueño: una fuga. Usa un puntero temporal para el resultado de realloc.',
+			'NULL overwrites the only address of the original block, which is left without an owner: a leak. Use a temporary pointer for the result of realloc.',
+		),
+	},
+];
+
+const labels = {
+	kind: {
+		owner: t('dueño', 'owner'),
+		borrow: t('préstamo', 'borrow'),
+		dangling: t('colgante', 'dangling'),
+		null: 'NULL',
+		value: '',
+	},
+	status: {
+		live: t('vivo', 'live'),
+		freed: t('liberado', 'freed'),
+		leaked: t('fuga: sin dueño', 'leak: no owner'),
+		static: t('estático: no vino de malloc', 'static: not from malloc'),
+	},
+	ownerPrefix: t('Dueño: ', 'Owner: '),
+	stepOf: t('Paso {n} de {m}', 'Step {n} of {m}'),
+	correct: t('Correcto. ', 'Correct. '),
+	wrong: t('No es así. ', 'Not quite. '),
+	showAfter: t('Ver transición', 'Show transition'),
+	showBefore: t('Volver al estado anterior', 'Back to the previous state'),
+	score: t('Respondiste bien {n} de {m}.', 'You got {n} of {m} right.'),
+	yourAnswer: t('Tu respuesta: ', 'Your answer: '),
+	noAnswer: t('sin responder', 'no answer'),
+	rightAnswer: t('Respuesta correcta: ', 'Correct answer: '),
+	answered: t('Respondidas: {n} de {m}', 'Answered: {n} of {m}'),
+	modes: { learn: t('Aprender', 'Learn'), practice: t('Practicar', 'Practice'), assess: t('Evaluar', 'Assess') },
+};
+
+const data = {
+	learn: learn.map((s) => ({ steps: s.steps })),
+	practice: practice.map((p) => ({ before: p.before, after: p.after, correct: p.correct, reason: p.reason, options: p.options })),
+	assess: assess.map((a) => ({ correct: a.correct, reason: a.reason, options: a.options, prompt: a.prompt })),
+	labels,
+};
+const dataJson = JSON.stringify(data).replace(/</g, '\\u003c');
+
+const lines = (src: string) => src.split('\n');
+const modes = [
+	{ id: 'learn', label: labels.modes.learn },
+	{ id: 'practice', label: labels.modes.practice },
+	{ id: 'assess', label: labels.modes.assess },
+];
+---
+
+<div class="cv-screen" data-presentation="ciclo-de-vida-objetos-c" data-lang={lang}>
+	<div class="cv-shell">
+		<nav class="cv-nav" aria-label={t('Controles de navegación', 'Navigation controls')}>
+			<div class="cv-seg" role="radiogroup" aria-label={t('Modo de la presentación', 'Presentation mode')}>
+				{
+					modes.map((m, i) => (
+						<label class="cv-seg-opt">
+							<input type="radio" name="cvMode" value={m.id} checked={i === 0} />
+							<span>{m.label}</span>
+						</label>
+					))
+				}
+			</div>
+			<div class="cv-nav-group">
+				<button class="cv-btn" id="cvPrevBtn" aria-label={t('Diapositiva anterior', 'Previous slide')} disabled>
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="m15 18-6-6 6-6"></path>
+					</svg>
+					<span>{t('Anterior', 'Previous')}</span>
+				</button>
+				<span class="cv-counter" id="cvCounter" aria-live="polite">{labels.modes.learn} · 1 / {learn.length}</span>
+				<button class="cv-btn" id="cvNextBtn" aria-label={t('Siguiente diapositiva', 'Next slide')}>
+					<span>{t('Siguiente', 'Next')}</span>
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="m9 18 6-6-6-6"></path>
+					</svg>
+				</button>
+			</div>
+		</nav>
+
+		<main class="cv-viewport">
+			<!-- Aprender / Learn -->
+			<div class="cv-mode" data-mode="learn">
+				{
+					learn.map((s, i) => (
+						<section class:list={['cv-slide', { 'is-active': i === 0 }]} data-slide={i + 1} data-kind="learn" data-index={i}>
+							<div class="cv-head">
+								<span class="cv-kicker">{t('Aprender', 'Learn')} · {s.kicker}</span>
+								<h2 class="cv-title">{s.title}</h2>
+								<p class="cv-lead">{s.lead}</p>
+							</div>
+							<div class="cv-grid">
+								<pre class="cv-code" aria-label={t('Código del programa', 'Program code')}><code>{lines(programs[s.program]).map((l, n) => <span class="cv-line" data-line={n + 1}><span class="cv-ln" aria-hidden="true">{n + 1}</span>{l || ' '}</span>)}</code></pre>
+								<div class="cv-mem" data-mem>
+									<div class="cv-col">
+										<span class="cv-col-label">{t('Pila (variables)', 'Stack (variables)')}</span>
+										<div data-stack></div>
+									</div>
+									<div class="cv-col">
+										<span class="cv-col-label">{t('Bloques', 'Blocks')}</span>
+										<div data-heap></div>
+									</div>
+									<svg class="cv-arrows" aria-hidden="true"></svg>
+								</div>
+							</div>
+							<div class="cv-alert" data-alert hidden></div>
+							<div class="cv-steps">
+								<button class="cv-btn" data-act="prev" aria-label={t('Paso anterior', 'Previous step')}>
+									<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+										<path d="m15 18-6-6 6-6"></path>
+									</svg>
+								</button>
+								<span class="cv-step-label" data-step-label></span>
+								<button class="cv-btn cv-btn-primary" data-act="next" aria-label={t('Siguiente paso', 'Next step')}>
+									<span>{t('Siguiente paso', 'Next step')}</span>
+									<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+										<path d="m9 18 6-6-6-6"></path>
+									</svg>
+								</button>
+								<button class="cv-btn" data-act="reset" aria-label={t('Reiniciar los pasos', 'Restart the steps')}>
+									<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+										<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+										<path d="M3 3v5h5"></path>
+									</svg>
+								</button>
+							</div>
+							<p class="cv-explain" data-explain aria-live="polite"></p>
+						</section>
+					))
+				}
+				<p class="cv-note">{t('Las direcciones (0x1000, 0x2000…) son ilustrativas: cambian en cada ejecución.', 'Addresses (0x1000, 0x2000…) are illustrative: they change on every run.')}</p>
+			</div>
+
+			<!-- Practicar / Practice -->
+			<div class="cv-mode" data-mode="practice" hidden>
+				{
+					practice.map((p, i) => (
+						<section class:list={['cv-slide', { 'is-active': i === 0 }]} data-slide={i + 1} data-kind="practice" data-index={i}>
+							<div class="cv-head">
+								<span class="cv-kicker">{t('Practicar', 'Practice')} · {t('Predice el siguiente estado', 'Predict the next state')}</span>
+								<h2 class="cv-title">{p.prompt}</h2>
+							</div>
+							<div class="cv-grid">
+								<pre class="cv-code" aria-label={t('Código del programa', 'Program code')}><code>{lines(programs[p.program]).map((l, n) => <span class:list={['cv-line', { 'is-current': n + 1 === p.line }]} data-line={n + 1}><span class="cv-ln" aria-hidden="true">{n + 1}</span>{l || ' '}</span>)}</code></pre>
+								<div class="cv-mem" data-mem>
+									<div class="cv-col">
+										<span class="cv-col-label">{t('Pila (variables)', 'Stack (variables)')}</span>
+										<div data-stack></div>
+									</div>
+									<div class="cv-col">
+										<span class="cv-col-label">{t('Bloques', 'Blocks')}</span>
+										<div data-heap></div>
+									</div>
+									<svg class="cv-arrows" aria-hidden="true"></svg>
+								</div>
+							</div>
+							<div class="cv-options" role="group" aria-label={t('Opciones', 'Options')}>
+								{p.options.map((o, k) => (
+									<button class="cv-opt" data-opt={k}>{o}</button>
+								))}
+							</div>
+							<p class="cv-feedback" data-feedback aria-live="polite"></p>
+							<button class="cv-btn" data-act="transition" disabled>{labels.showAfter}</button>
+						</section>
+					))
+				}
+			</div>
+
+			<!-- Evaluar / Assess -->
+			<div class="cv-mode" data-mode="assess" hidden>
+				{
+					assess.map((a, i) => (
+						<section class:list={['cv-slide', { 'is-active': i === 0 }]} data-slide={i + 1} data-kind="assess" data-index={i}>
+							<div class="cv-head">
+								<span class="cv-kicker">{t('Evaluar', 'Assess')} · {t('Pregunta', 'Question')} {i + 1} / {assess.length}</span>
+								<h2 class="cv-title">{a.prompt}</h2>
+							</div>
+							<pre class="cv-code cv-code-static"><code>{lines(a.snippet).map((l, n) => <span class="cv-line"><span class="cv-ln" aria-hidden="true">{n + 1}</span>{l || ' '}</span>)}</code></pre>
+							<div class="cv-options" role="group" aria-label={t('Opciones', 'Options')}>
+								{a.options.map((o, k) => (
+									<button class="cv-opt" data-pick={k} aria-pressed="false">{o}</button>
+								))}
+							</div>
+						</section>
+					))
+				}
+				<section class="cv-slide" data-slide={assess.length + 1} data-kind="result">
+					<div class="cv-head">
+						<span class="cv-kicker">{t('Evaluar', 'Assess')} · {t('Resultado', 'Result')}</span>
+						<h2 class="cv-title">{t('Califica tus respuestas', 'Grade your answers')}</h2>
+						<p class="cv-lead" data-answered></p>
+					</div>
+					<div class="cv-steps">
+						<button class="cv-btn cv-btn-primary" data-act="grade">{t('Calificar', 'Grade')}</button>
+						<button class="cv-btn" data-act="retry">{t('Reiniciar la evaluación', 'Restart the assessment')}</button>
+					</div>
+					<div aria-live="polite">
+						<p class="cv-score" data-score></p>
+						<ol class="cv-results" data-results></ol>
+					</div>
+				</section>
+			</div>
+		</main>
+	</div>
+</div>
+
+<script is:inline type="application/json" id="cvData" set:html={dataJson}></script>
+
+<style>
+	.cv-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.cv-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.cv-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	.cv-viewport {
+		flex: 1;
+	}
+
+	@media (min-width: 1440px) { .cv-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .cv-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .cv-viewport { zoom: 1.25; } }
+
+	.cv-nav {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-3) var(--space-6);
+		background: var(--color-surface);
+	}
+
+	.cv-nav-group {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	/* Segmented control ported from Organic/styles.css (.seg / .seg-opt). */
+	.cv-seg {
+		display: inline-flex;
+		overflow: hidden;
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+		background: var(--color-bg);
+	}
+
+	.cv-seg-opt {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		padding: var(--space-2) var(--space-4);
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.cv-seg-opt input {
+		position: absolute;
+		opacity: 0;
+		width: 0;
+		height: 0;
+		pointer-events: none;
+	}
+
+	.cv-seg-opt + .cv-seg-opt { border-left: 1px solid var(--color-divider); }
+	.cv-seg-opt:has(input:checked) { background: var(--color-accent); color: var(--color-bg); }
+	.cv-seg-opt:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+	.cv-seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+	.cv-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+		cursor: pointer;
+		transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+	}
+
+	.cv-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.cv-btn:focus-visible,
+	.cv-opt:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 2px;
+	}
+
+	.cv-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.cv-btn-primary {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.cv-btn-primary:hover:not(:disabled) {
+		background: var(--color-accent-600);
+		border-color: var(--color-accent-600);
+		color: var(--color-bg);
+	}
+
+	.cv-counter {
+		font-size: 13px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.cv-mode[hidden] { display: none; }
+
+	.cv-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		width: 100%;
+	}
+
+	.cv-slide.is-active {
+		display: block;
+		animation: cvFade 0.25s ease-out;
+	}
+
+	@keyframes cvFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.cv-head { margin-bottom: var(--space-4); }
+
+	.cv-kicker {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.cv-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 26px;
+		line-height: 1.2;
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.cv-lead {
+		font-size: 15px;
+		line-height: 1.5;
+		margin: 0;
+		max-width: 72ch;
+		color: color-mix(in srgb, var(--color-text) 75%, transparent);
+	}
+
+	.cv-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+		gap: var(--space-4);
+		align-items: start;
+	}
+
+	.cv-code {
+		position: relative;
+		margin: 0;
+		max-height: 420px;
+		overflow: auto;
+		padding: var(--space-3) 0;
+		background: var(--color-surface);
+		border-radius: var(--radius-lg);
+		font-family: monospace;
+		font-size: 12.5px;
+		line-height: 1.55;
+	}
+
+	.cv-code-static {
+		max-height: none;
+		margin-bottom: var(--space-4);
+	}
+
+	.cv-line {
+		display: block;
+		padding: 0 var(--space-3) 0 0;
+		white-space: pre;
+		transition: background 0.2s ease;
+	}
+
+	.cv-line.is-current {
+		background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+		box-shadow: inset 3px 0 0 var(--color-accent);
+	}
+
+	.cv-ln {
+		display: inline-block;
+		width: 3.5ch;
+		margin-right: var(--space-2);
+		text-align: right;
+		color: var(--color-neutral-600);
+		user-select: none;
+	}
+
+	.cv-mem {
+		position: relative;
+		display: grid;
+		grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+		gap: var(--space-8);
+		padding: var(--space-4) var(--space-8) var(--space-4) var(--space-4);
+		background: var(--color-surface);
+		border-radius: var(--radius-lg);
+		min-height: 220px;
+	}
+
+	.cv-col { display: flex; flex-direction: column; gap: var(--space-2); }
+
+	.cv-col > div { display: flex; flex-direction: column; gap: var(--space-3); }
+
+	.cv-col-label {
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-neutral-600);
+	}
+
+	.cv-arrows {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+		pointer-events: none;
+	}
+
+</style>
+
+<style is:global>
+	/* Elements built by the script carry no scope attribute, so their styles live here. */
+	.cv-arrows path { fill: none; stroke-width: 2.25; stroke-linecap: round; }
+	.cv-arrows path.is-head { stroke-linejoin: round; }
+	.cv-arrows .k-owner { stroke: var(--color-accent-2-700); }
+	.cv-arrows .k-borrow { stroke: var(--color-accent-2); stroke-dasharray: 6 5; }
+	.cv-arrows .k-dangling { stroke: var(--color-accent); stroke-dasharray: 3 5; }
+	.cv-arrows .is-head { stroke-dasharray: none; }
+
+	.cv-frame {
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+		padding: var(--space-2) var(--space-3);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.cv-frame-label {
+		display: block;
+		font-size: 11px;
+		font-weight: 700;
+		color: var(--color-accent-700);
+		margin-bottom: var(--space-1);
+		font-family: monospace;
+	}
+
+	.cv-var,
+	.cv-field {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-1) var(--space-2);
+		padding: var(--space-1) 0;
+		font-size: 13px;
+	}
+
+	.cv-var-name { font-family: monospace; font-weight: 700; }
+	.cv-var-value { font-family: monospace; }
+
+	.cv-tag {
+		font-size: 11px;
+		font-weight: 700;
+		padding: 0 var(--space-2);
+		border-radius: 999px;
+		background: var(--color-neutral-200);
+		color: var(--color-neutral-800);
+	}
+
+	[data-kind='owner'] > .cv-tag { background: var(--color-accent-2-100); color: var(--color-accent-2-800); }
+	[data-kind='borrow'] > .cv-tag { background: var(--color-accent-2-100); color: var(--color-accent-2-700); }
+	[data-kind='dangling'] > .cv-tag { background: var(--color-accent-100); color: var(--color-accent-800); }
+	[data-kind='dangling'] > .cv-var-value { color: var(--color-accent-700); text-decoration: line-through; }
+
+	.cv-block {
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+		border: 2px solid var(--color-accent-2);
+		padding: var(--space-2) var(--space-3);
+		transition: border-color 0.3s ease, opacity 0.3s ease, background 0.3s ease;
+	}
+
+	.cv-block[data-status='freed'] {
+		border-style: dashed;
+		border-color: var(--color-neutral-400);
+		opacity: 0.6;
+	}
+
+	.cv-block[data-status='leaked'] {
+		border-color: var(--color-accent);
+		background: var(--color-accent-100);
+	}
+
+	.cv-block[data-status='static'] {
+		border-color: var(--color-neutral-400);
+	}
+
+	.cv-block-head {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: var(--space-2);
+		font-size: 12px;
+	}
+
+	.cv-block-addr { font-family: monospace; font-weight: 700; }
+	.cv-block-meta { color: var(--color-neutral-600); }
+
+	.cv-block-status {
+		display: block;
+		font-size: 11px;
+		font-weight: 700;
+		margin-top: var(--space-1);
+		color: var(--color-accent-2-700);
+	}
+
+	.cv-block[data-status='freed'] .cv-block-status { color: var(--color-neutral-600); }
+	.cv-block[data-status='leaked'] .cv-block-status { color: var(--color-accent-800); }
+	.cv-block[data-status='static'] .cv-block-status { color: var(--color-neutral-600); }
+
+	.cv-block-value {
+		font-family: monospace;
+		font-size: 14px;
+		margin-top: var(--space-1);
+	}
+
+	.cv-cells { display: flex; gap: var(--space-1); margin-top: var(--space-2); }
+
+	.cv-cell {
+		min-width: 2.2em;
+		padding: var(--space-1);
+		text-align: center;
+		font-family: monospace;
+		font-size: 13px;
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+	}
+
+	.cv-cell.is-out {
+		background: var(--color-accent);
+		color: var(--color-bg);
+		outline: 2px dashed var(--color-accent-700);
+		outline-offset: 2px;
+	}
+
+	.cv-flash .cv-block,
+	.cv-flash .cv-frame {
+		animation: cvPulse 0.6s ease-out;
+	}
+
+	@keyframes cvPulse {
+		from { transform: scale(0.97); opacity: 0.4; }
+		to { transform: scale(1); opacity: 1; }
+	}
+
+	.cv-alert {
+		margin-top: var(--space-3);
+		padding: var(--space-2) var(--space-4);
+		border-radius: var(--radius-md);
+		font-family: monospace;
+		font-size: 13px;
+		background: var(--color-accent-100);
+		color: var(--color-accent-800);
+	}
+
+	.cv-alert[data-kind='ok'] { background: var(--color-accent-2-100); color: var(--color-accent-2-800); }
+
+	.cv-steps {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-3);
+		margin-top: var(--space-4);
+	}
+
+	.cv-step-label { font-size: 13px; font-weight: 700; color: var(--color-neutral-600); }
+
+	.cv-explain {
+		margin: var(--space-3) 0 0;
+		max-width: 80ch;
+		font-size: 15px;
+		line-height: 1.55;
+	}
+
+	.cv-note {
+		padding: 0 var(--space-8) var(--space-4);
+		margin: 0;
+		font-size: 12px;
+		color: var(--color-neutral-600);
+	}
+
+	.cv-options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-top: var(--space-4);
+	}
+
+	.cv-opt {
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 14px;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+		cursor: pointer;
+	}
+
+	.cv-opt:hover:not(:disabled) { border-color: var(--color-accent); color: var(--color-accent-700); }
+	.cv-opt:disabled { cursor: default; }
+	.cv-opt[aria-pressed='true'] { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-bg); }
+	.cv-opt.is-right { background: var(--color-accent-2-100); border-color: var(--color-accent-2-700); color: var(--color-accent-2-800); }
+	.cv-opt.is-wrong { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-accent-800); }
+
+	.cv-feedback {
+		min-height: 1.5em;
+		margin: var(--space-3) 0;
+		max-width: 80ch;
+		font-size: 15px;
+		line-height: 1.55;
+	}
+
+	.cv-score {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 22px;
+		margin: var(--space-4) 0 var(--space-2);
+	}
+
+	.cv-results {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		padding-left: var(--space-6);
+		max-width: 80ch;
+		font-size: 14px;
+		line-height: 1.5;
+	}
+
+	.cv-results li.is-right::marker { color: var(--color-accent-2-700); }
+	.cv-results li.is-wrong::marker { color: var(--color-accent); }
+	.cv-results strong { display: block; }
+
+	@media (max-width: 900px) {
+		.cv-grid { grid-template-columns: minmax(0, 1fr); }
+		.cv-code { max-height: 260px; }
+	}
+
+	@media (max-width: 640px) {
+		.cv-nav { padding: var(--space-3) var(--space-4); }
+		.cv-slide { padding: var(--space-4); }
+		.cv-note { padding: 0 var(--space-4) var(--space-4); }
+		.cv-title { font-size: 21px; }
+		.cv-mem { grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+		.cv-btn span { display: none; }
+	}
+</style>
+
+<script>
+	type Kind = 'owner' | 'borrow' | 'dangling' | 'null' | 'value';
+	type Slot = { name: string; value: string; kind: Kind; target?: string };
+	type Block = {
+		id: string;
+		addr: string;
+		size: string;
+		label: string;
+		status: 'live' | 'freed' | 'leaked' | 'static';
+		owner?: string;
+		fields?: Slot[];
+		cells?: { v: string; out?: boolean }[];
+		value?: string;
+	};
+	type State = { frames: { label: string; vars: Slot[] }[]; blocks: Block[]; alert?: { kind: string; text: string } };
+	type Data = {
+		learn: { steps: { lines: number[]; text: string; state: State }[] }[];
+		practice: { before: State; after: State; correct: number; reason: string; options: string[] }[];
+		assess: { correct: number; reason: string; options: string[]; prompt: string }[];
+		labels: {
+			kind: Record<Kind, string>;
+			status: Record<Block['status'], string>;
+			ownerPrefix: string;
+			stepOf: string;
+			correct: string;
+			wrong: string;
+			showAfter: string;
+			showBefore: string;
+			score: string;
+			yourAnswer: string;
+			noAnswer: string;
+			rightAnswer: string;
+			answered: string;
+			modes: Record<string, string>;
+		};
+	};
+
+	const screen = document.querySelector<HTMLElement>('.cv-screen');
+	const dataEl = document.getElementById('cvData');
+
+	if (screen && dataEl?.textContent) {
+		const data = JSON.parse(dataEl.textContent) as Data;
+		const L = data.labels;
+		const SVG_NS = 'http://www.w3.org/2000/svg';
+		const fill = (tpl: string, n: number, m: number) => tpl.replace('{n}', String(n)).replace('{m}', String(m));
+
+		function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
+			const node = document.createElement(tag);
+			if (cls) node.className = cls;
+			if (text !== undefined) node.textContent = text;
+			return node;
+		}
+
+		function slotRow(slot: Slot, cls: string) {
+			const row = el('div', cls);
+			row.dataset.kind = slot.kind;
+			if (slot.target && slot.kind !== 'null') row.dataset.target = slot.target;
+			row.append(el('span', 'cv-var-name', slot.name), el('span', 'cv-var-value', slot.value));
+			const tag = L.kind[slot.kind];
+			if (tag) row.append(el('span', 'cv-tag', tag));
+			return row;
+		}
+
+		function drawArrows(mem: HTMLElement) {
+			const svg = mem.querySelector('svg');
+			if (!svg) return;
+			svg.replaceChildren();
+			const box = mem.getBoundingClientRect();
+			if (!box.width || !mem.offsetWidth) return;
+			// CSS zoom on the viewport scales client rects; normalize back to layout pixels.
+			const scale = box.width / mem.offsetWidth;
+			svg.setAttribute('viewBox', `0 0 ${mem.offsetWidth} ${mem.offsetHeight}`);
+			mem.querySelectorAll<HTMLElement>('[data-target]').forEach((src) => {
+				const target = mem.querySelector<HTMLElement>(`[data-block="${src.dataset.target}"]`);
+				if (!target) return;
+				const r = src.getBoundingClientRect();
+				const tr = target.getBoundingClientRect();
+				const sx = (r.right - box.left) / scale;
+				const sy = (r.top + r.height / 2 - box.top) / scale;
+				const tl = (tr.left - box.left) / scale;
+				const trr = (tr.right - box.left) / scale;
+				const ty = (tr.top - box.top) / scale + 16;
+				let d: string;
+				let head: string;
+				if (tl > sx + 12) {
+					const dx = Math.max(24, (tl - sx) / 2);
+					d = `M ${sx} ${sy} C ${sx + dx} ${sy}, ${tl - dx} ${ty}, ${tl - 2} ${ty}`;
+					head = `M ${tl - 10} ${ty - 6} L ${tl - 2} ${ty} L ${tl - 10} ${ty + 6}`;
+				} else {
+					const ex = Math.max(sx, trr) + 26;
+					d = `M ${sx} ${sy} C ${ex} ${sy}, ${ex} ${ty}, ${trr + 2} ${ty}`;
+					head = `M ${trr + 10} ${ty - 6} L ${trr + 2} ${ty} L ${trr + 10} ${ty + 6}`;
+				}
+				const kind = `k-${src.dataset.kind}`;
+				const line = document.createElementNS(SVG_NS, 'path');
+				line.setAttribute('d', d);
+				line.setAttribute('class', kind);
+				const tip = document.createElementNS(SVG_NS, 'path');
+				tip.setAttribute('d', head);
+				tip.setAttribute('class', `${kind} is-head`);
+				svg.append(line, tip);
+			});
+		}
+
+		function renderState(slide: HTMLElement, state: State, flash = false) {
+			const mem = slide.querySelector<HTMLElement>('[data-mem]');
+			const stack = mem?.querySelector<HTMLElement>('[data-stack]');
+			const heap = mem?.querySelector<HTMLElement>('[data-heap]');
+			if (!mem || !stack || !heap) return;
+			stack.replaceChildren(
+				...state.frames.map((f) => {
+					const frame = el('div', 'cv-frame');
+					frame.append(el('span', 'cv-frame-label', f.label));
+					f.vars.forEach((v) => frame.append(slotRow(v, 'cv-var')));
+					return frame;
+				}),
+			);
+			heap.replaceChildren(
+				...state.blocks.map((b) => {
+					const block = el('div', 'cv-block');
+					block.dataset.block = b.id;
+					block.dataset.status = b.status;
+					const head = el('div', 'cv-block-head');
+					head.append(el('span', 'cv-block-addr', b.addr), el('span', 'cv-block-meta', `${b.label} · ${b.size}`));
+					block.append(head);
+					const status = b.owner ? `${L.status[b.status]} · ${L.ownerPrefix}${b.owner}` : L.status[b.status];
+					block.append(el('span', 'cv-block-status', status));
+					b.fields?.forEach((f) => block.append(slotRow(f, 'cv-field')));
+					if (b.cells) {
+						const cells = el('div', 'cv-cells');
+						b.cells.forEach((c) => cells.append(el('span', c.out ? 'cv-cell is-out' : 'cv-cell', c.v)));
+						block.append(cells);
+					}
+					if (b.value !== undefined) block.append(el('div', 'cv-block-value', b.value));
+					return block;
+				}),
+			);
+			const alert = slide.querySelector<HTMLElement>('[data-alert]');
+			if (alert) {
+				alert.hidden = !state.alert;
+				alert.textContent = state.alert?.text ?? '';
+				alert.dataset.kind = state.alert?.kind ?? '';
+			}
+			mem.classList.remove('cv-flash');
+			if (flash) {
+				void mem.offsetWidth;
+				mem.classList.add('cv-flash');
+			}
+			requestAnimationFrame(() => drawArrows(mem));
+		}
+
+		/* ---- Learn ---- */
+		const learnStep = data.learn.map(() => 0);
+
+		function renderLearn(slide: HTMLElement) {
+			const i = Number(slide.dataset.index);
+			const steps = data.learn[i].steps;
+			const s = learnStep[i];
+			const step = steps[s];
+			slide.querySelectorAll<HTMLElement>('.cv-line').forEach((line) => {
+				line.classList.toggle('is-current', step.lines.includes(Number(line.dataset.line)));
+			});
+			const code = slide.querySelector<HTMLElement>('.cv-code');
+			const first = slide.querySelector<HTMLElement>(`.cv-line[data-line="${step.lines[0]}"]`);
+			if (code && first) code.scrollTop = Math.max(0, first.offsetTop - code.clientHeight / 3);
+			const label = slide.querySelector('[data-step-label]');
+			if (label) label.textContent = fill(L.stepOf, s + 1, steps.length);
+			const explain = slide.querySelector('[data-explain]');
+			if (explain) explain.textContent = step.text;
+			(slide.querySelector('[data-act="prev"]') as HTMLButtonElement).disabled = s === 0;
+			(slide.querySelector('[data-act="next"]') as HTMLButtonElement).disabled = s === steps.length - 1;
+			renderState(slide, step.state, true);
+		}
+
+		screen.querySelectorAll<HTMLElement>('.cv-slide[data-kind="learn"]').forEach((slide) => {
+			const i = Number(slide.dataset.index);
+			const max = data.learn[i].steps.length - 1;
+			slide.querySelector('[data-act="prev"]')?.addEventListener('click', () => {
+				learnStep[i] = Math.max(0, learnStep[i] - 1);
+				renderLearn(slide);
+			});
+			slide.querySelector('[data-act="next"]')?.addEventListener('click', () => {
+				learnStep[i] = Math.min(max, learnStep[i] + 1);
+				renderLearn(slide);
+			});
+			slide.querySelector('[data-act="reset"]')?.addEventListener('click', () => {
+				learnStep[i] = 0;
+				renderLearn(slide);
+			});
+		});
+
+		/* ---- Practice ---- */
+		const showingAfter = data.practice.map(() => false);
+
+		function renderPractice(slide: HTMLElement) {
+			const i = Number(slide.dataset.index);
+			const item = data.practice[i];
+			renderState(slide, showingAfter[i] ? item.after : item.before, showingAfter[i]);
+		}
+
+		screen.querySelectorAll<HTMLElement>('.cv-slide[data-kind="practice"]').forEach((slide) => {
+			const i = Number(slide.dataset.index);
+			const item = data.practice[i];
+			const opts = slide.querySelectorAll<HTMLButtonElement>('[data-opt]');
+			const feedback = slide.querySelector('[data-feedback]');
+			const transition = slide.querySelector<HTMLButtonElement>('[data-act="transition"]');
+			opts.forEach((btn) => {
+				btn.addEventListener('click', () => {
+					const pick = Number(btn.dataset.opt);
+					const ok = pick === item.correct;
+					opts.forEach((o) => {
+						o.disabled = true;
+						if (Number(o.dataset.opt) === item.correct) o.classList.add('is-right');
+					});
+					if (!ok) btn.classList.add('is-wrong');
+					if (feedback) feedback.textContent = (ok ? L.correct : L.wrong) + item.reason;
+					if (transition) transition.disabled = false;
+				});
+			});
+			transition?.addEventListener('click', () => {
+				showingAfter[i] = !showingAfter[i];
+				transition.textContent = showingAfter[i] ? L.showBefore : L.showAfter;
+				renderPractice(slide);
+			});
+		});
+
+		/* ---- Assess ---- */
+		const answers: (number | null)[] = data.assess.map(() => null);
+		const resultSlide = screen.querySelector<HTMLElement>('.cv-slide[data-kind="result"]');
+
+		function updateAnswered() {
+			const el2 = resultSlide?.querySelector('[data-answered]');
+			if (el2) el2.textContent = fill(L.answered, answers.filter((a) => a !== null).length, answers.length);
+		}
+
+		screen.querySelectorAll<HTMLElement>('.cv-slide[data-kind="assess"]').forEach((slide) => {
+			const i = Number(slide.dataset.index);
+			const opts = slide.querySelectorAll<HTMLButtonElement>('[data-pick]');
+			opts.forEach((btn) => {
+				btn.addEventListener('click', () => {
+					answers[i] = Number(btn.dataset.pick);
+					opts.forEach((o) => o.setAttribute('aria-pressed', String(o === btn)));
+					updateAnswered();
+				});
+			});
+		});
+
+		resultSlide?.querySelector('[data-act="grade"]')?.addEventListener('click', () => {
+			const list = resultSlide!.querySelector('[data-results]');
+			const score = resultSlide!.querySelector('[data-score]');
+			let right = 0;
+			const items = data.assess.map((q, i) => {
+				const a = answers[i];
+				const ok = a === q.correct;
+				if (ok) right++;
+				const li = el('li', ok ? 'is-right' : 'is-wrong');
+				li.append(
+					el('strong', '', q.prompt),
+					el('span', '', `${L.yourAnswer}${a === null ? L.noAnswer : q.options[a]}. `),
+					el('span', '', `${L.rightAnswer}${q.options[q.correct]}. `),
+					el('span', '', q.reason),
+				);
+				return li;
+			});
+			list?.replaceChildren(...items);
+			if (score) score.textContent = fill(L.score, right, data.assess.length);
+		});
+
+		resultSlide?.querySelector('[data-act="retry"]')?.addEventListener('click', () => {
+			answers.fill(null);
+			screen.querySelectorAll('[data-pick]').forEach((o) => o.setAttribute('aria-pressed', 'false'));
+			resultSlide!.querySelector('[data-results]')?.replaceChildren();
+			const score = resultSlide!.querySelector('[data-score]');
+			if (score) score.textContent = '';
+			updateAnswered();
+			showSlide(1);
+		});
+
+		/* ---- Modes and slide navigation ---- */
+		const prevBtn = document.getElementById('cvPrevBtn') as HTMLButtonElement | null;
+		const nextBtn = document.getElementById('cvNextBtn') as HTMLButtonElement | null;
+		const counter = document.getElementById('cvCounter');
+		const current: Record<string, number> = { learn: 1, practice: 1, assess: 1 };
+		let mode = 'learn';
+
+		function panel() {
+			return screen!.querySelector<HTMLElement>(`.cv-mode[data-mode="${mode}"]`);
+		}
+
+		function showSlide(target: number) {
+			const slides = panel()?.querySelectorAll<HTMLElement>('.cv-slide');
+			if (!slides || target < 1 || target > slides.length) return;
+			current[mode] = target;
+			slides.forEach((s) => s.classList.toggle('is-active', Number(s.dataset.slide) === target));
+			const active = slides[target - 1];
+			if (counter) counter.textContent = `${L.modes[mode]} · ${target} / ${slides.length}`;
+			if (prevBtn) prevBtn.disabled = target === 1;
+			if (nextBtn) nextBtn.disabled = target === slides.length;
+			if (active.dataset.kind === 'learn') renderLearn(active);
+			if (active.dataset.kind === 'practice') renderPractice(active);
+			if (active.dataset.kind === 'result') updateAnswered();
+		}
+
+		screen.querySelectorAll<HTMLInputElement>('input[name="cvMode"]').forEach((input) => {
+			input.addEventListener('change', () => {
+				if (!input.checked) return;
+				mode = input.value;
+				screen.querySelectorAll<HTMLElement>('.cv-mode').forEach((p) => {
+					p.hidden = p.dataset.mode !== mode;
+				});
+				showSlide(current[mode]);
+			});
+		});
+
+		prevBtn?.addEventListener('click', () => showSlide(current[mode] - 1));
+		nextBtn?.addEventListener('click', () => showSlide(current[mode] + 1));
+
+		window.addEventListener('keydown', (e) => {
+			const target = e.target as HTMLElement | null;
+			if (target && (target.closest('input, textarea, select') || target.isContentEditable)) return;
+			if (e.key === 'ArrowRight') showSlide(current[mode] + 1);
+			if (e.key === 'ArrowLeft') showSlide(current[mode] - 1);
+		});
+
+		window.addEventListener('resize', () => {
+			const mem = panel()?.querySelector<HTMLElement>('.cv-slide.is-active [data-mem]');
+			if (mem) drawArrows(mem);
+		});
+
+		showSlide(1);
+	}
+</script>

@@ -1,0 +1,1640 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+const L = (es: string, en: string) => (isEs ? es : en);
+
+type Tone = 'base' | 'new' | 'warn' | 'ok';
+interface Box {
+	name: string;
+	type: string;
+	bytes: number;
+	value: string;
+	addr?: string;
+	tone?: Tone;
+}
+interface Step {
+	line: number;
+	boxes: Box[];
+	text: string;
+	out?: string;
+}
+interface LearnSlide {
+	title: string;
+	lead: string;
+	code: string;
+	steps: Step[];
+}
+
+// Learn mode: one mechanism per slide, every step changes the state of the boxes.
+const learn: LearnSlide[] = [
+	{
+		title: L('Un tipo es una caja de bytes', 'A type is a box of bytes'),
+		lead: L(
+			'El tipo decide qué valores caben, cuánta memoria se usa y cómo se interpretan los bits.',
+			'The type decides which values fit, how much memory is used and how the bits are read.',
+		),
+		code: L(
+			`#include <stdio.h>
+
+int main(void) {
+    char letra = 'A';
+    short pasos = 1200;
+    int edad = 18;
+    long long bytesDisco = 512000000000LL;
+
+    printf("%c %d %d %lld\\n", letra, pasos, edad, bytesDisco);
+    return 0;
+}`,
+			`#include <stdio.h>
+
+int main(void) {
+    char letter = 'A';
+    short steps = 1200;
+    int age = 18;
+    long long diskBytes = 512000000000LL;
+
+    printf("%c %d %d %lld\\n", letter, steps, age, diskBytes);
+    return 0;
+}`,
+		),
+		steps: [
+			{
+				line: 4,
+				boxes: [{ name: L('letra', 'letter'), type: 'char', bytes: 1, value: "'A'", addr: '0x1000', tone: 'new' }],
+				text: L(
+					'char letra reserva 1 byte. sizeof(char) vale 1 por definición: es la unidad con la que se miden los demás tipos.',
+					'char letter reserves 1 byte. sizeof(char) is 1 by definition: it is the unit every other type is measured in.',
+				),
+			},
+			{
+				line: 5,
+				boxes: [
+					{ name: L('letra', 'letter'), type: 'char', bytes: 1, value: "'A'", addr: '0x1000' },
+					{ name: L('pasos', 'steps'), type: 'short', bytes: 2, value: '1200', addr: '0x1002', tone: 'new' },
+				],
+				text: L(
+					'short ocupa 2 bytes en una máquina típica. El estándar no fija ese tamaño: garantiza un mínimo de 16 bits.',
+					'short takes 2 bytes on a typical machine. The standard does not fix that size: it guarantees at least 16 bits.',
+				),
+			},
+			{
+				line: 6,
+				boxes: [
+					{ name: L('letra', 'letter'), type: 'char', bytes: 1, value: "'A'", addr: '0x1000' },
+					{ name: L('pasos', 'steps'), type: 'short', bytes: 2, value: '1200', addr: '0x1002' },
+					{ name: L('edad', 'age'), type: 'int', bytes: 4, value: '18', addr: '0x1004', tone: 'new' },
+				],
+				text: L(
+					'int ocupa 4 bytes en Linux y macOS de 64 bits, pero el estándar solo garantiza 16 bits. No supongas 32 bits en todas partes.',
+					'int takes 4 bytes on 64-bit Linux and macOS, but the standard only guarantees 16 bits. Do not assume 32 bits everywhere.',
+				),
+			},
+			{
+				line: 7,
+				boxes: [
+					{ name: L('letra', 'letter'), type: 'char', bytes: 1, value: "'A'", addr: '0x1000' },
+					{ name: L('pasos', 'steps'), type: 'short', bytes: 2, value: '1200', addr: '0x1002' },
+					{ name: L('edad', 'age'), type: 'int', bytes: 4, value: '18', addr: '0x1004' },
+					{ name: L('bytesDisco', 'diskBytes'), type: 'long long', bytes: 8, value: '512000000000', addr: '0x1008', tone: 'new' },
+				],
+				text: L(
+					'long long garantiza 64 bits, así que 512 000 000 000 cabe en cualquier plataforma. Orden garantizado: short ≤ int ≤ long ≤ long long.',
+					'long long guarantees 64 bits, so 512,000,000,000 fits on every platform. Guaranteed order: short ≤ int ≤ long ≤ long long.',
+				),
+				out: "A 1200 18 512000000000",
+			},
+		],
+	},
+	{
+		title: L('sizeof y size_t', 'sizeof and size_t'),
+		lead: L(
+			'sizeof devuelve cuántos bytes ocupa un tipo o una variable. Se calcula al compilar, no al ejecutar.',
+			'sizeof returns how many bytes a type or a variable takes. It is computed at compile time, not at run time.',
+		),
+		code: L(
+			`#include <stdio.h>
+
+int main(void) {
+    double altura = 1.75;
+    size_t bytes = sizeof(int);
+
+    printf("char:   %zu\\n", sizeof(char));
+    printf("int:    %zu\\n", bytes);
+    printf("altura: %zu\\n", sizeof altura);
+    return 0;
+}`,
+			`#include <stdio.h>
+
+int main(void) {
+    double height = 1.75;
+    size_t bytes = sizeof(int);
+
+    printf("char:   %zu\\n", sizeof(char));
+    printf("int:    %zu\\n", bytes);
+    printf("height: %zu\\n", sizeof height);
+    return 0;
+}`,
+		),
+		steps: [
+			{
+				line: 4,
+				boxes: [{ name: L('altura', 'height'), type: 'double', bytes: 8, value: '1.75', addr: '0x1000', tone: 'new' }],
+				text: L(
+					'double altura ocupa 8 bytes en una máquina típica. sizeof mide justamente ese tamaño.',
+					'double height takes 8 bytes on a typical machine. sizeof measures exactly that size.',
+				),
+			},
+			{
+				line: 5,
+				boxes: [
+					{ name: L('altura', 'height'), type: 'double', bytes: 8, value: '1.75', addr: '0x1000' },
+					{ name: 'bytes', type: 'size_t', bytes: 8, value: '4', addr: '0x1008', tone: 'new' },
+				],
+				text: L(
+					'sizeof(int) vale 4 en una máquina típica. El resultado es un size_t: un entero sin signo pensado para tamaños y cantidades.',
+					'sizeof(int) is 4 on a typical machine. The result is a size_t: an unsigned integer meant for sizes and counts.',
+				),
+			},
+			{
+				line: 7,
+				boxes: [
+					{ name: L('altura', 'height'), type: 'double', bytes: 8, value: '1.75', addr: '0x1000' },
+					{ name: 'bytes', type: 'size_t', bytes: 8, value: '4', addr: '0x1008' },
+				],
+				text: L(
+					'sizeof(char) vale siempre 1. Con un tipo, los paréntesis son obligatorios: sizeof(char).',
+					'sizeof(char) is always 1. With a type, the parentheses are required: sizeof(char).',
+				),
+				out: 'char:   1',
+			},
+			{
+				line: 9,
+				boxes: [
+					{ name: L('altura', 'height'), type: 'double', bytes: 8, value: '1.75', addr: '0x1000', tone: 'ok' },
+					{ name: 'bytes', type: 'size_t', bytes: 8, value: '4', addr: '0x1008' },
+				],
+				text: L(
+					'Con una variable los paréntesis son opcionales: sizeof altura. Un size_t se muestra con %zu; usar %d es un error de formato que -Wall detecta.',
+					'With a variable the parentheses are optional: sizeof height. A size_t is printed with %zu; using %d is a format error that -Wall reports.',
+				),
+				out: L('char:   1\nint:    4\naltura: 8', 'char:   1\nint:    4\nheight: 8'),
+			},
+		],
+	},
+	{
+		title: L('Rangos y <limits.h>', 'Ranges and <limits.h>'),
+		lead: L(
+			'En lugar de memorizar números, consulta los límites reales de tu máquina.',
+			'Instead of memorizing numbers, look up the actual limits of your machine.',
+		),
+		code: L(
+			`#include <stdio.h>
+#include <limits.h>
+
+int main(void) {
+    printf("int: de %d a %d\\n", INT_MIN, INT_MAX);
+    printf("unsigned int: de 0 a %u\\n", UINT_MAX);
+    printf("bits por char: %d\\n", CHAR_BIT);
+    return 0;
+}`,
+			`#include <stdio.h>
+#include <limits.h>
+
+int main(void) {
+    printf("int: from %d to %d\\n", INT_MIN, INT_MAX);
+    printf("unsigned int: from 0 to %u\\n", UINT_MAX);
+    printf("bits per char: %d\\n", CHAR_BIT);
+    return 0;
+}`,
+		),
+		steps: [
+			{
+				line: 5,
+				boxes: [{ name: 'INT_MIN … INT_MAX', type: 'int', bytes: 4, value: '-2147483648 … 2147483647', tone: 'new' }],
+				text: L(
+					'Con 4 bytes y complemento a dos (obligatorio en C23), un int va de −2 147 483 648 a 2 147 483 647.',
+					'With 4 bytes and two’s complement (required in C23), an int goes from −2,147,483,648 to 2,147,483,647.',
+				),
+				out: L('int: de -2147483648 a 2147483647', 'int: from -2147483648 to 2147483647'),
+			},
+			{
+				line: 6,
+				boxes: [
+					{ name: 'INT_MIN … INT_MAX', type: 'int', bytes: 4, value: '-2147483648 … 2147483647' },
+					{ name: '0 … UINT_MAX', type: 'unsigned int', bytes: 4, value: '0 … 4294967295', tone: 'new' },
+				],
+				text: L(
+					'Mismo tamaño, otro rango: unsigned int no guarda negativos y llega al doble de alto. Se muestra con %u.',
+					'Same size, another range: unsigned int stores no negatives and goes twice as high. It is printed with %u.',
+				),
+				out: L(
+					'int: de -2147483648 a 2147483647\nunsigned int: de 0 a 4294967295',
+					'int: from -2147483648 to 2147483647\nunsigned int: from 0 to 4294967295',
+				),
+			},
+			{
+				line: 7,
+				boxes: [
+					{ name: 'INT_MIN … INT_MAX', type: 'int', bytes: 4, value: '-2147483648 … 2147483647' },
+					{ name: '0 … UINT_MAX', type: 'unsigned int', bytes: 4, value: '0 … 4294967295' },
+					{ name: 'CHAR_BIT', type: 'char', bytes: 1, value: L('8 bits', '8 bits'), tone: 'new' },
+				],
+				text: L(
+					'CHAR_BIT dice cuántos bits tiene un char: 8 en las máquinas actuales. Cada especificador corresponde a un tipo: %d, %u, %lld.',
+					'CHAR_BIT says how many bits a char has: 8 on current machines. Each specifier matches a type: %d, %u, %lld.',
+				),
+				out: L(
+					'int: de -2147483648 a 2147483647\nunsigned int: de 0 a 4294967295\nbits por char: 8',
+					'int: from -2147483648 to 2147483647\nunsigned int: from 0 to 4294967295\nbits per char: 8',
+				),
+			},
+			{
+				line: 5,
+				boxes: [
+					{ name: L('mínimo', 'minimum'), type: 'int', bytes: 2, value: L('16 bits garantizados', '16 bits guaranteed'), tone: 'warn' },
+					{ name: L('mínimo', 'minimum'), type: 'long', bytes: 4, value: L('32 bits (32 en Windows)', '32 bits (32 on Windows)'), tone: 'warn' },
+					{ name: L('mínimo', 'minimum'), type: 'long long', bytes: 8, value: L('64 bits garantizados', '64 bits guaranteed'), tone: 'ok' },
+				],
+				text: L(
+					'El estándar no fija tamaños exactos: fija mínimos. Para guardar 3 000 000 000 no confíes en int ni en long; long long sí está garantizado.',
+					'The standard does not fix exact sizes: it fixes minimums. To store 3,000,000,000 do not rely on int or long; long long is guaranteed.',
+				),
+			},
+		],
+	},
+	{
+		title: L('Desbordamiento: cuando el valor no cabe', 'Overflow: when the value does not fit'),
+		lead: L(
+			'Sin signo, el resultado da la vuelta. Con signo, es comportamiento indefinido.',
+			'Unsigned, the result wraps around. Signed, it is undefined behavior.',
+		),
+		code: L(
+			`#include <stdio.h>
+#include <limits.h>
+
+int main(void) {
+    unsigned int contador = UINT_MAX;
+    contador = contador + 1u;
+    printf("%u\\n", contador);
+    return 0;
+}`,
+			`#include <stdio.h>
+#include <limits.h>
+
+int main(void) {
+    unsigned int counter = UINT_MAX;
+    counter = counter + 1u;
+    printf("%u\\n", counter);
+    return 0;
+}`,
+		),
+		steps: [
+			{
+				line: 5,
+				boxes: [{ name: L('contador', 'counter'), type: 'unsigned int', bytes: 4, value: '4294967295', addr: '0x1000', tone: 'new' }],
+				text: L(
+					'contador empieza en UINT_MAX, el valor sin signo más grande: 4 294 967 295.',
+					'counter starts at UINT_MAX, the largest unsigned value: 4,294,967,295.',
+				),
+			},
+			{
+				line: 6,
+				boxes: [{ name: L('contador', 'counter'), type: 'unsigned int', bytes: 4, value: '0', addr: '0x1000', tone: 'ok' }],
+				text: L(
+					'Sumar 1 lo saca del rango y el resultado da la vuelta (aritmética módulo 2ⁿ): UINT_MAX + 1u vale 0. Está definido por el estándar.',
+					'Adding 1 takes it out of range and the result wraps around (arithmetic modulo 2ⁿ): UINT_MAX + 1u is 0. The standard defines it.',
+				),
+			},
+			{
+				line: 7,
+				boxes: [{ name: L('contador', 'counter'), type: 'unsigned int', bytes: 4, value: '0', addr: '0x1000' }],
+				text: L(
+					'El programa muestra 0. No es un error del programa: es la regla de los enteros sin signo.',
+					'The program prints 0. It is not a bug: it is the rule for unsigned integers.',
+				),
+				out: '0',
+			},
+			{
+				line: 6,
+				boxes: [
+					{ name: L('contador', 'counter'), type: 'unsigned int', bytes: 4, value: '0', addr: '0x1000' },
+					{ name: 'INT_MAX + 1', type: 'int', bytes: 4, value: '?', tone: 'warn' },
+				],
+				text: L(
+					'Con un int es distinto: desbordar un entero con signo es comportamiento indefinido. El estándar no dice qué pasa; elige un tipo con más rango (long long) o comprueba antes de operar.',
+					'With an int it is different: overflowing a signed integer is undefined behavior. The standard does not say what happens; pick a type with more range (long long) or check before operating.',
+				),
+			},
+		],
+	},
+	{
+		title: L('char es un entero pequeño, bool es 0 o 1', 'char is a small integer, bool is 0 or 1'),
+		lead: L(
+			'Un char guarda el código numérico del carácter. Un bool guarda solo falso (0) o verdadero (1).',
+			'A char stores the numeric code of the character. A bool stores only false (0) or true (1).',
+		),
+		code: L(
+			`#include <stdio.h>
+
+int main(void) {
+    char letra = 'A';
+    char siguiente = letra + 1;
+    bool algo = 25;
+
+    printf("%c vale %d\\n", letra, letra);
+    printf("%c %d\\n", siguiente, algo);
+    return 0;
+}`,
+			`#include <stdio.h>
+
+int main(void) {
+    char letter = 'A';
+    char next = letter + 1;
+    bool something = 25;
+
+    printf("%c is %d\\n", letter, letter);
+    printf("%c %d\\n", next, something);
+    return 0;
+}`,
+		),
+		steps: [
+			{
+				line: 4,
+				boxes: [{ name: L('letra', 'letter'), type: 'char', bytes: 1, value: "'A' = 65", addr: '0x1000', tone: 'new' }],
+				text: L(
+					'char guarda un carácter, pero en realidad es un entero pequeño: en ASCII, \'A\' vale 65.',
+					'char stores a character, but it really is a small integer: in ASCII, \'A\' is 65.',
+				),
+			},
+			{
+				line: 5,
+				boxes: [
+					{ name: L('letra', 'letter'), type: 'char', bytes: 1, value: "'A' = 65", addr: '0x1000' },
+					{ name: L('siguiente', 'next'), type: 'char', bytes: 1, value: "'B' = 66", addr: '0x1001', tone: 'new' },
+				],
+				text: L(
+					'letra + 1 opera con números: 65 + 1 = 66, que es el código de \'B\'.',
+					'letter + 1 works with numbers: 65 + 1 = 66, which is the code of \'B\'.',
+				),
+			},
+			{
+				line: 6,
+				boxes: [
+					{ name: L('letra', 'letter'), type: 'char', bytes: 1, value: "'A' = 65", addr: '0x1000' },
+					{ name: L('siguiente', 'next'), type: 'char', bytes: 1, value: "'B' = 66", addr: '0x1001' },
+					{ name: L('algo', 'something'), type: 'bool', bytes: 1, value: 'true (1)', addr: '0x1002', tone: 'new' },
+				],
+				text: L(
+					'bool guarda verdadero o falso. Cualquier valor distinto de cero, como 25, se convierte en true, que vale 1.',
+					'bool stores true or false. Any nonzero value, such as 25, becomes true, which is 1.',
+				),
+			},
+			{
+				line: 9,
+				boxes: [
+					{ name: L('letra', 'letter'), type: 'char', bytes: 1, value: "'A' = 65", addr: '0x1000' },
+					{ name: L('siguiente', 'next'), type: 'char', bytes: 1, value: "'B' = 66", addr: '0x1001' },
+					{ name: L('algo', 'something'), type: 'bool', bytes: 1, value: 'true (1)', addr: '0x1002' },
+				],
+				text: L(
+					'Con %c ves el carácter y con %d su número. En C23, bool, true y false son palabras clave; en C99 y C17 hay que incluir <stdbool.h>.',
+					'With %c you see the character and with %d its number. In C23, bool, true and false are keywords; in C99 and C17 you must include <stdbool.h>.',
+				),
+				out: L('A vale 65\nB 1', 'A is 65\nB 1'),
+			},
+		],
+	},
+	{
+		title: L('Conversión implícita', 'Implicit conversion'),
+		lead: L(
+			'El compilador convierte sin que lo escribas: al asignar, en las promociones enteras y en las conversiones aritméticas usuales.',
+			'The compiler converts without you writing it: on assignment, in integer promotions and in the usual arithmetic conversions.',
+		),
+		code: L(
+			`#include <stdio.h>
+
+int main(void) {
+    double precio = 9.99;
+    int entero = precio;
+    int codigo = 'A' + 1;
+    double mezcla = 5 + 2.5;
+
+    printf("%d %d %f\\n", entero, codigo, mezcla);
+    return 0;
+}`,
+			`#include <stdio.h>
+
+int main(void) {
+    double price = 9.99;
+    int whole = price;
+    int code = 'A' + 1;
+    double mixed = 5 + 2.5;
+
+    printf("%d %d %f\\n", whole, code, mixed);
+    return 0;
+}`,
+		),
+		steps: [
+			{
+				line: 4,
+				boxes: [{ name: L('precio', 'price'), type: 'double', bytes: 8, value: '9.99', addr: '0x1000', tone: 'new' }],
+				text: L(
+					'precio es un double: guarda 9.99 de forma aproximada en 8 bytes.',
+					'price is a double: it stores 9.99 approximately in 8 bytes.',
+				),
+			},
+			{
+				line: 5,
+				boxes: [
+					{ name: L('precio', 'price'), type: 'double', bytes: 8, value: '9.99', addr: '0x1000' },
+					{ name: L('entero', 'whole'), type: 'int', bytes: 4, value: '9', addr: '0x1008', tone: 'new' },
+				],
+				text: L(
+					'Al asignar, el valor se convierte al tipo de la variable que lo recibe. De double a int se descarta la parte decimal: se trunca hacia cero, no se redondea.',
+					'On assignment, the value is converted to the type of the receiving variable. From double to int the fractional part is dropped: it truncates toward zero, it does not round.',
+				),
+			},
+			{
+				line: 6,
+				boxes: [
+					{ name: L('precio', 'price'), type: 'double', bytes: 8, value: '9.99', addr: '0x1000' },
+					{ name: L('entero', 'whole'), type: 'int', bytes: 4, value: '9', addr: '0x1008' },
+					{ name: L('codigo', 'code'), type: 'int', bytes: 4, value: '66', addr: '0x100C', tone: 'new' },
+				],
+				text: L(
+					'Promoción entera: antes de operar, char, short y bool se convierten a int. Por eso \'A\' + 1 es un int que vale 66.',
+					'Integer promotion: before operating, char, short and bool are converted to int. That is why \'A\' + 1 is an int worth 66.',
+				),
+			},
+			{
+				line: 7,
+				boxes: [
+					{ name: L('precio', 'price'), type: 'double', bytes: 8, value: '9.99', addr: '0x1000' },
+					{ name: L('entero', 'whole'), type: 'int', bytes: 4, value: '9', addr: '0x1008' },
+					{ name: L('codigo', 'code'), type: 'int', bytes: 4, value: '66', addr: '0x100C' },
+					{ name: L('mezcla', 'mixed'), type: 'double', bytes: 8, value: '7.5', addr: '0x1010', tone: 'new' },
+				],
+				text: L(
+					'Conversión aritmética usual: con tipos distintos, el de menor rango se convierte al de mayor rango. 5 pasa a double y 5 + 2.5 vale 7.5.',
+					'Usual arithmetic conversion: with different types, the lower-ranked one is converted to the higher-ranked one. 5 becomes a double and 5 + 2.5 is 7.5.',
+				),
+				out: '9 66 7.500000',
+			},
+		],
+	},
+	{
+		title: L('La trampa: -1 < 1u', 'The trap: -1 < 1u'),
+		lead: L(
+			'Si mezclas int y unsigned int, la comparación se hace en unsigned int.',
+			'If you mix int and unsigned int, the comparison happens in unsigned int.',
+		),
+		code: L(
+			`#include <stdio.h>
+
+int main(void) {
+    int menosUno = -1;
+    unsigned int uno = 1u;
+
+    printf("%d\\n", menosUno < uno);
+    return 0;
+}`,
+			`#include <stdio.h>
+
+int main(void) {
+    int minusOne = -1;
+    unsigned int one = 1u;
+
+    printf("%d\\n", minusOne < one);
+    return 0;
+}`,
+		),
+		steps: [
+			{
+				line: 4,
+				boxes: [{ name: L('menosUno', 'minusOne'), type: 'int', bytes: 4, value: '-1', addr: '0x1000', tone: 'new' }],
+				text: L('menosUno es un int con signo y vale −1.', 'minusOne is a signed int and holds −1.'),
+			},
+			{
+				line: 5,
+				boxes: [
+					{ name: L('menosUno', 'minusOne'), type: 'int', bytes: 4, value: '-1', addr: '0x1000' },
+					{ name: L('uno', 'one'), type: 'unsigned int', bytes: 4, value: '1', addr: '0x1004', tone: 'new' },
+				],
+				text: L('uno es un unsigned int y vale 1.', 'one is an unsigned int and holds 1.'),
+			},
+			{
+				line: 7,
+				boxes: [
+					{ name: L('menosUno → unsigned int', 'minusOne → unsigned int'), type: 'unsigned int', bytes: 4, value: '4294967295', tone: 'warn' },
+					{ name: L('uno', 'one'), type: 'unsigned int', bytes: 4, value: '1', addr: '0x1004' },
+				],
+				text: L(
+					'Para comparar, la conversión aritmética usual pasa menosUno a unsigned int: −1 se transforma en UINT_MAX, 4 294 967 295.',
+					'To compare, the usual arithmetic conversion turns minusOne into an unsigned int: −1 becomes UINT_MAX, 4,294,967,295.',
+				),
+			},
+			{
+				line: 7,
+				boxes: [
+					{ name: L('menosUno → unsigned int', 'minusOne → unsigned int'), type: 'unsigned int', bytes: 4, value: '4294967295', tone: 'warn' },
+					{ name: L('uno', 'one'), type: 'unsigned int', bytes: 4, value: '1', addr: '0x1004' },
+				],
+				text: L(
+					'4 294 967 295 no es menor que 1: el programa muestra 0 (falso). Con -Wextra el compilador avisa "comparison of integers of different signs". No mezcles con signo y sin signo al comparar.',
+					'4,294,967,295 is not less than 1: the program prints 0 (false). With -Wextra the compiler warns "comparison of integers of different signs". Do not mix signed and unsigned in a comparison.',
+				),
+				out: '0',
+			},
+		],
+	},
+	{
+		title: L('Cast y división entera', 'Casts and integer division'),
+		lead: L(
+			'Una conversión explícita la pides tú con un cast, como (double). Tiene que actuar antes de dividir.',
+			'You request an explicit conversion with a cast, such as (double). It has to act before dividing.',
+		),
+		code: L(
+			`#include <stdio.h>
+
+int main(void) {
+    int suma = 17;
+    int cantidad = 4;
+
+    double mal = suma / cantidad;
+    double bien = (double)suma / cantidad;
+    double tarde = (double)(suma / cantidad);
+
+    printf("%f %f %f\\n", mal, bien, tarde);
+    return 0;
+}`,
+			`#include <stdio.h>
+
+int main(void) {
+    int sum = 17;
+    int count = 4;
+
+    double wrong = sum / count;
+    double right = (double)sum / count;
+    double late = (double)(sum / count);
+
+    printf("%f %f %f\\n", wrong, right, late);
+    return 0;
+}`,
+		),
+		steps: [
+			{
+				line: 5,
+				boxes: [
+					{ name: L('suma', 'sum'), type: 'int', bytes: 4, value: '17', addr: '0x1000', tone: 'new' },
+					{ name: L('cantidad', 'count'), type: 'int', bytes: 4, value: '4', addr: '0x1004', tone: 'new' },
+				],
+				text: L('Dos enteros: suma vale 17 y cantidad vale 4.', 'Two integers: sum holds 17 and count holds 4.'),
+			},
+			{
+				line: 7,
+				boxes: [
+					{ name: L('suma', 'sum'), type: 'int', bytes: 4, value: '17', addr: '0x1000' },
+					{ name: L('cantidad', 'count'), type: 'int', bytes: 4, value: '4', addr: '0x1004' },
+					{ name: L('mal', 'wrong'), type: 'double', bytes: 8, value: '4.0', addr: '0x1008', tone: 'warn' },
+				],
+				text: L(
+					'Con dos enteros, / es división entera: 17 / 4 es 4. Recién después se convierte a double: 4.0.',
+					'With two integers, / is integer division: 17 / 4 is 4. Only afterwards is it converted to double: 4.0.',
+				),
+			},
+			{
+				line: 8,
+				boxes: [
+					{ name: L('suma', 'sum'), type: 'int', bytes: 4, value: '17', addr: '0x1000' },
+					{ name: L('cantidad', 'count'), type: 'int', bytes: 4, value: '4', addr: '0x1004' },
+					{ name: L('mal', 'wrong'), type: 'double', bytes: 8, value: '4.0', addr: '0x1008' },
+					{ name: L('bien', 'right'), type: 'double', bytes: 8, value: '4.25', addr: '0x1010', tone: 'ok' },
+				],
+				text: L(
+					'El cast (double)suma convierte antes de dividir, y la conversión aritmética usual convierte también a cantidad: 17.0 / 4 es 4.25.',
+					'The cast (double)sum converts before dividing, and the usual arithmetic conversion converts count too: 17.0 / 4 is 4.25.',
+				),
+			},
+			{
+				line: 9,
+				boxes: [
+					{ name: L('suma', 'sum'), type: 'int', bytes: 4, value: '17', addr: '0x1000' },
+					{ name: L('cantidad', 'count'), type: 'int', bytes: 4, value: '4', addr: '0x1004' },
+					{ name: L('mal', 'wrong'), type: 'double', bytes: 8, value: '4.0', addr: '0x1008' },
+					{ name: L('bien', 'right'), type: 'double', bytes: 8, value: '4.25', addr: '0x1010' },
+					{ name: L('tarde', 'late'), type: 'double', bytes: 8, value: '4.0', addr: '0x1018', tone: 'warn' },
+				],
+				text: L(
+					'(double)(suma / cantidad) llega tarde: la división entera ya descartó los decimales. El cast tiene que actuar antes de dividir.',
+					'(double)(sum / count) comes too late: integer division already dropped the decimals. The cast has to act before dividing.',
+				),
+				out: '4.000000 4.250000 4.000000',
+			},
+		],
+	},
+];
+
+interface PracticeItem {
+	code: string;
+	before: Box[];
+	question: string;
+	options: string[];
+	answer: number;
+	after: Box[];
+	reason: string;
+}
+
+// Practice mode: predict the next state, then watch the transition.
+const practice: PracticeItem[] = [
+	{
+		code: L('int a = 7;\nint b = 2;\ndouble x = a / b;', 'int a = 7;\nint b = 2;\ndouble x = a / b;'),
+		before: [
+			{ name: 'a', type: 'int', bytes: 4, value: '7', addr: '0x1000' },
+			{ name: 'b', type: 'int', bytes: 4, value: '2', addr: '0x1004' },
+		],
+		question: L('¿Qué valor guarda x?', 'What value does x hold?'),
+		options: ['3.5', '3.0', '4.0'],
+		answer: 1,
+		after: [
+			{ name: 'a', type: 'int', bytes: 4, value: '7', addr: '0x1000' },
+			{ name: 'b', type: 'int', bytes: 4, value: '2', addr: '0x1004' },
+			{ name: 'x', type: 'double', bytes: 8, value: '3.0', addr: '0x1008', tone: 'warn' },
+		],
+		reason: L(
+			'a / b es una división entera (7 / 2 es 3); recién después se convierte a double: 3.0.',
+			'a / b is integer division (7 / 2 is 3); only afterwards is it converted to double: 3.0.',
+		),
+	},
+	{
+		code: L(
+			'unsigned int contador = UINT_MAX;\ncontador = contador + 1u;',
+			'unsigned int counter = UINT_MAX;\ncounter = counter + 1u;',
+		),
+		before: [{ name: L('contador', 'counter'), type: 'unsigned int', bytes: 4, value: '4294967295', addr: '0x1000' }],
+		question: L('¿Qué vale contador después de la suma?', 'What is counter after the addition?'),
+		options: ['0', '4294967296', L('Comportamiento indefinido', 'Undefined behavior')],
+		answer: 0,
+		after: [{ name: L('contador', 'counter'), type: 'unsigned int', bytes: 4, value: '0', addr: '0x1000', tone: 'ok' }],
+		reason: L(
+			'Los unsigned dan la vuelta (módulo 2ⁿ) y eso está definido: UINT_MAX + 1u vale 0. 4294967296 no cabe en 4 bytes.',
+			'Unsigned values wrap around (modulo 2ⁿ) and that is defined: UINT_MAX + 1u is 0. 4294967296 does not fit in 4 bytes.',
+		),
+	},
+	{
+		code: L("char letra = 'A';\nint codigo = letra + 1;", "char letter = 'A';\nint code = letter + 1;"),
+		before: [{ name: L('letra', 'letter'), type: 'char', bytes: 1, value: "'A' = 65", addr: '0x1000' }],
+		question: L('¿Qué valor guarda codigo?', 'What value does code hold?'),
+		options: ['65', '66', "'A1'"],
+		answer: 1,
+		after: [
+			{ name: L('letra', 'letter'), type: 'char', bytes: 1, value: "'A' = 65", addr: '0x1000' },
+			{ name: L('codigo', 'code'), type: 'int', bytes: 4, value: '66', addr: '0x1004', tone: 'ok' },
+		],
+		reason: L(
+			'char es un entero pequeño: letra se promueve a int y 65 + 1 da 66.',
+			'char is a small integer: letter is promoted to int and 65 + 1 gives 66.',
+		),
+	},
+	{
+		code: L(
+			'int menosUno = -1;\nunsigned int uno = 1u;\nbool menor = menosUno < uno;',
+			'int minusOne = -1;\nunsigned int one = 1u;\nbool less = minusOne < one;',
+		),
+		before: [
+			{ name: L('menosUno', 'minusOne'), type: 'int', bytes: 4, value: '-1', addr: '0x1000' },
+			{ name: L('uno', 'one'), type: 'unsigned int', bytes: 4, value: '1', addr: '0x1004' },
+		],
+		question: L('¿Qué valor guarda menor?', 'What value does less hold?'),
+		options: ['true (1)', 'false (0)'],
+		answer: 1,
+		after: [
+			{ name: L('menosUno → unsigned int', 'minusOne → unsigned int'), type: 'unsigned int', bytes: 4, value: '4294967295', tone: 'warn' },
+			{ name: L('uno', 'one'), type: 'unsigned int', bytes: 4, value: '1', addr: '0x1004' },
+			{ name: L('menor', 'less'), type: 'bool', bytes: 1, value: 'false (0)', addr: '0x1008', tone: 'warn' },
+		],
+		reason: L(
+			'Al mezclar int y unsigned int se compara en unsigned int: −1 se vuelve 4294967295, que no es menor que 1.',
+			'Mixing int and unsigned int compares in unsigned int: −1 becomes 4294967295, which is not less than 1.',
+		),
+	},
+	{
+		code: L('double nota = 9.9;\nint z = nota;', 'double grade = 9.9;\nint z = grade;'),
+		before: [{ name: L('nota', 'grade'), type: 'double', bytes: 8, value: '9.9', addr: '0x1000' }],
+		question: L('¿Qué valor guarda z?', 'What value does z hold?'),
+		options: ['10', '9.9', '9'],
+		answer: 2,
+		after: [
+			{ name: L('nota', 'grade'), type: 'double', bytes: 8, value: '9.9', addr: '0x1000' },
+			{ name: 'z', type: 'int', bytes: 4, value: '9', addr: '0x1008', tone: 'ok' },
+		],
+		reason: L(
+			'Al asignar un double a un int se descarta la parte decimal: se trunca hacia cero, no se redondea.',
+			'Assigning a double to an int drops the fractional part: it truncates toward zero, it does not round.',
+		),
+	},
+	{
+		code: L(
+			'int suma = 17;\nint cantidad = 4;\ndouble bien = (double)suma / cantidad;',
+			'int sum = 17;\nint count = 4;\ndouble right = (double)sum / count;',
+		),
+		before: [
+			{ name: L('suma', 'sum'), type: 'int', bytes: 4, value: '17', addr: '0x1000' },
+			{ name: L('cantidad', 'count'), type: 'int', bytes: 4, value: '4', addr: '0x1004' },
+		],
+		question: L('¿Qué valor guarda bien?', 'What value does right hold?'),
+		options: ['4.0', '4', '4.25'],
+		answer: 2,
+		after: [
+			{ name: L('suma', 'sum'), type: 'int', bytes: 4, value: '17', addr: '0x1000' },
+			{ name: L('cantidad', 'count'), type: 'int', bytes: 4, value: '4', addr: '0x1004' },
+			{ name: L('bien', 'right'), type: 'double', bytes: 8, value: '4.25', addr: '0x1008', tone: 'ok' },
+		],
+		reason: L(
+			'El cast convierte suma antes de dividir; la conversión aritmética usual convierte cantidad y 17.0 / 4 da 4.25.',
+			'The cast converts sum before dividing; the usual arithmetic conversion converts count and 17.0 / 4 gives 4.25.',
+		),
+	},
+];
+
+interface AssessItem {
+	code: string;
+	question: string;
+	options: string[];
+	answer: number;
+	reason: string;
+}
+
+// Assess mode: no hints, graded at the end.
+const assess: AssessItem[] = [
+	{
+		code: 'int a = 7, b = 2;\nprintf("%f\\n", (double)(a / b));',
+		question: L('¿Qué muestra este fragmento?', 'What does this fragment print?'),
+		options: ['3.500000', '3.000000', '3'],
+		answer: 1,
+		reason: L(
+			'El cast llega tarde: a / b ya es una división entera (3) y luego se convierte a 3.0.',
+			'The cast comes too late: a / b is already integer division (3) and is then converted to 3.0.',
+		),
+	},
+	{
+		code: L('printf("Tamaño de int: %d bytes\\n", sizeof(int));', 'printf("Size of int: %d bytes\\n", sizeof(int));'),
+		question: L('¿Qué error tiene esta línea?', 'What is wrong with this line?'),
+		options: [
+			L('sizeof se calcula al ejecutar el programa', 'sizeof is computed when the program runs'),
+			L('Nada, es correcta', 'Nothing, it is correct'),
+			L('sizeof devuelve un size_t, que se muestra con %zu', 'sizeof returns a size_t, which is printed with %zu'),
+		],
+		answer: 2,
+		reason: L(
+			'El resultado de sizeof es un size_t; mostrarlo con %d es un error de formato que -Wall detecta.',
+			'The result of sizeof is a size_t; printing it with %d is a format error that -Wall reports.',
+		),
+	},
+	{
+		code: 'int x = INT_MAX;\nx = x + 1;',
+		question: L('¿Qué dice el estándar sobre la segunda línea?', 'What does the standard say about the second line?'),
+		options: [
+			L('Es comportamiento indefinido', 'It is undefined behavior'),
+			L('x vale INT_MIN, da la vuelta', 'x becomes INT_MIN, it wraps around'),
+			L('x vale 0', 'x becomes 0'),
+		],
+		answer: 0,
+		reason: L(
+			'Desbordar un entero con signo es comportamiento indefinido. Solo los unsigned dan la vuelta.',
+			'Overflowing a signed integer is undefined behavior. Only unsigned values wrap around.',
+		),
+	},
+	{
+		code: L(
+			'int n1 = 7, n2 = 8, n3 = 8;\ndouble promedio = (n1 + n2 + n3) / 3;  // 7.000000',
+			'int g1 = 7, g2 = 8, g3 = 8;\ndouble average = (g1 + g2 + g3) / 3;  // 7.000000',
+		),
+		question: L('¿Qué corrección muestra 7.666667?', 'Which fix prints 7.666667?'),
+		options: [
+			L('double promedio = (double)((n1 + n2 + n3) / 3);', 'double average = (double)((g1 + g2 + g3) / 3);'),
+			L('double promedio = (double)(n1 + n2 + n3) / 3;', 'double average = (double)(g1 + g2 + g3) / 3;'),
+			L('float promedio = (n1 + n2 + n3) / 3;', 'float average = (g1 + g2 + g3) / 3;'),
+		],
+		answer: 1,
+		reason: L(
+			'Hay que convertir antes de dividir: (double)(n1 + n2 + n3) / 3 divide 23.0 / 3. Las otras opciones siguen dividiendo enteros.',
+			'You must convert before dividing: (double)(g1 + g2 + g3) / 3 divides 23.0 / 3. The other options still divide integers.',
+		),
+	},
+	{
+		code: 'printf("%d\\n", (bool)-3);',
+		question: L('¿Qué muestra este fragmento?', 'What does this fragment print?'),
+		options: ['1', '0', '-3'],
+		answer: 0,
+		reason: L(
+			'Cualquier valor distinto de cero convertido a bool se vuelve true, que vale 1.',
+			'Any nonzero value converted to bool becomes true, which is 1.',
+		),
+	},
+	{
+		code: L('// habitantes del planeta: más de 8 000 000 000', '// people on the planet: more than 8,000,000,000'),
+		question: L('¿Qué tipo garantiza que el dato cabe en cualquier plataforma?', 'Which type guarantees the value fits on every platform?'),
+		options: ['int', 'long', 'long long'],
+		answer: 2,
+		reason: L(
+			'int solo garantiza 16 bits y long 32 (mide 32 en Windows); long long garantiza 64 bits.',
+			'int only guarantees 16 bits and long 32 (it is 32 bits on Windows); long long guarantees 64 bits.',
+		),
+	},
+];
+
+const lines = (code: string) => code.split('\n');
+const totals = { learn: learn.length, practice: practice.length, assess: assess.length };
+---
+
+<div
+	class="ts-screen"
+	data-presentation="tipos-sizeof-conversiones-c"
+	data-lang={lang}
+	data-total-learn={totals.learn}
+	data-total-practice={totals.practice}
+	data-total-assess={totals.assess}
+	data-ok={L('¡Correcto!', 'Correct!')}
+	data-ko={L('No es así.', 'Not quite.')}
+	data-score={L('Puntaje', 'Score')}
+	data-your={L('Tu respuesta', 'Your answer')}
+	data-right={L('Respuesta correcta', 'Correct answer')}
+	data-none={L('Sin responder', 'Not answered')}
+	data-step={L('Paso', 'Step')}
+>
+	<div class="ts-shell">
+		<nav class="ts-nav" aria-label={L('Controles de navegación', 'Navigation controls')}>
+			<button class="ts-btn" id="tsPrevBtn" aria-label={L('Anterior', 'Previous')} disabled>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{L('Anterior', 'Previous')}</span>
+			</button>
+
+			<fieldset class="ts-seg" aria-label={L('Modo de la presentación', 'Presentation mode')}>
+				<label class="ts-seg-opt">
+					<input type="radio" name="ts-mode" value="learn" checked />
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+					</svg>
+					<span>{L('Aprender', 'Learn')}</span>
+				</label>
+				<label class="ts-seg-opt">
+					<input type="radio" name="ts-mode" value="practice" />
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
+					</svg>
+					<span>{L('Practicar', 'Practice')}</span>
+				</label>
+				<label class="ts-seg-opt">
+					<input type="radio" name="ts-mode" value="assess" />
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+					</svg>
+					<span>{L('Evaluar', 'Assess')}</span>
+				</label>
+			</fieldset>
+
+			<span class="ts-counter" id="tsCounter" aria-live="polite">1 / {totals.learn}</span>
+			<button class="ts-btn" id="tsNextBtn" aria-label={L('Siguiente', 'Next')}>
+				<span>{L('Siguiente', 'Next')}</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="ts-viewport">
+			<!-- Learn: one mechanism per slide with a step control -->
+			<div class="ts-mode is-active" data-mode="learn">
+				{learn.map((slide, si) => (
+					<section class:list={['ts-slide', { 'is-active': si === 0 }]} data-slide={si + 1} data-steps={slide.steps.length}>
+						<div class="ts-head">
+							<span class="ts-kicker">{L('Aprender', 'Learn')} · {si + 1} / {learn.length}</span>
+							<h2 class="ts-title">{slide.title}</h2>
+							<p class="ts-lead">{slide.lead}</p>
+						</div>
+						<div class="ts-grid">
+							<div class="ts-codecol">
+								<pre class="ts-code" aria-label={L('Código C', 'C code')}><code>{lines(slide.code).map((ln, li) => (
+									<span class="ts-line" data-line={li + 1}><span class="ts-ln" aria-hidden="true">{li + 1}</span>{ln || ' '}</span>
+								))}</code></pre>
+								{slide.steps.map((step, k) => (
+									<pre class="ts-out" data-step-out={k} hidden={k !== 0}><span class="ts-out-label">{L('Salida', 'Output')}</span>{step.out ?? '…'}</pre>
+								))}
+							</div>
+							<div class="ts-vizcol">
+								{slide.steps.map((step, k) => (
+									<div class="ts-step" data-step={k} data-line={step.line} hidden={k !== 0}>
+										<div class="ts-boxes">
+											{step.boxes.map((b) => (
+												<div class:list={['ts-box', `ts-tone-${b.tone ?? 'base'}`]}>
+													<div class="ts-box-head">
+														<span class="ts-box-type">{b.type}</span>
+														<span class="ts-box-name">{b.name}</span>
+														<span class="ts-box-size">{b.bytes} {b.bytes === 1 ? 'byte' : 'bytes'}</span>
+													</div>
+													<div class="ts-bytes" aria-hidden="true">
+														{Array.from({ length: b.bytes }).map(() => <span class="ts-byte" />)}
+													</div>
+													<div class="ts-box-foot">
+														<span class="ts-addr">{b.addr ?? ' '}</span>
+														<span class="ts-value">{b.value}</span>
+													</div>
+												</div>
+											))}
+										</div>
+										<p class="ts-explain">{step.text}</p>
+									</div>
+								))}
+								<p class="ts-sr" aria-live="polite"></p>
+								<div class="ts-stepper">
+									<button class="ts-btn ts-step-prev" aria-label={L('Paso anterior', 'Previous step')} disabled>
+										<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+									</button>
+									<span class="ts-step-count">{L('Paso', 'Step')} 1 / {slide.steps.length}</span>
+									<button class="ts-btn ts-btn-primary ts-step-next" aria-label={L('Paso siguiente', 'Next step')}>
+										<span>{L('Paso siguiente', 'Next step')}</span>
+										<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+									</button>
+								</div>
+							</div>
+						</div>
+					</section>
+				))}
+				<p class="ts-note">
+					{L(
+						'Las direcciones como 0x1000 son ilustrativas. Los tamaños son los típicos de Linux y macOS de 64 bits.',
+						'Addresses such as 0x1000 are illustrative. Sizes are the typical ones on 64-bit Linux and macOS.',
+					)}
+				</p>
+			</div>
+
+			<!-- Practice: predict the next state -->
+			<div class="ts-mode" data-mode="practice" hidden>
+				{practice.map((item, pi) => (
+					<section class:list={['ts-item', { 'is-active': pi === 0 }]} data-item={pi + 1} data-answer={item.answer}>
+						<div class="ts-head">
+							<span class="ts-kicker">{L('Practicar', 'Practice')} · {pi + 1} / {practice.length}</span>
+							<h2 class="ts-title">{L('Predice el próximo estado', 'Predict the next state')}</h2>
+						</div>
+						<div class="ts-grid">
+							<div class="ts-codecol">
+								<pre class="ts-code"><code>{lines(item.code).map((ln, li) => (
+									<span class="ts-line" data-line={li + 1}><span class="ts-ln" aria-hidden="true">{li + 1}</span>{ln}</span>
+								))}</code></pre>
+								<p class="ts-question">{item.question}</p>
+								<div class="ts-options" role="group" aria-label={item.question}>
+									{item.options.map((opt, oi) => (
+										<button class="ts-opt" data-index={oi}>{opt}</button>
+									))}
+								</div>
+								<p class="ts-feedback" aria-live="polite"></p>
+								<p class="ts-reason" hidden>{item.reason}</p>
+							</div>
+							<div class="ts-vizcol">
+								<span class="ts-state-label">{L('Estado actual', 'Current state')}</span>
+								<div class="ts-boxes ts-before">
+									{item.before.map((b) => (
+										<div class:list={['ts-box', `ts-tone-${b.tone ?? 'base'}`]}>
+											<div class="ts-box-head">
+												<span class="ts-box-type">{b.type}</span>
+												<span class="ts-box-name">{b.name}</span>
+												<span class="ts-box-size">{b.bytes} {b.bytes === 1 ? 'byte' : 'bytes'}</span>
+											</div>
+											<div class="ts-bytes" aria-hidden="true">
+												{Array.from({ length: b.bytes }).map(() => <span class="ts-byte" />)}
+											</div>
+											<div class="ts-box-foot">
+												<span class="ts-addr">{b.addr ?? ' '}</span>
+												<span class="ts-value">{b.value}</span>
+											</div>
+										</div>
+									))}
+								</div>
+								<div class="ts-after" hidden>
+									<span class="ts-state-label">{L('Estado siguiente', 'Next state')}</span>
+									<div class="ts-boxes">
+										{item.after.map((b) => (
+											<div class:list={['ts-box', `ts-tone-${b.tone ?? 'base'}`]}>
+												<div class="ts-box-head">
+													<span class="ts-box-type">{b.type}</span>
+													<span class="ts-box-name">{b.name}</span>
+													<span class="ts-box-size">{b.bytes} {b.bytes === 1 ? 'byte' : 'bytes'}</span>
+												</div>
+												<div class="ts-bytes" aria-hidden="true">
+													{Array.from({ length: b.bytes }).map(() => <span class="ts-byte" />)}
+												</div>
+												<div class="ts-box-foot">
+													<span class="ts-addr">{b.addr ?? ' '}</span>
+													<span class="ts-value">{b.value}</span>
+												</div>
+											</div>
+										))}
+									</div>
+									<div class="ts-row-actions">
+										<button class="ts-btn ts-replay">
+											<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+											<span>{L('Ver la transición otra vez', 'Replay the transition')}</span>
+										</button>
+										<button class="ts-btn ts-retry">{L('Reintentar', 'Try again')}</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</section>
+				))}
+			</div>
+
+			<!-- Assess: no hints, graded at the end -->
+			<div class="ts-mode" data-mode="assess" hidden>
+				{assess.map((q, qi) => (
+					<section class:list={['ts-q', { 'is-active': qi === 0 }]} data-q={qi + 1} data-answer={q.answer} data-code={q.code}>
+						<div class="ts-head">
+							<span class="ts-kicker">{L('Evaluar', 'Assess')} · {qi + 1} / {assess.length}</span>
+							<h2 class="ts-title">{q.question}</h2>
+						</div>
+						<pre class="ts-code"><code>{lines(q.code).map((ln, li) => (
+							<span class="ts-line" data-line={li + 1}><span class="ts-ln" aria-hidden="true">{li + 1}</span>{ln}</span>
+						))}</code></pre>
+						<div class="ts-options ts-options-col" role="group" aria-label={q.question}>
+							{q.options.map((opt, oi) => (
+								<button class="ts-opt" data-index={oi} aria-pressed="false">{opt}</button>
+							))}
+						</div>
+						<p class="ts-reason" hidden>{q.reason}</p>
+					</section>
+				))}
+				<div class="ts-grade">
+					<button class="ts-btn ts-btn-primary" id="tsGradeBtn">{L('Calificar', 'Grade')}</button>
+					<button class="ts-btn" id="tsResetBtn" hidden>{L('Reintentar la evaluación', 'Retake the assessment')}</button>
+				</div>
+				<div class="ts-result" id="tsResult" aria-live="polite" hidden></div>
+			</div>
+		</main>
+	</div>
+</div>
+
+<style>
+	.ts-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.ts-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.ts-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .ts-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .ts-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .ts-viewport { zoom: 1.25; } }
+
+	.ts-viewport { flex: 1; }
+
+	.ts-nav {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-3) var(--space-6);
+		background: var(--color-surface);
+	}
+
+	.ts-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+		cursor: pointer;
+		transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+	}
+
+	.ts-btn:hover:not(:disabled) { border-color: var(--color-accent); color: var(--color-accent-700); }
+	.ts-btn:active:not(:disabled) { background: var(--color-accent-100); }
+	.ts-btn:focus-visible, .ts-opt:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+	.ts-btn:disabled, .ts-opt:disabled { opacity: 0.45; cursor: not-allowed; }
+
+	.ts-btn-primary { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-bg); }
+	.ts-btn-primary:hover:not(:disabled) { background: var(--color-accent-600); color: var(--color-bg); }
+	.ts-btn-primary:active:not(:disabled) { background: var(--color-accent-700); }
+
+	.ts-counter {
+		font-size: 13px;
+		font-weight: 700;
+		color: var(--color-neutral-700);
+	}
+
+	/* Segmented control, ported from Organic/styles.css (.seg / .seg-opt) */
+	.ts-seg {
+		display: inline-flex;
+		overflow: hidden;
+		margin: 0;
+		padding: 0;
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+		background: var(--color-bg);
+	}
+
+	.ts-seg-opt {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 7px 12px;
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.ts-seg-opt input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+	.ts-seg-opt + .ts-seg-opt { border-left: 1px solid var(--color-divider); }
+	.ts-seg-opt:has(input:checked) { background: var(--color-accent); color: var(--color-bg); }
+	.ts-seg-opt:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+	.ts-seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+	.ts-mode { display: none; }
+	.ts-mode.is-active { display: block; }
+
+	.ts-slide, .ts-item, .ts-q {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		width: 100%;
+	}
+
+	.ts-slide.is-active, .ts-item.is-active, .ts-q.is-active {
+		display: block;
+		animation: tsFade 0.25s ease-out;
+	}
+
+	@keyframes tsFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.ts-head { margin-bottom: var(--space-4); }
+
+	.ts-kicker {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.ts-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 28px;
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.ts-lead {
+		font-size: 15px;
+		line-height: 1.5;
+		margin: 0;
+		max-width: 72ch;
+		color: var(--color-neutral-800);
+	}
+
+	.ts-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+		gap: var(--space-6);
+		align-items: start;
+	}
+
+	@media (max-width: 860px) {
+		.ts-grid { grid-template-columns: 1fr; }
+		.ts-slide, .ts-item, .ts-q { padding: var(--space-4); }
+		.ts-nav { padding: var(--space-3) var(--space-4); }
+	}
+
+	.ts-code {
+		margin: 0;
+		padding: var(--space-4) 0;
+		background: var(--color-neutral-900);
+		color: var(--color-neutral-100);
+		border-radius: var(--radius-md);
+		font-family: monospace;
+		font-size: 13.5px;
+		line-height: 1.6;
+		overflow-x: auto;
+	}
+
+	.ts-code code { display: block; }
+
+	.ts-line {
+		display: block;
+		padding: 0 var(--space-4) 0 var(--space-2);
+		white-space: pre;
+		border-left: 3px solid transparent;
+		transition: background 0.25s ease, border-color 0.25s ease;
+	}
+
+	.ts-line.is-current {
+		background: color-mix(in srgb, var(--color-accent) 28%, transparent);
+		border-left-color: var(--color-accent-400);
+	}
+
+	.ts-ln {
+		display: inline-block;
+		width: 2.4ch;
+		margin-right: var(--space-3);
+		text-align: right;
+		color: var(--color-neutral-600);
+		user-select: none;
+	}
+
+	.ts-out {
+		margin: var(--space-3) 0 0;
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-neutral-100);
+		border-radius: var(--radius-md);
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre-wrap;
+	}
+
+	.ts-out-label {
+		display: block;
+		margin-bottom: var(--space-1);
+		font-family: var(--font-body);
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-2-700);
+	}
+
+	.ts-boxes { display: flex; flex-direction: column; gap: var(--space-3); }
+
+	.ts-box {
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-neutral-100);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-sm);
+		animation: tsBoxIn 0.35s ease-out;
+	}
+
+	@keyframes tsBoxIn {
+		from { opacity: 0.4; transform: translateX(-6px); }
+		to { opacity: 1; transform: translateX(0); }
+	}
+
+	.ts-box-head { display: flex; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
+	.ts-box-type { font-family: monospace; font-size: 12px; font-weight: 700; color: var(--color-accent-2-700); }
+	.ts-box-name { font-family: monospace; font-size: 14px; font-weight: 700; }
+	.ts-box-size { margin-left: auto; font-size: 12px; color: var(--color-neutral-700); }
+
+	.ts-bytes { display: flex; gap: 3px; margin: var(--space-2) 0; }
+
+	.ts-byte {
+		width: 30px;
+		height: 22px;
+		border-radius: var(--radius-sm);
+		background: var(--color-accent-2-200);
+		border: 1px solid var(--color-accent-2-500);
+	}
+
+	.ts-box-foot { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); }
+	.ts-addr { font-family: monospace; font-size: 11px; color: var(--color-neutral-600); }
+	.ts-value { font-family: monospace; font-size: 16px; font-weight: 700; overflow-wrap: anywhere; text-align: right; }
+
+	.ts-tone-new { border-color: var(--color-accent-2-500); background: var(--color-accent-2-100); }
+	.ts-tone-ok { border-color: var(--color-accent-2-600); background: var(--color-accent-2-100); }
+	.ts-tone-ok .ts-value { color: var(--color-accent-2-700); }
+	.ts-tone-warn { border-color: var(--color-accent); background: var(--color-accent-100); }
+	.ts-tone-warn .ts-byte { background: var(--color-accent-200); border-color: var(--color-accent-400); }
+	.ts-tone-warn .ts-value { color: var(--color-accent-700); }
+
+	.ts-explain {
+		margin: var(--space-4) 0 0;
+		padding: var(--space-3) var(--space-4);
+		background: var(--color-surface);
+		border-radius: var(--radius-md);
+		font-size: 15px;
+		line-height: 1.5;
+	}
+
+	.ts-stepper { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-4); }
+	.ts-step-count { font-size: 13px; font-weight: 700; color: var(--color-neutral-700); }
+
+	.ts-note { padding: 0 var(--space-8) var(--space-4); margin: 0; font-size: 12px; color: var(--color-neutral-700); }
+
+	.ts-state-label {
+		display: block;
+		margin-bottom: var(--space-2);
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-neutral-700);
+	}
+
+	.ts-after { margin-top: var(--space-4); }
+	.ts-after.ts-play .ts-box { animation: tsBoxIn 0.6s ease-out; }
+
+	.ts-question { margin: var(--space-4) 0 var(--space-2); font-size: 16px; font-weight: 700; }
+
+	.ts-options { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+	.ts-options-col { flex-direction: column; align-items: flex-start; margin-top: var(--space-4); }
+
+	.ts-opt {
+		padding: var(--space-2) var(--space-4);
+		font-family: monospace;
+		font-size: 14px;
+		color: var(--color-text);
+		background: var(--color-neutral-100);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		text-align: left;
+		transition: border-color 0.2s ease, background 0.2s ease;
+	}
+
+	.ts-opt:hover:not(:disabled) { border-color: var(--color-accent); }
+	.ts-opt[aria-pressed='true'] { border-color: var(--color-accent); background: var(--color-accent-100); }
+	.ts-opt.is-right { border-color: var(--color-accent-2-600); background: var(--color-accent-2-100); opacity: 1; }
+	.ts-opt.is-wrong { border-color: var(--color-accent); background: var(--color-accent-200); opacity: 1; }
+
+	.ts-feedback { min-height: 1.5em; margin: var(--space-3) 0 0; font-weight: 700; }
+	.ts-feedback.is-right { color: var(--color-accent-2-700); }
+	.ts-feedback.is-wrong { color: var(--color-accent-700); }
+	.ts-reason { margin: var(--space-1) 0 0; font-size: 15px; line-height: 1.5; }
+
+	.ts-row-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+
+	.ts-grade { display: flex; gap: var(--space-2); padding: 0 var(--space-8) var(--space-4); }
+
+	.ts-result {
+		margin: 0 var(--space-8) var(--space-6);
+		padding: var(--space-4) var(--space-6);
+		background: var(--color-surface);
+		border-radius: var(--radius-lg);
+	}
+
+	.ts-result :global(h3) { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 22px; margin: 0 0 var(--space-3); }
+	.ts-result :global(ol) { margin: 0; padding-left: var(--space-6); display: flex; flex-direction: column; gap: var(--space-3); }
+	.ts-result :global(li) { line-height: 1.5; }
+	.ts-result :global(.ts-res-code) { display: block; margin: var(--space-1) 0; font-family: monospace; font-size: 13px; white-space: pre-wrap; }
+	.ts-result :global(.ts-res-right) { color: var(--color-accent-2-700); font-weight: 700; }
+	.ts-result :global(.ts-res-wrong) { color: var(--color-accent-700); font-weight: 700; }
+
+	@media (max-width: 860px) {
+		.ts-grade { padding: 0 var(--space-4) var(--space-4); }
+		.ts-result { margin: 0 var(--space-4) var(--space-4); }
+		.ts-note { padding: 0 var(--space-4) var(--space-4); }
+	}
+
+	.ts-screen [hidden] { display: none !important; }
+
+	.ts-sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+</style>
+
+<script>
+	const root = document.querySelector<HTMLElement>('.ts-screen');
+
+	if (root) {
+		type Mode = 'learn' | 'practice' | 'assess';
+		const d = root.dataset;
+		const totals: Record<Mode, number> = {
+			learn: Number(d.totalLearn),
+			practice: Number(d.totalPractice),
+			assess: Number(d.totalAssess),
+		};
+		const selectors: Record<Mode, string> = { learn: '.ts-slide', practice: '.ts-item', assess: '.ts-q' };
+		const current: Record<Mode, number> = { learn: 1, practice: 1, assess: 1 };
+		let mode: Mode = 'learn';
+
+		const prevBtn = root.querySelector<HTMLButtonElement>('#tsPrevBtn');
+		const nextBtn = root.querySelector<HTMLButtonElement>('#tsNextBtn');
+		const counter = root.querySelector<HTMLElement>('#tsCounter');
+
+		const panel = (m: Mode) => root.querySelector<HTMLElement>(`.ts-mode[data-mode="${m}"]`);
+
+		function show(target: number) {
+			if (target < 1 || target > totals[mode]) return;
+			current[mode] = target;
+			const items = panel(mode)?.querySelectorAll<HTMLElement>(selectors[mode]) ?? [];
+			items.forEach((el, i) => el.classList.toggle('is-active', i + 1 === target));
+			if (counter) counter.textContent = `${target} / ${totals[mode]}`;
+			if (prevBtn) prevBtn.disabled = target === 1;
+			if (nextBtn) nextBtn.disabled = target === totals[mode];
+		}
+
+		function setMode(m: Mode) {
+			mode = m;
+			(['learn', 'practice', 'assess'] as Mode[]).forEach((k) => {
+				const p = panel(k);
+				if (!p) return;
+				p.hidden = k !== m;
+				p.classList.toggle('is-active', k === m);
+			});
+			show(current[m]);
+		}
+
+		root.querySelectorAll<HTMLInputElement>('input[name="ts-mode"]').forEach((input) => {
+			input.addEventListener('change', () => setMode(input.value as Mode));
+		});
+
+		prevBtn?.addEventListener('click', () => show(current[mode] - 1));
+		nextBtn?.addEventListener('click', () => show(current[mode] + 1));
+
+		window.addEventListener('keydown', (e) => {
+			const t = e.target as HTMLElement | null;
+			if (t && t.closest('input, textarea, select')) return;
+			if (e.key === 'ArrowRight') show(current[mode] + 1);
+			if (e.key === 'ArrowLeft') show(current[mode] - 1);
+		});
+
+		// Learn: step control per slide
+		root.querySelectorAll<HTMLElement>('.ts-slide').forEach((slide) => {
+			const total = Number(slide.dataset.steps);
+			const steps = slide.querySelectorAll<HTMLElement>('.ts-step');
+			const outs = slide.querySelectorAll<HTMLElement>('[data-step-out]');
+			const codeLines = slide.querySelectorAll<HTMLElement>('.ts-line');
+			const prev = slide.querySelector<HTMLButtonElement>('.ts-step-prev');
+			const next = slide.querySelector<HTMLButtonElement>('.ts-step-next');
+			const count = slide.querySelector<HTMLElement>('.ts-step-count');
+			const live = slide.querySelector<HTMLElement>('.ts-sr');
+			let k = 0;
+			let ready = false;
+
+			function render() {
+				steps.forEach((s, i) => (s.hidden = i !== k));
+				outs.forEach((o, i) => (o.hidden = i !== k));
+				const line = steps[k]?.dataset.line;
+				codeLines.forEach((l) => l.classList.toggle('is-current', l.dataset.line === line));
+				if (count) count.textContent = `${d.step} ${k + 1} / ${total}`;
+				if (live && ready) live.textContent = steps[k]?.querySelector('.ts-explain')?.textContent ?? '';
+				if (prev) prev.disabled = k === 0;
+				if (next) next.disabled = k === total - 1;
+			}
+
+			prev?.addEventListener('click', () => { if (k > 0) { k -= 1; render(); } });
+			next?.addEventListener('click', () => { if (k < total - 1) { k += 1; render(); } });
+			render();
+			ready = true;
+		});
+
+		// Practice: predict, get feedback, watch the transition
+		root.querySelectorAll<HTMLElement>('.ts-item').forEach((item) => {
+			const answer = Number(item.dataset.answer);
+			const opts = item.querySelectorAll<HTMLButtonElement>('.ts-opt');
+			const feedback = item.querySelector<HTMLElement>('.ts-feedback');
+			const reason = item.querySelector<HTMLElement>('.ts-reason');
+			const after = item.querySelector<HTMLElement>('.ts-after');
+
+			function play() {
+				if (!after) return;
+				after.hidden = false;
+				after.classList.remove('ts-play');
+				void after.offsetWidth;
+				after.classList.add('ts-play');
+			}
+
+			opts.forEach((opt) => {
+				opt.addEventListener('click', () => {
+					const chosen = Number(opt.dataset.index);
+					const ok = chosen === answer;
+					opts.forEach((o) => {
+						o.disabled = true;
+						if (Number(o.dataset.index) === answer) o.classList.add('is-right');
+					});
+					if (!ok) opt.classList.add('is-wrong');
+					if (feedback) {
+						feedback.textContent = ok ? d.ok ?? '' : d.ko ?? '';
+						feedback.classList.toggle('is-right', ok);
+						feedback.classList.toggle('is-wrong', !ok);
+					}
+					if (reason) reason.hidden = false;
+					play();
+				});
+			});
+
+			item.querySelector('.ts-replay')?.addEventListener('click', play);
+			item.querySelector('.ts-retry')?.addEventListener('click', () => {
+				opts.forEach((o) => {
+					o.disabled = false;
+					o.classList.remove('is-right', 'is-wrong');
+				});
+				if (feedback) {
+					feedback.textContent = '';
+					feedback.classList.remove('is-right', 'is-wrong');
+				}
+				if (reason) reason.hidden = true;
+				if (after) after.hidden = true;
+				opts[0]?.focus();
+			});
+		});
+
+		// Assess: answers are only revealed when grading
+		const questions = Array.from(root.querySelectorAll<HTMLElement>('.ts-q'));
+		const chosen: (number | null)[] = questions.map(() => null);
+		const gradeBtn = root.querySelector<HTMLButtonElement>('#tsGradeBtn');
+		const resetBtn = root.querySelector<HTMLButtonElement>('#tsResetBtn');
+		const result = root.querySelector<HTMLElement>('#tsResult');
+
+		questions.forEach((q, qi) => {
+			q.querySelectorAll<HTMLButtonElement>('.ts-opt').forEach((opt) => {
+				opt.addEventListener('click', () => {
+					chosen[qi] = Number(opt.dataset.index);
+					q.querySelectorAll<HTMLButtonElement>('.ts-opt').forEach((o) => o.setAttribute('aria-pressed', String(o === opt)));
+				});
+			});
+		});
+
+		gradeBtn?.addEventListener('click', () => {
+			if (!result) return;
+			let score = 0;
+			const list = document.createElement('ol');
+			questions.forEach((q, qi) => {
+				const answer = Number(q.dataset.answer);
+				const opts = Array.from(q.querySelectorAll<HTMLButtonElement>('.ts-opt'));
+				const ok = chosen[qi] === answer;
+				if (ok) score += 1;
+				opts.forEach((o, oi) => {
+					o.disabled = true;
+					if (oi === answer) o.classList.add('is-right');
+					else if (oi === chosen[qi]) o.classList.add('is-wrong');
+				});
+				q.querySelector<HTMLElement>('.ts-reason')?.removeAttribute('hidden');
+
+				const li = document.createElement('li');
+				const title = document.createElement('strong');
+				title.textContent = q.querySelector('.ts-title')?.textContent ?? '';
+				const snippet = document.createElement('code');
+				snippet.className = 'ts-res-code';
+				snippet.textContent = q.dataset.code ?? '';
+				const mine = document.createElement('div');
+				mine.className = ok ? 'ts-res-right' : 'ts-res-wrong';
+				mine.textContent = `${d.your}: ${chosen[qi] === null ? d.none : opts[chosen[qi] as number]?.textContent}`;
+				const right = document.createElement('div');
+				right.textContent = `${d.right}: ${opts[answer]?.textContent}`;
+				const why = document.createElement('div');
+				why.textContent = q.querySelector('.ts-reason')?.textContent ?? '';
+				li.append(title, snippet, mine, right, why);
+				list.append(li);
+			});
+			const heading = document.createElement('h3');
+			heading.textContent = `${d.score}: ${score} / ${questions.length}`;
+			result.replaceChildren(heading, list);
+			result.hidden = false;
+			gradeBtn.hidden = true;
+			if (resetBtn) resetBtn.hidden = false;
+			result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		});
+
+		resetBtn?.addEventListener('click', () => {
+			questions.forEach((q, qi) => {
+				chosen[qi] = null;
+				q.querySelectorAll<HTMLButtonElement>('.ts-opt').forEach((o) => {
+					o.disabled = false;
+					o.classList.remove('is-right', 'is-wrong');
+					o.setAttribute('aria-pressed', 'false');
+				});
+				q.querySelector<HTMLElement>('.ts-reason')?.setAttribute('hidden', '');
+			});
+			if (result) {
+				result.hidden = true;
+				result.replaceChildren();
+			}
+			resetBtn.hidden = true;
+			if (gradeBtn) gradeBtn.hidden = false;
+			show(1);
+		});
+
+		setMode('learn');
+	}
+</script>

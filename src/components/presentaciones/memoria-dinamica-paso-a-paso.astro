@@ -1,0 +1,1434 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// <md-data>
+// Identifiers and string literals are localized like the lesson does.
+const N: Record<string, string> = {
+	numeros: t('numeros', 'numbers'),
+	nuevo: t('nuevo', 'bigger'),
+	capacidad: t('capacidad', 'capacity'),
+	cantidad: t('cantidad', 'count'),
+	nuevaCap: t('nueva_capacidad', 'new_capacity'),
+	valor: t('valor', 'value'),
+	suma: t('suma', 'sum'),
+	ventas: t('ventas', 'sales'),
+	dias: t('dias', 'days'),
+	datos: t('datos', 'data'),
+	contadores: t('contadores', 'counters'),
+	noMem: t('No hay memoria suficiente\\n', 'Not enough memory\\n'),
+	noGrow: t('No se pudo agrandar el arreglo\\n', 'Could not grow the array\\n'),
+	report: t('Leidos: %zu (capacidad %zu), suma: %lld\\n', 'Read: %zu (capacity %zu), sum: %lld\\n'),
+	wrong: t('Incorrecto: si realloc falla, se pierde el bloque', 'Wrong: if realloc fails, the block is lost'),
+	right: t('Correcto: puntero temporal', 'Right: temporary pointer'),
+	freeC1: t('ya no apunta a un bloque muerto', 'no longer points to a dead block'),
+	freeC2: t('free(NULL): no hace nada, no es un error', 'free(NULL): does nothing, not an error'),
+};
+const sub = (s: string) => s.replace(/\{(\w+)\}/g, (_m: string, k: string) => N[k] ?? `{${k}}`);
+const lines = (rows: string[]) => rows.map(sub);
+
+const code: Record<string, string[]> = {
+	malloc: lines([
+		'size_t n = 5;',
+		'int *{numeros} = malloc(n * sizeof *{numeros});',
+		'if ({numeros} == NULL) {',
+		'    fprintf(stderr, "{noMem}");',
+		'    return 1;',
+		'}',
+		'for (size_t i = 0; i < n; i++) {',
+		'    {numeros}[i] = (int)(i * i);',
+		'}',
+	]),
+	calloc: lines([
+		'size_t {dias} = 7;',
+		'int *{ventas} = calloc({dias}, sizeof *{ventas});',
+		'if ({ventas} == NULL) {',
+		'    fprintf(stderr, "{noMem}");',
+		'    return 1;',
+		'}',
+		'{ventas}[2] = 15;',
+		'free({ventas});',
+	]),
+	grow: lines([
+		'size_t {nuevaCap} = {capacidad} * 2;',
+		'int *{nuevo} = realloc({numeros}, {nuevaCap} * sizeof *{numeros});',
+		'if ({nuevo} == NULL) {',
+		'    free({numeros});',
+		'    return 1;',
+		'}',
+		'{numeros} = {nuevo};',
+		'{capacidad} = {nuevaCap};',
+	]),
+	lost: lines([
+		'// {wrong}',
+		'{numeros} = realloc({numeros}, {nuevaCap} * sizeof *{numeros});',
+		'',
+		'// {right}',
+		'int *{nuevo} = realloc({numeros}, {nuevaCap} * sizeof *{numeros});',
+		'if ({nuevo} == NULL) {',
+		'    free({numeros});',
+		'    return 1;',
+		'}',
+	]),
+	free: lines([
+		'free({numeros});',
+		'{numeros} = NULL;    // {freeC1}',
+		'free({numeros});     // {freeC2}',
+	]),
+	vector: lines([
+		'size_t {capacidad} = 4;',
+		'size_t {cantidad} = 0;',
+		'int *{numeros} = malloc({capacidad} * sizeof *{numeros});',
+		'if ({numeros} == NULL) {',
+		'    fprintf(stderr, "{noMem}");',
+		'    return 1;',
+		'}',
+		'int {valor};',
+		'while (scanf("%d", &{valor}) == 1 && {valor} != 0) {',
+		'    if ({cantidad} == {capacidad}) {',
+		'        size_t {nuevaCap} = {capacidad} * 2;',
+		'        int *{nuevo} = realloc({numeros}, {nuevaCap} * sizeof *{numeros});',
+		'        if ({nuevo} == NULL) {',
+		'            fprintf(stderr, "{noGrow}");',
+		'            free({numeros});',
+		'            return 1;',
+		'        }',
+		'        {numeros} = {nuevo};',
+		'        {capacidad} = {nuevaCap};',
+		'    }',
+		'    {numeros}[{cantidad}] = {valor};',
+		'    {cantidad}++;',
+		'}',
+		'long long {suma} = 0;',
+		'for (size_t i = 0; i < {cantidad}; i++) {',
+		'    {suma} += {numeros}[i];',
+		'}',
+		'printf("{report}", {cantidad}, {capacidad}, {suma});',
+		'free({numeros});',
+		'{numeros} = NULL;',
+	]),
+	p1: lines(['int *{numeros} = malloc(3 * sizeof *{numeros});']),
+	p2: lines(['int *{ventas} = calloc(4, sizeof *{ventas});']),
+	p3: lines(['int *{nuevo} = realloc({numeros}, 8 * sizeof *{numeros});']),
+	p5: lines(['free({numeros});']),
+	p6: lines(['{numeros} = NULL;', 'free({numeros});']),
+	a2: lines([
+		'size_t n = 10;',
+		'int *{datos} = malloc(n * sizeof *{datos});',
+		'for (size_t i = 0; i < n; i++) {',
+		'    {datos}[i] = 0;',
+		'}',
+		'free({datos});',
+	]),
+	a3: lines([
+		'int *{numeros} = malloc(4 * sizeof *{numeros});',
+		'if ({numeros} == NULL) {',
+		'    return 1;',
+		'}',
+		'{numeros} = realloc({numeros}, 8 * sizeof *{numeros});',
+	]),
+	a4: lines([
+		'int *{numeros} = malloc(4 * sizeof *{numeros});',
+		'if ({numeros} == NULL) {',
+		'    return 1;',
+		'}',
+		'int *{nuevo} = realloc({numeros}, 8 * sizeof *{numeros});',
+		'if ({nuevo} == NULL) {',
+		'    return 1;',
+		'}',
+		'{numeros} = {nuevo};',
+		'free({numeros});',
+		'return 0;',
+	]),
+};
+// </md-data>
+
+// Memory states: stack variables (name, illustrative address, value) and heap blocks.
+type Var = { name: string; addr: string; value: string; ptr: boolean };
+type Block = { addr: string; cells: string[]; status: 'live' | 'freed' | 'lost' };
+type MemState = { stack: Var[]; heap: Block[]; out?: string };
+type Step = MemState & { line: number; note: string };
+
+const sv = (name: string, addr: string, value: string): Var => ({ name, addr, value, ptr: false });
+const pv = (name: string, addr: string, value: string): Var => ({ name, addr, value, ptr: true });
+const hb = (addr: string, cells: string[], status: Block['status'] = 'live'): Block => ({ addr, cells, status });
+const unknown = (n: number) => Array.from({ length: n }, () => '?');
+const full4 = ['5', '8', '13', '2'];
+const grown = ['5', '8', '13', '2', '?', '?', '?', '?'];
+const reportOut = t('Leidos: 5 (capacidad 8), suma: 35', 'Read: 5 (capacity 8), sum: 35');
+
+const learn: { kicker: string; title: string; lead: string; code: string; steps: Step[] }[] = [
+	{
+		kicker: t('1 · El montículo', '1 · The heap'),
+		title: t('Un puntero en la pila, un bloque en el montículo', 'A pointer on the stack, a block on the heap'),
+		lead: t(
+			'La memoria dinámica se pide cuando hace falta, del tamaño que hace falta, y vive hasta que la liberas con `free`.',
+			'Dynamic memory is requested when you need it, at the size you need, and it lives until you release it with `free`.',
+		),
+		code: 'malloc',
+		steps: [
+			{ line: 1, stack: [sv('n', '0x7f00', '5')], heap: [], note: t('`n` es una variable automática: vive en la pila y muere al salir de su bloque. El montículo todavía está vacío.', '`n` is an automatic variable: it lives on the stack and dies when its block ends. The heap is still empty.') },
+			{ line: 2, stack: [sv('n', '0x7f00', '5'), pv(N.numeros, '0x7f08', '0x1000')], heap: [hb('0x1000', unknown(5))], note: t('`malloc` reserva `n * sizeof *numeros` bytes en el montículo (20 si un `int` ocupa 4) y devuelve la dirección del bloque, que se guarda en `numeros`.', '`malloc` reserves `n * sizeof *numbers` bytes on the heap (20 if an `int` takes 4) and returns the block address, which is stored in `numbers`.') },
+			{ line: 2, stack: [sv('n', '0x7f00', '5'), pv(N.numeros, '0x7f08', '0x1000')], heap: [hb('0x1000', unknown(5))], note: t('El contenido no está inicializado: cada celda muestra `?`. Y el bloque no muere con ninguna llave de cierre: vive desde que lo pides hasta que llamas a `free`.', 'The contents are not initialized: every cell shows `?`. And no closing brace kills the block: it lives from the moment you request it until you call `free`.') },
+		],
+	},
+	{
+		kicker: t('2 · malloc', '2 · malloc'),
+		title: t('Reservar y comprobar NULL antes de usar', 'Allocate and check for NULL before use'),
+		lead: t(
+			'`malloc` devuelve un `void *` con la dirección del bloque, o `NULL` si no pudo reservarlo. Por eso cada reserva se comprueba.',
+			'`malloc` returns a `void *` with the block address, or `NULL` if it could not reserve it. That is why every allocation is checked.',
+		),
+		code: 'malloc',
+		steps: [
+			{ line: 2, stack: [sv('n', '0x7f00', '5'), pv(N.numeros, '0x7f08', '0x1000')], heap: [hb('0x1000', unknown(5))], note: t('No hace falta convertir el resultado: `void *` se convierte solo a `int *`. Escribir `sizeof *numeros` ajusta el tamaño si cambias el tipo del puntero.', 'No cast is needed: `void *` converts to `int *` on its own. Writing `sizeof *numbers` keeps the size right if you change the pointer type.') },
+			{ line: 3, stack: [sv('n', '0x7f00', '5'), pv(N.numeros, '0x7f08', '0x1000')], heap: [hb('0x1000', unknown(5))], note: t('`numeros` vale 0x1000, no `NULL`: la condición es falsa y el programa sigue.', '`numbers` holds 0x1000, not `NULL`: the condition is false and the program goes on.') },
+			{ line: 8, stack: [sv('n', '0x7f00', '5'), pv(N.numeros, '0x7f08', '0x1000')], heap: [hb('0x1000', ['0', '1', '4', '9', '16'])], note: t('El bloque se usa como un arreglo: `numeros[i]` es lo mismo que `*(numeros + i)`. Ahora cada celda tiene un valor definido.', 'The block is used like an array: `numbers[i]` is the same as `*(numbers + i)`. Now every cell holds a defined value.') },
+		],
+	},
+	{
+		kicker: t('3 · Cuando la reserva falla', '3 · When allocation fails'),
+		title: t('Si malloc devuelve NULL, no hay bloque', 'If malloc returns NULL, there is no block'),
+		lead: t(
+			'Usar el puntero sin comprobarlo es comportamiento indefinido. La comprobación convierte el fallo en un mensaje y una salida ordenada.',
+			'Using the pointer without checking it is undefined behavior. The check turns the failure into a message and an orderly exit.',
+		),
+		code: 'malloc',
+		steps: [
+			{ line: 1, stack: [sv('n', '0x7f00', '5')], heap: [], note: t('Supón que esta vez el sistema no tiene memoria disponible.', 'Suppose that this time the system has no memory available.') },
+			{ line: 2, stack: [sv('n', '0x7f00', '5'), pv(N.numeros, '0x7f08', 'NULL')], heap: [], note: t('`malloc` no reserva nada y devuelve `NULL`.', '`malloc` reserves nothing and returns `NULL`.') },
+			{ line: 3, stack: [sv('n', '0x7f00', '5'), pv(N.numeros, '0x7f08', 'NULL')], heap: [], note: t('La comprobación detecta el fallo. Escribir `numeros[i]` ahora sería comportamiento indefinido.', 'The check catches the failure. Writing `numbers[i]` now would be undefined behavior.') },
+			{ line: 5, stack: [sv('n', '0x7f00', '5'), pv(N.numeros, '0x7f08', 'NULL')], heap: [], out: t('No hay memoria suficiente', 'Not enough memory'), note: t('El programa avisa por `stderr` y termina con `return 1`. No hay nada que liberar: el bloque nunca existió.', 'The program reports on `stderr` and ends with `return 1`. There is nothing to free: the block never existed.') },
+		],
+	},
+	{
+		kicker: t('4 · calloc', '4 · calloc'),
+		title: t('Reservar con todos los bytes en cero', 'Allocate with every byte set to zero'),
+		lead: t(
+			'`calloc(cantidad, tamaño)` reserva espacio para `cantidad` elementos y los deja en cero. Además comprueba que la multiplicación no desborde.',
+			'`calloc(count, size)` reserves room for `count` elements and leaves them at zero. It also checks that the multiplication does not overflow.',
+		),
+		code: 'calloc',
+		steps: [
+			{ line: 1, stack: [sv(N.dias, '0x7f00', '7')], heap: [], note: t('`dias` vive en la pila.', '`days` lives on the stack.') },
+			{ line: 2, stack: [sv(N.dias, '0x7f00', '7'), pv(N.ventas, '0x7f08', '0x1000')], heap: [hb('0x1000', ['0', '0', '0', '0', '0', '0', '0'])], note: t('A diferencia de `malloc`, cada celda empieza en `0`: no hay valores indeterminados.', 'Unlike `malloc`, every cell starts at `0`: there are no indeterminate values.') },
+			{ line: 3, stack: [sv(N.dias, '0x7f00', '7'), pv(N.ventas, '0x7f08', '0x1000')], heap: [hb('0x1000', ['0', '0', '0', '0', '0', '0', '0'])], note: t('Igual que con `malloc`, se comprueba `NULL` antes de usar el bloque.', 'Just like with `malloc`, check for `NULL` before using the block.') },
+			{ line: 7, stack: [sv(N.dias, '0x7f00', '7'), pv(N.ventas, '0x7f08', '0x1000')], heap: [hb('0x1000', ['0', '0', '15', '0', '0', '0', '0'])], note: t('Solo escribes lo que cambia: el resto ya vale `0`.', 'You only write what changes: the rest is already `0`.') },
+			{ line: 8, stack: [sv(N.dias, '0x7f00', '7'), pv(N.ventas, '0x7f08', '0x1000')], heap: [hb('0x1000', ['0', '0', '15', '0', '0', '0', '0'], 'freed')], note: t('`free` devuelve el bloque. `ventas` sigue guardando 0x1000, pero ese bloque ya está muerto.', '`free` gives the block back. `sales` still holds 0x1000, but that block is now dead.') },
+		],
+	},
+	{
+		kicker: t('5 · realloc', '5 · realloc'),
+		title: t('Crecer a través de un puntero temporal', 'Growing through a temporary pointer'),
+		lead: t(
+			'`realloc` puede agrandar el bloque en su lugar o mover los datos a un bloque nuevo. Por eso devuelve la dirección que hay que usar a partir de ahora.',
+			'`realloc` may grow the block in place or move the data to a new block. That is why it returns the address you must use from now on.',
+		),
+		code: 'grow',
+		steps: [
+			{ line: 0, stack: [sv(N.capacidad, '0x7f00', '4'), pv(N.numeros, '0x7f08', '0x1000')], heap: [hb('0x1000', full4)], note: t('Estado inicial: el bloque de 4 enteros está lleno con 5, 8, 13 y 2.', 'Initial state: the 4-int block is full with 5, 8, 13 and 2.') },
+			{ line: 1, stack: [sv(N.capacidad, '0x7f00', '4'), pv(N.numeros, '0x7f08', '0x1000'), sv(N.nuevaCap, '0x7f10', '8')], heap: [hb('0x1000', full4)], note: t('Se duplica la capacidad: el nuevo tamaño será de 8 enteros.', 'The capacity doubles: the new size will be 8 ints.') },
+			{ line: 2, stack: [sv(N.capacidad, '0x7f00', '4'), pv(N.numeros, '0x7f08', '0x1000'), sv(N.nuevaCap, '0x7f10', '8'), pv(N.nuevo, '0x7f18', '0x2000')], heap: [hb('0x1000', full4, 'freed'), hb('0x2000', grown)], note: t('Aquí no había lugar para crecer en el mismo sitio: `realloc` reservó un bloque en 0x2000, copió los 4 valores y liberó el bloque viejo. Las celdas nuevas quedan sin inicializar.', 'There was no room to grow in place: `realloc` reserved a block at 0x2000, copied the 4 values and freed the old block. The new cells are left uninitialized.') },
+			{ line: 3, stack: [sv(N.capacidad, '0x7f00', '4'), pv(N.numeros, '0x7f08', '0x1000'), sv(N.nuevaCap, '0x7f10', '8'), pv(N.nuevo, '0x7f18', '0x2000')], heap: [hb('0x1000', full4, 'freed'), hb('0x2000', grown)], note: t('`nuevo` no es `NULL`: el crecimiento funcionó. Mientras tanto, `numeros` todavía guarda la dirección vieja.', '`bigger` is not `NULL`: growing worked. Meanwhile, `numbers` still holds the old address.') },
+			{ line: 7, stack: [sv(N.capacidad, '0x7f00', '4'), pv(N.numeros, '0x7f08', '0x2000'), sv(N.nuevaCap, '0x7f10', '8'), pv(N.nuevo, '0x7f18', '0x2000')], heap: [hb('0x1000', full4, 'freed'), hb('0x2000', grown)], note: t('Solo ahora se reemplaza `numeros`, cuando ya sabes que `realloc` tuvo éxito.', 'Only now is `numbers` replaced, once you know that `realloc` succeeded.') },
+			{ line: 8, stack: [sv(N.capacidad, '0x7f00', '8'), pv(N.numeros, '0x7f08', '0x2000'), sv(N.nuevaCap, '0x7f10', '8'), pv(N.nuevo, '0x7f18', '0x2000')], heap: [hb('0x1000', full4, 'freed'), hb('0x2000', grown)], note: t('La capacidad registrada coincide con el bloque real: 8 lugares, 4 ocupados.', 'The recorded capacity matches the real block: 8 slots, 4 in use.') },
+		],
+	},
+	{
+		kicker: t('6 · El realloc perdido', '6 · The lost realloc'),
+		title: t('¿Por qué nunca se escribe p = realloc(p, ...)?', 'Why you never write p = realloc(p, ...)'),
+		lead: t(
+			'Si `realloc` falla, devuelve `NULL` y el bloque original sigue vivo y sin cambios. Lo que importa es no perder su dirección.',
+			'If `realloc` fails, it returns `NULL` and the original block stays alive and unchanged. What matters is not losing its address.',
+		),
+		code: 'lost',
+		steps: [
+			{ line: 0, stack: [pv(N.numeros, '0x7f00', '0x1000')], heap: [hb('0x1000', full4)], note: t('Supón que esta vez `realloc` no consigue memoria y devuelve `NULL`.', 'Suppose that this time `realloc` cannot get memory and returns `NULL`.') },
+			{ line: 2, stack: [pv(N.numeros, '0x7f00', 'NULL')], heap: [hb('0x1000', full4, 'lost')], note: t('Con la asignación directa, `NULL` pisa la única dirección del bloque. Sigue reservado, pero nadie puede usarlo ni liberarlo: es una fuga de memoria.', 'With the direct assignment, `NULL` overwrites the only address of the block. It is still reserved, but nobody can use it or free it: it is a memory leak.') },
+			{ line: 5, stack: [pv(N.numeros, '0x7f00', '0x1000'), pv(N.nuevo, '0x7f08', 'NULL')], heap: [hb('0x1000', full4)], note: t('Con el patrón seguro, el resultado va a `nuevo`. `numeros` conserva la dirección y el bloque queda intacto.', 'With the safe pattern, the result goes to `bigger`. `numbers` keeps the address and the block stays intact.') },
+			{ line: 6, stack: [pv(N.numeros, '0x7f00', '0x1000'), pv(N.nuevo, '0x7f08', 'NULL')], heap: [hb('0x1000', full4)], note: t('La comprobación detecta el fallo.', 'The check catches the failure.') },
+			{ line: 7, stack: [pv(N.numeros, '0x7f00', '0x1000'), pv(N.nuevo, '0x7f08', 'NULL')], heap: [hb('0x1000', full4, 'freed')], note: t('Como todavía tienes la dirección, puedes liberar el bloque antes de salir. Nada se pierde.', 'Since you still have the address, you can free the block before leaving. Nothing is lost.') },
+		],
+	},
+	{
+		kicker: t('7 · free', '7 · free'),
+		title: t('Liberar y dejar el puntero en NULL', 'Free, then set the pointer to NULL'),
+		lead: t(
+			'Solo se pasa a `free` un puntero que vino de `malloc`, `calloc` o `realloc` (o `NULL`), y cada bloque se libera una sola vez.',
+			'Only pass to `free` a pointer that came from `malloc`, `calloc` or `realloc` (or `NULL`), and free each block exactly once.',
+		),
+		code: 'free',
+		steps: [
+			{ line: 0, stack: [pv(N.numeros, '0x7f00', '0x2000')], heap: [hb('0x2000', ['5', '8', '13', '2', '7', '?', '?', '?'])], note: t('Estado inicial: `numeros` apunta a un bloque vivo de 8 enteros.', 'Initial state: `numbers` points to a live block of 8 ints.') },
+			{ line: 1, stack: [pv(N.numeros, '0x7f00', '0x2000')], heap: [hb('0x2000', ['5', '8', '13', '2', '7', '?', '?', '?'], 'freed')], note: t('`free` devuelve el bloque. `numeros` sigue guardando 0x2000: es un puntero colgante.', '`free` gives the block back. `numbers` still holds 0x2000: it is a dangling pointer.') },
+			{ line: 2, stack: [pv(N.numeros, '0x7f00', 'NULL')], heap: [hb('0x2000', ['5', '8', '13', '2', '7', '?', '?', '?'], 'freed')], note: t('Con `NULL`, un uso posterior falla de forma predecible al comprobar `NULL`, en lugar de leer memoria muerta.', 'With `NULL`, a later use fails predictably on a `NULL` check instead of reading dead memory.') },
+			{ line: 3, stack: [pv(N.numeros, '0x7f00', 'NULL')], heap: [hb('0x2000', ['5', '8', '13', '2', '7', '?', '?', '?'], 'freed')], note: t('`free(NULL)` no hace nada: el estándar lo garantiza. No es una doble liberación.', '`free(NULL)` does nothing: the standard guarantees it. It is not a double free.') },
+		],
+	},
+	{
+		kicker: t('8 · Un arreglo que crece', '8 · An array that grows'),
+		title: t('El ejemplo de la lección con la entrada 5 8 13 2 7 0', 'The lesson example with the input 5 8 13 2 7 0'),
+		lead: t(
+			'El programa no sabe cuántos números llegarán: empieza con capacidad 4 y la duplica cada vez que se llena.',
+			'The program does not know how many numbers will arrive: it starts with capacity 4 and doubles it each time it fills up.',
+		),
+		code: 'vector',
+		steps: [
+			{ line: 3, stack: [sv(N.capacidad, '0x7f00', '4'), sv(N.cantidad, '0x7f08', '0'), pv(N.numeros, '0x7f10', '0x1000')], heap: [hb('0x1000', unknown(4))], note: t('Reserva inicial: lugar para 4 enteros, ninguno ocupado.', 'Initial allocation: room for 4 ints, none in use.') },
+			{ line: 22, stack: [sv(N.capacidad, '0x7f00', '4'), sv(N.cantidad, '0x7f08', '4'), pv(N.numeros, '0x7f10', '0x1000'), sv(N.valor, '0x7f18', '2')], heap: [hb('0x1000', full4)], note: t('Lee 5, 8, 13 y 2: cada vuelta guarda el valor en `numeros[cantidad]` y suma 1 a `cantidad`. El bloque está lleno.', 'It reads 5, 8, 13 and 2: each pass stores the value in `numbers[count]` and adds 1 to `count`. The block is full.') },
+			{ line: 10, stack: [sv(N.capacidad, '0x7f00', '4'), sv(N.cantidad, '0x7f08', '4'), pv(N.numeros, '0x7f10', '0x1000'), sv(N.valor, '0x7f18', '7')], heap: [hb('0x1000', full4)], note: t('Llega 7 y `cantidad == capacidad`: no hay lugar para guardarlo.', '7 arrives and `count == capacity`: there is no room to store it.') },
+			{ line: 12, stack: [sv(N.capacidad, '0x7f00', '4'), sv(N.cantidad, '0x7f08', '4'), pv(N.numeros, '0x7f10', '0x1000'), sv(N.valor, '0x7f18', '7'), sv(N.nuevaCap, '0x7f20', '8'), pv(N.nuevo, '0x7f28', '0x2000')], heap: [hb('0x1000', full4, 'freed'), hb('0x2000', grown)], note: t('`realloc` duplica la capacidad: bloque nuevo de 8, copia de los 4 valores, bloque viejo liberado.', '`realloc` doubles the capacity: a new block of 8, the 4 values copied, the old block freed.') },
+			{ line: 19, stack: [sv(N.capacidad, '0x7f00', '8'), sv(N.cantidad, '0x7f08', '4'), pv(N.numeros, '0x7f10', '0x2000'), sv(N.valor, '0x7f18', '7'), sv(N.nuevaCap, '0x7f20', '8'), pv(N.nuevo, '0x7f28', '0x2000')], heap: [hb('0x1000', full4, 'freed'), hb('0x2000', grown)], note: t('Comprobado el resultado, `numeros` y `capacidad` se actualizan.', 'With the result checked, `numbers` and `capacity` are updated.') },
+			{ line: 22, stack: [sv(N.capacidad, '0x7f00', '8'), sv(N.cantidad, '0x7f08', '5'), pv(N.numeros, '0x7f10', '0x2000'), sv(N.valor, '0x7f18', '7')], heap: [hb('0x1000', full4, 'freed'), hb('0x2000', ['5', '8', '13', '2', '7', '?', '?', '?'])], note: t('Ahora sí hay lugar: 7 entra en la posición 4 y `cantidad` pasa a 5.', 'Now there is room: 7 goes into position 4 and `count` becomes 5.') },
+			{ line: 28, stack: [sv(N.capacidad, '0x7f00', '8'), sv(N.cantidad, '0x7f08', '5'), pv(N.numeros, '0x7f10', '0x2000'), sv(N.valor, '0x7f18', '0'), sv(N.suma, '0x7f20', '35')], heap: [hb('0x1000', full4, 'freed'), hb('0x2000', ['5', '8', '13', '2', '7', '?', '?', '?'])], out: reportOut, note: t('Llega 0 y el ciclo termina. Duplicar en vez de sumar 1 mantiene el total de copias en el orden de n, no de n².', '0 arrives and the loop ends. Doubling instead of adding 1 keeps the total number of copies on the order of n, not n².') },
+			{ line: 30, stack: [sv(N.capacidad, '0x7f00', '8'), sv(N.cantidad, '0x7f08', '5'), pv(N.numeros, '0x7f10', 'NULL'), sv(N.valor, '0x7f18', '0'), sv(N.suma, '0x7f20', '35')], heap: [hb('0x1000', full4, 'freed'), hb('0x2000', ['5', '8', '13', '2', '7', '?', '?', '?'], 'freed')], out: reportOut, note: t('Un bloque vivo, una llamada a `free`. Si `realloc` hubiera fallado, el otro camino de salida también libera.', 'One live block, one call to `free`. Had `realloc` failed, the other exit path frees too.') },
+		],
+	},
+];
+
+const practice: { title: string; context: string; prompt: string; code: string; line: number; before: MemState; after: MemState; options: string[]; correct: number; reason: string }[] = [
+	{
+		title: t('Después de malloc', 'After malloc'),
+		context: t('El montículo está vacío. La reserva tiene éxito y devuelve 0x1000.', 'The heap is empty. The allocation succeeds and returns 0x1000.'),
+		prompt: t('¿Cómo queda el montículo después de esta línea?', 'What does the heap look like after this line?'),
+		code: 'p1',
+		line: 1,
+		before: { stack: [], heap: [] },
+		after: { stack: [pv(N.numeros, '0x7f00', '0x1000')], heap: [hb('0x1000', unknown(3))] },
+		options: [
+			t('Un bloque de 3 `int` en 0x1000 con valores indeterminados', 'A block of 3 `int` at 0x1000 with indeterminate values'),
+			t('Un bloque de 3 `int` en 0x1000, todos en 0', 'A block of 3 `int` at 0x1000, all set to 0'),
+			t('Un bloque de 3 bytes en 0x1000', 'A block of 3 bytes at 0x1000'),
+		],
+		correct: 0,
+		reason: t('`malloc` no inicializa: el contenido es indeterminado. Y `3 * sizeof *numeros` pide 3 elementos del tamaño de un `int`, no 3 bytes.', '`malloc` does not initialize: the contents are indeterminate. And `3 * sizeof *numbers` asks for 3 elements the size of an `int`, not 3 bytes.'),
+	},
+	{
+		title: t('Después de calloc', 'After calloc'),
+		context: t('El montículo está vacío. La reserva tiene éxito y devuelve 0x1000.', 'The heap is empty. The allocation succeeds and returns 0x1000.'),
+		prompt: t('¿Qué contiene el bloque?', 'What does the block hold?'),
+		code: 'p2',
+		line: 1,
+		before: { stack: [], heap: [] },
+		after: { stack: [pv(N.ventas, '0x7f00', '0x1000')], heap: [hb('0x1000', ['0', '0', '0', '0'])] },
+		options: [
+			t('Cuatro valores indeterminados', 'Four indeterminate values'),
+			t('Cuatro ceros', 'Four zeros'),
+			t('El valor 4 en cada celda', 'The value 4 in every cell'),
+		],
+		correct: 1,
+		reason: t('`calloc` pone todos los bytes del bloque en cero; para enteros, eso es el valor `0`.', '`calloc` sets every byte of the block to zero; for ints, that is the value `0`.'),
+	},
+	{
+		title: t('realloc mueve el bloque', 'realloc moves the block'),
+		context: t('El bloque no puede crecer en su lugar y `realloc` lo mueve a 0x2000.', 'The block cannot grow in place and `realloc` moves it to 0x2000.'),
+		prompt: t('¿Cuál es el estado después de la llamada?', 'What is the state after the call?'),
+		code: 'p3',
+		line: 1,
+		before: { stack: [pv(N.numeros, '0x7f00', '0x1000')], heap: [hb('0x1000', full4)] },
+		after: { stack: [pv(N.numeros, '0x7f00', '0x1000'), pv(N.nuevo, '0x7f08', '0x2000')], heap: [hb('0x1000', full4, 'freed'), hb('0x2000', grown)] },
+		options: [
+			t('`nuevo` vale 0x2000 y el bloque nuevo tiene 8 celdas indeterminadas: los datos se pierden', '`bigger` holds 0x2000 and the new block has 8 indeterminate cells: the data is lost'),
+			t('`numeros` pasa a valer 0x2000 automáticamente', '`numbers` automatically becomes 0x2000'),
+			t('`nuevo` vale 0x2000, el bloque nuevo empieza con 5 8 13 2 y el bloque 0x1000 queda liberado', '`bigger` holds 0x2000, the new block starts with 5 8 13 2 and block 0x1000 is freed'),
+		],
+		correct: 2,
+		reason: t('`realloc` conserva los datos, los copia al bloque nuevo y libera el viejo. `numeros` no cambia: guarda 0x1000 hasta que escribas `numeros = nuevo`.', '`realloc` keeps the data, copies it to the new block and frees the old one. `numbers` does not change: it holds 0x1000 until you write `numbers = bigger`.'),
+	},
+	{
+		title: t('realloc falla', 'realloc fails'),
+		context: t('Esta vez `realloc` no consigue memoria y devuelve `NULL`.', 'This time `realloc` cannot get memory and returns `NULL`.'),
+		prompt: t('¿Cuál es el estado después de la llamada?', 'What is the state after the call?'),
+		code: 'p3',
+		line: 1,
+		before: { stack: [pv(N.numeros, '0x7f00', '0x1000')], heap: [hb('0x1000', full4)] },
+		after: { stack: [pv(N.numeros, '0x7f00', '0x1000'), pv(N.nuevo, '0x7f08', 'NULL')], heap: [hb('0x1000', full4)] },
+		options: [
+			t('`nuevo` vale `NULL`; `numeros` sigue en 0x1000 y el bloque está intacto', '`bigger` is `NULL`; `numbers` stays at 0x1000 and the block is intact'),
+			t('`nuevo` vale `NULL` y el bloque 0x1000 queda liberado', '`bigger` is `NULL` and block 0x1000 is freed'),
+			t('`numeros` pasa a valer `NULL`', '`numbers` becomes `NULL`'),
+		],
+		correct: 0,
+		reason: t('Si `realloc` falla, el bloque original sigue vivo y sin cambios. Gracias al puntero temporal, todavía puedes usarlo o liberarlo.', 'If `realloc` fails, the original block stays alive and unchanged. Thanks to the temporary pointer, you can still use it or free it.'),
+	},
+	{
+		title: t('Después de free', 'After free'),
+		context: t('`numeros` apunta a un bloque vivo en 0x2000.', '`numbers` points to a live block at 0x2000.'),
+		prompt: t('¿Cuál es el estado después de `free`?', 'What is the state after `free`?'),
+		code: 'p5',
+		line: 1,
+		before: { stack: [pv(N.numeros, '0x7f00', '0x2000')], heap: [hb('0x2000', ['5', '8', '13', '2', '7', '?', '?', '?'])] },
+		after: { stack: [pv(N.numeros, '0x7f00', '0x2000')], heap: [hb('0x2000', ['5', '8', '13', '2', '7', '?', '?', '?'], 'freed')] },
+		options: [
+			t('El bloque queda liberado y `numeros` pasa a `NULL`', 'The block is freed and `numbers` becomes `NULL`'),
+			t('El bloque queda liberado y `numeros` sigue guardando 0x2000', 'The block is freed and `numbers` still holds 0x2000'),
+			t('El bloque se pone en cero y se puede seguir usando', 'The block is zeroed and can still be used'),
+		],
+		correct: 1,
+		reason: t('`free` no modifica la variable: solo devuelve el bloque. `numeros` queda colgante; por eso conviene asignarle `NULL` si sigue en uso.', '`free` does not modify the variable: it only gives the block back. `numbers` is left dangling; that is why you set it to `NULL` if it is still in use.'),
+	},
+	{
+		title: t('free(NULL)', 'free(NULL)'),
+		context: t('El bloque 0x2000 ya fue liberado y la línea 1 dejó `numeros` en `NULL`.', 'Block 0x2000 was already freed and line 1 set `numbers` to `NULL`.'),
+		prompt: t('¿Qué pasa en la línea 2?', 'What happens on line 2?'),
+		code: 'p6',
+		line: 2,
+		before: { stack: [pv(N.numeros, '0x7f00', 'NULL')], heap: [hb('0x2000', ['5', '8', '13', '2', '7', '?', '?', '?'], 'freed')] },
+		after: { stack: [pv(N.numeros, '0x7f00', 'NULL')], heap: [hb('0x2000', ['5', '8', '13', '2', '7', '?', '?', '?'], 'freed')] },
+		options: [
+			t('Una doble liberación del bloque 0x2000', 'A double free of block 0x2000'),
+			t('Comportamiento indefinido', 'Undefined behavior'),
+			t('Nada: `free(NULL)` no hace nada', 'Nothing: `free(NULL)` does nothing'),
+		],
+		correct: 2,
+		reason: t('`numeros` ya vale `NULL`, así que `free` recibe `NULL`, no 0x2000. El estándar garantiza que `free(NULL)` no hace nada.', '`numbers` is already `NULL`, so `free` receives `NULL`, not 0x2000. The standard guarantees that `free(NULL)` does nothing.'),
+	},
+];
+
+const assess: { kind: string; prompt: string; code?: string; options: string[]; correct: number; reason: string }[] = [
+	{
+		kind: t('Predicción', 'Prediction'),
+		prompt: t('El programa del arreglo que crece (capacidad inicial 4, se duplica al llenarse) recibe la entrada `1 2 3 4 5 6 7 8 9 0`. ¿Qué imprime?', 'The growing-array program (initial capacity 4, doubled when full) gets the input `1 2 3 4 5 6 7 8 9 0`. What does it print?'),
+		options: [
+			t('Leidos: 9 (capacidad 9), suma: 45', 'Read: 9 (capacity 9), sum: 45'),
+			t('Leidos: 10 (capacidad 16), suma: 45', 'Read: 10 (capacity 16), sum: 45'),
+			t('Leidos: 9 (capacidad 12), suma: 45', 'Read: 9 (capacity 12), sum: 45'),
+			t('Leidos: 9 (capacidad 16), suma: 45', 'Read: 9 (capacity 16), sum: 45'),
+		],
+		correct: 3,
+		reason: t('El 0 termina la lectura y no se guarda: 9 valores. La capacidad pasa de 4 a 8 con el quinto y de 8 a 16 con el noveno.', 'The 0 ends the input and is not stored: 9 values. The capacity goes from 4 to 8 on the fifth and from 8 to 16 on the ninth.'),
+	},
+	{
+		kind: t('Detección de errores', 'Error detection'),
+		prompt: t('¿Qué le falta a este fragmento?', 'What is this fragment missing?'),
+		code: 'a2',
+		options: [
+			t('Convertir el resultado: `(int *)malloc(...)`', 'Casting the result: `(int *)malloc(...)`'),
+			t('Comprobar si `datos` es `NULL` antes del `for`', 'Checking whether `data` is `NULL` before the `for`'),
+			t('Usar `sizeof(int)` en lugar de `sizeof *datos`', 'Using `sizeof(int)` instead of `sizeof *data`'),
+			t('Nada: es correcto', 'Nothing: it is correct'),
+		],
+		correct: 1,
+		reason: t('Si `malloc` falla, `datos[i] = 0` escribe a través de `NULL`: comportamiento indefinido. La conversión no hace falta en C y `sizeof *datos` es la forma recomendada.', 'If `malloc` fails, `data[i] = 0` writes through `NULL`: undefined behavior. The cast is not needed in C and `sizeof *data` is the recommended form.'),
+	},
+	{
+		kind: t('Detección de errores', 'Error detection'),
+		prompt: t('Si el `realloc` de la línea 5 falla, ¿cuál es el estado?', 'If the `realloc` on line 5 fails, what is the state?'),
+		code: 'a3',
+		options: [
+			t('`numeros` sigue con la dirección vieja y el bloque está intacto', '`numbers` keeps the old address and the block is intact'),
+			t('El bloque viejo se libera automáticamente', 'The old block is freed automatically'),
+			t('`numeros` vale `NULL` y el bloque de 4 `int` queda reservado sin ningún puntero: una fuga', '`numbers` is `NULL` and the 4-`int` block stays reserved with no pointer to it: a leak'),
+			t('El programa termina con un mensaje de error', 'The program ends with an error message'),
+		],
+		correct: 2,
+		reason: t('La asignación directa pisa la única dirección del bloque con `NULL`. Hay que usar un puntero temporal y asignar solo si no es `NULL`.', 'The direct assignment overwrites the only address of the block with `NULL`. Use a temporary pointer and assign only when it is not `NULL`.'),
+	},
+	{
+		kind: t('Detección de errores', 'Error detection'),
+		prompt: t('¿Qué camino de salida pierde memoria?', 'Which exit path leaks memory?'),
+		code: 'a4',
+		options: [
+			t('El `return 1` de la línea 3', 'The `return 1` on line 3'),
+			t('El `return 1` de la línea 7', 'The `return 1` on line 7'),
+			t('El `return 0` de la línea 11', 'The `return 0` on line 11'),
+			t('Ninguno', 'None'),
+		],
+		correct: 1,
+		reason: t('En la línea 7 `realloc` falló, así que el bloque original sigue vivo y nadie lo libera: falta `free(numeros)`. En la línea 3 no hay nada que liberar.', 'On line 7 `realloc` failed, so the original block is still alive and nobody frees it: `free(numbers)` is missing. On line 3 there is nothing to free.'),
+	},
+	{
+		kind: t('Elección', 'Choice'),
+		prompt: t('Necesitas `n` contadores que empiecen en 0, y `n` lo ingresa el usuario. ¿Qué reserva eliges?', 'You need `n` counters starting at 0, and the user enters `n`. Which allocation do you choose?'),
+		options: [
+			t('`malloc(n * sizeof *contadores)` y nada más', '`malloc(n * sizeof *counters)` and nothing else'),
+			t('`calloc(n, sizeof *contadores)`', '`calloc(n, sizeof *counters)`'),
+			t('`malloc(n)`', '`malloc(n)`'),
+			t('`realloc(contadores, 0)`', '`realloc(counters, 0)`'),
+		],
+		correct: 1,
+		reason: t('`calloc` deja los contadores en cero y comprueba que la multiplicación no desborde, algo importante cuando `n` viene de afuera. `realloc` con tamaño cero es comportamiento indefinido en C23.', '`calloc` leaves the counters at zero and checks that the multiplication does not overflow, which matters when `n` comes from outside. `realloc` with size zero is undefined behavior in C23.'),
+	},
+	{
+		kind: t('Predicción', 'Prediction'),
+		prompt: t('¿Qué hace `realloc(NULL, 8 * sizeof *p)`?', 'What does `realloc(NULL, 8 * sizeof *p)` do?'),
+		options: [
+			t('Siempre devuelve `NULL`', 'It always returns `NULL`'),
+			t('Es comportamiento indefinido', 'It is undefined behavior'),
+			t('Lo mismo que `malloc(8 * sizeof *p)`', 'The same as `malloc(8 * sizeof *p)`'),
+			t('Libera `p`', 'It frees `p`'),
+		],
+		correct: 2,
+		reason: t('`realloc(NULL, tamaño)` se comporta como `malloc(tamaño)`. Por eso un arreglo puede empezar en `NULL` y crecer siempre con el mismo código.', '`realloc(NULL, size)` behaves like `malloc(size)`. That is why an array can start at `NULL` and always grow with the same code.'),
+	},
+];
+
+const ui = {
+	step: t('Paso {n} de {t}', 'Step {n} of {t}'),
+	stack: t('Pila (stack)', 'Stack'),
+	heap: t('Montículo (heap)', 'Heap'),
+	emptyStack: t('Sin variables todavía.', 'No variables yet.'),
+	emptyHeap: t('Vacío: no hay bloques reservados.', 'Empty: no blocks reserved.'),
+	live: t('reservado', 'allocated'),
+	freed: t('liberado', 'freed'),
+	lost: t('sin puntero: fuga', 'no pointer: leak'),
+	dangling: t('colgante', 'dangling'),
+	pointedBy: t('apuntado por', 'pointed to by'),
+	output: t('Salida', 'Output'),
+	correct: t('Correcto.', 'Correct.'),
+	incorrect: t('Incorrecto.', 'Incorrect.'),
+	answerWas: t('La respuesta correcta era:', 'The correct answer was:'),
+	yourAnswer: t('Tu respuesta:', 'Your answer:'),
+	unanswered: t('sin responder', 'not answered'),
+	score: t('Obtuviste {s} de {t}.', 'You scored {s} out of {t}.'),
+	question: t('Pregunta', 'Question'),
+	right: t('Correcta', 'Correct'),
+	wrong: t('Incorrecta', 'Incorrect'),
+	pending: t('Te faltan {n} preguntas por responder.', '{n} questions are still unanswered.'),
+	selected: t('Respuesta guardada.', 'Answer saved.'),
+};
+
+const modeHints = {
+	learn: t('Avanza paso a paso y mira cómo cambian la pila y el montículo.', 'Step through and watch the stack and the heap change.'),
+	practice: t('Predice el estado siguiente, compruébalo y mira la transición.', 'Predict the next state, check it and watch the transition.'),
+	assess: t('Responde sin pistas: la nota y las respuestas aparecen al final.', 'Answer without hints: the score and the answers appear at the end.'),
+};
+
+const totals = { learn: learn.length, practice: practice.length, assess: assess.length + 1 };
+const parts = (s: string) => s.split('`');
+---
+
+<div
+	class="md-screen"
+	data-presentation="memoria-dinamica-paso-a-paso"
+	data-lang={lang}
+	data-ui={JSON.stringify(ui)}
+	data-hints={JSON.stringify(modeHints)}
+	data-totals={JSON.stringify(totals)}
+>
+	<div class="md-shell">
+		<nav class="md-nav" aria-label={t('Controles de navegación', 'Navigation controls')}>
+			<button class="md-btn" id="mdPrevBtn" type="button" aria-label={t('Diapositiva anterior', 'Previous slide')} disabled>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+				<span>{t('Anterior', 'Previous')}</span>
+			</button>
+			<span class="md-counter" id="mdSlideCounter" aria-live="polite">1 / {totals.learn}</span>
+			<button class="md-btn" id="mdNextBtn" type="button" aria-label={t('Siguiente diapositiva', 'Next slide')}>
+				<span>{t('Siguiente', 'Next')}</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+			</button>
+		</nav>
+
+		<div class="md-modebar">
+			<span class="md-modes-label" id="mdModesLabel">{t('Modo', 'Mode')}</span>
+			<div class="md-seg" role="radiogroup" aria-labelledby="mdModesLabel">
+				<label class="md-seg-opt">
+					<input type="radio" name="mdMode" value="learn" checked />
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></svg>
+					{t('Aprender', 'Learn')}
+				</label>
+				<label class="md-seg-opt">
+					<input type="radio" name="mdMode" value="practice" />
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></svg>
+					{t('Practicar', 'Practice')}
+				</label>
+				<label class="md-seg-opt">
+					<input type="radio" name="mdMode" value="assess" />
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="m9 14 2 2 4-4" /></svg>
+					{t('Evaluar', 'Assess')}
+				</label>
+			</div>
+			<p class="md-mode-hint" id="mdModeHint">{modeHints.learn}</p>
+		</div>
+
+		<main class="md-viewport">
+			{learn.map((s, i) => (
+				<section class={`md-slide${i === 0 ? ' is-active' : ''}`} data-mode="learn" data-slide={`learn-${i + 1}`} data-steps={JSON.stringify(s.steps)}>
+					<div class="md-head">
+						<span class="md-kicker">{t('Aprender', 'Learn')} · {s.kicker}</span>
+						<h2 class="md-title">{s.title}</h2>
+						<p class="md-lead">{parts(s.lead).map((p, k) => (k % 2 ? <code>{p}</code> : p))}</p>
+					</div>
+					<div class="md-card md-grid">
+						<div class="md-code-panel">
+							<span class="md-panel-label">C</span>
+							<pre class="md-code" data-code><code>{code[s.code].map((l, n) => <span class="md-line" data-line={n + 1}><span class="md-ln" aria-hidden="true">{n + 1}</span>{l}</span>)}</code></pre>
+						</div>
+						<div class="md-memory" data-memory role="group" aria-label={t('Estado de la memoria', 'Memory state')}></div>
+					</div>
+					<div class="md-stepper">
+						<div class="md-actions">
+							<button class="md-btn" type="button" data-step-prev aria-label={t('Paso anterior', 'Previous step')}>
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+								<span>{t('Paso anterior', 'Previous step')}</span>
+							</button>
+							<span class="md-step-count" data-step-count></span>
+							<button class="md-btn md-btn-primary" type="button" data-step-next aria-label={t('Siguiente paso', 'Next step')}>
+								<span>{t('Siguiente paso', 'Next step')}</span>
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+							</button>
+							<button class="md-btn" type="button" data-step-reset aria-label={t('Reiniciar los pasos', 'Restart the steps')}>
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+								<span>{t('Reiniciar', 'Restart')}</span>
+							</button>
+						</div>
+						<p class="md-note" data-note aria-live="polite"></p>
+					</div>
+				</section>
+			))}
+
+			{practice.map((p, i) => (
+				<section class="md-slide" data-mode="practice" data-slide={`practice-${i + 1}`} data-practice={JSON.stringify({ before: p.before, after: p.after, correct: p.correct, reason: p.reason })}>
+					<div class="md-head">
+						<span class="md-kicker">{t('Practicar', 'Practice')} · {i + 1} / {practice.length}</span>
+						<h2 class="md-title">{p.title}</h2>
+						<p class="md-lead">{parts(p.context).map((x, k) => (k % 2 ? <code>{x}</code> : x))}</p>
+					</div>
+					<div class="md-card md-grid">
+						<div class="md-code-panel">
+							<span class="md-panel-label">C</span>
+							<pre class="md-code"><code>{code[p.code].map((l, n) => <span class={`md-line${n + 1 === p.line ? ' is-current' : ''}`} data-line={n + 1}><span class="md-ln" aria-hidden="true">{n + 1}</span>{l}</span>)}</code></pre>
+						</div>
+						<div class="md-memory" data-memory role="group" aria-label={t('Estado de la memoria', 'Memory state')}></div>
+					</div>
+					<fieldset class="md-quiz">
+						<legend class="md-prompt">{parts(p.prompt).map((x, k) => (k % 2 ? <code>{x}</code> : x))}</legend>
+						<div class="md-options">
+							{p.options.map((o, k) => (
+								<button class="md-opt" type="button" data-index={k}>{parts(o).map((x, j) => (j % 2 ? <code>{x}</code> : x))}</button>
+							))}
+						</div>
+					</fieldset>
+					<p class="md-feedback" data-feedback aria-live="polite"></p>
+					<div class="md-actions">
+						<button class="md-btn md-btn-primary" type="button" data-replay hidden>
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" /></svg>
+							<span>{t('Ver la transición', 'Watch the transition')}</span>
+						</button>
+						<button class="md-btn" type="button" data-retry hidden>
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+							<span>{t('Intentar de nuevo', 'Try again')}</span>
+						</button>
+					</div>
+				</section>
+			))}
+
+			{assess.map((a, i) => (
+				<section class="md-slide" data-mode="assess" data-slide={`assess-${i + 1}`} data-question={i}>
+					<div class="md-head">
+						<span class="md-kicker">{t('Evaluar', 'Assess')} · {a.kind} · {i + 1} / {assess.length}</span>
+						<h2 class="md-title">{t('Pregunta', 'Question')} {i + 1}</h2>
+					</div>
+					<div class={`md-card${a.code ? ' md-grid' : ''}`}>
+						{a.code && (
+							<div class="md-code-panel">
+								<span class="md-panel-label">C</span>
+								<pre class="md-code"><code>{code[a.code].map((l, n) => <span class="md-line" data-line={n + 1}><span class="md-ln" aria-hidden="true">{n + 1}</span>{l}</span>)}</code></pre>
+							</div>
+						)}
+						<fieldset class="md-quiz">
+							<legend class="md-prompt">{parts(a.prompt).map((x, k) => (k % 2 ? <code>{x}</code> : x))}</legend>
+							<div class="md-options">
+								{a.options.map((o, k) => (
+									<button class="md-opt" type="button" data-index={k} aria-pressed="false">{parts(o).map((x, j) => (j % 2 ? <code>{x}</code> : x))}</button>
+								))}
+							</div>
+						</fieldset>
+						<p class="md-feedback" data-saved aria-live="polite"></p>
+					</div>
+				</section>
+			))}
+
+			<section
+				class="md-slide"
+				data-mode="assess"
+				data-slide={`assess-${assess.length + 1}`}
+				data-results-slide
+				data-assess={JSON.stringify(assess.map((a) => ({ options: a.options, correct: a.correct, reason: a.reason })))}
+			>
+				<div class="md-head">
+					<span class="md-kicker">{t('Evaluar', 'Assess')} · {t('Resultado', 'Result')}</span>
+					<h2 class="md-title">{t('Tu resultado', 'Your result')}</h2>
+					<p class="md-lead">{t('Cuando termines, califica tus respuestas para ver la nota y la solución de cada pregunta.', 'When you are done, grade your answers to see the score and the solution to each question.')}</p>
+				</div>
+				<div class="md-actions">
+					<button class="md-btn md-btn-primary" type="button" data-grade>
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+						<span>{t('Calificar', 'Grade')}</span>
+					</button>
+					<button class="md-btn" type="button" data-assess-reset>
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+						<span>{t('Empezar de nuevo', 'Start over')}</span>
+					</button>
+				</div>
+				<div class="md-results" data-results aria-live="polite"></div>
+			</section>
+		</main>
+
+		<p class="md-legend">{t('Direcciones ilustrativas: 0x7f.. en la pila, 0x1000 y 0x2000 en el montículo. Se asume que un int ocupa 4 bytes; ? es un valor indeterminado.', 'Illustrative addresses: 0x7f.. on the stack, 0x1000 and 0x2000 on the heap. An int is assumed to take 4 bytes; ? is an indeterminate value.')}</p>
+	</div>
+</div>
+
+<style>
+	.md-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.md-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.md-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .md-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .md-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .md-viewport { zoom: 1.25; } }
+
+	.md-shell > .md-viewport { flex: 1; }
+
+	.md-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-3) var(--space-6);
+		background: var(--color-surface);
+	}
+
+	.md-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 14px;
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+	}
+
+	.md-btn:hover:not(:disabled) { border-color: var(--color-accent); color: var(--color-accent-700); }
+	.md-btn:active:not(:disabled) { background: var(--color-accent-100); }
+	.md-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+	.md-btn-primary { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-bg); }
+	.md-btn-primary:hover:not(:disabled) { background: var(--color-accent-600); border-color: var(--color-accent-600); color: var(--color-bg); }
+	.md-btn-primary:active:not(:disabled) { background: var(--color-accent-700); }
+	.md-btn[hidden] { display: none; }
+
+	.md-btn:focus-visible,
+	.md-opt:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 2px;
+	}
+
+	.md-counter {
+		font-size: 14px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.md-modebar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-3) var(--space-6) 0;
+	}
+
+	.md-modes-label {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.md-seg {
+		display: inline-flex;
+		overflow: hidden;
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+	}
+
+	.md-seg-opt {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-3);
+		font-size: 14px;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.md-seg-opt input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+	.md-seg-opt + .md-seg-opt { border-left: 1px solid var(--color-divider); }
+	.md-seg-opt:has(input:checked) { background: var(--color-accent); color: var(--color-bg); }
+	.md-seg-opt:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+	.md-seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+	.md-mode-hint {
+		margin: 0;
+		font-size: 14px;
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+
+	.md-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 1180px;
+		width: 100%;
+	}
+
+	.md-slide.is-active { display: block; animation: mdFade 0.25s ease-out; }
+
+	@keyframes mdFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.md-head { margin-bottom: var(--space-4); }
+
+	.md-kicker {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.md-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 28px;
+		line-height: 1.15;
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.md-lead {
+		margin: 0;
+		max-width: 72ch;
+		font-size: 16px;
+		line-height: 1.5;
+		color: color-mix(in srgb, var(--color-text) 75%, transparent);
+	}
+
+	.md-slide :global(code) {
+		font-family: monospace;
+		font-size: 0.92em;
+		padding: 0 var(--space-1);
+		border-radius: var(--radius-sm);
+		background: color-mix(in srgb, var(--color-text) 7%, transparent);
+	}
+
+	.md-card {
+		background: var(--color-surface);
+		border-radius: var(--radius-lg);
+		padding: var(--space-4);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.md-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+		gap: var(--space-4);
+		align-items: start;
+	}
+
+	.md-code-panel { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+
+	.md-panel-label {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-2-700);
+	}
+
+	.md-slide .md-code {
+		position: relative;
+		margin: 0;
+		max-height: 420px;
+		overflow: auto;
+		padding: var(--space-3) 0;
+		border-radius: var(--radius-md);
+		background: var(--color-neutral-900);
+		color: var(--color-neutral-100);
+		font-family: monospace;
+		font-size: 13px;
+		line-height: 1.6;
+	}
+
+	.md-slide .md-code :global(code) { padding: 0; background: none; font-size: inherit; }
+
+	.md-line {
+		display: block;
+		min-height: 1.6em;
+		padding: 0 var(--space-3) 0 0;
+		white-space: pre;
+		border-left: 3px solid transparent;
+		transition: background 0.25s ease, border-color 0.25s ease;
+	}
+
+	.md-line.is-current {
+		background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+		border-left-color: var(--color-accent);
+	}
+
+	.md-ln {
+		display: inline-block;
+		width: 3ch;
+		margin-right: var(--space-3);
+		text-align: right;
+		color: color-mix(in srgb, var(--color-neutral-100) 45%, transparent);
+		user-select: none;
+	}
+
+	.md-memory {
+		display: grid;
+		grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+		gap: var(--space-3);
+		min-width: 0;
+	}
+
+	.md-memory :global(.md-col) {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		padding: var(--space-3);
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+		min-width: 0;
+	}
+
+	.md-memory :global(.md-col-title) {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-2-700);
+	}
+
+	.md-memory :global(.md-empty) {
+		margin: 0;
+		font-size: 13px;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.md-memory :global(.md-var) {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 0 var(--space-2);
+		padding: var(--space-2);
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		font-family: monospace;
+		font-size: 13px;
+	}
+
+	.md-memory :global(.md-var-name) { font-weight: 700; overflow-wrap: anywhere; }
+	.md-memory :global(.md-var-addr) { justify-self: end; color: color-mix(in srgb, var(--color-text) 55%, transparent); font-size: 12px; }
+
+	.md-memory :global(.md-var-value) {
+		grid-column: 1 / -1;
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		color: var(--color-text);
+	}
+
+	.md-memory :global(.md-var.is-ptr .md-var-value) { color: var(--color-accent-2-700); font-weight: 700; }
+	.md-memory :global(.md-var.is-null .md-var-value) { color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+	.md-memory :global(.md-var.is-dangling .md-var-value) { color: var(--color-accent-700); }
+
+	.md-memory :global(.md-tag) {
+		margin-left: var(--space-1);
+		padding: 0 var(--space-2);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-body);
+		font-size: 11px;
+		font-weight: 700;
+		background: var(--color-accent-100);
+		color: var(--color-accent-700);
+	}
+
+	.md-memory :global(.md-block) {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		padding: var(--space-2);
+		border: 2px solid var(--color-accent-2);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+	}
+
+	.md-memory :global(.md-block.is-freed) { border-style: dashed; border-color: var(--color-neutral-400); opacity: 0.6; }
+	.md-memory :global(.md-block.is-lost) { border-style: dashed; border-color: var(--color-accent); background: var(--color-accent-100); }
+
+	.md-memory :global(.md-block-head) {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+	}
+
+	.md-memory :global(.md-badge) {
+		padding: 0 var(--space-2);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-body);
+		font-size: 11px;
+		font-weight: 700;
+		background: var(--color-accent-2-100);
+		color: var(--color-accent-2-700);
+	}
+
+	.md-memory :global(.md-block.is-freed .md-badge) { background: var(--color-neutral-200); color: var(--color-neutral-700); }
+	.md-memory :global(.md-block.is-lost .md-badge) { background: var(--color-accent); color: var(--color-bg); }
+
+	.md-memory :global(.md-owner) { font-family: var(--font-body); font-size: 12px; font-weight: 600; color: var(--color-accent-2-700); }
+
+	.md-memory :global(.md-cells) {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+		gap: var(--space-1);
+	}
+
+	.md-memory :global(.md-cell) {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: var(--space-1);
+		border-radius: var(--radius-sm);
+		background: var(--color-bg);
+		font-family: monospace;
+	}
+
+	.md-memory :global(.md-cell-addr) { font-size: 10px; color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+	.md-memory :global(.md-cell-value) { font-size: 15px; font-weight: 700; }
+	.md-memory :global(.md-cell.is-unknown .md-cell-value) { color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+
+	.md-memory :global(.md-out) {
+		grid-column: 1 / -1;
+		margin: 0;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-md);
+		background: var(--color-neutral-900);
+		color: var(--color-neutral-100);
+		font-family: monospace;
+		font-size: 13px;
+	}
+
+	.md-memory :global(.is-changed) { animation: mdPulse 0.9s ease-out; }
+
+	@keyframes mdPulse {
+		0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 70%, transparent); transform: scale(0.97); }
+		60% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-accent) 0%, transparent); transform: scale(1); }
+		100% { box-shadow: none; }
+	}
+
+	.md-stepper { margin-top: var(--space-4); }
+
+	.md-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+		margin-top: var(--space-3);
+	}
+
+	.md-stepper .md-actions { margin-top: 0; }
+
+	.md-step-count { font-size: 14px; font-weight: 700; color: color-mix(in srgb, var(--color-text) 65%, transparent); }
+
+	.md-note,
+	.md-feedback {
+		margin: var(--space-3) 0 0;
+		max-width: 80ch;
+		font-size: 16px;
+		line-height: 1.5;
+	}
+
+	.md-feedback:empty { display: none; }
+	.md-feedback.is-right { color: var(--color-accent-2-700); }
+	.md-feedback.is-wrong { color: var(--color-accent-700); }
+
+	.md-quiz { margin: var(--space-4) 0 0; padding: 0; border: 0; min-width: 0; }
+	.md-card .md-quiz { margin-top: 0; }
+	.md-prompt { padding: 0; margin-bottom: var(--space-3); font-size: 17px; font-weight: 700; }
+
+	.md-options { display: flex; flex-direction: column; gap: var(--space-2); }
+
+	.md-opt {
+		text-align: left;
+		padding: var(--space-3) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 15px;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 2px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: border-color 0.2s ease, background 0.2s ease;
+	}
+
+	.md-opt:hover:not(:disabled) { border-color: var(--color-accent); }
+	.md-opt:disabled { cursor: default; }
+	.md-opt:disabled:not(.is-right):not(.is-wrong) { opacity: 0.45; }
+	.md-opt[aria-pressed='true'] { border-color: var(--color-accent); background: var(--color-accent-100); }
+	.md-opt.is-right { border-color: var(--color-accent-2); background: var(--color-accent-2-100); }
+	.md-opt.is-wrong { border-color: var(--color-accent); background: var(--color-accent-100); }
+
+	.md-results :global(.md-score) {
+		margin: var(--space-4) 0 var(--space-3);
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 24px;
+	}
+
+	.md-results :global(.md-result-list) { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+
+	.md-results :global(.md-result) {
+		padding: var(--space-3) var(--space-4);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		border-left: 4px solid var(--color-accent-2);
+		font-size: 15px;
+		line-height: 1.5;
+	}
+
+	.md-results :global(.md-result.is-wrong) { border-left-color: var(--color-accent); }
+	.md-results :global(.md-result p) { margin: var(--space-1) 0 0; }
+	.md-results :global(.md-result strong) { color: var(--color-accent-2-700); }
+	.md-results :global(.md-result.is-wrong strong) { color: var(--color-accent-700); }
+
+	.md-legend {
+		margin: 0;
+		padding: 0 var(--space-6) var(--space-4);
+		font-size: 13px;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	@media (max-width: 960px) {
+		.md-grid { grid-template-columns: minmax(0, 1fr); }
+	}
+
+	@media (max-width: 640px) {
+		.md-nav { padding: var(--space-2) var(--space-3); }
+		.md-btn span { display: none; }
+		.md-modebar { padding: var(--space-3) var(--space-3) 0; }
+		.md-slide { padding: var(--space-4) var(--space-3); }
+		.md-title { font-size: 23px; }
+		.md-memory { grid-template-columns: minmax(0, 1fr); }
+		.md-legend { padding: 0 var(--space-3) var(--space-4); }
+	}
+</style>
+
+<script>
+	type Var = { name: string; addr: string; value: string; ptr: boolean };
+	type Block = { addr: string; cells: string[]; status: 'live' | 'freed' | 'lost' };
+	type MemState = { stack: Var[]; heap: Block[]; out?: string };
+	type Step = MemState & { line: number; note: string };
+	type Mode = 'learn' | 'practice' | 'assess';
+
+	const screen = document.querySelector<HTMLElement>('.md-screen');
+
+	if (screen) {
+		const ui = JSON.parse(screen.dataset.ui ?? '{}') as Record<string, string>;
+		const hints = JSON.parse(screen.dataset.hints ?? '{}') as Record<Mode, string>;
+		const totals = JSON.parse(screen.dataset.totals ?? '{}') as Record<Mode, number>;
+		const fmt = (s: string, vars: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (_m, k: string) => String(vars[k] ?? ''));
+
+		const ARROW = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
+
+		function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
+			const node = document.createElement(tag);
+			if (cls) node.className = cls;
+			if (text !== undefined) node.textContent = text;
+			return node;
+		}
+
+		// Renders text where `code` spans are delimited by backticks.
+		function richText(target: HTMLElement, text: string) {
+			target.replaceChildren();
+			text.split('`').forEach((part, i) => {
+				target.append(i % 2 ? el('code', undefined, part) : document.createTextNode(part));
+			});
+		}
+
+		function cellAddr(base: string, i: number) {
+			return `0x${(parseInt(base, 16) + 4 * i).toString(16)}`;
+		}
+
+		function renderMemory(container: HTMLElement, state: MemState, prev?: MemState) {
+			container.replaceChildren();
+			const freedAddrs = new Set(state.heap.filter((b) => b.status === 'freed').map((b) => b.addr));
+			const liveAddrs = new Set(state.heap.filter((b) => b.status === 'live').map((b) => b.addr));
+
+			const stackCol = el('div', 'md-col');
+			stackCol.append(el('p', 'md-col-title', ui.stack));
+			if (state.stack.length === 0) stackCol.append(el('p', 'md-empty', ui.emptyStack));
+			state.stack.forEach((v) => {
+				const before = prev?.stack.find((p) => p.name === v.name);
+				const card = el('div', 'md-var');
+				if (v.ptr) card.classList.add('is-ptr');
+				if (v.ptr && v.value === 'NULL') card.classList.add('is-null');
+				const dangling = v.ptr && freedAddrs.has(v.value) && !liveAddrs.has(v.value);
+				if (dangling) card.classList.add('is-dangling');
+				if (prev && (!before || before.value !== v.value)) card.classList.add('is-changed');
+				card.append(el('span', 'md-var-name', v.name), el('span', 'md-var-addr', v.addr));
+				const value = el('span', 'md-var-value');
+				if (v.ptr && v.value !== 'NULL') value.insertAdjacentHTML('beforeend', ARROW);
+				value.append(document.createTextNode(v.value));
+				if (dangling) value.append(el('span', 'md-tag', ui.dangling));
+				card.append(value);
+				stackCol.append(card);
+			});
+
+			const heapCol = el('div', 'md-col');
+			heapCol.append(el('p', 'md-col-title', ui.heap));
+			if (state.heap.length === 0) heapCol.append(el('p', 'md-empty', ui.emptyHeap));
+			state.heap.forEach((b) => {
+				const before = prev?.heap.find((p) => p.addr === b.addr);
+				const block = el('div', `md-block is-${b.status}`);
+				if (prev && (!before || before.status !== b.status)) block.classList.add('is-changed');
+				const head = el('div', 'md-block-head');
+				head.append(el('span', undefined, b.addr), el('span', 'md-badge', ui[b.status]));
+				const owners = state.stack.filter((v) => v.ptr && v.value === b.addr).map((v) => v.name);
+				if (owners.length && b.status === 'live') head.append(el('span', 'md-owner', `${ui.pointedBy} ${owners.join(', ')}`));
+				const cells = el('div', 'md-cells');
+				b.cells.forEach((value, i) => {
+					const cell = el('div', `md-cell${value === '?' ? ' is-unknown' : ''}`);
+					if (prev && before && before.status === b.status && before.cells[i] !== value) cell.classList.add('is-changed');
+					cell.append(el('span', 'md-cell-addr', `[${i}] ${cellAddr(b.addr, i)}`), el('span', 'md-cell-value', value));
+					cells.append(cell);
+				});
+				block.append(head, cells);
+				heapCol.append(block);
+			});
+
+			container.append(stackCol, heapCol);
+			if (state.out) {
+				const out = el('p', 'md-out', `${ui.output}: ${state.out}`);
+				if (prev && prev.out !== state.out) out.classList.add('is-changed');
+				container.append(out);
+			}
+		}
+
+		function highlightLine(pre: HTMLElement | null, line: number) {
+			if (!pre) return;
+			pre.querySelectorAll('.md-line').forEach((l) => l.classList.remove('is-current'));
+			const current = pre.querySelector<HTMLElement>(`.md-line[data-line="${line}"]`);
+			if (!current) return;
+			current.classList.add('is-current');
+			const top = current.offsetTop - pre.clientHeight / 2 + current.offsetHeight / 2;
+			pre.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+		}
+
+		// Learn: stepped visualizations.
+		screen.querySelectorAll<HTMLElement>('.md-slide[data-mode="learn"]').forEach((slide) => {
+			const steps = JSON.parse(slide.dataset.steps ?? '[]') as Step[];
+			const memory = slide.querySelector<HTMLElement>('[data-memory]');
+			const pre = slide.querySelector<HTMLElement>('[data-code]');
+			const note = slide.querySelector<HTMLElement>('[data-note]');
+			const count = slide.querySelector<HTMLElement>('[data-step-count]');
+			const prevBtn = slide.querySelector<HTMLButtonElement>('[data-step-prev]');
+			const nextBtn = slide.querySelector<HTMLButtonElement>('[data-step-next]');
+			let index = 0;
+
+			function show(i: number, animate: boolean) {
+				index = Math.max(0, Math.min(steps.length - 1, i));
+				const step = steps[index];
+				if (memory) renderMemory(memory, step, animate && index > 0 ? steps[index - 1] : undefined);
+				highlightLine(pre, step.line);
+				if (note) richText(note, step.note);
+				if (count) count.textContent = fmt(ui.step, { n: index + 1, t: steps.length });
+				if (prevBtn) prevBtn.disabled = index === 0;
+				if (nextBtn) nextBtn.disabled = index === steps.length - 1;
+			}
+
+			prevBtn?.addEventListener('click', () => show(index - 1, false));
+			nextBtn?.addEventListener('click', () => show(index + 1, true));
+			slide.querySelector('[data-step-reset]')?.addEventListener('click', () => show(0, false));
+			show(0, false);
+		});
+
+		// Practice: predict the next state.
+		screen.querySelectorAll<HTMLElement>('.md-slide[data-mode="practice"]').forEach((slide) => {
+			const data = JSON.parse(slide.dataset.practice ?? '{}') as { before: MemState; after: MemState; correct: number; reason: string };
+			const memory = slide.querySelector<HTMLElement>('[data-memory]');
+			const feedback = slide.querySelector<HTMLElement>('[data-feedback]');
+			const replay = slide.querySelector<HTMLButtonElement>('[data-replay]');
+			const retry = slide.querySelector<HTMLButtonElement>('[data-retry]');
+			const options = Array.from(slide.querySelectorAll<HTMLButtonElement>('.md-opt'));
+			let timer: number | undefined;
+
+			function transition() {
+				if (!memory) return;
+				window.clearTimeout(timer);
+				renderMemory(memory, data.before);
+				timer = window.setTimeout(() => renderMemory(memory, data.after, data.before), 650);
+			}
+
+			function reset() {
+				window.clearTimeout(timer);
+				if (memory) renderMemory(memory, data.before);
+				options.forEach((o) => {
+					o.disabled = false;
+					o.classList.remove('is-right', 'is-wrong');
+				});
+				if (feedback) {
+					feedback.textContent = '';
+					feedback.classList.remove('is-right', 'is-wrong');
+				}
+				if (replay) replay.hidden = true;
+				if (retry) retry.hidden = true;
+			}
+
+			options.forEach((opt) => {
+				opt.addEventListener('click', () => {
+					const chosen = Number(opt.dataset.index);
+					const ok = chosen === data.correct;
+					options.forEach((o) => {
+						o.disabled = true;
+						if (Number(o.dataset.index) === data.correct) o.classList.add('is-right');
+					});
+					if (!ok) opt.classList.add('is-wrong');
+					if (feedback) {
+						richText(feedback, `${ok ? ui.correct : ui.incorrect} ${data.reason}`);
+						feedback.classList.toggle('is-right', ok);
+						feedback.classList.toggle('is-wrong', !ok);
+					}
+					if (replay) replay.hidden = false;
+					if (retry) retry.hidden = false;
+					transition();
+				});
+			});
+
+			replay?.addEventListener('click', transition);
+			retry?.addEventListener('click', () => {
+				reset();
+				options[0]?.focus();
+			});
+			reset();
+		});
+
+		// Assess: answers are stored silently and graded at the end.
+		const answers: (number | null)[] = [];
+		const questionSlides = Array.from(screen.querySelectorAll<HTMLElement>('.md-slide[data-question]'));
+		questionSlides.forEach((slide) => {
+			const q = Number(slide.dataset.question);
+			answers[q] = null;
+			const saved = slide.querySelector<HTMLElement>('[data-saved]');
+			const options = Array.from(slide.querySelectorAll<HTMLButtonElement>('.md-opt'));
+			options.forEach((opt) => {
+				opt.addEventListener('click', () => {
+					answers[q] = Number(opt.dataset.index);
+					options.forEach((o) => o.setAttribute('aria-pressed', String(o === opt)));
+					if (saved) saved.textContent = ui.selected;
+				});
+			});
+		});
+
+		const resultsSlide = screen.querySelector<HTMLElement>('[data-results-slide]');
+		const results = resultsSlide?.querySelector<HTMLElement>('[data-results]');
+		const assessData = JSON.parse(resultsSlide?.dataset.assess ?? '[]') as { options: string[]; correct: number; reason: string }[];
+
+		resultsSlide?.querySelector('[data-grade]')?.addEventListener('click', () => {
+			if (!results) return;
+			results.replaceChildren();
+			const missing = answers.filter((a) => a === null).length;
+			const score = assessData.filter((q, i) => answers[i] === q.correct).length;
+			results.append(el('p', 'md-score', fmt(ui.score, { s: score, t: assessData.length })));
+			if (missing > 0) results.append(el('p', 'md-empty', fmt(ui.pending, { n: missing })));
+			const list = el('ol', 'md-result-list');
+			assessData.forEach((q, i) => {
+				const answer = answers[i];
+				const ok = answer === q.correct;
+				const item = el('li', `md-result${ok ? '' : ' is-wrong'}`);
+				item.append(el('strong', undefined, `${ui.question} ${i + 1}: ${ok ? ui.right : ui.wrong}`));
+				const mine = el('p');
+				richText(mine, `${ui.yourAnswer} ${answer === null ? ui.unanswered : q.options[answer]}`);
+				const correct = el('p');
+				richText(correct, `${ui.answerWas} ${q.options[q.correct]}`);
+				const reason = el('p');
+				richText(reason, q.reason);
+				item.append(mine, correct, reason);
+				list.append(item);
+			});
+			results.append(list);
+		});
+
+		resultsSlide?.querySelector('[data-assess-reset]')?.addEventListener('click', () => {
+			answers.fill(null);
+			questionSlides.forEach((slide) => {
+				slide.querySelectorAll('.md-opt').forEach((o) => o.setAttribute('aria-pressed', 'false'));
+				const saved = slide.querySelector<HTMLElement>('[data-saved]');
+				if (saved) saved.textContent = '';
+			});
+			results?.replaceChildren();
+			goTo('assess', 1);
+		});
+
+		// Deck navigation: one position per mode.
+		const prevBtn = screen.querySelector<HTMLButtonElement>('#mdPrevBtn');
+		const nextBtn = screen.querySelector<HTMLButtonElement>('#mdNextBtn');
+		const counter = screen.querySelector<HTMLElement>('#mdSlideCounter');
+		const hint = screen.querySelector<HTMLElement>('#mdModeHint');
+		const position: Record<Mode, number> = { learn: 1, practice: 1, assess: 1 };
+		let mode: Mode = 'learn';
+
+		function goTo(m: Mode, n: number) {
+			const total = totals[m];
+			if (n < 1 || n > total) return;
+			mode = m;
+			position[m] = n;
+			screen?.querySelectorAll('.md-slide').forEach((s) => s.classList.remove('is-active'));
+			screen?.querySelector(`.md-slide[data-slide="${m}-${n}"]`)?.classList.add('is-active');
+			if (counter) counter.textContent = `${n} / ${total}`;
+			if (prevBtn) prevBtn.disabled = n === 1;
+			if (nextBtn) nextBtn.disabled = n === total;
+			if (hint) hint.textContent = hints[m];
+		}
+
+		prevBtn?.addEventListener('click', () => goTo(mode, position[mode] - 1));
+		nextBtn?.addEventListener('click', () => goTo(mode, position[mode] + 1));
+
+		screen.querySelectorAll<HTMLInputElement>('input[name="mdMode"]').forEach((input) => {
+			input.addEventListener('change', () => {
+				if (input.checked) goTo(input.value as Mode, position[input.value as Mode]);
+			});
+		});
+
+		window.addEventListener('keydown', (e) => {
+			const target = e.target as HTMLElement | null;
+			if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+			if (e.key === 'ArrowRight') goTo(mode, position[mode] + 1);
+			if (e.key === 'ArrowLeft') goTo(mode, position[mode] - 1);
+		});
+
+		goTo('learn', 1);
+	}
+</script>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+	<!-- Pointer markers: p and p + 2 -->
+	<g font-family="monospace" font-size="13" font-weight="700" text-anchor="middle">
+		<rect x="56" y="34" width="28" height="20" rx="10" fill="#7a8a5e"/>
+		<text x="70" y="48" fill="#f5ead8">p</text>
+		<rect x="190" y="34" width="60" height="20" rx="10" fill="#8c491a"/>
+		<text x="220" y="48" fill="#f5ead8">p + 2</text>
+	</g>
+	<path d="M70 58 L70 76 M64 70 L70 76 L76 70" fill="none" stroke="#7a8a5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+	<path d="M220 58 L220 76 M214 70 L220 76 L226 70" fill="none" stroke="#8c491a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+	<!-- Contiguous cells -->
+	<g font-family="monospace" text-anchor="middle">
+		<rect x="40" y="84" width="60" height="52" rx="14" fill="#f5ead8" stroke="#7a8a5e" stroke-width="3"/>
+		<rect x="115" y="84" width="60" height="52" rx="14" fill="#f5ead8" stroke="#d9cbba" stroke-width="3"/>
+		<rect x="190" y="84" width="60" height="52" rx="14" fill="#f5ead8" stroke="#c67139" stroke-width="3"/>
+		<rect x="265" y="84" width="60" height="52" rx="14" fill="#f5ead8" stroke="#d9cbba" stroke-width="3"/>
+		<rect x="340" y="84" width="40" height="52" rx="14" fill="none" stroke="#d9cbba" stroke-width="2" stroke-dasharray="5 5"/>
+		<text x="70" y="116" font-size="18" font-weight="700" fill="#201e1d">10</text>
+		<text x="145" y="116" font-size="18" font-weight="700" fill="#201e1d">20</text>
+		<text x="220" y="116" font-size="18" font-weight="700" fill="#201e1d">30</text>
+		<text x="295" y="116" font-size="18" font-weight="700" fill="#201e1d">40</text>
+		<text x="70" y="154" font-size="11" fill="#7a8a5e">0x1000</text>
+		<text x="145" y="154" font-size="11" fill="#7a8a5e">0x1004</text>
+		<text x="220" y="154" font-size="11" fill="#7a8a5e">0x1008</text>
+		<text x="295" y="154" font-size="11" fill="#7a8a5e">0x100C</text>
+	</g>
+	<text x="40" y="184" font-family="'Caprasimo', serif" font-size="16" fill="#201e1d">a[i] == *(a + i)</text>
+</svg>

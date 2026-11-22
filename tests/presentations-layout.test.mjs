@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
+import { presentations } from '../src/data/presentations.ts';
 
 const PRESENTATIONS_DIR = 'src/components/presentaciones';
 
@@ -24,7 +25,8 @@ async function getPresentationFiles() {
 
 test('every presentation component drops its <header class="XX-header"> block', async () => {
 	const files = await getPresentationFiles();
-	assert.equal(files.length, 50, 'expected 50 presentation components');
+	// One component per catalog entry.
+	assert.equal(files.length, presentations.length, 'expected one component per catalog presentation');
 
 	for (const file of files) {
 		const content = await readFile(`${PRESENTATIONS_DIR}/${file}`, 'utf8');

@@ -1,0 +1,1496 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// The C programs shown in the deck. Every program compiles with
+// `cc -std=c23 -Wall -Wextra -Wpedantic`; the ones that hold a lifetime bug
+// on purpose (dangling, record, largest, formatPrice) are marked as such in the slides.
+// c-code:start
+const C_CODE = {
+	es: {
+		auto: String.raw`#include <stdio.h>
+
+void mostrar_cuadrado(int n) {
+    int cuadrado = n * n;
+    printf("%d al cuadrado es %d\n", n, cuadrado);
+}
+
+int main(void) {
+    for (int i = 1; i <= 3; i++) {
+        int doble = i * 2;
+        printf("doble de %d: %d\n", i, doble);
+    }
+    mostrar_cuadrado(4);
+    mostrar_cuadrado(5);
+    return 0;
+}`,
+		static: String.raw`#include <stdio.h>
+
+int llamadas_totales = 0;
+
+int siguiente_turno(void) {
+    static int turno = 0;
+    turno++;
+    llamadas_totales++;
+    return turno;
+}
+
+int main(void) {
+    printf("Turno %d\n", siguiente_turno());
+    printf("Turno %d\n", siguiente_turno());
+    printf("Turno %d\n", siguiente_turno());
+    printf("Llamadas: %d\n", llamadas_totales);
+    return 0;
+}`,
+		dangling: String.raw`#include <stdio.h>
+
+int *calcular_doble(int n) {
+    int resultado = n * 2;
+    return &resultado;
+}
+
+int main(void) {
+    int *p = calcular_doble(21);
+    printf("%d\n", *p);
+    return 0;
+}`,
+		block: String.raw`#include <stdio.h>
+
+int main(void) {
+    int *p = NULL;
+    {
+        int temporal = 42;
+        p = &temporal;
+        printf("Dentro del bloque: %d\n", *p);
+    }
+    printf("Fuera del bloque: %d\n", *p);
+    return 0;
+}`,
+		buffer: String.raw`#include <stdio.h>
+
+bool armar_saludo(char *destino, size_t capacidad, const char *nombre) {
+    int escritos = snprintf(destino, capacidad, "Hola, %s", nombre);
+    return escritos >= 0 && (size_t)escritos < capacidad;
+}
+
+int main(void) {
+    char saludo[32];
+    if (armar_saludo(saludo, sizeof saludo, "Ana")) {
+        printf("%s\n", saludo);
+    }
+    return 0;
+}`,
+		count: String.raw`#include <stdio.h>
+
+int contar(void) {
+    static int veces = 0;
+    int local = 0;
+    veces++;
+    local++;
+    return veces * 10 + local;
+}
+
+int main(void) {
+    printf("%d\n", contar());
+    printf("%d\n", contar());
+    printf("%d\n", contar());
+    return 0;
+}`,
+		day: String.raw`#include <stdio.h>
+
+const char *nombre_del_dia(int dia) {
+    static char texto[16];
+    snprintf(texto, sizeof texto, "Dia %d", dia);
+    return texto;
+}
+
+int main(void) {
+    const char *a = nombre_del_dia(1);
+    const char *b = nombre_del_dia(2);
+    printf("%s / %s\n", a, b);
+    return 0;
+}`,
+		record: String.raw`#include <stdio.h>
+
+struct registro {
+    int *dato;
+};
+
+struct registro registro_global = { NULL };
+
+void guardar(void) {
+    int valor = 7;
+    registro_global.dato = &valor;
+}
+
+int main(void) {
+    guardar();
+    return 0;
+}`,
+		process: String.raw`int total = 0;
+
+void procesar(int x) {
+    static int contador = 0;
+    char buffer[8] = "";
+    for (int i = 0; i < x; i++) {
+        contador++;
+    }
+    total += contador + buffer[0];
+}`,
+		largest: String.raw`#include <stddef.h>
+
+int *mayor(const int *valores, size_t n) {
+    int maximo = valores[0];
+    for (size_t i = 1; i < n; i++) {
+        if (valores[i] > maximo) {
+            maximo = valores[i];
+        }
+    }
+    return &maximo;
+}`,
+		formatPrice: String.raw`#include <stdio.h>
+
+const char *formatear_precio(double precio) {
+    char texto[32];
+    snprintf(texto, sizeof texto, "$ %.2f", precio);
+    return texto;
+}`,
+	},
+	en: {
+		auto: String.raw`#include <stdio.h>
+
+void show_square(int n) {
+    int square = n * n;
+    printf("%d squared is %d\n", n, square);
+}
+
+int main(void) {
+    for (int i = 1; i <= 3; i++) {
+        int twice = i * 2;
+        printf("twice %d: %d\n", i, twice);
+    }
+    show_square(4);
+    show_square(5);
+    return 0;
+}`,
+		static: String.raw`#include <stdio.h>
+
+int total_calls = 0;
+
+int next_turn(void) {
+    static int turn = 0;
+    turn++;
+    total_calls++;
+    return turn;
+}
+
+int main(void) {
+    printf("Turn %d\n", next_turn());
+    printf("Turn %d\n", next_turn());
+    printf("Turn %d\n", next_turn());
+    printf("Calls: %d\n", total_calls);
+    return 0;
+}`,
+		dangling: String.raw`#include <stdio.h>
+
+int *compute_double(int n) {
+    int result = n * 2;
+    return &result;
+}
+
+int main(void) {
+    int *p = compute_double(21);
+    printf("%d\n", *p);
+    return 0;
+}`,
+		block: String.raw`#include <stdio.h>
+
+int main(void) {
+    int *p = NULL;
+    {
+        int temporary = 42;
+        p = &temporary;
+        printf("Inside the block: %d\n", *p);
+    }
+    printf("Outside the block: %d\n", *p);
+    return 0;
+}`,
+		buffer: String.raw`#include <stdio.h>
+
+bool build_greeting(char *destination, size_t capacity, const char *name) {
+    int written = snprintf(destination, capacity, "Hello, %s", name);
+    return written >= 0 && (size_t)written < capacity;
+}
+
+int main(void) {
+    char greeting[32];
+    if (build_greeting(greeting, sizeof greeting, "Ana")) {
+        printf("%s\n", greeting);
+    }
+    return 0;
+}`,
+		count: String.raw`#include <stdio.h>
+
+int count(void) {
+    static int times = 0;
+    int local = 0;
+    times++;
+    local++;
+    return times * 10 + local;
+}
+
+int main(void) {
+    printf("%d\n", count());
+    printf("%d\n", count());
+    printf("%d\n", count());
+    return 0;
+}`,
+		day: String.raw`#include <stdio.h>
+
+const char *day_name(int day) {
+    static char text[16];
+    snprintf(text, sizeof text, "Day %d", day);
+    return text;
+}
+
+int main(void) {
+    const char *a = day_name(1);
+    const char *b = day_name(2);
+    printf("%s / %s\n", a, b);
+    return 0;
+}`,
+		record: String.raw`#include <stdio.h>
+
+struct record {
+    int *data;
+};
+
+struct record global_record = { NULL };
+
+void save(void) {
+    int value = 7;
+    global_record.data = &value;
+}
+
+int main(void) {
+    save();
+    return 0;
+}`,
+		process: String.raw`int total = 0;
+
+void process(int x) {
+    static int counter = 0;
+    char buffer[8] = "";
+    for (int i = 0; i < x; i++) {
+        counter++;
+    }
+    total += counter + buffer[0];
+}`,
+		largest: String.raw`#include <stddef.h>
+
+int *largest(const int *values, size_t n) {
+    int maximum = values[0];
+    for (size_t i = 1; i < n; i++) {
+        if (values[i] > maximum) {
+            maximum = values[i];
+        }
+    }
+    return &maximum;
+}`,
+		formatPrice: String.raw`#include <stdio.h>
+
+const char *format_price(double price) {
+    char text[32];
+    snprintf(text, sizeof text, "$ %.2f", price);
+    return text;
+}`,
+	},
+};
+// c-code:end
+
+type CodeKey = keyof (typeof C_CODE)['es'];
+const code = (key: CodeKey) => C_CODE[isEs ? 'es' : 'en'][key].split('\n');
+
+type Var = { n: string; a: string; v: string; st?: 'new' | 'chg' | 'dead'; p?: string; bad?: boolean };
+type Frame = { fn: string; v: Var[]; st?: 'new' | 'dead' };
+type State = { s?: Var[]; f?: Frame[]; h?: Var[]; out?: string[]; focus?: 'static' | 'stack' | 'heap' };
+type Step = State & { ln?: number; note: string };
+
+const V = (n: string, a: string, v: string, st?: Var['st'], extra: Partial<Var> = {}): Var => ({ n, a, v, st, ...extra });
+const F = (fn: string, v: Var[], st?: Frame['st']): Frame => ({ fn, v, st });
+
+// Identifiers, localized like the lesson does.
+const id = {
+	square: t('cuadrado', 'square'),
+	showSquare: t('mostrar_cuadrado', 'show_square'),
+	twice: t('doble', 'twice'),
+	totalCalls: t('llamadas_totales', 'total_calls'),
+	turn: t('turno', 'turn'),
+	nextTurn: t('siguiente_turno', 'next_turn'),
+	result: t('resultado', 'result'),
+	computeDouble: t('calcular_doble', 'compute_double'),
+	temporary: t('temporal', 'temporary'),
+	greeting: t('saludo', 'greeting'),
+	buildGreeting: t('armar_saludo', 'build_greeting'),
+	destination: t('destino', 'destination'),
+	capacity: t('capacidad', 'capacity'),
+	name: t('nombre', 'name'),
+	written: t('escritos', 'written'),
+	count: t('contar', 'count'),
+	times: t('veces', 'times'),
+	dayName: t('nombre_del_dia', 'day_name'),
+	text: t('texto', 'text'),
+	globalRecord: t('registro_global.dato', 'global_record.data'),
+	save: t('guardar', 'save'),
+	value: t('valor', 'value'),
+	block: t('bloque', 'block'),
+};
+
+const sq = (n: number) => (isEs ? `${n} al cuadrado es ${n * n}` : `${n} squared is ${n * n}`);
+const tw = (i: number) => (isEs ? `doble de ${i}: ${i * 2}` : `twice ${i}: ${i * 2}`);
+const turnOut = (n: number) => t(`Turno ${n}`, `Turn ${n}`);
+
+const learn: { kicker: string; title: string; lead: string; code?: CodeKey; buggy?: boolean; steps: Step[] }[] = [
+	{
+		kicker: t('Objetos y tiempo de vida', 'Objects and lifetime'),
+		title: t('Cuatro duraciones, tres zonas para imaginarlas', 'Four durations, three regions to picture them'),
+		lead: t(
+			'Un objeto es una región de memoria que guarda un valor. Su tiempo de vida es el intervalo de la ejecución en que existe, tiene una dirección fija y conserva su último valor. La duración de almacenamiento decide ese intervalo.',
+			'An object is a region of memory that holds a value. Its lifetime is the part of the execution during which it exists, has a fixed address and keeps its last stored value. The storage duration decides that interval.',
+		),
+		steps: [
+			{
+				focus: 'stack',
+				f: [F('main', [V(id.twice, '0x2004', '2', 'new')])],
+				note: t(
+					'Duración automática: variables locales y parámetros. Empieza al entrar al bloque y termina en su llave de cierre. En el modelo viven en un marco de la pila.',
+					'Automatic duration: local variables and parameters. It starts on entering the block and ends at its closing brace. In the model they live in a stack frame.',
+				),
+			},
+			{
+				focus: 'static',
+				s: [V(id.totalCalls, '0x1000', '0', 'new'), V(id.turn, '0x1004', '0', 'new')],
+				f: [F('main', [V(id.twice, '0x2004', '2')])],
+				note: t(
+					'Duración estática: globales y locales static. Empieza antes de que empiece main y termina cuando termina el programa. Suelen ir en una zona preparada al cargar el programa.',
+					'Static duration: globals and static locals. It starts before main starts and ends when the program ends. They usually go in a region prepared when the program is loaded.',
+				),
+			},
+			{
+				focus: 'heap',
+				s: [V(id.totalCalls, '0x1000', '0'), V(id.turn, '0x1004', '0')],
+				f: [F('main', [V(id.twice, '0x2004', '2')])],
+				h: [V(id.block, '0x3000', '…', 'new')],
+				note: t(
+					'Duración asignada: el programa pide memoria en tiempo de ejecución y decide cuándo devolverla. El modelo la ubica en el montículo. Cómo se pide es el tema de la próxima lección.',
+					'Allocated duration: the program requests memory at run time and decides when to give it back. The model places it in the heap. How to request it is the topic of the next lesson.',
+				),
+			},
+			{
+				s: [V(id.totalCalls, '0x1000', '0'), V(id.turn, '0x1004', '0')],
+				f: [F('main', [V(id.twice, '0x2004', '2')])],
+				h: [V(id.block, '0x3000', '…')],
+				note: t(
+					'Duración de hilo: una variable thread_local tiene una copia por hilo, que vive mientras vive ese hilo. Se estudia en el módulo avanzado de concurrencia.',
+					'Thread duration: a thread_local variable has one copy per thread, alive while that thread lives. It is covered in the advanced concurrency module.',
+				),
+			},
+		],
+	},
+	{
+		kicker: t('Duración automática', 'Automatic duration'),
+		title: t('Marcos que se apilan y se desapilan', 'Frames pushed and popped'),
+		lead: t(
+			'Cada llamada a función apila un marco con sus parámetros y variables locales. Al volver, el marco se desapila y esa memoria se reutiliza.',
+			'Each function call pushes a frame with its parameters and local variables. On return, the frame is popped and that memory is reused.',
+		),
+		code: 'auto',
+		steps: [
+			{ ln: 8, focus: 'stack', f: [F('main', [], 'new')], note: t('Empieza main: se apila su marco. Todavía no hay variables vivas porque no se ejecutó ninguna declaración.', 'main starts: its frame is pushed. There are no live variables yet because no declaration has run.') },
+			{ ln: 9, focus: 'stack', f: [F('main', [V('i', '0x2000', '1', 'new')])], note: t('Al entrar al for nace i, con duración automática y valor 1. Vive mientras dure el for.', 'Entering the for creates i, with automatic duration and value 1. It lives as long as the for runs.') },
+			{ ln: 10, focus: 'stack', f: [F('main', [V('i', '0x2000', '1'), V(id.twice, '0x2004', '2', 'new')])], note: t('Dentro del cuerpo nace doble, que vale 2.', 'Inside the body twice is created, with value 2.') },
+			{ ln: 12, focus: 'stack', f: [F('main', [V('i', '0x2000', '1'), V(id.twice, '0x2004', '2', 'dead')])], out: [tw(1)], note: t('Llave de cierre: termina la vuelta y doble deja de existir.', 'Closing brace: the iteration ends and twice stops existing.') },
+			{ ln: 10, focus: 'stack', f: [F('main', [V('i', '0x2000', '2', 'chg'), V(id.twice, '0x2004', '4', 'new')])], out: [tw(1)], note: t('Segunda vuelta: i vale 2 y nace otro doble, que vale 4. Es un objeto nuevo, aunque el modelo reutilice su lugar.', 'Second iteration: i is 2 and another twice is created, with value 4. It is a new object, even if the model reuses its place.') },
+			{ ln: 13, focus: 'stack', f: [F('main', [V('i', '0x2000', '4', 'dead')])], out: [tw(1), tw(2), tw(3)], note: t('Terminó el for: también i deja de existir. Ahora main llama a mostrar_cuadrado(4).', 'The for is over: i stops existing too. Now main calls show_square(4).') },
+			{ ln: 5, focus: 'stack', f: [F('main', []), F(`${id.showSquare}(4)`, [V('n', '0x2010', '4', 'new'), V(id.square, '0x2014', '16', 'new')], 'new')], out: [tw(1), tw(2), tw(3)], note: t('La llamada apila un marco nuevo con el parámetro n y la variable cuadrado.', 'The call pushes a new frame with the parameter n and the variable square.') },
+			{ ln: 6, focus: 'stack', f: [F('main', []), F(`${id.showSquare}(4)`, [V('n', '0x2010', '4', 'dead'), V(id.square, '0x2014', '16', 'dead')], 'dead')], out: [tw(1), tw(2), tw(3), sq(4)], note: t('La función vuelve: su marco se desapila y n y cuadrado dejan de existir.', 'The function returns: its frame is popped and n and square stop existing.') },
+			{ ln: 5, focus: 'stack', f: [F('main', []), F(`${id.showSquare}(5)`, [V('n', '0x2010', '5', 'new'), V(id.square, '0x2014', '25', 'new')], 'new')], out: [tw(1), tw(2), tw(3), sq(4)], note: t('Otra llamada, otros objetos. En el modelo ocupan el mismo lugar que los anteriores: la memoria de la pila se reutiliza.', 'Another call, other objects. In the model they take the same place as the previous ones: stack memory is reused.') },
+		],
+	},
+	{
+		kicker: t('Duración estática', 'Static duration'),
+		title: t('Lo que sobrevive a cada llamada', 'What survives every call'),
+		lead: t(
+			'Las globales y las locales static existen durante toda la ejecución. Se inicializan una sola vez, antes de main, y si no tienen valor inicial empiezan en cero.',
+			'Globals and static locals exist for the whole execution. They are initialized only once, before main, and start at zero when they have no initial value.',
+		),
+		code: 'static',
+		steps: [
+			{ ln: 3, focus: 'static', s: [V(id.totalCalls, '0x1000', '0', 'new'), V(id.turn, '0x1004', '0', 'new')], note: t('Antes de que empiece main ya existen las dos variables estáticas, inicializadas una sola vez. turno también, aunque se declare dentro de la función.', 'Before main starts both static variables already exist, initialized only once. turn too, even though it is declared inside the function.') },
+			{ ln: 9, focus: 'static', s: [V(id.totalCalls, '0x1000', '1', 'chg'), V(id.turn, '0x1004', '1', 'chg')], f: [F('main', []), F(id.nextTurn, [], 'new')], note: t('La primera llamada apila un marco sin variables automáticas. turno y llamadas_totales no están en el marco: viven en la zona estática y pasan a 1.', 'The first call pushes a frame with no automatic variables. turn and total_calls are not in the frame: they live in the static region and become 1.') },
+			{ ln: 9, focus: 'static', s: [V(id.totalCalls, '0x1000', '2', 'chg'), V(id.turn, '0x1004', '2', 'chg')], f: [F('main', []), F(id.nextTurn, [], 'new')], out: [turnOut(1)], note: t('El marco anterior se desapiló, pero turno conservó su valor: la línea 6 no vuelve a inicializarlo. Ahora vale 2.', 'The previous frame was popped, but turn kept its value: line 6 does not initialize it again. Now it is 2.') },
+			{ ln: 9, focus: 'static', s: [V(id.totalCalls, '0x1000', '3', 'chg'), V(id.turn, '0x1004', '3', 'chg')], f: [F('main', []), F(id.nextTurn, [], 'new')], out: [turnOut(1), turnOut(2)], note: t('Tercera llamada: otro marco nuevo, pero las mismas dos variables estáticas, que llegan a 3.', 'Third call: another new frame, but the same two static variables, which reach 3.') },
+			{ ln: 16, focus: 'static', s: [V(id.totalCalls, '0x1000', '3'), V(id.turn, '0x1004', '3')], f: [F('main', [])], out: [turnOut(1), turnOut(2), turnOut(3)], note: t('Desde main puedes leer llamadas_totales porque es global. turno sigue vivo, pero su alcance es el bloque de siguiente_turno: aquí no puedes escribir su nombre. Alcance y tiempo de vida son ideas distintas.', 'From main you can read total_calls because it is global. turn is still alive, but its scope is the block of next_turn: here you cannot write its name. Scope and lifetime are different ideas.') },
+			{ ln: 17, focus: 'static', s: [V(id.totalCalls, '0x1000', '3'), V(id.turn, '0x1004', '3')], f: [F('main', [])], out: [turnOut(1), turnOut(2), turnOut(3), t('Llamadas: 3', 'Calls: 3')], note: t('Las variables estáticas viven hasta que termina el programa.', 'Static variables live until the program ends.') },
+		],
+	},
+	{
+		kicker: t('Punteros colgantes', 'Dangling pointers'),
+		title: t('Devolver la dirección de una variable local', 'Returning the address of a local variable'),
+		lead: t(
+			'Este programa tiene un error a propósito: la función devuelve la dirección de un objeto automático, que deja de existir en cuanto la función termina.',
+			'This program has a bug on purpose: the function returns the address of an automatic object, which stops existing as soon as the function ends.',
+		),
+		code: 'dangling',
+		buggy: true,
+		steps: [
+			{ ln: 9, focus: 'stack', f: [F('main', []), F(id.computeDouble, [V('n', '0x2010', '21', 'new')], 'new')], note: t('main llama a calcular_doble(21): se apila un marco con el parámetro n.', 'main calls compute_double(21): a frame with the parameter n is pushed.') },
+			{ ln: 4, focus: 'stack', f: [F('main', []), F(id.computeDouble, [V('n', '0x2010', '21'), V(id.result, '0x2014', '42', 'new')])], note: t('Nace resultado, con duración automática, en el marco de la función.', 'result is created, with automatic duration, in the function frame.') },
+			{ ln: 5, focus: 'stack', f: [F('main', []), F(id.computeDouble, [V('n', '0x2010', '21'), V(id.result, '0x2014', '42')])], note: t('return &resultado entrega la dirección 0x2014. El problema es lo que pasa justo después.', 'return &result hands back the address 0x2014. The problem is what happens right after.') },
+			{ ln: 9, focus: 'stack', f: [F('main', [V('p', '0x2000', '0x2014', 'new', { p: id.result, bad: true })]), F(id.computeDouble, [V('n', '0x2010', '21', 'dead'), V(id.result, '0x2014', '42', 'dead')], 'dead')], note: t('El marco se desapiló y resultado ya no existe, pero p guarda su dirección: p es un puntero colgante.', 'The frame was popped and result no longer exists, but p holds its address: p is a dangling pointer.') },
+			{ ln: 10, focus: 'stack', f: [F('main', [V('p', '0x2000', '0x2014', undefined, { p: id.result, bad: true })])], note: t('Leer *p es comportamiento indefinido. Por suerte el compilador suele avisar: gcc con -Wreturn-local-addr, clang con -Wreturn-stack-address. Con -Werror ni siquiera compila.', 'Reading *p is undefined behavior. Luckily the compiler usually warns: gcc with -Wreturn-local-addr, clang with -Wreturn-stack-address. With -Werror it does not even compile.') },
+		],
+	},
+	{
+		kicker: t('Punteros colgantes', 'Dangling pointers'),
+		title: t('Un puntero que sobrevive a su bloque', 'A pointer that outlives its block'),
+		lead: t(
+			'El compilador no siempre puede avisarte. Este programa compila sin ninguna advertencia y aun así la segunda lectura de *p es incorrecta.',
+			'The compiler cannot always warn you. This program compiles without any warning, and still the second read of *p is wrong.',
+		),
+		code: 'block',
+		buggy: true,
+		steps: [
+			{ ln: 4, focus: 'stack', f: [F('main', [V('p', '0x2000', 'NULL', 'new')], 'new')], note: t('p nace en el marco de main con el valor NULL.', 'p is created in the frame of main with the value NULL.') },
+			{ ln: 6, focus: 'stack', f: [F('main', [V('p', '0x2000', 'NULL'), V(id.temporary, '0x2008', '42', 'new')])], note: t('Al entrar al bloque interno nace temporal, con valor 42.', 'Entering the inner block creates temporary, with value 42.') },
+			{ ln: 7, focus: 'stack', f: [F('main', [V('p', '0x2000', '0x2008', 'chg', { p: id.temporary }), V(id.temporary, '0x2008', '42')])], note: t('p guarda la dirección de temporal.', 'p stores the address of temporary.') },
+			{ ln: 8, focus: 'stack', f: [F('main', [V('p', '0x2000', '0x2008', undefined, { p: id.temporary }), V(id.temporary, '0x2008', '42')])], out: [t('Dentro del bloque: 42', 'Inside the block: 42')], note: t('Esta lectura es correcta: temporal está vivo.', 'This read is correct: temporary is alive.') },
+			{ ln: 9, focus: 'stack', f: [F('main', [V('p', '0x2000', '0x2008', undefined, { p: id.temporary, bad: true }), V(id.temporary, '0x2008', '42', 'dead')])], out: [t('Dentro del bloque: 42', 'Inside the block: 42')], note: t('Llave de cierre: temporal deja de existir. p no cambia, pero ahora es colgante.', 'Closing brace: temporary stops existing. p does not change, but it is now dangling.') },
+			{ ln: 10, focus: 'stack', f: [F('main', [V('p', '0x2000', '0x2008', undefined, { p: id.temporary, bad: true })])], out: [t('Dentro del bloque: 42', 'Inside the block: 42'), '?'], note: t('Comportamiento indefinido: puede imprimir 42, basura, terminar con error u otra cosa. Que hoy imprima 42 no prueba nada: una llamada en el medio, -O2 u otro compilador lo cambian.', 'Undefined behavior: it may print 42, garbage, crash or something else. Printing 42 today proves nothing: a call in between, -O2 or another compiler change it.') },
+		],
+	},
+	{
+		kicker: t('Modelos explicativos', 'Explanatory models'),
+		title: t('La pila y el montículo no son reglas del lenguaje', 'The stack and the heap are not language rules'),
+		lead: t(
+			'El estándar de C habla de duraciones y tiempos de vida; no exige que exista una pila ni un montículo. Son imágenes útiles para razonar.',
+			'The C standard talks about storage durations and lifetimes; it does not require a stack or a heap to exist. They are useful pictures to reason with.',
+		),
+		steps: [
+			{ focus: 'static', s: [V(id.totalCalls, '0x1000', '0', 'new'), V(id.turn, '0x1004', '0', 'new')], note: t('Zona estática: preparada al cargar el programa, guarda las variables de duración estática durante toda la ejecución.', 'Static region: prepared when the program is loaded, it holds the static duration variables for the whole execution.') },
+			{ focus: 'stack', s: [V(id.totalCalls, '0x1000', '0'), V(id.turn, '0x1004', '0')], f: [F('main', [V('i', '0x2000', '1')]), F(`${id.showSquare}(4)`, [V('n', '0x2010', '4'), V(id.square, '0x2014', '16')], 'new')], note: t('Pila: cada llamada apila un marco con sus variables automáticas; al volver se desapila. Crece al llamar y se libera al volver.', 'Stack: each call pushes a frame with its automatic variables; on return it is popped. It grows on calls and is released on returns.') },
+			{ focus: 'heap', s: [V(id.totalCalls, '0x1000', '0'), V(id.turn, '0x1004', '0')], f: [F('main', [V('i', '0x2000', '1')])], h: [V(`${id.block} A`, '0x3000', '…', 'new'), V(`${id.block} B`, '0x3010', '…', 'new')], note: t('Montículo: de aquí sale la memoria de duración asignada. Los bloques se piden y se devuelven en cualquier orden, no en orden de llamadas.', 'Heap: the memory of allocated duration comes from here. Blocks are requested and given back in any order, not in call order.') },
+			{ focus: 'heap', s: [V(id.totalCalls, '0x1000', '0'), V(id.turn, '0x1004', '0')], f: [F('main', [V('i', '0x2000', '1')])], h: [V(`${id.block} A`, '0x3000', '…', 'dead'), V(`${id.block} B`, '0x3010', '…')], note: t('El bloque A se devolvió antes que el B: el programa decide cuándo termina cada uno. Las funciones que lo hacen son el tema de la próxima lección.', 'Block A was given back before B: the program decides when each one ends. The functions that do it are the topic of the next lesson.') },
+			{ s: [V(id.totalCalls, '0x1000', '0'), V(id.turn, '0x1004', '0')], f: [F('main', [V('i', '0x2000', '1')])], h: [V(`${id.block} B`, '0x3010', '…')], note: t('Un compilador puede guardar una variable automática solo en un registro, o eliminarla si no la necesita. Razona con la pila y el montículo, pero la garantía real es la duración.', 'A compiler may keep an automatic variable only in a register, or remove it if it is not needed. Reason with the stack and the heap, but the real guarantee is the storage duration.') },
+		],
+	},
+	{
+		kicker: t('Alternativas correctas', 'Correct alternatives'),
+		title: t('El llamador decide dónde vive el resultado', 'The caller decides where the result lives'),
+		lead: t(
+			'Para devolver un resultado sin punteros colgantes: devuélvelo por valor si es pequeño, usa un búfer del llamador si es un arreglo o una cadena, o, con cuidado, una variable local static.',
+			'To return a result without dangling pointers: return it by value if it is small, use a caller-provided buffer for an array or a string, or, carefully, a static local variable.',
+		),
+		code: 'buffer',
+		steps: [
+			{ ln: 9, focus: 'stack', f: [F('main', [V(`${id.greeting}[32]`, '0x2000', '?', 'new')], 'new')], note: t('saludo vive en el marco de main. Todavía no tiene contenido.', 'greeting lives in the frame of main. It has no contents yet.') },
+			{ ln: 10, focus: 'stack', f: [F('main', [V(`${id.greeting}[32]`, '0x2000', '?')]), F(id.buildGreeting, [V(id.destination, '0x2030', '0x2000', 'new', { p: id.greeting }), V(id.capacity, '0x2038', '32', 'new'), V(id.name, '0x2040', '"Ana"', 'new')], 'new')], note: t('La función recibe un puntero a saludo y su capacidad. destino apunta a un objeto que vive en el marco de main, que es más largo.', 'The function receives a pointer to greeting and its capacity. destination points to an object that lives in the frame of main, which lasts longer.') },
+			{ ln: 4, focus: 'stack', f: [F('main', [V(`${id.greeting}[32]`, '0x2000', t('"Hola, Ana"', '"Hello, Ana"'), 'chg')]), F(id.buildGreeting, [V(id.destination, '0x2030', '0x2000', undefined, { p: id.greeting }), V(id.capacity, '0x2038', '32'), V(id.name, '0x2040', '"Ana"'), V(id.written, '0x2048', t('9', '10'), 'new')])], note: t('snprintf escribe en saludo sin pasar de la capacidad y devuelve cuántos caracteres quería escribir.', 'snprintf writes into greeting without going past the capacity and returns how many characters it wanted to write.') },
+			{ ln: 10, focus: 'stack', f: [F('main', [V(`${id.greeting}[32]`, '0x2000', t('"Hola, Ana"', '"Hello, Ana"'))]), F(id.buildGreeting, [V(id.destination, '0x2030', '0x2000', 'dead'), V(id.capacity, '0x2038', '32', 'dead'), V(id.name, '0x2040', '"Ana"', 'dead'), V(id.written, '0x2048', t('9', '10'), 'dead')], 'dead')], note: t('La función vuelve con true y su marco se desapila. saludo sigue vivo: pertenece a main.', 'The function returns true and its frame is popped. greeting is still alive: it belongs to main.') },
+			{ ln: 11, focus: 'stack', f: [F('main', [V(`${id.greeting}[32]`, '0x2000', t('"Hola, Ana"', '"Hello, Ana"'))])], out: [t('Hola, Ana', 'Hello, Ana')], note: t('Es el patrón de snprintf y fgets: quien llama decide dónde vive el resultado y cuánto mide. Una variable static también evita el puntero colgante, pero es un solo objeto compartido que cada llamada pisa.', 'It is the pattern of snprintf and fgets: the caller decides where the result lives and how big it is. A static variable also avoids the dangling pointer, but it is one shared object that every call overwrites.') },
+		],
+	},
+];
+
+type Option = { text: string; ok?: boolean; why: string };
+const practice: { code: CodeKey; mark: number; before: State; after: State; question: string; options: Option[]; afterNote: string }[] = [
+	{
+		code: 'auto',
+		mark: 10,
+		before: { focus: 'stack', f: [F('main', [V('i', '0x2000', '2')])], out: [tw(1)] },
+		after: { focus: 'stack', f: [F('main', [V('i', '0x2000', '2'), V(id.twice, '0x2004', '4', 'new')])], out: [tw(1)] },
+		question: t('Segunda vuelta del for: se ejecuta la línea marcada. ¿Qué objetos están vivos después?', 'Second iteration of the for: the marked line runs. Which objects are alive afterwards?'),
+		options: [
+			{ text: t('i, que vale 2, y un doble nuevo que vale 4', 'i, with value 2, and a new twice with value 4'), ok: true, why: t('Correcto: el doble de la primera vuelta terminó en la llave de cierre; esta vuelta crea otro objeto.', 'Correct: the twice of the first iteration ended at the closing brace; this iteration creates another object.') },
+			{ text: t('i, el doble de la vuelta 1 y un doble nuevo', 'i, the twice of iteration 1 and a new twice'), why: t('No: el doble de la vuelta 1 dejó de existir en la llave de cierre de esa vuelta.', 'No: the twice of iteration 1 stopped existing at the closing brace of that iteration.') },
+			{ text: t('Solo i: doble nace recién en el printf', 'Only i: twice is created at the printf'), why: t('No: doble nace en su declaración, que es justamente la línea marcada.', 'No: twice is created at its declaration, which is exactly the marked line.') },
+		],
+		afterNote: t('Nace un doble nuevo con valor 4 en el marco de main.', 'A new twice with value 4 is created in the frame of main.'),
+	},
+	{
+		code: 'auto',
+		mark: 4,
+		before: { focus: 'stack', f: [F('main', [])], out: [tw(1), tw(2), tw(3), sq(4)] },
+		after: { focus: 'stack', f: [F('main', []), F(`${id.showSquare}(5)`, [V('n', '0x2010', '5', 'new'), V(id.square, '0x2014', '25', 'new')], 'new')], out: [tw(1), tw(2), tw(3), sq(4)] },
+		question: t('La segunda llamada, mostrar_cuadrado(5), llega a la línea marcada. ¿Qué marcos hay en la pila?', 'The second call, show_square(5), reaches the marked line. Which frames are on the stack?'),
+		options: [
+			{ text: t('main, el marco de mostrar_cuadrado(4) y el de mostrar_cuadrado(5)', 'main, the frame of show_square(4) and the one of show_square(5)'), why: t('No: el marco de mostrar_cuadrado(4) se desapiló cuando esa llamada volvió.', 'No: the frame of show_square(4) was popped when that call returned.') },
+			{ text: t('main y un marco nuevo con n = 5 y cuadrado = 25', 'main and a new frame with n = 5 and square = 25'), ok: true, why: t('Correcto: la llamada anterior ya volvió; esta apila su propio marco, con objetos nuevos.', 'Correct: the previous call already returned; this one pushes its own frame, with new objects.') },
+			{ text: t('Solo el marco de mostrar_cuadrado(5)', 'Only the frame of show_square(5)'), why: t('No: main sigue ejecutándose, así que su marco sigue en la pila.', 'No: main is still running, so its frame is still on the stack.') },
+		],
+		afterNote: t('Se apila el marco de mostrar_cuadrado(5), en el mismo lugar que usó la llamada anterior.', 'The frame of show_square(5) is pushed, in the same place the previous call used.'),
+	},
+	{
+		code: 'count',
+		mark: 7,
+		before: { focus: 'static', s: [V(id.times, '0x1000', '2')], f: [F('main', [])], out: ['11', '21'] },
+		after: { focus: 'static', s: [V(id.times, '0x1000', '3', 'chg')], f: [F('main', []), F(id.count, [V('local', '0x2010', '1', 'new')], 'new')], out: ['11', '21'] },
+		question: t('Durante la tercera llamada a contar se ejecuta la línea marcada. ¿Cuánto valen veces y local?', 'During the third call to count the marked line runs. What are times and local?'),
+		options: [
+			{ text: t('veces = 1, local = 1', 'times = 1, local = 1'), why: t('No: veces es static y se inicializa una sola vez; acumula entre llamadas.', 'No: times is static and is initialized only once; it accumulates across calls.') },
+			{ text: t('veces = 3, local = 3', 'times = 3, local = 3'), why: t('No: local es automática; se crea de nuevo con 0 en cada llamada.', 'No: local is automatic; it is created again with 0 on every call.') },
+			{ text: t('veces = 3, local = 1', 'times = 3, local = 1'), ok: true, why: t('Correcto: veces vive todo el programa y llega a 3; local nace en 0 y queda en 1. La función devuelve 31.', 'Correct: times lives for the whole program and reaches 3; local starts at 0 and ends at 1. The function returns 31.') },
+		],
+		afterNote: t('veces pasa a 3 en la zona estática; local vale 1 en un marco nuevo.', 'times becomes 3 in the static region; local is 1 in a new frame.'),
+	},
+	{
+		code: 'block',
+		mark: 9,
+		before: { focus: 'stack', f: [F('main', [V('p', '0x2000', '0x2008', undefined, { p: id.temporary }), V(id.temporary, '0x2008', '42')])], out: [t('Dentro del bloque: 42', 'Inside the block: 42')] },
+		after: { focus: 'stack', f: [F('main', [V('p', '0x2000', '0x2008', undefined, { p: id.temporary, bad: true }), V(id.temporary, '0x2008', '42', 'dead')])], out: [t('Dentro del bloque: 42', 'Inside the block: 42')] },
+		question: t('La ejecución pasa la llave de cierre marcada. ¿Cómo queda p?', 'Execution goes past the marked closing brace. What happens to p?'),
+		options: [
+			{ text: t('Vale NULL automáticamente', 'It becomes NULL automatically'), why: t('No: nada cambia el valor de p. Sigue guardando la misma dirección.', 'No: nothing changes the value of p. It still holds the same address.') },
+			{ text: t('Guarda la misma dirección, pero temporal ya no existe: es colgante', 'It holds the same address, but temporary no longer exists: it is dangling'), ok: true, why: t('Correcto: temporal termina en la llave de cierre y p queda apuntando a un objeto muerto.', 'Correct: temporary ends at the closing brace and p is left pointing to a dead object.') },
+			{ text: t('temporal sigue vivo mientras p apunte a él', 'temporary stays alive while p points to it'), why: t('No: un puntero no extiende la vida de nada. La duración de temporal es automática y termina con su bloque.', 'No: a pointer does not extend the life of anything. temporary has automatic duration and ends with its block.') },
+		],
+		afterNote: t('temporal deja de existir; p conserva 0x2008 y queda colgante.', 'temporary stops existing; p keeps 0x2008 and is left dangling.'),
+	},
+	{
+		code: 'day',
+		mark: 11,
+		before: { focus: 'static', s: [V(`${id.text}[16]`, '0x1000', t('"Dia 1"', '"Day 1"'))], f: [F('main', [V('a', '0x2000', '0x1000', undefined, { p: id.text })])] },
+		after: { focus: 'static', s: [V(`${id.text}[16]`, '0x1000', t('"Dia 2"', '"Day 2"'), 'chg')], f: [F('main', [V('a', '0x2000', '0x1000', undefined, { p: id.text }), V('b', '0x2008', '0x1000', 'new', { p: id.text })])] },
+		question: t('Se ejecuta la línea marcada. ¿Qué queda en a y b?', 'The marked line runs. What is left in a and b?'),
+		options: [
+			{ text: t('a quedó colgante y b apunta a "Dia 2"', 'a is left dangling and b points to "Day 2"'), why: t('No: texto es static y vive todo el programa; a no queda colgante.', 'No: text is static and lives for the whole program; a is not left dangling.') },
+			{ text: t('a apunta a "Dia 1" y b a "Dia 2"', 'a points to "Day 1" and b to "Day 2"'), why: t('No: hay un solo objeto texto. La segunda llamada pisa el resultado de la primera.', 'No: there is only one text object. The second call overwrites the result of the first.') },
+			{ text: t('Ambos guardan 0x1000 y texto contiene "Dia 2"', 'Both hold 0x1000 and text contains "Day 2"'), ok: true, why: t('Correcto: el programa imprime Dia 2 / Dia 2. Esa es la desventaja de un static compartido.', 'Correct: the program prints Day 2 / Day 2. That is the drawback of a shared static.') },
+		],
+		afterNote: t('texto pasa a "Dia 2" y b apunta al mismo lugar que a.', 'text becomes "Day 2" and b points to the same place as a.'),
+	},
+	{
+		code: 'record',
+		mark: 16,
+		before: { focus: 'stack', s: [V(id.globalRecord, '0x1000', '0x2010', undefined, { p: id.value })], f: [F('main', []), F(id.save, [V(id.value, '0x2010', '7')])] },
+		after: { focus: 'stack', s: [V(id.globalRecord, '0x1000', '0x2010', undefined, { p: id.value, bad: true })], f: [F('main', []), F(id.save, [V(id.value, '0x2010', '7', 'dead')], 'dead')] },
+		question: t('guardar termina y main llega a la línea marcada. ¿Qué sigue vivo?', 'save ends and main reaches the marked line. What is still alive?'),
+		options: [
+			{ text: t('registro_global vive, valor no: el puntero guardado es colgante', 'global_record lives, value does not: the stored pointer is dangling'), ok: true, why: t('Correcto: un puntero nunca debe vivir más que el objeto al que apunta. Habría que guardar el valor, no su dirección.', 'Correct: a pointer must never live longer than the object it points to. The value should be stored, not its address.') },
+			{ text: t('Ambos, porque registro_global es global', 'Both, because global_record is global'), why: t('No: la duración de valor es automática; que el puntero sea global no la cambia.', 'No: value has automatic duration; a global pointer does not change that.') },
+			{ text: t('Ninguno: al volver se borran todas las variables', 'Neither: every variable is erased on return'), why: t('No: registro_global tiene duración estática y vive todo el programa.', 'No: global_record has static duration and lives for the whole program.') },
+		],
+		afterNote: t('El marco de guardar se desapila; registro_global sigue guardando 0x2010, que ya no es un objeto vivo.', 'The frame of save is popped; global_record still holds 0x2010, which is no longer a live object.'),
+	},
+];
+
+const durations = [t('Automática', 'Automatic'), t('Estática', 'Static'), t('Asignada', 'Allocated'), t('De hilo', 'Thread')];
+const assess: { code?: CodeKey; question: string; options: string[]; answer: number; why: string }[] = [
+	{
+		code: 'process',
+		question: t('¿Qué duración de almacenamiento tiene contador?', 'What storage duration does counter have?'),
+		options: durations,
+		answer: 1,
+		why: t('Es una local static: se inicializa una sola vez y conserva su valor entre llamadas.', 'It is a static local: it is initialized only once and keeps its value across calls.'),
+	},
+	{
+		code: 'process',
+		question: t('¿Qué duración de almacenamiento tiene buffer?', 'What storage duration does buffer have?'),
+		options: durations,
+		answer: 0,
+		why: t('Es una variable local sin static: vive hasta la llave de cierre de la función.', 'It is a local variable without static: it lives until the closing brace of the function.'),
+	},
+	{
+		code: 'largest',
+		question: t('¿Qué problema tiene esta función?', 'What is wrong with this function?'),
+		options: [
+			t('No puede recibir un puntero a const', 'It cannot receive a pointer to const'),
+			t('Devuelve la dirección de maximo, que muere al volver: el llamador recibe un puntero colgante', 'It returns the address of maximum, which dies on return: the caller gets a dangling pointer'),
+			t('El for debería empezar en 0', 'The for should start at 0'),
+		],
+		answer: 1,
+		why: t('maximo es automático. Como el resultado es un solo int, lo correcto es devolverlo por valor (o un puntero a un elemento del arreglo del llamador).', 'maximum is automatic. Since the result is a single int, return it by value (or a pointer to an element of the caller’s array).'),
+	},
+	{
+		code: 'formatPrice',
+		question: t('¿Cuál es una corrección correcta?', 'Which one is a correct fix?'),
+		options: [
+			t('Devolver &texto en lugar de texto', 'Return &text instead of text'),
+			t('Recibir destino y capacidad del llamador y escribir allí', 'Receive a destination and a capacity from the caller and write there'),
+			t('Declarar texto después del snprintf', 'Declare text after the snprintf'),
+		],
+		answer: 1,
+		why: t('Con el búfer del llamador el resultado vive en el marco de quien llama, que sigue vivo después de la llamada.', 'With a caller-provided buffer the result lives in the caller’s frame, which is still alive after the call.'),
+	},
+	{
+		question: t('Un programa lee un puntero colgante, compila sin advertencias e imprime el valor esperado. ¿Qué puedes concluir?', 'A program reads a dangling pointer, compiles without warnings and prints the expected value. What can you conclude?'),
+		options: [
+			t('Que es correcto, porque la prueba lo demuestra', 'That it is correct, because the test proves it'),
+			t('Que el compilador extendió la vida del objeto', 'That the compiler extended the life of the object'),
+			t('Que tiene comportamiento indefinido: con -O2, otra llamada u otro compilador puede hacer otra cosa', 'That it has undefined behavior: with -O2, another call or another compiler it may do something else'),
+		],
+		answer: 2,
+		why: t('Ejecutarlo no prueba nada: hay que razonar sobre los tiempos de vida.', 'Running it proves nothing: you have to reason about lifetimes.'),
+	},
+	{
+		question: t('¿Qué establece el estándar de C sobre la memoria de los objetos?', 'What does the C standard establish about the memory of objects?'),
+		options: [
+			t('Duraciones de almacenamiento y tiempos de vida; la pila y el montículo son modelos', 'Storage durations and lifetimes; the stack and the heap are models'),
+			t('Que toda variable local se guarda en una pila', 'That every local variable is stored on a stack'),
+			t('Que la memoria de un objeto muerto se pone en cero', 'That the memory of a dead object is set to zero'),
+		],
+		answer: 0,
+		why: t('El estándar no exige pila ni montículo; un compilador puede dejar una variable solo en un registro.', 'The standard requires neither a stack nor a heap; a compiler may keep a variable only in a register.'),
+	},
+];
+
+const ui = {
+	static: t('Zona estática', 'Static region'),
+	stack: t('Pila (stack)', 'Stack'),
+	heap: t('Montículo (heap)', 'Heap'),
+	emptyStatic: t('sin variables estáticas', 'no static variables'),
+	emptyStack: t('sin marcos', 'no frames'),
+	emptyHeap: t('sin bloques asignados', 'no allocated blocks'),
+	emptyFrame: t('sin variables vivas', 'no live variables'),
+	dead: t('fin de vida', 'lifetime over'),
+	popped: t('desapilado', 'popped'),
+	dangling: t('colgante', 'dangling'),
+	noOutput: t('(sin salida todavía)', '(no output yet)'),
+	step: t('Paso', 'Step'),
+	of: t('de', 'of'),
+	question: t('Pregunta', 'Question'),
+	score: t('Puntaje', 'Score'),
+	yourAnswer: t('Tu respuesta', 'Your answer'),
+	correctAnswer: t('Respuesta correcta', 'Correct answer'),
+	noAnswer: t('sin responder', 'not answered'),
+	answered: t('respondidas', 'answered'),
+};
+
+const deckData = { learn: learn.map((s) => s.steps), practice: practice.map((p) => ({ before: p.before, after: p.after, options: p.options, afterNote: p.afterNote })), assess: assess.map((q) => ({ options: q.options, answer: q.answer, why: q.why, question: q.question })), ui };
+const deckJson = JSON.stringify(deckData).replace(/</g, '\\u003c');
+
+const modes = [
+	{ id: 'learn', label: t('Aprender', 'Learn') },
+	{ id: 'practice', label: t('Practicar', 'Practice') },
+	{ id: 'assess', label: t('Evaluar', 'Assess') },
+];
+---
+
+<div class="sh-screen" data-presentation="stack-y-heap-c" data-lang={lang}>
+	<div class="sh-shell">
+		<nav class="sh-nav" aria-label={t('Controles de navegación', 'Navigation controls')}>
+			<button class="sh-btn" id="shPrevBtn" aria-label={t('Diapositiva anterior', 'Previous slide')} disabled>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{t('Anterior', 'Previous')}</span>
+			</button>
+			<div class="seg sh-modes" role="radiogroup" aria-label={t('Modo didáctico', 'Learning mode')}>
+				{modes.map((m, i) => (
+					<label class="seg-opt">
+						<input type="radio" name="shMode" value={m.id} checked={i === 0} />
+						<span>{m.label}</span>
+					</label>
+				))}
+			</div>
+			<span class="sh-counter" id="shSlideCounter" aria-live="polite">1 / {learn.length}</span>
+			<button class="sh-btn" id="shNextBtn" aria-label={t('Siguiente diapositiva', 'Next slide')}>
+				<span>{t('Siguiente', 'Next')}</span>
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="sh-viewport">
+			<!-- Learn: guided steps over the memory model -->
+			{learn.map((slide, i) => (
+				<section class:list={['sh-slide', i === 0 && 'is-active']} data-mode="learn" data-slide={i + 1} data-learn={i}>
+					<div class="sh-head">
+						<span class="sh-kicker">{t('Aprender', 'Learn')} · {slide.kicker}</span>
+						<h2 class="sh-title">{slide.title}</h2>
+						<p class="sh-lead">{slide.lead}</p>
+					</div>
+					<div class:list={['sh-lab', !slide.code && 'is-wide']}>
+						{slide.code && (
+							<div class="sh-code-col">
+								{slide.buggy && <span class="sh-flag">{t('Contiene un error a propósito', 'Contains a bug on purpose')}</span>}
+								<pre class="sh-code" aria-label={t('Código C', 'C code')}><code>{code(slide.code).map((line, n) => <span class="sh-line" data-ln={n + 1}><span class="sh-ln" aria-hidden="true">{n + 1}</span>{line || ' '}</span>)}</code></pre>
+								<div class="sh-out-box">
+									<span class="sh-out-label">{t('Salida', 'Output')}</span>
+									<pre class="sh-out" data-out></pre>
+								</div>
+							</div>
+						)}
+						<div class="sh-mem-col">
+							<div class="sh-mem" data-mem></div>
+							<p class="sh-addr-note">{t('Direcciones ilustrativas: cambian en cada máquina y en cada ejecución.', 'Illustrative addresses: they change on every machine and every run.')}</p>
+						</div>
+					</div>
+					<div class="sh-stepper">
+						<button class="sh-step-btn" data-step="prev" aria-label={t('Paso anterior', 'Previous step')}>
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+						</button>
+						<button class="sh-step-btn is-primary" data-step="next">
+							<span>{t('Siguiente paso', 'Next step')}</span>
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+						</button>
+						<button class="sh-step-btn" data-step="reset">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+							<span>{t('Reiniciar', 'Restart')}</span>
+						</button>
+						<span class="sh-step-count" data-step-count></span>
+					</div>
+					<p class="sh-note" data-note aria-live="polite"></p>
+				</section>
+			))}
+
+			<!-- Practice: predict the next state -->
+			{practice.map((item, i) => (
+				<section class="sh-slide" data-mode="practice" data-slide={i + 1} data-practice={i}>
+					<div class="sh-head">
+						<span class="sh-kicker">{t('Practicar', 'Practice')} · {t('Predice el siguiente estado', 'Predict the next state')} {i + 1}/{practice.length}</span>
+						<h2 class="sh-title">{item.question}</h2>
+					</div>
+					<div class="sh-lab">
+						<div class="sh-code-col">
+							<pre class="sh-code" aria-label={t('Código C', 'C code')}><code>{code(item.code).map((line, n) => <span class:list={['sh-line', n + 1 === item.mark && 'is-marked']} data-ln={n + 1}><span class="sh-ln" aria-hidden="true">{n + 1}</span>{line || ' '}</span>)}</code></pre>
+							<p class="sh-mark-hint">{t(`Línea marcada: ${item.mark}`, `Marked line: ${item.mark}`)}</p>
+						</div>
+						<div class="sh-mem-col">
+							<div class="sh-mem" data-mem></div>
+							<p class="sh-addr-note">{t('Estado antes de la línea marcada. Direcciones ilustrativas.', 'State before the marked line. Illustrative addresses.')}</p>
+						</div>
+					</div>
+					<div class="sh-options" role="group" aria-label={t('Opciones', 'Options')}>
+						{item.options.map((opt, k) => (
+							<button class="sh-option" data-option={k}>{opt.text}</button>
+						))}
+					</div>
+					<p class="sh-feedback" data-feedback aria-live="polite"></p>
+					<div class="sh-practice-actions">
+						<button class="sh-step-btn is-primary" data-transition hidden>{t('Ver la transición', 'Show the transition')}</button>
+						<button class="sh-step-btn" data-retry hidden>{t('Intentar de nuevo', 'Try again')}</button>
+					</div>
+				</section>
+			))}
+
+			<!-- Assess: no hints, graded at the end -->
+			{assess.map((q, i) => (
+				<section class="sh-slide" data-mode="assess" data-slide={i + 1} data-assess={i}>
+					<div class="sh-head">
+						<span class="sh-kicker">{t('Evaluar', 'Assess')} · {ui.question} {i + 1}/{assess.length}</span>
+						<h2 class="sh-title">{q.question}</h2>
+					</div>
+					{q.code && (
+						<pre class="sh-code sh-code-solo" aria-label={t('Código C', 'C code')}><code>{code(q.code).map((line, n) => <span class="sh-line" data-ln={n + 1}><span class="sh-ln" aria-hidden="true">{n + 1}</span>{line || ' '}</span>)}</code></pre>
+					)}
+					<div class="sh-options" role="group" aria-label={t('Opciones', 'Options')}>
+						{q.options.map((opt, k) => (
+							<button class="sh-option" data-choice={k} aria-pressed="false">{opt}</button>
+						))}
+					</div>
+				</section>
+			))}
+			<section class="sh-slide" data-mode="assess" data-slide={assess.length + 1} data-results>
+				<div class="sh-head">
+					<span class="sh-kicker">{t('Evaluar', 'Assess')} · {t('Resultado', 'Result')}</span>
+					<h2 class="sh-title">{t('Califica tus respuestas', 'Grade your answers')}</h2>
+					<p class="sh-lead" data-progress></p>
+				</div>
+				<div class="sh-practice-actions">
+					<button class="sh-step-btn is-primary" data-grade>{t('Calificar', 'Grade')}</button>
+					<button class="sh-step-btn" data-restart>{t('Empezar de nuevo', 'Start over')}</button>
+				</div>
+				<p class="sh-score" data-score aria-live="polite"></p>
+				<ol class="sh-review" data-review></ol>
+			</section>
+		</main>
+	</div>
+	<script is:inline type="application/json" id="shDeckData" set:html={deckJson} />
+</div>
+
+<style>
+	.sh-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.sh-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.sh-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .sh-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .sh-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .sh-viewport { zoom: 1.25; } }
+
+	.sh-viewport { flex: 1; }
+
+	.sh-nav {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-3) var(--space-6);
+		border-bottom: 1px solid var(--color-divider);
+		background: var(--color-surface);
+	}
+
+	.sh-modes { order: 0; }
+
+	.sh-btn,
+	.sh-step-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+	}
+
+	.sh-btn:hover:not(:disabled),
+	.sh-step-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.sh-step-btn.is-primary {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.sh-step-btn.is-primary:hover:not(:disabled) { background: var(--color-accent-600); color: var(--color-bg); }
+	.sh-step-btn.is-primary:active:not(:disabled) { background: var(--color-accent-700); }
+
+	.sh-btn:disabled,
+	.sh-step-btn:disabled,
+	.sh-option:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.sh-btn:focus-visible,
+	.sh-step-btn:focus-visible,
+	.sh-option:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 2px;
+	}
+
+	.sh-counter {
+		font-size: 13px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	.sh-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 1180px;
+		margin: 0 auto;
+		width: 100%;
+	}
+
+	.sh-slide.is-active {
+		display: block;
+		animation: shFade 0.25s ease-out;
+	}
+
+	@keyframes shFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.sh-head { margin-bottom: var(--space-4); }
+
+	.sh-kicker {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.sh-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 26px;
+		line-height: 1.2;
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.sh-lead {
+		font-size: 15px;
+		line-height: 1.5;
+		margin: 0;
+		max-width: 72ch;
+		color: color-mix(in srgb, var(--color-text) 75%, transparent);
+	}
+
+	.sh-lab {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+		gap: var(--space-4);
+		align-items: start;
+	}
+
+	.sh-lab.is-wide { grid-template-columns: minmax(0, 1fr); }
+
+	.sh-code-col,
+	.sh-mem-col {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		min-width: 0;
+	}
+
+	.sh-flag {
+		align-self: flex-start;
+		font-size: 12px;
+		font-weight: 700;
+		padding: var(--space-1) var(--space-3);
+		border-radius: 999px;
+		background: var(--color-accent-100);
+		color: var(--color-accent-800);
+	}
+
+	.sh-code {
+		margin: 0;
+		padding: var(--space-3) 0;
+		background: var(--color-neutral-900);
+		color: var(--color-neutral-100);
+		border-radius: var(--radius-lg);
+		font-family: monospace;
+		font-size: 13px;
+		line-height: 1.55;
+		overflow-x: auto;
+	}
+
+	.sh-code code { display: block; min-width: max-content; }
+
+	.sh-code-solo { margin-bottom: var(--space-4); }
+
+	.sh-line {
+		display: block;
+		padding: 0 var(--space-4) 0 0;
+		border-left: 3px solid transparent;
+		transition: background 0.25s ease, border-color 0.25s ease;
+	}
+
+	.sh-ln {
+		display: inline-block;
+		width: 3ch;
+		margin: 0 var(--space-3) 0 var(--space-2);
+		text-align: right;
+		color: var(--color-neutral-500);
+		user-select: none;
+	}
+
+	.sh-line.is-current,
+	.sh-line.is-marked {
+		background: color-mix(in srgb, var(--color-accent) 32%, transparent);
+		border-left-color: var(--color-accent-300);
+	}
+
+	.sh-mark-hint,
+	.sh-addr-note {
+		margin: 0;
+		font-size: 12px;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.sh-out-box {
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		padding: var(--space-2) var(--space-3);
+	}
+
+	.sh-out-label {
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.sh-out {
+		margin: var(--space-1) 0 0;
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre-wrap;
+		min-height: 1.5em;
+	}
+
+	.sh-mem {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--space-3);
+	}
+
+	.sh-region {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		padding: var(--space-3);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-lg);
+		min-height: 220px;
+		transition: border-color 0.25s ease, box-shadow 0.25s ease;
+	}
+
+	.sh-region.is-focus {
+		border-color: var(--color-accent);
+		box-shadow: var(--shadow-md);
+	}
+
+	.sh-region-title {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+
+	.sh-stack-list {
+		display: flex;
+		flex-direction: column-reverse;
+		gap: var(--space-2);
+	}
+
+	.sh-frame {
+		padding: var(--space-2);
+		border-radius: var(--radius-md);
+		background: var(--color-accent-100);
+		border: 1px solid var(--color-accent-200);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.sh-frame-name {
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+		color: var(--color-accent-800);
+		display: flex;
+		justify-content: space-between;
+		gap: var(--space-2);
+	}
+
+	.sh-cell {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 0 var(--space-2);
+		padding: var(--space-1) var(--space-2);
+		border-radius: var(--radius-sm);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		font-family: monospace;
+		font-size: 12px;
+		transition: background 0.3s ease, opacity 0.3s ease;
+	}
+
+	.sh-cell-name { font-weight: 700; overflow-wrap: anywhere; }
+	.sh-cell-addr { color: var(--color-neutral-500); text-align: right; }
+	.sh-cell-value { grid-column: 1 / -1; overflow-wrap: anywhere; }
+
+	.sh-region-static .sh-cell { background: var(--color-accent-2-100); border-color: var(--color-accent-2-200); }
+	.sh-region-heap .sh-cell { background: var(--color-accent-2-100); border-color: var(--color-accent-2-300); }
+
+	.sh-cell.is-new { animation: shPop 0.4s ease-out; box-shadow: 0 0 0 2px var(--color-accent-2); }
+	.sh-cell.is-chg { box-shadow: 0 0 0 2px var(--color-accent); }
+	.sh-frame.is-new { animation: shPop 0.4s ease-out; }
+
+	.sh-cell.is-dead,
+	.sh-frame.is-dead {
+		opacity: 0.45;
+		border-style: dashed;
+		text-decoration: line-through;
+	}
+
+	.sh-cell.is-bad { box-shadow: 0 0 0 2px var(--color-accent-700); }
+
+	.sh-tag {
+		font-family: var(--font-body);
+		font-size: 11px;
+		font-weight: 700;
+		text-decoration: none;
+		color: var(--color-accent-800);
+	}
+
+	.sh-empty {
+		font-size: 12px;
+		font-style: italic;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	@keyframes shPop {
+		from { opacity: 0; transform: translateY(-4px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.sh-stepper,
+	.sh-practice-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+		margin-top: var(--space-4);
+	}
+
+	.sh-step-count {
+		font-size: 13px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.sh-note,
+	.sh-feedback {
+		margin: var(--space-3) 0 0;
+		padding: var(--space-3) var(--space-4);
+		font-size: 15px;
+		line-height: 1.5;
+		background: var(--color-surface);
+		border-left: 4px solid var(--color-accent-2);
+		border-radius: var(--radius-md);
+		max-width: 80ch;
+	}
+
+	.sh-feedback:empty { display: none; }
+	.sh-feedback.is-ok { border-left-color: var(--color-accent-2-600); }
+	.sh-feedback.is-bad { border-left-color: var(--color-accent); }
+
+	.sh-options {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		margin-top: var(--space-4);
+		max-width: 80ch;
+	}
+
+	.sh-option {
+		text-align: left;
+		padding: var(--space-3) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 14px;
+		color: var(--color-text);
+		background: var(--color-surface);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition: border-color 0.2s ease, background 0.2s ease;
+	}
+
+	.sh-option:hover:not(:disabled) { border-color: var(--color-accent); }
+	.sh-option[aria-pressed='true'] { border-color: var(--color-accent); background: var(--color-accent-100); }
+	.sh-option.is-right { border-color: var(--color-accent-2-600); background: var(--color-accent-2-100); opacity: 1; }
+	.sh-option.is-wrong { border-color: var(--color-accent); background: var(--color-accent-100); opacity: 1; }
+
+	.sh-score {
+		font-family: var(--font-heading);
+		font-size: 22px;
+		margin: var(--space-4) 0 0;
+	}
+
+	.sh-review {
+		margin: var(--space-3) 0 0;
+		padding-left: var(--space-6);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		max-width: 80ch;
+		font-size: 14px;
+		line-height: 1.5;
+	}
+
+	.sh-review li.is-ok::marker { color: var(--color-accent-2-600); }
+	.sh-review li.is-bad::marker { color: var(--color-accent-700); }
+
+	@media (max-width: 900px) {
+		.sh-lab { grid-template-columns: minmax(0, 1fr); }
+	}
+
+	@media (max-width: 640px) {
+		.sh-slide { padding: var(--space-4); }
+		.sh-nav { padding: var(--space-3) var(--space-4); }
+		.sh-modes { order: -1; width: 100%; }
+		.sh-modes .seg-opt { flex: 1; justify-content: center; }
+		.sh-mem { grid-template-columns: minmax(0, 1fr); }
+		.sh-region { min-height: 0; }
+		.sh-title { font-size: 21px; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.sh-slide.is-active,
+		.sh-cell.is-new,
+		.sh-frame.is-new { animation: none; }
+	}
+</style>
+
+<script>
+	type Var = { n: string; a: string; v: string; st?: string; p?: string; bad?: boolean };
+	type Frame = { fn: string; v: Var[]; st?: string };
+	type State = { s?: Var[]; f?: Frame[]; h?: Var[]; out?: string[]; focus?: string };
+	type Step = State & { ln?: number; note: string };
+	type Option = { text: string; ok?: boolean; why: string };
+	type Deck = {
+		learn: Step[][];
+		practice: { before: State; after: State; options: Option[]; afterNote: string }[];
+		assess: { options: string[]; answer: number; why: string; question: string }[];
+		ui: Record<string, string>;
+	};
+
+	const root = document.querySelector<HTMLElement>('.sh-screen');
+	const deck: Deck = JSON.parse(document.getElementById('shDeckData')?.textContent ?? '{}');
+	const ui = deck.ui;
+
+	function el(tag: string, cls?: string, text?: string) {
+		const node = document.createElement(tag);
+		if (cls) node.className = cls;
+		if (text !== undefined) node.textContent = text;
+		return node;
+	}
+
+	function cell(v: Var) {
+		const c = el('div', 'sh-cell');
+		if (v.st) c.classList.add(`is-${v.st}`);
+		if (v.bad) c.classList.add('is-bad');
+		c.append(el('span', 'sh-cell-name', v.n), el('span', 'sh-cell-addr', v.a));
+		const value = el('span', 'sh-cell-value', v.p ? `${v.v} → ${v.bad ? '✕ ' : ''}${v.p}` : v.v);
+		if (v.bad) value.append(' ', el('span', 'sh-tag', `(${ui.dangling})`));
+		if (v.st === 'dead') value.append(' ', el('span', 'sh-tag', `(${ui.dead})`));
+		c.append(value);
+		return c;
+	}
+
+	function region(kind: string, title: string, focus?: string) {
+		const r = el('section', `sh-region sh-region-${kind}`);
+		if (focus === kind) r.classList.add('is-focus');
+		r.setAttribute('aria-label', title);
+		r.append(el('span', 'sh-region-title', title));
+		return r;
+	}
+
+	function renderMemory(target: Element | null, state: State) {
+		if (!target) return;
+		const statics = region('static', ui.static, state.focus);
+		if (state.s?.length) state.s.forEach((v) => statics.append(cell(v)));
+		else statics.append(el('span', 'sh-empty', ui.emptyStatic));
+
+		const stack = region('stack', ui.stack, state.focus);
+		const list = el('div', 'sh-stack-list');
+		if (state.f?.length) {
+			state.f.forEach((frame) => {
+				const f = el('div', 'sh-frame');
+				if (frame.st) f.classList.add(`is-${frame.st}`);
+				const head = el('span', 'sh-frame-name', frame.fn);
+				if (frame.st === 'dead') head.append(el('span', 'sh-tag', ui.popped));
+				f.append(head);
+				if (frame.v.length) frame.v.forEach((v) => f.append(cell(v)));
+				else f.append(el('span', 'sh-empty', ui.emptyFrame));
+				list.append(f);
+			});
+		} else {
+			list.append(el('span', 'sh-empty', ui.emptyStack));
+		}
+		stack.append(list);
+
+		const heap = region('heap', ui.heap, state.focus);
+		if (state.h?.length) state.h.forEach((v) => heap.append(cell(v)));
+		else heap.append(el('span', 'sh-empty', ui.emptyHeap));
+
+		target.replaceChildren(statics, stack, heap);
+	}
+
+	function renderOutput(slide: Element, out?: string[]) {
+		const box = slide.querySelector('[data-out]');
+		if (box) box.textContent = out?.length ? out.join('\n') : ui.noOutput;
+	}
+
+	// Mode and slide navigation
+	const modes = ['learn', 'practice', 'assess'] as const;
+	type Mode = (typeof modes)[number];
+	let mode: Mode = 'learn';
+	const current: Record<Mode, number> = { learn: 1, practice: 1, assess: 1 };
+	const prevBtn = document.getElementById('shPrevBtn') as HTMLButtonElement | null;
+	const nextBtn = document.getElementById('shNextBtn') as HTMLButtonElement | null;
+	const counter = document.getElementById('shSlideCounter');
+
+	function slidesOf(m: Mode) {
+		return Array.from(root?.querySelectorAll<HTMLElement>(`.sh-slide[data-mode="${m}"]`) ?? []);
+	}
+
+	function show(target: number) {
+		const list = slidesOf(mode);
+		if (target < 1 || target > list.length) return;
+		current[mode] = target;
+		root?.querySelectorAll('.sh-slide').forEach((s) => s.classList.remove('is-active'));
+		list[target - 1].classList.add('is-active');
+		if (counter) counter.textContent = `${target} / ${list.length}`;
+		if (prevBtn) prevBtn.disabled = target === 1;
+		if (nextBtn) nextBtn.disabled = target === list.length;
+		if (list[target - 1].hasAttribute('data-results')) updateProgress();
+	}
+
+	root?.querySelectorAll<HTMLInputElement>('input[name="shMode"]').forEach((input) => {
+		input.addEventListener('change', () => {
+			if (!input.checked) return;
+			mode = input.value as Mode;
+			show(current[mode]);
+		});
+	});
+
+	prevBtn?.addEventListener('click', () => show(current[mode] - 1));
+	nextBtn?.addEventListener('click', () => show(current[mode] + 1));
+
+	window.addEventListener('keydown', (e) => {
+		const tag = (e.target as HTMLElement | null)?.tagName;
+		if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+		if (e.key === 'ArrowRight') show(current[mode] + 1);
+		if (e.key === 'ArrowLeft') show(current[mode] - 1);
+	});
+
+	// Learn: step through each slide's states
+	root?.querySelectorAll<HTMLElement>('[data-learn]').forEach((slide) => {
+		const steps = deck.learn[Number(slide.dataset.learn)];
+		let index = 0;
+		const note = slide.querySelector('[data-note]');
+		const count = slide.querySelector('[data-step-count]');
+		const prev = slide.querySelector<HTMLButtonElement>('[data-step="prev"]');
+		const next = slide.querySelector<HTMLButtonElement>('[data-step="next"]');
+
+		function render() {
+			const step = steps[index];
+			renderMemory(slide.querySelector('[data-mem]'), step);
+			renderOutput(slide, step.out);
+			slide.querySelectorAll('.sh-line').forEach((line) => {
+				line.classList.toggle('is-current', Number((line as HTMLElement).dataset.ln) === step.ln);
+			});
+			if (note) note.textContent = step.note;
+			if (count) count.textContent = `${ui.step} ${index + 1} ${ui.of} ${steps.length}`;
+			if (prev) prev.disabled = index === 0;
+			if (next) next.disabled = index === steps.length - 1;
+		}
+
+		prev?.addEventListener('click', () => { if (index > 0) { index--; render(); } });
+		next?.addEventListener('click', () => { if (index < steps.length - 1) { index++; render(); } });
+		slide.querySelector('[data-step="reset"]')?.addEventListener('click', () => { index = 0; render(); });
+		render();
+	});
+
+	// Practice: pick the next state, get the reason, watch the transition
+	root?.querySelectorAll<HTMLElement>('[data-practice]').forEach((slide) => {
+		const item = deck.practice[Number(slide.dataset.practice)];
+		const mem = slide.querySelector('[data-mem]');
+		const feedback = slide.querySelector<HTMLElement>('[data-feedback]');
+		const transition = slide.querySelector<HTMLButtonElement>('[data-transition]');
+		const retry = slide.querySelector<HTMLButtonElement>('[data-retry]');
+		const buttons = Array.from(slide.querySelectorAll<HTMLButtonElement>('[data-option]'));
+
+		function reset() {
+			renderMemory(mem, item.before);
+			buttons.forEach((b) => { b.disabled = false; b.classList.remove('is-right', 'is-wrong'); });
+			if (feedback) { feedback.textContent = ''; feedback.className = 'sh-feedback'; }
+			if (transition) transition.hidden = true;
+			if (retry) retry.hidden = true;
+		}
+
+		buttons.forEach((button) => {
+			button.addEventListener('click', () => {
+				const option = item.options[Number(button.dataset.option)];
+				buttons.forEach((b) => { b.disabled = true; });
+				button.classList.add(option.ok ? 'is-right' : 'is-wrong');
+				if (feedback) {
+					feedback.textContent = option.why;
+					feedback.className = `sh-feedback ${option.ok ? 'is-ok' : 'is-bad'}`;
+				}
+				if (option.ok) { if (transition) transition.hidden = false; }
+				else if (retry) retry.hidden = false;
+			});
+		});
+
+		transition?.addEventListener('click', () => {
+			renderMemory(mem, item.after);
+			if (feedback) feedback.textContent = item.afterNote;
+			transition.hidden = true;
+			if (retry) retry.hidden = false;
+		});
+		retry?.addEventListener('click', reset);
+		reset();
+	});
+
+	// Assess: answers stay hidden until grading
+	const answers: (number | null)[] = deck.assess.map(() => null);
+	root?.querySelectorAll<HTMLElement>('[data-assess]').forEach((slide) => {
+		const qi = Number(slide.dataset.assess);
+		const buttons = Array.from(slide.querySelectorAll<HTMLButtonElement>('[data-choice]'));
+		buttons.forEach((button) => {
+			button.addEventListener('click', () => {
+				answers[qi] = Number(button.dataset.choice);
+				buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+			});
+		});
+	});
+
+	const results = root?.querySelector<HTMLElement>('[data-results]');
+	function updateProgress() {
+		const progress = results?.querySelector('[data-progress]');
+		const done = answers.filter((a) => a !== null).length;
+		if (progress) progress.textContent = `${done} / ${answers.length} ${ui.answered}`;
+	}
+
+	results?.querySelector('[data-grade]')?.addEventListener('click', () => {
+		const review = results.querySelector('[data-review]');
+		const score = results.querySelector('[data-score]');
+		let right = 0;
+		const items = deck.assess.map((q, i) => {
+			const ok = answers[i] === q.answer;
+			if (ok) right++;
+			const li = el('li', ok ? 'is-ok' : 'is-bad');
+			li.append(el('strong', undefined, q.question));
+			li.append(el('div', undefined, `${ui.yourAnswer}: ${answers[i] === null ? ui.noAnswer : q.options[answers[i] as number]}`));
+			li.append(el('div', undefined, `${ui.correctAnswer}: ${q.options[q.answer]}`));
+			li.append(el('div', undefined, q.why));
+			return li;
+		});
+		review?.replaceChildren(...items);
+		if (score) score.textContent = `${ui.score}: ${right} / ${deck.assess.length}`;
+	});
+
+	results?.querySelector('[data-restart]')?.addEventListener('click', () => {
+		answers.fill(null);
+		root?.querySelectorAll('[data-choice]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+		results.querySelector('[data-review]')?.replaceChildren();
+		const score = results.querySelector('[data-score]');
+		if (score) score.textContent = '';
+		show(1);
+	});
+
+	show(1);
+</script>

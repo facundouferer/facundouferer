@@ -33,8 +33,8 @@ const isEs = lang === 'es';
 							<h2 class="pv-slide-title">1. {isEs ? '¿Cómo se pasan los datos a una función?' : 'How are arguments passed to functions?'}</h2>
 							<p class="pv-text">
 								{isEs 
-									? 'Al invocar una función, los argumentos pueden pasarse por copia del valor o compartiendo la referencia directa a la celda de memoria original.'
-									: 'When invoking a function, arguments are either copied by value or share a direct memory reference.'}
+									? 'Cada lenguaje define cómo llegan los argumentos a una función. En C la regla es una sola: la función recibe una copia del valor.'
+									: 'Each language defines how arguments reach a function. In C there is a single rule: the function receives a copy of the value.'}
 							</p>
 							<div class="pv-concept-box">
 								<div class="pv-concept-item">
@@ -42,8 +42,8 @@ const isEs = lang === 'es';
 									<span>{isEs ? 'La función recibe una copia independiente. Modificar el parámetro NO altera la variable original.' : 'Function receives an independent copy. Modifying the parameter DOES NOT alter original.'}</span>
 								</div>
 								<div class="pv-concept-item">
-									<strong class="pv-accent-text">{isEs ? 'Paso por Referencia:' : 'Pass by Reference:'}</strong>
-									<span>{isEs ? 'La función recibe un alias a la variable del llamador. Cualquier cambio altera directamente el valor original.' : 'Function receives an alias to caller variable. Any change mutates the caller value.'}</span>
+									<strong class="pv-accent-text">{isEs ? 'Paso por Referencia (no existe en C):' : 'Pass by Reference (not in C):'}</strong>
+									<span>{isEs ? 'En lenguajes como C++ la función recibe un alias a la variable del llamador. C no tiene ese mecanismo: pasa siempre por valor y, para modificar una variable de quien llama, recibe su dirección en un puntero, que también se copia.' : 'In languages such as C++ the function receives an alias to the caller variable. C has no such mechanism: it always passes by value and, to modify a caller variable, it receives its address in a pointer, which is copied too.'}</span>
 								</div>
 							</div>
 						</div>
