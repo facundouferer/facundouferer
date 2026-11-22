@@ -271,7 +271,16 @@ const modes = [
 		font-family: var(--font-heading);
 		font-weight: var(--font-heading-weight);
 		font-size: 1.05rem;
-		padding: 0 var(--space-2);
+		padding: 0;
+		/* A floated legend sits inside the box, so a long prompt wraps cleanly
+		   instead of straddling the border. */
+		float: left;
+		width: 100%;
+		margin-bottom: var(--space-2);
+	}
+
+	.pp-item legend + * {
+		clear: both;
 	}
 
 	.pp-item :global(code) {
@@ -282,7 +291,7 @@ const modes = [
 	}
 
 	.pp-code {
-		margin: var(--space-3) 0 var(--space-2);
+		margin: var(--space-3) 0 var(--space-3);
 		overflow-x: auto;
 	}
 
