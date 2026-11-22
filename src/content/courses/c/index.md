@@ -83,7 +83,23 @@ roadmap:
     description: 'Biblioteca estándar, conversiones, manejo de errores y archivos de texto y binarios.'
     description_en: 'Standard library, conversions, error handling and text and binary files.'
     lessons:
+      - 'biblioteca-estandar-y-errores'
       - 'archivos'
+  - title: 'Calidad, depuración y buenas prácticas'
+    title_en: 'Quality, debugging and good practices'
+    description: 'Depuradores, sanitizers, pruebas, estilo, portabilidad y proyecto final.'
+    description_en: 'Debuggers, sanitizers, tests, style, portability and the final project.'
+    lessons:
+      - 'depuracion-y-sanitizers'
+      - 'pruebas-estilo-y-portabilidad'
+  - title: 'C moderno y C23 (avanzado)'
+    title_en: 'Modern C and C23 (advanced)'
+    description: 'Recorrido opcional: novedades de C23, preprocesador, programación genérica y concurrencia.'
+    description_en: 'Optional path: C23 features, the preprocessor, generic programming and concurrency.'
+    lessons:
+      - 'c23-moderno'
+      - 'preprocesador-y-programacion-generica'
+      - 'concurrencia-threads-y-atomics'
   - title: 'Diseño de software en C (complementario)'
     title_en: 'Software design in C (complementary)'
     description: 'Recorrido opcional: abstracción, encapsulación, tablas de operaciones y polimorfismo simulado, con sus límites.'
