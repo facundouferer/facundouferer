@@ -383,7 +383,10 @@ export const script: AnimationScript = {
 					{ at: 2700, do: 'enter', el: 'n2' },
 					{ at: 2800, do: 'enter', el: 'repo-on' },
 					{ at: 3300, do: 'draw', el: 'link', dur: 800 },
-					{ at: 2500, do: 'move', el: 'head', to: 'a-head-2', dur: 900 },
+					// HEAD fades from the first commit to the new one instead of sliding across it.
+					{ at: 2300, do: 'exit', el: 'head', dur: 300 },
+					{ at: 2700, do: 'move', el: 'head', to: 'a-head-2', dur: 100 },
+					{ at: 3000, do: 'enter', el: 'head' },
 					{ at: chain.start(1) + 200, do: 'flow', el: 'link' },
 					{ at: chain.start(1) + 500, do: 'pulse', el: 'n1' },
 					{ at: chain.start(1) + 1600, do: 'pulse', el: 'head' },

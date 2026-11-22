@@ -116,8 +116,8 @@ const outputs = [
 
 // ── Editor geometry (canvas units, outside the camera) ────────────────────
 const ED = { x: 20, y: 20, w: 580, h: 680 };
-const CODE_X = 68;
-const GUTTER_X = 54;
+const CODE_X = 72;
+const GUTTER_X = 59;
 const CODE_TOP = 74;
 const LINE_H = 23;
 const BAR = { x: 28, w: 564 };
@@ -171,6 +171,8 @@ function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
 }
 /** Text lying flat on a floor, reading along +u. */
 const floorMatrix = (point: Point) => `matrix(0.866 0.5 -0.866 0.5 ${point.x} ${point.y})`;
+/** Text lying flat on a floor, reading along -v (up its left edge). */
+const floorMatrixV = (point: Point) => `matrix(0.866 -0.5 0.866 0.5 ${point.x} ${point.y})`;
 
 const CHAIN_V = -2.0;
 const LANE_V = -1.0;
@@ -206,7 +208,7 @@ const anchors = [
 	...slots.map((point, k) => ({ id: `a-tip-${k}`, ...lift(point, 60) })),
 	...lane.map((point, k) => ({ id: `a-o-${k + 1}`, ...point })),
 	{ id: 'a-stage', ...lift(STAGE, 16) },
-	{ id: 'a-work', ...lift(WORK, 16) },
+	{ id: 'a-work', ...lift(WORK, 22) },
 	...G.modules.map((module, index) => ({ id: `a-m-${index + 1}`, ...lift(module.center, 16) })),
 ];
 const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0, y: 0 };
@@ -215,7 +217,7 @@ const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0,
 const shots = [
 	{ id: 'shot-all', cx: 640, cy: 380, s: 0.92 },
 	{ id: 'shot-main', cx: 662, cy: 372, s: 1.05 },
-	{ id: 'shot-repo', cx: 765, cy: 300, s: 1.2 },
+	{ id: 'shot-repo', cx: 745, cy: 300, s: 1.1 },
 ].map((item) => ({
 	id: item.id,
 	x: round(item.cx - 640 / item.s),
@@ -266,16 +268,17 @@ type Chip = {
 };
 const beside = (k: number) => ({ x: slots[k].x + 40, y: slots[k].y + 2 });
 // Notes for the working tree sit off its front-right edge, clear of the deck.
-const UNDER_WORK = { x: WORK.x + 40, y: WORK.y + 40 };
-const UNDER_WORK2 = { x: WORK.x + 40, y: WORK.y + 70 };
-const UNDER_STAGE = { x: STAGE.x - 30, y: STAGE.y + 76 };
+const UNDER_WORK = { x: WORK.x + 50, y: WORK.y + 40 };
+const UNDER_WORK2 = { x: WORK.x + 50, y: WORK.y + 70 };
+const UNDER_STAGE = { x: STAGE.x + 12, y: STAGE.y + 76 };
 
 const chips: Chip[] = [
 	{ id: 'lb-hola', text: `${names.greeting}: ${names.before}`, ...UNDER_WORK, align: 'start', tone: 'flow', mono: true, icon: 'check' },
 	{ id: 'lb-lost', text: t('cambio perdido para siempre', 'change lost for good'), ...UNDER_WORK2, align: 'start', tone: 'magenta', icon: 'x' },
 	{ id: 'lb-typo', text: names.typo, ...beside(1), align: 'start', tone: 'magenta', mono: true },
 	{ id: 'lb-fixed', text: names.farewell, ...beside(1), align: 'start', tone: 'violet', mono: true },
-	{ id: 'lb-change', text: `${names.before} → ${names.after}`, ...beside(2), align: 'start', tone: 'magenta' },
+	// Stacked over the revert note, right of HEAD's arrow, so the pointer never crosses it.
+	{ id: 'lb-change', text: `${names.before} → ${names.after}`, x: slots[3].x + 40, y: slots[3].y - 38, align: 'start', tone: 'magenta' },
 	{ id: 'lb-revert', text: `${names.after} → ${names.before}`, ...beside(3), align: 'start', tone: 'violet' },
 	{ id: 'lb-soft', text: t('--soft: al staging', '--soft: to staging'), ...UNDER_STAGE, align: 'middle', tone: 'flow', mono: true },
 	{ id: 'lb-mixed', text: t('--mixed: al working tree', '--mixed: to the working tree'), ...UNDER_WORK, align: 'start', tone: 'flow', mono: true },
@@ -339,11 +342,11 @@ const LEGEND_Y = VP.y + VP.h - 22;
 							<polygon class="xj-plate xj-plate--r" points={G.repo.rightFace}></polygon>
 							<polygon class="xj-plate xj-plate--t" points={G.repo.top} fill="url(#dc-g-floor)"></polygon>
 							{gridLines.map((d) => <path class="xj-grid" d={d} />)}
-							<text class="xj-floor-text" transform={floorMatrix(pt(-2.8, -0.75))}>{t('Repositorio', 'Repository')}</text>
+							<text class="xj-floor-text" transform={floorMatrixV(pt(-2.8, -0.35))}>{t('Repositorio', 'Repository')}</text>
 						</g>
 						<g data-el="rf-lane" class="xj-lane">
 							<path class="mg-stroke" pathLength="1" d={path(LANE_BOX)}></path>
-							<text class="xj-floor-text xj-floor-text--small xj-lane-text" transform={floorMatrix(pt(0.7, -0.4))}>git reflog</text>
+							<text class="xj-floor-text xj-floor-text--small xj-lane-text" transform={floorMatrix(pt(-0.25, -0.4))}>git reflog</text>
 						</g>
 						<g data-el="lb-out">
 							<text class="xj-floor-text xj-floor-text--small" transform={floorMatrix(pt(-2.4, -0.4))}>{t('fuera del historial', 'out of the history')}</text>
@@ -362,14 +365,14 @@ const LEGEND_Y = VP.y + VP.h - 22;
 							<polygon class="xj-plate xj-plate--l" points={G.stage.leftFace}></polygon>
 							<polygon class="xj-plate xj-plate--r" points={G.stage.rightFace}></polygon>
 							<polygon class="xj-plate xj-plate--t" points={G.stage.top} fill="url(#dc-g-floor)"></polygon>
-							<text class="xj-floor-text xj-floor-text--small" transform={floorMatrix(pt(-1.95, 1.15))}>Staging</text>
+							<text class="xj-floor-text xj-floor-text--small" transform={floorMatrix(pt(-0.95, 1.25))}>Staging</text>
 						</g>
 						<g data-el="floor-work">
 							<polygon class="xj-plate-shadow" points={G.work.base} transform="translate(10 14)"></polygon>
 							<polygon class="xj-plate xj-plate--l" points={G.work.leftFace}></polygon>
 							<polygon class="xj-plate xj-plate--r" points={G.work.rightFace}></polygon>
 							<polygon class="xj-plate xj-plate--t" points={G.work.top} fill="url(#dc-g-floor)"></polygon>
-							<text class="xj-floor-text xj-floor-text--small" transform={floorMatrix(pt(0.85, 1.15))}>Working tree</text>
+							<text class="xj-floor-text xj-floor-text--small" transform={floorMatrix(pt(1.4, 1.25))}>Working tree</text>
 						</g>
 
 						<!-- Command deck: one module per editor line -->

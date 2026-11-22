@@ -106,8 +106,8 @@ const rowClass = (row: string) =>
 
 // ── Editor geometry (canvas units, outside the camera) ────────────────────
 const ED = { x: 20, y: 20, w: 580, h: 680 };
-const CODE_X = 68;
-const GUTTER_X = 54;
+const CODE_X = 72;
+const GUTTER_X = 59;
 const CODE_TOP = 74;
 const LINE_H = 23;
 const BAR = { x: 28, w: 564 };
@@ -225,7 +225,7 @@ const shots = [
 	{ id: 'shot-all', cx: 450, cy: 285, s: 0.92 },
 	{ id: 'shot-wd', cx: 330, cy: 290, s: 1.2 },
 	{ id: 'shot-repo', cx: 585, cy: 260, s: 1.15 },
-	{ id: 'shot-cmp', cx: 450, cy: 270, s: 0.95 },
+	{ id: 'shot-cmp', cx: 450, cy: 270, s: 0.9 },
 	{ id: 'shot-hist', cx: 610, cy: 230, s: 1.15 },
 ].map((item) => ({
 	id: item.id,
@@ -272,7 +272,7 @@ const chips: Chip[] = [
 	{ id: 'st-modified', text: 'modified', x: WD.x, y: STATE_Y, align: 'middle', tone: 'magenta', mono: true },
 	{ id: 'st-staged', text: t('preparado', 'staged'), x: ST.x, y: STATE_Y, align: 'middle', tone: 'violet', icon: 'check' },
 	{ id: 'lb-snap', text: t('una foto de los archivos', 'a snapshot of the files'), x: N1.x, y: N1.y + NODE.h / 2 + 24, align: 'middle', tone: 'violet' },
-	{ id: 'lb-root', text: 'root-commit', x: N1.x - NODE.w / 2 - 10, y: N1.y, align: 'end', tone: 'violet', mono: true },
+	{ id: 'lb-root', text: 'root-commit', x: N1.x + NODE.w / 2 - 12, y: N1.y - NODE.h / 2, align: 'end', tone: 'violet', mono: true },
 	{ id: 'lb-diff', text: 'git diff', x: (WD.x + ST.x) / 2, y: WD.y - 120, align: 'middle', tone: 'flow', mono: true },
 	{ id: 'lb-staged', text: 'git diff --staged', x: ST.x + 50, y: ST.y - 104, align: 'middle', tone: 'flow', mono: true },
 	{ id: 'r-cycle', text: t('editar → git add → git commit', 'edit → git add → git commit'), x: ST.x, y: 494, align: 'middle', tone: 'violet', mono: true },
