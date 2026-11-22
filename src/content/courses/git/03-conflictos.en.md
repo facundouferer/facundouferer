@@ -1,64 +1,286 @@
 ---
-title: 'Merging Branches and Conflicts'
+title: 'Branches, merging and conflicts'
 course: 'git'
 slug: 'conflictos'
-description: 'Master parallel branching workflows with branch and merge, and learn how to interpret and resolve integration conflicts step by step.'
+description: 'Create branches to work in parallel, integrate them with git merge (fast-forward and merge commit) and resolve conflicts step by step, all in your local repository.'
 order: 3
 lang: 'en'
 published: true
 ---
 
-# 🔀 Branching, Merging, and Conflict Resolution in Git
+# Branches, merging and conflicts
 
-When multiple developers work simultaneously on the same codebase, lines of history inevitably diverge. Mastering how to branch, merge, and confidently resolve integration conflicts is an essential skill for any software engineer.
+A branch lets you try an idea without touching the stable version of the project. When the idea works, you integrate it with `git merge`. If both branches changed the same lines, Git asks you to decide: that is a conflict.
 
-In this lesson, you will learn:
-1. How to create, switch, and isolate development lines with `git branch` and `git switch`.
-2. How to merge branches with `git merge` (fast-forward vs three-way merge commit).
-3. What causes an integration conflict and why Git halts the merge.
-4. How to dissect and understand conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`).
-5. The step-by-step method to resolve conflicts, verify fixes, and complete the merge cleanly.
+In this lesson you will learn:
 
----
+1. What a branch is and what `HEAD` is.
+2. How to create, list, switch and delete branches with `git branch` and `git switch`.
+3. How to view history as a graph with `git log --oneline --graph --all`.
+4. The difference between a fast-forward merge and a merge commit.
+5. How to read conflict markers, resolve a conflict or cancel the merge.
 
-# 🌿 MERGING BRANCHES — EXPLAINED STEP BY STEP
+Everything happens on your computer: no server is needed.
 
-## 🧠 Core Idea (Concept First, Then Commands)
+## What a branch is
 
-Imagine this scenario:
+A branch is a **movable pointer to a commit**. It is not a copy of the files: it is just a name (for example `main`) that points to the latest commit of a line of work. Every time you commit on that branch, the pointer moves forward to the new commit.
 
-* `main` branch → stable, working version of your project
-* `login` branch → isolated line of work for a new user authentication feature
+`HEAD` tells you where you are. It normally points to a branch (`HEAD -> main`), which is why your new commits move that branch forward.
 
-👉 **Merging (`git merge`)** means:
+In the [Undoing changes](/en/courses/git/deshacer-cambios) lesson you used `git switch --detach <hash>`: there `HEAD` pointed directly at a commit, with no branch. That is *detached HEAD*. With branches, `HEAD` points to a name again, one that moves with you.
 
-> Integrating the commits from one branch into another branch
+## Setting up the practice repository
 
-Typically, you develop and test in a secondary branch, then switch to `main` and merge your feature branch into it.
+Every example in this lesson continues from the previous one in the same repository. Create it in an empty folder:
 
----
+```bash
+mkdir project
+cd project
+git init
+```
 
-# 📊 Visual Diagram: Branching and Merging
+Create `greeting.txt` with this content:
+
+```text
+Hello world
+```
+
+```bash
+git add greeting.txt
+git commit -m "Add initial greeting"
+```
+
+```text
+[main (root-commit) 84e98ce] Add initial greeting
+ 1 file changed, 1 insertion(+)
+ create mode 100644 greeting.txt
+```
+
+The hashes in your terminal will be different: every commit has its own.
+
+## Listing, creating and switching branches
+
+### Listing branches
+
+```bash
+git branch
+```
+
+```text
+* main
+```
+
+The asterisk marks the current branch, the one `HEAD` points to.
+
+### Creating a branch and switching to it
+
+```bash
+git switch -c farewell
+```
+
+```text
+Switched to a new branch 'farewell'
+```
+
+`git switch -c <name>` creates the branch at the current commit and switches to it. Now `git branch` shows:
+
+```text
+* farewell
+  main
+```
+
+If the branch already exists, you switch to it without `-c`:
+
+```bash
+git switch main
+```
+
+When you switch branches, Git replaces the files in your folder with those of the commit the new branch points to. Commit your changes before switching: if you have uncommitted changes that clash with the other branch, Git refuses to switch so you do not lose them.
+
+## Viewing history as a graph
+
+`git log --oneline` only shows the current branch. To see every branch and how they split and join:
+
+```bash
+git log --oneline --graph --all
+```
+
+- `--graph` draws the lines of each branch on the left.
+- `--all` includes every branch, not just the current one.
+- The parentheses show which commit each branch and `HEAD` point to.
+
+You will use it after every step in this lesson.
+
+## Fast-forward merge
+
+Stay on the `farewell` branch (go back with `git switch farewell` if you switched to `main`). Create `farewell.txt`:
+
+```text
+See you later
+```
+
+```bash
+git add farewell.txt
+git commit -m "Add farewell"
+git switch main
+```
+
+On `main` the file `farewell.txt` does not exist: that branch still points to the previous commit. The graph shows it:
+
+```bash
+git log --oneline --graph --all
+```
+
+```text
+* 1c21b09 (farewell) Add farewell
+* 84e98ce (HEAD -> main) Add initial greeting
+```
+
+`main` has not moved since you created `farewell`. To integrate, you stand on the branch that **receives** the changes and merge the other one:
+
+```bash
+git merge farewell
+```
+
+```text
+Updating 84e98ce..1c21b09
+Fast-forward
+ farewell.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 farewell.txt
+```
+
+Since `main` had no commits of its own, Git does not need to combine anything: it just moves the `main` pointer forward to the commit of `farewell`. That is a **fast-forward**, and it creates no new commit.
+
+```text
+* 1c21b09 (HEAD -> main, farewell) Add farewell
+* 84e98ce Add initial greeting
+```
 
 <figure class="diagram">
-<svg viewBox="0 0 720 280" role="img" aria-labelledby="d-git-merge-conflict-en-t">
-<title id="d-git-merge-conflict-en-t">Branch divergence, git merge integration, and conflict markers</title>
+<svg viewBox="0 0 720 290" role="img" aria-labelledby="d-git-ff-l3-t">
+<title id="d-git-ff-l3-t">Fast-forward merge: main moves forward to the commit of the farewell branch</title>
 <defs>
-  <marker id="ar-main-l3-en" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+  <marker id="ar-ff-l3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
     <path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent)"/>
   </marker>
-  <marker id="ar-branch-l3-en" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+  <marker id="ar-ptr-l3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="var(--color-neutral-700)"/>
+  </marker>
+</defs>
+
+<!-- Before -->
+<text x="40" y="40" font-size="13" font-weight="700" fill="var(--color-neutral-700)">Before git merge</text>
+<path d="M 200 80 L 360 80" fill="none" stroke="var(--color-accent-2-600)" stroke-width="2.5" stroke-dasharray="7 4"/>
+<circle cx="200" cy="80" r="16" fill="var(--color-bg)" stroke="var(--color-accent)" stroke-width="3"/>
+<text x="200" y="85" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">A</text>
+<circle cx="360" cy="80" r="16" fill="var(--color-bg)" stroke="var(--color-accent-2-600)" stroke-width="3"/>
+<text x="360" y="85" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">B</text>
+<path d="M 200 128 L 200 102" fill="none" stroke="var(--color-neutral-700)" stroke-width="1.5" marker-end="url(#ar-ptr-l3)"/>
+<text x="200" y="145" font-size="13" font-weight="700" font-family="monospace" text-anchor="middle" fill="var(--color-accent-700)">HEAD -&gt; main</text>
+<path d="M 360 128 L 360 102" fill="none" stroke="var(--color-neutral-700)" stroke-width="1.5" marker-end="url(#ar-ptr-l3)"/>
+<text x="360" y="145" font-size="13" font-weight="700" font-family="monospace" text-anchor="middle" fill="var(--color-accent-2-800)">farewell</text>
+
+<!-- After -->
+<text x="40" y="190" font-size="13" font-weight="700" fill="var(--color-neutral-700)">After git merge farewell</text>
+<path d="M 200 230 L 360 230" fill="none" stroke="var(--color-accent)" stroke-width="3"/>
+<circle cx="200" cy="230" r="16" fill="var(--color-bg)" stroke="var(--color-accent)" stroke-width="3"/>
+<text x="200" y="235" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">A</text>
+<circle cx="360" cy="230" r="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="3"/>
+<text x="360" y="235" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">B</text>
+<path d="M 210 200 C 250 180, 310 180, 348 204" fill="none" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#ar-ff-l3)"/>
+<text x="280" y="176" font-size="11" text-anchor="middle" fill="var(--color-accent-700)">main moves forward</text>
+<text x="390" y="226" font-size="13" font-weight="700" font-family="monospace" fill="var(--color-accent-700)">HEAD -&gt; main, farewell</text>
+<text x="390" y="246" font-size="11" fill="var(--color-neutral-700)">No new commit: only the pointer moves</text>
+</svg>
+<figcaption>Fast-forward: A is “Add initial greeting” and B is “Add farewell”. Since <code>main</code> did not move, <code>git merge farewell</code> only moves the <code>main</code> pointer from A to B.</figcaption>
+</figure>
+
+## Merge with a merge commit
+
+Now make both branches move forward, each in a different file. Create the `author` branch and add `author.txt`:
+
+```bash
+git switch -c author
+```
+
+```text
+Author: Ana
+```
+
+```bash
+git add author.txt
+git commit -m "Add author"
+git switch main
+```
+
+On `main`, change `farewell.txt` so it reads:
+
+```text
+See you later, see you soon
+```
+
+```bash
+git add farewell.txt
+git commit -m "Improve the farewell"
+git log --oneline --graph --all
+```
+
+```text
+* c236346 (author) Add author
+| * e4fe6bd (HEAD -> main) Improve the farewell
+|/
+* 1c21b09 Add farewell
+* 84e98ce Add initial greeting
+```
+
+The branches have diverged: each one has a commit the other does not. Moving a pointer is no longer enough. Merge:
+
+```bash
+git merge author
+```
+
+Git opens your editor with the message `Merge branch 'author'`. Accept it: save and close the editor. Git replies:
+
+```text
+Merge made by the 'ort' strategy.
+ author.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 author.txt
+```
+
+Git compares both tips with their common ancestor (`1c21b09`), combines the changes and creates a **merge commit**: a commit with two parents. That is why it is called a three-way merge.
+
+```text
+*   a73905e (HEAD -> main) Merge branch 'author'
+|\
+| * c236346 (author) Add author
+* | e4fe6bd Improve the farewell
+|/
+* 1c21b09 Add farewell
+* 84e98ce Add initial greeting
+```
+
+<figure class="diagram">
+<svg viewBox="0 0 720 230" role="img" aria-labelledby="d-git-merge-l3-t">
+<title id="d-git-merge-l3-t">Three-way merge: main and author diverge from B and join in merge commit M</title>
+<defs>
+  <marker id="ar-main-l3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent)"/>
+  </marker>
+  <marker id="ar-branch-l3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
     <path d="M0,0 L10,5 L0,10 z" fill="var(--color-accent-2-600)"/>
   </marker>
 </defs>
 
 <!-- Branch main line -->
-<path d="M 60 70 L 620 70" fill="none" stroke="var(--color-accent)" stroke-width="3"/>
-<text x="45" y="75" font-size="13" font-weight="700" font-family="monospace" text-anchor="end" fill="var(--color-accent-700)">main</text>
+<path d="M 90 70 L 600 70" fill="none" stroke="var(--color-accent)" stroke-width="3" marker-end="url(#ar-main-l3)"/>
+<text x="60" y="75" font-size="13" font-weight="700" font-family="monospace" text-anchor="end" fill="var(--color-accent-700)">main</text>
 
-<!-- Branch feature/login curve -->
-<path d="M 180 70 C 220 70, 230 150, 270 150 L 450 150 C 490 150, 500 70, 540 70" fill="none" stroke="var(--color-accent-2-600)" stroke-width="2.5" stroke-dasharray="7 4"/>
-<text x="210" y="170" font-size="13" font-weight="700" font-family="monospace" fill="var(--color-accent-2-800)">login</text>
+<!-- Branch author curve -->
+<path d="M 180 70 C 220 70, 230 150, 270 150 L 450 150 C 490 150, 500 70, 520 72" fill="none" stroke="var(--color-accent-2-600)" stroke-width="2.5" stroke-dasharray="7 4" marker-end="url(#ar-branch-l3)"/>
+<text x="210" y="175" font-size="13" font-weight="700" font-family="monospace" fill="var(--color-accent-2-800)">author</text>
 
 <!-- Commits on main -->
 <circle cx="90" cy="70" r="16" fill="var(--color-bg)" stroke="var(--color-accent)" stroke-width="3"/>
@@ -66,304 +288,334 @@ Typically, you develop and test in a secondary branch, then switch to `main` and
 
 <circle cx="180" cy="70" r="16" fill="var(--color-bg)" stroke="var(--color-accent)" stroke-width="3"/>
 <text x="180" y="75" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">B</text>
+<text x="180" y="40" font-size="11" text-anchor="middle" fill="var(--color-neutral-700)">Common ancestor</text>
 
 <circle cx="360" cy="70" r="16" fill="var(--color-bg)" stroke="var(--color-accent)" stroke-width="3"/>
 <text x="360" y="75" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">C</text>
-<text x="360" y="45" font-size="11" text-anchor="middle" fill="var(--color-neutral-700)">Edit on line 2</text>
+<text x="360" y="40" font-size="11" text-anchor="middle" fill="var(--color-neutral-700)">Changes farewell.txt</text>
 
-<!-- Commits on login -->
-<circle cx="300" cy="150" r="16" fill="var(--color-bg)" stroke="var(--color-accent-2-600)" stroke-width="3"/>
-<text x="300" y="155" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">D</text>
+<!-- Commit on author -->
+<circle cx="360" cy="150" r="16" fill="var(--color-bg)" stroke="var(--color-accent-2-600)" stroke-width="3"/>
+<text x="360" y="155" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">D</text>
+<text x="360" y="190" font-size="11" text-anchor="middle" fill="var(--color-accent-2-800)">Creates author.txt</text>
 
-<circle cx="420" cy="150" r="16" fill="var(--color-bg)" stroke="var(--color-accent-2-600)" stroke-width="3"/>
-<text x="420" y="155" font-size="12" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">E</text>
-<text x="420" y="185" font-size="11" text-anchor="middle" fill="var(--color-accent-2-800)">Different edit on line 2</text>
-
-<!-- Merge Commit F -->
+<!-- Merge commit M -->
 <circle cx="540" cy="70" r="20" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="3.5"/>
-<text x="540" y="76" font-size="13" font-weight="800" text-anchor="middle" fill="var(--color-accent-700)">F</text>
-<text x="540" y="40" font-size="11" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">Merge Commit</text>
-
-<!-- Conflict Marker Box (inset) -->
-<rect x="60" y="205" width="600" height="60" rx="12" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="1.5"/>
-<text x="80" y="228" font-size="11.5" font-family="monospace" fill="var(--color-accent-700)">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD (current version on main)</text>
-<text x="80" y="244" font-size="11.5" font-family="monospace" fill="var(--color-neutral-700)">======= (separator)</text>
-<text x="80" y="260" font-size="11.5" font-family="monospace" fill="var(--color-accent-2-800)">&gt;&gt;&gt;&gt;&gt;&gt;&gt; login (incoming version)</text>
-<text x="530" y="234" font-size="12" font-weight="700" fill="var(--color-accent-700)">Conflict!</text>
-<text x="530" y="252" font-size="11" fill="var(--color-neutral-700)">Same line modified</text>
+<text x="540" y="76" font-size="13" font-weight="800" text-anchor="middle" fill="var(--color-accent-700)">M</text>
+<text x="540" y="40" font-size="11" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">Merge commit (two parents)</text>
 </svg>
-<figcaption>Evolution of a merge with divergent branches: the <code>login</code> branch forks from commit B and advances in parallel to <code>main</code>. If both branches touch the same lines, Git inserts conflict markers before sealing the merge commit F.</figcaption>
+<figcaption>Merge commit: A “Add initial greeting”, B “Add farewell”, C “Improve the farewell” on <code>main</code> and D “Add author” on <code>author</code>. Both branches moved forward in different files, so <code>git merge author</code> creates M with no conflicts.</figcaption>
 </figure>
 
----
+## Deleting a merged branch
 
-# 🧪 REAL STEP-BY-STEP EXAMPLE (Clean Merge)
-
-## Step 1️⃣ Create test project
+Once a branch is integrated, its name is no longer needed: the commits stay in `main`.
 
 ```bash
-# Initialize a new local Git repository
-git init
+git branch -d farewell
+git branch -d author
 ```
-
-Create file `message.txt`:
 
 ```text
-Hello world
+Deleted branch farewell (was 1c21b09).
+Deleted branch author (was c236346).
 ```
 
-```bash
-# Stage and commit initial baseline on main
-git add .
-git commit -m "chore: initial commit"
-```
-
----
-
-## Step 2️⃣ Create a new feature branch
-
-```bash
-# Create secondary branch and switch to it in one command
-git checkout -b login
-```
-
-📌 You are now working on the `login` branch.
-
----
-
-## Step 3️⃣ Make changes in the new branch
-
-Edit `message.txt`:
+`git branch -d` refuses to delete a branch that has unmerged commits:
 
 ```text
-Hello world
-Adding login screen
+error: the branch 'test' is not fully merged
 ```
 
-Save:
+Git suggests `git branch -D` to force it. Use it only if you really want to discard those commits.
+
+## Conflicts
+
+### When a conflict happens
+
+Git only combines changes that do not overlap: different files, or different parts of the same file. There is a **conflict** when both branches changed the same lines differently since the common ancestor. Git does not guess which version is right: it stops the merge and asks you.
+
+### Causing a conflict
+
+Stay in the same repository, on `main`. Right now `greeting.txt` reads `Hello world`. Create a new branch and change that line:
 
 ```bash
-# Commit the modification to the login branch
-git add .
-git commit -m "feat: add login screen"
+git switch -c formal-greeting
 ```
 
----
-
-## Step 4️⃣ Switch back to `main`
-
-```bash
-# Return to the main branch (files revert to main state)
-git checkout main
-```
-
-📌 Notice that `message.txt` in your editor returns to its original single-line content.
-
----
-
-## Step 5️⃣ Merge the `login` branch
-
-```bash
-# Integrate login commits into the current branch (main)
-git merge login
-```
-
-🎉 **Successful merge without conflicts (Fast-Forward or clean merge).**
-
----
-
-# ⚠️ NOW: MERGE CONFLICTS (The Critical Part)
-
-## 🧠 When do conflicts happen?
-
-A merge conflict occurs when:
-
-* Two branches
-* Modify the **exact same lines** of the same file
-* With different content
-
-Git cannot infer human intent automatically 🤯
-
----
-
-# 💥 REAL EXAMPLE OF A CONFLICT
-
-## Step 1️⃣ Initial state
-
-File `message.txt` on `main`:
+Edit `greeting.txt` so it reads:
 
 ```text
-Hello world
+Good morning, world
 ```
-
----
-
-## Step 2️⃣ Branch `login` changes the line
 
 ```bash
-# Switch to the feature branch
-git checkout -b login
+git add greeting.txt
+git commit -m "Use a formal greeting"
+git switch main
 ```
 
-Edit `message.txt`:
+On `main`, `greeting.txt` reads `Hello world` again. Change the same line in a different way:
 
 ```text
-Hello world from login
+Hello, whole world
 ```
 
 ```bash
-# Stage and commit on branch login
-git add .
-git commit -m "feat: update message in login"
+git add greeting.txt
+git commit -m "Expand the greeting"
+git merge formal-greeting
 ```
-
----
-
-## Step 3️⃣ Return to `main` and change the same line
-
-```bash
-# Switch back to main
-git checkout main
-```
-
-Edit `message.txt` with a different line:
 
 ```text
-Hello world from main
-```
-
-```bash
-# Stage and commit conflicting line on main
-git add .
-git commit -m "feat: update message in main"
-```
-
----
-
-## Step 4️⃣ Attempt to merge (BOOM 💥)
-
-```bash
-# Attempt to merge login into main (Git detects the collision)
-git merge login
-```
-
-Git halts execution and reports:
-
-```text
-CONFLICT (content): Merge conflict in message.txt
+Auto-merging greeting.txt
+CONFLICT (content): Merge conflict in greeting.txt
 Automatic merge failed; fix conflicts and then commit the result.
 ```
 
----
+The merge is halfway done. `git status` tells you which files are waiting for a decision:
 
-# 🔍 ANATOMY OF A CONFLICT (Inside the File)
+```text
+On branch main
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
 
-Open `message.txt` in your code editor:
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+	both modified:   greeting.txt
+```
+
+### Reading the markers
+
+Open `greeting.txt`:
 
 ```text
 <<<<<<< HEAD
-Hello world from main
+Hello, whole world
 =======
-Hello world from login
->>>>>>> login
+Good morning, world
+>>>>>>> formal-greeting
 ```
 
-### What does this mean?
+- `<<<<<<< HEAD` opens the version of your current branch (`main`).
+- `=======` separates the two versions.
+- `>>>>>>> formal-greeting` closes the version of the branch you are merging.
 
-* `<<<<<<< HEAD` → content present on your current branch (`main`)
-* `=======` → center division marker
-* `>>>>>>> login` → content coming from the incoming branch (`login`)
+<figure class="diagram">
+<svg viewBox="0 0 720 180" role="img" aria-labelledby="d-git-conflict-l3-t">
+<title id="d-git-conflict-l3-t">Conflict markers in greeting.txt: the main version, the separator and the formal-greeting version</title>
+<rect x="40" y="25" width="640" height="130" rx="16" fill="var(--color-surface)" stroke="var(--color-divider)" stroke-width="1.5"/>
+<text x="64" y="58" font-size="13" font-family="monospace" font-weight="700" fill="var(--color-accent-700)">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</text>
+<text x="64" y="80" font-size="13" font-family="monospace" fill="var(--color-accent-700)">Hello, whole world</text>
+<text x="64" y="102" font-size="13" font-family="monospace" font-weight="700" fill="var(--color-neutral-700)">=======</text>
+<text x="64" y="124" font-size="13" font-family="monospace" fill="var(--color-accent-2-800)">Good morning, world</text>
+<text x="64" y="146" font-size="13" font-family="monospace" font-weight="700" fill="var(--color-accent-2-800)">&gt;&gt;&gt;&gt;&gt;&gt;&gt; formal-greeting</text>
+<text x="420" y="69" font-size="12" fill="var(--color-accent-700)">Your current branch (main)</text>
+<text x="420" y="102" font-size="12" fill="var(--color-neutral-700)">Separator</text>
+<text x="420" y="135" font-size="12" fill="var(--color-accent-2-800)">The branch you are merging</text>
+</svg>
+<figcaption>Both branches changed the same line of <code>greeting.txt</code> since the common ancestor, so Git writes both versions between markers and waits for your decision.</figcaption>
+</figure>
 
----
+### Cancelling the merge: `git merge --abort`
 
-# 🛠️ HOW TO RESOLVE A CONFLICT (Step by Step)
-
-## Step 1️⃣ Decide what remains
-
-* **Option A**: Keep your version (`Hello world from main`)
-* **Option B**: Keep the incoming version (`Hello world from login`)
-* **Option C**: Combine both into a cohesive result:
-
-```text
-Hello world from main and login
-```
-
-👉 You make the engineering call.
-
----
-
-## Step 2️⃣ Delete the conflict markers
-
-⚠️ **CRITICAL STEP**:
-You must delete all marker lines:
-
-```text
-<<<<<<<
-=======
->>>>>>>
-```
-
----
-
-## Step 3️⃣ Save the clean file
-
-The file must contain only clean, valid code:
-
-```text
-Hello world from main and login
-```
-
----
-
-## Step 4️⃣ Mark the conflict as resolved
+If you do not want to resolve it now, go back to the state before `git merge`:
 
 ```bash
-# Tell Git that the conflict in this file is resolved
-git add message.txt
+git merge --abort
+git status
 ```
 
----
+```text
+On branch main
+nothing to commit, working tree clean
+```
 
-## Step 5️⃣ Create the resolution commit
+`greeting.txt` reads `Hello, whole world` again. To continue the example, try the merge again:
 
 ```bash
-# Create the merge commit that finalizes conflict resolution
-git commit -m "merge: resolve conflict between main and login"
+git merge formal-greeting
 ```
 
-🎉 The merge conflict is now completely resolved.
+You get the same `CONFLICT (content)` as before.
 
----
+### Resolving the conflict
 
-# 🔄 COMPLETE MERGE CONFLICT WORKFLOW
+1. Decide the final content. It can be one version, the other or a combination.
+2. Delete the three marker lines (`<<<<<<<`, `=======`, `>>>>>>>`).
+3. Save the file.
+
+In this example we combine both ideas. `greeting.txt` ends up like this:
+
+```text
+Good morning, whole world
+```
+
+Mark the file as resolved with `git add`:
 
 ```bash
-# 1. Attempt the branch merge
-git merge login
-
-# 2. Git stops and reports CONFLICT (content)
-# 3. Open affected files in your editor and resolve markers
-
-# 4. Stage resolved files
-git add .
-
-# 5. Commit the merge result
-git commit -m "merge: resolve conflict"
+git add greeting.txt
+git status
 ```
 
----
+```text
+On branch main
+All conflicts fixed but you are still merging.
+  (use "git commit" to conclude merge)
+```
 
-# 🧠 Professional Advice
+### Finishing the merge
 
-✔️ Always run `git pull` before branching or starting work  
-✔️ Keep commits small and focused  
-✔️ Use descriptive branch names (`feat/login`, `fix/nav`)  
-✔️ Inspect conflict markers calmly; Git never erases your code silently  
+```bash
+git commit
+```
 
----
+Git opens the editor with the message `Merge branch 'formal-greeting'`. Accept it: save and close.
 
-# ❌ Common Mistakes
+```text
+[main 5f1ebe6] Merge branch 'formal-greeting'
+```
 
-❌ Deleting entire files by mistake during conflict resolution  
-❌ Committing files without removing the `<<<<<<<` and `>>>>>>>` markers  
-❌ Panicking and closing your terminal without completing or aborting the merge (`git merge --abort`)
+At this point `git merge --continue` does the same as `git commit`: it also opens the editor with the default message. Use whichever you prefer.
+
+```bash
+git log --oneline --graph --all
+git branch -d formal-greeting
+```
+
+```text
+*   5f1ebe6 (HEAD -> main) Merge branch 'formal-greeting'
+|\
+| * c93e3d6 (formal-greeting) Use a formal greeting
+* | 1007196 Expand the greeting
+|/
+*   a73905e Merge branch 'author'
+...
+```
+
+## What Git can and cannot recover
+
+- **Anything already in a commit can almost always be recovered.** Even if you delete a branch or get a merge wrong, the commits still exist for a while and `git reflog` shows their hashes (you saw it in [Undoing changes](/en/courses/git/deshacer-cambios)).
+- **Anything you never committed cannot be recovered.** `git restore` and `git reset --hard` discard uncommitted changes, and Git keeps no copy of them.
+
+So: commit before switching branches or merging.
+
+## Tips
+
+- Create one branch per idea or task, with a name that describes it.
+- Make small commits: conflicts are shorter and easier to read.
+- Merge often: the more two branches diverge, the more conflicts they pile up.
+- Read the whole conflict before editing, and check the result with `git diff --staged` before committing.
+- Common mistakes: committing with markers still in the file, or deleting the whole file instead of the conflicting lines.
+
+## Summary
+
+| I want to... | Command |
+| --- | --- |
+| See the branches | `git branch` |
+| Create a branch and switch to it | `git switch -c <branch>` |
+| Switch to an existing branch | `git switch <branch>` |
+| See every branch as a graph | `git log --oneline --graph --all` |
+| Integrate another branch into the current one | `git merge <branch>` |
+| Mark a conflict as resolved | `git add <file>` |
+| Finish the merge | `git commit` or `git merge --continue` |
+| Cancel a merge with conflicts | `git merge --abort` |
+| Delete an already merged branch | `git branch -d <branch>` |
+
+## Practice exercises
+
+### Exercise 1: a fast-forward merge
+
+In a new repository with one commit on `main`, create the `contact` branch, add `contact.txt` in a commit and merge it into `main`. Check that Git replies `Fast-forward` and delete the branch.
+
+<details>
+<summary>Show solution</summary>
+
+```bash
+git switch -c contact
+# Create contact.txt with any text
+git add contact.txt
+git commit -m "Add contact"
+git switch main
+git merge contact
+git log --oneline --graph --all
+git branch -d contact
+```
+
+`git merge` shows `Fast-forward` because `main` had no new commits: only the pointer moved.
+
+</details>
+
+### Exercise 2: a merge commit without conflicts
+
+Create the `colors` branch and add `colors.txt` in a commit. Go back to `main` and, before merging, make a commit that changes another file. Merge `colors` and look at the graph.
+
+<details>
+<summary>Show solution</summary>
+
+```bash
+git switch -c colors
+# Create colors.txt
+git add colors.txt
+git commit -m "Add colors"
+git switch main
+# Change greeting.txt
+git add greeting.txt
+git commit -m "Update the greeting"
+git merge colors
+# Accept the "Merge branch 'colors'" message in the editor
+git log --oneline --graph --all
+```
+
+Git replies `Merge made by the 'ort' strategy.` and the graph shows a commit with two lines reaching it: the merge commit.
+
+</details>
+
+### Exercise 3: cancelling and resolving a conflict
+
+Create the `title` branch and change the first line of `greeting.txt`. On `main`, change that same line in a different way. Merge, cancel with `git merge --abort`, merge again and this time resolve the conflict, finishing with `git merge --continue`.
+
+<details>
+<summary>Show solution</summary>
+
+```bash
+git switch -c title
+# Change the first line of greeting.txt
+git add greeting.txt
+git commit -m "Change the greeting on title"
+git switch main
+# Change the same line with different text
+git add greeting.txt
+git commit -m "Change the greeting on main"
+git merge title
+# CONFLICT (content): Merge conflict in greeting.txt
+git merge --abort
+git status
+# nothing to commit, working tree clean
+git merge title
+# Keep the final content and delete the markers
+git add greeting.txt
+git merge --continue
+git branch -d title
+```
+
+</details>
+
+### Exercise 4: an unmerged branch
+
+Create the `draft` branch, make a commit on it, go back to `main` and try to delete it with `git branch -d`. What does Git reply and why? How would you delete it without losing that commit?
+
+<details>
+<summary>Show solution</summary>
+
+Git replies `error: the branch 'draft' is not fully merged`, because the commit on `draft` is not in `main`: if you delete the branch, no name points to that commit. To keep it, merge first and then delete:
+
+```bash
+git merge draft
+git branch -d draft
+```
+
+If you really want to discard the work, `git branch -D draft` deletes it anyway.
+
+</details>
