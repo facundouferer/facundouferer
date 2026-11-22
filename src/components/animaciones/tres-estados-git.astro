@@ -1,0 +1,1003 @@
+---
+/**
+ * Scene for "The journey of a file through Git's three areas" (lesson
+ * git/01-el-principio-con-git, order: 1), a short film played on one persistent
+ * motion canvas. The captions and cues live in `src/data/animations/tres-estados-git.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: it is the
+ * terminal session, one command per line, and the cues slide a bar over the command
+ * being run while its real output is typed in the console below. The viewport on the
+ * right holds the camera: the three areas of Git side by side (Working Directory,
+ * Staging Area, repository), with one module per command in front of them, labelled
+ * with its editor line. A version of the file is a card that travels between the
+ * areas; a commit is a node with its short hash, message, author, date and parent.
+ * Magenta marks a change Git has not saved yet (untracked, modified); violet marks
+ * what records it (staged, commit).
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/tres-estados-git';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── The session shown in the editor ───────────────────────────────────────
+// Names, messages, hashes and outputs are the lesson's own, localized like it does.
+const names = {
+	project: t('mi-proyecto', 'my-project'),
+	file: t('hola.txt', 'hello.txt'),
+	author: t('Ana García', 'Ana Garcia'),
+	date: t('22 nov 2026', 'Nov 22 2026'),
+};
+const text = {
+	first: t('Hola, este es mi primer proyecto con Git', 'Hello, this is my first project with Git'),
+	second: t('Estoy aprendiendo Git', 'I am learning Git'),
+};
+const msg = {
+	first: t('Agrega saludo inicial', 'Add initial greeting'),
+	second: t('Agrega segunda línea al saludo', 'Add a second line to the greeting'),
+};
+const hash = {
+	first: t('edf5c7d', 'c5b1fcb'),
+	second: t('5904ec5', '24c9a2a'),
+};
+
+// One command per line. Comment lines are what you do outside Git (editing the file).
+const session = [
+	'git init',
+	`# ${t('creas', 'create')} ${names.file}`,
+	'git status',
+	`git add ${names.file}`,
+	`git commit -m "${msg.first}"`,
+	`# ${t('agregas una línea a', 'add a line to')} ${names.file}`,
+	'git status',
+	'git diff',
+	`git add ${names.file}`,
+	'git diff --staged',
+	`git restore --staged ${names.file}`,
+	`git add ${names.file}`,
+	`git commit -m "${msg.second}"`,
+	'git log --oneline',
+].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const lines = highlightCode(session, 'bash').map((html, index) => ({
+	n: index + 1,
+	html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+}));
+
+// The output each command prints, as the lesson shows it (shortened where needed).
+const diffRows = [
+	`diff --git a/${names.file} b/${names.file}`,
+	`--- a/${names.file}`,
+	`+++ b/${names.file}`,
+	'@@ -1 +1,2 @@',
+	` ${text.first}`,
+	`+${text.second}`,
+];
+const outputs = [
+	{ line: 1, rows: [`Initialized empty Git repository in /home/ana/${names.project}/.git/`] },
+	{ line: 3, rows: ['On branch main', 'No commits yet', 'Untracked files:', `        ${names.file}`] },
+	{
+		line: 5,
+		rows: [`[main (root-commit) ${hash.first}] ${msg.first}`, ' 1 file changed, 1 insertion(+)', ` create mode 100644 ${names.file}`],
+	},
+	{ line: 7, rows: ['On branch main', 'Changes not staged for commit:', `        modified:   ${names.file}`] },
+	{ line: 8, rows: diffRows },
+	{ line: 10, rows: diffRows },
+	{ line: 13, rows: [`[main ${hash.second}] ${msg.second}`, ' 1 file changed, 1 insertion(+)'] },
+	{ line: 14, rows: [`${hash.second} (HEAD -> main) ${msg.second}`, `${hash.first} ${msg.first}`] },
+];
+const rowClass = (row: string) =>
+	/^(diff |--- |\+\+\+ |@@)/.test(row) ? 'xj-out xj-out--meta' : row.startsWith('+') ? 'xj-out xj-out--add' : 'xj-out';
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 68;
+const GUTTER_X = 54;
+const CODE_TOP = 74;
+const LINE_H = 23;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 5;
+const CONSOLE_TOP = 414;
+const outY = (row: number) => 464 + row * 22;
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right, +v down-left, z is up. The three areas lie on the
+// horizontal diagonal (u = k, v = -k); the command modules stand in two rows in front.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 56;
+const EY = 32;
+const ORIGIN = { x: 440, y: 250 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+
+/** A box standing on the floor at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+type Slab = ReturnType<typeof slab>;
+type Tone = 'flow' | 'violet' | 'magenta';
+
+const area = (k: number) => slab(k, -k, 0.8, 0.8, 14, -14);
+const ROW_A = 2.3;
+const ROW_B = 3.0;
+const COLS = [-1.5, -0.9, -0.3, 0.3, 0.9, 1.5];
+const block = (k: number, d: number) => slab(k + d, -k + d, 0.2, 0.2, 16);
+const LABEL_Y = 345;
+
+const areas = [
+	{ id: 'z-wd', lit: 'wd-on', tone: 'flow' as Tone, g: area(-2), label: 'Working Directory' },
+	{ id: 'z-st', lit: 'st-on', tone: 'violet' as Tone, g: area(0), label: 'Staging Area' },
+	{ id: 'z-repo', lit: 'repo-on', tone: 'violet' as Tone, g: area(2), label: t('Repositorio (.git)', 'Repository (.git)') },
+];
+const WD = areas[0].g.center;
+const ST = areas[1].g.center;
+const REPO = areas[2].g.center;
+const DISK = slab(-2, 2, 0.3, 0.3, 18, 0);
+
+// Modules: one per command, back row first, with the editor line on its face.
+type Module = { line: number; g: Slab; tone: Tone };
+const moduleRow = (d: number, specs: [number, Tone][]): Module[] =>
+	specs.map(([line, tone], index) => ({ line, tone, g: block(COLS[index], d) }));
+const modules: Module[] = [
+	...moduleRow(ROW_A, [
+		[1, 'flow'],
+		[3, 'magenta'],
+		[4, 'flow'],
+		[5, 'violet'],
+		[7, 'magenta'],
+		[8, 'flow'],
+	]),
+	...moduleRow(ROW_B, [
+		[9, 'flow'],
+		[10, 'flow'],
+		[11, 'violet'],
+		[12, 'flow'],
+		[13, 'violet'],
+		[14, 'violet'],
+	]),
+];
+
+// Commit nodes: one visual identity for "a commit": short hash, message, author, date, parent.
+const NODE = { w: 240, h: 74 };
+const N1 = { x: REPO.x, y: REPO.y };
+const N2 = { x: REPO.x, y: REPO.y - 100 };
+const nodes = [
+	{ id: 'n1', at: N1, hash: hash.first, msg: msg.first, parent: t('padre: ninguno', 'parent: none') },
+	{ id: 'n2', at: N2, hash: hash.second, msg: msg.second, parent: `${t('padre', 'parent')}: ${hash.first}` },
+];
+const LINK_TOP = N2.y + NODE.h / 2;
+const LINK_END = N1.y - NODE.h / 2;
+
+// Where the particle stops (just above a module) and where cards, nodes and HEAD rest.
+const anchors = [
+	...modules.map((module) => ({ id: `a-m${module.line}`, ...lift(module.g.center, 16) })),
+	{ id: 'a-wd', ...lift(DISK.center, 36) },
+	{ id: 'a-st', ...lift(ST, 36) },
+	{ id: 'a-repo', ...N1 },
+	{ id: 'a-repo2', ...N2 },
+	{ id: 'a-head-1', ...lift(N1, NODE.h / 2 + 18) },
+	{ id: 'a-head-2', ...lift(N2, NODE.h / 2 + 18) },
+];
+const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0, y: 0 };
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-all', cx: 450, cy: 285, s: 0.92 },
+	{ id: 'shot-wd', cx: 330, cy: 290, s: 1.2 },
+	{ id: 'shot-repo', cx: 585, cy: 260, s: 1.15 },
+	{ id: 'shot-cmp', cx: 450, cy: 270, s: 0.95 },
+	{ id: 'shot-hist', cx: 610, cy: 230, s: 1.15 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Version cards: one visual identity for "a version of the file on its way".
+type Packet = { id: string; text: string; restAt: string };
+const packets: Packet[] = [
+	{ id: 'c1', text: names.file, restAt: 'a-wd' },
+	{ id: 'c2', text: `${names.file} +1 ${t('línea', 'line')}`, restAt: 'a-wd' },
+];
+const packetWidth = (packet: Packet) => Math.round(packet.text.length * 7.6 + 28);
+
+// Routes between the areas: what `add` and `commit` carry, the way back, and the
+// two comparisons (`git diff` and `git diff --staged`).
+const routes = [
+	{ id: 'fl-add', tone: 'flow', d: `M${WD.x + 24} ${WD.y - 60} Q${(WD.x + ST.x) / 2} ${WD.y - 104} ${ST.x - 24} ${ST.y - 44}` },
+	{ id: 'fl-commit', tone: 'violet', d: `M${ST.x + 24} ${ST.y - 44} Q${(ST.x + REPO.x) / 2} ${ST.y - 100} ${REPO.x - 44} ${N1.y - 20}` },
+	{ id: 'fl-commit2', tone: 'violet', d: `M${ST.x + 24} ${ST.y - 44} Q${(ST.x + REPO.x) / 2 - 20} ${ST.y - 130} ${REPO.x - 64} ${N2.y + 10}` },
+	{ id: 'fl-back', tone: 'violet', d: `M${ST.x - 24} ${ST.y - 44} Q${(WD.x + ST.x) / 2} ${WD.y - 104} ${WD.x + 24} ${WD.y - 60}` },
+	{ id: 'cmp-wd', tone: 'flow', d: `M${WD.x} ${WD.y - 70} Q${(WD.x + ST.x) / 2} ${WD.y - 170} ${ST.x} ${ST.y - 56}` },
+	{ id: 'cmp-st', tone: 'flow', d: `M${ST.x} ${ST.y - 56} Q${ST.x + 50} ${ST.y - 150} ${N1.x - NODE.w / 2 - 4} ${N1.y - 10}` },
+	{ id: 'fl-cycle', tone: 'flow', d: `M${WD.x} ${WD.y} L${ST.x} ${ST.y} L${REPO.x} ${REPO.y}` },
+];
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | Tone;
+	mono?: boolean;
+	icon?: 'check';
+};
+const STATE_Y = WD.y + 34;
+const chips: Chip[] = [
+	{ id: 'st-untracked', text: 'Untracked', x: WD.x, y: STATE_Y, align: 'middle', tone: 'magenta', mono: true },
+	{ id: 'st-modified', text: 'modified', x: WD.x, y: STATE_Y, align: 'middle', tone: 'magenta', mono: true },
+	{ id: 'st-staged', text: t('preparado', 'staged'), x: ST.x, y: STATE_Y, align: 'middle', tone: 'violet', icon: 'check' },
+	{ id: 'lb-snap', text: t('una foto de los archivos', 'a snapshot of the files'), x: N1.x, y: N1.y + NODE.h / 2 + 24, align: 'middle', tone: 'violet' },
+	{ id: 'lb-root', text: 'root-commit', x: N1.x - NODE.w / 2 - 10, y: N1.y, align: 'end', tone: 'violet', mono: true },
+	{ id: 'lb-diff', text: 'git diff', x: (WD.x + ST.x) / 2, y: WD.y - 120, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'lb-staged', text: 'git diff --staged', x: ST.x + 50, y: ST.y - 104, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'r-cycle', text: t('editar → git add → git commit', 'edit → git add → git commit'), x: ST.x, y: 494, align: 'middle', tone: 'violet', mono: true },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + (chip.icon ? 42 : 24));
+const chipLeft = (chip: Chip) =>
+	chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x;
+
+const HEAD_W = 122;
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="tg-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="tg-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="tg-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="tg-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="tg-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="tg-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the three areas of Git, seen through the camera -->
+			<g clip-path="url(#tg-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#tg-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#tg-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- The three areas, each with its lit state -->
+						{
+							areas.map((zone) => (
+								<>
+									<g data-el={zone.id}>
+										<polygon class="xj-plate-shadow" points={zone.g.base} transform="translate(12 18)" />
+										<polygon class="xj-plate xj-plate--l" points={zone.g.leftFace} />
+										<polygon class="xj-plate xj-plate--r" points={zone.g.rightFace} />
+										<polygon class="xj-plate xj-plate--t" points={zone.g.top} fill="url(#tg-g-floor)" />
+										<text class="xj-area-label" x={zone.g.center.x} y={LABEL_Y} text-anchor="middle">
+											{zone.label}
+										</text>
+									</g>
+									<g data-el={zone.lit} class:list={['xj-lit', `xj-lit--${zone.tone}`]}>
+										<polygon class="xj-lit-halo" points={zone.g.top} />
+										<polygon class="xj-lit-top xj-lit-top--soft" points={zone.g.top} />
+									</g>
+								</>
+							))
+						}
+
+						<!-- The cycle seen at the end: through the three areas -->
+						<g data-el="fl-cycle" class="xj-flowline xj-flowline--flow">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={routes[6].d}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={routes[6].d}></path>
+						</g>
+
+						<!-- The file on disk, in the Working Directory -->
+						<g data-el="disk">
+							<polygon class="xj-shadow" points={DISK.base} transform="translate(6 8)"></polygon>
+							<polygon class="xj-face xj-face--l" points={DISK.leftFace}></polygon>
+							<polygon class="xj-face xj-face--r" points={DISK.rightFace}></polygon>
+							<polygon class="xj-face xj-face--t" points={DISK.top} fill="url(#tg-g-top)"></polygon>
+							<text class="xj-face-text" transform={DISK.faceMatrix} text-anchor="middle" y="4">txt</text>
+						</g>
+
+						<!-- Command modules: one per command, labelled with its editor line -->
+						{
+							modules.map((module) => (
+								<>
+									<g data-el={`m-${module.line}`} class="xj-mod">
+										<polygon class="xj-shadow" points={module.g.base} transform="translate(6 8)" />
+										<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#tg-g-top)" />
+										<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+											{module.line}
+										</text>
+									</g>
+									<g data-el={`on-${module.line}`} class:list={['xj-lit', `xj-lit--${module.tone}`]}>
+										<polygon class="xj-lit-halo" points={module.g.top} />
+										<polygon class="xj-lit-top" points={module.g.top} />
+										<polygon class="xj-lit-side" points={module.g.leftFace} />
+										<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+											{module.line}
+										</text>
+									</g>
+								</>
+							))
+						}
+
+						<!-- Routes: add, commit, the way back and the two comparisons -->
+						{
+							routes.slice(0, 6).map((route) => (
+								<g data-el={route.id} class:list={['xj-flowline', `xj-flowline--${route.tone}`]}>
+									<path class="mg-stroke xj-flowline-halo" pathLength="1" d={route.d} />
+									<path class="mg-stroke xj-flowline-core" pathLength="1" d={route.d} />
+								</g>
+							))
+						}
+
+						<!-- Commit nodes and the parent link -->
+						{
+							nodes.map((node) => (
+								<g data-el={node.id} class="xj-node">
+									<rect class="xj-node-halo" x={node.at.x - NODE.w / 2 - 6} y={node.at.y - NODE.h / 2 - 6} width={NODE.w + 12} height={NODE.h + 12} rx="22" />
+									<rect class="xj-node-card" x={node.at.x - NODE.w / 2} y={node.at.y - NODE.h / 2} width={NODE.w} height={NODE.h} rx="16" />
+									<circle class="xj-node-dot" cx={node.at.x - NODE.w / 2 + 18} cy={node.at.y - 22} r="5" />
+									<text class="xj-node-hash" x={node.at.x - NODE.w / 2 + 30} y={node.at.y - 17.5}>
+										{node.hash}
+									</text>
+									<text class="xj-node-msg" x={node.at.x - NODE.w / 2 + 12} y={node.at.y + 0.5}>
+										{node.msg}
+									</text>
+									<text class="xj-node-meta" x={node.at.x - NODE.w / 2 + 12} y={node.at.y + 16}>
+										{`${names.author} · ${names.date}`}
+									</text>
+									<text class="xj-node-parent" x={node.at.x - NODE.w / 2 + 12} y={node.at.y + 30}>
+										{node.parent}
+									</text>
+								</g>
+							))
+						}
+						<g data-el="link" class="xj-link">
+							<path class="mg-stroke" pathLength="1" d={`M${N1.x} ${LINK_TOP} V${LINK_END - 7}`}></path>
+							<polygon class="mg-head" points={`${N1.x - 6},${LINK_END - 8} ${N1.x + 6},${LINK_END - 8} ${N1.x},${LINK_END}`}></polygon>
+						</g>
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.icon === 'check' && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<path d="M20 6 9 17l-5-5" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.icon ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Version cards. Placement lives on the inner group: the player resets data-el transforms. -->
+						{
+							packets.map((packet) => (
+								<g data-el={packet.id} data-x={at(packet.restAt).x} data-y={at(packet.restAt).y}>
+									<g class="xj-packet">
+										<rect class="xj-packet-halo" x={-packetWidth(packet) / 2 - 5} y="-18" width={packetWidth(packet) + 10} height="36" rx="18" />
+										<rect class="xj-packet-card" x={-packetWidth(packet) / 2} y="-13" width={packetWidth(packet)} height="26" rx="13" />
+										<text class="xj-packet-text" x="0" y="4.5" text-anchor="middle">
+											{packet.text}
+										</text>
+									</g>
+								</g>
+							))
+						}
+
+						<!-- HEAD: the marker of the commit you are on -->
+						<g data-el="head" data-x={at('a-head-1').x} data-y={at('a-head-1').y}>
+							<g class="xj-head">
+								<rect x={-HEAD_W / 2} y="-12" width={HEAD_W} height="24" rx="12"></rect>
+								<path d="M-6 12 L0 19 L6 12 Z"></path>
+								<text class="xj-chip-mono" x="0" y="4.5" text-anchor="middle">HEAD -&gt; main</text>
+							</g>
+						</g>
+
+						<!-- The execution flow -->
+						<g data-el="p" class="xj-particle" data-x={at('a-m1').x} data-y={at('a-m1').y}>
+							<circle r="20" fill="url(#tg-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="420" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<rect class="xj-legend-card" x={VP.x + 172} y={LEGEND_Y - 6} width="20" height="12" rx="6"></rect>
+				<text x={VP.x + 200} y={LEGEND_Y + 4}>{t('Versión del archivo', 'File version')}</text>
+				<rect class="xj-legend-node" x={VP.x + 340} y={LEGEND_Y - 7} width="20" height="14" rx="5"></rect>
+				<text x={VP.x + 368} y={LEGEND_Y + 4}>Commit</text>
+			</g>
+
+			<!-- EDITOR: the terminal session, with the running command highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{`Terminal — ${names.project}`}</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(1)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<!-- The session: each line is typed when it runs -->
+				<g data-el="ed" data-base="shown" class="xj-code">
+					{
+						lines.map((line) => (
+							<g data-el={`ed-${line.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				<!-- Console: the output of the command that just ran -->
+				{
+					outputs.map((block) => (
+						<g data-el={`out-${block.line}`} data-base="shown">
+							{block.rows.map((row, index) => (
+								<text data-el={`o${block.line}-${index + 1}`} class={rowClass(row)} x={ED.x + 20} y={outY(index)} xml:space="preserve">
+									{row}
+								</text>
+							))}
+						</g>
+					))
+				}
+				{lines.map((line) => <circle data-anchor={`ln-${line.n}`} cx={BAR_CX} cy={lineMid(line.n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue execution flow, magenta for a change Git has not saved yet (untracked,
+	   modified) and violet for what records it (staged, commit).
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='tres-estados-git']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='tres-estados-git'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='tres-estados-git'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='tres-estados-git'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-card {
+		fill: var(--xj-panel);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend-node {
+		fill: var(--xj-panel);
+		stroke: var(--xj-violet);
+		stroke-width: 1.5;
+	}
+
+	/* Areas and modules */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-area-label {
+		font-family: var(--font-body);
+		font-size: 14px;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top--soft {
+		fill-opacity: 0.16;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* Routes */
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--violet {
+		--xj-line: var(--xj-violet);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	/* Commits */
+	.xj-node-halo {
+		fill: var(--xj-violet);
+		fill-opacity: 0.16;
+	}
+
+	.xj-node-card {
+		fill: var(--xj-ink);
+		stroke: var(--xj-violet);
+		stroke-width: 2;
+	}
+
+	.xj-node-dot {
+		fill: var(--xj-violet);
+	}
+
+	.xj-node-hash {
+		font-family: monospace;
+		font-size: 14px;
+		font-weight: 700;
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-node-msg {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-white);
+	}
+
+	.xj-node-meta {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-node-parent {
+		font-family: monospace;
+		font-size: 11.5px;
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-link path {
+		fill: none;
+		stroke: var(--xj-violet-soft);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+	}
+
+	.xj-link polygon {
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-head rect {
+		fill: var(--xj-panel);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+	}
+
+	.xj-head path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-head .xj-chip-mono {
+		fill: var(--xj-flow-soft);
+		font-weight: 700;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* Version cards and the flow */
+	.xj-packet-halo {
+		fill: var(--xj-flow);
+		fill-opacity: 0.16;
+	}
+
+	.xj-packet-card {
+		fill: var(--xj-ink);
+		stroke: var(--xj-flow);
+		stroke-width: 2;
+	}
+
+	.xj-packet-text {
+		font-family: monospace;
+		font-size: 12.5px;
+		font-weight: 700;
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-out--meta {
+		fill: var(--xj-dim);
+	}
+
+	.xj-out--add {
+		fill: var(--xj-flow);
+		font-weight: 700;
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-cmd) {
+		fill: var(--xj-white);
+		font-weight: 700;
+	}
+
+	.mg-canvas .xj-code :global(.tok-flag) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-var) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+</style>

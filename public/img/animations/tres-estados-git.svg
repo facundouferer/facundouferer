@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" role="img" aria-label="El viaje de un archivo por las tres zonas de Git">
+  <rect width="400" height="200" fill="#f1e8d9"/>
+  <g stroke-linejoin="round" stroke-width="2.5">
+    <path d="M30 120l46-24 46 24-46 24z" fill="#faf5ec" stroke="#7d9a76"/>
+    <path d="M154 120l46-24 46 24-46 24z" fill="#faf5ec" stroke="#e8a27c"/>
+    <path d="M278 120l46-24 46 24-46 24z" fill="#faf5ec" stroke="#c0714a"/>
+  </g>
+  <g fill="none" stroke-width="3.5" stroke-linecap="round">
+    <path d="M96 92c30-26 60-26 86 -2" stroke="#7d9a76"/>
+    <path d="M220 92c30-26 60-26 86 -2" stroke="#c0714a"/>
+  </g>
+  <path d="M176 86l8 6-10 3z" fill="#7d9a76"/>
+  <path d="M300 86l8 6-10 3z" fill="#c0714a"/>
+  <rect x="42" y="98" width="68" height="22" rx="11" fill="#faf5ec" stroke="#7d9a76" stroke-width="2.5"/>
+  <rect x="274" y="88" width="100" height="36" rx="12" fill="#2e2b25"/>
+  <circle cx="288" cy="100" r="4" fill="#e8a27c"/>
+  <g font-family="monospace" font-weight="700">
+    <text x="76" y="113" font-size="10" text-anchor="middle" fill="#2e2b25">hola.txt</text>
+    <text x="297" y="104" font-size="11" fill="#faf5ec">edf5c7d</text>
+  </g>
+  <rect x="290" y="110" width="70" height="5" rx="2.5" fill="#e8a27c"/>
+  <g font-family="sans-serif" font-size="11" font-weight="700" fill="#2e2b25">
+    <text x="76" y="166" text-anchor="middle">working</text>
+    <text x="200" y="166" text-anchor="middle">staging</text>
+    <text x="324" y="166" text-anchor="middle">commit</text>
+  </g>
+  <g font-family="monospace" font-size="11" font-weight="700" fill="#c0714a">
+    <text x="139" y="54" text-anchor="middle">git add</text>
+    <text x="263" y="54" text-anchor="middle">git commit</text>
+  </g>
+</svg>
