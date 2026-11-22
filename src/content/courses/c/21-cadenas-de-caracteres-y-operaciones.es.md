@@ -7,905 +7,587 @@ lang: 'es'
 published: true
 ---
 
-En muchos programas no alcanza con trabajar solo con números. También necesitamos trabajar con texto: nombres, apellidos, ciudades, mensajes, contraseñas, frases y mucho más.
+Nombres, mensajes, contraseñas, líneas de un archivo: casi todo programa maneja texto. C no tiene un tipo `string` como otros lenguajes. Una **cadena** en C es algo que ya conoces: un **arreglo de `char`**, con una marca especial que indica dónde termina el texto. Si entiendes los índices de la lección 19 y esa marca, entiendes las cadenas; y también entiendes por qué son la fuente más famosa de errores de seguridad en C.
 
-En C, ese texto no se maneja con un tipo especial llamado `string`, como pasa en otros lenguajes. En C, una cadena de caracteres se representa como un **arreglo de caracteres**.
+## Objetivos
 
-Y esto es CLAVE entenderlo desde el comienzo.
+- Explicar qué es una cadena: un arreglo de `char` terminado en `'\0'`.
+- Distinguir la **capacidad** del arreglo de la **longitud** del texto, y calcular cada una.
+- Recorrer una cadena y usar `strlen`, `strcmp`, `strchr` y `strcspn`.
+- Leer palabras con `scanf("%19s", ...)` y líneas con `fgets`, quitando el salto de línea.
+- Copiar y concatenar sin desbordar el arreglo: los riesgos de `strcpy` y `strcat`, las alternativas `snprintf` y `strncat`, y las trampas de `strncpy`.
+- Convertir entre números y texto.
 
-> Una cadena en C no es magia. Es un arreglo de `char` con una marca de final.
+**Requisitos previos:** `arreglos-unidimensionales-y-multidimensionales` (índices, límite, `sizeof`, arreglos como parámetros), `operaciones-con-arreglos` (recorrer, copiar), `entrada-y-salida` (`scanf`, `printf`, validar con `!= 1`).
 
-En esta lección vas a aprender:
-
-- qué es una cadena de caracteres
-- cómo se relaciona con los arreglos
-- qué significa `\0`
-- cómo declarar e inicializar cadenas
-- cómo leer cadenas desde el teclado
-- cómo recorrer una cadena carácter por carácter
-- operaciones comunes con cadenas
-- funciones útiles de `<string.h>`
-
-Antes de empezar, quedate con esta idea: **si entendés los índices y el `\0`, entendés cadenas en C**. Si no entendés eso, vas a terminar copiando funciones de memoria sin saber por qué funcionan. Y ahí es donde después aparecen los errores raros.
-
-## El problema: guardar texto no es guardar un número
-
-Guardar un número es directo:
-
-```c
-int edad = 18;
-```
-
-Guardar un carácter también:
-
-```c
-char inicial = 'A';
-```
-
-Pero un nombre como `"Ana"` no entra en un solo `char`, porque un `char` guarda **un carácter**, no una palabra completa.
-
-Esto está mal:
-
-```c
-char nombre = 'Ana'; /* incorrecto */
-```
-
-¿Por qué? Porque `'Ana'` no es un carácter. Son varios caracteres. Para guardar varios valores del mismo tipo usamos un arreglo.
-
-Entonces, para guardar texto en C, usamos un arreglo de `char`:
-
-```c
-char nombre[10];
-```
-
-Eso reserva 10 posiciones de memoria para guardar caracteres.
-
-## ¿Qué es una cadena de caracteres?
-
-Una **cadena de caracteres** es una secuencia de caracteres guardada en un arreglo de tipo `char`.
-
-Por ejemplo:
-
-```c
-char nombre[] = "Juan";
-```
-
-Acá parece que guardamos una sola cosa, pero en realidad se guardan varios caracteres:
-
-- `J`
-- `u`
-- `a`
-- `n`
-- y un carácter especial más: `\0`
-
-## ¿Qué significa `\0`?
-
-`\0` se llama **carácter nulo**.
-
-No es una letra, no es un número visible, no se imprime como texto común. Su función es marcar el final de la cadena.
-
-Eso significa que una cadena como `"Juan"` en memoria se representa así:
-
-```text
-J u a n \0
-```
-
-También podemos verlo con índices:
-
-```text
-Indice:      0    1    2    3    4
-Contenido:  'J'  'u'  'a'  'n'  '\0'
-```
-
-Esto es exactamente igual a pensar en un arreglo común. La diferencia es que, cuando hablamos de cadenas, el `\0` le dice al programa: “hasta acá llega el texto”.
-
-## ¿Por qué `\0` es tan importante?
-
-Porque muchas funciones en C no saben cuántos caracteres querés usar. Entonces leen carácter por carácter hasta encontrar `\0`.
-
-Si ese carácter de final no está donde corresponde, el programa puede leer basura o comportarse mal.
-
-Y eso, hermano, es una de las cosas que más confunden al que recién empieza.
-
-Pensalo así: el arreglo puede tener más espacio del que usa la palabra.
-
-```c
-char nombre[10] = "Ana";
-```
-
-En memoria queda conceptualmente así:
-
-```text
-Indice:      0    1    2    3    4    5    6    7    8    9
-Contenido:  'A'  'n'  'a'  '\0' ...  ...  ...  ...  ...  ...
-```
-
-La cadena no ocupa necesariamente todo el arreglo. La cadena termina en el primer `\0`.
-
-Eso significa que el **tamaño del arreglo** y la **longitud real del texto** no son lo mismo.
-
-- `char nombre[10]` tiene 10 posiciones disponibles
-- `"Ana"` tiene 3 caracteres visibles
-- además necesita 1 posición extra para `\0`
-
-## Una cadena es un arreglo de `char`
-
-Como una cadena es un arreglo, podemos acceder a sus posiciones igual que con cualquier otro arreglo.
+## Una cadena es un arreglo de `char` con terminador
 
 ```c
 char nombre[] = "Ana";
 ```
 
-Entonces:
-
-- `nombre[0]` es `'A'`
-- `nombre[1]` es `'n'`
-- `nombre[2]` es `'a'`
-- `nombre[3]` es `\0`
-
-Fijate algo importante:
-
-- `'A'` con comillas simples representa un **carácter**
-- `"Ana"` con comillas dobles representa una **cadena**
-
-No es lo mismo.
-
-## Declaración de cadenas
-
-Cuando declarás una cadena, tenés que pensar en dos cosas:
-
-- cuántos caracteres visibles querés guardar
-- una posición extra para el `\0`
-
-Esto es FUNDAMENTAL. Si querés guardar una palabra de 4 letras, necesitás como mínimo 5 posiciones.
-
-### Declaración con tamaño fijo
-
-```c
-char ciudad[20];
-```
-
-Esto reserva espacio para guardar hasta 19 caracteres visibles y el `\0` final.
-
-No significa que ya haya una palabra guardada. Solo significa que existe espacio reservado.
-
-### Declaración con inicialización directa
-
-```c
-char nombre[] = "Lucia";
-```
-
-En este caso, el compilador calcula automáticamente el tamaño necesario.
-
-Como `"Lucia"` tiene 5 letras, el arreglo necesita 6 posiciones:
+El literal `"Ana"` tiene tres letras, pero el arreglo tiene **cuatro** elementos. El compilador agrega al final el carácter nulo `'\0'`, el **terminador**:
 
 ```text
-L u c i a \0
+índice:    0     1     2     3
+nombre:  ['A'] ['n'] ['a'] ['\0']
 ```
 
-### Declaración indicando tamaño e inicialización
+`'\0'` es el carácter de código 0. No es el dígito `'0'` (que tiene código 48) ni un espacio. Su única función es decir "aquí termina el texto". Todas las funciones de cadenas (`printf` con `%s`, `strlen`, `strcmp`...) avanzan carácter por carácter **hasta encontrar `'\0'`**. Una cadena sin terminador no es una cadena: esas funciones seguirían leyendo más allá del límite del arreglo.
 
-```c
-char apellido[10] = "Perez";
-```
+Comillas simples y dobles no son lo mismo:
 
-Acá se reserva espacio para 10 caracteres, aunque la palabra use menos.
+- `'A'` es **un carácter** (un `char`).
+- `"A"` es **una cadena**: un arreglo de dos `char`, `'A'` y `'\0'`.
 
-Conceptualmente queda así:
+## Capacidad y longitud
 
-```text
-P e r e z \0 ... ... ... ...
-```
+Dos números describen una cadena, y confundirlos es el origen de casi todos los errores:
 
-El texto termina en `\0`; el resto del arreglo queda disponible.
-
-## Caracteres vs cadenas
-
-Esto parece un detalle, pero no lo es:
-
-```c
-char letra = 'A';
-char palabra[] = "A";
-```
-
-No son lo mismo.
-
-`'A'` es un solo carácter.
-
-`"A"` es una cadena. Aunque tenga una sola letra visible, internamente guarda:
-
-```text
-'A' '\0'
-```
-
-O sea, `"A"` necesita dos posiciones.
-
-Esta diferencia te evita muchísimos errores.
-
-## Ejemplo: mostrar una cadena
+- **Capacidad**: cuántos `char` tiene el arreglo. Se fija al declararlo. Se obtiene con `sizeof`, donde el arreglo está declarado.
+- **Longitud**: cuántos caracteres hay **antes** del `'\0'`. Cambia según el texto guardado. Se obtiene con `strlen`.
 
 ```c
 #include <stdio.h>
+#include <string.h>
 
-int main() {
-    char nombre[] = "Martina";
+int main(void) {
+    char saludo[10] = "Hola";
 
-    printf("Nombre: %s\n", nombre);
-
+    printf("Texto: %s\n", saludo);
+    printf("Capacidad: %zu\n", sizeof saludo);
+    printf("Longitud: %zu\n", strlen(saludo));
+    printf("Primer carácter: %c\n", saludo[0]);
+    printf("¿saludo[4] es el terminador? %s\n", saludo[4] == '\0' ? "sí" : "no");
     return 0;
 }
 ```
 
-### ¿Qué significa `%s`?
-
-`%s` es el especificador de formato que se usa en `printf` para mostrar cadenas.
-
-## Acceder a caracteres individuales
-
-Como la cadena es un arreglo, podemos leer cada carácter por separado.
-
-```c
-#include <stdio.h>
-
-int main() {
-    char palabra[] = "Sol";
-
-    printf("Primer caracter: %c\n", palabra[0]);
-    printf("Segundo caracter: %c\n", palabra[1]);
-    printf("Tercer caracter: %c\n", palabra[2]);
-
-    return 0;
-}
-```
-
-### Salida esperada
-
 ```text
-Primer caracter: S
-Segundo caracter: o
-Tercer caracter: l
+índice:   0    1    2    3    4     5     6     7     8     9
+saludo: ['H']['o']['l']['a']['\0']['\0']['\0']['\0']['\0']['\0']
+         |---- longitud 4 ---|
+         |----------------------- capacidad 10 --------------------|
 ```
 
-Fijate que ahora usamos `%c`, porque mostramos un solo carácter cada vez.
+La regla que hay que recordar: **una cadena de longitud `L` necesita capacidad `L + 1`**. En un arreglo de capacidad 10 cabe un texto de hasta 9 caracteres.
 
-## Recorrer una cadena carácter por carácter
+`strlen` devuelve un `size_t`, por eso se muestra con `%zu`. Usar `%d` es un error: el tipo no coincide y el compilador lo avisa.
 
-También podemos recorrer una cadena con un ciclo.
+## Recorrer una cadena
 
-Esta es una operación clave porque confirma la idea central: una cadena se procesa igual que un arreglo, posición por posición.
+Como una cadena es un arreglo, se recorre con índices. La diferencia es la condición de corte: en lugar de comparar con una cantidad `n`, se avanza **hasta el terminador**.
 
 ```c
 #include <stdio.h>
 
-int main() {
-    char palabra[] = "Hola";
-    int i;
-
-    for (i = 0; palabra[i] != '\0'; i = i + 1) {
-        printf("Caracter %d: %c\n", i, palabra[i]);
+size_t longitud(const char s[]) {
+    size_t n = 0;
+    while (s[n] != '\0') {
+        n++;
     }
-
-    return 0;
+    return n;
 }
-```
 
-## ¿Por qué la condición es `palabra[i] != '\0'`?
-
-Porque no siempre necesitamos saber el tamaño exacto del arreglo completo. Lo que nos importa es recorrer la cadena hasta su final real.
-
-El final real de la cadena está marcado por `\0`.
-
-Entonces el ciclo dice:
-
-> seguí mientras el carácter actual no sea el carácter nulo.
-
-Fantástico. Esa es la idea correcta.
-
-### Salida esperada
-
-```text
-Caracter 0: H
-Caracter 1: o
-Caracter 2: l
-Caracter 3: a
-```
-
-El `\0` no se imprime porque el ciclo se detiene justo antes de llegar a él.
-
-## Contar caracteres manualmente
-
-Antes de usar funciones de biblioteca, conviene saber hacer una operación manual. No porque siempre vayas a escribirla así, sino porque te obliga a entender el mecanismo.
-
-Por ejemplo, podemos contar cuántos caracteres visibles tiene una cadena:
-
-```c
-#include <stdio.h>
-
-int main() {
-    char palabra[] = "perro";
-    int i = 0;
-
-    while (palabra[i] != '\0') {
-        i = i + 1;
+void a_mayusculas(char s[]) {
+    for (size_t i = 0; s[i] != '\0'; i++) {
+        if (s[i] >= 'a' && s[i] <= 'z') {
+            s[i] = s[i] - 'a' + 'A';
+        }
     }
+}
 
-    printf("Cantidad de caracteres: %d\n", i);
+int main(void) {
+    char palabra[] = "cadena";
 
+    printf("Longitud calculada a mano: %zu\n", longitud(palabra));
+    a_mayusculas(palabra);
+    printf("En mayúsculas: %s\n", palabra);
     return 0;
 }
 ```
 
-### ¿Qué pasa paso a paso?
+Observa que las funciones que reciben una cadena **no necesitan la cantidad de elementos** como parámetro: el `'\0'` cumple ese papel. Esa es la gran ventaja del terminador, y también su gran riesgo: si falta, nada detiene el recorrido.
 
-- `i` empieza en `0`
-- se revisa `palabra[0]`
-- si no es `\0`, se suma 1
-- se repite hasta encontrar el final de la cadena
+`longitud` hace exactamente lo que hace `strlen`: recorre todo el texto. Por eso `strlen` no es gratis, y escribir `for (size_t i = 0; i < strlen(s); i++)` vuelve a medir la cadena en cada vuelta. Mide una vez y guarda el resultado, o usa `s[i] != '\0'` como condición.
 
-Cuando el ciclo termina, `i` contiene la cantidad de caracteres visibles.
+## Leer cadenas
 
-Para `"perro"`, el resultado es `5`.
-
-¿Ves la idea? No contamos el tamaño total del arreglo. Contamos hasta llegar al `\0`.
-
-## Entrada de cadenas
-
-Leer texto desde el teclado requiere más cuidado que leer un número.
-
-## Leer una palabra con `scanf`
+### Una palabra con `scanf`
 
 ```c
 #include <stdio.h>
 
-int main() {
+int main(void) {
     char nombre[20];
 
-    printf("Ingresa tu nombre: ");
-    scanf("%19s", nombre);
-
+    printf("¿Cómo te llamas? ");
+    if (scanf("%19s", nombre) != 1) {
+        printf("No se pudo leer el nombre.\n");
+        return 1;
+    }
     printf("Hola, %s\n", nombre);
-
     return 0;
 }
 ```
 
-### ¿Qué hace bien este ejemplo?
+- `%s` lee una **palabra**: se detiene en el primer espacio, tabulación o salto de línea.
+- El `19` es el **ancho máximo**: `scanf` guarda como mucho 19 caracteres más el `'\0'`. El ancho es siempre **capacidad − 1**. Sin ancho, `scanf("%s", nombre)` escribe todo lo que el usuario escriba, aunque no quepa: desbordamiento del arreglo.
+- Aquí `nombre` va **sin `&`**. Con un `int` escribías `&edad` para indicarle a `scanf` dónde guardar; el nombre de un arreglo ya indica dónde está. La lección `punteros-arreglos-y-estructuras` (26) explica por qué.
 
-- `nombre` tiene espacio reservado
-- `scanf` guarda allí la palabra ingresada
-- `%s` indica que vamos a leer una cadena
-- `%19s` limita la lectura a 19 caracteres visibles
+### Una línea completa con `fgets`
 
-### ¿Por qué usamos `%19s` y no solo `%s`?
-
-Porque `nombre` tiene 20 posiciones:
-
-```c
-char nombre[20];
-```
-
-Pero una posición debe quedar para el `\0` final.
-
-Entonces podemos leer como máximo 19 caracteres visibles.
-
-Esto:
-
-```c
-scanf("%19s", nombre);
-```
-
-le dice a `scanf`: “leé una palabra, pero no más de 19 caracteres”.
-
-Ponete las pilas con esto: usar `scanf("%s", nombre)` sin límite puede escribir más caracteres de los que entran en el arreglo. Eso se llama desbordamiento de buffer y es una fuente clásica de errores en C.
-
-### Limitación importante de `scanf("%s", ...)`
-
-Lee solo hasta el primer espacio.
-
-Entonces:
-
-- si escribís `Ana`, lee `Ana`
-- si escribís `Ana Maria`, solo lee `Ana`
-
-Además, `scanf` deja de leer cuando encuentra un espacio, una tabulación o un salto de línea.
-
-## Leer una línea completa con `fgets`
-
-Cuando necesitamos leer texto con espacios, usamos `fgets`.
-
-```c
-#include <stdio.h>
-
-int main() {
-    char frase[100];
-
-    printf("Escribi una frase: ");
-    fgets(frase, 100, stdin);
-
-    printf("La frase ingresada fue: %s", frase);
-
-    return 0;
-}
-```
-
-### ¿Qué recibe `fgets`?
-
-```c
-fgets(frase, 100, stdin);
-```
-
-- `frase`: dónde se guarda el texto
-- `100`: cantidad máxima de caracteres a leer
-- `stdin`: entrada estándar, o sea, el teclado
-
-### Detalle importante: `fgets` puede guardar el salto de línea
-
-Si escribís:
-
-```text
-Hola mundo
-```
-
-y apretás Enter, `fgets` puede guardar también ese Enter como `\n`, siempre que haya espacio en el arreglo.
-
-Por eso, muchas veces conviene quitar ese `\n` al final.
-
-Podemos hacerlo recorriendo la cadena:
-
-```c
-#include <stdio.h>
-
-int main() {
-    char frase[100];
-    int i;
-
-    printf("Escribi una frase: ");
-    fgets(frase, 100, stdin);
-
-    for (i = 0; frase[i] != '\0'; i = i + 1) {
-        if (frase[i] == '\n') {
-            frase[i] = '\0';
-        }
-    }
-
-    printf("Frase limpia: %s\n", frase);
-
-    return 0;
-}
-```
-
-### ¿Qué hicimos?
-
-- recorrimos la cadena carácter por carácter
-- buscamos el carácter `\n`
-- cuando lo encontramos, lo reemplazamos por `\0`
-
-Eso convierte el salto de línea en el final real de la cadena.
-
-No memorices esto como receta ciega. Entendé el concepto: **modificamos un carácter del arreglo**.
-
-## Diferencia entre `scanf` y `fgets`
-
-### `scanf("%s", cadena)`
-
-- sirve para una sola palabra
-- se detiene en el primer espacio
-- es simple, pero limitada
-
-### `fgets(cadena, tamanio, stdin)`
-
-- permite leer una línea completa
-- acepta espacios
-- suele ser más útil para frases
-
-## Operaciones comunes con cadenas
-
-Como una cadena es un arreglo, muchas operaciones podrían hacerse manualmente con ciclos. Pero C también ofrece funciones en la biblioteca `<string.h>`.
-
-Primero entendamos qué significa cada operación:
-
-- medir: contar caracteres hasta `\0`
-- copiar: pasar caracteres de una cadena a otra
-- comparar: revisar si dos cadenas tienen los mismos caracteres en el mismo orden
-- concatenar: agregar una cadena al final de otra
-
-Las funciones de `<string.h>` hacen estas tareas por nosotros, pero internamente la idea sigue siendo la misma: recorrer caracteres.
-
-## Copiar manualmente una cadena
-
-Antes de usar `strcpy`, mirá cómo sería copiar una cadena a mano:
-
-```c
-#include <stdio.h>
-
-int main() {
-    char origen[] = "Hola";
-    char destino[20];
-    int i = 0;
-
-    while (origen[i] != '\0') {
-        destino[i] = origen[i];
-        i = i + 1;
-    }
-
-    destino[i] = '\0';
-
-    printf("Destino: %s\n", destino);
-
-    return 0;
-}
-```
-
-### La línea más importante
-
-```c
-destino[i] = '\0';
-```
-
-Esa línea pone el final de la cadena copiada.
-
-Si te olvidás de copiar o agregar el `\0`, el programa no sabe dónde termina el texto. Y ahí empieza la locura cósmica: caracteres basura, salidas raras y bugs difíciles de entender.
-
-## Comparar manualmente dos cadenas
-
-También podemos comparar dos cadenas carácter por carácter.
-
-```c
-#include <stdio.h>
-
-int main() {
-    char a[] = "sol";
-    char b[] = "sol";
-    int i = 0;
-    int iguales = 1;
-
-    while (a[i] != '\0' || b[i] != '\0') {
-        if (a[i] != b[i]) {
-            iguales = 0;
-        }
-
-        i = i + 1;
-    }
-
-    if (iguales == 1) {
-        printf("Son iguales.\n");
-    } else {
-        printf("Son diferentes.\n");
-    }
-
-    return 0;
-}
-```
-
-No te preocupes si después usás `strcmp`. Está perfecto. Pero este ejemplo te muestra la idea de fondo: comparar cadenas no es comparar una sola cosa, sino comparar posiciones.
-
-## Longitud de una cadena: `strlen`
-
-`strlen` devuelve la cantidad de caracteres de la cadena, sin contar el `\0`.
-
-Es decir: hace por nosotros algo muy parecido al ejemplo manual donde contábamos caracteres hasta encontrar el final.
+Para leer texto con espacios (un nombre completo, una frase) se usa `fgets`:
 
 ```c
 #include <stdio.h>
 #include <string.h>
 
-int main() {
-    char palabra[] = "computadora";
+int main(void) {
+    char linea[50];
 
-    printf("Longitud: %d\n", strlen(palabra));
-
+    printf("Escribe una frase: ");
+    if (fgets(linea, sizeof linea, stdin) == NULL) {
+        printf("No se pudo leer.\n");
+        return 1;
+    }
+    linea[strcspn(linea, "\n")] = '\0';
+    printf("Leíste \"%s\" (%zu caracteres)\n", linea, strlen(linea));
     return 0;
 }
 ```
 
-### Resultado
+`fgets(linea, sizeof linea, stdin)`:
 
-La longitud es `11`, porque la palabra tiene 11 letras. El `\0` no se cuenta.
+- recibe la **capacidad** del arreglo y nunca escribe más: guarda como mucho `capacidad − 1` caracteres y siempre agrega `'\0'`;
+- guarda también el `'\n'` que el usuario escribió al presionar Enter, si cabe;
+- devuelve `NULL` si no pudo leer nada (por ejemplo, porque se terminó la entrada). Por ahora, `NULL` es simplemente el valor que indica "no hubo resultado"; la lección `punteros-y-direcciones` (25) explica qué es.
 
-Ojo con este punto: `strlen` no devuelve el tamaño total del arreglo. Devuelve la longitud real de la cadena hasta `\0`.
+Para quitar el salto de línea se usa `strcspn(linea, "\n")`, que devuelve la **posición** del primer `'\n'` o, si no hay ninguno, la longitud de la cadena. En los dos casos escribir `'\0'` en esa posición es seguro. La versión equivalente con `strlen`:
 
 ```c
-char texto[20] = "Hola";
+size_t largo = strlen(linea);
+if (largo > 0 && linea[largo - 1] == '\n') {
+    linea[largo - 1] = '\0';
+}
 ```
 
-En este caso:
+Si la línea escrita no cabe, `fgets` guarda solo el comienzo y el resto queda esperando en la entrada para la próxima lectura. En ese caso la cadena leída **no** termina en `'\n'`, y eso sirve para detectarlo.
 
-- el arreglo tiene 20 posiciones
-- `strlen(texto)` devuelve 4
+> **Portabilidad:** nunca uses `gets`. Leía una línea sin recibir la capacidad, así que cualquier entrada larga desbordaba el arreglo. Se declaró obsoleta en una corrección de C99 y fue **eliminada del estándar en C11**; con `-std=c23` los compiladores la rechazan o advierten. Su reemplazo es `fgets`.
 
-Son conceptos distintos.
+## Copiar cadenas
 
-## Copiar una cadena: `strcpy`
+Una cadena no se asigna con `=` (es un arreglo). Se copia con `strcpy(destino, origen)`, de `<string.h>`, que copia los caracteres y el `'\0'`.
 
-No podemos copiar cadenas con el signo `=` como si fueran números.
-
-Esto NO es correcto para copiar contenido:
+El problema: **`strcpy` no conoce la capacidad del destino**. Si el origen no cabe, escribe fuera del límite:
 
 ```c
-/* destino = origen; */
+char destino[6];
+strcpy(destino, "Bienvenido");   /* 11 char en un arreglo de 6: desbordamiento */
 ```
 
-Para copiar una cadena usamos `strcpy`.
+Es comportamiento indefinido y, en programas reales, una vulnerabilidad clásica (*buffer overflow*). Hay dos formas seguras.
+
+**1. Comprobar antes de copiar.**
 
 ```c
-#include <stdio.h>
-#include <string.h>
-
-int main() {
-    char origen[] = "Hola";
-    char destino[20];
-
+if (strlen(origen) < sizeof destino) {
     strcpy(destino, origen);
-
-    printf("Destino: %s\n", destino);
-
-    return 0;
 }
 ```
 
-### Idea importante
-
-- `origen` contiene el texto original
-- `destino` debe tener espacio suficiente
-- `strcpy` copia carácter por carácter, incluyendo el `\0`
-
-Si `destino` no tiene espacio suficiente, `strcpy` puede escribir fuera del arreglo. C no te salva automáticamente. Por eso, antes de copiar, tenés que pensar si el destino tiene lugar para el texto y para el `\0`.
-
-## Comparar cadenas: `strcmp`
-
-Para comparar si dos cadenas son iguales no debemos usar `==`.
-
-Eso sería un error conceptual.
-
-Con arreglos, `==` no compara el contenido carácter por carácter. Para comparar texto, necesitás una función que recorra ambas cadenas y revise sus caracteres.
-
-Para comparar contenido usamos `strcmp`.
+**2. Usar `snprintf`**, que recibe la capacidad, nunca escribe de más, **siempre** termina con `'\0'` y devuelve cuántos caracteres **habría** escrito. Si ese número es mayor o igual que la capacidad, el texto se truncó:
 
 ```c
 #include <stdio.h>
-#include <string.h>
 
-int main() {
-    char clave1[] = "casa";
-    char clave2[] = "casa";
+int main(void) {
+    char origen[] = "Programar en C";
+    char corto[8];
 
-    if (strcmp(clave1, clave2) == 0) {
-        printf("Las cadenas son iguales.\n");
+    int escritos = snprintf(corto, sizeof corto, "%s", origen);
+    if (escritos < 0 || (size_t)escritos >= sizeof corto) {
+        printf("Se truncó: \"%s\" (hacían falta %d caracteres)\n", corto, escritos);
     } else {
-        printf("Las cadenas son diferentes.\n");
+        printf("Copia completa: \"%s\"\n", corto);
     }
-
     return 0;
 }
 ```
 
-### ¿Por qué se compara con `0`?
+Salida: `Se truncó: "Program" (hacían falta 14 caracteres)`.
 
-Porque `strcmp`:
+### La trampa de `strncpy`
 
-- devuelve `0` si las cadenas son iguales
-- devuelve otro valor si son diferentes
-
-Para este nivel, con entender que `0` significa “son iguales” alcanza perfecto.
-
-Pensalo así:
+`strncpy(destino, origen, n)` parece la versión segura de `strcpy`, pero no lo es: si el origen tiene `n` caracteres o más, copia `n` y **no agrega `'\0'`**. El resultado no es una cadena.
 
 ```c
-if (strcmp(clave1, clave2) == 0)
+char codigo[4];
+strncpy(codigo, "ABCDEF", sizeof codigo);   /* copia 'A','B','C','D' y ningún '\0' */
+codigo[sizeof codigo - 1] = '\0';           /* hay que terminarla a mano: "ABC" */
 ```
 
-se lee como:
+Además, cuando el origen es corto, rellena con ceros todo el resto del destino. Fue pensada para campos de ancho fijo, no para copiar texto. Para copiar con límite, prefiere `snprintf`.
 
-> si el contenido de `clave1` y `clave2` es igual...
+> **Portabilidad:** `strlcpy` y `strlcat` existen en BSD, macOS y POSIX, pero **no son C estándar**. El Anexo K de C11 define `strcpy_s` y `strcat_s`, pero es opcional y casi ningún compilador lo implementa. Con C estándar, usa `snprintf` o comprueba la longitud antes de copiar.
 
-## Concatenar cadenas: `strcat`
+## Concatenar cadenas
 
-**Concatenar** significa unir una cadena con otra.
+`strcat(destino, origen)` agrega `origen` al final de `destino`. Tiene el mismo problema que `strcpy`: no sabe cuánto lugar queda.
+
+`strncat(destino, origen, n)` agrega como mucho `n` caracteres y **siempre** pone el `'\0'`. El `n` correcto es el lugar libre: `sizeof destino - strlen(destino) - 1`.
 
 ```c
 #include <stdio.h>
 #include <string.h>
 
-int main() {
-    char nombre[30] = "Ana";
+int main(void) {
+    char completo[16] = "Ada";
 
-    strcat(nombre, " Maria");
+    strncat(completo, " ", sizeof completo - strlen(completo) - 1);
+    strncat(completo, "Lovelace", sizeof completo - strlen(completo) - 1);
+    printf("%s (%zu de %zu)\n", completo, strlen(completo), sizeof completo);
 
-    printf("Nombre completo: %s\n", nombre);
-
+    char ficha[32];
+    snprintf(ficha, sizeof ficha, "%s, nacida en %d", completo, 1815);
+    printf("%s\n", ficha);
     return 0;
 }
 ```
 
-### Resultado
-
-La variable `nombre` pasa a contener:
+Salida:
 
 ```text
-Ana Maria
+Ada Lovelace (12 de 16)
+Ada Lovelace, nacida en 1815
 ```
 
-### Cuidado
+Cuando hay que armar un texto con varias partes, `snprintf` suele ser lo más claro: un solo formato, una sola capacidad.
 
-El arreglo destino debe tener espacio suficiente para guardar:
+## Comparar cadenas
 
-- su contenido original
-- la cadena que agregamos
-- el `\0` final
+`==` no sirve para comparar el contenido de dos cadenas: compara si son **el mismo arreglo**, no si tienen las mismas letras. Para comparar el texto se usa `strcmp(a, b)`, que devuelve:
 
-En este ejemplo `nombre` tiene 30 posiciones, por eso entra `"Ana Maria"` sin problema.
-
-## Ejemplo completo con varias operaciones
+- `0` si son iguales;
+- un número negativo si `a` va antes que `b`;
+- un número positivo si `a` va después que `b`.
 
 ```c
 #include <stdio.h>
 #include <string.h>
 
-int main() {
-    char nombre[20] = "Juan";
-    char apellido[20] = "Perez";
-    char completo[50] = "";
+int main(void) {
+    char clave[] = "secreto";
 
-    strcpy(completo, nombre);
-    strcat(completo, " ");
-    strcat(completo, apellido);
-
-    printf("Nombre completo: %s\n", completo);
-    printf("Longitud: %d\n", strlen(completo));
-
-    if (strcmp(nombre, "Juan") == 0) {
-        printf("El nombre guardado es Juan.\n");
+    if (strcmp(clave, "secreto") == 0) {
+        printf("Clave correcta\n");
     }
-
+    printf("manzana vs pera: %s\n", strcmp("manzana", "pera") < 0 ? "manzana va antes" : "pera va antes");
+    printf("Zeta vs abeja: %s\n", strcmp("Zeta", "abeja") < 0 ? "Zeta va antes" : "abeja va antes");
     return 0;
 }
 ```
 
-## Recorrer una cadena para contar vocales
+El orden es el de los **códigos** de los caracteres, no el del diccionario: todas las mayúsculas van antes que las minúsculas, por eso `"Zeta"` va antes que `"abeja"`. Compara solo el signo del resultado, nunca su valor exacto.
 
-Además de usar funciones de biblioteca, también podemos resolver problemas recorriendo la cadena manualmente.
+## Buscar un carácter
+
+Buscar un carácter es un recorrido que se detiene al encontrarlo. Con índices:
+
+```c
+size_t posicion_de(const char s[], char c) {
+    size_t i = 0;
+    while (s[i] != '\0' && s[i] != c) {
+        i++;
+    }
+    return i;   /* si c no está, i es la longitud y s[i] es '\0' */
+}
+```
+
+La biblioteca ofrece dos funciones para lo mismo:
+
+- `strchr(s, c)` recorre `s` buscando `c`. Si no lo encuentra devuelve `NULL`; si lo encuentra devuelve la ubicación del carácter dentro del arreglo. Qué es exactamente esa ubicación lo verás en la lección `punteros-y-direcciones` (25); por ahora úsala para preguntar **si** el carácter está: `strchr(s, c) != NULL`.
+- `strcspn(s, "c")` devuelve la **posición** del primer carácter de `s` que aparece en el segundo texto, o la longitud si no hay ninguno. Es la versión con índice.
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+size_t posicion_de(const char s[], char c) {
+    size_t i = 0;
+    while (s[i] != '\0' && s[i] != c) {
+        i++;
+    }
+    return i;
+}
+
+int main(void) {
+    char correo[] = "ana@ejemplo.com";
+
+    if (strchr(correo, '@') != NULL) {
+        printf("Tiene arroba\n");
+    }
+    printf("Posición del @ (a mano): %zu\n", posicion_de(correo, '@'));
+    printf("Posición del @ (strcspn): %zu\n", strcspn(correo, "@"));
+
+    size_t pos = strcspn(correo, "#");
+    if (correo[pos] == '\0') {
+        printf("No hay #\n");
+    }
+    return 0;
+}
+```
+
+## Números y texto
+
+`"12"` es una cadena de dos caracteres, no el número 12. "Sumar" dos cadenas con `snprintf` las **une**; para sumar sus valores hay que **convertirlas**:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main(void) {
+    char a[] = "12";
+    char b[] = "30";
+
+    char unidos[8];
+    snprintf(unidos, sizeof unidos, "%s%s", a, b);
+
+    int suma = atoi(a) + atoi(b);
+
+    char texto[12];
+    snprintf(texto, sizeof texto, "%d", suma);
+
+    printf("Unidos como texto: %s\n", unidos);
+    printf("Sumados como números: %d\n", suma);
+    printf("La suma como texto: \"%s\" (%zu caracteres)\n", texto, strlen(texto));
+    return 0;
+}
+```
+
+```text
+Unidos como texto: 1230
+Sumados como números: 42
+La suma como texto: "42" (2 caracteres)
+```
+
+- `atoi` (de `<stdlib.h>`) convierte texto en `int`.
+- `snprintf` con `%d` convierte un número en texto, con la capacidad como límite. Existe también `sprintf`, sin capacidad: tiene el mismo riesgo que `strcpy`.
+
+> **C básico:** `atoi` no informa errores: `atoi("hola")` devuelve `0`, igual que `atoi("0")`, y un número demasiado grande es comportamiento indefinido. Sirve para ejemplos con datos conocidos. La lección `biblioteca-estandar-y-errores` (34) enseña `strtol`, que detecta texto inválido y desbordes.
+
+## Contar palabras
+
+Un problema clásico que reúne todo: recorrer la cadena recordando si estamos **dentro** o **fuera** de una palabra. Cada vez que se pasa de fuera a dentro, empieza una palabra nueva.
 
 ```c
 #include <stdio.h>
 
-int main() {
-    char palabra[] = "murcielago";
-    int i;
-    int cantidadVocales = 0;
+size_t contar_palabras(const char s[]) {
+    size_t palabras = 0;
+    bool dentro = false;
 
-    for (i = 0; palabra[i] != '\0'; i = i + 1) {
-        if (palabra[i] == 'a' || palabra[i] == 'e' || palabra[i] == 'i' || palabra[i] == 'o' || palabra[i] == 'u') {
-            cantidadVocales = cantidadVocales + 1;
+    for (size_t i = 0; s[i] != '\0'; i++) {
+        bool separador = s[i] == ' ' || s[i] == '\t' || s[i] == '\n';
+        if (separador) {
+            dentro = false;
+        } else if (!dentro) {
+            dentro = true;
+            palabras++;
         }
     }
+    return palabras;
+}
 
-    printf("Cantidad de vocales: %d\n", cantidadVocales);
+int main(void) {
+    char frase[] = "  Hola   mundo en   C  ";
 
+    printf("Palabras: %zu\n", contar_palabras(frase));
     return 0;
 }
 ```
 
-Este ejemplo es muy valioso porque muestra algo clave:
+Salida: `Palabras: 4`. Contar espacios no funcionaría: hay espacios repetidos, al principio y al final. La función `isspace` de `<ctype.h>` (lección 34) reconoce todos los separadores sin escribirlos a mano.
 
-> una cadena no solo se imprime o se copia; también puede procesarse carácter por carácter.
+> **C moderno (C23):** C23 incorpora al estándar `strdup` y `strndup`, que crean una copia nueva de una cadena en memoria pedida en ejecución. Las verás junto con la lección `memoria-dinamica` (28).
 
-### Mejora posible
+## Errores comunes
 
-Este ejemplo cuenta vocales minúsculas. Si la palabra tuviera mayúsculas, como `"Murcielago"`, la `M` no importa porque no es vocal, pero si tuviera `"Avion"`, la `A` no se contaría con este código.
-
-Para este nivel está bien. Más adelante podrías ampliar la condición para incluir `A`, `E`, `I`, `O`, `U`.
-
-Lo importante ahora es entender el recorrido.
-
-## Errores comunes al trabajar con cadenas
-
-### Confundir carácter con cadena
-
-- `'A'` es un carácter
-- `"A"` es una cadena
-
-No son lo mismo.
-
-### No dejar espacio suficiente
-
-```c
-char nombre[4] = "Juan";
-```
-
-Esto está mal, porque `"Juan"` necesita:
-
-- `J`
-- `u`
-- `a`
-- `n`
-- `\0`
-
-O sea, necesita 5 posiciones.
-
-La versión correcta sería:
-
-```c
-char nombre[5] = "Juan";
-```
-
-o mejor todavía, dejar que el compilador calcule:
-
-```c
-char nombre[] = "Juan";
-```
-
-### Comparar cadenas con `==`
-
-Para comparar contenido, usá `strcmp`.
-
-```c
-if (strcmp(a, b) == 0) {
-    printf("Son iguales.\n");
-}
-```
-
-### Olvidarse de que `scanf("%s", ...)` no lee espacios
-
-Si necesitás leer una frase completa, usá `fgets`.
-
-### Usar `scanf("%s", cadena)` sin límite
-
-Si el arreglo tiene 20 posiciones, usá un ancho máximo:
-
-```c
-scanf("%19s", cadena);
-```
-
-Ese `19` deja lugar para el `\0`.
-
-### Olvidarse del `\n` que puede dejar `fgets`
-
-Si después de leer una frase aparecen saltos de línea raros, revisá si `fgets` guardó el `\n`.
-
-Podés reemplazarlo por `\0` recorriendo la cadena.
-
-### Pensar que el tamaño del arreglo y la longitud de la cadena son iguales
-
-No necesariamente.
-
-```c
-char texto[50] = "Hola";
-```
-
-Acá el arreglo tiene 50 posiciones, pero la cadena tiene 4 caracteres visibles.
+- **Olvidar el lugar del `'\0'`.** Para guardar `"Hola"` hace falta capacidad 5. Ojo: `char s[4] = "Hola";` compila en C, pero el arreglo queda **sin terminador**.
+- **Usar `strcpy`, `strcat` o `sprintf` sin comprobar la capacidad.** Prefiere `snprintf`, o mide antes con `strlen`.
+- **Creer que `strncpy` siempre termina la cadena.** No lo hace si el origen es largo.
+- **`scanf("%s", s)` sin ancho.** Escribe `%19s` para una capacidad de 20.
+- **Usar `gets`.** Ya no existe en el estándar; usa `fgets`.
+- **Olvidar el `'\n'` que guarda `fgets`.** Quítalo con `s[strcspn(s, "\n")] = '\0';`.
+- **Comparar cadenas con `==`.** Usa `strcmp(a, b) == 0`.
+- **Mostrar `strlen` con `%d`.** Es `size_t`: usa `%zu`.
+- **Confundir capacidad y longitud.** `sizeof` mide el arreglo; `strlen` mide el texto.
 
 ## Resumen
 
-- una cadena en C es un arreglo de `char`
-- toda cadena termina en `\0`
-- el `\0` marca el final real del texto
-- el tamaño del arreglo y la longitud de la cadena no son lo mismo
-- `%s` se usa para mostrar cadenas completas
-- `%c` se usa para mostrar un solo carácter
-- una cadena puede recorrerse con un ciclo como cualquier arreglo
-- `scanf("%s", ...)` lee una palabra, pero conviene limitar el ancho
-- `fgets` permite leer frases con espacios
-- `fgets` puede guardar el `\n`, y podemos reemplazarlo por `\0`
-- `strlen` mide longitud
-- `strcpy` copia
-- `strcmp` compara
-- `strcat` concatena
+- Una cadena es un arreglo de `char` terminado en `'\0'`; `"A"` ocupa dos `char`.
+- Capacidad (`sizeof`, fija) y longitud (`strlen`, variable) son distintas; longitud `L` necesita capacidad `L + 1`.
+- Las cadenas se recorren hasta `'\0'`, sin necesidad de pasar la cantidad.
+- `scanf("%19s", ...)` lee una palabra con límite; `fgets` lee una línea con límite y guarda el `'\n'`.
+- `strcpy` y `strcat` no comprueban la capacidad: usa `snprintf`, `strncat` con el lugar libre, o comprueba antes.
+- `strcmp` compara el contenido; `strchr` y `strcspn` buscan caracteres.
+- `atoi` y `snprintf` convierten entre texto y números.
 
-## Qué deberías poder explicar antes de seguir
+## Ejercicios prácticos
 
-Antes de pasar a la próxima lección, deberías poder responder estas preguntas:
+### Ejercicio 1: capacidad y longitud
 
-- ¿por qué `"Ana"` necesita 4 posiciones y no 3?
-- ¿qué diferencia hay entre `'A'` y `"A"`?
-- ¿por qué una cadena se puede recorrer con un `for` o un `while`?
-- ¿por qué `scanf("%s", nombre)` no lee `Ana Maria` completo?
-- ¿por qué `strcmp(a, b) == 0` significa que dos cadenas son iguales?
-- ¿qué puede pasar si te olvidás del `\0`?
+¿Qué muestran `sizeof` y `strlen` para cada arreglo?
 
-Si podés explicar eso, no estás memorizando: estás entendiendo. Y eso vale muchísimo más.
+```c
+char a[] = "C23";
+char b[10] = "C23";
+char c[10] = "";
+```
 
-## Idea final
+<details><summary>Ver solución</summary>
 
-Si entendés que una cadena en C es un arreglo de caracteres con un final marcado por `\0`, se ordena TODO.
+| | `sizeof` | `strlen` |
+| --- | --- | --- |
+| `a` | 4 | 3 |
+| `b` | 10 | 3 |
+| `c` | 10 | 0 |
 
-Y cuando eso se entiende de verdad, dejás de memorizar funciones sueltas y empezás a comprender qué está pasando en memoria y en el programa.
+`a` toma la capacidad del literal (3 letras más `'\0'`). `b` y `c` tienen capacidad 10 declarada; `c` guarda solo el terminador, así que su longitud es 0.
+
+</details>
+
+### Ejercicio 2: saludo con nombre completo
+
+Escribe un programa que lea un nombre completo con `fgets` (capacidad 40), quite el salto de línea, rechace una línea vacía y arme con `snprintf` el saludo `Hola, <nombre>. Tu nombre tiene N caracteres.`
+
+<details><summary>Ver solución</summary>
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+int main(void) {
+    char nombre[40];
+
+    printf("Nombre completo: ");
+    if (fgets(nombre, sizeof nombre, stdin) == NULL) {
+        printf("No se pudo leer.\n");
+        return 1;
+    }
+    nombre[strcspn(nombre, "\n")] = '\0';
+    if (nombre[0] == '\0') {
+        printf("El nombre no puede estar vacío.\n");
+        return 1;
+    }
+
+    char saludo[80];
+    snprintf(saludo, sizeof saludo, "Hola, %s. Tu nombre tiene %zu caracteres.", nombre, strlen(nombre));
+    printf("%s\n", saludo);
+    return 0;
+}
+```
+
+La línea vacía se detecta después de quitar el `'\n'`: el primer carácter ya es el terminador.
+
+</details>
+
+### Ejercicio 3: corregir un desbordamiento
+
+Este fragmento desborda el arreglo. Explica por qué y corrígelo con `snprintf` de modo que avise si el texto no entra.
+
+```c
+char destino[6];
+strcpy(destino, "Bienvenido");
+```
+
+<details><summary>Ver solución</summary>
+
+`"Bienvenido"` tiene 10 letras: necesita capacidad 11, y `destino` tiene 6. `strcpy` no conoce la capacidad y escribe 5 bytes fuera del límite (comportamiento indefinido).
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    char destino[6];
+
+    int escritos = snprintf(destino, sizeof destino, "%s", "Bienvenido");
+    if (escritos < 0 || (size_t)escritos >= sizeof destino) {
+        printf("No entra completo; se guardó \"%s\"\n", destino);
+    }
+    return 0;
+}
+```
+
+Salida: `No entra completo; se guardó "Bienv"`.
+
+</details>
+
+### Ejercicio 4: contar vocales
+
+Escribe `size_t contar_vocales(const char s[])`, que cuente las vocales sin tilde, mayúsculas o minúsculas, y pruébala con `"Programacion en C"`.
+
+<details><summary>Ver solución</summary>
+
+```c
+#include <stdio.h>
+
+bool es_vocal(char c) {
+    return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' ||
+           c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U';
+}
+
+size_t contar_vocales(const char s[]) {
+    size_t vocales = 0;
+    for (size_t i = 0; s[i] != '\0'; i++) {
+        if (es_vocal(s[i])) {
+            vocales++;
+        }
+    }
+    return vocales;
+}
+
+int main(void) {
+    printf("Vocales: %zu\n", contar_vocales("Programacion en C"));
+    return 0;
+}
+```
+
+Salida: `Vocales: 6`. La función no necesita la cantidad de elementos: se detiene en `'\0'`.
+
+</details>
+
+### Ejercicio 5: agregar sin desbordar
+
+Escribe `bool agregar(char destino[], size_t capacidad, const char extra[])`, que agregue `extra` al final de `destino` solo si el resultado entra completo, y devuelva si pudo hacerlo.
+
+<details><summary>Ver solución</summary>
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+bool agregar(char destino[], size_t capacidad, const char extra[]) {
+    size_t usado = strlen(destino);
+    size_t falta = strlen(extra);
+    if (usado + falta + 1 > capacidad) {
+        return false;
+    }
+    strcat(destino, extra);
+    return true;
+}
+
+int main(void) {
+    char ruta[12] = "/home";
+
+    printf("%s\n", agregar(ruta, sizeof ruta, "/ana") ? ruta : "No entra");
+    printf("%s\n", agregar(ruta, sizeof ruta, "/documentos") ? ruta : "No entra");
+    return 0;
+}
+```
+
+Salida: `/home/ana` y `No entra`. Aquí `strcat` es seguro porque la función comprobó antes que hay lugar para el texto **y** para el `'\0'` (el `+ 1`). La capacidad viaja como parámetro porque dentro de la función `sizeof destino` no la daría.
+
+</details>

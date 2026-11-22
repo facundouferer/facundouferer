@@ -7,905 +7,587 @@ lang: 'en'
 published: true
 ---
 
-In many programs it's not enough to work only with numbers. We also need to work with text: names, last names, cities, messages, passwords, phrases, and much more.
+Names, messages, passwords, lines of a file: almost every program handles text. C has no `string` type like other languages. A **string** in C is something you already know: a **`char` array**, with a special mark that tells where the text ends. If you understand the indexes of lesson 19 and that mark, you understand strings; and you also understand why they are the most famous source of security bugs in C.
 
-In C, that text isn't handled with a special type called `string`, as happens in other languages. In C, a character string is represented as an **array of characters**.
+## Objectives
 
-And this is KEY to understand from the beginning.
+- Explain what a string is: a `char` array terminated by `'\0'`.
+- Tell the array's **capacity** from the text's **length**, and compute each one.
+- Traverse a string and use `strlen`, `strcmp`, `strchr` and `strcspn`.
+- Read words with `scanf("%19s", ...)` and lines with `fgets`, removing the newline.
+- Copy and concatenate without overflowing the array: the risks of `strcpy` and `strcat`, the alternatives `snprintf` and `strncat`, and the traps of `strncpy`.
+- Convert between numbers and text.
 
-> A string in C isn't magic. It's an array of `char` with an end marker.
+**Prerequisites:** `arreglos-unidimensionales-y-multidimensionales` (indexes, bounds, `sizeof`, arrays as parameters), `operaciones-con-arreglos` (traversing, copying), `entrada-y-salida` (`scanf`, `printf`, validating with `!= 1`).
 
-In this lesson you'll learn:
-
-- what a character string is
-- how it relates to arrays
-- what `\0` means
-- how to declare and initialize strings
-- how to read strings from the keyboard
-- how to traverse a string character by character
-- common string operations
-- useful functions from `<string.h>`
-
-Before starting, keep this idea: **if you understand indices and `\0`, you understand strings in C**. If you don't understand that, you'll end up copying functions from memory without knowing why they work. And that's where strange errors appear later.
-
-## The problem: storing text isn't storing a number
-
-Storing a number is straightforward:
+## A string is a `char` array with a terminator
 
 ```c
-int edad = 18;
+char name[] = "Ana";
 ```
 
-Storing a character too:
-
-```c
-char inicial = 'A';
-```
-
-But a name like `"Ana"` doesn't fit in a single `char`, because a `char` stores **one character**, not a whole word.
-
-This is wrong:
-
-```c
-char nombre = 'Ana'; /* incorrect */
-```
-
-Why? Because `'Ana'` isn't a character. It's several characters. To store several values of the same type we use an array.
-
-So, to store text in C, we use an array of `char`:
-
-```c
-char nombre[10];
-```
-
-That reserves 10 memory positions to store characters.
-
-## What is a character string?
-
-A **character string** is a sequence of characters stored in an array of type `char`.
-
-For example:
-
-```c
-char nombre[] = "Juan";
-```
-
-Here it seems we store a single thing, but in reality several characters are stored:
-
-- `J`
-- `u`
-- `a`
-- `n`
-- and one more special character: `\0`
-
-## What does `\0` mean?
-
-`\0` is called the **null character**.
-
-It's not a letter, not a visible number, it doesn't print like regular text. Its function is to mark the end of the string.
-
-That means a string like `"Juan"` is represented in memory like this:
+The literal `"Ana"` has three letters, but the array has **four** elements. The compiler appends the null character `'\0'`, the **terminator**:
 
 ```text
-J u a n \0
+index:     0     1     2     3
+name:    ['A'] ['n'] ['a'] ['\0']
 ```
 
-We can also see it with indices:
+`'\0'` is the character with code 0. It is not the digit `'0'` (code 48) nor a space. Its only job is to say "the text ends here". Every string function (`printf` with `%s`, `strlen`, `strcmp`...) moves character by character **until it finds `'\0'`**. A string without a terminator is not a string: those functions would keep reading past the array bound.
 
-```text
-Index:       0    1    2    3    4
-Content:    'J'  'u'  'a'  'n'  '\0'
-```
+Single and double quotes are not the same:
 
-This is exactly like thinking about a regular array. The difference is that when we talk about strings, `\0` tells the program: "this is where the text ends."
+- `'A'` is **one character** (a `char`).
+- `"A"` is **a string**: an array of two `char`, `'A'` and `'\0'`.
 
-## Why is `\0` so important?
+## Capacity and length
 
-Because many functions in C don't know how many characters you want to use. So they read character by character until they find `\0`.
+Two numbers describe a string, and mixing them up causes almost every bug:
 
-If that end character isn't where it should be, the program may read garbage or misbehave.
-
-And that, friend, is one of the things that most confuses beginners.
-
-Think of it this way: the array can have more space than the word uses.
-
-```c
-char nombre[10] = "Ana";
-```
-
-In memory it looks conceptually like this:
-
-```text
-Index:      0    1    2    3    4    5    6    7    8    9
-Content:   'A'  'n'  'a'  '\0' ...  ...  ...  ...  ...  ...
-```
-
-The string doesn't necessarily occupy the whole array. The string ends at the first `\0`.
-
-That means the **array size** and the **actual text length** are not the same.
-
-- `char nombre[10]` has 10 available positions
-- `"Ana"` has 3 visible characters
-- it also needs 1 extra position for `\0`
-
-## A string is an array of `char`
-
-Since a string is an array, we can access its positions just like any other array.
-
-```c
-char nombre[] = "Ana";
-```
-
-So:
-
-- `nombre[0]` is `'A'`
-- `nombre[1]` is `'n'`
-- `nombre[2]` is `'a'`
-- `nombre[3]` is `\0`
-
-Notice something important:
-
-- `'A'` with single quotes represents a **character**
-- `"Ana"` with double quotes represents a **string**
-
-They're not the same.
-
-## Declaring strings
-
-When you declare a string, you need to think about two things:
-
-- how many visible characters you want to store
-- one extra position for `\0`
-
-This is FUNDAMENTAL. If you want to store a 4-letter word, you need at least 5 positions.
-
-### Declaration with fixed size
-
-```c
-char ciudad[20];
-```
-
-This reserves space to store up to 19 visible characters and the final `\0`.
-
-It doesn't mean a word is already stored there. It only means there's reserved space.
-
-### Declaration with direct initialization
-
-```c
-char nombre[] = "Lucia";
-```
-
-In this case, the compiler automatically calculates the necessary size.
-
-Since `"Lucia"` has 5 letters, the array needs 6 positions:
-
-```text
-L u c i a \0
-```
-
-### Declaration specifying size and initialization
-
-```c
-char apellido[10] = "Perez";
-```
-
-Here space is reserved for 10 characters, even though the word uses less.
-
-Conceptually it looks like this:
-
-```text
-P e r e z \0 ... ... ... ...
-```
-
-The text ends at `\0`; the rest of the array is available.
-
-## Characters vs strings
-
-This may seem like a detail, but it's not:
-
-```c
-char letra = 'A';
-char palabra[] = "A";
-```
-
-They're not the same.
-
-`'A'` is a single character.
-
-`"A"` is a string. Even though it has only one visible letter, internally it stores:
-
-```text
-'A' '\0'
-```
-
-In other words, `"A"` needs two positions.
-
-This difference will save you from many errors.
-
-## Example: displaying a string
+- **Capacity**: how many `char` the array has. It is fixed when declared. You get it with `sizeof`, where the array is declared.
+- **Length**: how many characters come **before** the `'\0'`. It changes with the stored text. You get it with `strlen`.
 
 ```c
 #include <stdio.h>
+#include <string.h>
 
-int main() {
-    char nombre[] = "Martina";
+int main(void) {
+    char greeting[10] = "Code";
 
-    printf("Name: %s\n", nombre);
-
+    printf("Text: %s\n", greeting);
+    printf("Capacity: %zu\n", sizeof greeting);
+    printf("Length: %zu\n", strlen(greeting));
+    printf("First character: %c\n", greeting[0]);
+    printf("Is greeting[4] the terminator? %s\n", greeting[4] == '\0' ? "yes" : "no");
     return 0;
 }
 ```
 
-### What does `%s` mean?
-
-`%s` is the format specifier used in `printf` to display strings.
-
-## Accessing individual characters
-
-Since the string is an array, we can read each character separately.
-
-```c
-#include <stdio.h>
-
-int main() {
-    char palabra[] = "Sol";
-
-    printf("First character: %c\n", palabra[0]);
-    printf("Second character: %c\n", palabra[1]);
-    printf("Third character: %c\n", palabra[2]);
-
-    return 0;
-}
-```
-
-### Expected output
-
 ```text
-First character: S
-Second character: o
-Third character: l
+index:     0    1    2    3    4     5     6     7     8     9
+greeting: ['C']['o']['d']['e']['\0']['\0']['\0']['\0']['\0']['\0']
+           |---- length 4 ----|
+           |----------------------- capacity 10 -------------------|
 ```
 
-Notice we use `%c` now, because we're showing a single character each time.
+The rule to remember: **a string of length `L` needs capacity `L + 1`**. An array of capacity 10 holds text of up to 9 characters.
 
-## Traversing a string character by character
+`strlen` returns a `size_t`, which is why it is printed with `%zu`. Using `%d` is a bug: the type does not match and the compiler warns about it.
 
-We can also traverse a string with a loop.
+## Traversing a string
 
-This is a key operation because it confirms the central idea: a string is processed just like an array, position by position.
+Since a string is an array, you traverse it with indexes. The difference is the stop condition: instead of comparing with a count `n`, you move **until the terminator**.
 
 ```c
 #include <stdio.h>
 
-int main() {
-    char palabra[] = "Hola";
-    int i;
-
-    for (i = 0; palabra[i] != '\0'; i = i + 1) {
-        printf("Character %d: %c\n", i, palabra[i]);
+size_t length(const char s[]) {
+    size_t n = 0;
+    while (s[n] != '\0') {
+        n++;
     }
-
-    return 0;
+    return n;
 }
-```
 
-## Why is the condition `palabra[i] != '\0'`?
-
-Because we don't always need to know the exact size of the entire array. What matters is traversing the string up to its actual end.
-
-The actual end of the string is marked by `\0`.
-
-So the loop says:
-
-> continue while the current character is not the null character.
-
-Fantastic. That's the correct idea.
-
-### Expected output
-
-```text
-Character 0: H
-Character 1: o
-Character 2: l
-Character 3: a
-```
-
-The `\0` is not printed because the loop stops just before reaching it.
-
-## Counting characters manually
-
-Before using library functions, it's good to know how to do an operation manually. Not because you'll always write it that way, but because it forces you to understand the mechanism.
-
-For example, we can count how many visible characters a string has:
-
-```c
-#include <stdio.h>
-
-int main() {
-    char palabra[] = "perro";
-    int i = 0;
-
-    while (palabra[i] != '\0') {
-        i = i + 1;
-    }
-
-    printf("Number of characters: %d\n", i);
-
-    return 0;
-}
-```
-
-### What happens step by step?
-
-- `i` starts at `0`
-- `palabra[0]` is checked
-- if it's not `\0`, add 1
-- repeat until finding the end of the string
-
-When the loop ends, `i` contains the number of visible characters.
-
-For `"perro"`, the result is `5`.
-
-See the idea? We don't count the total size of the array. We count until we reach `\0`.
-
-## String input
-
-Reading text from the keyboard requires more care than reading a number.
-
-## Reading a word with `scanf`
-
-```c
-#include <stdio.h>
-
-int main() {
-    char nombre[20];
-
-    printf("Enter your name: ");
-    scanf("%19s", nombre);
-
-    printf("Hello, %s\n", nombre);
-
-    return 0;
-}
-```
-
-### What does this example do well?
-
-- `nombre` has reserved space
-- `scanf` stores the entered word there
-- `%s` indicates we're reading a string
-- `%19s` limits reading to 19 visible characters
-
-### Why do we use `%19s` and not just `%s`?
-
-Because `nombre` has 20 positions:
-
-```c
-char nombre[20];
-```
-
-But one position must remain for the final `\0`.
-
-So we can read at most 19 visible characters.
-
-This:
-
-```c
-scanf("%19s", nombre);
-```
-
-tells `scanf`: "read a word, but no more than 19 characters."
-
-Pay attention to this: using `scanf("%s", nombre)` without a limit can write more characters than the array can hold. That's called a buffer overflow and it's a classic source of errors in C.
-
-### Important limitation of `scanf("%s", ...)`
-
-It reads only up to the first space.
-
-So:
-
-- if you type `Ana`, it reads `Ana`
-- if you type `Ana Maria`, it only reads `Ana`
-
-Also, `scanf` stops reading when it encounters a space, a tab, or a newline.
-
-## Reading a full line with `fgets`
-
-When we need to read text with spaces, we use `fgets`.
-
-```c
-#include <stdio.h>
-
-int main() {
-    char frase[100];
-
-    printf("Write a sentence: ");
-    fgets(frase, 100, stdin);
-
-    printf("The sentence entered was: %s", frase);
-
-    return 0;
-}
-```
-
-### What does `fgets` receive?
-
-```c
-fgets(frase, 100, stdin);
-```
-
-- `frase`: where the text is stored
-- `100`: maximum number of characters to read
-- `stdin`: standard input, i.e., the keyboard
-
-### Important detail: `fgets` may store the newline
-
-If you type:
-
-```text
-Hello world
-```
-
-and press Enter, `fgets` may also store that Enter as `\n`, as long as there's space in the array.
-
-That's why it's often convenient to remove that `\n` at the end.
-
-We can do it by traversing the string:
-
-```c
-#include <stdio.h>
-
-int main() {
-    char frase[100];
-    int i;
-
-    printf("Write a sentence: ");
-    fgets(frase, 100, stdin);
-
-    for (i = 0; frase[i] != '\0'; i = i + 1) {
-        if (frase[i] == '\n') {
-            frase[i] = '\0';
+void to_upper(char s[]) {
+    for (size_t i = 0; s[i] != '\0'; i++) {
+        if (s[i] >= 'a' && s[i] <= 'z') {
+            s[i] = s[i] - 'a' + 'A';
         }
     }
+}
 
-    printf("Clean sentence: %s\n", frase);
+int main(void) {
+    char word[] = "string";
 
+    printf("Length computed by hand: %zu\n", length(word));
+    to_upper(word);
+    printf("Uppercase: %s\n", word);
     return 0;
 }
 ```
 
-### What did we do?
+Notice that functions receiving a string **do not need the number of elements** as a parameter: the `'\0'` plays that role. That is the great advantage of the terminator, and also its great risk: if it is missing, nothing stops the traversal.
 
-- we traversed the string character by character
-- we looked for the `\n` character
-- when we found it, we replaced it with `\0`
+`length` does exactly what `strlen` does: it walks the whole text. So `strlen` is not free, and writing `for (size_t i = 0; i < strlen(s); i++)` measures the string again on every iteration. Measure once and keep the result, or use `s[i] != '\0'` as the condition.
 
-That turns the newline into the actual end of the string.
+## Reading strings
 
-Don't memorize this as a blind recipe. Understand the concept: **we modified a character of the array**.
-
-## Difference between `scanf` and `fgets`
-
-### `scanf("%s", cadena)`
-
-- works for a single word
-- stops at the first space
-- simple, but limited
-
-### `fgets(cadena, tamanio, stdin)`
-
-- allows reading a full line
-- accepts spaces
-- usually more useful for sentences
-
-## Common string operations
-
-Since a string is an array, many operations could be done manually with loops. But C also offers functions in the `<string.h>` library.
-
-First let's understand what each operation means:
-
-- measure: count characters until `\0`
-- copy: pass characters from one string to another
-- compare: check if two strings have the same characters in the same order
-- concatenate: add one string to the end of another
-
-The functions in `<string.h>` do these tasks for us, but internally the idea is still the same: traversing characters.
-
-## Copying a string manually
-
-Before using `strcpy`, look at how to copy a string by hand:
+### A word with `scanf`
 
 ```c
 #include <stdio.h>
 
-int main() {
-    char origen[] = "Hola";
-    char destino[20];
-    int i = 0;
+int main(void) {
+    char name[20];
 
-    while (origen[i] != '\0') {
-        destino[i] = origen[i];
-        i = i + 1;
+    printf("What is your name? ");
+    if (scanf("%19s", name) != 1) {
+        printf("Could not read the name.\n");
+        return 1;
     }
-
-    destino[i] = '\0';
-
-    printf("Destination: %s\n", destino);
-
+    printf("Hello, %s\n", name);
     return 0;
 }
 ```
 
-### The most important line
+- `%s` reads a **word**: it stops at the first space, tab or newline.
+- The `19` is the **maximum width**: `scanf` stores at most 19 characters plus the `'\0'`. The width is always **capacity − 1**. Without it, `scanf("%s", name)` writes whatever the user types, even if it does not fit: an array overflow.
+- Here `name` goes **without `&`**. With an `int` you wrote `&age` to tell `scanf` where to store; the name of an array already says where it is. The `punteros-arreglos-y-estructuras` lesson (26) explains why.
+
+### A whole line with `fgets`
+
+To read text with spaces (a full name, a sentence) use `fgets`:
 
 ```c
-destino[i] = '\0';
+#include <stdio.h>
+#include <string.h>
+
+int main(void) {
+    char line[50];
+
+    printf("Type a sentence: ");
+    if (fgets(line, sizeof line, stdin) == NULL) {
+        printf("Could not read.\n");
+        return 1;
+    }
+    line[strcspn(line, "\n")] = '\0';
+    printf("You typed \"%s\" (%zu characters)\n", line, strlen(line));
+    return 0;
+}
 ```
 
-That line puts the end of the copied string.
+`fgets(line, sizeof line, stdin)`:
 
-If you forget to copy or add the `\0`, the program doesn't know where the text ends. And then the cosmic chaos begins: garbage characters, strange output, and bugs that are hard to understand.
+- receives the array's **capacity** and never writes more: it stores at most `capacity − 1` characters and always adds `'\0'`;
+- also stores the `'\n'` the user typed when pressing Enter, if it fits;
+- returns `NULL` if it could not read anything (for example, because input ended). For now, `NULL` is simply the value that means "no result"; the `punteros-y-direcciones` lesson (25) explains what it is.
 
-## Comparing two strings manually
+To remove the newline use `strcspn(line, "\n")`, which returns the **position** of the first `'\n'` or, if there is none, the length of the string. In both cases writing `'\0'` at that position is safe. The equivalent version with `strlen`:
 
-We can also compare two strings character by character.
+```c
+size_t len = strlen(line);
+if (len > 0 && line[len - 1] == '\n') {
+    line[len - 1] = '\0';
+}
+```
+
+If the typed line does not fit, `fgets` stores only its beginning and the rest stays waiting in the input for the next read. In that case the string read does **not** end in `'\n'`, and that is how you detect it.
+
+> **Portability:** never use `gets`. It read a line without receiving the capacity, so any long input overflowed the array. It was declared obsolete in a correction to C99 and **removed from the standard in C11**; with `-std=c23` compilers reject it or warn. Its replacement is `fgets`.
+
+## Copying strings
+
+A string is not assigned with `=` (it is an array). It is copied with `strcpy(destination, source)`, from `<string.h>`, which copies the characters and the `'\0'`.
+
+The problem: **`strcpy` does not know the destination's capacity**. If the source does not fit, it writes past the bound:
+
+```c
+char destination[6];
+strcpy(destination, "Welcome home");   /* 13 char into an array of 6: overflow */
+```
+
+That is undefined behavior and, in real programs, a classic vulnerability (*buffer overflow*). There are two safe ways.
+
+**1. Check before copying.**
+
+```c
+if (strlen(source) < sizeof destination) {
+    strcpy(destination, source);
+}
+```
+
+**2. Use `snprintf`**, which receives the capacity, never writes too much, **always** ends with `'\0'` and returns how many characters it **would have** written. If that number is greater than or equal to the capacity, the text was truncated:
 
 ```c
 #include <stdio.h>
 
-int main() {
-    char a[] = "sol";
-    char b[] = "sol";
-    int i = 0;
-    int iguales = 1;
+int main(void) {
+    char source[] = "Programming in C";
+    char shorter[8];
 
-    while (a[i] != '\0' || b[i] != '\0') {
-        if (a[i] != b[i]) {
-            iguales = 0;
-        }
-
-        i = i + 1;
-    }
-
-    if (iguales == 1) {
-        printf("They are equal.\n");
+    int written = snprintf(shorter, sizeof shorter, "%s", source);
+    if (written < 0 || (size_t)written >= sizeof shorter) {
+        printf("Truncated: \"%s\" (%d characters were needed)\n", shorter, written);
     } else {
-        printf("They are different.\n");
+        printf("Full copy: \"%s\"\n", shorter);
     }
-
     return 0;
 }
 ```
 
-Don't worry if you later use `strcmp`. That's perfectly fine. But this example shows you the underlying idea: comparing strings isn't comparing a single thing, but comparing positions.
+Output: `Truncated: "Program" (16 characters were needed)`.
 
-## String length: `strlen`
+### The `strncpy` trap
 
-`strlen` returns the number of characters in the string, not counting the `\0`.
+`strncpy(destination, source, n)` looks like the safe version of `strcpy`, but it is not: if the source has `n` characters or more, it copies `n` and **does not add `'\0'`**. The result is not a string.
 
-That is: it does something very similar to our manual example where we counted characters until finding the end.
+```c
+char code[4];
+strncpy(code, "ABCDEF", sizeof code);   /* copies 'A','B','C','D' and no '\0' */
+code[sizeof code - 1] = '\0';           /* you must terminate it by hand: "ABC" */
+```
+
+Also, when the source is short, it fills the whole rest of the destination with zeros. It was designed for fixed-width fields, not for copying text. To copy with a limit, prefer `snprintf`.
+
+> **Portability:** `strlcpy` and `strlcat` exist in BSD, macOS and POSIX, but they are **not standard C**. Annex K of C11 defines `strcpy_s` and `strcat_s`, but it is optional and almost no compiler implements it. With standard C, use `snprintf` or check the length before copying.
+
+## Concatenating strings
+
+`strcat(destination, source)` appends `source` to the end of `destination`. It has the same problem as `strcpy`: it does not know how much room is left.
+
+`strncat(destination, source, n)` appends at most `n` characters and **always** adds the `'\0'`. The right `n` is the free room: `sizeof destination - strlen(destination) - 1`.
 
 ```c
 #include <stdio.h>
 #include <string.h>
 
-int main() {
-    char palabra[] = "computadora";
+int main(void) {
+    char full[16] = "Ada";
 
-    printf("Length: %d\n", strlen(palabra));
+    strncat(full, " ", sizeof full - strlen(full) - 1);
+    strncat(full, "Lovelace", sizeof full - strlen(full) - 1);
+    printf("%s (%zu of %zu)\n", full, strlen(full), sizeof full);
 
+    char card[32];
+    snprintf(card, sizeof card, "%s, born in %d", full, 1815);
+    printf("%s\n", card);
     return 0;
 }
 ```
 
-### Result
-
-The length is `11`, because the word has 11 letters. The `\0` is not counted.
-
-Be careful with this: `strlen` does not return the total size of the array. It returns the actual length of the string up to `\0`.
-
-```c
-char texto[20] = "Hola";
-```
-
-In this case:
-
-- the array has 20 positions
-- `strlen(texto)` returns 4
-
-They're different concepts.
-
-## Copying a string: `strcpy`
-
-We cannot copy strings with the `=` sign like we do with numbers.
-
-This is NOT correct for copying content:
-
-```c
-/* destino = origen; */
-```
-
-To copy a string we use `strcpy`.
-
-```c
-#include <stdio.h>
-#include <string.h>
-
-int main() {
-    char origen[] = "Hola";
-    char destino[20];
-
-    strcpy(destino, origen);
-
-    printf("Destination: %s\n", destino);
-
-    return 0;
-}
-```
-
-### Important idea
-
-- `origen` contains the original text
-- `destino` must have enough space
-- `strcpy` copies character by character, including the `\0`
-
-If `destino` doesn't have enough space, `strcpy` may write outside the array. C doesn't save you automatically. That's why, before copying, you need to think about whether the destination has room for the text and for the `\0`.
-
-## Comparing strings: `strcmp`
-
-To compare if two strings are equal, we must NOT use `==`.
-
-That would be a conceptual error.
-
-With arrays, `==` doesn't compare content character by character. To compare text, you need a function that traverses both strings and checks their characters.
-
-To compare content we use `strcmp`.
-
-```c
-#include <stdio.h>
-#include <string.h>
-
-int main() {
-    char clave1[] = "casa";
-    char clave2[] = "casa";
-
-    if (strcmp(clave1, clave2) == 0) {
-        printf("The strings are equal.\n");
-    } else {
-        printf("The strings are different.\n");
-    }
-
-    return 0;
-}
-```
-
-### Why compare with `0`?
-
-Because `strcmp`:
-
-- returns `0` if the strings are equal
-- returns another value if they're different
-
-At this level, understanding that `0` means "they are equal" is perfectly enough.
-
-Think of it this way:
-
-```c
-if (strcmp(clave1, clave2) == 0)
-```
-
-reads as:
-
-> if the content of `clave1` and `clave2` is equal...
-
-## Concatenating strings: `strcat`
-
-**Concatenating** means joining one string with another.
-
-```c
-#include <stdio.h>
-#include <string.h>
-
-int main() {
-    char nombre[30] = "Ana";
-
-    strcat(nombre, " Maria");
-
-    printf("Full name: %s\n", nombre);
-
-    return 0;
-}
-```
-
-### Result
-
-The variable `nombre` now contains:
+Output:
 
 ```text
-Ana Maria
+Ada Lovelace (12 of 16)
+Ada Lovelace, born in 1815
 ```
 
-### Caution
+When you need to build a text from several parts, `snprintf` is usually the clearest: one format, one capacity.
 
-The destination array must have enough space to store:
+## Comparing strings
 
-- its original content
-- the string we add
-- the final `\0`
+`==` does not compare the content of two strings: it checks whether they are **the same array**, not whether they hold the same letters. To compare text use `strcmp(a, b)`, which returns:
 
-In this example `nombre` has 30 positions, so `"Ana Maria"` fits without issue.
-
-## Complete example with several operations
+- `0` if they are equal;
+- a negative number if `a` comes before `b`;
+- a positive number if `a` comes after `b`.
 
 ```c
 #include <stdio.h>
 #include <string.h>
 
-int main() {
-    char nombre[20] = "Juan";
-    char apellido[20] = "Perez";
-    char completo[50] = "";
+int main(void) {
+    char key[] = "secret";
 
-    strcpy(completo, nombre);
-    strcat(completo, " ");
-    strcat(completo, apellido);
-
-    printf("Full name: %s\n", completo);
-    printf("Length: %d\n", strlen(completo));
-
-    if (strcmp(nombre, "Juan") == 0) {
-        printf("The stored name is Juan.\n");
+    if (strcmp(key, "secret") == 0) {
+        printf("Correct key\n");
     }
-
+    printf("apple vs pear: %s\n", strcmp("apple", "pear") < 0 ? "apple comes first" : "pear comes first");
+    printf("Zebra vs ant: %s\n", strcmp("Zebra", "ant") < 0 ? "Zebra comes first" : "ant comes first");
     return 0;
 }
 ```
 
-## Traversing a string to count vowels
+The order is that of the characters' **codes**, not the dictionary's: every uppercase letter comes before every lowercase one, which is why `"Zebra"` comes before `"ant"`. Check only the sign of the result, never its exact value.
 
-In addition to using library functions, we can also solve problems by traversing the string manually.
+## Finding a character
+
+Finding a character is a traversal that stops when it finds it. With indexes:
+
+```c
+size_t position_of(const char s[], char c) {
+    size_t i = 0;
+    while (s[i] != '\0' && s[i] != c) {
+        i++;
+    }
+    return i;   /* if c is not there, i is the length and s[i] is '\0' */
+}
+```
+
+The library offers two functions for the same job:
+
+- `strchr(s, c)` walks `s` looking for `c`. If it does not find it, it returns `NULL`; if it does, it returns the location of the character inside the array. What that location is exactly you will see in the `punteros-y-direcciones` lesson (25); for now use it to ask **whether** the character is there: `strchr(s, c) != NULL`.
+- `strcspn(s, "c")` returns the **position** of the first character of `s` that appears in the second text, or the length if there is none. It is the index-based version.
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+size_t position_of(const char s[], char c) {
+    size_t i = 0;
+    while (s[i] != '\0' && s[i] != c) {
+        i++;
+    }
+    return i;
+}
+
+int main(void) {
+    char email[] = "ana@example.com";
+
+    if (strchr(email, '@') != NULL) {
+        printf("It has an at sign\n");
+    }
+    printf("Position of @ (by hand): %zu\n", position_of(email, '@'));
+    printf("Position of @ (strcspn): %zu\n", strcspn(email, "@"));
+
+    size_t pos = strcspn(email, "#");
+    if (email[pos] == '\0') {
+        printf("No #\n");
+    }
+    return 0;
+}
+```
+
+## Numbers and text
+
+`"12"` is a string of two characters, not the number 12. "Adding" two strings with `snprintf` **joins** them; to add their values you have to **convert** them:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main(void) {
+    char a[] = "12";
+    char b[] = "30";
+
+    char joined[8];
+    snprintf(joined, sizeof joined, "%s%s", a, b);
+
+    int sum = atoi(a) + atoi(b);
+
+    char text[12];
+    snprintf(text, sizeof text, "%d", sum);
+
+    printf("Joined as text: %s\n", joined);
+    printf("Added as numbers: %d\n", sum);
+    printf("The sum as text: \"%s\" (%zu characters)\n", text, strlen(text));
+    return 0;
+}
+```
+
+```text
+Joined as text: 1230
+Added as numbers: 42
+The sum as text: "42" (2 characters)
+```
+
+- `atoi` (from `<stdlib.h>`) converts text into an `int`.
+- `snprintf` with `%d` converts a number into text, with the capacity as a limit. There is also `sprintf`, with no capacity: it has the same risk as `strcpy`.
+
+> **Basic C:** `atoi` reports no errors: `atoi("hello")` returns `0`, just like `atoi("0")`, and a number that is too large is undefined behavior. It is fine for examples with known data. The `biblioteca-estandar-y-errores` lesson (34) teaches `strtol`, which detects invalid text and overflow.
+
+## Counting words
+
+A classic problem that brings everything together: traverse the string remembering whether you are **inside** or **outside** a word. Every time you go from outside to inside, a new word starts.
 
 ```c
 #include <stdio.h>
 
-int main() {
-    char palabra[] = "murcielago";
-    int i;
-    int cantidadVocales = 0;
+size_t count_words(const char s[]) {
+    size_t words = 0;
+    bool inside = false;
 
-    for (i = 0; palabra[i] != '\0'; i = i + 1) {
-        if (palabra[i] == 'a' || palabra[i] == 'e' || palabra[i] == 'i' || palabra[i] == 'o' || palabra[i] == 'u') {
-            cantidadVocales = cantidadVocales + 1;
+    for (size_t i = 0; s[i] != '\0'; i++) {
+        bool separator = s[i] == ' ' || s[i] == '\t' || s[i] == '\n';
+        if (separator) {
+            inside = false;
+        } else if (!inside) {
+            inside = true;
+            words++;
         }
     }
+    return words;
+}
 
-    printf("Number of vowels: %d\n", cantidadVocales);
+int main(void) {
+    char sentence[] = "  Hello   world in   C  ";
 
+    printf("Words: %zu\n", count_words(sentence));
     return 0;
 }
 ```
 
-This example is very valuable because it shows something key:
+Output: `Words: 4`. Counting spaces would not work: there are repeated spaces, and spaces at the start and at the end. The `isspace` function from `<ctype.h>` (lesson 34) recognizes every separator without writing them by hand.
 
-> a string isn't just printed or copied; it can also be processed character by character.
+> **Modern C (C23):** C23 adds `strdup` and `strndup` to the standard; they create a new copy of a string in memory requested at run time. You will see them with the `memoria-dinamica` lesson (28).
 
-### Possible improvement
+## Common mistakes
 
-This example counts lowercase vowels. If the word had uppercase letters, like `"Murcielago"`, the `M` doesn't matter because it's not a vowel, but if it were `"Avion"`, the `A` wouldn't be counted with this code.
-
-For this level that's fine. Later you could expand the condition to include `A`, `E`, `I`, `O`, `U`.
-
-The important thing now is to understand the traversal.
-
-## Common mistakes when working with strings
-
-### Confusing character with string
-
-- `'A'` is a character
-- `"A"` is a string
-
-They're not the same.
-
-### Not leaving enough space
-
-```c
-char nombre[4] = "Juan";
-```
-
-This is wrong, because `"Juan"` needs:
-
-- `J`
-- `u`
-- `a`
-- `n`
-- `\0`
-
-That is, it needs 5 positions.
-
-The correct version would be:
-
-```c
-char nombre[5] = "Juan";
-```
-
-or even better, let the compiler calculate:
-
-```c
-char nombre[] = "Juan";
-```
-
-### Comparing strings with `==`
-
-To compare content, use `strcmp`.
-
-```c
-if (strcmp(a, b) == 0) {
-    printf("They are equal.\n");
-}
-```
-
-### Forgetting that `scanf("%s", ...)` doesn't read spaces
-
-If you need to read a full sentence, use `fgets`.
-
-### Using `scanf("%s", cadena)` without a limit
-
-If the array has 20 positions, use a maximum width:
-
-```c
-scanf("%19s", cadena);
-```
-
-That `19` leaves room for `\0`.
-
-### Forgetting the `\n` that `fgets` may leave
-
-If after reading a sentence strange newlines appear, check if `fgets` stored the `\n`.
-
-You can replace it with `\0` by traversing the string.
-
-### Thinking the array size and the string length are the same
-
-Not necessarily.
-
-```c
-char texto[50] = "Hola";
-```
-
-Here the array has 50 positions, but the string has 4 visible characters.
+- **Forgetting room for the `'\0'`.** Storing `"Code"` needs capacity 5. Watch out: `char s[4] = "Code";` compiles in C, but the array ends up **without a terminator**.
+- **Using `strcpy`, `strcat` or `sprintf` without checking the capacity.** Prefer `snprintf`, or measure first with `strlen`.
+- **Believing `strncpy` always terminates the string.** It does not when the source is long.
+- **`scanf("%s", s)` without a width.** Write `%19s` for a capacity of 20.
+- **Using `gets`.** It is no longer in the standard; use `fgets`.
+- **Forgetting the `'\n'` that `fgets` keeps.** Remove it with `s[strcspn(s, "\n")] = '\0';`.
+- **Comparing strings with `==`.** Use `strcmp(a, b) == 0`.
+- **Printing `strlen` with `%d`.** It is a `size_t`: use `%zu`.
+- **Confusing capacity and length.** `sizeof` measures the array; `strlen` measures the text.
 
 ## Summary
 
-- a string in C is an array of `char`
-- every string ends in `\0`
-- `\0` marks the actual end of the text
-- the array size and the string length are not the same
-- `%s` is used to display complete strings
-- `%c` is used to display a single character
-- a string can be traversed with a loop like any array
-- `scanf("%s", ...)` reads a word, but it's good to limit the width
-- `fgets` allows reading sentences with spaces
-- `fgets` may store `\n`, and we can replace it with `\0`
-- `strlen` measures length
-- `strcpy` copies
-- `strcmp` compares
-- `strcat` concatenates
+- A string is a `char` array terminated by `'\0'`; `"A"` takes two `char`.
+- Capacity (`sizeof`, fixed) and length (`strlen`, variable) are different; length `L` needs capacity `L + 1`.
+- Strings are traversed up to `'\0'`, with no need to pass the count.
+- `scanf("%19s", ...)` reads a word with a limit; `fgets` reads a line with a limit and keeps the `'\n'`.
+- `strcpy` and `strcat` do not check the capacity: use `snprintf`, `strncat` with the free room, or check first.
+- `strcmp` compares content; `strchr` and `strcspn` find characters.
+- `atoi` and `snprintf` convert between text and numbers.
 
-## What you should be able to explain before continuing
+## Practice exercises
 
-Before moving to the next lesson, you should be able to answer these questions:
+### Exercise 1: capacity and length
 
-- why does `"Ana"` need 4 positions and not 3?
-- what's the difference between `'A'` and `"A"`?
-- why can a string be traversed with a `for` or `while`?
-- why doesn't `scanf("%s", nombre)` read `Ana Maria` completely?
-- why does `strcmp(a, b) == 0` mean two strings are equal?
-- what can happen if you forget the `\0`?
+What do `sizeof` and `strlen` give for each array?
 
-If you can explain that, you're not memorizing: you're understanding. And that's worth much more.
+```c
+char a[] = "C23";
+char b[10] = "C23";
+char c[10] = "";
+```
 
-## Final thought
+<details><summary>Show solution</summary>
 
-If you understand that a string in C is an array of characters with an end marked by `\0`, EVERYTHING falls into place.
+| | `sizeof` | `strlen` |
+| --- | --- | --- |
+| `a` | 4 | 3 |
+| `b` | 10 | 3 |
+| `c` | 10 | 0 |
 
-And when that's truly understood, you stop memorizing isolated functions and start understanding what's happening in memory and in the program.
+`a` takes the literal's capacity (3 letters plus `'\0'`). `b` and `c` have a declared capacity of 10; `c` holds only the terminator, so its length is 0.
+
+</details>
+
+### Exercise 2: greeting with a full name
+
+Write a program that reads a full name with `fgets` (capacity 40), removes the newline, rejects an empty line and builds with `snprintf` the greeting `Hello, <name>. Your name has N characters.`
+
+<details><summary>Show solution</summary>
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+int main(void) {
+    char name[40];
+
+    printf("Full name: ");
+    if (fgets(name, sizeof name, stdin) == NULL) {
+        printf("Could not read.\n");
+        return 1;
+    }
+    name[strcspn(name, "\n")] = '\0';
+    if (name[0] == '\0') {
+        printf("The name cannot be empty.\n");
+        return 1;
+    }
+
+    char greeting[80];
+    snprintf(greeting, sizeof greeting, "Hello, %s. Your name has %zu characters.", name, strlen(name));
+    printf("%s\n", greeting);
+    return 0;
+}
+```
+
+The empty line is detected after removing the `'\n'`: the first character is already the terminator.
+
+</details>
+
+### Exercise 3: fix an overflow
+
+This fragment overflows the array. Explain why and fix it with `snprintf` so it reports when the text does not fit.
+
+```c
+char destination[6];
+strcpy(destination, "Welcome");
+```
+
+<details><summary>Show solution</summary>
+
+`"Welcome"` has 7 letters: it needs capacity 8, and `destination` has 6. `strcpy` does not know the capacity and writes 2 bytes past the bound (undefined behavior).
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    char destination[6];
+
+    int written = snprintf(destination, sizeof destination, "%s", "Welcome");
+    if (written < 0 || (size_t)written >= sizeof destination) {
+        printf("It does not fit; stored \"%s\"\n", destination);
+    }
+    return 0;
+}
+```
+
+Output: `It does not fit; stored "Welco"`.
+
+</details>
+
+### Exercise 4: count vowels
+
+Write `size_t count_vowels(const char s[])`, which counts vowels, uppercase or lowercase, and test it with `"Programming in C"`.
+
+<details><summary>Show solution</summary>
+
+```c
+#include <stdio.h>
+
+bool is_vowel(char c) {
+    return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' ||
+           c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U';
+}
+
+size_t count_vowels(const char s[]) {
+    size_t vowels = 0;
+    for (size_t i = 0; s[i] != '\0'; i++) {
+        if (is_vowel(s[i])) {
+            vowels++;
+        }
+    }
+    return vowels;
+}
+
+int main(void) {
+    printf("Vowels: %zu\n", count_vowels("Programming in C"));
+    return 0;
+}
+```
+
+Output: `Vowels: 4`. The function does not need the number of elements: it stops at `'\0'`.
+
+</details>
+
+### Exercise 5: append without overflowing
+
+Write `bool append(char destination[], size_t capacity, const char extra[])`, which appends `extra` to the end of `destination` only if the whole result fits, and returns whether it could.
+
+<details><summary>Show solution</summary>
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+bool append(char destination[], size_t capacity, const char extra[]) {
+    size_t used = strlen(destination);
+    size_t needed = strlen(extra);
+    if (used + needed + 1 > capacity) {
+        return false;
+    }
+    strcat(destination, extra);
+    return true;
+}
+
+int main(void) {
+    char path[12] = "/home";
+
+    printf("%s\n", append(path, sizeof path, "/ana") ? path : "Does not fit");
+    printf("%s\n", append(path, sizeof path, "/documents") ? path : "Does not fit");
+    return 0;
+}
+```
+
+Output: `/home/ana` and `Does not fit`. Here `strcat` is safe because the function checked first that there is room for the text **and** for the `'\0'` (the `+ 1`). The capacity travels as a parameter because inside the function `sizeof destination` would not give it.
+
+</details>
