@@ -2,307 +2,230 @@
 title: 'El principio con Git'
 course: 'git'
 slug: 'el-principio-con-git'
-description: 'Comprende los fundamentos del control de versiones, instala y configura tu identidad con git config y domina el ciclo de tres estados.'
+description: 'Instala y configura Git, crea tu primer repositorio y domina el ciclo local de tres zonas: git status, git add, git commit, git diff y git log.'
 order: 1
 lang: 'es'
 published: true
 ---
 
-# 🚀 El principio con Git: Fundamentos y Primeros Pasos
+# El principio con Git
 
-El control de versiones es la habilidad base de cualquier desarrollador moderno. Sin él, coordinar código en equipo o volver a un estado funcional anterior es prácticamente imposible.
+Git es la herramienta que usan casi todos los equipos de software para guardar la historia de su código. En esta lección trabajas solo, en tu computadora, sin internet.
 
 En esta lección aprenderás:
-1. Qué es Git y por qué es el estándar indiscutido de la industria.
-2. Conceptos fundamentales: repositorios, archivos, commits e historial.
-3. Cómo instalar Git y configurar tu identidad obligatoria con `git config`.
-4. El ciclo de vida de los tres estados: Working Directory, Staging Area y Repository.
-5. Cómo inspeccionar el historial y crear tus primeras ramas de trabajo.
 
----
+1. Qué es Git y qué son un repositorio, un commit y el historial.
+2. Cómo instalar Git y configurar tu identidad con `git config`.
+3. Cómo crear un repositorio con `git init`.
+4. El ciclo de las tres zonas: `git status`, `git add`, `git restore --staged` y `git commit`.
+5. Cómo ver qué cambió con `git diff` y `git diff --staged`.
+6. Cómo leer el historial con `git log`.
 
-# ¿Qué es Git?
+## Qué es Git
 
-**Git es un sistema de control de versiones.**
+**Git es un sistema de control de versiones**: guarda fotos sucesivas de tu proyecto para que puedas ver qué cambió, cuándo, quién lo hizo y volver a una versión anterior.
 
-👉 En palabras simples:  
-**Git sirve para guardar la historia de los cambios de un proyecto**, igual que un “guardar partida” en un videojuego.
+Sin Git, terminas con carpetas como estas:
 
-### Analogía sencilla
-
-Imagina que escribes un trabajo en Word:
-
-- Versión 1
-    
-- Versión 2
-    
-- Versión final
-    
-- Versión final FINAL 😅
-    
-
-Git hace eso automáticamente, pero:
-
-- Guarda **cada cambio**
-    
-- Te permite **volver atrás**
-    
-- Te deja **trabajar en equipo sin pisarse**
-    
-- Funciona perfecto con código
-    
-
----
-
-# 🧠 ¿Por qué Git es tan importante?
-
-Aprender Git te permite:
-
-- No perder tu trabajo
-    
-- Trabajar con otras personas
-    
-- Probar ideas sin romper nada
-    
-- Trabajar como un programador profesional
-    
-
-💡 **TODAS** las empresas de tecnología usan Git.
-
----
-
-# 🧩 Conceptos fundamentales (muy importante)
-
-Antes de usar comandos, necesitas entender **estos conceptos clave**:
-
-## 1️⃣ Repositorio (repo)
-
-Es el **proyecto**.
-
-📦 Piensa en un repositorio como:
-
-> Una carpeta especial que Git controla
-
-Puede contener:
-
-- Código
-    
-- Imágenes
-    
-- Documentación
-    
-- Cualquier archivo
-    
-
----
-
-## 2️⃣ Archivo
-
-Son los archivos normales:
-
-- `.html`
-    
-- `.css`
-    
-- `.js`
-    
-- `.txt`
-    
-
-Git **observa** estos archivos y detecta cambios.
-
----
-
-## 3️⃣ Versión / Commit
-
-Un **commit** es una **foto del proyecto en un momento del tiempo**.
-
-📸 Cada commit:
-
-- Tiene un mensaje (“qué hice”)
-    
-- Tiene fecha
-    
-- Tiene autor
-    
-
-Ejemplo de mensaje de commit:
-
-```
-Agrego botón de login
+```text
+informe.docx
+informe-v2.docx
+informe-final.docx
+informe-final-AHORA-SI.docx
 ```
 
----
+Con Git tienes un solo archivo y una historia ordenada de todas sus versiones, con una explicación de cada cambio.
 
-## 4️⃣ Historial
+### Conceptos fundamentales
 
-Git guarda todos los commits en orden.
+- **Repositorio (repo)**: una carpeta cuyo historial controla Git. Git guarda ese historial en una subcarpeta oculta llamada `.git`.
+- **Commit**: una foto del estado de los archivos en un momento dado. Es la unidad del historial.
+- **Historial**: la cadena de commits, del más reciente al primero.
 
-Esto te permite:
+Cada commit guarda:
 
-- Ver qué cambió
-    
-- Volver a una versión anterior
-    
-- Saber quién hizo qué
-    
+- **Hash**: un identificador único de 40 caracteres hexadecimales, por ejemplo `edf5c7dd85da2be768183a849deb5eea36fa0d3e`. Se suele mostrar abreviado a los primeros 7: `edf5c7d`.
+- **Autor**: nombre y correo de quien lo creó.
+- **Fecha**: cuándo se creó.
+- **Mensaje**: qué cambió y por qué, escrito por ti.
+- **Padre**: el hash del commit anterior. Así se encadena el historial. El primer commit del repositorio no tiene padre.
 
----
+### Git y GitHub no son lo mismo
 
-# 🧰 Instalación de Git
+| Git | GitHub |
+| --- | --- |
+| Programa que instalas en tu computadora | Servicio web |
+| Guarda el historial de tu proyecto | Aloja copias de repositorios Git en internet |
+| Funciona sin internet | Necesita internet |
+| Lo usas desde la terminal | Lo usas desde el navegador (y desde Git) |
 
-### En Windows
+GitHub usa Git para que varias personas compartan un repositorio, pero todo lo de esta lección ocurre solo en tu computadora.
 
-Descarga desde:  
-👉 [https://git-scm.com](https://git-scm.com/)
+## Instalar Git
 
-Instálalo dejando las opciones por defecto.
+### Windows
 
-### En macOS
+Descarga el instalador de [git-scm.com](https://git-scm.com/) e instálalo con las opciones por defecto. También puedes usar `winget` desde PowerShell:
 
+```bash
+winget install --id Git.Git -e --source winget
 ```
+
+Usa la terminal **Git Bash** que se instala junto con Git para seguir esta lección.
+
+### macOS
+
+Instala las herramientas de línea de comandos de Xcode, que incluyen Git:
+
+```bash
+xcode-select --install
+```
+
+O, si usas Homebrew:
+
+```bash
 brew install git
 ```
 
-### En Linux
+### Linux (Debian y Ubuntu)
 
-```
+```bash
+sudo apt update
 sudo apt install git
 ```
 
-Verifica que está instalado:
+### Linux (Fedora)
+
+```bash
+sudo dnf install git
+```
+
+### Verificar la instalación
 
 ```bash
 git --version
 ```
 
----
-
-# ⚙️ Configuración inicial (obligatorio antes de empezar)
-
-Antes de crear tu primer commit, Git **necesita saber quién eres**. Cada cambio en el historial queda firmado con un nombre y un correo electrónico.
-
-### Configurar tu identidad
-
-Ejecuta en tu terminal:
-
-```bash
-git config --global user.name "Tu Nombre Completo"
-git config --global user.email "tu-correo@ejemplo.com"
+```text
+git version 2.52.0
 ```
 
-> 💡 **Nota importante**: `user.name` y `user.email` son metadatos para firmar los commits, no credenciales para autenticarte contra GitHub. Puedes usar el mismo correo de tu cuenta de GitHub para que la plataforma vincule tus commits a tu perfil.
+Tu número de versión puede ser otro; cualquier versión reciente sirve.
 
-### Configurar la rama principal por defecto
+## Configurar tu identidad
 
-Históricamente Git llamaba a la rama inicial `master`. El estándar actual de la industria y de GitHub es `main`:
+Git firma cada commit con un nombre y un correo. Configúralos una sola vez:
+
+```bash
+git config --global user.name "Ana García"
+git config --global user.email "ana@ejemplo.com"
+```
+
+`user.name` y `user.email` son solo datos que se escriben en cada commit; no son una contraseña ni una cuenta. Si más adelante usas GitHub, conviene poner el mismo correo de tu cuenta para que vincule tus commits a tu perfil.
+
+Configura también el nombre de la línea principal del historial. El estándar actual es `main`:
 
 ```bash
 git config --global init.defaultBranch main
 ```
 
-### ¿Dónde se guarda esta configuración?
+### `--global` y `--local`
 
-* **`--global`**: Aplica a todos los repositorios en tu computadora (se guarda en el archivo `~/.gitconfig`).
-* **`--local`**: Aplica únicamente al repositorio actual (útil si manejas una cuenta laboral y otra personal).
+- `--global`: se aplica a todos tus repositorios. Se guarda en `~/.gitconfig`.
+- `--local`: se aplica solo al repositorio en el que estás y tiene prioridad sobre la global. Se guarda en `.git/config`. Es la opción por defecto si no indicas ninguna.
 
-Para verificar tu configuración activa en cualquier momento:
+Por ejemplo, para usar tu correo del trabajo solo en un repositorio (ejecútalo dentro de ese repositorio):
+
+```bash
+git config --local user.email "ana@trabajo.com"
+```
+
+Para ver toda tu configuración:
 
 ```bash
 git config --list
 ```
 
----
+```text
+user.name=Ana García
+user.email=ana@ejemplo.com
+init.defaultbranch=main
+```
 
-# 🚀 Empezando con Git (primeros pasos)
+La lista real puede incluir más líneas; lo importante es que aparezcan tus tres valores. Git muestra los nombres de las claves en minúsculas (`init.defaultbranch`).
 
-## Paso 1: Crear un proyecto
+## Crear un repositorio
 
-Crea una carpeta y entra en ella:
+Crea una carpeta para el proyecto y entra en ella:
 
 ```bash
-# Crear la carpeta de nuestro nuevo proyecto
 mkdir mi-proyecto
-
-# Entrar al directorio del proyecto
 cd mi-proyecto
 ```
 
----
-
-## Paso 2: Inicializar Git
-
-Dentro de la carpeta:
+Convierte la carpeta en un repositorio:
 
 ```bash
-# Inicializar un nuevo repositorio Git local en este directorio
 git init
 ```
 
-👉 Esto crea un repositorio Git.
+```text
+Initialized empty Git repository in /home/ana/mi-proyecto/.git/
+```
 
-💡 Git ahora controla esta carpeta.
+Git creó la carpeta oculta `.git`, donde guardará todo el historial. No la edites a mano: si la borras, pierdes el historial.
 
----
+## Preguntarle a Git qué pasa: `git status`
 
-# 📂 El estado de Git (muy importante)
-
-Siempre puedes preguntar:
+`git status` es el comando que más usarás. Te dice qué archivos cambiaron y qué entrará en el próximo commit:
 
 ```bash
-# Consultar el estado actual del directorio de trabajo y del staging area
 git status
 ```
 
-Esto te dice:
+```text
+On branch main
 
-- Qué archivos cambiaron
-    
-- Qué está listo para guardar
-    
-- Qué no
-    
+No commits yet
 
----
-
-# 📝 Crear tu primer archivo
-
-Crea un archivo llamado:
-
-```
-hola.txt
+nothing to commit (create/copy files and use "git add" to track)
 ```
 
-Contenido:
+`No commits yet` significa que el historial está vacío. `On branch main` indica el nombre de la línea principal que configuraste con `init.defaultBranch`.
 
-```
+Crea un archivo `hola.txt` con este contenido:
+
+```text
 Hola, este es mi primer proyecto con Git
 ```
 
-Revisa el estado:
+Y vuelve a preguntar:
 
-```
+```bash
 git status
 ```
 
-Verás algo como:
+```text
+On branch main
 
-> archivo nuevo no rastreado
+No commits yet
 
----
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	hola.txt
 
-# ➕ Agregar archivos (staging)
+nothing added to commit but untracked files present (use "git add" to track)
+```
 
-Git trabaja en **3 zonas fundamentales**:
+`Untracked files` son archivos que Git ve pero todavía no controla.
 
-### 1️⃣ Working Directory
-Tus archivos normales en disco, donde programas y editas.
+## Las tres zonas de Git
 
-### 2️⃣ Staging Area
-El área de preparación donde seleccionas exactamente qué cambios formarán parte del próximo commit.
+Git trabaja con tres zonas:
 
-### 3️⃣ Repository (.git)
-La base de datos local donde Git guarda el historial definitivo en forma de commits.
+1. **Working Directory (directorio de trabajo)**: tus archivos en disco, donde editas.
+2. **Staging Area (área de preparación)**: lo que elegiste incluir en el próximo commit.
+3. **Repository (`.git`)**: el historial de commits.
 
 <figure class="diagram">
 <svg viewBox="0 0 720 260" role="img" aria-labelledby="d-git-3zonas-t">
@@ -317,274 +240,338 @@ La base de datos local donde Git guarda el historial definitivo en forma de comm
 </defs>
 
 <!-- Zone 1: Working Directory -->
-<rect x="20" y="30" width="200" height="155" rx="16" fill="var(--color-neutral-200)" stroke="var(--color-divider)" stroke-width="2"/>
-<text x="120" y="58" font-size="14" font-weight="700" text-anchor="middle" fill="var(--color-neutral-800)">1. Working Directory</text>
-<text x="120" y="80" font-size="12" text-anchor="middle" fill="var(--color-neutral-700)">Archivos en disco</text>
-<rect x="40" y="100" width="160" height="32" rx="8" fill="var(--color-bg)" stroke="var(--color-divider)"/>
-<text x="120" y="121" font-size="11" font-family="monospace" text-anchor="middle" fill="var(--color-text)">hola.txt (modificado)</text>
-<text x="120" y="162" font-size="11" text-anchor="middle" fill="var(--color-neutral-700)">Cambios sin preparar</text>
+<rect x="20" y="30" width="180" height="155" rx="16" fill="var(--color-neutral-200)" stroke="var(--color-divider)" stroke-width="2"/>
+<text x="110" y="58" font-size="14" font-weight="700" text-anchor="middle" fill="var(--color-neutral-800)">1. Working Directory</text>
+<text x="110" y="80" font-size="12" text-anchor="middle" fill="var(--color-neutral-700)">Archivos en disco</text>
+<rect x="35" y="100" width="150" height="32" rx="8" fill="var(--color-bg)" stroke="var(--color-divider)"/>
+<text x="110" y="121" font-size="11" font-family="monospace" text-anchor="middle" fill="var(--color-text)">hola.txt (modificado)</text>
+<text x="110" y="162" font-size="11" text-anchor="middle" fill="var(--color-neutral-700)">Cambios sin preparar</text>
 
 <!-- Zone 2: Staging Area -->
-<rect x="260" y="30" width="200" height="155" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
+<rect x="270" y="30" width="180" height="155" rx="16" fill="var(--color-accent-200)" stroke="var(--color-accent)" stroke-width="2"/>
 <text x="360" y="58" font-size="14" font-weight="700" text-anchor="middle" fill="var(--color-accent-700)">2. Staging Area</text>
-<text x="360" y="80" font-size="12" text-anchor="middle" fill="var(--color-neutral-700)">Preparados para commit</text>
-<rect x="280" y="100" width="160" height="32" rx="8" fill="var(--color-bg)" stroke="var(--color-accent)"/>
+<text x="360" y="80" font-size="12" text-anchor="middle" fill="var(--color-neutral-700)">Preparado para commit</text>
+<rect x="285" y="100" width="150" height="32" rx="8" fill="var(--color-bg)" stroke="var(--color-accent)"/>
 <text x="360" y="121" font-size="11" font-family="monospace" text-anchor="middle" fill="var(--color-accent-700)">hola.txt (en stage)</text>
-<text x="360" y="162" font-size="11" text-anchor="middle" fill="var(--color-accent-700)">Listo para el snapshot</text>
+<text x="360" y="162" font-size="11" text-anchor="middle" fill="var(--color-accent-700)">Entra en el próximo commit</text>
 
 <!-- Zone 3: Repository -->
-<rect x="500" y="30" width="200" height="155" rx="16" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-600)" stroke-width="2"/>
-<text x="600" y="58" font-size="14" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">3. Repository (.git)</text>
-<text x="600" y="80" font-size="12" text-anchor="middle" fill="var(--color-neutral-700)">Historial permanente</text>
-<rect x="520" y="100" width="160" height="32" rx="8" fill="var(--color-bg)" stroke="var(--color-accent-2-600)"/>
-<text x="600" y="121" font-size="11" font-family="monospace" text-anchor="middle" fill="var(--color-accent-2-800)">commit: a1b2c3d</text>
-<text x="600" y="162" font-size="11" text-anchor="middle" fill="var(--color-accent-2-800)">Versión registrada</text>
+<rect x="520" y="30" width="180" height="155" rx="16" fill="var(--color-accent-2-200)" stroke="var(--color-accent-2-600)" stroke-width="2"/>
+<text x="610" y="58" font-size="14" font-weight="700" text-anchor="middle" fill="var(--color-accent-2-800)">3. Repository (.git)</text>
+<text x="610" y="80" font-size="12" text-anchor="middle" fill="var(--color-neutral-700)">Historial de commits</text>
+<rect x="535" y="100" width="150" height="32" rx="8" fill="var(--color-bg)" stroke="var(--color-accent-2-600)"/>
+<text x="610" y="121" font-size="11" font-family="monospace" text-anchor="middle" fill="var(--color-accent-2-800)">commit edf5c7d</text>
+<text x="610" y="162" font-size="11" text-anchor="middle" fill="var(--color-accent-2-800)">Versión registrada</text>
 
 <!-- Arrow 1: git add -->
-<path d="M 220 116 L 254 116" fill="none" stroke="var(--color-accent)" stroke-width="2.5" marker-end="url(#ar-fwd-l1)"/>
-<text x="240" y="106" font-size="11" font-weight="700" font-family="monospace" text-anchor="middle" fill="var(--color-accent-700)">git add</text>
+<path d="M 200 116 L 264 116" fill="none" stroke="var(--color-accent)" stroke-width="2.5" marker-end="url(#ar-fwd-l1)"/>
+<text x="234" y="106" font-size="10" font-weight="700" font-family="monospace" text-anchor="middle" fill="var(--color-accent-700)">git add</text>
 
 <!-- Arrow 2: git commit -->
-<path d="M 460 116 L 494 116" fill="none" stroke="var(--color-accent)" stroke-width="2.5" marker-end="url(#ar-fwd-l1)"/>
-<text x="480" y="106" font-size="11" font-weight="700" font-family="monospace" text-anchor="middle" fill="var(--color-accent-700)">git commit</text>
+<path d="M 450 116 L 514 116" fill="none" stroke="var(--color-accent)" stroke-width="2.5" marker-end="url(#ar-fwd-l1)"/>
+<text x="484" y="106" font-size="10" font-weight="700" font-family="monospace" text-anchor="middle" fill="var(--color-accent-700)">git commit</text>
 
-<!-- Arrow 3: restore staged -->
-<path d="M 360 185 C 360 225, 120 225, 120 191" fill="none" stroke="var(--color-accent-2-600)" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ar-back-l1)"/>
-<text x="240" y="235" font-size="11" font-weight="700" font-family="monospace" text-anchor="middle" fill="var(--color-accent-2-800)">git restore --staged (deshacer stage)</text>
+<!-- Arrow 3: git restore staged -->
+<path d="M 360 185 C 360 225, 110 225, 110 191" fill="none" stroke="var(--color-accent-2-600)" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ar-back-l1)"/>
+<text x="235" y="242" font-size="11" font-weight="700" font-family="monospace" text-anchor="middle" fill="var(--color-accent-2-800)">git restore --staged (sacar del stage)</text>
 </svg>
-<figcaption>El ciclo de vida en tres estados de Git: tus modificaciones en el directorio de trabajo se seleccionan con <code>git add</code> hacia el Staging Area y se confirman con <code>git commit</code> en la base de datos local.</figcaption>
+<figcaption>Con <code>git add</code> pasas un cambio del directorio de trabajo al Staging Area, con <code>git commit</code> lo registras en el historial y con <code>git restore --staged</code> lo sacas del Staging Area sin perder lo que editaste.</figcaption>
 </figure>
 
-Para mover un archivo a staging:
+El flujo básico, que repetirás todos los días:
+
+```text
+editar → git add → git commit
+```
+
+## Preparar cambios: `git add`
+
+Agrega `hola.txt` al Staging Area:
 
 ```bash
-# Agregar un archivo específico al staging area
 git add hola.txt
 ```
 
-O todos los archivos modificados a la vez:
+Para agregar todos los archivos nuevos y modificados de la carpeta actual (y sus subcarpetas) en un solo paso:
 
 ```bash
-# Agregar todos los cambios del directorio actual al staging area
 git add .
 ```
 
----
+## Guardar una versión: `git commit`
 
-# 💾 Guardar cambios (commit)
-
-Ahora guarda los cambios:
+Crea el commit con un mensaje:
 
 ```bash
-# Crear un commit que registra los cambios del staging area en el historial
-git commit -m "Agrego archivo hola.txt"
+git commit -m "Agrega saludo inicial"
 ```
 
-🎉 ¡Primer commit hecho!
-
----
-
-# 🔁 Flujo básico de Git (memorízalo)
-
-Este es el **flujo más importante de Git**:
-
 ```text
-Editar → git add → git commit
+[main (root-commit) edf5c7d] Agrega saludo inicial
+ 1 file changed, 1 insertion(+)
+ create mode 100644 hola.txt
 ```
 
-Siempre será así.
+- `edf5c7d` es el hash abreviado del commit. El tuyo será distinto: depende del contenido, del autor y de la fecha.
+- `root-commit` indica que es el primer commit, el que no tiene padre.
 
----
+### Cómo escribir un buen mensaje
 
-# 🧪 Modificar un archivo
+Un buen mensaje dice qué hace el commit, en pocas palabras y en imperativo, como una orden:
 
-Edita `hola.txt`:
+| Mal | Bien |
+| --- | --- |
+| `cambios` | `Agrega saludo inicial` |
+| `arreglé cosas` | `Corrige la fecha del pie de página` |
+| `asdf` | `Agrega segunda línea al saludo` |
+
+Reglas simples:
+
+- Una sola idea por commit.
+- Una línea corta (unos 50 caracteres).
+- Empieza con un verbo: "Agrega", "Corrige", "Elimina", "Actualiza".
+
+## Ver qué cambió: `git diff`
+
+Agrega una segunda línea a `hola.txt`:
 
 ```text
-Hola mundo
+Hola, este es mi primer proyecto con Git
 Estoy aprendiendo Git
 ```
 
-Revisa estado:
-
 ```bash
-# Verificar qué archivos fueron modificados tras la edición
 git status
 ```
 
-Agrega y guarda:
+```text
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   hola.txt
 
-```bash
-# Preparar las modificaciones en el staging area
-git add .
-
-# Confirmar la nueva versión en el repositorio
-git commit -m "Actualizo mensaje de saludo"
+no changes added to commit (use "git add" and/or "git commit -a")
 ```
 
----
+El archivo está modificado pero no preparado. Git sugiere `git restore <file>` para descartar el cambio; no lo uses todavía: borra lo que editaste y lo verás con cuidado en la próxima lección.
 
-# ⏪ Volver atrás en el tiempo
-
-Ver historial:
+Para ver exactamente qué cambió:
 
 ```bash
-# Listar los commits cronológicos con su autor, fecha y hash identificador
+git diff
+```
+
+```text
+diff --git a/hola.txt b/hola.txt
+index b3e1e42..cf18bfc 100644
+--- a/hola.txt
++++ b/hola.txt
+@@ -1 +1,2 @@
+ Hola, este es mi primer proyecto con Git
++Estoy aprendiendo Git
+```
+
+Las líneas con `+` se agregaron y las líneas con `-` se eliminaron. Las demás son contexto.
+
+Hay dos comparaciones distintas:
+
+| Comando | Compara | Muestra |
+| --- | --- | --- |
+| `git diff` | Working Directory contra Staging Area | Lo que cambiaste y todavía **no** preparaste |
+| `git diff --staged` | Staging Area contra el último commit | Lo que **entrará** en el próximo commit |
+
+Compruébalo: prepara el cambio y repite los dos comandos.
+
+```bash
+git add hola.txt
+git diff
+git diff --staged
+```
+
+Ahora `git diff` no muestra nada (no hay cambios sin preparar) y `git diff --staged` muestra la línea `+Estoy aprendiendo Git`, porque está en el Staging Area esperando el commit.
+
+## Sacar un archivo del Staging Area: `git restore --staged`
+
+Si preparaste algo que no querías incluir, sácalo del Staging Area:
+
+```bash
+git status
+```
+
+```text
+On branch main
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   hola.txt
+```
+
+```bash
+git restore --staged hola.txt
+git status
+```
+
+```text
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   hola.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+El cambio volvió al Working Directory: **el archivo conserva lo que escribiste**, solo dejó de estar preparado. Es exactamente la flecha punteada del diagrama.
+
+`git restore --staged` necesita al menos un commit en el repositorio. Si lo usas antes del primer commit, Git responde `fatal: could not resolve HEAD`.
+
+Prepara el cambio otra vez y guárdalo:
+
+```bash
+git add hola.txt
+git commit -m "Agrega segunda línea al saludo"
+```
+
+```text
+[main 5904ec5] Agrega segunda línea al saludo
+ 1 file changed, 1 insertion(+)
+```
+
+## Leer el historial: `git log`
+
+```bash
 git log
 ```
 
-Verás una lista de commits. Cada commit tiene un **ID** único.
+```text
+commit 5904ec5af99175bd0ec2e55c66c52f30083a77f4 (HEAD -> main)
+Author: Ana García <ana@ejemplo.com>
+Date:   Sun Nov 22 01:17:59 2026 -0300
 
-Para volver a un commit:
+    Agrega segunda línea al saludo
 
-```bash
-# Inspeccionar el estado del proyecto en un commit específico (modo lectura)
-git checkout ID_DEL_COMMIT
+commit edf5c7dd85da2be768183a849deb5eea36fa0d3e
+Author: Ana García <ana@ejemplo.com>
+Date:   Sun Nov 22 01:17:59 2026 -0300
+
+    Agrega saludo inicial
 ```
 
-⚠️ Esto es modo lectura (no para trabajar directamente).
+Cada bloque es un commit, del más reciente al más antiguo, con su hash completo, autor, fecha y mensaje. El commit `5904ec5` tiene como padre a `edf5c7d`, y `edf5c7d` no tiene padre porque es el primero. `(HEAD -> main)` marca el commit en el que estás parado ahora.
 
----
+Para una vista compacta, una línea por commit:
 
-# 🌿 Ramas (branches)
-
-## ¿Qué es una rama?
-
-Una rama es una **línea paralela de trabajo**.
-
-🌱 Te permite:
-
-- Probar ideas sin afectar la rama principal
-- Trabajar en equipo en paralelo sin pisarse
-
-La rama principal se llama:
+```bash
+git log --oneline
+```
 
 ```text
-main
+5904ec5 (HEAD -> main) Agrega segunda línea al saludo
+edf5c7d Agrega saludo inicial
 ```
 
----
+Si el historial no entra en la pantalla, Git lo muestra paginado: avanza con la barra espaciadora y sal con `q`.
 
-## Crear una rama
+## Errores comunes
 
-```bash
-# Crear una nueva rama a partir del commit actual
-git branch nueva-funcion
-```
+- **Olvidar `git add`**: `git commit` responde `nothing added to commit` o guarda solo lo que estaba preparado. Revisa con `git status` antes de cada commit.
+- **Hacer commit sin identidad**: si no configuraste `user.name` y `user.email`, Git se niega a crear el commit (`Author identity unknown`) o lo firma con datos adivinados a partir de tu sistema. Configura tu identidad antes del primer commit.
+- **Ejecutar `git init` en la carpeta equivocada**: hazlo dentro de la carpeta del proyecto, nunca en tu carpeta de usuario.
+- **Commits gigantes con mensajes vagos**: haz commits pequeños y frecuentes, cada uno con un mensaje claro.
 
-Cambiar a ella:
+## Resumen
 
-```bash
-# Cambiar de rama de trabajo
-git checkout nueva-funcion
-```
+- Git guarda la historia de tu proyecto como una cadena de commits; cada commit tiene hash, autor, fecha, mensaje y padre.
+- `git config --global` configura tu identidad una vez; `--local` la cambia solo para un repositorio.
+- `git init` crea el repositorio y `git status` te dice en qué zona está cada cambio.
+- `git add` pasa cambios al Staging Area, `git restore --staged` los saca y `git commit -m` los registra en el historial.
+- `git diff` muestra lo no preparado y `git diff --staged` lo que entrará en el próximo commit.
+- `git log` y `git log --oneline` muestran el historial.
 
-O en un solo paso (muy recomendado):
+En la próxima lección, Deshacer cambios, aprenderás a descartar modificaciones y a volver a versiones anteriores; más adelante verás ramas, conflictos y cómo publicar tu repositorio en GitHub.
 
-```bash
-# Crear la rama y cambiar a ella inmediatamente
-git checkout -b nueva-funcion
-```
+## Ejercicios prácticos
 
----
+### Ejercicio 1: tu primer repositorio
 
-## Fusionar ramas (merge)
+Crea una carpeta `recetas`, conviértela en un repositorio, crea un archivo `tortilla.txt` con la línea `Ingredientes: huevos y papas` y guárdalo en un commit con el mensaje `Agrega receta de tortilla`. Comprueba el resultado con `git log --oneline`.
 
-Vuelve a main:
-
-```bash
-# Regresar a la rama principal
-git checkout main
-```
-
-Fusiona:
+<details>
+<summary>Ver solución</summary>
 
 ```bash
-# Integrar los commits de la rama secundaria en la rama actual (main)
-git merge nueva-funcion
-```
-
----
-
-# 🌍 Git vs GitHub (muy importante)
-
-🚫 **Git NO es GitHub**
-
-|Git|GitHub|
-|---|---|
-|Herramienta local|Plataforma online|
-|Controla versiones|Guarda repositorios|
-|Funciona sin internet|Requiere internet|
-
-GitHub usa Git, pero **no son lo mismo**.
-
----
-
-# ☁️ Subir proyecto a GitHub (básico)
-
-1. Crear un repositorio vacío en GitHub (sin README ni .gitignore iniciales).
-2. Conectar el repositorio local con el remoto:
-
-```bash
-# Asociar la URL remota de GitHub bajo el alias 'origin'
-git remote add origin https://github.com/tu-usuario/tu-repositorio.git
-```
-
-3. Subir código y configurar seguimiento:
-
-```bash
-# Subir la rama local 'main' al remoto 'origin' y configurar seguimiento (-u)
-git push -u origin main
-```
-
----
-
-# 📥 Descargar un proyecto
-
-```bash
-# Clonar un repositorio existente desde GitHub a tu equipo
-git clone https://github.com/usuario/repositorio.git
-```
-
----
-
-# ⚠️ Errores comunes
-
-❌ No hacer commits seguido  
-❌ Mensajes de commit malos  
-❌ Trabajar sin ramas  
-❌ No usar git status
-
----
-
-# 🧠 Próximos pasos en este curso
-
-Ahora que conoces las bases y el ciclo local, avanza con las siguientes lecciones del curso:
-
-1. **Lección 2: Bajar y subir cambios**: Sincronización remota con GitHub (`pull`, `push`, tracking branches).
-2. **Lección 3: Fusionar ramas y conflictos**: Trabajo colaborativo con ramas (`branch`, `merge`) y cómo resolver conflictos de integración.
-3. **Lección 4: Rebase y buenas prácticas**: Rebase paso a paso, historial lineal, commits atómicos, Conventional Commits y uso correcto de `.gitignore`.
-
----
-
-# 📌 Resumen final
-
-Git te permite:
-
-- Guardar versiones
-- Volver atrás
-- Trabajar en equipo
-- Programar profesionalmente
-
-Flujo clave que usarás a diario:
-
-```bash
-# 1. Comprobar qué archivos cambiaron
+mkdir recetas
+cd recetas
+git init
+echo "Ingredientes: huevos y papas" > tortilla.txt
 git status
-
-# 2. Agregar los cambios al área de preparación
-git add .
-
-# 3. Guardar el snapshot con un mensaje claro
-git commit -m "feat: agrego mensaje claro"
+git add tortilla.txt
+git commit -m "Agrega receta de tortilla"
+git log --oneline
 ```
+
+`git status` muestra `tortilla.txt` en `Untracked files` antes del `git add`. Al final, `git log --oneline` muestra un solo commit con tu mensaje (con un hash distinto al de cualquier otra persona).
+
+</details>
+
+### Ejercicio 2: `git diff` contra `git diff --staged`
+
+En el repositorio `recetas`, agrega a `tortilla.txt` la línea `Paso 1: pelar las papas` y prepárala con `git add`. Después agrega la línea `Paso 2: batir los huevos` sin prepararla. Antes de ejecutarlos, predice qué mostrará `git diff` y qué mostrará `git diff --staged`.
+
+<details>
+<summary>Ver solución</summary>
+
+```bash
+echo "Paso 1: pelar las papas" >> tortilla.txt
+git add tortilla.txt
+echo "Paso 2: batir los huevos" >> tortilla.txt
+git diff
+git diff --staged
+```
+
+- `git diff` muestra solo `+Paso 2: batir los huevos`: es el cambio que está en el Working Directory y todavía no está en el Staging Area.
+- `git diff --staged` muestra solo `+Paso 1: pelar las papas`: es lo que entraría en el próximo commit.
+
+`git status` muestra `tortilla.txt` dos veces, en `Changes to be committed` y en `Changes not staged for commit`, porque el archivo tiene una parte preparada y otra no.
+
+</details>
+
+### Ejercicio 3: elegir qué entra en el commit
+
+Sigue en `recetas`. Prepara todo con `git add .`, crea un archivo nuevo `notas.txt` con la línea `Probar con cebolla` y prepáralo también. Luego decide que `notas.txt` no debe entrar en este commit: sácalo del Staging Area, haz el commit solo con `tortilla.txt` y el mensaje `Agrega los primeros pasos de la tortilla`, y comprueba que `notas.txt` sigue en disco.
+
+<details>
+<summary>Ver solución</summary>
+
+```bash
+git add .
+echo "Probar con cebolla" > notas.txt
+git add notas.txt
+git restore --staged notas.txt
+git status
+git commit -m "Agrega los primeros pasos de la tortilla"
+git status
+```
+
+Después de `git restore --staged notas.txt`, `git status` muestra `tortilla.txt` en `Changes to be committed` y `notas.txt` en `Untracked files`. El commit incluye solo `tortilla.txt`. `notas.txt` sigue en disco con su contenido, listo para un commit futuro.
+
+</details>
+
+### Ejercicio 4: identidad solo para un repositorio
+
+En el repositorio `recetas`, configura el correo `ana@cocina.com` solo para ese repositorio. Comprueba qué correo usa Git dentro de `recetas` y crea un commit para ver que lo firma con ese correo.
+
+<details>
+<summary>Ver solución</summary>
+
+```bash
+git config --local user.email "ana@cocina.com"
+git config user.email
+git add notas.txt
+git commit -m "Agrega notas de la receta"
+git log
+```
+
+`git config user.email` muestra `ana@cocina.com`, porque la configuración local tiene prioridad sobre la global. En `git log`, el commit más reciente aparece con `Author: Ana García <ana@cocina.com>`, y los anteriores conservan el correo con el que se crearon. En cualquier otro repositorio Git sigue usando el correo global.
+
+</details>
