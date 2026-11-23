@@ -2,6 +2,7 @@
 title: 'Operators'
 course: 'c'
 slug: 'operadores'
+description: 'Apply arithmetic, relational and logical operators, understand precedence and short-circuit evaluation in && and ||, and avoid undefined behavior.'
 order: 7
 lang: 'en'
 published: true

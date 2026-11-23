@@ -2,6 +2,7 @@
 title: 'Objetos y operaciones: diseño basado en struct'
 course: 'c'
 slug: 'objetos-metodos-y-diseno-basado-en-struct'
+description: 'Diseña módulos coherentes pasando un puntero al struct como primer parámetro, modela relaciones mediante composición de estructuras y maneja errores explícitamente.'
 order: 43
 lang: 'es'
 published: true

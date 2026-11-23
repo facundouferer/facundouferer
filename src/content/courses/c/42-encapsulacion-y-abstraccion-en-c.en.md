@@ -2,6 +2,7 @@
 title: 'Encapsulation and Opaque Types'
 course: 'c'
 slug: 'encapsulacion-y-abstraccion-en-c'
+description: 'Hide the internal layout of a struct using forward declarations and opaque pointers in the .h header while exposing only its public interface.'
 order: 42
 lang: 'en'
 published: true

@@ -2,6 +2,7 @@
 title: 'Polimorfismo y herencia simulados en C'
 course: 'c'
 slug: 'polimorfismo-y-herencia-simulados-en-c'
+description: 'Despacha operaciones en tiempo de ejecución mediante tablas de punteros a función (vtables manuales) e incrusta una estructura base como primer miembro conociendo sus límites.'
 order: 44
 lang: 'es'
 published: true

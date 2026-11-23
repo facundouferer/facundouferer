@@ -2,6 +2,7 @@
 title: 'Memoria dinámica: malloc, calloc, realloc y free'
 course: 'c'
 slug: 'memoria-dinamica'
+description: 'Reserva y redimensiona bloques en el montículo en tiempo de ejecución con malloc, calloc y realloc, verifica fallos de asignación y libera con free.'
 order: 28
 lang: 'es'
 published: true

@@ -2,6 +2,7 @@
 title: 'Tipos de Datos'
 course: 'c'
 slug: 'tipos-de-datos'
+description: 'Domina los tipos enteros, de punto flotante y bool en C23, mide su tamaño con sizeof y size_t, y controla las conversiones implícitas y explícitas.'
 order: 5
 lang: 'es'
 published: true

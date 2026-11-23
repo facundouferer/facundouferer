@@ -2,6 +2,7 @@
 title: 'Structures (struct)'
 course: 'c'
 slug: 'concepto-de-estructuras'
+description: 'Group fields of different types into a record with struct, define enums, unions and typedef aliases, and understand alignment and padding.'
 order: 22
 lang: 'en'
 published: true

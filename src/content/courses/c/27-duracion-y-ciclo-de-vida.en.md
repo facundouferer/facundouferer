@@ -2,6 +2,7 @@
 title: 'Storage duration and object lifetime'
 course: 'c'
 slug: 'duracion-y-ciclo-de-vida'
+description: 'Distinguish automatic, static and allocated storage duration, the lifetime of every object and how to prevent dangling pointers.'
 order: 27
 lang: 'en'
 published: true

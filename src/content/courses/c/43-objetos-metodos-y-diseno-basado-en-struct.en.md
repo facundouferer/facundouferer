@@ -2,6 +2,7 @@
 title: 'Objects and Operations: Struct-Based Design'
 course: 'c'
 slug: 'objetos-metodos-y-diseno-basado-en-struct'
+description: 'Design cohesive modules by passing a struct pointer as the first parameter, model relationships through struct composition and handle errors explicitly.'
 order: 43
 lang: 'en'
 published: true

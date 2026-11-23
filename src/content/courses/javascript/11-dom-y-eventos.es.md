@@ -2,6 +2,7 @@
 title: 'El DOM y Eventos'
 course: 'javascript'
 slug: 'dom-y-eventos'
+description: 'Selecciona y modifica elementos HTML desde JavaScript a través del DOM y responde a las acciones del usuario con addEventListener.'
 order: 11
 lang: 'es'
 published: true

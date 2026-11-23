@@ -2,6 +2,7 @@
 title: 'While Loop'
 course: 'c'
 slug: 'sentencia-while'
+description: 'Repeat statements while a condition holds with while, control loops with counters, accumulators and sentinel values without falling into infinite loops.'
 order: 11
 lang: 'en'
 published: true

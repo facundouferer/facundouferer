@@ -2,6 +2,7 @@
 title: 'Tipos de Datos y Valores Locos'
 course: 'javascript'
 slug: 'tipos-de-datos'
+description: 'Explora los tipos primitivos de JavaScript (Number, String, Boolean, null, undefined), sus valores especiales como NaN e Infinity y cómo inspeccionarlos con typeof.'
 order: 3
 lang: 'es'
 published: true

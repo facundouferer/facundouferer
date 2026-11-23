@@ -2,6 +2,7 @@
 title: 'Estructuras Secuenciales'
 course: 'c'
 slug: 'manejo-de-estructuras-secuenciales-de-datos'
+description: 'Comprende por qué agrupar colecciones de datos en secuencia, la diferencia entre acceso secuencial y acceso directo, y cuándo usar un contenedor de tamaño fijo.'
 order: 18
 lang: 'es'
 published: true

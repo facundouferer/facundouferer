@@ -2,6 +2,7 @@
 title: 'Introduction to C'
 course: 'c'
 slug: 'introduccion-y-estructura'
+description: 'Understand what a program is, learn the ISO C23 standard and write the base structure with #include <stdio.h> and int main(void).'
 order: 1
 lang: 'en'
 published: true

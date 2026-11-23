@@ -2,6 +2,7 @@
 title: 'Loops and Iterators'
 course: 'javascript'
 slug: 'bucles-e-iteradores'
+description: 'Repeat tasks and iterate over collections using for, while, do-while loops and modern for...of and for...in syntax.'
 order: 6
 lang: 'en'
 published: true

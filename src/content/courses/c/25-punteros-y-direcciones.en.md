@@ -2,6 +2,7 @@
 title: 'Pointers and memory addresses'
 course: 'c'
 slug: 'punteros-y-direcciones'
+description: 'Understand memory as addressed cells, take addresses with &, store typed pointers, dereference with * and modify caller variables safely.'
 order: 25
 lang: 'en'
 published: true

@@ -2,6 +2,7 @@
 title: 'Sequence of Actions'
 course: 'c'
 slug: 'procesos-y-estados'
+description: 'Design algorithms as sequences of actions, track variable state in trace tables and swap values step by step.'
 order: 2
 lang: 'en'
 published: true

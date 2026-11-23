@@ -2,6 +2,7 @@
 title: 'Estructuras de Control'
 course: 'javascript'
 slug: 'estructuras-de-control'
+description: 'Toma decisiones en tus programas con condicionales if, else if y else, el operador ternario ?: y la estructura switch.'
 order: 5
 lang: 'es'
 published: true

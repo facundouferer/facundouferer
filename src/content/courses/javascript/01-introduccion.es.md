@@ -2,6 +2,7 @@
 title: 'Introducción a JavaScript'
 course: 'javascript'
 slug: 'introduccion'
+description: 'Descubre qué es JavaScript, cómo se integra con HTML y CSS en el navegador y ejecuta tus primeras instrucciones en la consola.'
 order: 1
 lang: 'es'
 published: true

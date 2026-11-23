@@ -2,6 +2,7 @@
 title: 'Funciones y Orden Superior'
 course: 'javascript'
 slug: 'funciones-y-orden-superior'
+description: 'Escribe funciones declaradas, expresiones y arrow functions, utiliza callbacks y domina las funciones de orden superior y closures.'
 order: 10
 lang: 'es'
 published: true

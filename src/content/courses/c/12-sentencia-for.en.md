@@ -2,6 +2,7 @@
 title: 'For Loop'
 course: 'c'
 slug: 'sentencia-for'
+description: 'Structure repetitions with initialization, condition and update in the for loop header, manage counter scope and avoid off-by-one errors.'
 order: 12
 lang: 'en'
 published: true

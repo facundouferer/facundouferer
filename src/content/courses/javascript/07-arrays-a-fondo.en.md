@@ -2,6 +2,7 @@
 title: 'Arrays in Depth'
 course: 'javascript'
 slug: 'arrays-a-fondo'
+description: 'Create and manipulate arrays, add and remove elements, and transform collections with functional methods like map, filter, find and reduce.'
 order: 7
 lang: 'en'
 published: true

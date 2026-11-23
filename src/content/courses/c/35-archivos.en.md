@@ -2,6 +2,7 @@
 title: 'Files'
 course: 'c'
 slug: 'archivos'
+description: 'Persist data in text and binary files with fopen, fprintf, fgets, fread and fwrite, distinguishing end-of-file from errors with feof/ferror and closing with fclose.'
 order: 35
 lang: 'en'
 published: true

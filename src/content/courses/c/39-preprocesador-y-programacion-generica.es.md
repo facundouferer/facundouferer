@@ -2,6 +2,7 @@
 title: 'Preprocesador y programación genérica'
 course: 'c'
 slug: 'preprocesador-y-programacion-generica'
+description: 'Domina macros parametrizadas y variádicas sin trampas de doble evaluación, funciones static inline y selección por tipo en compilación con _Generic.'
 order: 39
 lang: 'es'
 published: true

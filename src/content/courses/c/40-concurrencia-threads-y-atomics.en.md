@@ -2,6 +2,7 @@
 title: 'Concurrency: threads and atomics'
 course: 'c'
 slug: 'concurrencia-threads-y-atomics'
+description: 'Run tasks in parallel with threads, understand how race conditions arise on shared state and synchronize with mutexes and atomic operations.'
 order: 40
 lang: 'en'
 published: true

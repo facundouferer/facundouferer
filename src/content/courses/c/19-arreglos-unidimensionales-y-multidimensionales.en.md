@@ -2,6 +2,7 @@
 title: 'One-Dimensional and Multi-Dimensional Arrays'
 course: 'c'
 slug: 'arreglos-unidimensionales-y-multidimensionales'
+description: 'Store same-type elements in contiguous zero-indexed cells, validate bounds with sizeof and work with two-dimensional matrices row by row.'
 order: 19
 lang: 'en'
 published: true

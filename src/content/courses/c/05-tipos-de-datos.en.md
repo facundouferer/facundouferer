@@ -2,6 +2,7 @@
 title: 'Data Types'
 course: 'c'
 slug: 'tipos-de-datos'
+description: 'Master integer, floating-point and C23 bool types, measure their size with sizeof and size_t, and control implicit and explicit conversions.'
 order: 5
 lang: 'en'
 published: true

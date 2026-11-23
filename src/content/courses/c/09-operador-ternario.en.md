@@ -2,6 +2,7 @@
 title: 'Ternary Operator'
 course: 'c'
 slug: 'operador-ternario'
+description: 'Use the ?: conditional operator to choose between two values inside an expression and learn when it improves readability over if-else.'
 order: 9
 lang: 'en'
 published: true

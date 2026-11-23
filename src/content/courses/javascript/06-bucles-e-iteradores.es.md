@@ -2,6 +2,7 @@
 title: 'Bucles e Iteradores'
 course: 'javascript'
 slug: 'bucles-e-iteradores'
+description: 'Repite tareas y recorre colecciones utilizando ciclos for, while, do-while y la sintaxis moderna for...of y for...in.'
 order: 6
 lang: 'es'
 published: true

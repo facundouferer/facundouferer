@@ -2,6 +2,7 @@
 title: 'Recursividad'
 course: 'c'
 slug: 'recursividad'
+description: 'Resuelve problemas dividiéndolos en subproblemas del mismo tipo con un caso base claro, siguiendo cada marco de activación en la pila de llamadas.'
 order: 17
 lang: 'es'
 published: true

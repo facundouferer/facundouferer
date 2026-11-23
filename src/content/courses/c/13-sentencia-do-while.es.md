@@ -2,6 +2,7 @@
 title: 'Do-While'
 course: 'c'
 slug: 'sentencia-do-while'
+description: 'Ejecuta un bloque al menos una vez antes de evaluar la condición con do-while, ideal para menús interactivos y validación de entradas junto con break y continue.'
 order: 13
 lang: 'es'
 published: true

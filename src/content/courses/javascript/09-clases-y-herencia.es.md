@@ -2,6 +2,7 @@
 title: 'Clases y Herencia'
 course: 'javascript'
 slug: 'clases-y-herencia'
+description: 'Define plantillas de objetos con class y constructor, agrega métodos e implementa herencia con extends y super.'
 order: 9
 lang: 'es'
 published: true

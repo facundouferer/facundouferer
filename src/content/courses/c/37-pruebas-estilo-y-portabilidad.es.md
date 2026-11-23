@@ -2,6 +2,7 @@
 title: 'Pruebas, estilo y portabilidad'
 course: 'c'
 slug: 'pruebas-estilo-y-portabilidad'
+description: 'Verifica tus módulos con pruebas unitarias basadas en assert, documenta precondiciones e invariantes en cabeceras y escribe código C portable y mantenible.'
 order: 37
 lang: 'es'
 published: true

@@ -2,6 +2,7 @@
 title: 'Sequential Data Structures'
 course: 'c'
 slug: 'manejo-de-estructuras-secuenciales-de-datos'
+description: 'Understand why we group data collections in sequence, the difference between sequential and direct access, and when to use a fixed-size container.'
 order: 18
 lang: 'en'
 published: true

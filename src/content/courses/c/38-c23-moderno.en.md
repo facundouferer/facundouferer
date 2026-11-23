@@ -2,6 +2,7 @@
 title: 'Modern C: what is new in C23'
 course: 'c'
 slug: 'c23-moderno'
+description: 'Take advantage of ISO C23 features such as nullptr, constexpr, typeof, [[nodiscard]] attributes and #embed, distinguishing standard C from compiler extensions.'
 order: 38
 lang: 'en'
 published: true

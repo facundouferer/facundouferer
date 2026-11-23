@@ -2,6 +2,7 @@
 title: 'Variables y Constantes'
 course: 'c'
 slug: 'variables-y-constantes'
+description: 'Declara e inicializa variables con nombre, evita valores indeterminados y distingue literales, objetos const y constantes con #define.'
 order: 4
 lang: 'es'
 published: true

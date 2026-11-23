@@ -2,6 +2,7 @@
 title: 'Estructuras (struct)'
 course: 'c'
 slug: 'concepto-de-estructuras'
+description: 'Agrupa campos de distintos tipos en un registro con struct, define enumeraciones con enum, uniones con union, alias con typedef y comprende la alineación y el relleno.'
 order: 22
 lang: 'es'
 published: true

@@ -2,6 +2,7 @@
 title: 'Debugging, warnings and sanitizers'
 course: 'c'
 slug: 'depuracion-y-sanitizers'
+description: 'Apply a systematic method to reproduce and isolate bugs using GDB or LLDB, debug symbols (-g), AddressSanitizer and UndefinedBehaviorSanitizer.'
 order: 36
 lang: 'en'
 published: true

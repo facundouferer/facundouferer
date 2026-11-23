@@ -2,6 +2,7 @@
 title: 'Modularization and Functions'
 course: 'c'
 slug: 'modularizacion-subprogramas-y-funciones'
+description: 'Split a program into functions with clear prototypes, separate interface (.h) and implementation (.c) with include guards and build multi-file projects.'
 order: 15
 lang: 'en'
 published: true

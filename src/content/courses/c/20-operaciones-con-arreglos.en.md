@@ -2,6 +2,7 @@
 title: 'Array Operations'
 course: 'c'
 slug: 'operaciones-con-arreglos'
+description: 'Traverse, search, insert and remove elements in arrays while maintaining a logical size with size_t without exceeding the reserved capacity.'
 order: 20
 lang: 'en'
 published: true

@@ -2,6 +2,7 @@
 title: 'If-Else'
 course: 'c'
 slug: 'sentencia-if-else'
+description: 'Toma decisiones en tus programas con if, else y cadenas else if, anida condiciones con claridad y evita errores comunes como usar = en lugar de ==.'
 order: 8
 lang: 'es'
 published: true

@@ -2,6 +2,7 @@
 title: 'If-Else Statement'
 course: 'c'
 slug: 'sentencia-if-else'
+description: 'Make decisions in your programs with if, else and else if chains, nest conditions clearly and avoid common mistakes like using = instead of ==.'
 order: 8
 lang: 'en'
 published: true

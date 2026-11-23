@@ -2,6 +2,7 @@
 title: 'Dynamic Structures — Queues'
 course: 'c'
 slug: 'estructuras-dinamicas-colas'
+description: 'Implement a FIFO queue with front and rear pointers or a circular array, handling the empty-queue transition and releasing its memory.'
 order: 32
 lang: 'en'
 published: true

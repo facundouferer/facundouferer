@@ -2,6 +2,7 @@
 title: 'For'
 course: 'c'
 slug: 'sentencia-for'
+description: 'Estructura repeticiones con inicialización, condición y actualización en el encabezado del ciclo for, maneja el alcance del contador y evita errores por un paso.'
 order: 12
 lang: 'es'
 published: true

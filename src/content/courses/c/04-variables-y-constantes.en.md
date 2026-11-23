@@ -2,6 +2,7 @@
 title: 'Variables and Constants'
 course: 'c'
 slug: 'variables-y-constantes'
+description: 'Declare and initialize named variables, avoid indeterminate values and distinguish literals, const objects and #define constants.'
 order: 4
 lang: 'en'
 published: true

@@ -2,6 +2,7 @@
 title: 'Simulated Polymorphism and Inheritance in C'
 course: 'c'
 slug: 'polimorfismo-y-herencia-simulados-en-c'
+description: 'Dispatch operations at runtime through function-pointer tables (manual vtables) and embed a base struct as the first member while knowing the limits of the technique.'
 order: 44
 lang: 'en'
 published: true

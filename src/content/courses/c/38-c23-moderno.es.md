@@ -2,6 +2,7 @@
 title: 'C moderno: novedades de C23'
 course: 'c'
 slug: 'c23-moderno'
+description: 'Aprovecha las novedades del estándar ISO C23 como nullptr, constexpr, typeof, atributos [[nodiscard]] y #embed, distinguiendo estándar de extensiones del compilador.'
 order: 38
 lang: 'es'
 published: true

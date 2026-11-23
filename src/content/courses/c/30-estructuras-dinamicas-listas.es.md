@@ -2,6 +2,7 @@
 title: 'Listas'
 course: 'c'
 slug: 'estructuras-dinamicas-listas'
+description: 'Construye listas enlazadas reservando nodos en el montículo, inserta, busca y elimina reenganchando enlaces y libera toda la lista nodo por nodo.'
 order: 30
 lang: 'es'
 published: true

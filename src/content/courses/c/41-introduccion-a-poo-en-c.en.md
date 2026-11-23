@@ -2,6 +2,7 @@
 title: 'Software Design in C: Ideas from OOP'
 course: 'c'
 slug: 'introduccion-a-poo-en-c'
+description: 'Understand how to express abstraction and modularity in C by combining data structures and associated functions without treating C as an object-oriented language.'
 order: 41
 lang: 'en'
 published: true

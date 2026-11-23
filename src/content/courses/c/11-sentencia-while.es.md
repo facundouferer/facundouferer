@@ -2,6 +2,7 @@
 title: 'While'
 course: 'c'
 slug: 'sentencia-while'
+description: 'Repite instrucciones mientras se cumpla una condición con while, controla ciclos con contadores, acumuladores y valores centinela sin caer en bucles infinitos.'
 order: 11
 lang: 'es'
 published: true

@@ -2,6 +2,7 @@
 title: 'Binary Trees'
 course: 'c'
 slug: 'arboles-binarios'
+description: 'Organize hierarchical data in a binary search tree (BST), insert and search keys, traverse in preorder, inorder and postorder, and free in postorder.'
 order: 33
 lang: 'en'
 published: true

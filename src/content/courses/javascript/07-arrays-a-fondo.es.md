@@ -2,6 +2,7 @@
 title: 'Arrays a Fondo'
 course: 'javascript'
 slug: 'arrays-a-fondo'
+description: 'Crea y manipula arreglos, agrega y quita elementos, y transforma colecciones con métodos funcionales como map, filter, find y reduce.'
 order: 7
 lang: 'es'
 published: true

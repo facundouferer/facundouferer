@@ -2,6 +2,7 @@
 title: "Objetos y la palabra clave 'this'"
 course: 'javascript'
 slug: 'objetos-y-this'
+description: 'Modela entidades con objetos literales, accede y modifica propiedades y métodos, desestructura datos y comprende cómo funciona la referencia this.'
 order: 8
 lang: 'es'
 published: true

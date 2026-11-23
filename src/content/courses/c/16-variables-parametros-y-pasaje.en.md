@@ -2,6 +2,7 @@
 title: 'Variables and Parameters'
 course: 'c'
 slug: 'variables-parametros-y-pasaje'
+description: 'Understand why C always passes every argument by value, how copies work on the call stack and the scope and duration of variables.'
 order: 16
 lang: 'en'
 published: true

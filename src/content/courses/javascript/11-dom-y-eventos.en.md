@@ -2,6 +2,7 @@
 title: 'DOM and Events'
 course: 'javascript'
 slug: 'dom-y-eventos'
+description: 'Select and modify HTML elements from JavaScript through the DOM and respond to user interactions with addEventListener.'
 order: 11
 lang: 'en'
 published: true

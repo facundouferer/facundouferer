@@ -2,6 +2,7 @@
 title: 'Input and Output'
 course: 'c'
 slug: 'entrada-y-salida'
+description: 'Display data with printf and its format specifiers, read input with scanf while checking its return value and clear the buffer on errors.'
 order: 6
 lang: 'en'
 published: true

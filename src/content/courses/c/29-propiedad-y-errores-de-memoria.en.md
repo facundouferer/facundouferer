@@ -2,6 +2,7 @@
 title: 'Memory ownership and common errors'
 course: 'c'
 slug: 'propiedad-y-errores-de-memoria'
+description: 'Define clear ownership contracts for who allocates and who frees memory, and catch leaks, double frees and use-after-free bugs with AddressSanitizer.'
 order: 29
 lang: 'en'
 published: true

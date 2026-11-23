@@ -2,6 +2,7 @@
 title: 'Character Strings and Operations'
 course: 'c'
 slug: 'cadenas-de-caracteres-y-operaciones'
+description: 'Represent text as null-terminated char arrays, distinguish capacity from length and use fgets, strlen, strcmp and snprintf safely.'
 order: 21
 lang: 'en'
 published: true

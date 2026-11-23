@@ -2,6 +2,7 @@
 title: 'Concurrencia: threads y atomics'
 course: 'c'
 slug: 'concurrencia-threads-y-atomics'
+description: 'Ejecuta tareas en paralelo con hilos, comprende cómo nacen las condiciones de carrera sobre estado compartido y sincroniza con mutexes y operaciones atómicas.'
 order: 40
 lang: 'es'
 published: true

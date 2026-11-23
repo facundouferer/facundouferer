@@ -2,6 +2,7 @@
 title: 'Variables, Constantes y Comentarios'
 course: 'javascript'
 slug: 'variables-y-comentarios'
+description: 'Declara variables y constantes con let y const, comprende por qué evitar var y documenta tu código con comentarios claros.'
 order: 2
 lang: 'es'
 published: true

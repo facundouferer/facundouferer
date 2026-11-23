@@ -2,6 +2,7 @@
 title: 'The standard library and error handling'
 course: 'c'
 slug: 'biblioteca-estandar-y-errores'
+description: 'Explore the C standard library, classify characters with <ctype.h>, convert text to numbers with strtol and strtod, and report errors with return codes and errno.'
 order: 34
 lang: 'en'
 published: true

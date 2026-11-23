@@ -2,6 +2,7 @@
 title: 'Data Types'
 course: 'javascript'
 slug: 'tipos-de-datos'
+description: 'Explore JavaScript primitive types (Number, String, Boolean, null, undefined), special values like NaN and Infinity, and how to inspect them with typeof.'
 order: 3
 lang: 'en'
 published: true

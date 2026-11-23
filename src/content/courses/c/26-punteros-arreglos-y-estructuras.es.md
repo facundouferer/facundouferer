@@ -2,6 +2,7 @@
 title: 'Punteros, arreglos y estructuras'
 course: 'c'
 slug: 'punteros-arreglos-y-estructuras'
+description: 'Recorre arreglos con aritmética de punteros, accede a campos con el operador ->, y utiliza punteros dobles, punteros genéricos void * y punteros a función.'
 order: 26
 lang: 'es'
 published: true

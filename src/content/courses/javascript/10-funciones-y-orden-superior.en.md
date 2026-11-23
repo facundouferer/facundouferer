@@ -2,6 +2,7 @@
 title: 'Functions and Higher-Order Functions'
 course: 'javascript'
 slug: 'funciones-y-orden-superior'
+description: 'Write function declarations, expressions and arrow functions, use callbacks and master higher-order functions and closures.'
 order: 10
 lang: 'en'
 published: true

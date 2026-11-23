@@ -2,6 +2,7 @@
 title: 'Entrada y Salida'
 course: 'c'
 slug: 'entrada-y-salida'
+description: 'Muestra datos con printf y sus especificadores de formato, lee entradas con scanf verificando su valor de retorno y limpia el búfer ante errores.'
 order: 6
 lang: 'es'
 published: true

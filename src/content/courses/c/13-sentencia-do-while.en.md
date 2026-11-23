@@ -2,6 +2,7 @@
 title: 'Do-While Loop'
 course: 'c'
 slug: 'sentencia-do-while'
+description: 'Run a block at least once before checking the condition with do-while, ideal for interactive menus and input validation alongside break and continue.'
 order: 13
 lang: 'en'
 published: true

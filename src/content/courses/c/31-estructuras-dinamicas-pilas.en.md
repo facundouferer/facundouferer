@@ -2,6 +2,7 @@
 title: 'Dynamic Structures — Stacks'
 course: 'c'
 slug: 'estructuras-dinamicas-pilas'
+description: 'Implement a LIFO stack with linked nodes or a dynamic array, handling push, pop, top inspection, empty-stack checks and full cleanup.'
 order: 31
 lang: 'en'
 published: true

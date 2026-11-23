@@ -2,6 +2,7 @@
 title: 'Duración de almacenamiento y ciclo de vida'
 course: 'c'
 slug: 'duracion-y-ciclo-de-vida'
+description: 'Distingue la duración de almacenamiento automática, estática y dinámica, el tiempo de vida de cada objeto y cómo evitar punteros colgantes.'
 order: 27
 lang: 'es'
 published: true

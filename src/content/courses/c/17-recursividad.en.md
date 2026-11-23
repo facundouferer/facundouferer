@@ -2,6 +2,7 @@
 title: 'Recursion'
 course: 'c'
 slug: 'recursividad'
+description: 'Solve problems by splitting them into smaller instances of the same kind with a clear base case, tracing each activation frame on the call stack.'
 order: 17
 lang: 'en'
 published: true

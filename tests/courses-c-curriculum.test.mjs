@@ -128,12 +128,14 @@ test('every C lesson file belongs to the target curriculum', async () => {
 
 for (const lesson of LESSONS.filter((lesson) => done(lesson) || present(lesson))) {
 	for (const { lang } of LOCALES) {
-		test(`${lesson.file}.${lang} declares its slug, order, course and locale`, async () => {
+		test(`${lesson.file}.${lang} declares its slug, order, course, locale and description`, async () => {
 			const content = await read(lesson, lang);
 			assert.equal(field(content, 'slug'), lesson.slug);
 			assert.equal(Number(field(content, 'order')), lesson.order);
 			assert.equal(field(content, 'course'), 'c');
 			assert.equal(field(content, 'lang'), lang);
+			const desc = field(content, 'description');
+			assert.ok(desc && desc.length >= 20, `${lesson.file}.${lang} needs a non-empty description`);
 		});
 	}
 }

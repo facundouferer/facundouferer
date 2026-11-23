@@ -2,6 +2,7 @@
 title: 'Dynamic Structures — Linked Lists'
 course: 'c'
 slug: 'estructuras-dinamicas-listas'
+description: 'Build linked lists by allocating nodes on the heap, insert, search and delete by relinking pointers and free the entire list node by node.'
 order: 30
 lang: 'en'
 published: true

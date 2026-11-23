@@ -2,6 +2,7 @@
 title: "Objects and the 'this' Keyword"
 course: 'javascript'
 slug: 'objetos-y-this'
+description: 'Model entities with object literals, access and modify properties and methods, destructure data and understand how the this reference works.'
 order: 8
 lang: 'en'
 published: true

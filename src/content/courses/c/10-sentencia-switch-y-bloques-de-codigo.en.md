@@ -2,6 +2,7 @@
 title: 'Switch Statement and Code Blocks'
 course: 'c'
 slug: 'sentencia-switch-y-bloques-de-codigo'
+description: 'Select paths by integer values with switch, case, break and default, document intentional fallthrough and master block variable scope.'
 order: 10
 lang: 'en'
 published: true

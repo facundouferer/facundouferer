@@ -2,6 +2,7 @@
 title: 'The preprocessor and generic programming'
 course: 'c'
 slug: 'preprocesador-y-programacion-generica'
+description: 'Master parameterized and variadic macros without double-evaluation pitfalls, static inline functions and compile-time type selection with _Generic.'
 order: 39
 lang: 'en'
 published: true

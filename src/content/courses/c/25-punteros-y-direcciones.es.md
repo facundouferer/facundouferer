@@ -2,6 +2,7 @@
 title: 'Punteros y direcciones de memoria'
 course: 'c'
 slug: 'punteros-y-direcciones'
+description: 'Entiende la memoria como celdas con dirección, obtén direcciones con &, guarda punteros tipados, desreferencia con * y modifica variables del llamador de forma segura.'
 order: 25
 lang: 'es'
 published: true

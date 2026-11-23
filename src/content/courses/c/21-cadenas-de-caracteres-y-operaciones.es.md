@@ -2,6 +2,7 @@
 title: 'Cadenas'
 course: 'c'
 slug: 'cadenas-de-caracteres-y-operaciones'
+description: 'Representa texto como arreglos de char terminados en el carácter nulo, distingue capacidad de longitud y usa fgets, strlen, strcmp y snprintf de forma segura.'
 order: 21
 lang: 'es'
 published: true

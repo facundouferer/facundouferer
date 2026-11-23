@@ -2,6 +2,7 @@
 title: 'Testing, style and portability'
 course: 'c'
 slug: 'pruebas-estilo-y-portabilidad'
+description: 'Verify your modules with assert-based unit tests, document preconditions and invariants in headers and write portable, maintainable C code.'
 order: 37
 lang: 'en'
 published: true

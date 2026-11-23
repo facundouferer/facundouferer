@@ -2,6 +2,7 @@
 title: 'Operators and Type Conversion'
 course: 'javascript'
 slug: 'operadores-y-conversion'
+description: 'Master arithmetic, logical and strict comparison (===) operators, and understand implicit type coercion versus explicit conversion.'
 order: 4
 lang: 'en'
 published: true

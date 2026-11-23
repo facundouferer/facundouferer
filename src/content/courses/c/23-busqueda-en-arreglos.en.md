@@ -2,6 +2,7 @@
 title: 'Searching Data in Arrays'
 course: 'c'
 slug: 'busqueda-en-arreglos'
+description: 'Compare O(n) linear search with O(log n) binary search, their sorting preconditions and the number of comparisons in each case.'
 order: 23
 lang: 'en'
 published: true

@@ -2,6 +2,7 @@
 title: 'Pointers, arrays and structs'
 course: 'c'
 slug: 'punteros-arreglos-y-estructuras'
+description: 'Walk arrays with pointer arithmetic, access struct fields with the -> operator, and use double pointers, generic void * pointers and function pointers.'
 order: 26
 lang: 'en'
 published: true

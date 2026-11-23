@@ -2,6 +2,7 @@
 title: 'Variables y Parámetros'
 course: 'c'
 slug: 'variables-parametros-y-pasaje'
+description: 'Comprende por qué C pasa todos los argumentos siempre por valor, cómo funcionan las copias en la pila de llamadas y el alcance y duración de las variables.'
 order: 16
 lang: 'es'
 published: true

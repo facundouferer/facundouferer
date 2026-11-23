@@ -2,6 +2,7 @@
 title: 'Árboles Binarios'
 course: 'c'
 slug: 'arboles-binarios'
+description: 'Organiza datos jerárquicos en un árbol binario de búsqueda (ABB), inserta y busca claves, recorre en preorden, inorden y postorden, y libera en postorden.'
 order: 33
 lang: 'es'
 published: true

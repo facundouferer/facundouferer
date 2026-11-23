@@ -2,6 +2,7 @@
 title: 'Operador ternario'
 course: 'c'
 slug: 'operador-ternario'
+description: 'Usa el operador condicional ?: para elegir entre dos valores dentro de una expresión y aprende cuándo mejora la legibilidad frente a if-else.'
 order: 9
 lang: 'es'
 published: true

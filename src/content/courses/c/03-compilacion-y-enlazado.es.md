@@ -2,6 +2,7 @@
 title: 'Compilación, enlazado y advertencias'
 course: 'c'
 slug: 'compilacion-y-enlazado'
+description: 'Recorre las cuatro etapas desde el código fuente hasta el ejecutable (preprocesador, compilador, ensamblador y enlazador) y activa las advertencias de C23.'
 order: 3
 lang: 'es'
 published: true

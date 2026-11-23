@@ -2,6 +2,7 @@
 title: 'Arreglos'
 course: 'c'
 slug: 'arreglos-unidimensionales-y-multidimensionales'
+description: 'Almacena elementos del mismo tipo en celdas contiguas indexadas desde cero, valida límites con sizeof y trabaja con matrices bidimensionales fila por fila.'
 order: 19
 lang: 'es'
 published: true

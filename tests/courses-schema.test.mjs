@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 
 test('content config defines courses and lessons collections (RED before B-2)', async () => {
@@ -71,4 +71,17 @@ test('export collections includes courses and lessons', async () => {
 	assert.ok(exportLine, 'export collections statement found');
 	assert.match(exportLine[1], /courses/);
 	assert.match(exportLine[1], /lessons/);
+});
+
+test('every lesson across all courses defines a non-empty description in frontmatter', async () => {
+	for (const course of ['c', 'git', 'java', 'javascript']) {
+		const dir = `src/content/courses/${course}`;
+		const files = (await readdir(dir)).filter((f) => /\.(es|en)\.md$/.test(f));
+		assert.ok(files.length > 0, `${dir} has lessons`);
+		for (const file of files) {
+			const content = await readFile(`${dir}/${file}`, 'utf8');
+			const match = content.match(/^description:\s*['"]?([^'"\n]+)['"]?\s*$/m);
+			assert.ok(match && match[1].trim().length >= 15, `${dir}/${file} is missing a description in frontmatter`);
+		}
+	}
 });

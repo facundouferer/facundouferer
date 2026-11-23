@@ -2,6 +2,7 @@
 title: 'Diseño de software en C: ideas de la POO'
 course: 'c'
 slug: 'introduccion-a-poo-en-c'
+description: 'Comprende cómo expresar abstracción y modularidad en C combinando estructuras de datos y funciones asociadas sin presentar a C como un lenguaje orientado a objetos.'
 order: 41
 lang: 'es'
 published: true

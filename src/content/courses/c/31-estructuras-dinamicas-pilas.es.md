@@ -2,6 +2,7 @@
 title: 'Pilas'
 course: 'c'
 slug: 'estructuras-dinamicas-pilas'
+description: 'Implementa una pila LIFO con nodos enlazados o arreglo dinámico, manejando apilar, desapilar, consulta del tope, pila vacía y liberación completa.'
 order: 31
 lang: 'es'
 published: true

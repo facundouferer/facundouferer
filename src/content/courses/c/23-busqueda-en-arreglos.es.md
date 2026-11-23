@@ -2,6 +2,7 @@
 title: 'Búsqueda de Datos en Arreglos'
 course: 'c'
 slug: 'busqueda-en-arreglos'
+description: 'Compara la búsqueda lineal O(n) con la búsqueda binaria O(log n), sus precondiciones de ordenamiento y la cantidad de comparaciones en cada caso.'
 order: 23
 lang: 'es'
 published: true

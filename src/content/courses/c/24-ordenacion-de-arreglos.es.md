@@ -2,6 +2,7 @@
 title: 'Ordenación de Arreglos'
 course: 'c'
 slug: 'ordenacion-de-arreglos'
+description: 'Implementa y compara los algoritmos de ordenamiento por burbuja, selección e inserción, analizando su complejidad cuadrática, estabilidad y casos favorables.'
 order: 24
 lang: 'es'
 published: true

@@ -2,6 +2,7 @@
 title: 'Encapsulación y tipos opacos'
 course: 'c'
 slug: 'encapsulacion-y-abstraccion-en-c'
+description: 'Oculta los detalles internos de una estructura mediante declaraciones adelantadas y punteros opacos en el archivo .h, exponiendo únicamente su interfaz pública.'
 order: 42
 lang: 'es'
 published: true

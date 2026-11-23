@@ -2,6 +2,7 @@
 title: 'Biblioteca estándar y manejo de errores'
 course: 'c'
 slug: 'biblioteca-estandar-y-errores'
+description: 'Explora la biblioteca estándar de C, clasifica caracteres con <ctype.h>, convierte texto a números con strtol y strtod, y reporta errores con códigos de retorno y errno.'
 order: 34
 lang: 'es'
 published: true

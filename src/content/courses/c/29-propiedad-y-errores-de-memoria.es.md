@@ -2,6 +2,7 @@
 title: 'Propiedad de la memoria y errores frecuentes'
 course: 'c'
 slug: 'propiedad-y-errores-de-memoria'
+description: 'Define contratos claros de propiedad sobre quién reserva y quién libera memoria, y detecta fugas, dobles liberaciones y usos tras liberar con AddressSanitizer.'
 order: 29
 lang: 'es'
 published: true

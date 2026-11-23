@@ -2,6 +2,7 @@
 title: 'Dynamic memory: malloc, calloc, realloc and free'
 course: 'c'
 slug: 'memoria-dinamica'
+description: 'Allocate and resize heap blocks at runtime with malloc, calloc and realloc, check allocation failures and release memory with free.'
 order: 28
 lang: 'en'
 published: true

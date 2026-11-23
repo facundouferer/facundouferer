@@ -2,6 +2,7 @@
 title: 'Archivos'
 course: 'c'
 slug: 'archivos'
+description: 'Persiste datos en archivos de texto y binarios con fopen, fprintf, fgets, fread y fwrite, distinguiendo fin de archivo de errores con feof/ferror y cerrando con fclose.'
 order: 35
 lang: 'es'
 published: true

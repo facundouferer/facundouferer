@@ -2,6 +2,7 @@
 title: 'Programación Esquemática'
 course: 'c'
 slug: 'programacion-esquematica-y-sentencias-anidadas'
+description: 'Descompone problemas complejos mediante refinamiento sucesivo, elige la estructura de control adecuada y combina ciclos y condicionales anidados.'
 order: 14
 lang: 'es'
 published: true

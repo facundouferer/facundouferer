@@ -2,6 +2,7 @@
 title: 'Schematic Programming and Nested Statements'
 course: 'c'
 slug: 'programacion-esquematica-y-sentencias-anidadas'
+description: 'Break down complex problems through stepwise refinement, pick the right control structure and combine nested loops and conditionals.'
 order: 14
 lang: 'en'
 published: true

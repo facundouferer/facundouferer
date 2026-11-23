@@ -2,6 +2,7 @@
 title: 'Secuencia de Acciones'
 course: 'c'
 slug: 'procesos-y-estados'
+description: 'Diseña algoritmos como secuencias de acciones, sigue el estado de las variables en tablas de traza e intercambia valores paso a paso.'
 order: 2
 lang: 'es'
 published: true

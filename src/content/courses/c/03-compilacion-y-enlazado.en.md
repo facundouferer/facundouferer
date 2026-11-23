@@ -2,6 +2,7 @@
 title: 'Compilation, linking and warnings'
 course: 'c'
 slug: 'compilacion-y-enlazado'
+description: 'Walk through the four stages from source code to executable (preprocessor, compiler, assembler and linker) and enable C23 warnings.'
 order: 3
 lang: 'en'
 published: true

@@ -2,6 +2,7 @@
 title: 'Operadores'
 course: 'c'
 slug: 'operadores'
+description: 'Aplica operadores aritméticos, relacionales y lógicos, comprende la precedencia, el cortocircuito en && y || y evita el comportamiento indefinido.'
 order: 7
 lang: 'es'
 published: true

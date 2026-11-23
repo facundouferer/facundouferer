@@ -2,6 +2,7 @@
 title: 'Sorting Arrays'
 course: 'c'
 slug: 'ordenacion-de-arreglos'
+description: 'Implement and compare bubble, selection and insertion sort, analyzing their quadratic complexity, stability and favorable cases.'
 order: 24
 lang: 'en'
 published: true

@@ -2,6 +2,7 @@
 title: 'Depuración, advertencias y sanitizers'
 course: 'c'
 slug: 'depuracion-y-sanitizers'
+description: 'Aplica un método sistemático para reproducir y aislar fallos usando GDB o LLDB, símbolos de depuración (-g), AddressSanitizer y UndefinedBehaviorSanitizer.'
 order: 36
 lang: 'es'
 published: true

@@ -2,6 +2,7 @@
 title: 'Operadores y Conversión de Tipos'
 course: 'javascript'
 slug: 'operadores-y-conversion'
+description: 'Domina los operadores aritméticos, lógicos y de comparación estricta (===), y comprende la coerción implícita y la conversión explícita de tipos.'
 order: 4
 lang: 'es'
 published: true

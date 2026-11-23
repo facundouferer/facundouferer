@@ -2,6 +2,7 @@
 title: 'Switch y Bloques'
 course: 'c'
 slug: 'sentencia-switch-y-bloques-de-codigo'
+description: 'Selecciona caminos por valores enteros con switch, case, break y default, documenta caídas intencionales y domina el alcance de las variables por bloque.'
 order: 10
 lang: 'es'
 published: true

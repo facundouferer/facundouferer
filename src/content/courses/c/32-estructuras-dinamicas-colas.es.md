@@ -2,6 +2,7 @@
 title: 'Colas'
 course: 'c'
 slug: 'estructuras-dinamicas-colas'
+description: 'Implementa una cola FIFO con punteros a frente y final o arreglo circular, cuidando el caso en que la cola queda vacía y liberando su memoria.'
 order: 32
 lang: 'es'
 published: true

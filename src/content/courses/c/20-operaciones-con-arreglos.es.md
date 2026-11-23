@@ -2,6 +2,7 @@
 title: 'Operaciones con Arreglos'
 course: 'c'
 slug: 'operaciones-con-arreglos'
+description: 'Recorre, busca, inserta y elimina elementos en arreglos manteniendo un tamaño lógico con size_t sin cruzar la capacidad reservada.'
 order: 20
 lang: 'es'
 published: true

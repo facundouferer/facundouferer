@@ -2,6 +2,7 @@
 title: 'Classes and Inheritance'
 course: 'javascript'
 slug: 'clases-y-herencia'
+description: 'Define object blueprints with class and constructor, add methods and implement inheritance with extends and super.'
 order: 9
 lang: 'en'
 published: true
