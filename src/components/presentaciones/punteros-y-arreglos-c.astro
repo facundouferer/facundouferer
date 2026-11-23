@@ -1,0 +1,1305 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+---
+
+<div class="pa-screen" data-presentation="punteros-y-arreglos-c" data-lang={lang}>
+	<div class="pa-shell">
+		<nav class="pa-nav" aria-label={isEs ? 'Controles de navegación' : 'Navigation controls'}>
+			<button class="btn btn-secondary" id="paPrevBtn" aria-label={isEs ? 'Diapositiva anterior' : 'Previous slide'} disabled>
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="m15 18-6-6 6-6" />
+				</svg>
+				<span>{isEs ? 'Anterior' : 'Previous'}</span>
+			</button>
+
+			<div class="pa-nav-center">
+				<div class="pa-seg" role="radiogroup" aria-label={isEs ? 'Modo de estudio' : 'Study mode'}>
+					<label class="pa-seg-opt">
+						<input type="radio" name="paMode" value="learn" checked />
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<path d="M12 7v14" />
+							<path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+						</svg>
+						<span>{isEs ? 'Aprender' : 'Learn'}</span>
+					</label>
+					<label class="pa-seg-opt">
+						<input type="radio" name="paMode" value="practice" />
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+							<path d="m15 5 4 4" />
+						</svg>
+						<span>{isEs ? 'Practicar' : 'Practice'}</span>
+					</label>
+					<label class="pa-seg-opt">
+						<input type="radio" name="paMode" value="assess" />
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+							<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+							<path d="m9 14 2 2 4-4" />
+						</svg>
+						<span>{isEs ? 'Evaluar' : 'Assess'}</span>
+					</label>
+				</div>
+				<span class="pa-counter" id="paSlideCounter" aria-live="polite">1 / 8</span>
+			</div>
+
+			<button class="btn btn-secondary" id="paNextBtn" aria-label={isEs ? 'Siguiente diapositiva' : 'Next slide'}>
+				<span>{isEs ? 'Siguiente' : 'Next'}</span>
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="m9 18 6-6-6-6" />
+				</svg>
+			</button>
+		</nav>
+
+		<main class="pa-viewport">
+			<!-- ═════════════ Learn mode ═════════════ -->
+			<section class="pa-slide is-active" data-slide="1" data-mode="learn" data-item="0">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Aprender · 1' : 'Learn · 1'}</span>
+					<h2 class="pa-title">{isEs ? 'Celdas contiguas y p + n' : 'Contiguous cells and p + n'}</h2>
+					<p class="pa-lead">{isEs ? 'Los elementos de un arreglo están contiguos. Sumar 1 a un puntero lo lleva al siguiente elemento, no al siguiente byte: p + n avanza n * sizeof(*p) bytes.' : 'Array elements are contiguous. Adding 1 to a pointer takes it to the next element, not the next byte: p + n moves n * sizeof(*p) bytes.'}</p>
+				</div>
+				<div class="pa-card"><div data-lab></div><div data-stepper></div></div>
+			</section>
+
+			<section class="pa-slide" data-slide="2" data-mode="learn" data-item="1">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Aprender · 2' : 'Learn · 2'}</span>
+					<h2 class="pa-title">{isEs ? 'a[i] es *(a + i)' : 'a[i] is *(a + i)'}</h2>
+					<p class="pa-lead">{isEs ? 'El nombre de un arreglo decae a un puntero a su primer elemento, y el operador [] está definido como aritmética de punteros más desreferenciación.' : 'An array name decays to a pointer to its first element, and the [] operator is defined as pointer arithmetic plus a dereference.'}</p>
+				</div>
+				<div class="pa-card"><div data-lab></div><div data-stepper></div></div>
+			</section>
+
+			<section class="pa-slide" data-slide="3" data-mode="learn" data-item="2">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Aprender · 3' : 'Learn · 3'}</span>
+					<h2 class="pa-title">{isEs ? 'Pasar un arreglo es pasar un puntero' : 'Passing an array passes a pointer'}</h2>
+					<p class="pa-lead">{isEs ? 'Al llamar a una función, el arreglo decae: viaja la dirección del primer elemento y sizeof deja de medir el arreglo. La longitud viaja aparte, como size_t.' : 'When you call a function, the array decays: the address of the first element travels and sizeof stops measuring the array. The length travels separately, as a size_t.'}</p>
+				</div>
+				<div class="pa-card"><div data-lab></div><div data-stepper></div></div>
+			</section>
+
+			<section class="pa-slide" data-slide="4" data-mode="learn" data-item="3">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Aprender · 4' : 'Learn · 4'}</span>
+					<h2 class="pa-title">{isEs ? 'Restar punteros: ptrdiff_t' : 'Subtracting pointers: ptrdiff_t'}</h2>
+					<p class="pa-lead">{isEs ? 'Restar dos punteros del mismo arreglo da la cantidad de elementos que los separa, de tipo ptrdiff_t, y se imprime con %td.' : 'Subtracting two pointers into the same array gives the number of elements between them, of type ptrdiff_t, printed with %td.'}</p>
+				</div>
+				<div class="pa-card"><div data-lab></div><div data-stepper></div></div>
+			</section>
+
+			<section class="pa-slide" data-slide="5" data-mode="learn" data-item="4">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Aprender · 5' : 'Learn · 5'}</span>
+					<h2 class="pa-title">{isEs ? 'Una posición después del final' : 'One past the end'}</h2>
+					<p class="pa-lead">{isEs ? 'Qué punteros se pueden calcular y cuáles se pueden desreferenciar. Salir del arreglo es comportamiento indefinido.' : 'Which pointers you may compute and which you may dereference. Leaving the array is undefined behavior.'}</p>
+				</div>
+				<div class="pa-card"><div data-lab></div><div data-stepper></div></div>
+			</section>
+
+			<section class="pa-slide" data-slide="6" data-mode="learn" data-item="5">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Aprender · 6' : 'Learn · 6'}</span>
+					<h2 class="pa-title">{isEs ? 'Recorrer una cadena con char *' : 'Walking a string with a char *'}</h2>
+					<p class="pa-lead">{isEs ? "Una cadena es un arreglo de char terminado en '\\0'. Como cualquier arreglo, decae a un char * que se avanza hasta encontrar el terminador." : "A string is a char array terminated by '\\0'. Like any array, it decays to a char * that you move forward until you find the terminator."}</p>
+				</div>
+				<div class="pa-card"><div data-lab></div><div data-stepper></div></div>
+			</section>
+
+			<section class="pa-slide" data-slide="7" data-mode="learn" data-item="6">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Aprender · 7' : 'Learn · 7'}</span>
+					<h2 class="pa-title">{isEs ? 'Punteros a estructuras y ->' : 'Pointers to structs and ->'}</h2>
+					<p class="pa-lead">{isEs ? 'En lugar de copiar una estructura, se pasa su dirección. p->campo es exactamente lo mismo que (*p).campo.' : 'Instead of copying a struct, you pass its address. p->member is exactly the same as (*p).member.'}</p>
+				</div>
+				<div class="pa-card"><div data-lab></div><div data-stepper></div></div>
+			</section>
+
+			<section class="pa-slide" data-slide="8" data-mode="learn" data-item="7">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Aprender · 8' : 'Learn · 8'}</span>
+					<h2 class="pa-title">{isEs ? 'int **, void * y punteros a funciones' : 'int **, void * and function pointers'}</h2>
+					<p class="pa-lead">{isEs ? 'Un puntero que guarda la dirección de otro puntero, un puntero genérico que no se desreferencia sin convertirlo y un puntero que elige qué función llamar.' : 'A pointer that holds the address of another pointer, a generic pointer you cannot dereference without converting it, and a pointer that chooses which function to call.'}</p>
+				</div>
+				<div class="pa-card"><div data-lab></div><div data-stepper></div></div>
+			</section>
+
+			<!-- ═════════════ Practice mode ═════════════ -->
+			<section class="pa-slide" data-slide="9" data-mode="practice" data-item="0">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Practicar · 1' : 'Practice · 1'}</span>
+					<h2 class="pa-title">{isEs ? 'Predice el siguiente estado' : 'Predict the next state'}</h2>
+					<p class="pa-lead" data-q></p>
+				</div>
+				<div class="pa-card"><div data-lab></div><div data-practice></div></div>
+			</section>
+
+			<section class="pa-slide" data-slide="10" data-mode="practice" data-item="1">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Practicar · 2' : 'Practice · 2'}</span>
+					<h2 class="pa-title">{isEs ? 'Predice el siguiente estado' : 'Predict the next state'}</h2>
+					<p class="pa-lead" data-q></p>
+				</div>
+				<div class="pa-card"><div data-lab></div><div data-practice></div></div>
+			</section>
+
+			<section class="pa-slide" data-slide="11" data-mode="practice" data-item="2">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Practicar · 3' : 'Practice · 3'}</span>
+					<h2 class="pa-title">{isEs ? 'Predice el siguiente estado' : 'Predict the next state'}</h2>
+					<p class="pa-lead" data-q></p>
+				</div>
+				<div class="pa-card"><div data-lab></div><div data-practice></div></div>
+			</section>
+
+			<section class="pa-slide" data-slide="12" data-mode="practice" data-item="3">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Practicar · 4' : 'Practice · 4'}</span>
+					<h2 class="pa-title">{isEs ? 'Predice el siguiente estado' : 'Predict the next state'}</h2>
+					<p class="pa-lead" data-q></p>
+				</div>
+				<div class="pa-card"><div data-lab></div><div data-practice></div></div>
+			</section>
+
+			<section class="pa-slide" data-slide="13" data-mode="practice" data-item="4">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Practicar · 5' : 'Practice · 5'}</span>
+					<h2 class="pa-title">{isEs ? 'Predice el siguiente estado' : 'Predict the next state'}</h2>
+					<p class="pa-lead" data-q></p>
+				</div>
+				<div class="pa-card"><div data-lab></div><div data-practice></div></div>
+			</section>
+
+			<section class="pa-slide" data-slide="14" data-mode="practice" data-item="5">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Practicar · 6' : 'Practice · 6'}</span>
+					<h2 class="pa-title">{isEs ? 'Predice el siguiente estado' : 'Predict the next state'}</h2>
+					<p class="pa-lead" data-q></p>
+				</div>
+				<div class="pa-card"><div data-lab></div><div data-practice></div></div>
+			</section>
+
+			<!-- ═════════════ Assess mode ═════════════ -->
+			<section class="pa-slide" data-slide="15" data-mode="assess" data-item="0">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Evaluar · 1 de 6' : 'Assess · 1 of 6'}</span>
+					<h2 class="pa-title" data-q></h2>
+				</div>
+				<div class="pa-card" data-assess></div>
+			</section>
+
+			<section class="pa-slide" data-slide="16" data-mode="assess" data-item="1">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Evaluar · 2 de 6' : 'Assess · 2 of 6'}</span>
+					<h2 class="pa-title" data-q></h2>
+				</div>
+				<div class="pa-card" data-assess></div>
+			</section>
+
+			<section class="pa-slide" data-slide="17" data-mode="assess" data-item="2">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Evaluar · 3 de 6' : 'Assess · 3 of 6'}</span>
+					<h2 class="pa-title" data-q></h2>
+				</div>
+				<div class="pa-card" data-assess></div>
+			</section>
+
+			<section class="pa-slide" data-slide="18" data-mode="assess" data-item="3">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Evaluar · 4 de 6' : 'Assess · 4 of 6'}</span>
+					<h2 class="pa-title" data-q></h2>
+				</div>
+				<div class="pa-card" data-assess></div>
+			</section>
+
+			<section class="pa-slide" data-slide="19" data-mode="assess" data-item="4">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Evaluar · 5 de 6' : 'Assess · 5 of 6'}</span>
+					<h2 class="pa-title" data-q></h2>
+				</div>
+				<div class="pa-card" data-assess></div>
+			</section>
+
+			<section class="pa-slide" data-slide="20" data-mode="assess" data-item="5">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Evaluar · 6 de 6' : 'Assess · 6 of 6'}</span>
+					<h2 class="pa-title" data-q></h2>
+				</div>
+				<div class="pa-card" data-assess></div>
+			</section>
+
+			<section class="pa-slide" data-slide="21" data-mode="assess" data-item="result">
+				<div class="pa-head">
+					<span class="kicker">{isEs ? 'Evaluar · resultado' : 'Assess · result'}</span>
+					<h2 class="pa-title">{isEs ? 'Califica tus respuestas' : 'Grade your answers'}</h2>
+					<p class="pa-lead">{isEs ? 'Cuando hayas respondido las seis preguntas, califícalas. Verás tu puntaje, la respuesta correcta de cada una y por qué.' : 'Once you have answered the six questions, grade them. You will see your score, the correct answer to each one and why.'}</p>
+				</div>
+				<div class="pa-card">
+					<div class="pa-actions">
+						<button class="btn btn-primary" type="button" id="paGradeBtn">{isEs ? 'Calificar' : 'Grade'}</button>
+						<button class="btn btn-secondary" type="button" id="paRetryBtn">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+								<path d="M3 3v5h5" />
+							</svg>
+							<span>{isEs ? 'Reintentar' : 'Try again'}</span>
+						</button>
+					</div>
+					<p class="pa-score" id="paScore" aria-live="polite"></p>
+					<ol class="pa-results" id="paResults"></ol>
+				</div>
+			</section>
+		</main>
+	</div>
+</div>
+
+<style>
+	.pa-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+		--pa-cell: 5.5rem;
+		--pa-gap: var(--space-2);
+		--pa-row: 1.5rem;
+	}
+
+	.pa-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.pa-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .pa-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .pa-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .pa-viewport { zoom: 1.25; } }
+
+	.pa-viewport { flex: 1; }
+
+	.pa-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+		padding: var(--space-3) var(--space-6);
+		background: var(--color-surface);
+	}
+
+	.pa-nav-center {
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+		flex-wrap: wrap;
+	}
+
+	/* Segmented control, ported from Organic/styles.css (.seg / .seg-opt). */
+	.pa-seg {
+		display: inline-flex;
+		overflow: hidden;
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+	}
+
+	.pa-seg-opt {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		padding: var(--space-2) var(--space-3);
+		font-size: 0.85rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.pa-seg-opt input {
+		position: absolute;
+		opacity: 0;
+		width: 0;
+		height: 0;
+		pointer-events: none;
+	}
+
+	.pa-seg-opt + .pa-seg-opt { border-left: 1px solid var(--color-divider); }
+	.pa-seg-opt:has(input:checked) { background: var(--color-accent); color: var(--color-bg); }
+	.pa-seg-opt:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+	.pa-seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+	.pa-counter {
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.pa-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		max-width: 76rem;
+		width: 100%;
+	}
+
+	.pa-slide.is-active {
+		display: block;
+		animation: paFade 0.25s ease-out;
+	}
+
+	@keyframes paFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.pa-head { margin-bottom: var(--space-4); }
+
+	.pa-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 1.65rem;
+		line-height: 1.2;
+		margin: 0 0 var(--space-2);
+	}
+
+	.pa-lead {
+		font-size: 0.95rem;
+		line-height: 1.55;
+		color: color-mix(in srgb, var(--color-text) 75%, transparent);
+		margin: 0;
+		max-width: 72ch;
+	}
+
+	.pa-card {
+		background: var(--color-surface);
+		border-radius: var(--radius-lg);
+		padding: var(--space-6);
+		box-shadow: var(--shadow-sm);
+	}
+
+	/* — lab: code on the left, memory on the right — */
+	.pa-lab {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--space-4);
+	}
+
+	@media (min-width: 1024px) {
+		.pa-lab { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); align-items: start; }
+	}
+
+	.pa-code {
+		margin: 0;
+		padding: var(--space-3) 0;
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+		font-family: monospace;
+		font-size: 0.82rem;
+		line-height: 1.55;
+		overflow-x: auto;
+	}
+
+	.pa-line {
+		display: block;
+		padding: 0 var(--space-3);
+		border-left: 3px solid transparent;
+		white-space: pre;
+		min-height: 1.55em;
+		transition: background 0.25s ease;
+	}
+
+	.pa-line-no {
+		display: inline-block;
+		width: 2.5ch;
+		margin-right: var(--space-2);
+		text-align: right;
+		color: color-mix(in srgb, var(--color-text) 40%, transparent);
+		user-select: none;
+	}
+
+	.pa-line.is-current {
+		background: var(--color-accent-100);
+		border-left-color: var(--color-accent);
+	}
+
+	.pa-machine {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		min-width: 0;
+	}
+
+	.pa-track {
+		overflow-x: auto;
+		padding-bottom: var(--space-2);
+	}
+
+	.pa-ptrs {
+		position: relative;
+		width: calc(var(--n, 1) * (var(--pa-cell) + var(--pa-gap)));
+		height: calc(2.6rem + (var(--rows, 1) - 1) * var(--pa-row));
+	}
+
+	.pa-ptr {
+		position: absolute;
+		left: calc(var(--i, 0) * (var(--pa-cell) + var(--pa-gap)));
+		bottom: calc(var(--row, 0) * var(--pa-row));
+		width: var(--pa-cell);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		color: var(--color-accent-2-700);
+		transition: left 0.6s ease, bottom 0.3s ease;
+		animation: paFade 0.3s ease-out;
+	}
+
+	.pa-ptr-name {
+		font-family: monospace;
+		font-size: 0.78rem;
+		font-weight: 700;
+		padding: 0 var(--space-2);
+		border-radius: 999px;
+		background: var(--color-accent-2-100);
+		color: var(--color-accent-2-800);
+		white-space: nowrap;
+		line-height: 1.4rem;
+	}
+
+	.pa-ptr svg { width: 1.1rem; height: 1.1rem; }
+	.pa-ptr:not([data-row="0"]) svg { visibility: hidden; }
+
+	.pa-ptr.is-bad { color: var(--color-accent-700); }
+	.pa-ptr.is-bad .pa-ptr-name { background: var(--color-accent-100); color: var(--color-accent-800); }
+
+	.pa-mem {
+		display: flex;
+		gap: var(--pa-gap);
+		width: max-content;
+	}
+
+	.pa-cell {
+		width: var(--pa-cell);
+		flex: none;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-1);
+		padding: var(--space-2) var(--space-1);
+		border: 2px solid var(--color-accent-2-300);
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+		transition: background 0.3s ease, border-color 0.3s ease;
+	}
+
+	.pa-cell-name {
+		font-family: monospace;
+		font-size: 0.72rem;
+		color: color-mix(in srgb, var(--color-text) 65%, transparent);
+		white-space: nowrap;
+	}
+
+	.pa-cell-val {
+		font-family: monospace;
+		font-size: 1.05rem;
+		font-weight: 700;
+		min-height: 1.4rem;
+		white-space: nowrap;
+	}
+
+	.pa-cell-addr {
+		font-family: monospace;
+		font-size: 0.72rem;
+		color: var(--color-accent-2-700);
+	}
+
+	.pa-cell.is-ghost {
+		border-style: dashed;
+		border-color: var(--color-divider);
+		background: transparent;
+	}
+
+	.pa-cell.is-hot { border-color: var(--color-accent-2); background: var(--color-accent-2-100); }
+	.pa-cell.is-bad { border-color: var(--color-accent); background: var(--color-accent-100); }
+	.pa-cell.is-changed { animation: paPulse 0.7s ease-out; }
+
+	@keyframes paPulse {
+		0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 55%, transparent); }
+		100% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--color-accent) 0%, transparent); }
+	}
+
+	.pa-vars {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		min-height: 1.8rem;
+	}
+
+	.pa-var {
+		font-family: monospace;
+		font-size: 0.82rem;
+		padding: var(--space-1) var(--space-3);
+		border-radius: 999px;
+		background: var(--color-neutral-100);
+		color: var(--color-neutral-800);
+	}
+
+	.pa-var.is-changed { animation: paPulse 0.7s ease-out; }
+
+	.pa-note {
+		margin: 0;
+		font-size: 0.78rem;
+		color: color-mix(in srgb, var(--color-text) 55%, transparent);
+	}
+
+	/* — step control (learn) — */
+	.pa-stepbar {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		flex-wrap: wrap;
+		margin-top: var(--space-4);
+	}
+
+	.pa-step-count {
+		font-size: 0.85rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.pa-explain {
+		margin: var(--space-3) 0 0;
+		padding: var(--space-3) var(--space-4);
+		border-radius: var(--radius-md);
+		background: var(--color-accent-2-100);
+		color: var(--color-neutral-900);
+		font-size: 0.95rem;
+		line-height: 1.55;
+		max-width: 80ch;
+	}
+
+	/* — options (practice and assess) — */
+	.pa-opts {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-top: var(--space-4);
+	}
+
+	.pa-opt {
+		font-family: monospace;
+		font-size: 0.9rem;
+		text-align: left;
+		padding: var(--space-2) var(--space-4);
+		border: 2px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+		color: var(--color-text);
+		cursor: pointer;
+		transition: border-color 0.2s ease, background 0.2s ease;
+	}
+
+	.pa-opt:hover:not(:disabled) { border-color: var(--color-accent); }
+	.pa-opt:active:not(:disabled) { background: var(--color-accent-100); }
+	.pa-opt:disabled { cursor: default; }
+	.pa-opt:disabled:not(.is-right):not(.is-wrong) { opacity: 0.45; }
+	.pa-opt[aria-pressed="true"] { border-color: var(--color-accent); background: var(--color-accent-100); }
+	.pa-opt.is-right { border-color: var(--color-accent-2); background: var(--color-accent-2-100); }
+	.pa-opt.is-wrong { border-color: var(--color-accent); background: var(--color-accent-100); }
+
+	.pa-feedback {
+		margin: var(--space-3) 0 0;
+		font-size: 0.95rem;
+		line-height: 1.55;
+		max-width: 80ch;
+		min-height: 1.5em;
+	}
+
+	.pa-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-top: var(--space-3);
+	}
+
+	.pa-assess-code { margin-bottom: var(--space-2); }
+
+	.pa-score {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 1.4rem;
+		margin: var(--space-4) 0 var(--space-2);
+		min-height: 1.5em;
+	}
+
+	.pa-results {
+		margin: 0;
+		padding-left: var(--space-6);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.pa-results li { line-height: 1.55; max-width: 80ch; }
+	.pa-results .tag { margin-right: var(--space-2); }
+	.pa-results code { font-family: monospace; }
+
+	@media (max-width: 640px) {
+		.pa-screen { --pa-cell: 4.4rem; }
+		.pa-nav { padding: var(--space-3) var(--space-4); }
+		.pa-slide { padding: var(--space-4); }
+		.pa-card { padding: var(--space-4); }
+		.pa-title { font-size: 1.35rem; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.pa-ptr, .pa-line, .pa-cell { transition: none; }
+		.pa-slide.is-active, .pa-ptr, .pa-cell.is-changed, .pa-var.is-changed { animation: none; }
+	}
+</style>
+
+<script>
+	type Txt = string | { es: string; en: string };
+	type Code = string[] | { es: string[]; en: string[] };
+	type Cell = { addr: string; name: string; val: string; ghost?: boolean };
+	type Ptr = { n: string; i: number; bad?: boolean };
+	type State = {
+		code?: number;
+		line: number;
+		mem: Cell[];
+		ptrs?: Ptr[];
+		vars?: [string, string][];
+		hot?: number[];
+		bad?: number[];
+		text?: Txt;
+	};
+	type Lab = {
+		code: HTMLElement;
+		ptrs: HTMLElement;
+		mem: HTMLElement;
+		vars: HTMLElement;
+		markers: Map<string, HTMLElement>;
+		shownCode: string[] | null;
+		prevVals: Map<string, string>;
+		prevVars: Map<string, string>;
+	};
+	type Option = { t: Txt; ok?: boolean; why: Txt };
+	type PracticeItem = { codes: Code[]; q: Txt; before: State; after: State; options: Option[] };
+	type AssessItem = { code: Code; q: Txt; options: Txt[]; answer: number; why: Txt };
+
+	const root = document.querySelector<HTMLElement>('.pa-screen');
+	const isEs = root?.dataset.lang !== 'en';
+	const tr = (es: string, en: string) => (isEs ? es : en);
+	const txt = (v: Txt | undefined) => (v === undefined ? '' : typeof v === 'string' ? v : isEs ? v.es : v.en);
+	const codeOf = (c: Code) => (Array.isArray(c) ? c : isEs ? c.es : c.en);
+
+	// ───────── memory helpers (illustrative addresses) ─────────
+	const hex = (n: number) => '0x' + n.toString(16).toUpperCase().padStart(4, '0');
+	const arr = (name: string, base: number, size: number, values: (number | string)[]): Cell[] =>
+		values.map((v, i) => ({ addr: hex(base + i * size), name: `${name}[${i}]`, val: String(v) }));
+	const ghost = (addr: number, name: string): Cell => ({ addr: hex(addr), name, val: '', ghost: true });
+	const cell = (addr: number, name: string, val: string | number): Cell => ({ addr: hex(addr), name, val: String(val) });
+	const chars = (name: string, word: string): Cell[] =>
+		[...word.split(''), '\\0'].map((ch, i) => ({ addr: hex(0x2000 + i), name: `${name}[${i}]`, val: `'${ch}'` }));
+
+	const ARROW =
+		'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>';
+
+	function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
+		const node = document.createElement(tag);
+		if (cls) node.className = cls;
+		if (text !== undefined) node.textContent = text;
+		return node;
+	}
+
+	function buildLab(host: HTMLElement): Lab {
+		const wrap = el('div', 'pa-lab');
+		const code = el('pre', 'pa-code');
+		const machine = el('div', 'pa-machine');
+		const track = el('div', 'pa-track');
+		const ptrs = el('div', 'pa-ptrs');
+		const mem = el('div', 'pa-mem');
+		const vars = el('div', 'pa-vars');
+		const note = el('p', 'pa-note', tr('Las direcciones son ilustrativas: int de 4 bytes y punteros de 8 bytes.', 'Addresses are illustrative: 4-byte int and 8-byte pointers.'));
+		track.setAttribute('role', 'img');
+		track.setAttribute('aria-label', tr('Memoria: celdas con nombre, valor y dirección', 'Memory: cells with name, value and address'));
+		track.append(ptrs, mem);
+		machine.append(track, vars, note);
+		wrap.append(code, machine);
+		host.replaceChildren(wrap);
+		return { code, ptrs, mem, vars, markers: new Map(), shownCode: null, prevVals: new Map(), prevVars: new Map() };
+	}
+
+	function render(lab: Lab, state: State, codes: Code[]) {
+		const lines = codeOf(codes[state.code ?? 0]);
+		if (lab.shownCode !== lines) {
+			lab.code.replaceChildren(
+				...lines.map((line, i) => {
+					const span = el('span', 'pa-line');
+					span.append(el('span', 'pa-line-no', String(i + 1)), document.createTextNode(line));
+					return span;
+				}),
+			);
+			lab.shownCode = lines;
+			lab.markers.forEach((m) => m.remove());
+			lab.markers.clear();
+			lab.prevVals.clear();
+			lab.prevVars.clear();
+		}
+		lab.code.querySelectorAll('.pa-line').forEach((line, i) => line.classList.toggle('is-current', i + 1 === state.line));
+
+		// memory cells
+		const nextVals = new Map<string, string>();
+		lab.mem.replaceChildren(
+			...state.mem.map((c, i) => {
+				const node = el('div', 'pa-cell');
+				if (c.ghost) node.classList.add('is-ghost');
+				if (state.hot?.includes(i)) node.classList.add('is-hot');
+				if (state.bad?.includes(i)) node.classList.add('is-bad');
+				const before = lab.prevVals.get(c.addr + c.name);
+				if (before !== undefined && before !== c.val) node.classList.add('is-changed');
+				nextVals.set(c.addr + c.name, c.val);
+				node.append(el('span', 'pa-cell-name', c.name), el('span', 'pa-cell-val', c.val), el('span', 'pa-cell-addr', c.addr));
+				return node;
+			}),
+		);
+		lab.prevVals = nextVals;
+		lab.ptrs.style.setProperty('--n', String(state.mem.length));
+
+		// pointer markers, keyed by name so a moving pointer slides to its new cell
+		const rowsAt = new Map<number, number>();
+		const alive = new Set<string>();
+		let maxRows = 1;
+		for (const p of state.ptrs ?? []) {
+			const row = rowsAt.get(p.i) ?? 0;
+			rowsAt.set(p.i, row + 1);
+			maxRows = Math.max(maxRows, row + 1);
+			let marker = lab.markers.get(p.n);
+			if (!marker) {
+				marker = el('div', 'pa-ptr');
+				const name = el('span', 'pa-ptr-name', p.n);
+				marker.append(name);
+				marker.insertAdjacentHTML('beforeend', ARROW);
+				lab.ptrs.append(marker);
+				lab.markers.set(p.n, marker);
+			}
+			marker.style.setProperty('--i', String(p.i));
+			marker.style.setProperty('--row', String(row));
+			marker.dataset.row = String(row);
+			marker.classList.toggle('is-bad', Boolean(p.bad));
+			alive.add(p.n);
+		}
+		lab.markers.forEach((m, name) => {
+			if (!alive.has(name)) {
+				m.remove();
+				lab.markers.delete(name);
+			}
+		});
+		lab.ptrs.style.setProperty('--rows', String(maxRows));
+
+		// scalar variables
+		const nextVars = new Map<string, string>();
+		lab.vars.replaceChildren(
+			...(state.vars ?? []).map(([name, val]) => {
+				const chip = el('span', 'pa-var', `${name} = ${val}`);
+				const before = lab.prevVars.get(name);
+				if (before !== undefined && before !== val) chip.classList.add('is-changed');
+				nextVars.set(name, val);
+				return chip;
+			}),
+		);
+		lab.prevVars = nextVars;
+	}
+
+	// ───────── Learn data ─────────
+	const A4 = arr('a', 0x1000, 4, [10, 20, 30, 40]);
+	const V5 = arr('v', 0x1000, 4, [2, 4, 6, 8, 10]);
+	const notasName = tr('notas', 'grades');
+	const N5 = arr(notasName, 0x1000, 4, [7, 4, 9, 6, 8]);
+	const V6 = [...arr('v', 0x1000, 4, [5, 8, 3, 9, 1, 7]), ghost(0x1018, 'v + 6')];
+	const A3 = [ghost(0x0ffc, 'a - 1'), ...arr('a', 0x1000, 4, [1, 2, 3]), ghost(0x100c, 'a + 3')];
+	const word = tr('hola', 'hello');
+	const wordName = tr('saludo', 'greeting');
+	const S = chars(wordName, word);
+	const len = word.length;
+	const pt = (x: number, y: number) => [cell(0x3000, 'a.x', x), cell(0x3004, 'a.y', y)];
+	const fnA = tr('sumar', 'add');
+	const fnB = tr('restar', 'subtract');
+
+	const learn: { codes: Code[]; steps: State[] }[] = [
+		{
+			codes: [
+				[
+					'int a[4] = {10, 20, 30, 40};',
+					'int *p = &a[0];',
+					'int *q = p + 1;',
+					'int *r = p + 3;',
+					'printf("%td\\n", (char *)r - (char *)p);   /* 12 */',
+				],
+			],
+			steps: [
+				{ line: 1, mem: A4, text: { es: 'Los cuatro int quedan contiguos, uno pegado al otro. Cada uno ocupa sizeof(int) = 4 bytes, por eso las direcciones avanzan de 4 en 4.', en: 'The four ints sit contiguously, one right after the other. Each takes sizeof(int) = 4 bytes, so the addresses go up 4 at a time.' } },
+				{ line: 2, mem: A4, ptrs: [{ n: 'p', i: 0 }], vars: [['p', '0x1000']], hot: [0], text: { es: 'p guarda la dirección del primer elemento, 0x1000. *p vale 10.', en: 'p holds the address of the first element, 0x1000. *p is 10.' } },
+				{ line: 3, mem: A4, ptrs: [{ n: 'p', i: 0 }, { n: 'q', i: 1 }], vars: [['p', '0x1000'], ['q', '0x1004']], hot: [1], text: { es: 'p + 1 avanza un elemento, no un byte: 0x1000 + 1 * 4 = 0x1004, la dirección de a[1].', en: 'p + 1 moves one element, not one byte: 0x1000 + 1 * 4 = 0x1004, the address of a[1].' } },
+				{ line: 4, mem: A4, ptrs: [{ n: 'p', i: 0 }, { n: 'q', i: 1 }, { n: 'r', i: 3 }], vars: [['p', '0x1000'], ['q', '0x1004'], ['r', '0x100C']], hot: [3], text: { es: 'p + 3 avanza 3 * sizeof(int) = 12 bytes: 0x100C. El compilador hace la multiplicación por ti porque conoce el tipo apuntado.', en: 'p + 3 moves 3 * sizeof(int) = 12 bytes: 0x100C. The compiler does the multiplication for you because it knows the pointed-to type.' } },
+				{ line: 5, mem: A4, ptrs: [{ n: 'p', i: 0 }, { n: 'q', i: 1 }, { n: 'r', i: 3 }], vars: [['p', '0x1000'], ['r', '0x100C'], ['bytes', '12']], text: { es: 'Convertidos a char *, que ocupa 1 byte, la distancia se mide en bytes: 12. Con double serían 24, porque cada elemento ocupa 8.', en: 'Converted to char *, which takes 1 byte, the distance is measured in bytes: 12. With double it would be 24, because each element takes 8.' } },
+			],
+		},
+		{
+			codes: [['int v[5] = {2, 4, 6, 8, 10};', 'int *p = v + 1;', 'int x = *p + 1;', 'int y = *(p + 1);', 'int z = p[2];', 'p += 3;', 'int w = *p;']],
+			steps: [
+				{ line: 1, mem: V5, text: { es: 'v ocupa cinco celdas contiguas. En casi cualquier expresión, el nombre v se convierte en un puntero a su primer elemento: vale lo mismo que &v[0].', en: 'v takes five contiguous cells. In almost any expression, the name v turns into a pointer to its first element: it is the same value as &v[0].' } },
+				{ line: 2, mem: V5, ptrs: [{ n: 'p', i: 1 }], vars: [['p', '0x1004']], hot: [1], text: { es: 'v + 1 combina las dos ideas: v decae a 0x1000 y + 1 avanza un elemento. p apunta a v[1], que vale 4.', en: 'v + 1 combines both ideas: v decays to 0x1000 and + 1 moves one element. p points to v[1], which holds 4.' } },
+				{ line: 3, mem: V5, ptrs: [{ n: 'p', i: 1 }], vars: [['p', '0x1004'], ['x', '5']], hot: [1], text: { es: 'El * se aplica antes que el +: *p vale 4 y se le suma 1. x vale 5 y p no se movió.', en: 'The * applies before the +: *p is 4 and 1 is added. x is 5 and p did not move.' } },
+				{ line: 4, mem: V5, ptrs: [{ n: 'p', i: 1 }], vars: [['x', '5'], ['y', '6']], hot: [2], text: { es: 'Los paréntesis cambian todo: *(p + 1) primero avanza a v[2] y después lee. y vale 6.', en: 'Parentheses change everything: *(p + 1) first moves to v[2] and then reads. y is 6.' } },
+				{ line: 5, mem: V5, ptrs: [{ n: 'p', i: 1 }], vars: [['x', '5'], ['y', '6'], ['z', '8']], hot: [3], text: { es: 'p[2] es *(p + 2): v[3], que vale 8. El operador [] está definido así; por eso a[i] == *(a + i) y por eso los índices empiezan en 0.', en: 'p[2] is *(p + 2): v[3], which holds 8. The [] operator is defined that way; that is why a[i] == *(a + i) and why indexes start at 0.' } },
+				{ line: 6, mem: V5, ptrs: [{ n: 'p', i: 4 }], vars: [['p', '0x1010'], ['z', '8']], hot: [4], text: { es: 'p += 3 mueve p de v[1] a v[4]: 3 * 4 = 12 bytes, de 0x1004 a 0x1010.', en: 'p += 3 moves p from v[1] to v[4]: 3 * 4 = 12 bytes, from 0x1004 to 0x1010.' } },
+				{ line: 7, mem: V5, ptrs: [{ n: 'p', i: 4 }], vars: [['x', '5'], ['y', '6'], ['z', '8'], ['w', '10']], hot: [4], text: { es: 'w lee lo que hay en v[4]: 10. El arreglo nunca cambió; solo se movió el puntero.', en: 'w reads what is in v[4]: 10. The array never changed; only the pointer moved.' } },
+			],
+		},
+		{
+			codes: [
+				{
+					es: ['#include <stddef.h>', '#include <stdio.h>', '', 'double promedio(const int *v, size_t n) {', '    int suma = 0;', '    for (size_t i = 0; i < n; i++) {', '        suma += v[i];', '    }', '    return n > 0 ? (double)suma / (double)n : 0.0;', '}', '', 'int main(void) {', '    int notas[] = {7, 4, 9, 6, 8};', '    size_t n = sizeof notas / sizeof notas[0];', '    printf("promedio = %.2f\\n", promedio(notas, n));', '    return 0;', '}'],
+					en: ['#include <stddef.h>', '#include <stdio.h>', '', 'double average(const int *v, size_t n) {', '    int sum = 0;', '    for (size_t i = 0; i < n; i++) {', '        sum += v[i];', '    }', '    return n > 0 ? (double)sum / (double)n : 0.0;', '}', '', 'int main(void) {', '    int grades[] = {7, 4, 9, 6, 8};', '    size_t n = sizeof grades / sizeof grades[0];', '    printf("average = %.2f\\n", average(grades, n));', '    return 0;', '}'],
+				},
+			],
+			steps: [
+				{ line: 13, mem: N5, vars: [[`sizeof ${notasName}`, '20']], text: { es: 'Aquí notas es un arreglo de verdad: sizeof mide los cinco int completos, 5 * 4 = 20 bytes.', en: 'Here grades is a real array: sizeof measures all five ints, 5 * 4 = 20 bytes.' } },
+				{ line: 14, mem: N5, vars: [[`sizeof ${notasName}`, '20'], ['n', '5']], text: { es: 'sizeof notas / sizeof notas[0] = 20 / 4 = 5 elementos. Este cálculo solo funciona donde se declaró el arreglo.', en: 'sizeof grades / sizeof grades[0] = 20 / 4 = 5 elements. This calculation only works where the array was declared.' } },
+				{ line: 15, mem: N5, ptrs: [{ n: 'v', i: 0 }], vars: [['v', '0x1000'], ['n', '5']], text: { es: 'En la llamada promedio(notas, n), notas decae a puntero: al parámetro v se copia la dirección 0x1000, no los cinco int.', en: 'In the call average(grades, n), grades decays to a pointer: the parameter v receives a copy of the address 0x1000, not the five ints.' } },
+				{ line: 4, mem: N5, ptrs: [{ n: 'v', i: 0 }], vars: [['v', '0x1000'], ['n', '5'], ['sizeof v', '8']], text: { es: 'Dentro de promedio, v es un puntero: sizeof v es el tamaño de un puntero (8 en este ejemplo), no 20. La función no puede saber cuántos elementos hay; por eso n viaja aparte, como size_t.', en: 'Inside average, v is a pointer: sizeof v is the size of a pointer (8 in this example), not 20. The function cannot know how many elements there are; that is why n travels separately, as a size_t.' } },
+				{ line: 7, mem: N5, ptrs: [{ n: 'v', i: 0 }], vars: [['v', '0x1000'], [tr('suma', 'sum'), '34']], hot: [0, 1, 2, 3, 4], text: { es: 'v[i] es *(v + i): la función recorre los elementos originales a través de la dirección. Con const promete no modificarlos.', en: 'v[i] is *(v + i): the function walks the original elements through the address. With const it promises not to modify them.' } },
+				{ line: 15, mem: N5, vars: [[tr('promedio', 'average'), '6.80']], text: { es: 'promedio devuelve 34 / 5 = 6.80. Las declaraciones const int v[] y const int *v son equivalentes: en los dos casos llega un puntero.', en: 'average returns 34 / 5 = 6.80. The declarations const int v[] and const int *v are equivalent: in both cases a pointer arrives.' } },
+			],
+		},
+		{
+			codes: [
+				{
+					es: ['#include <stddef.h>', '#include <stdio.h>', '', 'int main(void) {', '    int v[6] = {5, 8, 3, 9, 1, 7};', '    int *inicio = v;', '    int *mayor = v;', '', '    for (int *p = v + 1; p < v + 6; p++) {', '        if (*p > *mayor) {', '            mayor = p;', '        }', '    }', '', '    ptrdiff_t posicion = mayor - inicio;', '    printf("el mayor es %d, en la posicion %td\\n", *mayor, posicion);', '', '    return 0;', '}'],
+					en: ['#include <stddef.h>', '#include <stdio.h>', '', 'int main(void) {', '    int v[6] = {5, 8, 3, 9, 1, 7};', '    int *start = v;', '    int *largest = v;', '', '    for (int *p = v + 1; p < v + 6; p++) {', '        if (*p > *largest) {', '            largest = p;', '        }', '    }', '', '    ptrdiff_t position = largest - start;', '    printf("the largest is %d, at position %td\\n", *largest, position);', '', '    return 0;', '}'],
+				},
+			],
+			steps: [
+				{ line: 7, mem: V6, ptrs: [{ n: tr('inicio', 'start'), i: 0 }, { n: tr('mayor', 'largest'), i: 0 }], text: { es: 'inicio y mayor empiezan en v[0]. Ninguno copia el arreglo: solo guardan direcciones.', en: 'start and largest begin at v[0]. Neither copies the array: they only hold addresses.' } },
+				{ line: 11, mem: V6, ptrs: [{ n: tr('inicio', 'start'), i: 0 }, { n: 'p', i: 1 }, { n: tr('mayor', 'largest'), i: 1 }], hot: [1], text: { es: 'p arranca en v + 1. Como 8 > 5, mayor = p: mayor pasa a apuntar a v[1].', en: 'p starts at v + 1. Since 8 > 5, largest = p: largest now points to v[1].' } },
+				{ line: 11, mem: V6, ptrs: [{ n: tr('inicio', 'start'), i: 0 }, { n: 'p', i: 3 }, { n: tr('mayor', 'largest'), i: 3 }], hot: [3], text: { es: 'p sigue avanzando. En v[3], 9 > 8, así que mayor = p otra vez. Asignar un puntero copia la dirección, no el valor.', en: 'p keeps moving. At v[3], 9 > 8, so largest = p again. Assigning a pointer copies the address, not the value.' } },
+				{ line: 9, mem: V6, ptrs: [{ n: tr('inicio', 'start'), i: 0 }, { n: tr('mayor', 'largest'), i: 3 }, { n: 'p', i: 6 }], text: { es: 'p llega a v + 6, una posición después del final. p < v + 6 da falso y el ciclo termina sin desreferenciarlo.', en: 'p reaches v + 6, one past the end. p < v + 6 is false and the loop ends without dereferencing it.' } },
+				{ line: 15, mem: V6, ptrs: [{ n: tr('inicio', 'start'), i: 0 }, { n: tr('mayor', 'largest'), i: 3 }], vars: [[tr('posicion', 'position'), '3']], hot: [3], text: { es: 'mayor - inicio cuenta elementos, no bytes: (0x100C - 0x1000) / 4 = 3. El resultado es un ptrdiff_t y se imprime con %td.', en: 'largest - start counts elements, not bytes: (0x100C - 0x1000) / 4 = 3. The result is a ptrdiff_t and is printed with %td.' } },
+			],
+		},
+		{
+			codes: [
+				{
+					es: ['int a[3] = {1, 2, 3};', 'int *fin = a + 3;      /* bien: una posición después del final */', 'int x = *fin;          /* comportamiento indefinido */', 'int *antes = a - 1;    /* comportamiento indefinido */'],
+					en: ['int a[3] = {1, 2, 3};', 'int *end = a + 3;      /* fine: one past the end */', 'int x = *end;          /* undefined behavior */', 'int *before = a - 1;   /* undefined behavior */'],
+				},
+			],
+			steps: [
+				{ line: 1, mem: A3, text: { es: 'Tres int en 0x1000, 0x1004 y 0x1008. Las celdas punteadas no le pertenecen al arreglo: ahí no hay elementos.', en: 'Three ints at 0x1000, 0x1004 and 0x1008. The dashed cells do not belong to the array: there are no elements there.' } },
+				{ line: 2, mem: A3, ptrs: [{ n: tr('fin', 'end'), i: 4 }], vars: [[tr('fin', 'end'), '0x100C']], text: { es: 'Calcular a + 3 está permitido: es el puntero una posición después del final. Se puede comparar, como en p < a + 3.', en: 'Computing a + 3 is allowed: it is the pointer one past the end. You may compare it, as in p < a + 3.' } },
+				{ line: 3, mem: A3, ptrs: [{ n: tr('fin', 'end'), i: 4, bad: true }], bad: [4], text: { es: 'Desreferenciarlo es comportamiento indefinido: ahí no hay ningún elemento. a[3] es *(a + 3), así que es el mismo error que un índice fuera de rango.', en: 'Dereferencing it is undefined behavior: there is no element there. a[3] is *(a + 3), so it is the same mistake as an out-of-range index.' } },
+				{ line: 4, mem: A3, ptrs: [{ n: tr('fin', 'end'), i: 4 }, { n: tr('antes', 'before'), i: 0, bad: true }], bad: [0], text: { es: 'a - 1 es comportamiento indefinido aunque solo lo calcules: solo valen punteros dentro del arreglo o justo después del final.', en: 'a - 1 is undefined behavior even if you only compute it: only pointers inside the array or right after the end are valid.' } },
+			],
+		},
+		{
+			codes: [
+				{
+					es: ['size_t mi_strlen(const char *s) {', '    const char *p = s;', "    while (*p != '\\0') {", '        p++;', '    }', '    return (size_t)(p - s);', '}', '', '/* en main: */', 'char saludo[] = "hola";', 'size_t largo = mi_strlen(saludo);'],
+					en: ['size_t my_strlen(const char *s) {', '    const char *p = s;', "    while (*p != '\\0') {", '        p++;', '    }', '    return (size_t)(p - s);', '}', '', '/* in main: */', 'char greeting[] = "hello";', 'size_t length = my_strlen(greeting);'],
+				},
+			],
+			steps: [
+				{ line: 11, mem: S, ptrs: [{ n: 's', i: 0 }], vars: [['s', '0x2000']], text: { es: 'saludo decae a char * y s recibe 0x2000. Cada char ocupa 1 byte: las direcciones avanzan de 1 en 1.', en: 'greeting decays to char * and s receives 0x2000. Each char takes 1 byte: the addresses go up 1 at a time.' } },
+				{ line: 2, mem: S, ptrs: [{ n: 's', i: 0 }, { n: 'p', i: 0 }], vars: [['s', '0x2000'], ['p', '0x2000']], hot: [0], text: { es: 'p empieza donde empieza s. p se mueve y s queda quieto como referencia.', en: 'p starts where s starts. p moves and s stays put as a reference.' } },
+				{ line: 4, mem: S, ptrs: [{ n: 's', i: 0 }, { n: 'p', i: 1 }], vars: [['s', '0x2000'], ['p', '0x2001']], hot: [1], text: { es: "Como *p no es '\\0', p++ avanza un char: 0x2001.", en: "Since *p is not '\\0', p++ moves one char: 0x2001." } },
+				{ line: 4, mem: S, ptrs: [{ n: 's', i: 0 }, { n: 'p', i: len - 1 }], vars: [['s', '0x2000'], ['p', hex(0x2000 + len - 1)]], hot: [len - 1], text: { es: 'p sigue avanzando de a un byte por cada carácter, sin usar índices.', en: 'p keeps moving one byte per character, without any index.' } },
+				{ line: 3, mem: S, ptrs: [{ n: 's', i: 0 }, { n: 'p', i: len }], vars: [['s', '0x2000'], ['p', hex(0x2000 + len)]], hot: [len], text: { es: "Ahora *p es '\\0': la condición del while es falsa y el ciclo termina.", en: "Now *p is '\\0': the while condition is false and the loop ends." } },
+				{ line: 6, mem: S, ptrs: [{ n: 's', i: 0 }, { n: 'p', i: len }], vars: [['p - s', String(len)]], text: { es: `p - s cuenta los elementos recorridos: ${len}, la longitud de la cadena sin el terminador.`, en: `p - s counts the elements walked: ${len}, the length of the string without the terminator.` } },
+			],
+		},
+		{
+			codes: [
+				{
+					es: ['struct Punto {', '    int x;', '    int y;', '};', '', 'void mover(struct Punto *p, int dx, int dy) {', '    p->x += dx;', '    p->y += dy;', '}', '', 'int main(void) {', '    struct Punto a = {1, 2};', '    mover(&a, 3, -1);', '    struct Punto *pa = &a;', '    (*pa).x = 0;', '    return 0;', '}'],
+					en: ['struct Point {', '    int x;', '    int y;', '};', '', 'void move(struct Point *p, int dx, int dy) {', '    p->x += dx;', '    p->y += dy;', '}', '', 'int main(void) {', '    struct Point a = {1, 2};', '    move(&a, 3, -1);', '    struct Point *pa = &a;', '    (*pa).x = 0;', '    return 0;', '}'],
+				},
+			],
+			steps: [
+				{ line: 12, mem: pt(1, 2), text: { es: 'La estructura a ocupa dos int seguidos: a.x en 0x3000 y a.y en 0x3004.', en: 'The struct a takes two ints in a row: a.x at 0x3000 and a.y at 0x3004.' } },
+				{ line: 6, mem: pt(1, 2), ptrs: [{ n: 'p', i: 0 }], vars: [['p', '0x3000'], ['dx', '3'], ['dy', '-1']], text: { es: 'mover recibe &a: la dirección de la estructura, no una copia. Pasar la dirección evita copiar estructuras grandes.', en: 'move receives &a: the address of the struct, not a copy. Passing the address avoids copying large structs.' } },
+				{ line: 7, mem: pt(4, 2), ptrs: [{ n: 'p', i: 0 }], vars: [['p', '0x3000'], ['dx', '3'], ['dy', '-1']], hot: [0], text: { es: 'p->x es (*p).x: sigue el puntero hasta a y accede al campo x. 1 + 3 = 4.', en: 'p->x is (*p).x: it follows the pointer to a and reaches the member x. 1 + 3 = 4.' } },
+				{ line: 8, mem: pt(4, 1), ptrs: [{ n: 'p', i: 0 }], vars: [['p', '0x3000'], ['dx', '3'], ['dy', '-1']], hot: [1], text: { es: 'p->y += dy cambia a.y: 2 - 1 = 1. Los cambios se ven en main porque se hicieron sobre el original.', en: 'p->y += dy changes a.y: 2 - 1 = 1. The changes show in main because they were made on the original.' } },
+				{ line: 14, mem: pt(4, 1), ptrs: [{ n: 'pa', i: 0 }], vars: [['pa', '0x3000']], text: { es: 'Regla práctica: con una variable estructura usas ".", con un puntero a estructura usas "->".', en: 'Rule of thumb: with a struct variable you use ".", with a pointer to a struct you use "->".' } },
+				{ line: 15, mem: pt(0, 1), ptrs: [{ n: 'pa', i: 0 }], vars: [['pa', '0x3000']], hot: [0], text: { es: '(*pa).x = 0 es lo mismo que pa->x = 0. Los paréntesis son obligatorios porque "." tiene más precedencia que "*".', en: '(*pa).x = 0 is the same as pa->x = 0. The parentheses are required because "." binds tighter than "*".' } },
+			],
+		},
+		{
+			codes: [
+				['int x = 5;', 'int *p = &x;', 'int **pp = &p;', '**pp = 6;'],
+				['int n = 42;', 'void *g = &n;', 'int *pi = g;', 'printf("%d %d\\n", *pi, *(int *)g);   /* 42 42 */'],
+				{
+					es: ['int sumar(int a, int b) { return a + b; }', 'int restar(int a, int b) { return a - b; }', '', 'int (*f)(int, int) = sumar;', 'printf("%d\\n", f(6, 3));   /* 9 */', 'f = restar;', 'printf("%d\\n", f(6, 3));   /* 3 */'],
+					en: ['int add(int a, int b) { return a + b; }', 'int subtract(int a, int b) { return a - b; }', '', 'int (*f)(int, int) = add;', 'printf("%d\\n", f(6, 3));   /* 9 */', 'f = subtract;', 'printf("%d\\n", f(6, 3));   /* 3 */'],
+				},
+			],
+			steps: [
+				{ code: 0, line: 2, mem: [cell(0x1000, 'x', 5), cell(0x1008, 'p', '0x1000')], ptrs: [{ n: 'p', i: 0 }], text: { es: 'p es una variable más: vive en 0x1008 y guarda 0x1000, la dirección de x.', en: 'p is just another variable: it lives at 0x1008 and holds 0x1000, the address of x.' } },
+				{ code: 0, line: 3, mem: [cell(0x1000, 'x', 5), cell(0x1008, 'p', '0x1000'), cell(0x1010, 'pp', '0x1008')], ptrs: [{ n: 'p', i: 0 }, { n: 'pp', i: 1 }], text: { es: 'Como p tiene dirección, otra variable puede guardarla: pp es un int **. *pp es p (un int *) y **pp es x (un int).', en: 'Since p has an address, another variable can hold it: pp is an int **. *pp is p (an int *) and **pp is x (an int).' } },
+				{ code: 0, line: 4, mem: [cell(0x1000, 'x', 6), cell(0x1008, 'p', '0x1000'), cell(0x1010, 'pp', '0x1008')], ptrs: [{ n: 'p', i: 0 }, { n: 'pp', i: 1 }], hot: [0], text: { es: '**pp = 6 sigue las dos flechas y cambia x. Así una función que recibe un int ** puede cambiar a qué apunta un puntero de quien llama.', en: '**pp = 6 follows both arrows and changes x. That is how a function that receives an int ** can change what a caller\'s pointer points to.' } },
+				{ code: 1, line: 2, mem: [cell(0x1000, 'n', 42), cell(0x1008, 'g', '0x1000')], ptrs: [{ n: 'g', i: 0 }], text: { es: 'Un void * guarda la dirección de cualquier objeto, pero no sabe qué hay del otro lado: *g no compila y no admite aritmética de punteros.', en: 'A void * holds the address of any object, but it does not know what is on the other side: *g does not compile and it allows no pointer arithmetic.' } },
+				{ code: 1, line: 4, mem: [cell(0x1000, 'n', 42), cell(0x1008, 'g', '0x1000')], ptrs: [{ n: 'g', i: 0 }, { n: 'pi', i: 0 }], vars: [['*(int *)g', '42']], hot: [0], text: { es: 'Para leer el objeto hay que convertirlo: int *pi = g es una conversión implícita válida en C, y *(int *)g la hace explícita. Usar el tipo correcto es tu responsabilidad.', en: 'To read the object you convert it: int *pi = g is a valid implicit conversion in C, and *(int *)g makes it explicit. Using the right type is your responsibility.' } },
+				{ code: 2, line: 5, mem: [cell(0x4000, fnA, tr('código', 'code')), cell(0x4040, fnB, tr('código', 'code'))], ptrs: [{ n: 'f', i: 0 }], vars: [['f(6, 3)', '9']], text: { es: 'Las funciones también tienen dirección. El nombre sumar se convierte en un puntero a la función, sin &, y f(6, 3) la llama: 9.', en: 'Functions have addresses too. The name add turns into a pointer to the function, without &, and f(6, 3) calls it: 9.' } },
+				{ code: 2, line: 7, mem: [cell(0x4000, fnA, tr('código', 'code')), cell(0x4040, fnB, tr('código', 'code'))], ptrs: [{ n: 'f', i: 1 }], vars: [['f(6, 3)', '3']], text: { es: 'Al cambiar f, el programa elige en tiempo de ejecución qué función llamar: 3. qsort usa esta idea con su función comparadora.', en: 'By changing f, the program chooses at run time which function to call: 3. qsort uses this idea with its comparison function.' } },
+			],
+		},
+	];
+
+	// ───────── Practice data ─────────
+	const P3code = ['int v[5] = {3, 6, 9, 12, 15};', 'int *p = v + 1;', 'int *q = v + 4;', '*p = *p + *q;'];
+	const V3 = arr('v', 0x1000, 4, [3, 6, 9, 12, 15]);
+	const V3b = arr('v', 0x1000, 4, [3, 21, 9, 12, 15]);
+	const structCode: Code = {
+		es: ['struct Punto {', '    int x;', '    int y;', '};', '', 'struct Punto a = {1, 2};', 'struct Punto *pa = &a;', 'pa->y += 3;'],
+		en: ['struct Point {', '    int x;', '    int y;', '};', '', 'struct Point a = {1, 2};', 'struct Point *pa = &a;', 'pa->y += 3;'],
+	};
+
+	const practice: PracticeItem[] = [
+		{
+			codes: [['int a[4] = {10, 20, 30, 40};', 'int *p = a;', 'p += 2;']],
+			q: { es: 'p apunta a a[0], en 0x1000. ¿Qué dirección guarda p después de p += 2?', en: 'p points to a[0], at 0x1000. What address does p hold after p += 2?' },
+			before: { line: 2, mem: A4, ptrs: [{ n: 'p', i: 0 }], vars: [['p', '0x1000']] },
+			after: { line: 3, mem: A4, ptrs: [{ n: 'p', i: 2 }], vars: [['p', '0x1008']], hot: [2] },
+			options: [
+				{ t: '0x1002', why: { es: 'Eso sería avanzar 2 bytes. La aritmética de punteros avanza elementos: 2 * sizeof(int) = 8 bytes.', en: 'That would move 2 bytes. Pointer arithmetic moves elements: 2 * sizeof(int) = 8 bytes.' } },
+				{ t: '0x1008', ok: true, why: { es: 'Correcto: p + 2 avanza dos elementos de 4 bytes, 0x1000 + 8 = 0x1008. p apunta a a[2].', en: 'Right: p + 2 moves two 4-byte elements, 0x1000 + 8 = 0x1008. p points to a[2].' } },
+				{ t: '0x1010', why: { es: 'Eso serían cuatro elementos. p += 2 avanza solo dos: 8 bytes.', en: 'That would be four elements. p += 2 moves only two: 8 bytes.' } },
+			],
+		},
+		{
+			codes: [['int a[4] = {10, 20, 30, 40};', 'int *p = a + 2;', 'int x = *(p - 1);']],
+			q: { es: 'p apunta a a[2]. ¿Cuánto vale x después de int x = *(p - 1);?', en: 'p points to a[2]. What is x after int x = *(p - 1);?' },
+			before: { line: 2, mem: A4, ptrs: [{ n: 'p', i: 2 }], vars: [['p', '0x1008']] },
+			after: { line: 3, mem: A4, ptrs: [{ n: 'p', i: 2 }], vars: [['p', '0x1008'], ['x', '20']], hot: [1] },
+			options: [
+				{ t: '30', why: { es: 'Eso es *p. Los paréntesis hacen que primero se calcule p - 1 y después se lea.', en: 'That is *p. The parentheses make p - 1 happen first and the read second.' } },
+				{ t: '29', why: { es: 'Eso sería *p - 1: sin paréntesis, * se aplica antes que la resta.', en: 'That would be *p - 1: without parentheses, * applies before the subtraction.' } },
+				{ t: '20', ok: true, why: { es: 'Correcto: p - 1 apunta a a[1] y * lee 20. p no se mueve: solo se calculó otra dirección.', en: 'Right: p - 1 points to a[1] and * reads 20. p does not move: another address was only computed.' } },
+			],
+		},
+		{
+			codes: [P3code],
+			q: { es: 'p apunta a v[1] y q a v[4]. ¿Cuánto vale v[1] después de *p = *p + *q;?', en: 'p points to v[1] and q to v[4]. What is v[1] after *p = *p + *q;?' },
+			before: { line: 3, mem: V3, ptrs: [{ n: 'p', i: 1 }, { n: 'q', i: 4 }] },
+			after: { line: 4, mem: V3b, ptrs: [{ n: 'p', i: 1 }, { n: 'q', i: 4 }], hot: [1] },
+			options: [
+				{ t: '21', ok: true, why: { es: 'Correcto: *p es v[1] (6) y *q es v[4] (15). La suma se escribe a través de p en el arreglo original.', en: 'Right: *p is v[1] (6) and *q is v[4] (15). The sum is written through p into the original array.' } },
+				{ t: '6', why: { es: 'La asignación *p = ... escribe en el objeto apuntado: v[1] sí cambia.', en: 'The assignment *p = ... writes to the pointed-to object: v[1] does change.' } },
+				{ t: '18', why: { es: 'Eso sería v[0] + v[4]. p apunta a v[1], no a v[0].', en: 'That would be v[0] + v[4]. p points to v[1], not to v[0].' } },
+			],
+		},
+		{
+			codes: [[...P3code, 'q -= 2;', 'ptrdiff_t d = q - p;']],
+			q: { es: 'Seguimos el mismo programa. ¿Cuánto vale d después de q -= 2; y ptrdiff_t d = q - p;?', en: 'Same program, continued. What is d after q -= 2; and ptrdiff_t d = q - p;?' },
+			before: { line: 4, mem: V3b, ptrs: [{ n: 'p', i: 1 }, { n: 'q', i: 4 }] },
+			after: { line: 6, mem: V3b, ptrs: [{ n: 'p', i: 1 }, { n: 'q', i: 2 }], vars: [['q', '0x1008'], ['d', '1']], hot: [2] },
+			options: [
+				{ t: '4', why: { es: 'Eso son los bytes entre v[1] y v[2]. Restar punteros cuenta elementos, no bytes.', en: 'That is the bytes between v[1] and v[2]. Subtracting pointers counts elements, not bytes.' } },
+				{ t: '1', ok: true, why: { es: 'Correcto: q -= 2 lleva q de v[4] a v[2], en 0x1008. Entre v[1] y v[2] hay 1 elemento: d es un ptrdiff_t que vale 1.', en: 'Right: q -= 2 takes q from v[4] to v[2], at 0x1008. Between v[1] and v[2] there is 1 element: d is a ptrdiff_t equal to 1.' } },
+				{ t: '3', why: { es: 'Eso sería q - p antes de q -= 2. Primero q retrocede dos elementos.', en: 'That would be q - p before q -= 2. First q moves back two elements.' } },
+			],
+		},
+		{
+			codes: [{ es: ['char saludo[] = "hola";', 'const char *c = saludo;', 'c += 3;'], en: ['char greeting[] = "hello";', 'const char *c = greeting;', 'c += 3;'] }],
+			q: { es: 'c apunta al primer carácter, en 0x2000. ¿Qué vale *c después de c += 3?', en: 'c points to the first character, at 0x2000. What is *c after c += 3?' },
+			before: { line: 2, mem: S, ptrs: [{ n: 'c', i: 0 }], vars: [['c', '0x2000']] },
+			after: { line: 3, mem: S, ptrs: [{ n: 'c', i: 3 }], vars: [['c', '0x2003']], hot: [3] },
+			options: isEs
+				? [
+						{ t: "'l'", why: 'Eso es c[2]. Contando desde 0, c + 3 llega a la cuarta letra.' },
+						{ t: "'a'", ok: true, why: 'Correcto: c + 3 es la cuarta posición: h, o, l, a. Cada char ocupa 1 byte, así que c pasa a 0x2003.' },
+						{ t: "'\\0'", why: 'El terminador está en c + 4, justo después de la última letra.' },
+					]
+				: [
+						{ t: "'l'", ok: true, why: 'Right: c + 3 is the fourth position: h, e, l, l. Each char takes 1 byte, so c moves to 0x2003.' },
+						{ t: "'o'", why: 'That is c[4]. Counting from 0, c + 3 reaches the fourth letter.' },
+						{ t: "'\\0'", why: 'The terminator is at c + 5, right after the last letter.' },
+					],
+		},
+		{
+			codes: [structCode],
+			q: { es: 'pa apunta a la estructura a. ¿Cuánto vale a.y después de pa->y += 3;?', en: 'pa points to the struct a. What is a.y after pa->y += 3;?' },
+			before: { line: 7, mem: pt(1, 2), ptrs: [{ n: 'pa', i: 0 }], vars: [['pa', '0x3000']] },
+			after: { line: 8, mem: pt(1, 5), ptrs: [{ n: 'pa', i: 0 }], vars: [['pa', '0x3000']], hot: [1] },
+			options: [
+				{ t: '2', why: { es: 'pa apunta a a: modificar a través del puntero cambia el original.', en: 'pa points to a: modifying through the pointer changes the original.' } },
+				{ t: '0x3007', why: { es: '-> no suma a la dirección: sigue el puntero y suma 3 al valor del campo y.', en: '-> does not add to the address: it follows the pointer and adds 3 to the value of member y.' } },
+				{ t: '5', ok: true, why: { es: 'Correcto: pa->y es (*pa).y, el campo y de a. 2 + 3 = 5.', en: 'Right: pa->y is (*pa).y, the member y of a. 2 + 3 = 5.' } },
+			],
+		},
+	];
+
+	// ───────── Assess data (no hints until graded) ─────────
+	const assess: AssessItem[] = [
+		{
+			code: ['int v[5] = {2, 4, 6, 8, 10};', 'int *p = v + 1;', 'printf("%d %d\\n", *p + 1, *(p + 1));'],
+			q: { es: '¿Qué imprime este fragmento?', en: 'What does this fragment print?' },
+			options: ['6 6', '5 6', '5 5'],
+			answer: 1,
+			why: { es: '*p + 1 suma al valor (4 + 1 = 5); *(p + 1) primero avanza a v[2] y lee 6.', en: '*p + 1 adds to the value (4 + 1 = 5); *(p + 1) first moves to v[2] and reads 6.' },
+		},
+		{
+			code: {
+				es: ['double promedio(const int *v, size_t n);', '', 'int notas[] = {7, 4, 9, 6, 8};', 'size_t n = sizeof notas / sizeof notas[0];', 'double r = promedio(notas, n);'],
+				en: ['double average(const int *v, size_t n);', '', 'int grades[] = {7, 4, 9, 6, 8};', 'size_t n = sizeof grades / sizeof grades[0];', 'double r = average(grades, n);'],
+			},
+			q: { es: 'Con int de 4 bytes y punteros de 8, ¿cuánto vale sizeof v dentro de promedio?', en: 'With 4-byte int and 8-byte pointers, what is sizeof v inside average?' },
+			options: ['20', '5', '8'],
+			answer: 2,
+			why: { es: 'Al pasarlo, el arreglo decae: v es un puntero y sizeof v mide un puntero (8). Por eso n viaja aparte.', en: 'When passed, the array decays: v is a pointer and sizeof v measures a pointer (8). That is why n travels separately.' },
+		},
+		{
+			code: { es: ['int ultimo(const int *v, size_t n) {', '    const int *fin = v + n;', '    return *fin;', '}'], en: ['int last(const int *v, size_t n) {', '    const int *end = v + n;', '    return *end;', '}'] },
+			q: { es: 'Esta función debería devolver el último elemento, pero a veces devuelve basura. ¿Cuál es el error?', en: 'This function should return the last element, but sometimes returns garbage. What is the mistake?' },
+			options: [
+				{ es: 'Calcular v + n ya es comportamiento indefinido.', en: 'Computing v + n is already undefined behavior.' },
+				{ es: 'Desreferenciar v + n es comportamiento indefinido: el último elemento está en v + n - 1.', en: 'Dereferencing v + n is undefined behavior: the last element is at v + n - 1.' },
+				{ es: 'const int * impide leer los elementos del arreglo.', en: 'const int * prevents reading the array elements.' },
+			],
+			answer: 1,
+			why: { es: 'v + n es el puntero una posición después del final: se puede calcular y comparar, pero no desreferenciar. El último está en v + n - 1 (con n > 0).', en: 'v + n is the pointer one past the end: you may compute and compare it, but not dereference it. The last one is at v + n - 1 (with n > 0).' },
+		},
+		{
+			code: ['int v[6] = {5, 8, 3, 9, 1, 7};', 'int *a = v + 1;', 'int *b = v + 5;', 'printf("%td\\n", b - a);'],
+			q: { es: '¿Qué imprime este fragmento?', en: 'What does this fragment print?' },
+			options: ['4', '16', '5'],
+			answer: 0,
+			why: { es: 'Restar punteros del mismo arreglo da elementos, no bytes: 5 - 1 = 4, de tipo ptrdiff_t.', en: 'Subtracting pointers into the same array gives elements, not bytes: 5 - 1 = 4, of type ptrdiff_t.' },
+		},
+		{
+			code: ['int x = 5;', 'int *p = &x;', 'int **pp = &p;', '**pp = 6;', 'printf("%d\\n", x);'],
+			q: { es: '¿Qué imprime este fragmento?', en: 'What does this fragment print?' },
+			options: ['5', '6', { es: 'La dirección de p', en: 'The address of p' }],
+			answer: 1,
+			why: { es: '*pp es p y **pp es x: la asignación sigue las dos flechas y cambia x a 6.', en: '*pp is p and **pp is x: the assignment follows both arrows and changes x to 6.' },
+		},
+		{
+			code: { es: ['int a[3] = {1, 2, 3};', '/* ¿cuál de estas líneas es comportamiento indefinido? */'], en: ['int a[3] = {1, 2, 3};', '/* which of these lines is undefined behavior? */'] },
+			q: { es: 'Solo una de estas líneas es comportamiento indefinido. ¿Cuál?', en: 'Only one of these lines is undefined behavior. Which one?' },
+			options: [
+				{ es: 'int *fin = a + 3;', en: 'int *end = a + 3;' },
+				{ es: 'for (int *p = a; p < a + 3; p++) {}', en: 'for (int *p = a; p < a + 3; p++) {}' },
+				{ es: 'int *antes = a - 1;', en: 'int *before = a - 1;' },
+			],
+			answer: 2,
+			why: { es: 'a + 3 se puede calcular y comparar (el ciclo lo hace); a - 1 es comportamiento indefinido aunque solo se calcule.', en: 'a + 3 may be computed and compared (the loop does it); a - 1 is undefined behavior even if it is only computed.' },
+		},
+	];
+
+	// ───────── Learn wiring ─────────
+	root?.querySelectorAll<HTMLElement>('.pa-slide[data-mode="learn"]').forEach((slide) => {
+		const data = learn[Number(slide.dataset.item)];
+		const labHost = slide.querySelector<HTMLElement>('[data-lab]');
+		const stepHost = slide.querySelector<HTMLElement>('[data-stepper]');
+		if (!data || !labHost || !stepHost) return;
+		const lab = buildLab(labHost);
+
+		const bar = el('div', 'pa-stepbar');
+		const prev = el('button', 'btn btn-secondary', tr('Paso anterior', 'Previous step'));
+		const next = el('button', 'btn btn-primary', tr('Siguiente paso', 'Next step'));
+		const reset = el('button', 'btn btn-ghost', tr('Reiniciar', 'Restart'));
+		[prev, next, reset].forEach((b) => (b.type = 'button'));
+		const count = el('span', 'pa-step-count');
+		const explain = el('p', 'pa-explain');
+		explain.setAttribute('aria-live', 'polite');
+		bar.append(prev, next, count, reset);
+		stepHost.replaceChildren(bar, explain);
+
+		let step = 0;
+		const show = () => {
+			const s = data.steps[step];
+			render(lab, s, data.codes);
+			count.textContent = `${tr('Paso', 'Step')} ${step + 1} / ${data.steps.length}`;
+			explain.textContent = txt(s.text);
+			prev.disabled = step === 0;
+			next.disabled = step === data.steps.length - 1;
+		};
+		prev.addEventListener('click', () => { if (step > 0) { step--; show(); } });
+		next.addEventListener('click', () => { if (step < data.steps.length - 1) { step++; show(); } });
+		reset.addEventListener('click', () => { step = 0; show(); });
+		show();
+	});
+
+	// ───────── Practice wiring ─────────
+	root?.querySelectorAll<HTMLElement>('.pa-slide[data-mode="practice"]').forEach((slide) => {
+		const item = practice[Number(slide.dataset.item)];
+		const labHost = slide.querySelector<HTMLElement>('[data-lab]');
+		const host = slide.querySelector<HTMLElement>('[data-practice]');
+		const qEl = slide.querySelector<HTMLElement>('[data-q]');
+		if (!item || !labHost || !host) return;
+		if (qEl) qEl.textContent = txt(item.q);
+		const lab = buildLab(labHost);
+
+		const opts = el('div', 'pa-opts');
+		opts.setAttribute('role', 'group');
+		opts.setAttribute('aria-label', tr('Opciones', 'Options'));
+		const feedback = el('p', 'pa-feedback');
+		feedback.setAttribute('aria-live', 'polite');
+		const actions = el('div', 'pa-actions');
+		const play = el('button', 'btn btn-primary', tr('Ver la transición', 'Show the transition'));
+		const retry = el('button', 'btn btn-secondary', tr('Intentar de nuevo', 'Try again'));
+		play.type = 'button';
+		retry.type = 'button';
+		actions.append(play, retry);
+		host.replaceChildren(opts, feedback, actions);
+
+		const buttons = item.options.map((o) => {
+			const b = el('button', 'pa-opt', txt(o.t));
+			b.type = 'button';
+			b.addEventListener('click', () => {
+				buttons.forEach((x, i) => {
+					x.disabled = true;
+					if (item.options[i].ok) x.classList.add('is-right');
+				});
+				if (!o.ok) b.classList.add('is-wrong');
+				feedback.textContent = `${o.ok ? '' : tr('No es así. ', 'Not quite. ')}${txt(o.why)}`;
+				play.disabled = false;
+			});
+			return b;
+		});
+		opts.replaceChildren(...buttons);
+
+		const start = () => {
+			buttons.forEach((b) => {
+				b.disabled = false;
+				b.classList.remove('is-right', 'is-wrong');
+			});
+			feedback.textContent = '';
+			play.disabled = true;
+			render(lab, item.before, item.codes);
+		};
+		play.addEventListener('click', () => {
+			render(lab, item.after, item.codes);
+			play.disabled = true;
+		});
+		retry.addEventListener('click', start);
+		start();
+	});
+
+	// ───────── Assess wiring ─────────
+	const picks: (number | null)[] = assess.map(() => null);
+	const assessButtons: HTMLButtonElement[][] = [];
+	root?.querySelectorAll<HTMLElement>('.pa-slide[data-mode="assess"]').forEach((slide) => {
+		const idx = Number(slide.dataset.item);
+		const item = assess[idx];
+		const host = slide.querySelector<HTMLElement>('[data-assess]');
+		const qEl = slide.querySelector<HTMLElement>('[data-q]');
+		if (!item || !host) return;
+		if (qEl) qEl.textContent = txt(item.q);
+		const pre = el('pre', 'pa-code pa-assess-code');
+		pre.replaceChildren(...codeOf(item.code).map((line, i) => {
+			const span = el('span', 'pa-line');
+			span.append(el('span', 'pa-line-no', String(i + 1)), document.createTextNode(line));
+			return span;
+		}));
+		const opts = el('div', 'pa-opts');
+		opts.setAttribute('role', 'group');
+		opts.setAttribute('aria-label', tr('Respuestas posibles', 'Possible answers'));
+		const buttons = item.options.map((o, i) => {
+			const b = el('button', 'pa-opt', txt(o));
+			b.type = 'button';
+			b.setAttribute('aria-pressed', 'false');
+			b.addEventListener('click', () => {
+				picks[idx] = i;
+				buttons.forEach((x, j) => x.setAttribute('aria-pressed', String(j === i)));
+			});
+			return b;
+		});
+		assessButtons[idx] = buttons;
+		opts.replaceChildren(...buttons);
+		host.replaceChildren(pre, opts);
+	});
+
+	const gradeBtn = document.getElementById('paGradeBtn') as HTMLButtonElement | null;
+	const retryBtn = document.getElementById('paRetryBtn') as HTMLButtonElement | null;
+	const scoreEl = document.getElementById('paScore');
+	const resultsEl = document.getElementById('paResults');
+
+	gradeBtn?.addEventListener('click', () => {
+		let score = 0;
+		const items = assess.map((item, i) => {
+			const ok = picks[i] === item.answer;
+			if (ok) score++;
+			const li = el('li');
+			const tag = el('span', ok ? 'tag tag-accent' : 'tag tag-outline', ok ? tr('Correcta', 'Correct') : picks[i] === null ? tr('Sin responder', 'Unanswered') : tr('Incorrecta', 'Incorrect'));
+			li.append(tag, document.createTextNode(`${txt(item.q)} ${tr('Respuesta', 'Answer')}: `), el('code', '', txt(item.options[item.answer])), document.createTextNode(`. ${txt(item.why)}`));
+			return li;
+		});
+		resultsEl?.replaceChildren(...items);
+		if (scoreEl) scoreEl.textContent = `${tr('Puntaje', 'Score')}: ${score} / ${assess.length}`;
+		assessButtons.forEach((group) => group.forEach((b) => (b.disabled = true)));
+		if (gradeBtn) gradeBtn.disabled = true;
+	});
+
+	retryBtn?.addEventListener('click', () => {
+		picks.fill(null);
+		assessButtons.forEach((group) => group.forEach((b) => {
+			b.disabled = false;
+			b.setAttribute('aria-pressed', 'false');
+		}));
+		resultsEl?.replaceChildren();
+		if (scoreEl) scoreEl.textContent = '';
+		if (gradeBtn) gradeBtn.disabled = false;
+	});
+
+	// ───────── Modes and slide navigation ─────────
+	type Mode = 'learn' | 'practice' | 'assess';
+	let mode: Mode = 'learn';
+	const position: Record<Mode, number> = { learn: 0, practice: 0, assess: 0 };
+	const prevBtn = document.getElementById('paPrevBtn') as HTMLButtonElement | null;
+	const nextBtn = document.getElementById('paNextBtn') as HTMLButtonElement | null;
+	const counter = document.getElementById('paSlideCounter');
+	const allSlides = root ? [...root.querySelectorAll<HTMLElement>('.pa-slide')] : [];
+	const slidesOf = (m: Mode) => allSlides.filter((s) => s.dataset.mode === m);
+
+	function showSlide(target: number) {
+		const list = slidesOf(mode);
+		if (target < 0 || target >= list.length) return;
+		position[mode] = target;
+		allSlides.forEach((s) => s.classList.remove('is-active'));
+		list[target].classList.add('is-active');
+		if (counter) counter.textContent = `${target + 1} / ${list.length}`;
+		if (prevBtn) prevBtn.disabled = target === 0;
+		if (nextBtn) nextBtn.disabled = target === list.length - 1;
+	}
+
+	root?.querySelectorAll<HTMLInputElement>('input[name="paMode"]').forEach((input) => {
+		input.addEventListener('change', () => {
+			if (!input.checked) return;
+			mode = input.value as Mode;
+			showSlide(position[mode]);
+		});
+	});
+
+	prevBtn?.addEventListener('click', () => showSlide(position[mode] - 1));
+	nextBtn?.addEventListener('click', () => showSlide(position[mode] + 1));
+
+	window.addEventListener('keydown', (e) => {
+		const t = e.target as HTMLElement | null;
+		if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+		if (e.key === 'ArrowRight') showSlide(position[mode] + 1);
+		if (e.key === 'ArrowLeft') showSlide(position[mode] - 1);
+	});
+
+	showSlide(0);
+</script>

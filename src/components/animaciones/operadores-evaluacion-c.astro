@@ -1,0 +1,1410 @@
+---
+/**
+ * Scene for "The order an expression is evaluated in" (lesson c/07-operadores,
+ * order: 7), a short film played on one persistent motion canvas. The captions
+ * and cues live in `src/data/animations/operadores-evaluacion-c.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: the C
+ * program, with a bar that slides to the line being executed and the real output
+ * typed in the console below. The viewport on the right holds the camera. Every
+ * expression is drawn as the same tree: an operator is a cube (its editor line on
+ * the face), an operand is a flat plate, a wire joins a node to its operands. The
+ * tree is evaluated bottom-up: the operator lights up, its result appears and
+ * travels on as a token to the operator above it or into the variable box. The
+ * right operand of `&&` and `||` that never runs is sealed in magenta; the two
+ * lines that are undefined behavior end in a refused state (sealed box, `?`),
+ * never an explosion.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/operadores-evaluacion-c';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── The program shown in the editor ───────────────────────────────────────
+// Identifiers are the lesson's own, localized like it does. The two commented
+// lines are the lesson's undefined-behavior examples: shown, never executed.
+const names = {
+	value: t('valor', 'value'),
+	diff: t('resta', 'diff'),
+	total: 'total',
+	people: t('personas', 'people'),
+	costly: t('esCaro', 'isExpensive'),
+	rest: t('resto', 'rest'),
+	big: t('grande', 'big'),
+	file: t('operadores.c', 'operators.c'),
+};
+
+const program = [
+	'#include <stdio.h>',
+	'',
+	'int main(void) {',
+	`    int ${names.value} = 2 + 3 * 4;`,
+	`    int ${names.diff} = 10 - 4 - 3;`,
+	`    int total = 50, ${names.people} = 0;`,
+	`    int ${names.costly} = ${names.people} != 0 && total / ${names.people} > 20;`,
+	`    int ok = ${names.people} == 0 || total / ${names.people} > 20;`,
+	'    int a = 5, b = 5;',
+	'    int x = ++a;',
+	'    int y = b++;',
+	`    int ${names.rest} = -7 % 3;`,
+	`    printf("%d %d %d %d\\n", ${names.value}, ${names.diff}, ${names.costly}, ok);`,
+	`    printf("a=%d x=%d b=%d y=%d r=%d\\n", a, x, b, y, ${names.rest});`,
+	'    // i = i++ + 1;',
+	`    // ${names.big} = INT_MAX + 1;`,
+	'    return 0;',
+	'}',
+].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const lines = highlightCode(program, 'c').map((html, index) => ({
+	n: index + 1,
+	html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+}));
+
+// The real output of the program (cc -std=c23 -Wall -Wextra -Wpedantic), one line per print.
+const outputs = [
+	{ id: 'o-13', row: 0, text: '14 3 0 1' },
+	{ id: 'o-14', row: 1, text: 'a=6 x=6 b=6 y=5 r=-1' },
+];
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 72;
+const GUTTER_X = 59;
+const CODE_TOP = 70;
+const LINE_H = 22;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 4.5;
+const CONSOLE_TOP = 482;
+const outY = (row: number) => 534 + row * 26;
+// The two lines of undefined behavior, marked together.
+const WARN_LINES = [{ id: 'warn-15', from: 15, to: 16 }];
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const DU = { x: 20, y: 11.5 };
+const DV = { x: -20, y: 11.5 };
+const BH = 20;
+const round = (value: number) => Math.round(value * 10) / 10;
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const SKEW = (point: Point) => `matrix(0.866 0.5 0 1 ${point.x} ${point.y})`;
+
+/** A variable box: an isometric slab `n` units long whose top-face back corner is (ox, oy). */
+function box(ox: number, oy: number, n = 3) {
+	const P = (k: number, d = 0, z = 0): Point => ({
+		x: round(ox + k * DU.x + d * DV.x),
+		y: round(oy + k * DU.y + d * DV.y + z),
+	});
+	return {
+		top: poly([P(0), P(n), P(n, 1), P(0, 1)]),
+		front: poly([P(0, 1), P(n, 1), P(n, 1, BH), P(0, 1, BH)]),
+		end: poly([P(n), P(n, 1), P(n, 1, BH), P(n, 0, BH)]),
+		base: poly([P(0, 0, BH), P(n, 0, BH), P(n, 1, BH), P(0, 1, BH)]),
+		topCenter: P(n / 2, 0.5),
+		valueAt: { x: P(n / 2, 0.5).x, y: round(P(n / 2, 0.5).y + 4.5) },
+		labelAt: { x: P(0, 1).x, y: round(P(0).y - 10) },
+		leftC: P(0, 1),
+		rightC: P(n),
+	};
+}
+type Box = ReturnType<typeof box>;
+
+/** A cube whose top-face center is (cx, cy): an operator, or a machine. */
+const CS = 22;
+const CH = 24;
+const CY = round(CS * 0.575);
+function cube(cx: number, cy: number) {
+	return {
+		top: poly([
+			{ x: cx, y: cy - CY },
+			{ x: cx + CS, y: cy },
+			{ x: cx, y: cy + CY },
+			{ x: cx - CS, y: cy },
+		]),
+		left: poly([
+			{ x: cx - CS, y: cy },
+			{ x: cx, y: cy + CY },
+			{ x: cx, y: cy + CY + CH },
+			{ x: cx - CS, y: cy + CH },
+		]),
+		right: poly([
+			{ x: cx, y: cy + CY },
+			{ x: cx + CS, y: cy },
+			{ x: cx + CS, y: cy + CH },
+			{ x: cx, y: cy + CY + CH },
+		]),
+		base: poly([
+			{ x: cx, y: cy - CY + CH },
+			{ x: cx + CS, y: cy + CH },
+			{ x: cx, y: cy + CY + CH },
+			{ x: cx - CS, y: cy + CH },
+		]),
+		face: SKEW({ x: round(cx - CS / 2), y: round(cy + CY / 2 + CH / 2 + 4) }),
+		center: { x: cx, y: cy },
+		bottom: { x: cx, y: round(cy + CY + CH) },
+		topTip: { x: cx, y: round(cy - CY) },
+		leftMid: { x: cx - CS, y: cy + CH / 2 },
+		rightMid: { x: cx + CS, y: cy + CH / 2 },
+	};
+}
+type Cube = ReturnType<typeof cube>;
+
+/** An operand plate: a flat isometric tile centered on (cx, cy). Wide ones hold an expression. */
+const PT = 6;
+function plate(cx: number, cy: number, pw = 30, ph = 17) {
+	return {
+		top: poly([
+			{ x: cx, y: cy - ph },
+			{ x: cx + pw, y: cy },
+			{ x: cx, y: cy + ph },
+			{ x: cx - pw, y: cy },
+		]),
+		side: poly([
+			{ x: cx - pw, y: cy },
+			{ x: cx, y: cy + ph },
+			{ x: cx + pw, y: cy },
+			{ x: cx + pw, y: cy + PT },
+			{ x: cx, y: cy + ph + PT },
+			{ x: cx - pw, y: cy + PT },
+		]),
+		center: { x: cx, y: cy },
+		tip: { x: cx, y: cy - ph },
+		subAt: { x: cx, y: cy + ph + PT + 13 },
+		half: { w: pw, h: ph },
+	};
+}
+type Plate = ReturnType<typeof plate>;
+const wire = (from: Point, to: Point) => `M${from.x} ${from.y} C${from.x} ${round(from.y + 26)} ${to.x} ${round(to.y - 30)} ${to.x} ${to.y}`;
+const link = (from: Point, to: Point) => `M${from.x} ${from.y} C${round(from.x + 46)} ${from.y} ${round(to.x - 46)} ${to.y} ${to.x} ${to.y}`;
+
+// ── Expression trees ──────────────────────────────────────────────────────
+// Every node has an id that ends in its editor line: `4p` is the plus of line 4.
+type TNode = { id: string; kind: 'op' | 'leaf' | 'wide'; text: string; sub?: string; x: number; y: number };
+type Tree = { line: number; root: string; nodes: TNode[]; edges: [string, string][]; target: Box; targetName: string };
+
+const B = {
+	value: box(215, 56),
+	diff: box(635, 56),
+	total: box(740, 70),
+	people: box(740, 140),
+	costly: box(315, 306),
+	ok: box(755, 306),
+	a: box(50, 640),
+	x: box(270, 640),
+	b: box(400, 640),
+	y: box(620, 640),
+	rest: box(255, 736),
+	i: box(800, 690),
+	big: box(730, 820, 5),
+};
+
+const wideText = `total / ${names.people} > 20`;
+const trees: Tree[] = [
+	{
+		line: 4,
+		root: '4p',
+		nodes: [
+			{ id: '4p', kind: 'op', text: '+', x: 150, y: 80 },
+			{ id: '4a', kind: 'leaf', text: '2', x: 90, y: 164 },
+			{ id: '4m', kind: 'op', text: '*', x: 210, y: 164 },
+			{ id: '4b', kind: 'leaf', text: '3', x: 150, y: 248 },
+			{ id: '4c', kind: 'leaf', text: '4', x: 270, y: 248 },
+		],
+		edges: [['4p', '4a'], ['4p', '4m'], ['4m', '4b'], ['4m', '4c']],
+		target: B.value,
+		targetName: names.value,
+	},
+	{
+		line: 5,
+		root: '5r',
+		nodes: [
+			{ id: '5r', kind: 'op', text: '-', x: 570, y: 80 },
+			{ id: '5l', kind: 'op', text: '-', x: 510, y: 164 },
+			{ id: '5c', kind: 'leaf', text: '3', x: 630, y: 164 },
+			{ id: '5a', kind: 'leaf', text: '10', x: 450, y: 248 },
+			{ id: '5b', kind: 'leaf', text: '4', x: 570, y: 248 },
+		],
+		edges: [['5r', '5l'], ['5r', '5c'], ['5l', '5a'], ['5l', '5b']],
+		target: B.diff,
+		targetName: names.diff,
+	},
+	{
+		line: 7,
+		root: '7r',
+		nodes: [
+			{ id: '7r', kind: 'op', text: '&&', x: 250, y: 330 },
+			{ id: '7l', kind: 'op', text: '!=', x: 190, y: 414 },
+			{ id: '7w', kind: 'wide', text: wideText, x: 335, y: 414 },
+			{ id: '7a', kind: 'leaf', text: '0', sub: names.people, x: 130, y: 498 },
+			{ id: '7b', kind: 'leaf', text: '0', x: 250, y: 498 },
+		],
+		edges: [['7r', '7l'], ['7r', '7w'], ['7l', '7a'], ['7l', '7b']],
+		target: B.costly,
+		targetName: names.costly,
+	},
+	{
+		line: 8,
+		root: '8r',
+		nodes: [
+			{ id: '8r', kind: 'op', text: '||', x: 690, y: 330 },
+			{ id: '8l', kind: 'op', text: '==', x: 630, y: 414 },
+			{ id: '8w', kind: 'wide', text: wideText, x: 775, y: 414 },
+			{ id: '8a', kind: 'leaf', text: '0', sub: names.people, x: 570, y: 498 },
+			{ id: '8b', kind: 'leaf', text: '0', x: 690, y: 498 },
+		],
+		edges: [['8r', '8l'], ['8r', '8w'], ['8l', '8a'], ['8l', '8b']],
+		target: B.ok,
+		targetName: 'ok',
+	},
+	{
+		line: 12,
+		root: '12r',
+		nodes: [
+			{ id: '12r', kind: 'op', text: '%', x: 190, y: 760 },
+			{ id: '12a', kind: 'leaf', text: '-7', x: 130, y: 844 },
+			{ id: '12b', kind: 'leaf', text: '3', x: 250, y: 844 },
+		],
+		edges: [['12r', '12a'], ['12r', '12b']],
+		target: B.rest,
+		targetName: names.rest,
+	},
+];
+
+const cubes = new Map<string, Cube>();
+const plates = new Map<string, Plate>();
+for (const tree of trees) {
+	for (const node of tree.nodes) {
+		if (node.kind === 'op') cubes.set(node.id, cube(node.x, node.y));
+		else plates.set(node.id, node.kind === 'wide' ? plate(node.x, node.y, 100, 22) : plate(node.x, node.y));
+	}
+}
+const tipOf = (id: string): Point => cubes.get(id)?.topTip ?? plates.get(id)!.tip;
+const treeParts = trees.map((tree) => ({
+	tree,
+	wires: tree.edges.map(([parent, child]) => wire(cubes.get(parent)!.bottom, tipOf(child))),
+}));
+
+// Variable boxes of the declarations: each box is the module of its line.
+type BoxSpec = { id: string; g: Box; name: string; type: string; value?: string };
+const declarations: { line: number; boxes: BoxSpec[] }[] = [
+	{
+		line: 6,
+		boxes: [
+			{ id: 'total', g: B.total, name: 'total', type: 'int', value: '50' },
+			{ id: 'people', g: B.people, name: names.people, type: 'int', value: '0' },
+		],
+	},
+	{
+		line: 9,
+		boxes: [
+			{ id: 'a', g: B.a, name: 'a', type: 'int' },
+			{ id: 'b', g: B.b, name: 'b', type: 'int' },
+		],
+	},
+];
+
+// ++a and b++: one operator cube between the variable and the box that receives the value.
+type Unary = { line: number; id: string; label: string; g: Cube; from: Box; into: Box; name: string };
+const unaries: Unary[] = [
+	{ line: 10, id: '10u', label: '++a', g: cube(190, 620), from: B.a, into: B.x, name: 'x' },
+	{ line: 11, id: '11u', label: 'b++', g: cube(540, 620), from: B.b, into: B.y, name: 'y' },
+];
+for (const unary of unaries) cubes.set(unary.id, unary.g);
+
+// printf and return machines.
+type Machine = { line: number; g: Cube; label: string };
+const machines: Machine[] = [
+	{ line: 13, g: cube(430, 755), label: 'printf' },
+	{ line: 14, g: cube(430, 840), label: 'printf' },
+	{ line: 17, g: cube(430, 915), label: 'return 0' },
+];
+
+// The two lines that are undefined behavior: a refused state, never an explosion.
+const U = {
+	iInc: cube(770, 620),
+	iSet: cube(880, 620),
+	plus: cube(905, 850),
+};
+const ubWires = {
+	one: [wire(U.iInc.bottom, B.i.topCenter), wire(U.iSet.bottom, B.i.topCenter)],
+	two: link(B.big.rightC, U.plus.leftMid),
+};
+
+// Where the particle stops (above a module) and where tokens start and land.
+const anchors: { id: string; x: number; y: number }[] = [
+	{ id: 'a-m4', ...lift(cubes.get('4p')!.center, 46) },
+	{ id: 'a-m5', ...lift(cubes.get('5r')!.center, 46) },
+	{ id: 'a-m6', ...lift(B.total.topCenter, 46) },
+	{ id: 'a-m7', ...lift(cubes.get('7r')!.center, 46) },
+	{ id: 'a-m8', ...lift(cubes.get('8r')!.center, 46) },
+	{ id: 'a-m9', ...lift(B.a.topCenter, 46) },
+	{ id: 'a-m10', ...lift(unaries[0].g.center, 46) },
+	{ id: 'a-m11', ...lift(unaries[1].g.center, 46) },
+	{ id: 'a-m12', ...lift(cubes.get('12r')!.center, 46) },
+	{ id: 'a-m13', ...lift(machines[0].g.center, 46) },
+	{ id: 'a-m14', ...lift(machines[1].g.center, 46) },
+	{ id: 'a-m15', x: 825, y: 572 },
+	{ id: 'a-m16', ...lift(U.plus.center, 46) },
+	{ id: 'a-m17', ...lift(machines[2].g.center, 46) },
+	...[...cubes.entries()].map(([id, g]) => ({ id: `an-${id}`, ...g.center })),
+	{ id: 'ab-4', ...B.value.topCenter },
+	{ id: 'ab-5', ...B.diff.topCenter },
+	{ id: 'ab-7', ...B.costly.topCenter },
+	{ id: 'ab-8', ...B.ok.topCenter },
+	{ id: 'ab-10', ...B.x.topCenter },
+	{ id: 'ab-11', ...B.y.topCenter },
+	{ id: 'ab-12', ...B.rest.topCenter },
+];
+const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0, y: 0 };
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-all', cx: 480, cy: 510, s: 0.66 },
+	{ id: 'shot-prec', cx: 230, cy: 170, s: 1.3 },
+	{ id: 'shot-assoc', cx: 570, cy: 170, s: 1.3 },
+	{ id: 'shot-decl', cx: 760, cy: 150, s: 1.5 },
+	{ id: 'shot-s1', cx: 265, cy: 485, s: 1.3 },
+	{ id: 'shot-s2', cx: 700, cy: 485, s: 1.3 },
+	{ id: 'shot-pre', cx: 190, cy: 705, s: 1.5 },
+	{ id: 'shot-post', cx: 540, cy: 705, s: 1.5 },
+	{ id: 'shot-rest', cx: 230, cy: 870, s: 1.55 },
+	{ id: 'shot-print', cx: 440, cy: 830, s: 1.4 },
+	{ id: 'shot-ub', cx: 810, cy: 760, s: 1.3 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Value tokens: one visual identity for "the result of an operator, on its way".
+type Tone = 'flow' | 'violet' | 'magenta';
+type Token = { id: string; text: string; from: string; tone: Tone };
+const tokens: Token[] = [
+	{ id: 'tk-4m', text: '12', from: 'an-4m', tone: 'flow' },
+	{ id: 'tk-4', text: '14', from: 'an-4p', tone: 'flow' },
+	{ id: 'tk-5l', text: '6', from: 'an-5l', tone: 'flow' },
+	{ id: 'tk-5', text: '3', from: 'an-5r', tone: 'flow' },
+	{ id: 'tk-7l', text: '0', from: 'an-7l', tone: 'violet' },
+	{ id: 'tk-7', text: '0', from: 'an-7r', tone: 'violet' },
+	{ id: 'tk-8l', text: '1', from: 'an-8l', tone: 'violet' },
+	{ id: 'tk-8', text: '1', from: 'an-8r', tone: 'violet' },
+	{ id: 'tk-10', text: '6', from: 'an-10u', tone: 'flow' },
+	{ id: 'tk-11', text: '5', from: 'an-11u', tone: 'flow' },
+	{ id: 'tk-12', text: '-1', from: 'an-12r', tone: 'flow' },
+];
+const tokenWidth = (token: Token) => Math.round(token.text.length * 7.9 + 22);
+
+// Values the evaluations write into their boxes (and the ones a box starts with).
+const values: { id: string; text: string; at: Point; bad?: boolean }[] = [
+	{ id: 'vl-4', text: '14', at: B.value.valueAt },
+	{ id: 'vl-5', text: '3', at: B.diff.valueAt },
+	{ id: 'vl-7', text: '0', at: B.costly.valueAt },
+	{ id: 'vl-8', text: '1', at: B.ok.valueAt },
+	{ id: 'vl-a0', text: '5', at: B.a.valueAt },
+	{ id: 'vl-a1', text: '6', at: B.a.valueAt },
+	{ id: 'vl-b0', text: '5', at: B.b.valueAt },
+	{ id: 'vl-b1', text: '6', at: B.b.valueAt },
+	{ id: 'vl-10', text: '6', at: B.x.valueAt },
+	{ id: 'vl-11', text: '5', at: B.y.valueAt },
+	{ id: 'vl-12', text: '-1', at: B.rest.valueAt },
+	{ id: 'vl-i0', text: '1', at: B.i.valueAt },
+	{ id: 'vl-i1', text: '?', at: B.i.valueAt, bad: true },
+	{ id: 'vl-g0', text: '2147483647', at: B.big.valueAt },
+	{ id: 'vl-g1', text: '?', at: B.big.valueAt, bad: true },
+];
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = { id: string; text: string; x: number; y: number; align: 'start' | 'end' | 'middle'; tone: 'plain' | Tone; mono?: boolean };
+const isTrue = t('verdadero', 'true');
+const isFalse = t('falso', 'false');
+const stops = t('se detiene', 'it stops');
+const chips: Chip[] = [
+	{ id: 'rs-4m', text: '3 * 4 = 12', x: 246, y: 172, align: 'start', tone: 'flow', mono: true },
+	{ id: 'rs-4p', text: '2 + 12 = 14', x: 116, y: 88, align: 'end', tone: 'flow', mono: true },
+	{ id: 'rs-5l', text: '10 - 4 = 6', x: 476, y: 172, align: 'end', tone: 'flow', mono: true },
+	{ id: 'rs-5r', text: '6 - 3 = 3', x: 536, y: 88, align: 'end', tone: 'flow', mono: true },
+	{ id: 'rs-7l', text: `0 != 0 → ${isFalse}`, x: 156, y: 422, align: 'end', tone: 'violet', mono: true },
+	{ id: 'rs-7r', text: `${isFalse}: ${stops}`, x: 216, y: 338, align: 'end', tone: 'violet' },
+	{ id: 'rs-8l', text: `0 == 0 → ${isTrue}`, x: 596, y: 422, align: 'end', tone: 'violet', mono: true },
+	{ id: 'rs-8r', text: `${isTrue}: ${stops}`, x: 656, y: 338, align: 'end', tone: 'violet' },
+	{ id: 'rs-10u', text: t('++a vale 6', '++a is 6'), x: 190, y: 684, align: 'middle', tone: 'flow' },
+	{ id: 'rs-11u', text: t('b++ vale 5', 'b++ is 5'), x: 540, y: 684, align: 'middle', tone: 'flow' },
+	{ id: 'rs-12r', text: '-7 % 3 = -1', x: 156, y: 768, align: 'end', tone: 'flow', mono: true },
+	{ id: 'rs-13', text: '14 3 0 1', x: 462, y: 763, align: 'start', tone: 'flow', mono: true },
+	{ id: 'rs-14', text: '6 6 6 5 -1', x: 462, y: 848, align: 'start', tone: 'flow', mono: true },
+	{ id: 'lb-prec', text: t('precedencia: * antes que +', 'precedence: * before +'), x: 150, y: 12, align: 'middle', tone: 'flow' },
+	{ id: 'lb-no9', text: t('no es 10 - (4 - 3) = 9', 'not 10 - (4 - 3) = 9'), x: 570, y: 288, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-skip7', text: t('no se evalúa: dividiría por cero', 'not evaluated: it would divide by zero'), x: 335, y: 468, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-skip8', text: t('no se evalúa', 'not evaluated'), x: 775, y: 468, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-order', text: t('el orden importa', 'order matters'), x: 500, y: 562, align: 'middle', tone: 'violet' },
+	{ id: 'lb-div', text: '-7 / 3 = -2', x: 130, y: 712, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'lb-ident', text: '-2 * 3 + (-1) = -7', x: 190, y: 892, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'lb-ub1', text: t('dos modificaciones sin orden', 'two modifications, no order'), x: 820, y: 772, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-ub2', text: t('desborda un int con signo', 'signed int overflow'), x: 790, y: 935, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-ok', text: t('la precedencia agrupa; no ordena', 'precedence groups; it does not order'), x: 480, y: 12, align: 'middle', tone: 'violet' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + 24);
+const chipLeft = (chip: Chip) =>
+	chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x;
+
+// Operands that are sealed because they are never evaluated, and the boxes that refuse a value.
+const sealedPlates = [
+	{ id: 'seal-7', p: plates.get('7w')! },
+	{ id: 'seal-8', p: plates.get('8w')! },
+];
+const sealedBoxes = [
+	{ id: 'seal-15', top: B.i.top, icon: { x: B.i.leftC.x + 12, y: B.i.leftC.y - 16 } },
+	{ id: 'seal-16', top: B.big.top, icon: { x: B.big.leftC.x + 12, y: B.big.leftC.y - 16 } },
+];
+
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="eval" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="oe-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="oe-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<radialGradient id="oe-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="oe-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="oe-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: every expression as a tree, seen through the camera -->
+			<g clip-path="url(#oe-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#oe-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#oe-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- Declarations: each box is the module of its line -->
+						{
+							declarations.map((decl) => (
+								<>
+									<g data-el={`m-${decl.line}`} class="xj-mod">
+										{decl.boxes.map((spec) => (
+											<g>
+												<polygon class="xj-shadow" points={spec.g.base} transform="translate(6 8)" />
+												<polygon class="xj-face xj-face--l" points={spec.g.front} />
+												<polygon class="xj-face xj-face--r" points={spec.g.end} />
+												<polygon class="xj-face xj-face--t" points={spec.g.top} fill="url(#oe-g-top)" />
+												<text class="xj-name" x={spec.g.labelAt.x} y={spec.g.labelAt.y}>
+													{spec.name}
+													<tspan class="xj-type"> · {spec.type}</tspan>
+													<tspan class="xj-line"> · {decl.line}</tspan>
+												</text>
+												{spec.value && (
+													<text class="xj-value" x={spec.g.valueAt.x} y={spec.g.valueAt.y} text-anchor="middle">
+														{spec.value}
+													</text>
+												)}
+											</g>
+										))}
+									</g>
+									<g data-el={`on-${decl.line}`} class="xj-lit xj-lit--flow">
+										{decl.boxes.map((spec) => (
+											<g>
+												<polygon class="xj-lit-halo" points={spec.g.top} />
+												<polygon class="xj-lit-top xj-lit-top--soft" points={spec.g.top} />
+												<polygon class="xj-lit-side xj-lit-side--soft" points={spec.g.front} />
+											</g>
+										))}
+									</g>
+								</>
+							))
+						}
+
+						<!-- Trees: operators as cubes, operands as plates, the box that receives the result -->
+						{
+							treeParts.map((part) => (
+								<g data-el={`m-${part.tree.line}`} class="xj-mod">
+									{part.wires.map((d) => <path class="xj-wire" d={d} />)}
+									{
+										part.tree.nodes.map((node) => {
+											if (node.kind === 'op') {
+												const g = cubes.get(node.id)!;
+												return (
+													<g data-el={`c-${node.id}`} data-base="shown">
+														<g>
+															<polygon class="xj-shadow" points={g.base} transform="translate(6 8)" />
+															<polygon class="xj-face xj-face--l" points={g.left} />
+															<polygon class="xj-face xj-face--r" points={g.right} />
+															<polygon class="xj-face xj-face--t" points={g.top} fill="url(#oe-g-top)" />
+															<text class="xj-face-text" transform={g.face} text-anchor="middle">
+																{part.tree.line}
+															</text>
+															<text class="xj-op" x={g.center.x} y={g.center.y + 5} text-anchor="middle">
+																{node.text}
+															</text>
+														</g>
+													</g>
+												);
+											}
+											const p = plates.get(node.id)!;
+											return (
+												<g data-el={`lf-${node.id}`} data-base="shown">
+													<g>
+														<polygon class="xj-plate-side" points={p.side} />
+														<polygon class="xj-plate" points={p.top} />
+														<text class="xj-branch" x={p.center.x} y={p.center.y + 4.5} text-anchor="middle">
+															{node.text}
+														</text>
+														{node.sub && (
+															<text class="xj-sub" x={p.subAt.x} y={p.subAt.y} text-anchor="middle">
+																{node.sub}
+															</text>
+														)}
+													</g>
+												</g>
+											);
+										})
+									}
+									<g>
+										<polygon class="xj-shadow" points={part.tree.target.base} transform="translate(6 8)" />
+										<polygon class="xj-face xj-face--l" points={part.tree.target.front} />
+										<polygon class="xj-face xj-face--r" points={part.tree.target.end} />
+										<polygon class="xj-face xj-face--t" points={part.tree.target.top} fill="url(#oe-g-top)" />
+										<text class="xj-name" x={part.tree.target.labelAt.x} y={part.tree.target.labelAt.y}>
+											{part.tree.targetName}
+											<tspan class="xj-type"> · int</tspan>
+											<tspan class="xj-line"> · {part.tree.line}</tspan>
+										</text>
+									</g>
+								</g>
+							))
+						}
+
+						<!-- ++a and b++: the variable, one operator cube and the box that receives the value -->
+						{
+							unaries.map((unary) => (
+								<g data-el={`m-${unary.line}`} class="xj-mod">
+									<path class="xj-wire" d={link(unary.from.rightC, unary.g.leftMid)} />
+									<path class="xj-wire" d={link(unary.g.rightMid, unary.into.leftC)} />
+									<g data-el={`c-${unary.id}`} data-base="shown">
+										<g>
+											<polygon class="xj-shadow" points={unary.g.base} transform="translate(6 8)" />
+											<polygon class="xj-face xj-face--l" points={unary.g.left} />
+											<polygon class="xj-face xj-face--r" points={unary.g.right} />
+											<polygon class="xj-face xj-face--t" points={unary.g.top} fill="url(#oe-g-top)" />
+											<text class="xj-face-text" transform={unary.g.face} text-anchor="middle">
+												{unary.line}
+											</text>
+											<text class="xj-op" x={unary.g.center.x} y={unary.g.center.y + 5} text-anchor="middle">
+												++
+											</text>
+											<text class="xj-cond" x={unary.g.center.x} y={unary.g.topTip.y - 14} text-anchor="middle">
+												{unary.label}
+											</text>
+										</g>
+									</g>
+									<g>
+										<polygon class="xj-shadow" points={unary.into.base} transform="translate(6 8)" />
+										<polygon class="xj-face xj-face--l" points={unary.into.front} />
+										<polygon class="xj-face xj-face--r" points={unary.into.end} />
+										<polygon class="xj-face xj-face--t" points={unary.into.top} fill="url(#oe-g-top)" />
+										<text class="xj-name" x={unary.into.labelAt.x} y={unary.into.labelAt.y}>
+											{unary.name}
+											<tspan class="xj-type"> · int</tspan>
+											<tspan class="xj-line"> · {unary.line}</tspan>
+										</text>
+									</g>
+								</g>
+							))
+						}
+
+						<!-- Lit operators: the one being evaluated. Violet marks the verdict that stops && and || -->
+						{
+							[...cubes.entries()].map(([id, g]) => (
+								<g data-el={`nd-${id}`} class:list={['xj-lit', ['7r', '8r'].includes(id) ? 'xj-lit--violet' : 'xj-lit--flow']}>
+									<polygon class="xj-lit-halo" points={g.top} />
+									<polygon class="xj-lit-top" points={g.top} />
+									<polygon class="xj-lit-side" points={g.left} />
+									<text class="xj-face-text xj-face-text--on" transform={g.face} text-anchor="middle">
+										{id.replace(/\D/g, '')}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Machines: printf and return -->
+						{
+							machines.map((machine) => (
+								<>
+									<g data-el={`m-${machine.line}`} class="xj-mod">
+										<polygon class="xj-shadow" points={machine.g.base} transform="translate(6 8)" />
+										<polygon class="xj-face xj-face--l" points={machine.g.left} />
+										<polygon class="xj-face xj-face--r" points={machine.g.right} />
+										<polygon class="xj-face xj-face--t" points={machine.g.top} fill="url(#oe-g-top)" />
+										<text class="xj-face-text" transform={machine.g.face} text-anchor="middle">
+											{machine.line}
+										</text>
+										<text class="xj-machine" x={machine.g.center.x} y={machine.g.topTip.y - 12} text-anchor="middle">
+											{machine.label}
+										</text>
+									</g>
+									<g data-el={`on-${machine.line}`} class="xj-lit xj-lit--flow">
+										<polygon class="xj-lit-halo" points={machine.g.top} />
+										<polygon class="xj-lit-top" points={machine.g.top} />
+										<polygon class="xj-lit-side" points={machine.g.left} />
+										<text class="xj-face-text xj-face-text--on" transform={machine.g.face} text-anchor="middle">
+											{machine.line}
+										</text>
+									</g>
+								</>
+							))
+						}
+
+						<!-- Undefined behavior, line 15: two modifications of `i`, no order -->
+						<g data-el="m-15" class="xj-mod">
+							{
+								[
+									{ id: 'c-15a', g: U.iInc, label: 'i++', sym: '++' },
+									{ id: 'c-15b', g: U.iSet, label: 'i = …', sym: '=' },
+								].map((item) => (
+									<g data-el={item.id} data-base="shown">
+										<g>
+											<polygon class="xj-shadow" points={item.g.base} transform="translate(6 8)" />
+											<polygon class="xj-face xj-face--l" points={item.g.left} />
+											<polygon class="xj-face xj-face--r" points={item.g.right} />
+											<polygon class="xj-face xj-face--t" points={item.g.top} fill="url(#oe-g-top)" />
+											<text class="xj-face-text" transform={item.g.face} text-anchor="middle">
+												15
+											</text>
+											<text class="xj-op" x={item.g.center.x} y={item.g.center.y + 5} text-anchor="middle">
+												{item.sym}
+											</text>
+											<text class="xj-cond" x={item.g.center.x} y={item.g.topTip.y - 14} text-anchor="middle">
+												{item.label}
+											</text>
+										</g>
+									</g>
+								))
+							}
+							<g>
+								<polygon class="xj-shadow" points={B.i.base} transform="translate(6 8)" />
+								<polygon class="xj-face xj-face--l" points={B.i.front} />
+								<polygon class="xj-face xj-face--r" points={B.i.end} />
+								<polygon class="xj-face xj-face--t" points={B.i.top} fill="url(#oe-g-top)" />
+								<text class="xj-name" x={B.i.leftC.x - 8} y={B.i.leftC.y + 8} text-anchor="end">
+									i<tspan class="xj-type"> · int</tspan>
+									<tspan class="xj-line"> · 15</tspan>
+								</text>
+							</g>
+						</g>
+						<g data-el="bw-15" class="xj-bad">
+							<g>
+								{
+									ubWires.one.map((d) => (
+										<>
+											<path class="mg-stroke xj-bad-halo" pathLength="1" d={d} />
+											<path class="mg-stroke xj-bad-core" pathLength="1" d={d} />
+										</>
+									))
+								}
+							</g>
+						</g>
+
+						<!-- Undefined behavior, line 16: INT_MAX + 1 -->
+						<g data-el="m-16" class="xj-mod">
+							<path class="xj-wire" d={ubWires.two} />
+							<g data-el="c-16u" data-base="shown">
+								<g>
+									<polygon class="xj-shadow" points={U.plus.base} transform="translate(6 8)" />
+									<polygon class="xj-face xj-face--l" points={U.plus.left} />
+									<polygon class="xj-face xj-face--r" points={U.plus.right} />
+									<polygon class="xj-face xj-face--t" points={U.plus.top} fill="url(#oe-g-top)" />
+									<text class="xj-face-text" transform={U.plus.face} text-anchor="middle">
+										16
+									</text>
+									<text class="xj-op" x={U.plus.center.x} y={U.plus.center.y + 5} text-anchor="middle">
+										+
+									</text>
+									<text class="xj-cond" x={U.plus.center.x} y={U.plus.topTip.y - 14} text-anchor="middle">
+										+ 1
+									</text>
+								</g>
+							</g>
+							<g>
+								<polygon class="xj-shadow" points={B.big.base} transform="translate(6 8)" />
+								<polygon class="xj-face xj-face--l" points={B.big.front} />
+								<polygon class="xj-face xj-face--r" points={B.big.end} />
+								<polygon class="xj-face xj-face--t" points={B.big.top} fill="url(#oe-g-top)" />
+								<text class="xj-name" x={B.big.labelAt.x} y={B.big.labelAt.y}>
+									{names.big}
+									<tspan class="xj-type"> · int</tspan>
+									<tspan class="xj-line"> · 16</tspan>
+								</text>
+							</g>
+						</g>
+						<g data-el="bw-16" class="xj-bad">
+							<g>
+								<path class="mg-stroke xj-bad-halo" pathLength="1" d={ubWires.two} />
+								<path class="mg-stroke xj-bad-core" pathLength="1" d={ubWires.two} />
+							</g>
+						</g>
+
+						<!-- Sealed: the operand that never runs, and the boxes that refuse a value -->
+						{
+							sealedPlates.map((seal) => (
+								<g data-el={seal.id} class="xj-seal">
+									<g>
+										<polygon class="xj-seal-ring" points={seal.p.top} />
+										<svg class="xj-icon" x={seal.p.center.x + 52} y={seal.p.tip.y - 14} width="22" height="22" viewBox="0 0 24 24" stroke-width="2.75">
+											<rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+											<path d="M7 11V7a5 5 0 0 1 10 0v4" />
+										</svg>
+									</g>
+								</g>
+							))
+						}
+						{
+							sealedBoxes.map((seal) => (
+								<g data-el={seal.id} class="xj-seal">
+									<g>
+										<polygon class="xj-seal-ring" points={seal.top} />
+										<svg class="xj-icon" x={seal.icon.x} y={seal.icon.y} width="22" height="22" viewBox="0 0 24 24" stroke-width="2.75">
+											<rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+											<path d="M7 11V7a5 5 0 0 1 10 0v4" />
+										</svg>
+									</g>
+								</g>
+							))
+						}
+
+						<!-- Values -->
+						{
+							values.map((value) => (
+								<text data-el={value.id} class:list={['xj-value', value.bad && 'xj-value--bad']} x={value.at.x} y={value.at.y} text-anchor="middle">
+									{value.text}
+								</text>
+							))
+						}
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									<text class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'} x={chipLeft(chip) + chipWidth(chip) / 2} y={chip.y + 4.5} text-anchor="middle">
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Value tokens. Placement lives on the inner group: the player resets data-el transforms. -->
+						{
+							tokens.map((token) => (
+								<g data-el={token.id} data-x={at(token.from).x} data-y={at(token.from).y}>
+									<g class:list={['xj-token', `xj-token--${token.tone}`]}>
+										<rect class="xj-token-halo" x={-tokenWidth(token) / 2 - 5} y="-18" width={tokenWidth(token) + 10} height="36" rx="18" />
+										<rect class="xj-token-card" x={-tokenWidth(token) / 2} y="-13" width={tokenWidth(token)} height="26" rx="13" />
+										<text class="xj-token-text" x="0" y="4.5" text-anchor="middle">
+											{token.text}
+										</text>
+									</g>
+								</g>
+							))
+						}
+
+						<!-- The execution flow -->
+						<g data-el="p" class="xj-particle" data-x={at('a-m4').x} data-y={at('a-m4').y}>
+							<circle r="20" fill="url(#oe-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="440" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<rect class="xj-legend-pick" x={VP.x + 172} y={LEGEND_Y - 6} width="20" height="12" rx="3"></rect>
+				<text x={VP.x + 200} y={LEGEND_Y + 4}>{t('Operador evaluado', 'Evaluated operator')}</text>
+				<rect class="xj-legend-token" x={VP.x + 350} y={LEGEND_Y - 6} width="20" height="12" rx="6"></rect>
+				<text x={VP.x + 378} y={LEGEND_Y + 4}>{t('Valor', 'Value')}</text>
+			</g>
+
+			<!-- EDITOR: the program, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.file}</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(4)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<!-- Marked lines: the two examples of undefined behavior -->
+				{
+					WARN_LINES.map((mark) => (
+						<g data-el={mark.id} class="xj-warn">
+							<rect x={ED.x + 4} y={lineTop(mark.from) + 2} width="4" height={(mark.to - mark.from + 1) * LINE_H - 4} rx="2" />
+							<svg class="xj-icon" x={ED.x + ED.w - 30} y={lineMid(mark.from) - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+								<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+								<path d="M12 9v4" />
+								<path d="M12 17h.01" />
+							</svg>
+						</g>
+					))
+				}
+
+				<!-- The program: written before it runs, so every line is visible -->
+				<g class="xj-code">
+					{
+						lines.map((line) => (
+							<g>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+									{line.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+							</g>
+						))
+					}
+				</g>
+
+				<!-- Console: what each printf prints -->
+				{
+					outputs.map((out) => (
+						<text data-el={out.id} class="xj-out" x={ED.x + 20} y={outY(out.row)} xml:space="preserve">
+							{out.text}
+						</text>
+					))
+				}
+				{lines.map((line) => <circle data-anchor={`ln-${line.n}`} cx={BAR_CX} cy={lineMid(line.n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue execution flow, magenta for the problem (the operand that never runs,
+	   the undefined behavior) and violet for what resolves it (the verdict that
+	   stops && and ||, the identity of the remainder).
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='operadores-evaluacion-c']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='operadores-evaluacion-c'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='operadores-evaluacion-c'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='operadores-evaluacion-c'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-pick {
+		fill: var(--xj-flow);
+		fill-opacity: 0.45;
+		stroke: var(--xj-flow-soft);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend-token {
+		fill: var(--xj-panel);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+	}
+
+	/* Boxes, cubes and plates */
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-plate {
+		fill: var(--xj-deep-hi);
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate-side {
+		fill: var(--xj-steel);
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.2;
+		stroke-linejoin: round;
+	}
+
+	.xj-wire {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+	}
+
+	.xj-name {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-type,
+	.xj-line {
+		font-size: 11px;
+		font-weight: 400;
+		fill: var(--xj-dim);
+	}
+
+	.xj-line {
+		font-family: var(--font-body);
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-value {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-branch {
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-branch--on {
+		fill: var(--xj-white);
+	}
+
+	.xj-sub {
+		font-family: var(--font-body);
+		font-size: 10.5px;
+		font-weight: 600;
+		fill: var(--xj-dim);
+	}
+
+	.xj-cond,
+	.xj-machine {
+		font-family: monospace;
+		font-size: 12.5px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-machine {
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	.xj-op {
+		font-family: monospace;
+		font-size: 15px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-op--on {
+		fill: var(--xj-ink);
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit, var(--xj-flow));
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top--soft {
+		fill-opacity: 0.18;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side--soft {
+		fill: var(--xj-lit);
+		fill-opacity: 0.25;
+	}
+
+	/* The operand that is never evaluated */
+	.xj-seal-ring {
+		fill: var(--xj-magenta-deep);
+		fill-opacity: 0.55;
+		stroke: var(--xj-magenta);
+		stroke-width: 2;
+		stroke-dasharray: 6 5;
+		stroke-linejoin: round;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink);
+	}
+
+	/* Value tokens and the flow */
+	.xj-token {
+		--xj-token: var(--xj-flow);
+		--xj-token-ink: var(--xj-flow-soft);
+	}
+
+	.xj-token--violet {
+		--xj-token: var(--xj-violet);
+		--xj-token-ink: var(--xj-violet-soft);
+	}
+
+	.xj-token-halo {
+		fill: var(--xj-token);
+		fill-opacity: 0.16;
+	}
+
+	.xj-token-card {
+		fill: var(--xj-ink);
+		stroke: var(--xj-token);
+		stroke-width: 2;
+	}
+
+	.xj-token-text {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-token-ink);
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+		font-weight: 700;
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-ann) {
+		fill: var(--xj-flow-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-warn rect {
+		fill: var(--xj-magenta);
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-magenta);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	/* Refused state: the wires and values of undefined behavior */
+	.xj-bad-halo,
+	.xj-bad-core {
+		fill: none;
+		stroke: var(--xj-magenta);
+		stroke-linecap: round;
+	}
+
+	.xj-bad-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-bad-core {
+		stroke-width: 3;
+	}
+
+	.xj-value--bad {
+		font-size: 18px;
+		fill: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--plain {
+		--xj-chip: var(--xj-edge);
+	}
+</style>

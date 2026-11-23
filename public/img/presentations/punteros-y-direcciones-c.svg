@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+
+	<!-- Title -->
+	<text x="24" y="28" font-family="'Caprasimo', serif" font-size="15" fill="#8c491a">Punteros y direcciones</text>
+	<text x="24" y="44" font-family="'Figtree', sans-serif" font-size="9" fill="#5c5346">&amp;, *, NULL, const y punteros pasados por valor</text>
+
+	<!-- Memory panel -->
+	<rect x="20" y="58" width="360" height="124" rx="22" fill="#f5ead8"/>
+
+	<!-- Pointer p -->
+	<text x="44" y="88" font-family="'Figtree', sans-serif" font-weight="700" font-size="10" fill="#201e1d">p</text>
+	<rect x="40" y="94" width="110" height="40" rx="12" fill="#f0fae1" stroke="#7a8a5e" stroke-width="2.5"/>
+	<text x="95" y="119" font-family="monospace" font-weight="700" font-size="13" fill="#201e1d" text-anchor="middle">0x1000</text>
+	<text x="44" y="148" font-family="monospace" font-size="8" fill="#5c5346">0x2000</text>
+
+	<!-- Arrow p -> x -->
+	<path d="M150 114 Q 200 96 242 112" fill="none" stroke="#c67139" stroke-width="3" stroke-linecap="round"/>
+	<path d="M231 103 L 244 113 L 229 118" fill="none" stroke="#c67139" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+	<!-- Object x, 4 bytes -->
+	<text x="252" y="88" font-family="'Figtree', sans-serif" font-weight="700" font-size="10" fill="#201e1d">x</text>
+	<rect x="248" y="94" width="112" height="40" rx="12" fill="#fff2eb" stroke="#c67139" stroke-width="2.5"/>
+	<line x1="276" y1="100" x2="276" y2="128" stroke="#dcd3c4" stroke-width="1.2"/>
+	<line x1="304" y1="100" x2="304" y2="128" stroke="#dcd3c4" stroke-width="1.2"/>
+	<line x1="332" y1="100" x2="332" y2="128" stroke="#dcd3c4" stroke-width="1.2"/>
+	<text x="304" y="119" font-family="monospace" font-weight="700" font-size="15" fill="#201e1d" text-anchor="middle">42</text>
+	<text x="252" y="148" font-family="monospace" font-size="8" fill="#5c5346">0x1000</text>
+
+	<!-- Modes -->
+	<rect x="40" y="158" width="62" height="16" rx="8" fill="#c67139"/>
+	<text x="71" y="169" font-family="'Figtree', sans-serif" font-weight="700" font-size="8" fill="#f9f4ed" text-anchor="middle">Aprender</text>
+	<rect x="108" y="158" width="62" height="16" rx="8" fill="#ebddc5"/>
+	<text x="139" y="169" font-family="'Figtree', sans-serif" font-weight="700" font-size="8" fill="#5c5346" text-anchor="middle">Practicar</text>
+	<rect x="176" y="158" width="56" height="16" rx="8" fill="#ebddc5"/>
+	<text x="204" y="169" font-family="'Figtree', sans-serif" font-weight="700" font-size="8" fill="#5c5346" text-anchor="middle">Evaluar</text>
+	<text x="248" y="169" font-family="monospace" font-size="8.5" fill="#8c491a">*p = 50;  // x = 50</text>
+</svg>

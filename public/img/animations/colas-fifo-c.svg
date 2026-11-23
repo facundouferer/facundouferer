@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" role="img" aria-label="Una cola de nodos con los punteros frente y final: se encola por el final y se desencola por el frente">
+  <rect width="400" height="200" fill="#f1e8d9"/>
+  <g stroke-linejoin="round" stroke-width="2.5">
+    <path d="M24 150l44-23 44 23-44 23z" fill="#faf5ec" stroke="#7d9a76"/>
+    <path d="M130 118l112-58 112 58-112 58z" fill="#faf5ec" stroke="#c0714a"/>
+  </g>
+  <g stroke-linejoin="round" stroke-width="2" fill="#faf5ec">
+    <path d="M52 142l16-8 16 8-16 8z" stroke="#2e2b25"/>
+    <path d="M168 118l16-8 16 8-16 8z" stroke="#c0714a"/>
+    <path d="M212 96l16-8 16 8-16 8z" stroke="#c0714a"/>
+    <path d="M256 74l16-8 16 8-16 8z" stroke="#c0714a"/>
+  </g>
+  <g fill="none" stroke="#c0714a" stroke-width="3" stroke-linecap="round">
+    <path d="M200 112c4-8 8-12 14-16"/>
+    <path d="M244 90c4-8 8-12 14-16"/>
+    <path d="M68 130c20-46 74-56 100-24"/>
+  </g>
+  <g fill="#c0714a">
+    <path d="M216 94l-8 1 4-7z"/>
+    <path d="M260 72l-8 1 4-7z"/>
+    <path d="M170 110l-9-1 6-6z"/>
+  </g>
+  <g font-family="monospace" font-weight="700" fill="#2e2b25">
+    <text x="184" y="122" font-size="10" text-anchor="middle">10</text>
+    <text x="228" y="100" font-size="10" text-anchor="middle">20</text>
+    <text x="272" y="78" font-size="10" text-anchor="middle">30</text>
+  </g>
+  <g font-family="sans-serif" font-size="11" font-weight="700" fill="#2e2b25">
+    <text x="68" y="190" text-anchor="middle">stack</text>
+    <text x="242" y="190" text-anchor="middle">heap</text>
+  </g>
+  <g font-family="monospace" font-size="11" font-weight="700" fill="#c0714a">
+    <text x="150" y="150" text-anchor="middle">frente</text>
+    <text x="316" y="62" text-anchor="middle">final</text>
+    <text x="330" y="150" text-anchor="middle" fill="#7d9a76">FIFO</text>
+  </g>
+</svg>

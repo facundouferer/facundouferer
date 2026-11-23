@@ -60,3 +60,29 @@ test('bash marks the command word, flags, comments and strings', () => {
 test('highlightLine returns the first highlighted line', () => {
 	assert.equal(highlightLine('java HolaMundo', 'bash'), '<span class="tok-cmd">java</span> HolaMundo');
 });
+
+test('c marks preprocessor directives, keywords, types, functions, strings and comments', () => {
+	const lines = highlightCode(
+		'#include <stdio.h>\nint main(void) {\n    size_t n = sizeof(int); // bytes\n    printf("%zu\\n", n);\n    return 0;\n}',
+		'c',
+	);
+	assert.equal(lines.length, 6);
+	assert.match(lines[0], /^<span class="tok-ann">#include<\/span>/);
+	assert.match(lines[0], /&lt;stdio\.h&gt;/);
+	assert.match(lines[1], /<span class="tok-kw">int<\/span> <span class="tok-fn">main<\/span>/);
+	assert.match(lines[1], /<span class="tok-kw">void<\/span>/);
+	assert.match(lines[2], /<span class="tok-type">size_t<\/span>/);
+	assert.match(lines[2], /<span class="tok-kw">sizeof<\/span>/);
+	assert.match(lines[2], /<span class="tok-cmt">\/\/ bytes<\/span>/);
+	assert.match(lines[3], /<span class="tok-fn">printf<\/span>/);
+	assert.match(lines[3], /<span class="tok-str">&quot;%zu\\n&quot;<\/span>/);
+	assert.match(lines[4], /<span class="tok-kw">return<\/span> <span class="tok-num">0<\/span>/);
+});
+
+test('c knows C23 keywords and pointer operators', () => {
+	const [line] = highlightCode('constexpr bool ok = true; int *p = nullptr; p->x;', 'c');
+	for (const kw of ['constexpr', 'bool', 'true', 'int', 'nullptr']) {
+		assert.match(line, new RegExp(`<span class="tok-kw">${kw}</span>`));
+	}
+	assert.match(line, /<span class="tok-op">-&gt;<\/span>/);
+});

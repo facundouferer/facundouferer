@@ -1,0 +1,1128 @@
+---
+/**
+ * Scene for "Two threads, one counter" (lesson c/concurrencia-threads-y-atomics,
+ * order: 40), a short film played on one persistent motion canvas. The captions and
+ * cues live in `src/data/animations/hilos-atomics-c.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay with the
+ * lesson's pthread program in the four shapes the film runs (unprotected, mutex,
+ * atomic, and the two-lock fragment that deadlocks); a bar slides to the running line
+ * and the real output is typed in the console below. The viewport on the right holds
+ * the camera: an isometric floor with two parallel tracks, one per thread, that fork
+ * from `main` and merge again at `pthread_join`. Between them stands the shared
+ * counter, a single cell. `contador++` is three modules per track (read, add, write);
+ * a mutex is one key and a gate before the critical section; an atomic is one
+ * indivisible module. The threads are light blue particles (the execution flow);
+ * magenta marks the lost update, violet marks what protects the counter. Below the
+ * floor, a second small floor holds the two accounts of the deadlock.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/hilos-atomics-c';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── The programs shown in the editor ──────────────────────────────────────
+// They are the lesson's own, with its identifiers localized like it does. The error
+// checks of `pthread_create` are left out so every shape fits the editor, and the
+// atomic comment is shortened.
+const id = {
+	counter: t('contador', 'counter'),
+	inc: t('incrementar', 'increment'),
+	lock: t('candado', 'lock'),
+	file: t('contador.c', 'counter.c'),
+	dead: t('interbloqueo.c', 'deadlock.c'),
+};
+const cmt = {
+	race: t('carrera de datos', 'data race'),
+	crit: t('sección crítica', 'critical section'),
+	one: t('un solo paso', 'one single step'),
+	waits: t('espera', 'waits'),
+};
+const acc = {
+	a: t('cuenta_a', 'account_a'),
+	b: t('cuenta_b', 'account_b'),
+};
+
+const c = id.counter;
+const worker = (body: string[]) => [
+	`static void *${id.inc}(void *arg) {`,
+	'    (void)arg;',
+	'    for (int i = 0; i < 1000000; i++) {',
+	...body,
+	'    }',
+	'    return NULL;',
+	'}',
+];
+const main = (print: string) => [
+	'int main(void) {',
+	'    pthread_t a, b;',
+	`    pthread_create(&a, NULL, ${id.inc}, NULL);`,
+	`    pthread_create(&b, NULL, ${id.inc}, NULL);`,
+	'    pthread_join(a, NULL);',
+	'    pthread_join(b, NULL);',
+	print,
+	'    return 0;',
+	'}',
+];
+const printLong = `    printf("${c} = %ld\\n", ${c});`;
+const printAtomic = `    printf("${c} = %d\\n", atomic_load(&${c}));`;
+
+const programs: Record<string, string[]> = {
+	v0: [
+		'#include <stdio.h>',
+		'#include <pthread.h>',
+		'',
+		`static long ${c} = 0;`,
+		'',
+		...worker([`        ${c}++; // ${cmt.race}`]),
+		'',
+		...main(printLong),
+	],
+	v1: [
+		'#include <stdio.h>',
+		'#include <pthread.h>',
+		'',
+		`static long ${c} = 0;`,
+		`static pthread_mutex_t ${id.lock} = PTHREAD_MUTEX_INITIALIZER;`,
+		'',
+		...worker([`        pthread_mutex_lock(&${id.lock});`, `        ${c}++; // ${cmt.crit}`, `        pthread_mutex_unlock(&${id.lock});`]),
+		'',
+		...main(printLong),
+	],
+	v2: [
+		'#include <stdio.h>',
+		'#include <pthread.h>',
+		'#include <stdatomic.h>',
+		'',
+		`static atomic_int ${c} = 0;`,
+		'',
+		...worker([`        atomic_fetch_add(&${c}, 1); // ${cmt.one}`]),
+		'',
+		...main(printAtomic),
+	],
+	// The two-lock fragment of the lesson: opposite orders deadlock, one global order does not.
+	v3: [
+		`// ${t('Hilo A: transferir de', 'Thread A: transfer from')} ${acc.a} ${t('a', 'to')} ${acc.b}`,
+		`pthread_mutex_lock(&${acc.a}.${id.lock});`,
+		`pthread_mutex_lock(&${acc.b}.${id.lock}); // ${cmt.waits}`,
+		'',
+		`// ${t('Hilo B: transferir de', 'Thread B: transfer from')} ${acc.b} ${t('a', 'to')} ${acc.a}`,
+		`pthread_mutex_lock(&${acc.b}.${id.lock});`,
+		`pthread_mutex_lock(&${acc.a}.${id.lock}); // ${cmt.waits}`,
+	],
+	v4: [
+		`// ${t('Hilo A: transferir de', 'Thread A: transfer from')} ${acc.a} ${t('a', 'to')} ${acc.b}`,
+		`pthread_mutex_lock(&${acc.a}.${id.lock});`,
+		`pthread_mutex_lock(&${acc.b}.${id.lock});`,
+		'',
+		`// ${t('Hilo B: mismo orden global', 'Thread B: same global order')}`,
+		`pthread_mutex_lock(&${acc.a}.${id.lock}); // ${cmt.waits}`,
+		`pthread_mutex_lock(&${acc.b}.${id.lock});`,
+	],
+};
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const render = (key: string) =>
+	highlightCode(programs[key].join('\n'), 'c').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+const code = Object.fromEntries(Object.keys(programs).map((key) => [key, render(key)])) as Record<string, ReturnType<typeof render>>;
+
+/** 1-based editor line of the first line of `variant` that contains `needle`. */
+const lineOf = (variant: string, needle: string) => programs[variant].findIndex((line) => line.includes(needle)) + 1;
+
+// The lines each variant changes, flagged with a thin violet bar when it takes the editor.
+const changed: Record<string, string[]> = {
+	v1: ['pthread_mutex_t', 'pthread_mutex_lock', 'pthread_mutex_unlock', `${c}++`],
+	v2: ['stdatomic', 'atomic_int', 'atomic_fetch_add', 'atomic_load'],
+	v4: [`${t('mismo orden global', 'same global order')}`, `lock(&${acc.a}.${id.lock}); //`, `lock(&${acc.b}.${id.lock});`],
+};
+const marks = (variant: string) =>
+	programs[variant]
+		.map((line, index) => ({ n: index + 1, line }))
+		.filter(({ line }) => changed[variant]?.some((needle) => line.includes(needle)))
+		.map(({ n }) => n);
+
+// The output each run prints: real values from compiling the lesson's program with
+// `-pthread` and running it (the unprotected one varies from run to run).
+const runs = {
+	cc: `$ gcc -std=c23 -Wall -Wextra -pthread ${id.file} -o ${id.counter}`,
+	run: `$ ./${id.counter}`,
+	bad1: `${c} = 1195921`,
+	bad2: `${c} = 1178882`,
+	ok: `${c} = 2000000`,
+};
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const GUTTER_X = 59;
+const CODE_X = 72;
+const CODE_TOP = 62;
+const LINE_H = 19;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 4.5;
+const CONSOLE_TOP = 548;
+const outY = (row: number) => 594 + row * 20;
+const consoleRows = [
+	{ id: 'o-cc', row: 0, text: runs.cc },
+	{ id: 'o-b1', row: 1, text: runs.run },
+	{ id: 'o-b2', row: 2, text: runs.bad1 },
+	{ id: 'o-b3', row: 3, text: runs.run },
+	{ id: 'o-b4', row: 4, text: runs.bad2 },
+	{ id: 'o-m1', row: 1, text: runs.run },
+	{ id: 'o-m2', row: 2, text: runs.ok },
+	{ id: 'o-a1', row: 1, text: runs.run },
+	{ id: 'o-a2', row: 2, text: runs.ok },
+	{ id: 'o-j1', row: 1, text: runs.run },
+	{ id: 'o-j2', row: 2, text: runs.ok },
+];
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right, +v down-left, z is up. The two tracks run along u
+// (thread A at v = -LV, thread B at v = +LV) with the shared cell between them.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 58;
+const EY = 33;
+const ORIGIN = { x: 440, y: 290 };
+const DL_ORIGIN = { x: 440, y: 672 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const projector = (o: Point) => (u: number, v: number, z = 0): Point => ({
+	x: round(o.x + (u - v) * EX),
+	y: round(o.y + (u + v) * EY - z),
+});
+const pt = projector(ORIGIN);
+const pt2 = projector(DL_ORIGIN);
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const line = (...points: Point[]) => `M${points.map((point) => `${point.x} ${point.y}`).join(' L')}`;
+
+/** A box standing on the floor at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function makeSlab(p: typeof pt) {
+	return (u: number, v: number, a: number, b: number, h: number, z = 0) => {
+		const top = z + h;
+		const back = p(u - a, v - b, top);
+		const right = p(u + a, v - b, top);
+		const front = p(u + a, v + b, top);
+		const left = p(u - a, v + b, top);
+		const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+		const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+		const rightCenter = { x: round((front.x + right.x) / 2), y: round((front.y + right.y) / 2 + h / 2) };
+		return {
+			top: poly([back, right, front, left]),
+			base: poly([back, right, front, left].map(down)),
+			leftFace: poly([left, front, down(front), down(left)]),
+			rightFace: poly([front, right, down(right), down(front)]),
+			center: p(u, v, top),
+			floor: p(u, v, z),
+			faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+			rightMatrix: `matrix(0.866 -0.5 0 1 ${rightCenter.x} ${rightCenter.y})`,
+			topMatrix: `matrix(0.866 0.5 -0.866 0.5 ${p(u, v, top).x} ${p(u, v, top).y})`,
+		};
+	};
+}
+const slab = makeSlab(pt);
+const slab2 = makeSlab(pt2);
+type Slab = ReturnType<typeof slab>;
+type Tone = 'flow' | 'violet' | 'magenta';
+
+const LV = 1.8;
+const LANE = { a: -LV, b: LV };
+const U = { create: -2.7, gateIn: -2.0, read: -1.25, add: 0, write: 1.25, gateOut: 2.0, join: 2.7, laneA: -3.0, laneB: 3.0 };
+
+const floor = slab(0, 0, 4.3, 2.5, 14, -14);
+const cell = slab(0, 0, 0.6, 0.6, 26);
+
+type Mod = { id: string; lane: 'a' | 'b' | 'm'; tone: Tone; g: Slab; u: number; v: number };
+const laneMod = (modId: string, lane: 'a' | 'b', u: number, tone: Tone, a = 0.24, h = 16): Mod => ({
+	id: modId,
+	lane,
+	tone,
+	u,
+	v: LANE[lane],
+	g: slab(u, LANE[lane], a, a, h),
+});
+const modules: Mod[] = [
+	laneMod('ca', 'a', U.create, 'flow', 0.2),
+	laneMod('cb', 'b', U.create, 'flow', 0.2),
+	laneMod('gia', 'a', U.gateIn, 'violet', 0.2, 12),
+	laneMod('gib', 'b', U.gateIn, 'violet', 0.2, 12),
+	laneMod('la', 'a', U.read, 'flow'),
+	laneMod('sa', 'a', U.add, 'flow'),
+	laneMod('ea', 'a', U.write, 'flow'),
+	laneMod('lb', 'b', U.read, 'flow'),
+	laneMod('sb', 'b', U.add, 'flow'),
+	laneMod('eb', 'b', U.write, 'flow'),
+	laneMod('goa', 'a', U.gateOut, 'violet', 0.2, 12),
+	laneMod('gob', 'b', U.gateOut, 'violet', 0.2, 12),
+	laneMod('ja', 'a', U.join, 'flow', 0.2),
+	laneMod('jb', 'b', U.join, 'flow', 0.2),
+	{ id: 'pr', lane: 'm', tone: 'violet', u: 3.7, v: 0, g: slab(3.7, 0, 0.26, 0.26, 16) },
+	{ id: 'xa', lane: 'a', tone: 'violet', u: 0, v: -LV, g: slab(0, -LV, 1.45, 0.26, 16) },
+	{ id: 'xb', lane: 'b', tone: 'violet', u: 0, v: LV, g: slab(0, LV, 1.45, 0.26, 16) },
+];
+const mod = (modId: string) => modules.find((module) => module.id === modId) as Mod;
+
+// The editor line each module shows, per variant of the program.
+const needle: Record<string, string> = {
+	ca: 'pthread_create(&a',
+	cb: 'pthread_create(&b',
+	ja: 'pthread_join(a',
+	jb: 'pthread_join(b',
+	pr: 'printf(',
+	la: `${c}++`,
+	sa: `${c}++`,
+	ea: `${c}++`,
+	lb: `${c}++`,
+	sb: `${c}++`,
+	eb: `${c}++`,
+	gia: 'pthread_mutex_lock',
+	gib: 'pthread_mutex_lock',
+	goa: 'pthread_mutex_unlock',
+	gob: 'pthread_mutex_unlock',
+	xa: 'atomic_fetch_add',
+	xb: 'atomic_fetch_add',
+};
+const numberFor = (modId: string, variant: string) => lineOf(variant, needle[modId]);
+const variantsOf = (modId: string) => ['v0', 'v1', 'v2'].filter((variant) => numberFor(modId, variant) > 0);
+/** Which variant draws the number of a module while the film starts: the first one that has it. */
+const firstVariant = (modId: string) => variantsOf(modId)[0];
+
+// Roads (flat ribbons on the floor): the trunk of `main`, the fork, the two tracks, the merge.
+const M0 = pt(-3.9, 0);
+const FORK = pt(-3.3, 0);
+const JOIN = pt(3.3, 0);
+const OUT = pt(3.7, 0);
+const laneStart = (lane: 'a' | 'b') => pt(U.laneA, LANE[lane]);
+const laneEnd = (lane: 'a' | 'b') => pt(U.laneB, LANE[lane]);
+const roads = {
+	fk: [line(M0, FORK), line(FORK, laneStart('a')), line(FORK, laneStart('b'))],
+	'lane-a': [line(laneStart('a'), laneEnd('a'))],
+	'lane-b': [line(laneStart('b'), laneEnd('b'))],
+	jn: [line(laneEnd('a'), JOIN), line(laneEnd('b'), JOIN), line(JOIN, OUT)],
+};
+
+// Reads and writes of the shared cell: where the three steps of `contador++` meet it.
+// Points are given relative to the grid origin, next to the stations they join.
+const rel = (x: number, y: number): Point => ({ x: ORIGIN.x + x, y: ORIGIN.y + y });
+const curve = (from: Point, via: Point, to: Point) => `M${from.x} ${from.y} Q${via.x} ${via.y} ${to.x} ${to.y}`;
+const routes = [
+	{ id: 'rd-a', tone: 'flow', d: curve(rel(35, -46), rel(52, -76), rel(32, -100)) },
+	{ id: 'wr-a', tone: 'flow', d: curve(rel(150, -30), rel(112, -52), rel(74, -28)) },
+	{ id: 'rd-b', tone: 'flow', d: curve(rel(-35, -46), rel(-110, -74), rel(-168, -14)) },
+	{ id: 'wr-b', tone: 'flow', d: curve(rel(-26, 66), rel(-34, 30), rel(-34, 0)) },
+];
+const CELL_TOP = cell.center;
+
+// Anchors: where the particles stop (just above a module), plus a few resting places.
+const above = (modId: string, by = 22) => lift(mod(modId).g.center, by);
+const KEY_REST = rel(118, 28);
+const anchors: { id: string; x: number; y: number }[] = [
+	...modules.map((module) => ({ id: `a-${module.id}`, ...above(module.id) })),
+	{ id: 'a-m0', ...lift(M0, 20) },
+	{ id: 'a-f', ...lift(FORK, 20) },
+	{ id: 'a-jw', ...lift(mod('ja').g.center, 50) },
+	{ id: 'a-key', ...KEY_REST },
+	{ id: 'a-kia', ...above('gia', 40) },
+	{ id: 'a-kib', ...above('gib', 40) },
+	{ id: 'a-ksa', ...above('sa', 44) },
+	{ id: 'a-ksb', ...above('sb', 44) },
+];
+
+// Deadlock floor: two accounts, each guarded by its own lock.
+const DL = { floor: slab2(0, 0, 2.2, 1.1, 14, -14), a: slab2(-1, 1, 0.55, 0.55, 22), b: slab2(1, -1, 0.55, 0.55, 22) };
+const DL_THREAD = 58;
+const dlAnchors = [
+	{ id: 'a-dla', ...lift(DL.a.center, DL_THREAD) },
+	{ id: 'a-dlb', ...lift(DL.b.center, DL_THREAD) },
+	{ id: 'a-dla2', ...lift(DL.a.center, DL_THREAD), x: DL.a.center.x - 56 },
+];
+// The two waits cross in the middle: each thread reaches for the account the other one holds.
+const DL_MID = { x: DL.floor.center.x, y: DL.a.center.y - 22 };
+const dlA = { from: { x: dlAnchors[0].x + 24, y: dlAnchors[0].y + 8 }, to: { x: DL.b.center.x - 36, y: DL.b.center.y - 6 } };
+const dlB = { from: { x: dlAnchors[1].x - 24, y: dlAnchors[1].y + 8 }, to: { x: DL.a.center.x + 36, y: DL.a.center.y - 6 } };
+const dlRoutes = [
+	{ id: 'dl-ab', tone: 'magenta', d: curve(dlA.from, DL_MID, dlA.to) },
+	{ id: 'dl-ba', tone: 'magenta', d: curve(dlB.from, DL_MID, dlB.to) },
+	{ id: 'dl-ok', tone: 'violet', d: curve(dlA.from, DL_MID, dlA.to) },
+];
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-all', cx: 440, cy: 435, s: 0.8 },
+	{ id: 'shot-lanes', cx: 440, cy: 292, s: 1.0 },
+	{ id: 'shot-fork', cx: 330, cy: 215, s: 1.4 },
+	{ id: 'shot-cell', cx: 440, cy: 286, s: 1.45 },
+	{ id: 'shot-join', cx: 545, cy: 372, s: 1.4 },
+	{ id: 'shot-dl', cx: 440, cy: 664, s: 1.3 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = {
+	id: string;
+	text: string;
+	x: number;
+	y: number;
+	align: 'start' | 'end' | 'middle';
+	tone: 'plain' | Tone;
+	mono?: boolean;
+	icon?: 'lock';
+};
+const chips: Chip[] = [
+	{ id: 'lb-loop-a', text: t('× 1 000 000', '× 1,000,000'), ...above('ca', 34), align: 'middle', tone: 'flow', mono: true },
+	{ id: 'lb-loop-b', text: t('× 1 000 000', '× 1,000,000'), x: mod('cb').g.floor.x, y: mod('cb').g.floor.y + 32, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'ca-41', text: '41', ...above('la', 36), align: 'middle', tone: 'flow', mono: true },
+	{ id: 'ca-42', text: '42', ...above('sa', 36), align: 'middle', tone: 'flow', mono: true },
+	{ id: 'cb-41', text: '41', x: mod('lb').g.floor.x, y: mod('lb').g.floor.y + 34, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'cb-42', text: '42', x: mod('sb').g.floor.x, y: mod('sb').g.floor.y + 34, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'lb-lost', text: t('se perdió un incremento', 'an increment was lost'), x: CELL_TOP.x + 14, y: CELL_TOP.y + 90, align: 'start', tone: 'magenta' },
+	{ id: 'lb-ub', text: t('comportamiento indefinido', 'undefined behavior'), x: CELL_TOP.x + 14, y: CELL_TOP.y + 90, align: 'start', tone: 'magenta' },
+	{ id: 'lb-crit', text: t('sección crítica', 'critical section'), x: pt(0, -2.55).x, y: pt(0, -2.55).y - 14, align: 'middle', tone: 'violet' },
+	{ id: 'lb-atomic', text: 'atomic_fetch_add', x: above('xa', 38).x, y: above('xa', 38).y, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'wt-b', text: t('espera', 'waits'), x: above('gib', 26).x, y: above('gib', 26).y, align: 'middle', tone: 'plain' },
+	{ id: 'wt-main', text: t('main espera', 'main waits'), x: above('ja', 74).x, y: above('ja', 74).y, align: 'middle', tone: 'plain' },
+	{ id: 'res-bad', text: '1195921', x: mod('pr').g.floor.x - 6, y: mod('pr').g.floor.y + 36, align: 'middle', tone: 'magenta', mono: true },
+	{ id: 'res-ok', text: '2000000', x: mod('pr').g.floor.x - 6, y: mod('pr').g.floor.y + 36, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'lb-dead', text: t('interbloqueo', 'deadlock'), x: DL.floor.center.x, y: DL.a.center.y - 96, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-order', text: t('mismo orden: primero a, luego b', 'same order: a first, then b'), x: DL.floor.center.x, y: DL.a.center.y + 62, align: 'middle', tone: 'violet' },
+	{ id: 'dl-ka', text: id.lock, x: DL.a.center.x, y: DL.a.center.y - 22, align: 'middle', tone: 'violet', mono: true, icon: 'lock' },
+	{ id: 'dl-kb', text: id.lock, x: DL.b.center.x, y: DL.b.center.y - 22, align: 'middle', tone: 'violet', mono: true, icon: 'lock' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + (chip.icon ? 42 : 24));
+const chipLeft = (chip: Chip) => (chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x);
+
+const lanes = ['a', 'b'] as const;
+const zones = lanes.map((lane) => ({ id: `zone-${lane}`, g: slab(0, LANE[lane], 1.65, 0.5, 2) }));
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="ha-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="ha-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="ha-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="ha-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="ha-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="ha-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the two tracks and the shared counter, seen through the camera -->
+			<g clip-path="url(#ha-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#ha-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#ha-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- The floor with the roads of the program: fork, two tracks, merge -->
+						<g data-el="floor">
+							<polygon class="xj-plate-shadow" points={floor.base} transform="translate(12 18)" />
+							<polygon class="xj-plate xj-plate--l" points={floor.leftFace} />
+							<polygon class="xj-plate xj-plate--r" points={floor.rightFace} />
+							<polygon class="xj-plate xj-plate--t" points={floor.top} fill="url(#ha-g-floor)" />
+							{Object.values(roads).flat().map((d) => <path class="xj-road" d={d} />)}
+						</g>
+						{
+							Object.entries(roads).map(([roadId, paths]) => (
+								<g data-el={roadId} class="xj-flowline xj-flowline--flow">
+									{paths.map((d) => (
+										<>
+											<path class="mg-stroke xj-flowline-halo" pathLength="1" d={d} />
+											<path class="mg-stroke xj-flowline-core" pathLength="1" d={d} />
+										</>
+									))}
+								</g>
+							))
+						}
+
+						<!-- The critical section: the stretch of each track the mutex guards -->
+						{
+							zones.map((zone) => (
+								<g data-el={zone.id} class="xj-lit xj-lit--violet">
+									<polygon class="xj-lit-halo" points={zone.g.top} />
+									<polygon class="xj-lit-top xj-lit-top--soft" points={zone.g.top} />
+								</g>
+							))
+						}
+
+						<!-- The shared counter: one cell, its value lying on top -->
+						<g data-el="cell">
+							<polygon class="xj-shadow" points={cell.base} transform="translate(8 11)"></polygon>
+							<polygon class="xj-face xj-face--l" points={cell.leftFace}></polygon>
+							<polygon class="xj-face xj-face--r" points={cell.rightFace}></polygon>
+							<polygon class="xj-face xj-face--t" points={cell.top} fill="url(#ha-g-top)"></polygon>
+							<text class="xj-cell-name" transform={cell.rightMatrix} text-anchor="middle" y="4">{id.counter}</text>
+						</g>
+						<g data-el="cell-bad" class="xj-lit xj-lit--magenta">
+							<polygon class="xj-lit-halo" points={cell.top}></polygon>
+							<polygon class="xj-lit-top xj-lit-top--soft" points={cell.top}></polygon>
+						</g>
+						<g data-el="cell-ok" class="xj-lit xj-lit--violet">
+							<polygon class="xj-lit-halo" points={cell.top}></polygon>
+							<polygon class="xj-lit-top xj-lit-top--soft" points={cell.top}></polygon>
+						</g>
+						{
+							['0', '41', '42', '43'].map((value) => (
+								<g data-el={`v-${value}`}>
+									<text class="xj-cell-value" transform={cell.topMatrix} text-anchor="middle" y="8">
+										{value}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Modules: one per instruction, labelled with its editor line -->
+						{
+							modules.map((module) => (
+								<>
+									<g data-el={`st-${module.id}`} class="xj-mod">
+										<polygon class="xj-shadow" points={module.g.base} transform="translate(6 8)" />
+										<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#ha-g-top)" />
+									</g>
+									<g data-el={`on-${module.id}`} class:list={['xj-lit', `xj-lit--${module.tone}`]}>
+										<polygon class="xj-lit-halo" points={module.g.top} />
+										<polygon class="xj-lit-top" points={module.g.top} />
+										<polygon class="xj-lit-side" points={module.g.leftFace} />
+									</g>
+									<g data-el={`nm-${module.id}`}>
+										{variantsOf(module.id).map((variant) => (
+											<g data-el={`nm-${module.id}-${variant}`} data-base={variant === firstVariant(module.id) ? 'shown' : undefined}>
+												<text class="xj-num" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+													{numberFor(module.id, variant)}
+												</text>
+											</g>
+										))}
+									</g>
+								</>
+							))
+						}
+
+						<!-- Reads and writes of the shared cell -->
+						{
+							routes.map((route) => (
+								<g data-el={route.id} class:list={['xj-flowline', `xj-flowline--${route.tone}`]}>
+									<path class="mg-stroke xj-flowline-halo" pathLength="1" d={route.d} />
+									<path class="mg-stroke xj-flowline-core" pathLength="1" d={route.d} />
+								</g>
+							))
+						}
+
+						<!-- Deadlock floor: two accounts, each with its own lock -->
+						<g data-el="dl-floor">
+							<polygon class="xj-plate-shadow" points={DL.floor.base} transform="translate(12 18)" />
+							<polygon class="xj-plate xj-plate--l" points={DL.floor.leftFace} />
+							<polygon class="xj-plate xj-plate--r" points={DL.floor.rightFace} />
+							<polygon class="xj-plate xj-plate--t" points={DL.floor.top} fill="url(#ha-g-floor)" />
+						</g>
+						{
+							[
+								{ el: 'dl-a', g: DL.a, name: acc.a },
+								{ el: 'dl-b', g: DL.b, name: acc.b },
+							].map((account) => (
+								<g data-el={account.el}>
+									<polygon class="xj-shadow" points={account.g.base} transform="translate(6 8)" />
+									<polygon class="xj-face xj-face--l" points={account.g.leftFace} />
+									<polygon class="xj-face xj-face--r" points={account.g.rightFace} />
+									<polygon class="xj-face xj-face--t" points={account.g.top} fill="url(#ha-g-top)" />
+									<text class="xj-cell-name" transform={account.g.rightMatrix} text-anchor="middle" y="4">
+										{account.name}
+									</text>
+								</g>
+							))
+						}
+						{
+							dlRoutes.map((route) => (
+								<g data-el={route.id} class:list={['xj-flowline', `xj-flowline--${route.tone}`]}>
+									<path class="mg-stroke xj-flowline-halo" pathLength="1" d={route.d} />
+									<path class="mg-stroke xj-flowline-core" pathLength="1" d={route.d} />
+								</g>
+							))
+						}
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									{chip.icon === 'lock' && (
+										<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+											<rect x="4" y="11" width="16" height="10" rx="2" />
+											<path d="M8 11V7a4 4 0 0 1 8 0v4" />
+										</svg>
+									)}
+									<text
+										class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+										x={chipLeft(chip) + chipWidth(chip) / 2 + (chip.icon ? 9 : 0)}
+										y={chip.y + 4.5}
+										text-anchor="middle"
+									>
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The mutex: one key. Placement lives on the inner group: the player resets data-el transforms. -->
+						<g data-el="key" data-x={KEY_REST.x} data-y={KEY_REST.y}>
+							<g class="xj-chip xj-chip--violet">
+								<rect x="-48" y="-12" width="96" height="24" rx="12" />
+								<svg class="xj-icon" x="-38" y="-8" width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+									<rect x="4" y="11" width="16" height="10" rx="2" />
+									<path d="M8 11V7a4 4 0 0 1 8 0v4" />
+								</svg>
+								<text class="xj-chip-mono" x="9" y="4.5" text-anchor="middle">{id.lock}</text>
+							</g>
+						</g>
+
+						<!-- The threads: light blue particles, the execution flow of each one -->
+						{
+							[
+								{ el: 'pm', letter: 'M', at: 'a-m0' },
+								{ el: 'pa', letter: 'A', at: 'a-ca' },
+								{ el: 'pb', letter: 'B', at: 'a-cb' },
+							].map((particle) => (
+								<g data-el={particle.el} class="xj-particle" data-x={anchors.find((anchor) => anchor.id === particle.at)?.x} data-y={anchors.find((anchor) => anchor.id === particle.at)?.y}>
+									<circle r="21" fill="url(#ha-g-particle)"></circle>
+									<circle class="xj-particle-core" r="9"></circle>
+									<text class="xj-particle-letter" text-anchor="middle" y="4">{particle.letter}</text>
+								</g>
+							))
+						}
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{dlAnchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="470" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Hilo (flujo)', 'Thread (flow)')}</text>
+				<rect class="xj-legend-cell" x={VP.x + 148} y={LEGEND_Y - 6} width="20" height="12" rx="3"></rect>
+				<text x={VP.x + 176} y={LEGEND_Y + 4}>{t('Memoria compartida', 'Shared memory')}</text>
+				<circle class="xj-legend-violet" cx={VP.x + 340} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 352} y={LEGEND_Y + 4}>{t('Protección', 'Protection')}</text>
+			</g>
+
+			<!-- EDITOR: the lesson's program, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<g data-el="file-main" data-base="shown">
+					<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{id.file}</text>
+				</g>
+				<g data-el="file-dl">
+					<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{id.dead}</text>
+				</g>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(1)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<!-- The program as the film starts: each line is typed when it is introduced -->
+				<g data-el="ed-v0" data-base="shown" class="xj-code">
+					{
+						code.v0.map((row) => (
+							<g data-el={`e0-${row.n}`}>
+								<text class="xj-gutter" x={GUTTER_X} y={lineBase(row.n)} text-anchor="end">
+									{row.n}
+								</text>
+								<text class="xj-mono" x={CODE_X} y={lineBase(row.n)} xml:space="preserve" set:html={row.html} />
+							</g>
+						))
+					}
+				</g>
+
+				<!-- The other shapes of the program take the editor all at once -->
+				{
+					['v1', 'v2', 'v3', 'v4'].map((variant) => (
+						<g data-el={`ed-${variant}`} class="xj-code">
+							{marks(variant).map((n) => <rect class="xj-change" x={ED.x + 8} y={lineTop(n) + 2} width="3" height={LINE_H - 4} rx="1.5" />)}
+							{code[variant].map((row) => (
+								<>
+									<text class="xj-gutter" x={GUTTER_X} y={lineBase(row.n)} text-anchor="end">
+										{row.n}
+									</text>
+									<text class="xj-mono" x={CODE_X} y={lineBase(row.n)} xml:space="preserve" set:html={row.html} />
+								</>
+							))}
+						</g>
+					))
+				}
+
+				<!-- Console: what the shell shows -->
+				{consoleRows.map((row) => <text data-el={row.id} class={row.id === 'o-cc' || row.text.startsWith('$') ? 'xj-out xj-out--meta' : 'xj-out'} x={ED.x + 20} y={outY(row.row)} xml:space="preserve">{row.text}</text>)}
+				{Array.from({ length: 25 }, (_, index) => index + 1).map((n) => <circle data-anchor={`ln-${n}`} cx={BAR_CX} cy={lineMid(n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue execution flow, magenta for the problem (the lost update, the deadlock)
+	   and violet for what protects the counter (mutex, atomic, one global order).
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='hilos-atomics-c']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='hilos-atomics-c'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='hilos-atomics-c'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='hilos-atomics-c'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-cell {
+		fill: var(--xj-steel);
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend-violet {
+		fill: var(--xj-violet);
+	}
+
+	/* Floors and modules */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-road {
+		fill: none;
+		stroke: var(--xj-ink);
+		stroke-opacity: 0.55;
+		stroke-width: 24;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-num {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-white);
+		stroke: var(--xj-ink);
+		stroke-width: 3;
+		paint-order: stroke;
+		stroke-linejoin: round;
+	}
+
+	.xj-cell-name {
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-cell-value {
+		font-family: monospace;
+		font-size: 24px;
+		font-weight: 700;
+		fill: var(--xj-white);
+		stroke: var(--xj-ink);
+		stroke-width: 3;
+		paint-order: stroke;
+		stroke-linejoin: round;
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top--soft {
+		fill-opacity: 0.16;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* Roads and routes */
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--violet {
+		--xj-line: var(--xj-violet);
+	}
+
+	.xj-flowline--magenta {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* The flow of each thread */
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	.xj-particle-letter {
+		font-family: var(--font-body);
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--xj-ink);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 12.5px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-out--meta {
+		fill: var(--xj-dim);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 11.5px;
+		fill: var(--xj-dim);
+	}
+
+	.xj-change {
+		fill: var(--xj-violet);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type),
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-ann) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+</style>

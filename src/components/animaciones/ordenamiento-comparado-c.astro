@@ -1,0 +1,1222 @@
+---
+/**
+ * Scene for "Three ways to sort" (lesson c/ordenacion-de-arreglos, order: 24), a short
+ * film played on one persistent motion canvas. The captions and cues live in
+ * `src/data/animations/ordenamiento-comparado-c.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay with the
+ * programs of the lesson the film runs (bubble, selection and insertion sort, then the
+ * two sorts by grade); a bar slides to the line being executed and the real output is
+ * typed in the console below. The viewport on the right holds the camera: the same
+ * array of six numbers three times, each one a row of isometric bars whose height is the
+ * value, standing on a floor tile that carries the index. Pins are the indexes, a lit
+ * top marks the elements being compared, a violet tile marks what is already in place,
+ * and two strips of small tiles count comparisons and swaps. One module per instruction
+ * stands in front of each row, labelled with its editor line. At the end, towers compare
+ * the growth of the comparisons, and a second pair of rows sorts records by grade.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/ordenamiento-comparado-c';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── The programs shown in the editor ──────────────────────────────────────
+// They are the lesson's own examples, with its identifiers localized like it does.
+// Comments and blank lines inside the bodies are left out so each one fits.
+const nm = {
+	swap: t('intercambiar', 'swap'),
+	tmp: t('aux', 'tmp'),
+	bubble: t('ordenar_burbuja', 'bubble_sort'),
+	selection: t('ordenar_seleccion', 'selection_sort'),
+	insertion: t('ordenar_insercion', 'insertion_sort'),
+	pass: t('pasada', 'pass'),
+	flag: t('hubo_intercambio', 'swapped'),
+	min: t('minimo', 'min'),
+	key: t('actual', 'key'),
+	student: t('Alumno', 'Student'),
+	name: t('nombre', 'name'),
+	grade: t('nota', 'grade'),
+	selGrade: t('ordenar_seleccion_por_nota', 'selection_sort_by_grade'),
+	insGrade: t('ordenar_insercion_por_nota', 'insertion_sort_by_grade'),
+};
+
+const swapFunction = [`void ${nm.swap}(int v[], int i, int j) {`, `    int ${nm.tmp} = v[i];`, '    v[i] = v[j];', `    v[j] = ${nm.tmp};`, '}', ''];
+
+const programBubble = [
+	...swapFunction,
+	`void ${nm.bubble}(int v[], int n) {`,
+	`    for (int ${nm.pass} = 0; ${nm.pass} < n - 1; ${nm.pass}++) {`,
+	`        bool ${nm.flag} = false;`,
+	`        for (int j = 0; j < n - 1 - ${nm.pass}; j++) {`,
+	'            if (v[j] > v[j + 1]) {',
+	`                ${nm.swap}(v, j, j + 1);`,
+	`                ${nm.flag} = true;`,
+	'            }',
+	'        }',
+	`        if (!${nm.flag}) {`,
+	'            break;',
+	'        }',
+	'    }',
+	'}',
+].join('\n');
+
+const programSelection = [
+	...swapFunction,
+	`void ${nm.selection}(int v[], int n) {`,
+	'    for (int i = 0; i < n - 1; i++) {',
+	`        int ${nm.min} = i;`,
+	'        for (int j = i + 1; j < n; j++) {',
+	`            if (v[j] < v[${nm.min}]) {`,
+	`                ${nm.min} = j;`,
+	'            }',
+	'        }',
+	`        ${nm.swap}(v, i, ${nm.min});`,
+	'    }',
+	'}',
+].join('\n');
+
+const programInsertion = [
+	`void ${nm.insertion}(int v[], int n) {`,
+	'    for (int i = 1; i < n; i++) {',
+	`        int ${nm.key} = v[i];`,
+	'        int j = i - 1;',
+	`        while (j >= 0 && v[j] > ${nm.key}) {`,
+	'            v[j + 1] = v[j];',
+	'            j--;',
+	'        }',
+	`        v[j + 1] = ${nm.key};`,
+	'    }',
+	'}',
+].join('\n');
+
+const programStudentSelection = [
+	'typedef struct {',
+	`    char ${nm.name}[20];`,
+	`    int ${nm.grade};`,
+	`} ${nm.student};`,
+	'',
+	`void ${nm.selGrade}(${nm.student} v[], int n) {`,
+	'    for (int i = 0; i < n - 1; i++) {',
+	`        int ${nm.min} = i;`,
+	'        for (int j = i + 1; j < n; j++) {',
+	`            if (v[j].${nm.grade} < v[${nm.min}].${nm.grade}) {`,
+	`                ${nm.min} = j;`,
+	'            }',
+	'        }',
+	`        ${nm.student} ${nm.tmp} = v[i];`,
+	`        v[i] = v[${nm.min}];`,
+	`        v[${nm.min}] = ${nm.tmp};`,
+	'    }',
+	'}',
+].join('\n');
+
+const programStudentInsertion = [
+	`void ${nm.insGrade}(${nm.student} v[], int n) {`,
+	'    for (int i = 1; i < n; i++) {',
+	`        ${nm.student} ${nm.key} = v[i];`,
+	'        int j = i - 1;',
+	`        while (j >= 0 && v[j].${nm.grade} > ${nm.key}.${nm.grade}) {`,
+	'            v[j + 1] = v[j];',
+	'            j--;',
+	'        }',
+	`        v[j + 1] = ${nm.key};`,
+	'    }',
+	'}',
+].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const linesOf = (source: string) =>
+	highlightCode(source, 'c').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+const pages = [
+	{ el: 'ea', file: t('burbuja.c', 'bubble.c'), lines: linesOf(programBubble), typed: true },
+	{ el: 'eb', file: t('seleccion.c', 'selection.c'), lines: linesOf(programSelection), typed: false },
+	{ el: 'ec', file: t('insercion.c', 'insertion.c'), lines: linesOf(programInsertion), typed: false },
+	{ el: 'ed', file: t('alumnos_seleccion.c', 'students_selection.c'), lines: linesOf(programStudentSelection), typed: false },
+	{ el: 'ee', file: t('alumnos_insercion.c', 'students_insertion.c'), lines: linesOf(programStudentInsertion), typed: false },
+];
+const MAX_LINES = Math.max(...pages.map((page) => page.lines.length));
+
+// What the programs print (compiled with cc -std=c23 -Wall -Wextra -Wpedantic).
+const outputs = [
+	{ id: 'oa-1', row: 0, text: t('original:  29 10 14 37 13 5', 'original:  29 10 14 37 13 5') },
+	{ id: 'oa-2', row: 1, text: t('burbuja:   5 10 13 14 29 37', 'bubble:    5 10 13 14 29 37') },
+	{ id: 'oa-3', row: 2, text: t('seleccion: 5 10 13 14 29 37', 'selection: 5 10 13 14 29 37') },
+	{ id: 'oa-4', row: 3, text: t('insercion: 5 10 13 14 29 37', 'insertion: 5 10 13 14 29 37') },
+	{ id: 'os-1', row: 0, text: t('seleccion: Ciro(5) Ana(7) Bea(7)', 'selection: Ciro(5) Ana(7) Bea(7)') },
+	{ id: 'os-2', row: 1, text: t('insercion: Ciro(5) Bea(7) Ana(7)', 'insertion: Ciro(5) Bea(7) Ana(7)') },
+];
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 72;
+const GUTTER_X = 59;
+const CODE_TOP = 70;
+const LINE_H = 20;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 4.5;
+const CONSOLE_TOP = lineTop(MAX_LINES + 1) + 10;
+const outY = (row: number) => CONSOLE_TOP + 48 + row * 22;
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right, +v down-left, z is up. Every row of bars lies along u.
+// Rows a, b and c are the same array sorted three ways, one below the other (they share
+// u - v, so they share x); rows d and e hold the records of the stability scene.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 56;
+const EY = 32;
+const ORIGIN = { x: 400, y: 330 };
+const ZERO = { x: 0, y: 0 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0, o: Point = ORIGIN): Point => ({
+	x: round(o.x + (u - v) * EX),
+	y: round(o.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+
+/** A box standing at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0, o: Point = ORIGIN) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top, o);
+	const right = pt(u + a, v - b, top, o);
+	const front = pt(u + a, v + b, top, o);
+	const left = pt(u - a, v + b, top, o);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const leftCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top, o),
+		left,
+		front,
+		faceMatrix: `matrix(0.866 0.5 0 1 ${leftCenter.x} ${leftCenter.y})`,
+	};
+}
+type Slab = ReturnType<typeof slab>;
+type Tone = 'flow' | 'violet' | 'magenta';
+
+// The rows. `step` is the distance between slots along u.
+const D = 4.4;
+const ROW = {
+	a: { u0: -2.7, v: -2.7, step: 1.05, count: 6 },
+	b: { u0: -2.7 + D, v: -2.7 + D, step: 1.05, count: 6 },
+	c: { u0: -2.7 + 2 * D, v: -2.7 + 2 * D, step: 1.05, count: 6 },
+	d: { u0: 5.4, v: -6.2, step: 1.45, count: 3 },
+	e: { u0: 5.4 + 5.2, v: -6.2 + 5.2, step: 1.45, count: 3 },
+};
+type RowKey = keyof typeof ROW;
+const rowKeys = Object.keys(ROW) as RowKey[];
+const numberRows: RowKey[] = ['a', 'b', 'c'];
+const slotU = (row: RowKey, k: number) => ROW[row].u0 + k * ROW[row].step;
+
+// Floor tiles carry the index; a bar's base rests on the top of its tile.
+const TILE_H = 4;
+const tileOf = (row: RowKey, k: number) => slab(slotU(row, k), ROW[row].v, 0.44, 0.44, TILE_H);
+const slotAt = (row: RowKey, k: number) => pt(slotU(row, k), ROW[row].v, TILE_H);
+const tiles = rowKeys.map((row) => ({
+	row,
+	label: { a: 'a[6]', b: 'b[6]', c: 'c[6]', d: 'a[3]', e: 'b[3]' }[row],
+	cells: Array.from({ length: ROW[row].count }, (_, k) => ({ k, g: tileOf(row, k) })),
+}));
+
+// The array of the lesson, and the records of the stability scene.
+const VALUES = [29, 10, 14, 37, 13, 5];
+const RECORDS = [
+	{ name: 'Bea', grade: 7 },
+	{ name: 'Ana', grade: 7 },
+	{ name: 'Ciro', grade: 5 },
+];
+const numberHeight = (value: number) => Math.round(12 + 1.8 * value);
+const bars = [
+	...numberRows.flatMap((row) =>
+		VALUES.map((value, i) => ({
+			id: `b${row}${i}`,
+			text: String(value),
+			at: slotAt(row, i),
+			g: slab(0, 0, 0.3, 0.3, numberHeight(value), 0, ZERO),
+		})),
+	),
+	...(['d', 'e'] as RowKey[]).flatMap((row) =>
+		RECORDS.map((record, i) => ({
+			id: `b${row}${i}`,
+			text: `${record.name} ${record.grade}`,
+			at: slotAt(row, i),
+			g: slab(0, 0, 0.4, 0.4, record.grade * 9, 0, ZERO),
+		})),
+	),
+];
+
+// The cells where the pins rest: a rail above the tallest bar of each number row.
+const RAIL = numberHeight(37) + 14;
+const rails = numberRows.flatMap((row) =>
+	Array.from({ length: ROW[row].count }, (_, k) => ({ id: `a-p${row}${k}`, ...lift(slotAt(row, k), RAIL - TILE_H) })),
+);
+
+// Tally strips behind each number row: one small tile per comparison and per swap.
+const TALLY = { a: { cmp: 15, swp: 10 }, b: { cmp: 15, swp: 5 }, c: { cmp: 13, swp: 10 } } as const;
+const tallyTile = (row: RowKey, line: 0 | 1, k: number) => slab(ROW[row].u0 + 0.3 * k, ROW[row].v + 1.1 + 0.4 * line, 0.12, 0.12, 4);
+const tallies = numberRows.map((row) => ({
+	row,
+	cmp: Array.from({ length: TALLY[row as 'a' | 'b' | 'c'].cmp }, (_, k) => ({ k, g: tallyTile(row, 0, k) })),
+	swp: Array.from({ length: TALLY[row as 'a' | 'b' | 'c'].swp }, (_, k) => ({ k, g: tallyTile(row, 1, k) })),
+	labelCmp: pt(ROW[row].u0 - 0.35, ROW[row].v + 1.1, 4),
+	labelSwp: pt(ROW[row].u0 - 0.35, ROW[row].v + 1.5, 4),
+}));
+
+// The flag of bubble sort: a wide cell with the variable name on its face.
+const FLAG = slab(ROW.a.u0 - 1.9, ROW.a.v - 1.4, 0.9, 0.34, 14);
+const FLAG_AT = FLAG.center;
+
+// Modules: one per instruction, in a row in front of its array, labelled with the line.
+// The ids carry the program (a to e) and the editor line.
+const moduleLines: Record<RowKey, [number, Tone][]> = {
+	a: [
+		[2, 'flow'],
+		[3, 'flow'],
+		[4, 'flow'],
+		[8, 'flow'],
+		[9, 'flow'],
+		[10, 'flow'],
+		[11, 'flow'],
+		[12, 'flow'],
+		[13, 'flow'],
+		[16, 'flow'],
+		[17, 'violet'],
+	],
+	b: [
+		[2, 'flow'],
+		[3, 'flow'],
+		[4, 'flow'],
+		[8, 'flow'],
+		[9, 'flow'],
+		[10, 'flow'],
+		[11, 'flow'],
+		[12, 'violet'],
+		[15, 'flow'],
+	],
+	c: [
+		[2, 'flow'],
+		[3, 'flow'],
+		[4, 'flow'],
+		[5, 'flow'],
+		[6, 'flow'],
+		[7, 'flow'],
+		[9, 'violet'],
+	],
+	d: [
+		[7, 'flow'],
+		[8, 'flow'],
+		[9, 'flow'],
+		[10, 'flow'],
+		[11, 'flow'],
+		[14, 'flow'],
+		[15, 'flow'],
+		[16, 'magenta'],
+	],
+	e: [
+		[2, 'flow'],
+		[3, 'flow'],
+		[4, 'flow'],
+		[5, 'flow'],
+		[6, 'flow'],
+		[7, 'flow'],
+		[9, 'violet'],
+	],
+};
+const moduleAt = (row: RowKey, slot: number) => slab(ROW[row].u0 - 0.3 + slot * 0.56, ROW[row].v + 2.4, 0.2, 0.2, 16);
+const modules = rowKeys.flatMap((row) =>
+	moduleLines[row].map(([line, tone], slot) => ({ key: `${row}${line}`, line, tone, g: moduleAt(row, slot) })),
+);
+
+// Towers: comparisons for n = 100 and 200, then the sorted case, on a plate to the left.
+const TOWER_UNIT = 240 / 19900;
+const towerH = (value: number) => Math.max(6, Math.round(value * TOWER_UNIT));
+const TW = { u: -3.6, v: 3.4 };
+const TW_PLATE = slab(TW.u + 1.2, TW.v, 2.2, 1.0, 10, -10);
+const towers: { id: string; tone: Tone | 'ghost'; g: Slab }[] = [
+	{ id: 'tw-100', tone: 'flow', g: slab(TW.u + 0.2, TW.v, 0.3, 0.3, towerH(4950)) },
+	{ id: 'tw-200', tone: 'magenta', g: slab(TW.u + 1.4, TW.v, 0.3, 0.3, towerH(19900)) },
+	{ id: 'tw-sb', tone: 'violet', g: slab(TW.u + 0.2, TW.v, 0.3, 0.3, towerH(99)) },
+	{ id: 'tw-ss', tone: 'magenta', g: slab(TW.u + 1.2, TW.v, 0.3, 0.3, towerH(4950)) },
+	{ id: 'tw-si', tone: 'violet', g: slab(TW.u + 2.2, TW.v, 0.3, 0.3, towerH(99)) },
+];
+const tower = (key: string) => (towers.find((item) => item.id === key) ?? towers[0]).g.center;
+
+// Where the particle stops, and the camera shots.
+const anchors = [
+	...modules.map((module) => ({ id: `a-m${module.key}`, ...lift(module.g.center, 16) })),
+	...rowKeys.flatMap((row) => Array.from({ length: ROW[row].count }, (_, k) => ({ id: `a-s${row}${k}`, ...slotAt(row, k) }))),
+	...rails,
+];
+const at = (key: string) => anchors.find((anchor) => anchor.id === key) ?? { x: 0, y: 0 };
+
+const mid = (row: RowKey) => {
+	const first = slotAt(row, 0);
+	const last = slotAt(row, ROW[row].count - 1);
+	return { x: (first.x + last.x) / 2, y: (first.y + last.y) / 2 };
+};
+const shots = [
+	{ id: 'shot-all', cx: 790, cy: 470, s: 0.62 },
+	{ id: 'shot-a', cx: mid('a').x - 40, cy: mid('a').y + 30, s: 1.05 },
+	{ id: 'shot-b', cx: mid('b').x - 40, cy: mid('b').y + 30, s: 1.05 },
+	{ id: 'shot-c', cx: mid('c').x - 40, cy: mid('c').y + 30, s: 1.05 },
+	{ id: 'shot-tower', cx: 100, cy: 340, s: 1.2 },
+	{ id: 'shot-d', cx: mid('d').x - 60, cy: mid('d').y + 30, s: 1.25 },
+	{ id: 'shot-e', cx: mid('e').x - 60, cy: mid('e').y + 30, s: 1.25 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Index markers: one visual identity, a pin whose arrow tip rests on the rail above a slot.
+// Placement lives on the inner group: the player resets data-el transforms.
+type Pin = { id: string; text: string; stem: number; tone: 'flow' | 'violet'; restAt: string };
+const pins: Pin[] = [
+	{ id: 'pin-a-j', text: 'j', stem: 26, tone: 'flow', restAt: 'a-pa0' },
+	{ id: 'pin-b-i', text: 'i', stem: 26, tone: 'flow', restAt: 'a-pb0' },
+	{ id: 'pin-b-j', text: 'j', stem: 26, tone: 'flow', restAt: 'a-pb1' },
+	{ id: 'pin-b-m', text: nm.min, stem: 62, tone: 'violet', restAt: 'a-pb0' },
+	{ id: 'pin-c-i', text: 'i', stem: 26, tone: 'flow', restAt: 'a-pc1' },
+	{ id: 'pin-c-j', text: 'j', stem: 62, tone: 'violet', restAt: 'a-pc0' },
+];
+const pinWidth = (pin: Pin) => Math.round(pin.text.length * 7.9 + 22);
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = { id: string; text: string; x: number; y: number; align: 'start' | 'end' | 'middle'; tone: 'plain' | Tone; mono?: boolean; big?: boolean };
+const rowEnd = (row: RowKey) => slotAt(row, ROW[row].count - 1);
+const rowStart = (row: RowKey) => slotAt(row, 0);
+const TW100 = tower('tw-100');
+const TW200 = tower('tw-200');
+const TWSB = tower('tw-sb');
+const TWSS = tower('tw-ss');
+const TWSI = tower('tw-si');
+const GROW = `M${TW100.x} ${TW100.y - 8} L${TW200.x} ${TW200.y - 8}`;
+const below = (row: RowKey, dy: number): Point => ({ x: rowStart(row).x + 30, y: rowStart(row).y + dy });
+const chips: Chip[] = [
+	...tallies.flatMap((strip) => {
+		const lastC = strip.cmp[strip.cmp.length - 1].g.center;
+		const lastS = strip.swp[strip.swp.length - 1].g.center;
+		const swaps = strip.row === 'a' ? 10 : strip.row === 'b' ? 5 : 10;
+		const cmps = strip.row === 'c' ? 13 : 15;
+		return [
+			{ id: `ch-${strip.row}-tc`, text: String(cmps), x: lastC.x + 22, y: lastC.y + 2, align: 'start' as const, tone: 'flow' as const, mono: true },
+			{ id: `ch-${strip.row}-ts`, text: String(swaps), x: lastS.x + 22, y: lastS.y + 2, align: 'start' as const, tone: 'violet' as const, mono: true },
+		];
+	}),
+	{ id: 'ch-a-best', text: t('5 comparaciones, 0 intercambios: O(n)', '5 comparisons, 0 swaps: O(n)'), x: below('a', 150).x, y: below('a', 150).y, align: 'start', tone: 'violet', mono: true },
+	{ id: 'ch-b-best', text: t('15 comparaciones, siempre: O(n²)', '15 comparisons, always: O(n²)'), x: below('b', 150).x, y: below('b', 150).y, align: 'start', tone: 'magenta', mono: true },
+	{ id: 'ch-c-best', text: t('5 comparaciones, 0 desplazamientos: O(n)', '5 comparisons, 0 shifts: O(n)'), x: below('c', 150).x, y: below('c', 150).y, align: 'start', tone: 'violet', mono: true },
+	{ id: 'ch-brk', text: 'break', x: at('a-ma17').x, y: at('a-ma17').y - 34, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'ch-n100', text: 'n = 100: 4950', x: TW100.x - 28, y: TW100.y - 8, align: 'end', tone: 'flow', mono: true },
+	{ id: 'ch-n200', text: 'n = 200: 19 900', x: TW200.x + 26, y: TW200.y + 6, align: 'start', tone: 'magenta', mono: true },
+	{ id: 'ch-x4', text: t('el doble de datos, 4 veces más', 'double the data, 4 times more'), x: TW200.x, y: TW200.y - 36, align: 'middle', tone: 'plain' },
+	{ id: 'ch-sorted100', text: t('n = 100, arreglo ya ordenado', 'n = 100, already sorted'), x: TWSS.x, y: TWSS.y - 78, align: 'middle', tone: 'plain' },
+	{ id: 'ch-sb', text: t('burbuja: 99', 'bubble: 99'), x: TWSB.x - 28, y: TWSB.y - 6, align: 'end', tone: 'violet', mono: true },
+	{ id: 'ch-ss', text: t('selección: 4950', 'selection: 4950'), x: TWSS.x, y: TWSS.y - 34, align: 'middle', tone: 'magenta', mono: true },
+	{ id: 'ch-si', text: t('inserción: 99', 'insertion: 99'), x: TWSI.x + 26, y: TWSI.y + 6, align: 'start', tone: 'violet', mono: true },
+	{ id: 'ch-d-order', text: t('orden inicial: Bea antes que Ana', 'initial order: Bea before Ana'), x: slotAt('d', 1).x + 10, y: slotAt('d', 1).y - 182, align: 'middle', tone: 'plain' },
+	{ id: 'ch-d-jump', text: t('Bea salta sobre Ana', 'Bea jumps over Ana'), x: slotAt('d', 1).x + 10, y: slotAt('d', 1).y - 150, align: 'middle', tone: 'magenta' },
+	{ id: 'ch-d-unstable', text: t('selección: no es estable', 'selection: not stable'), x: slotAt('d', 1).x + 10, y: slotAt('d', 1).y - 118, align: 'middle', tone: 'magenta' },
+	{ id: 'ch-e-order', text: t('orden inicial: Bea antes que Ana', 'initial order: Bea before Ana'), x: slotAt('e', 1).x + 10, y: slotAt('e', 1).y - 182, align: 'middle', tone: 'plain' },
+	{ id: 'ch-e-strict', text: t('7 > 7 es falso: no desplaza', '7 > 7 is false: no shift'), x: slotAt('e', 1).x + 10, y: slotAt('e', 1).y - 150, align: 'middle', tone: 'violet' },
+	{ id: 'ch-e-stable', text: t('inserción: es estable', 'insertion: stable'), x: slotAt('e', 1).x + 10, y: slotAt('e', 1).y - 118, align: 'middle', tone: 'violet' },
+	{ id: 'ch-v-a', text: t('burbuja: estable', 'bubble: stable'), x: rowEnd('a').x + 60, y: rowEnd('a').y - 70, align: 'start', tone: 'violet', big: true },
+	{ id: 'ch-v-b', text: t('selección: no estable', 'selection: not stable'), x: rowEnd('b').x + 60, y: rowEnd('b').y - 70, align: 'start', tone: 'magenta', big: true },
+	{ id: 'ch-v-c', text: t('inserción: estable', 'insertion: stable'), x: rowEnd('c').x + 60, y: rowEnd('c').y - 70, align: 'start', tone: 'violet', big: true },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.big ? 9.6 : chip.mono ? 7.9 : 6.9) + (chip.big ? 32 : 24));
+const chipLeft = (chip: Chip) =>
+	chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x;
+
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="os-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="os-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="os-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="os-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="os-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="os-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the rows of bars, seen through the camera -->
+			<g clip-path="url(#os-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#os-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#os-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- Towers on a plate to the left: comparisons by size, then the sorted case -->
+						<g data-el="tw-plate">
+							<polygon class="xj-plate-shadow" points={TW_PLATE.base} transform="translate(10 14)"></polygon>
+							<polygon class="xj-plate xj-plate--l" points={TW_PLATE.leftFace}></polygon>
+							<polygon class="xj-plate xj-plate--r" points={TW_PLATE.rightFace}></polygon>
+							<polygon class="xj-plate xj-plate--t" points={TW_PLATE.top} fill="url(#os-g-floor)"></polygon>
+							<text class="xj-area-label" transform={TW_PLATE.faceMatrix} text-anchor="middle" y="4">{t('comparaciones', 'comparisons')}</text>
+						</g>
+						{
+							towers.map((item) => (
+								<g data-el={item.id} class:list={['xj-tower', `xj-tower--${item.tone}`]}>
+									<polygon class="xj-tower-l" points={item.g.leftFace} />
+									<polygon class="xj-tower-r" points={item.g.rightFace} />
+									<polygon class="xj-tower-t" points={item.g.top} />
+								</g>
+							))
+						}
+
+						<g data-el="fl-grow" class="xj-flowline">
+							<path class="mg-stroke xj-flowline-halo" pathLength="1" d={GROW}></path>
+							<path class="mg-stroke xj-flowline-core" pathLength="1" d={GROW}></path>
+						</g>
+
+						<!-- Floor tiles: the index on the front edge, and a violet tile for what is in place -->
+						{
+							tiles.map((row) =>
+								row.cells.map((cell) => (
+									<>
+										<g data-el={`fl-${row.row}${cell.k}`}>
+											<polygon class="xj-shadow" points={cell.g.base} transform="translate(6 8)" />
+											<polygon class="xj-face xj-face--l" points={cell.g.leftFace} />
+											<polygon class="xj-face xj-face--r" points={cell.g.rightFace} />
+											<polygon class="xj-face xj-face--t" points={cell.g.top} fill="url(#os-g-top)" />
+											<text class="xj-face-text" transform={cell.g.faceMatrix} text-anchor="middle" y="3.5">
+												{cell.k}
+											</text>
+											{cell.k === 0 && (
+												<text class="xj-area-label" x={cell.g.left.x - 8} y={cell.g.left.y + 4} text-anchor="end">
+													{row.label}
+												</text>
+											)}
+										</g>
+										<g data-el={`st-${row.row}${cell.k}`} class="xj-lit xj-lit--violet">
+											<polygon class="xj-lit-halo" points={cell.g.top} />
+											<polygon class="xj-lit-top" points={cell.g.top} />
+										</g>
+									</>
+								)),
+							)
+						}
+
+						<!-- Tally strips: one small tile per comparison and per swap (or shift) -->
+						{
+							tallies.map((strip) => (
+								<>
+									<g data-el={`tally-${strip.row}`} class="xj-ghost">
+										{strip.cmp.map((cell) => <polygon points={cell.g.top} />)}
+										{strip.swp.map((cell) => <polygon points={cell.g.top} />)}
+										<text class="xj-tally-label" x={strip.labelCmp.x} y={strip.labelCmp.y + 4} text-anchor="end">
+											{t('comp.', 'cmp.')}
+										</text>
+										<text class="xj-tally-label" x={strip.labelSwp.x} y={strip.labelSwp.y + 4} text-anchor="end">
+											{strip.row === 'c' ? t('desp.', 'shifts') : t('interc.', 'swaps')}
+										</text>
+									</g>
+									{strip.cmp.map((cell) => (
+										<g data-el={`tc-${strip.row}-${cell.k}`} class="xj-lit xj-lit--flow">
+											<polygon class="xj-lit-halo xj-lit-halo--thin" points={cell.g.top} />
+											<polygon class="xj-lit-top" points={cell.g.top} />
+										</g>
+									))}
+									{strip.swp.map((cell) => (
+										<g data-el={`ts-${strip.row}-${cell.k}`} class="xj-lit xj-lit--violet">
+											<polygon class="xj-lit-halo xj-lit-halo--thin" points={cell.g.top} />
+											<polygon class="xj-lit-top" points={cell.g.top} />
+										</g>
+									))}
+								</>
+							))
+						}
+
+						<!-- The flag of bubble sort -->
+						<g data-el="v-flag">
+							<polygon class="xj-shadow" points={FLAG.base} transform="translate(6 8)" />
+							<polygon class="xj-face xj-face--l" points={FLAG.leftFace} />
+							<polygon class="xj-face xj-face--r" points={FLAG.rightFace} />
+							<polygon class="xj-face xj-face--t" points={FLAG.top} fill="url(#os-g-top)" />
+							<text class="xj-face-text xj-face-text--sm" transform={FLAG.faceMatrix} text-anchor="middle" y="4">{nm.flag}</text>
+						</g>
+						<text data-el="fg-false" class="xj-value xj-value--sm" x={FLAG_AT.x} y={FLAG_AT.y + 5} text-anchor="middle">false</text>
+						<text data-el="fg-true" class="xj-value xj-value--sm" x={FLAG_AT.x} y={FLAG_AT.y + 5} text-anchor="middle">true</text>
+
+						<!-- Instruction modules: one per instruction, labelled with its editor line -->
+						{
+							modules.map((module) => (
+								<>
+									<g data-el={`m-${module.key}`} class="xj-mod">
+										<polygon class="xj-shadow" points={module.g.base} transform="translate(6 8)" />
+										<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#os-g-top)" />
+										<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+											{module.line}
+										</text>
+									</g>
+									<g data-el={`on-${module.key}`} class:list={['xj-lit', `xj-lit--${module.tone}`]}>
+										<polygon class="xj-lit-halo" points={module.g.top} />
+										<polygon class="xj-lit-top" points={module.g.top} />
+										<polygon class="xj-lit-side" points={module.g.leftFace} />
+										<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+											{module.line}
+										</text>
+									</g>
+								</>
+							))
+						}
+
+						<!-- The bars: the height is the value. The player moves a whole bar, so each one is drawn around its own origin -->
+						{
+							bars.map((bar) => (
+								<g data-el={bar.id} data-x={bar.at.x} data-y={bar.at.y}>
+									<polygon class="xj-shadow" points={bar.g.base} transform="translate(6 8)" />
+									<polygon class="xj-face xj-face--l" points={bar.g.leftFace} />
+									<polygon class="xj-face xj-face--r" points={bar.g.rightFace} />
+									<polygon class="xj-face xj-face--t" points={bar.g.top} fill="url(#os-g-top)" />
+									<text class="xj-value" x={bar.g.center.x} y={bar.g.center.y + 6} text-anchor="middle">
+										{bar.text}
+									</text>
+									<g data-el={`lit-${bar.id}`} class="xj-lit xj-lit--flow">
+										<polygon class="xj-lit-halo" points={bar.g.top} />
+										<polygon class="xj-lit-top" points={bar.g.top} />
+										<text class="xj-value xj-value--on" x={bar.g.center.x} y={bar.g.center.y + 6} text-anchor="middle">
+											{bar.text}
+										</text>
+									</g>
+									<g data-el={`hot-${bar.id}`} class="xj-lit xj-lit--magenta">
+										<polygon class="xj-lit-halo" points={bar.g.top} />
+										<polygon class="xj-lit-top" points={bar.g.top} />
+										<text class="xj-value xj-value--on" x={bar.g.center.x} y={bar.g.center.y + 6} text-anchor="middle">
+											{bar.text}
+										</text>
+									</g>
+								</g>
+							))
+						}
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									<rect x={chipLeft(chip)} y={chip.y - (chip.big ? 18 : 12)} width={chipWidth(chip)} height={chip.big ? 36 : 24} rx={chip.big ? 18 : 12} />
+									<text class={chip.big ? 'xj-chip-big' : chip.mono ? 'xj-chip-mono' : 'xj-chip-text'} x={chipLeft(chip) + chipWidth(chip) / 2} y={chip.y + (chip.big ? 6 : 4.5)} text-anchor="middle">
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Index markers: a pin whose arrow tip rests on the rail above a slot -->
+						{
+							pins.map((pin) => (
+								<g data-el={pin.id} data-x={at(pin.restAt).x} data-y={at(pin.restAt).y}>
+									<g class:list={['xj-pin', `xj-pin--${pin.tone}`]} transform={pin.tone === 'violet' ? 'translate(20 0)' : undefined}>
+										<path class="xj-pin-stem" d={`M0 -8 V${-pin.stem}`} />
+										<path class="xj-pin-tip" d="M-6 -10 L6 -10 L0 -1 Z" />
+										<rect x={-pinWidth(pin) / 2} y={-pin.stem - 24} width={pinWidth(pin)} height="24" rx="12" />
+										<text class="xj-chip-mono" x="0" y={-pin.stem - 7.5} text-anchor="middle">
+											{pin.text}
+										</text>
+									</g>
+								</g>
+							))
+						}
+
+						<!-- The execution flow -->
+						<g data-el="px" class="xj-particle" data-x={at('a-ma8').x} data-y={at('a-ma8').y}>
+							<circle r="20" fill="url(#os-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="400" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<path class="xj-legend-pin" d={`M${VP.x + 180} ${LEGEND_Y - 7} L${VP.x + 192} ${LEGEND_Y - 7} L${VP.x + 186} ${LEGEND_Y + 5} Z`}></path>
+				<text x={VP.x + 200} y={LEGEND_Y + 4}>{t('Índice', 'Index')}</text>
+				<rect class="xj-legend-ok" x={VP.x + 262} y={LEGEND_Y - 7} width="20" height="14" rx="4"></rect>
+				<text x={VP.x + 290} y={LEGEND_Y + 4}>{t('En su lugar', 'In place')}</text>
+			</g>
+
+			<!-- EDITOR: the program, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(8)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				<!-- The programs: the first is typed as the film begins, the others replace it -->
+				{
+					pages.map((page) => (
+						<g data-el={page.el} data-base={page.typed ? 'shown' : undefined} class="xj-code">
+							<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>
+								{page.file}
+							</text>
+							{page.lines.map((line) =>
+								page.typed ? (
+									<g data-el={`${page.el}-${line.n}`}>
+										<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+											{line.n}
+										</text>
+										<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+									</g>
+								) : (
+									<>
+										<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+											{line.n}
+										</text>
+										<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+									</>
+								),
+							)}
+						</g>
+					))
+				}
+
+				<!-- Console: what the programs print -->
+				{
+					outputs.map((row) => (
+						<text data-el={row.id} class="xj-out" x={ED.x + 20} y={outY(row.row)} xml:space="preserve">
+							{row.text}
+						</text>
+					))
+				}
+				{Array.from({ length: MAX_LINES }, (_, index) => <circle data-anchor={`ln-${index + 1}`} cx={BAR_CX} cy={lineMid(index + 1)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue execution flow, magenta for the problem (the swap that breaks the order
+	   of equal records, growth by squares) and violet for the markers and what
+	   resolves it (the elements in place, the stable sorts).
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='ordenamiento-comparado-c']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='ordenamiento-comparado-c'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='ordenamiento-comparado-c'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='ordenamiento-comparado-c'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-pin {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-ok {
+		fill: var(--xj-violet);
+		fill-opacity: 0.85;
+		stroke: var(--xj-violet-soft);
+		stroke-width: 1.5;
+	}
+
+	/* Plates, tiles, bars and modules */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-area-label {
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		fill: var(--xj-mist);
+	}
+
+	.xj-tally-label {
+		font-family: var(--font-body);
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--xj-dim);
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 10.5px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--sm {
+		font-size: 9.5px;
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	.xj-value {
+		font-family: monospace;
+		font-size: 16px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-value--sm {
+		font-size: 13px;
+	}
+
+	.xj-value--on {
+		fill: var(--xj-ink);
+	}
+
+	/* Strips that are still empty */
+	.xj-ghost polygon {
+		fill: var(--xj-panel);
+		fill-opacity: 0.6;
+		stroke: var(--xj-dim);
+		stroke-width: 1;
+		stroke-linejoin: round;
+	}
+
+	/* Towers */
+	.xj-tower {
+		--xj-tw: var(--xj-flow);
+		--xj-tw-soft: var(--xj-flow-soft);
+	}
+
+	.xj-tower--violet {
+		--xj-tw: var(--xj-violet);
+		--xj-tw-soft: var(--xj-violet-soft);
+	}
+
+	.xj-tower--magenta {
+		--xj-tw: var(--xj-magenta);
+		--xj-tw-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-tower polygon {
+		stroke: var(--xj-tw-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-tower-t {
+		fill: var(--xj-tw-soft);
+	}
+
+	.xj-tower-l {
+		fill: var(--xj-tw);
+	}
+
+	.xj-tower-r {
+		fill: var(--xj-tw);
+		fill-opacity: 0.6;
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-halo--thin {
+		stroke-width: 6;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.85;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* The line that joins the towers */
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-magenta);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	/* Index markers */
+	.xj-pin {
+		--xj-pin: var(--xj-violet);
+		--xj-pin-soft: var(--xj-violet-soft);
+	}
+
+	.xj-pin--flow {
+		--xj-pin: var(--xj-flow);
+		--xj-pin-soft: var(--xj-flow-soft);
+	}
+
+	.xj-pin rect {
+		fill: var(--xj-panel);
+		stroke: var(--xj-pin);
+		stroke-width: 2;
+	}
+
+	.xj-pin-stem {
+		fill: none;
+		stroke: var(--xj-pin-soft);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+	}
+
+	.xj-pin-tip {
+		fill: var(--xj-pin-soft);
+	}
+
+	.xj-pin .xj-chip-mono {
+		fill: var(--xj-pin-soft);
+		font-weight: 700;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-big {
+		font-family: var(--font-body);
+		font-size: 18px;
+		font-weight: 700;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	/* 12.5px keeps the longest line of the lesson programs inside the editor. */
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 12.5px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		font-size: 13px;
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type),
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-ann) {
+		fill: var(--xj-magenta-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+</style>

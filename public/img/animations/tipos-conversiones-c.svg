@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" role="img" aria-label="Cajas de bits: tipos, tamaños y conversiones en C">
+  <rect width="400" height="200" fill="#f1e8d9"/>
+  <g stroke="#2e2b25" stroke-width="2" stroke-linejoin="round">
+    <path d="M60 24l14 8-14 8-14-8z" fill="#faf5ec"/>
+    <path d="M46 32l14 8v12l-14-8z" fill="#e8a27c"/>
+    <path d="M60 40l14-8v12l-14 8z" fill="#c0714a"/>
+    <path d="M60 66l56 32-14 8-56-32z" fill="#faf5ec"/>
+    <path d="M46 74l56 32v12l-56-32z" fill="#e8a27c"/>
+    <path d="M102 106l14-8v12l-14 8z" fill="#c0714a"/>
+    <path d="M60 106l112 64-14 8-112-64z" fill="#faf5ec"/>
+    <path d="M46 114l112 64v12l-112-64z" fill="#7d9a76"/>
+    <path d="M158 178l14-8v12l-14 8z" fill="#2e2b25"/>
+  </g>
+  <g stroke="#2e2b25" stroke-width="1.5" fill="none">
+    <path d="M74 74l-14 8M88 82l-14 8M102 90l-14 8"/>
+    <path d="M74 114l-14 8M88 122l-14 8M102 130l-14 8M116 138l-14 8M130 146l-14 8M144 154l-14 8M158 162l-14 8"/>
+  </g>
+  <g font-family="monospace" font-weight="700" font-size="12" fill="#2e2b25">
+    <text x="84" y="30">char · 1</text>
+    <text x="126" y="92">int · 4</text>
+    <text x="182" y="160">double · 8</text>
+  </g>
+  <rect x="214" y="24" width="172" height="38" rx="14" fill="#2e2b25"/>
+  <text x="300" y="48" text-anchor="middle" font-family="monospace" font-weight="700" font-size="15" fill="#faf5ec">7 / 2 → 3</text>
+  <rect x="214" y="74" width="172" height="38" rx="14" fill="#faf5ec" stroke="#7d9a76" stroke-width="2.5"/>
+  <text x="300" y="97" text-anchor="middle" font-family="monospace" font-weight="700" font-size="12" fill="#2e2b25">(double)7 / 2 → 3.5</text>
+  <rect x="262" y="124" width="124" height="32" rx="12" fill="#faf5ec" stroke="#c0714a" stroke-width="2.5"/>
+  <text x="324" y="145" text-anchor="middle" font-family="monospace" font-weight="700" font-size="12" fill="#c0714a">-1 &lt; 1u → 0</text>
+</svg>

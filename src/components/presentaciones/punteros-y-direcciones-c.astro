@@ -1,0 +1,1853 @@
+---
+interface Props {
+	lang?: string;
+}
+
+const { lang = 'es' } = Astro.props;
+const isEs = lang === 'es';
+const t = (es: string, en: string) => (isEs ? es : en);
+
+/*
+ * Memory model shared by the three modes. Every scene is a set of cells (an
+ * object with a name, an illustrative address and a value), optional frames
+ * (main, a called function, static storage) and a list of states. A state
+ * says which code line runs, which cells exist and hold what value, which
+ * pointers point where (arrows) and what changed. The client script draws the
+ * state as SVG and animates the differences between two states.
+ */
+type Cell = { id: string; name: string; addr: string; x: number; y: number; w?: number; bytes?: number; ptr?: boolean };
+type Frame = { id: string; label: string; x: number; y: number; w: number; h: number };
+type State = {
+	line: number;
+	vals: Record<string, string>;
+	arrows?: [string, string][];
+	frames?: string[];
+	hl?: string[];
+	bad?: string[];
+	out?: string;
+	text?: string;
+};
+type Scene = { id: string; kicker: string; title: string; lead: string; code: string[]; cells: Cell[]; frames?: Frame[]; ghost?: boolean; steps: State[] };
+type PracticeItem = {
+	id: string;
+	title: string;
+	code: string[];
+	cells: Cell[];
+	frames?: Frame[];
+	before: State;
+	after: State;
+	question: string;
+	options: string[];
+	correct: number;
+	why: string;
+};
+type AssessItem = { id: string; title: string; code: string[]; question: string; options: string[]; correct: number; why: string };
+
+const swapCode = [
+	'#include <stdio.h>',
+	'',
+	t('void intercambiar(int *a, int *b) {', 'void swap(int *a, int *b) {'),
+	'    int aux = *a;',
+	'    *a = *b;',
+	'    *b = aux;',
+	'}',
+	'',
+	'int main(void) {',
+	'    int x = 3;',
+	'    int y = 8;',
+	t('    intercambiar(&x, &y);', '    swap(&x, &y);'),
+	'    printf("x = %d, y = %d\\n", x, y);',
+	'    return 0;',
+	'}',
+];
+const swapFrames: Frame[] = [
+	{ id: 'main', label: 'main', x: 20, y: 15, w: 270, h: 320 },
+	{ id: 'fn', label: t('intercambiar', 'swap'), x: 320, y: 15, w: 300, h: 320 },
+];
+const swapCells: Cell[] = [
+	{ id: 'x', name: 'x', addr: '0x1000', x: 70, y: 75 },
+	{ id: 'y', name: 'y', addr: '0x1004', x: 70, y: 215 },
+	{ id: 'a', name: 'a', addr: '0x2000', x: 460, y: 55, ptr: true },
+	{ id: 'b', name: 'b', addr: '0x2008', x: 460, y: 155, ptr: true },
+	{ id: 'aux', name: 'aux', addr: '0x2010', x: 460, y: 255 },
+];
+
+const learn: Scene[] = [
+	{
+		id: 'L1',
+		kicker: t('Aprender · 1', 'Learn · 1'),
+		title: t('La memoria como celdas numeradas', 'Memory as numbered cells'),
+		lead: t(
+			'La computadora no conoce nombres: conoce posiciones de memoria. Cada dato vive en un lugar y ese lugar tiene un número, su dirección.',
+			'The computer does not know names: it knows memory positions. Every piece of data lives somewhere, and that place has a number, its address.',
+		),
+		code: ['int x = 42;', t("char letra = 'A';", "char letter = 'A';"), 'printf("%p\\n", (void *)&x);'],
+		ghost: true,
+		cells: [
+			{ id: 'x', name: 'x', addr: '0x1000', x: 40, y: 140, w: 320, bytes: 4 },
+			{ id: 'c', name: t('letra', 'letter'), addr: '0x1004', x: 360, y: 140, w: 80, bytes: 1 },
+		],
+		steps: [
+			{
+				line: -1,
+				vals: {},
+				text: t(
+					'Piensa la memoria como una fila de celdas de un byte, cada una con un número único: su dirección. Las direcciones de esta presentación (0x1000, 0x2000…) son ilustrativas; las reales las decide el sistema.',
+					'Think of memory as a row of one-byte cells, each with a unique number: its address. The addresses in this deck (0x1000, 0x2000…) are illustrative; the real ones are chosen by the system.',
+				),
+			},
+			{
+				line: 0,
+				vals: { x: '42' },
+				hl: ['x'],
+				text: t(
+					'int x = 42; reserva tantas celdas consecutivas como sizeof(int); aquí suponemos 4 bytes, de 0x1000 a 0x1003. A esa región que guarda un valor el estándar de C la llama objeto.',
+					'int x = 42; reserves as many consecutive cells as sizeof(int); here we assume 4 bytes, from 0x1000 to 0x1003. The C standard calls that region holding a value an object.',
+				),
+			},
+			{
+				line: 1,
+				vals: { x: '42', c: "'A'" },
+				hl: ['c'],
+				text: t(
+					'char letra ocupa 1 byte, en 0x1004. La dirección de un objeto es la de su primer byte: x está en 0x1000 y letra en 0x1004.',
+					'char letter takes 1 byte, at 0x1004. The address of an object is the address of its first byte: x is at 0x1000 and letter at 0x1004.',
+				),
+			},
+			{
+				line: 2,
+				vals: { x: '42', c: "'A'" },
+				hl: ['x'],
+				out: '&x  →  0x1000',
+				text: t(
+					'El operador & devuelve la dirección de un objeto. El valor de x es 42; su dirección es 0x1000. %p imprime direcciones y espera un void *, por eso se convierte con (void *).',
+					'The & operator gives the address of an object. The value of x is 42; its address is 0x1000. %p prints addresses and expects a void *, which is why it is converted with (void *).',
+				),
+			},
+			{
+				line: 2,
+				vals: { x: '42', c: "'A'" },
+				hl: ['x'],
+				out: t('salida posible: 0x7ffd5e8a3b4c', 'possible output: 0x7ffd5e8a3b4c'),
+				text: t(
+					'El formato de %p lo decide cada implementación y la dirección cambia entre ejecuciones: nunca dependas de un valor concreto. Por eso scanf("%d", &x) recibe &x: necesita saber dónde escribir.',
+					'Each implementation decides the %p format, and the address changes between runs: never depend on a concrete value. That is why scanf("%d", &x) receives &x: it needs to know where to write.',
+				),
+			},
+		],
+	},
+	{
+		id: 'L2',
+		kicker: t('Aprender · 2', 'Learn · 2'),
+		title: t('Declarar e inicializar un puntero', 'Declaring and initializing a pointer'),
+		lead: t(
+			'Un puntero es una variable cuyo valor es la dirección de otro objeto. Se declara con el tipo del objeto al que va a apuntar, seguido de *.',
+			'A pointer is a variable whose value is the address of another object. It is declared with the type of the object it will point to, followed by *.',
+		),
+		code: ['int x = 42;', 'int *p = &x;'],
+		cells: [
+			{ id: 'x', name: 'x', addr: '0x1000', x: 60, y: 140 },
+			{ id: 'p', name: 'p', addr: '0x2000', x: 420, y: 140, ptr: true },
+		],
+		steps: [
+			{ line: 0, vals: { x: '42' }, hl: ['x'], text: t('x guarda 42 en la dirección 0x1000.', 'x holds 42 at address 0x1000.') },
+			{
+				line: 1,
+				vals: { x: '42', p: '0x1000' },
+				arrows: [['p', 'x']],
+				hl: ['p'],
+				text: t(
+					'int *p se lee de derecha a izquierda: p es un puntero (*) a int. Se inicializa con &x, así que su valor es 0x1000: decimos que p apunta a x.',
+					'int *p reads right to left: p is a pointer (*) to int. It is initialized with &x, so its value is 0x1000: we say that p points to x.',
+				),
+			},
+			{
+				line: 1,
+				vals: { x: '42', p: '0x1000' },
+				arrows: [['p', 'x']],
+				hl: ['p'],
+				text: t(
+					'p es una variable como cualquier otra: ocupa memoria, tiene su propia dirección (0x2000) y su valor es un número que, en este caso, es una dirección.',
+					'p is a variable like any other: it takes up memory, has its own address (0x2000), and its value is a number that, here, is an address.',
+				),
+			},
+			{
+				line: 1,
+				vals: { x: '42', p: '0x1000' },
+				arrows: [['p', 'x']],
+				out: t('int *p, q;   →   p es int *, q es int', 'int *p, q;   →   p is int *, q is int'),
+				text: t(
+					'Cuidado: el * pertenece a cada nombre, no al tipo. Para evitar errores, declara un puntero por línea.',
+					'Careful: the * belongs to each name, not to the type. To avoid mistakes, declare one pointer per line.',
+				),
+			},
+		],
+	},
+	{
+		id: 'L3',
+		kicker: t('Aprender · 3', 'Learn · 3'),
+		title: t('Desreferenciar: leer y escribir con *p', 'Dereferencing: reading and writing with *p'),
+		lead: t(
+			'El operador * aplicado a un puntero es el objeto al que apunta. Sirve para leer y también para escribir.',
+			'The * operator applied to a pointer is the object it points to. It works for reading and for writing.',
+		),
+		code: ['int x = 42;', 'int *p = &x;', 'printf("x = %d, *p = %d\\n", x, *p);', '*p = 50;', '*p = *p + 1;'],
+		cells: [
+			{ id: 'x', name: 'x', addr: '0x1000', x: 60, y: 140 },
+			{ id: 'p', name: 'p', addr: '0x2000', x: 420, y: 140, ptr: true },
+		],
+		steps: [
+			{ line: 0, vals: { x: '42' }, hl: ['x'], text: t('x vale 42.', 'x is 42.') },
+			{ line: 1, vals: { x: '42', p: '0x1000' }, arrows: [['p', 'x']], hl: ['p'], text: t('p apunta a x.', 'p points to x.') },
+			{
+				line: 2,
+				vals: { x: '42', p: '0x1000' },
+				arrows: [['p', 'x']],
+				hl: ['x'],
+				out: 'x = 42, *p = 42',
+				text: t('*p es el objeto al que apunta p: leer *p es leer x.', '*p is the object p points to: reading *p reads x.'),
+			},
+			{
+				line: 3,
+				vals: { x: '50', p: '0x1000' },
+				arrows: [['p', 'x']],
+				hl: ['x'],
+				text: t(
+					'*p = 50; escribe en x a través de p. Con la dirección puedes modificar el objeto sin usar su nombre.',
+					'*p = 50; writes to x through p. With the address you can modify the object without using its name.',
+				),
+			},
+			{
+				line: 4,
+				vals: { x: '51', p: '0x1000' },
+				arrows: [['p', 'x']],
+				hl: ['x'],
+				text: t(
+					'*p = *p + 1; lee x (50), suma 1 y guarda 51 en x. Fíjate: p nunca cambió, siempre vale 0x1000. Lo que cambió fue el objeto al que apunta.',
+					'*p = *p + 1; reads x (50), adds 1 and stores 51 in x. Notice: p never changed, it is always 0x1000. What changed is the object it points to.',
+				),
+			},
+			{
+				line: 4,
+				vals: { x: '51', p: '0x1000' },
+				arrows: [['p', 'x']],
+				out: t('*&x es x   ·   &*p es p', '*&x is x   ·   &*p is p'),
+				text: t(
+					'El * tiene tres significados: en una declaración (int *p), delante de un puntero (*p) y entre dos operandos (a * b). & y * son operaciones inversas.',
+					'The * has three meanings: in a declaration (int *p), in front of a pointer (*p) and between two operands (a * b). & and * are inverse operations.',
+				),
+			},
+		],
+	},
+	{
+		id: 'L4',
+		kicker: t('Aprender · 4', 'Learn · 4'),
+		title: t('Cambiar a qué apunta un puntero', 'Changing what a pointer points to'),
+		lead: t(
+			'Escribir *p cambia el objeto apuntado; escribir p cambia el puntero. Son dos operaciones distintas.',
+			'Writing *p changes the pointed-to object; writing p changes the pointer. They are two different operations.',
+		),
+		code: ['int a = 3;', 'int b = 7;', 'int *p = &a;', '*p = *p * 2;', 'p = &b;', '*p = *p + a;'],
+		cells: [
+			{ id: 'a', name: 'a', addr: '0x1000', x: 60, y: 60 },
+			{ id: 'b', name: 'b', addr: '0x1004', x: 60, y: 220 },
+			{ id: 'p', name: 'p', addr: '0x2000', x: 420, y: 140, ptr: true },
+		],
+		steps: [
+			{ line: 0, vals: { a: '3' }, hl: ['a'], text: t('a vale 3.', 'a is 3.') },
+			{ line: 1, vals: { a: '3', b: '7' }, hl: ['b'], text: t('b vale 7.', 'b is 7.') },
+			{ line: 2, vals: { a: '3', b: '7', p: '0x1000' }, arrows: [['p', 'a']], hl: ['p'], text: t('p apunta a a.', 'p points to a.') },
+			{
+				line: 3,
+				vals: { a: '6', b: '7', p: '0x1000' },
+				arrows: [['p', 'a']],
+				hl: ['a'],
+				text: t('*p = *p * 2; duplica a a través de p: a vale 6.', '*p = *p * 2; doubles a through p: a is 6.'),
+			},
+			{
+				line: 4,
+				vals: { a: '6', b: '7', p: '0x1004' },
+				arrows: [['p', 'b']],
+				hl: ['p'],
+				text: t(
+					'p = &b; no copia ningún entero: hace que p apunte a otro objeto. Ahora el valor de p es 0x1004.',
+					'p = &b; copies no integer: it makes p point to another object. Now the value of p is 0x1004.',
+				),
+			},
+			{
+				line: 5,
+				vals: { a: '6', b: '13', p: '0x1004' },
+				arrows: [['p', 'b']],
+				hl: ['b'],
+				text: t('*p ahora es b: 7 + 6 = 13. Al final a vale 6 y b vale 13.', '*p is now b: 7 + 6 = 13. In the end a is 6 and b is 13.'),
+			},
+		],
+	},
+	{
+		id: 'L5',
+		kicker: t('Aprender · 5', 'Learn · 5'),
+		title: t('Modificar las variables de quien llama', "Modifying the caller's variables"),
+		lead: t(
+			'C pasa los argumentos siempre por valor. Para que una función modifique variables de quien la llama, se le pasan sus direcciones.',
+			'C always passes arguments by value. For a function to modify the caller\'s variables, you pass it their addresses.',
+		),
+		code: swapCode,
+		cells: swapCells,
+		frames: swapFrames,
+		steps: [
+			{
+				line: 10,
+				vals: { x: '3', y: '8' },
+				frames: ['main'],
+				text: t('Antes de llamar: x vale 3 e y vale 8, en el marco de main.', 'Before the call: x is 3 and y is 8, in the frame of main.'),
+			},
+			{
+				line: 11,
+				vals: { x: '3', y: '8', a: '0x1000', b: '0x1004' },
+				arrows: [['a', 'x'], ['b', 'y']],
+				frames: ['main', 'fn'],
+				hl: ['a', 'b'],
+				text: t(
+					'Se evalúan &x y &y, dos direcciones, y esos valores se copian en a y b. Es pasaje por valor, como siempre: lo que se copia es una dirección.',
+					'&x and &y are evaluated, two addresses, and those values are copied into a and b. It is pass by value, as always: what gets copied is an address.',
+				),
+			},
+			{
+				line: 3,
+				vals: { x: '3', y: '8', a: '0x1000', b: '0x1004', aux: '3' },
+				arrows: [['a', 'x'], ['b', 'y']],
+				frames: ['main', 'fn'],
+				hl: ['aux'],
+				text: t('aux = *a; lee x a través de a: aux vale 3.', 'aux = *a; reads x through a: aux is 3.'),
+			},
+			{
+				line: 4,
+				vals: { x: '8', y: '8', a: '0x1000', b: '0x1004', aux: '3' },
+				arrows: [['a', 'x'], ['b', 'y']],
+				frames: ['main', 'fn'],
+				hl: ['x'],
+				text: t(
+					'*a = *b; lee y (8) y lo escribe en x. Lo que cambia la variable de main es la desreferenciación, no la llamada.',
+					'*a = *b; reads y (8) and writes it into x. What changes the variable of main is the dereference, not the call.',
+				),
+			},
+			{
+				line: 5,
+				vals: { x: '8', y: '3', a: '0x1000', b: '0x1004', aux: '3' },
+				arrows: [['a', 'x'], ['b', 'y']],
+				frames: ['main', 'fn'],
+				hl: ['y'],
+				text: t('*b = aux; escribe 3 en y.', '*b = aux; writes 3 into y.'),
+			},
+			{
+				line: 12,
+				vals: { x: '8', y: '3' },
+				frames: ['main'],
+				out: 'x = 8, y = 3',
+				text: t(
+					'Al volver, a, b y aux dejan de existir. x e y quedaron intercambiados.',
+					'On return, a, b and aux no longer exist. x and y were swapped.',
+				),
+			},
+		],
+	},
+	{
+		id: 'L6',
+		kicker: t('Aprender · 6', 'Learn · 6'),
+		title: t('El puntero también se pasa por valor', 'The pointer is passed by value too'),
+		lead: t(
+			'No hay un mecanismo especial de "pasaje por referencia". Si la función cambia el puntero mismo, quien llama no se entera.',
+			'There is no special "pass by reference" mechanism. If the function changes the pointer itself, the caller never notices.',
+		),
+		code: [
+			'#include <stdio.h>',
+			'',
+			t('void redirigir(int *p) {', 'void redirect(int *p) {'),
+			t('    static int otro = 99;', '    static int other = 99;'),
+			t('    p = &otro;', '    p = &other;'),
+			'    *p = 100;',
+			'}',
+			'',
+			'int main(void) {',
+			'    int x = 5;',
+			'    int *px = &x;',
+			t('    redirigir(px);', '    redirect(px);'),
+			t(
+				'    printf("x = %d, px apunta a x: %s\\n", x, px == &x ? "si" : "no");',
+				'    printf("x = %d, px points to x: %s\\n", x, px == &x ? "yes" : "no");',
+			),
+			'    return 0;',
+			'}',
+		],
+		frames: [
+			{ id: 'main', label: 'main', x: 20, y: 15, w: 270, h: 320 },
+			{ id: 'fn', label: t('redirigir', 'redirect'), x: 320, y: 15, w: 300, h: 180 },
+			{ id: 'st', label: 'static', x: 320, y: 210, w: 300, h: 125 },
+		],
+		cells: [
+			{ id: 'x', name: 'x', addr: '0x1000', x: 70, y: 75 },
+			{ id: 'px', name: 'px', addr: '0x1008', x: 70, y: 215, ptr: true },
+			{ id: 'p', name: 'p', addr: '0x2000', x: 460, y: 75, ptr: true },
+			{ id: 'o', name: t('otro', 'other'), addr: '0x3000', x: 460, y: 250 },
+		],
+		steps: [
+			{
+				line: 10,
+				vals: { x: '5', px: '0x1000', o: '99' },
+				arrows: [['px', 'x']],
+				frames: ['main', 'st'],
+				hl: ['px'],
+				text: t(
+					'px apunta a x. otro es static: existe durante todo el programa, antes y después de la llamada.',
+					'px points to x. other is static: it exists for the whole program, before and after the call.',
+				),
+			},
+			{
+				line: 11,
+				vals: { x: '5', px: '0x1000', p: '0x1000', o: '99' },
+				arrows: [['px', 'x'], ['p', 'x']],
+				frames: ['main', 'fn', 'st'],
+				hl: ['p'],
+				text: t(
+					'La llamada copia el valor de px (0x1000) en el parámetro p. Ahora hay dos punteros a x: px y su copia p.',
+					'The call copies the value of px (0x1000) into the parameter p. Now there are two pointers to x: px and its copy p.',
+				),
+			},
+			{
+				line: 4,
+				vals: { x: '5', px: '0x1000', p: '0x3000', o: '99' },
+				arrows: [['px', 'x'], ['p', 'o']],
+				frames: ['main', 'fn', 'st'],
+				hl: ['p'],
+				text: t(
+					'p = &otro; cambia la copia local del puntero. px, en main, no se entera.',
+					'p = &other; changes the local copy of the pointer. px, in main, never notices.',
+				),
+			},
+			{
+				line: 5,
+				vals: { x: '5', px: '0x1000', p: '0x3000', o: '100' },
+				arrows: [['px', 'x'], ['p', 'o']],
+				frames: ['main', 'fn', 'st'],
+				hl: ['o'],
+				text: t('*p = 100; escribe en otro, no en x.', '*p = 100; writes to other, not to x.'),
+			},
+			{
+				line: 12,
+				vals: { x: '5', px: '0x1000', o: '100' },
+				arrows: [['px', 'x']],
+				frames: ['main', 'st'],
+				out: t('x = 5, px apunta a x: si', 'x = 5, px points to x: yes'),
+				text: t(
+					'Al volver, px sigue apuntando a x y x sigue valiendo 5: redirigir recibió una copia de px. Para cambiar a qué apunta px desde una función habría que pasar la dirección de px.',
+					'On return, px still points to x and x is still 5: redirect received a copy of px. To change what px points to from a function you would pass the address of px.',
+				),
+			},
+		],
+	},
+	{
+		id: 'L7',
+		kicker: t('Aprender · 7', 'Learn · 7'),
+		title: t('NULL y punteros inválidos', 'NULL and invalid pointers'),
+		lead: t(
+			'Antes de escribir *p, p tiene que apuntar a un objeto válido. Si no, desreferenciar es comportamiento indefinido.',
+			'Before writing *p, p must point to a valid object. Otherwise, dereferencing is undefined behavior.',
+		),
+		code: [
+			'int *p = NULL;',
+			'if (p != NULL) {',
+			'    printf("%d\\n", *p);',
+			'}',
+			'int *q;',
+			t('*q = 10;   /* comportamiento indefinido */', '*q = 10;   /* undefined behavior */'),
+		],
+		cells: [
+			{ id: 'p', name: 'p', addr: '0x2000', x: 60, y: 70, ptr: true },
+			{ id: 'q', name: 'q', addr: '0x2008', x: 60, y: 220, ptr: true },
+		],
+		steps: [
+			{
+				line: 0,
+				vals: { p: 'NULL' },
+				hl: ['p'],
+				text: t(
+					'NULL es el puntero nulo: p no apunta a ningún objeto. Se puede comparar, nunca desreferenciar. C23 agrega nullptr; en el curso usamos NULL para que el código compile también con C17.',
+					'NULL is the null pointer: p points to no object. You can compare it, never dereference it. C23 adds nullptr; the course uses NULL so the code also compiles with C17.',
+				),
+			},
+			{
+				line: 1,
+				vals: { p: 'NULL' },
+				hl: ['p'],
+				text: t(
+					'p != NULL es falso, así que el printf no se ejecuta: solo se desreferencia un puntero que apunta a algo.',
+					'p != NULL is false, so the printf does not run: you only dereference a pointer that points to something.',
+				),
+			},
+			{
+				line: 4,
+				vals: { p: 'NULL', q: '?' },
+				bad: ['q'],
+				text: t(
+					'q no está inicializado: su valor es basura y, a simple vista, no se distingue de una dirección válida.',
+					'q is uninitialized: its value is garbage and, at a glance, it cannot be told apart from a valid address.',
+				),
+			},
+			{
+				line: 5,
+				vals: { p: 'NULL', q: '?' },
+				bad: ['q'],
+				out: t('comportamiento indefinido', 'undefined behavior'),
+				text: t(
+					'*q = 10; escribe en una dirección cualquiera: el programa puede terminar con un error de segmentación, parecer que funciona o corromper otros datos. Regla: todo puntero nace apuntando a algo válido o a NULL.',
+					'*q = 10; writes to an arbitrary address: the program may crash with a segmentation fault, seem to work or silently corrupt other data. Rule: every pointer starts out pointing to something valid or to NULL.',
+				),
+			},
+		],
+	},
+	{
+		id: 'L8',
+		kicker: t('Aprender · 8', 'Learn · 8'),
+		title: t('const y punteros', 'const and pointers'),
+		lead: t(
+			'const puede proteger el objeto apuntado o el puntero. Mira de qué lado del * está.',
+			'const can protect the pointed-to object or the pointer. Look at which side of the * it is on.',
+		),
+		code: [
+			'int x = 1;',
+			'int y = 2;',
+			'const int *p = &x;',
+			'p = &y;',
+			t('/* *p = 5;    error: *p es de solo lectura */', '/* *p = 5;    error: *p is read-only */'),
+			'int *const q = &x;',
+			'*q = 5;',
+			t('/* q = &y;    error: q siempre apunta a x */', '/* q = &y;    error: q always points to x */'),
+		],
+		cells: [
+			{ id: 'x', name: 'x', addr: '0x1000', x: 60, y: 70 },
+			{ id: 'y', name: 'y', addr: '0x1004', x: 60, y: 220 },
+			{ id: 'p', name: 'p · const int *', addr: '0x2000', x: 400, y: 70, w: 180, ptr: true },
+			{ id: 'q', name: 'q · int *const', addr: '0x2008', x: 400, y: 220, w: 180, ptr: true },
+		],
+		steps: [
+			{ line: 1, vals: { x: '1', y: '2' }, text: t('x vale 1 e y vale 2.', 'x is 1 and y is 2.') },
+			{
+				line: 2,
+				vals: { x: '1', y: '2', p: '0x1000' },
+				arrows: [['p', 'x']],
+				hl: ['p'],
+				text: t(
+					'const a la izquierda del * (const int *) protege el objeto apuntado: a través de p solo puedes leer.',
+					'const on the left of the * (const int *) protects the pointed-to object: through p you can only read.',
+				),
+			},
+			{
+				line: 3,
+				vals: { x: '1', y: '2', p: '0x1004' },
+				arrows: [['p', 'y']],
+				hl: ['p'],
+				text: t('p = &y; está bien: el puntero no es constante, puede apuntar a otro objeto.', 'p = &y; is fine: the pointer is not constant, it can point to another object.'),
+			},
+			{
+				line: 4,
+				vals: { x: '1', y: '2', p: '0x1004' },
+				arrows: [['p', 'y']],
+				bad: ['p'],
+				text: t('*p = 5; no compila: *p es de solo lectura.', '*p = 5; does not compile: *p is read-only.'),
+			},
+			{
+				line: 5,
+				vals: { x: '1', y: '2', p: '0x1004', q: '0x1000' },
+				arrows: [['p', 'y'], ['q', 'x']],
+				hl: ['q'],
+				text: t(
+					'const a la derecha del * (int *const) protege el puntero: q siempre apuntará a x.',
+					'const on the right of the * (int *const) protects the pointer: q will always point to x.',
+				),
+			},
+			{
+				line: 6,
+				vals: { x: '5', y: '2', p: '0x1004', q: '0x1000' },
+				arrows: [['p', 'y'], ['q', 'x']],
+				hl: ['x'],
+				text: t('*q = 5; está bien: el objeto apuntado se puede modificar.', '*q = 5; is fine: the pointed-to object can be modified.'),
+			},
+			{
+				line: 7,
+				vals: { x: '5', y: '2', p: '0x1004', q: '0x1000' },
+				arrows: [['p', 'y'], ['q', 'x']],
+				bad: ['q'],
+				text: t(
+					'q = &y; no compila. Si una función solo lee un dato, declara el parámetro const int *: el compilador te impide modificarlo por error.',
+					'q = &y; does not compile. When a function only reads a value, declare the parameter const int *: the compiler stops you from modifying it by mistake.',
+				),
+			},
+		],
+	},
+];
+
+const traceCode = [
+	'int a = 10;',
+	'int b = 20;',
+	'int *p = &a;',
+	'int *q = &b;',
+	'',
+	'*p = *q;',
+	'q = p;',
+	'*q = 5;',
+	'printf("%d %d %d %d\\n", a, b, *p, *q);',
+];
+const traceCells: Cell[] = [
+	{ id: 'a', name: 'a', addr: '0x1000', x: 60, y: 70 },
+	{ id: 'b', name: 'b', addr: '0x1004', x: 60, y: 220 },
+	{ id: 'p', name: 'p', addr: '0x2000', x: 420, y: 70, ptr: true },
+	{ id: 'q', name: 'q', addr: '0x2008', x: 420, y: 220, ptr: true },
+];
+
+const practice: PracticeItem[] = [
+	{
+		id: 'P1',
+		title: t('Sigue los valores: *p = *q', 'Trace the values: *p = *q'),
+		code: traceCode,
+		cells: traceCells,
+		before: { line: 5, vals: { a: '10', b: '20', p: '0x1000', q: '0x1004' }, arrows: [['p', 'a'], ['q', 'b']] },
+		after: { line: 5, vals: { a: '20', b: '20', p: '0x1000', q: '0x1004' }, arrows: [['p', 'a'], ['q', 'b']], hl: ['a'] },
+		question: t('¿Cuánto vale a después de *p = *q;?', 'What is a after *p = *q;?'),
+		options: ['10', '20', '0x1004'],
+		correct: 1,
+		why: t(
+			'*q lee el objeto al que apunta q (b, que vale 20) y *p escribe ese valor en a. No se copia ninguna dirección.',
+			'*q reads the object q points to (b, which is 20) and *p writes that value into a. No address is copied.',
+		),
+	},
+	{
+		id: 'P2',
+		title: t('Sigue los valores: q = p', 'Trace the values: q = p'),
+		code: traceCode,
+		cells: traceCells,
+		before: { line: 6, vals: { a: '20', b: '20', p: '0x1000', q: '0x1004' }, arrows: [['p', 'a'], ['q', 'b']] },
+		after: { line: 6, vals: { a: '20', b: '20', p: '0x1000', q: '0x1000' }, arrows: [['p', 'a'], ['q', 'a']], hl: ['q'] },
+		question: t('¿A qué objeto apunta q después de q = p;?', 'Which object does q point to after q = p;?'),
+		options: ['a', 'b', t('a ningún objeto', 'no object')],
+		correct: 0,
+		why: t(
+			'q = p copia el valor de p (0x1000) en q: ahora los dos punteros apuntan a a. No se copió ningún int; b sigue valiendo 20.',
+			'q = p copies the value of p (0x1000) into q: now both pointers point to a. No int was copied; b is still 20.',
+		),
+	},
+	{
+		id: 'P3',
+		title: t('Sigue los valores: *q = 5', 'Trace the values: *q = 5'),
+		code: traceCode,
+		cells: traceCells,
+		before: { line: 7, vals: { a: '20', b: '20', p: '0x1000', q: '0x1000' }, arrows: [['p', 'a'], ['q', 'a']] },
+		after: { line: 8, vals: { a: '5', b: '20', p: '0x1000', q: '0x1000' }, arrows: [['p', 'a'], ['q', 'a']], hl: ['a'], out: '5 20 5 5' },
+		question: t('¿Qué imprime el printf después de *q = 5;?', 'What does the printf print after *q = 5;?'),
+		options: ['5 20 5 5', '20 5 20 5', '5 5 5 5'],
+		correct: 0,
+		why: t(
+			'q apunta a a, así que *q = 5 cambia a. b no se tocó: sigue en 20. *p y *q leen a.',
+			'q points to a, so *q = 5 changes a. b was not touched: it is still 20. *p and *q both read a.',
+		),
+	},
+	{
+		id: 'P4',
+		title: t('Dentro de intercambiar', 'Inside swap'),
+		code: swapCode,
+		cells: swapCells,
+		frames: swapFrames,
+		before: {
+			line: 4,
+			vals: { x: '3', y: '8', a: '0x1000', b: '0x1004', aux: '3' },
+			arrows: [['a', 'x'], ['b', 'y']],
+			frames: ['main', 'fn'],
+		},
+		after: {
+			line: 4,
+			vals: { x: '8', y: '8', a: '0x1000', b: '0x1004', aux: '3' },
+			arrows: [['a', 'x'], ['b', 'y']],
+			frames: ['main', 'fn'],
+			hl: ['x'],
+		},
+		question: t('¿Qué cambia al ejecutar *a = *b;?', 'What changes when *a = *b; runs?'),
+		options: [t('x pasa a valer 8', 'x becomes 8'), t('a pasa a valer 0x1004', 'a becomes 0x1004'), t('y pasa a valer 3', 'y becomes 3')],
+		correct: 0,
+		why: t(
+			'*b lee y (8) y *a escribe en x. Los punteros a y b no cambian: siguen valiendo 0x1000 y 0x1004.',
+			'*b reads y (8) and *a writes into x. The pointers a and b do not change: they are still 0x1000 and 0x1004.',
+		),
+	},
+	{
+		id: 'P5',
+		title: t('Devolver varios resultados', 'Returning several results'),
+		code: [
+			'#include <stdio.h>',
+			'',
+			t('int dividir(int a, int b, int *cociente, int *resto) {', 'int divide(int a, int b, int *quotient, int *remainder) {'),
+			'    if (b == 0) {',
+			'        return 0;',
+			'    }',
+			t('    *cociente = a / b;', '    *quotient = a / b;'),
+			t('    *resto = a % b;', '    *remainder = a % b;'),
+			'    return 1;',
+			'}',
+			'',
+			'int main(void) {',
+			'    int c = 0;',
+			'    int r = 0;',
+			t('    if (dividir(17, 5, &c, &r)) {', '    if (divide(17, 5, &c, &r)) {'),
+			t('        printf("17 / 5 = %d, resto %d\\n", c, r);', '        printf("17 / 5 = %d, remainder %d\\n", c, r);'),
+			'    }',
+			'    return 0;',
+			'}',
+		],
+		frames: [
+			{ id: 'main', label: 'main', x: 20, y: 15, w: 270, h: 320 },
+			{ id: 'fn', label: t('dividir', 'divide'), x: 320, y: 15, w: 300, h: 320 },
+		],
+		cells: [
+			{ id: 'c', name: 'c', addr: '0x1000', x: 70, y: 75 },
+			{ id: 'r', name: 'r', addr: '0x1004', x: 70, y: 215 },
+			{ id: 'qt', name: t('cociente', 'quotient'), addr: '0x2000', x: 460, y: 75, ptr: true },
+			{ id: 'rm', name: t('resto', 'remainder'), addr: '0x2008', x: 460, y: 215, ptr: true },
+		],
+		before: {
+			line: 6,
+			vals: { c: '0', r: '0', qt: '0x1000', rm: '0x1004' },
+			arrows: [['qt', 'c'], ['rm', 'r']],
+			frames: ['main', 'fn'],
+		},
+		after: {
+			line: 15,
+			vals: { c: '3', r: '2' },
+			frames: ['main'],
+			hl: ['c', 'r'],
+			out: t('17 / 5 = 3, resto 2', '17 / 5 = 3, remainder 2'),
+		},
+		question: t(
+			'La función llegó a *cociente = a / b; con a = 17 y b = 5. ¿Cuánto valen c y r cuando vuelve a main?',
+			'The function reached *quotient = a / b; with a = 17 and b = 5. What are c and r back in main?',
+		),
+		options: ['c = 3, r = 2', 'c = 0, r = 0', 'c = 3.4, r = 0'],
+		correct: 0,
+		why: t(
+			'cociente y resto son parámetros de salida: guardan las direcciones de c y r, y la función escribe a través de ellas. 17 / 5 entre enteros es 3 y 17 % 5 es 2; el return solo informa si salió bien.',
+			'quotient and remainder are output parameters: they hold the addresses of c and r, and the function writes through them. 17 / 5 between integers is 3 and 17 % 5 is 2; the return value only reports success.',
+		),
+	},
+	{
+		id: 'P6',
+		title: t('Ordenar dos variables', 'Sorting two variables'),
+		code: [
+			'#include <stdio.h>',
+			'',
+			t('void ordenar_dos(int *a, int *b) {', 'void sort_two(int *a, int *b) {'),
+			'    if (*a > *b) {',
+			'        int aux = *a;',
+			'        *a = *b;',
+			'        *b = aux;',
+			'    }',
+			'}',
+			'',
+			'int main(void) {',
+			'    int x = 9;',
+			'    int y = 4;',
+			t('    ordenar_dos(&x, &y);', '    sort_two(&x, &y);'),
+			'    printf("x = %d, y = %d\\n", x, y);',
+			'    return 0;',
+			'}',
+		],
+		frames: [
+			{ id: 'main', label: 'main', x: 20, y: 15, w: 270, h: 320 },
+			{ id: 'fn', label: t('ordenar_dos', 'sort_two'), x: 320, y: 15, w: 300, h: 320 },
+		],
+		cells: swapCells,
+		before: {
+			line: 3,
+			vals: { x: '9', y: '4', a: '0x1000', b: '0x1004' },
+			arrows: [['a', 'x'], ['b', 'y']],
+			frames: ['main', 'fn'],
+		},
+		after: { line: 14, vals: { x: '4', y: '9' }, frames: ['main'], hl: ['x', 'y'], out: 'x = 4, y = 9' },
+		question: t('¿Qué imprime el programa?', 'What does the program print?'),
+		options: ['x = 4, y = 9', 'x = 9, y = 4', 'x = 4, y = 4'],
+		correct: 0,
+		why: t(
+			'*a (9) es mayor que *b (4), así que se intercambian a través de los punteros usando aux. Sin aux, los dos quedarían en 4.',
+			'*a (9) is greater than *b (4), so they are swapped through the pointers using aux. Without aux, both would end up as 4.',
+		),
+	},
+];
+
+const assess: AssessItem[] = [
+	{
+		id: 'A1',
+		title: t('Predice la salida', 'Predict the output'),
+		code: ['int a = 4;', 'int b = 10;', 'int *p = &b;', '*p = *p - a;', 'p = &a;', '*p = *p * 3;', 'printf("%d %d\\n", a, b);'],
+		question: t('¿Qué imprime?', 'What does it print?'),
+		options: ['12 6', '4 6', '12 10', '4 10'],
+		correct: 0,
+		why: t(
+			'Primero p apunta a b: b = 10 - 4 = 6. Después p = &a y a = 4 * 3 = 12.',
+			'First p points to b: b = 10 - 4 = 6. Then p = &a and a = 4 * 3 = 12.',
+		),
+	},
+	{
+		id: 'A2',
+		title: t('Encuentra el error', 'Find the bug'),
+		code: ['int total;', 'int *p;', '', 'total = 0;', '*p = 7;', 'total = total + *p;', 'printf("%d\\n", total);'],
+		question: t(
+			'Este programa a veces imprime un número raro y a veces termina con un error de segmentación. ¿Por qué?',
+			'This program sometimes prints a strange number and sometimes crashes with a segmentation fault. Why?',
+		),
+		options: [
+			t('p se desreferencia sin estar inicializado', 'p is dereferenced while uninitialized'),
+			t('total debería ser double', 'total should be a double'),
+			t('printf debería usar %p', 'printf should use %p'),
+			t('*p = 7 debería escribirse &p = 7', '*p = 7 should be written &p = 7'),
+		],
+		correct: 0,
+		why: t(
+			'p tiene un valor basura, así que *p = 7 escribe en una dirección cualquiera: comportamiento indefinido. p tiene que apuntar a un objeto válido antes de desreferenciarlo.',
+			'p holds a garbage value, so *p = 7 writes to an arbitrary address: undefined behavior. p must point to a valid object before it is dereferenced.',
+		),
+	},
+	{
+		id: 'A3',
+		title: t('¿Qué líneas no compilan?', 'Which lines do not compile?'),
+		code: ['int a = 1;', 'int b = 2;', 'const int *p = &a;', 'int *const q = &a;', '', '*p = 10;   /* (1) */', 'p = &b;    /* (2) */', '*q = 10;   /* (3) */', 'q = &b;    /* (4) */'],
+		question: t('¿Cuáles de las líneas marcadas producen un error de compilación?', 'Which of the marked lines produce a compile error?'),
+		options: [t('(1) y (4)', '(1) and (4)'), t('(2) y (3)', '(2) and (3)'), t('(1) y (3)', '(1) and (3)'), t('solo (4)', 'only (4)')],
+		correct: 0,
+		why: t(
+			'(1) escribe a través de un puntero a int constante y (4) cambia un puntero constante. (2) cambia un puntero no constante y (3) escribe en un int modificable: ambas están bien.',
+			'(1) writes through a pointer to const int and (4) changes a const pointer. (2) changes a non-const pointer and (3) writes to a modifiable int: both are fine.',
+		),
+	},
+	{
+		id: 'A4',
+		title: t('El puntero se pasa por valor', 'The pointer is passed by value'),
+		code: [
+			t('void redirigir(int *p) {', 'void redirect(int *p) {'),
+			t('    static int otro = 0;', '    static int other = 0;'),
+			t('    p = &otro;', '    p = &other;'),
+			'    *p = 7;',
+			'}',
+			'',
+			'int x = 1;',
+			'int *px = &x;',
+			t('redirigir(px);', 'redirect(px);'),
+			'printf("%d %d\\n", x, *px);',
+		],
+		question: t('¿Qué imprime el printf?', 'What does the printf print?'),
+		options: ['1 1', '7 7', '1 7', '7 1'],
+		correct: 0,
+		why: t(
+			'La función recibe una copia de px; p = &otro cambia solo esa copia, y *p = 7 escribe en otro. px sigue apuntando a x, que vale 1.',
+			'The function receives a copy of px; p = &other changes only that copy, and *p = 7 writes to other. px still points to x, which is 1.',
+		),
+	},
+	{
+		id: 'A5',
+		title: t('NULL', 'NULL'),
+		code: ['int x = 3;', 'int *p = NULL;'],
+		question: t('Con p en NULL, ¿cuál de estas líneas es comportamiento indefinido?', 'With p set to NULL, which of these lines is undefined behavior?'),
+		options: ['if (p != NULL) { }', 'printf("%d\\n", *p);', 'p = &x;', 'int *q = p;'],
+		correct: 1,
+		why: t(
+			'NULL se puede comparar y copiar, y a p se le puede asignar una dirección válida. Lo que nunca se hace es desreferenciarlo: *p con p nulo es comportamiento indefinido.',
+			'NULL can be compared and copied, and p can be assigned a valid address. What you never do is dereference it: *p with a null p is undefined behavior.',
+		),
+	},
+	{
+		id: 'A6',
+		title: t('Tipos de puntero', 'Pointer types'),
+		code: [t('int edad = 20;', 'int age = 20;'), t('double *pd = &edad;', 'double *pd = &age;')],
+		question: t('¿Qué pasa al compilar con -Wall -Wextra -Wpedantic?', 'What happens when compiling with -Wall -Wextra -Wpedantic?'),
+		options: [
+			t('Avisa que int * y double * son incompatibles', 'It warns that int * and double * are incompatible'),
+			t('Compila sin avisos y *pd vale 20.0', 'It compiles cleanly and *pd is 20.0'),
+			t('Convierte edad a double automáticamente', 'It converts age to double automatically'),
+		],
+		correct: 0,
+		why: t(
+			'El tipo del puntero debe coincidir con el del objeto. Si lo forzaras, *pd leería 8 bytes donde hay 4 y los interpretaría como double: comportamiento indefinido.',
+			'The pointer type must match the object type. If you forced it, *pd would read 8 bytes where there are 4 and interpret them as a double: undefined behavior.',
+		),
+	},
+];
+
+const ui = {
+	step: t('Paso', 'Step'),
+	correct: t('Correcto.', 'Correct.'),
+	wrong: t('No es así.', 'Not quite.'),
+	answer: t('Respuesta correcta', 'Correct answer'),
+	yours: t('Tu respuesta', 'Your answer'),
+	none: t('sin responder', 'not answered'),
+	score: t('Puntaje', 'Score'),
+	byLine: t('línea', 'line'),
+};
+
+const data = { learn, practice, assess, ui };
+const modes = [
+	{ id: 'learn', label: t('Aprender', 'Learn'), icon: 'book' },
+	{ id: 'practice', label: t('Practicar', 'Practice'), icon: 'pencil' },
+	{ id: 'assess', label: t('Evaluar', 'Assess'), icon: 'check' },
+];
+const assessTotal = assess.length + 1;
+---
+
+<div class="pd-screen" data-presentation="punteros-y-direcciones-c" data-lang={lang}>
+	<div class="pd-shell">
+		<nav class="pd-nav" aria-label={t('Controles de navegación', 'Navigation controls')}>
+			<div class="pd-seg" role="radiogroup" aria-label={t('Modo de la presentación', 'Presentation mode')}>
+				{
+					modes.map((mode, i) => (
+						<label class="pd-seg-opt">
+							<input type="radio" name="pdMode" value={mode.id} checked={i === 0} />
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								{mode.icon === 'book' && (
+									<Fragment>
+										<path d="M12 7v14" />
+										<path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+									</Fragment>
+								)}
+								{mode.icon === 'pencil' && (
+									<Fragment>
+										<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+										<path d="m15 5 4 4" />
+									</Fragment>
+								)}
+								{mode.icon === 'check' && (
+									<Fragment>
+										<circle cx="12" cy="12" r="10" />
+										<path d="m9 12 2 2 4-4" />
+									</Fragment>
+								)}
+							</svg>
+							{mode.label}
+						</label>
+					))
+				}
+			</div>
+			<div class="pd-nav-group">
+				<button class="pd-btn" id="pdPrevBtn" type="button" aria-label={t('Diapositiva anterior', 'Previous slide')} disabled>
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="m15 18-6-6 6-6" />
+					</svg>
+					<span>{t('Anterior', 'Previous')}</span>
+				</button>
+				<span class="pd-counter" id="pdSlideCounter" aria-live="polite">1 / {learn.length}</span>
+				<button class="pd-btn" id="pdNextBtn" type="button" aria-label={t('Siguiente diapositiva', 'Next slide')}>
+					<span>{t('Siguiente', 'Next')}</span>
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="m9 18 6-6-6-6" />
+					</svg>
+				</button>
+			</div>
+		</nav>
+
+		<div class="pd-viewport">
+			<!-- Aprender / Learn: guided, step by step -->
+			<div class="pd-mode" data-mode="learn">
+				{
+					learn.map((scene, i) => (
+						<section class:list={['pd-slide', { 'is-active': i === 0 }]} data-slide={i + 1} data-learn={i}>
+							<div class="pd-head">
+								<span class="pd-kicker">{scene.kicker}</span>
+								<h2 class="pd-title">{scene.title}</h2>
+								<p class="pd-lead">{scene.lead}</p>
+							</div>
+							<div class="pd-stage">
+								<ol class="pd-code" aria-label={t('Código', 'Code')}>
+									{scene.code.map((line, n) => (
+										<li data-line={n}>
+											<code>{line || ' '}</code>
+										</li>
+									))}
+								</ol>
+								<div class="pd-mem">
+									<svg class="pd-canvas" viewBox="0 0 640 340" role="img" aria-label={t('Diagrama de memoria', 'Memory diagram')} />
+									<p class="pd-out" data-out hidden />
+								</div>
+							</div>
+							<div class="pd-explain">
+								<p class="pd-text" data-text aria-live="polite" />
+								<div class="pd-steps">
+									<button class="pd-step-btn" type="button" data-step="prev" aria-label={t('Paso anterior', 'Previous step')}>
+										<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+											<path d="m15 18-6-6 6-6" />
+										</svg>
+									</button>
+									<span class="pd-step-count" data-step-count>
+										{ui.step} 1 / {scene.steps.length}
+									</span>
+									<button class="pd-step-btn is-primary" type="button" data-step="next" aria-label={t('Siguiente paso', 'Next step')}>
+										<span>{t('Siguiente paso', 'Next step')}</span>
+										<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+											<path d="m9 18 6-6-6-6" />
+										</svg>
+									</button>
+									<button class="pd-step-btn" type="button" data-step="reset" aria-label={t('Reiniciar la animación', 'Restart the animation')}>
+										<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+											<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+											<path d="M3 3v5h5" />
+										</svg>
+									</button>
+								</div>
+							</div>
+						</section>
+					))
+				}
+			</div>
+
+			<!-- Practicar / Practice: predict the next state -->
+			<div class="pd-mode" data-mode="practice" hidden>
+				{
+					practice.map((item, i) => (
+						<section class:list={['pd-slide', { 'is-active': i === 0 }]} data-slide={i + 1} data-practice={i}>
+							<div class="pd-head">
+								<span class="pd-kicker">
+									{t('Practicar', 'Practice')} · {i + 1} / {practice.length}
+								</span>
+								<h2 class="pd-title">{item.title}</h2>
+								<p class="pd-lead">{t('Mira el estado actual y la línea marcada. Predice el estado siguiente.', 'Look at the current state and the marked line. Predict the next state.')}</p>
+							</div>
+							<div class="pd-stage">
+								<ol class="pd-code" aria-label={t('Código', 'Code')}>
+									{item.code.map((line, n) => (
+										<li data-line={n}>
+											<code>{line || ' '}</code>
+										</li>
+									))}
+								</ol>
+								<div class="pd-mem">
+									<svg class="pd-canvas" viewBox="0 0 640 340" role="img" aria-label={t('Diagrama de memoria', 'Memory diagram')} />
+									<p class="pd-out" data-out hidden />
+								</div>
+							</div>
+							<div class="pd-explain">
+								<p class="pd-question">{item.question}</p>
+								<div class="pd-options" role="group" aria-label={t('Opciones', 'Options')}>
+									{item.options.map((option, n) => (
+										<button class="pd-option" type="button" data-option={n}>
+											<code>{option}</code>
+										</button>
+									))}
+								</div>
+								<p class="pd-feedback" data-feedback aria-live="polite" />
+								<div class="pd-steps">
+									<button class="pd-step-btn" type="button" data-replay hidden>
+										{t('Ver la transición otra vez', 'Replay the transition')}
+									</button>
+									<button class="pd-step-btn" type="button" data-retry hidden>
+										{t('Intentar de nuevo', 'Try again')}
+									</button>
+								</div>
+							</div>
+						</section>
+					))
+				}
+			</div>
+
+			<!-- Evaluar / Assess: no hints, graded at the end -->
+			<div class="pd-mode" data-mode="assess" hidden>
+				{
+					assess.map((item, i) => (
+						<section class:list={['pd-slide', { 'is-active': i === 0 }]} data-slide={i + 1} data-assess={i}>
+							<div class="pd-head">
+								<span class="pd-kicker">
+									{t('Evaluar', 'Assess')} · {i + 1} / {assess.length}
+								</span>
+								<h2 class="pd-title">{item.title}</h2>
+							</div>
+							<div class="pd-assess">
+								<ol class="pd-code" aria-label={t('Código', 'Code')}>
+									{item.code.map((line, n) => (
+										<li data-line={n}>
+											<code>{line || ' '}</code>
+										</li>
+									))}
+								</ol>
+								<fieldset class="pd-fieldset">
+									<legend class="pd-question">{item.question}</legend>
+									{item.options.map((option, n) => (
+										<label class="pd-choice">
+											<input type="radio" name={`pdA${i}`} value={n} />
+											<code>{option}</code>
+										</label>
+									))}
+								</fieldset>
+							</div>
+						</section>
+					))
+				}
+				<section class="pd-slide" data-slide={assessTotal} data-results>
+					<div class="pd-head">
+						<span class="pd-kicker">{t('Evaluar', 'Assess')}</span>
+						<h2 class="pd-title">{t('Resultado', 'Result')}</h2>
+						<p class="pd-lead">
+							{t(
+								'Cuando termines las seis preguntas, califica tus respuestas. Verás el puntaje y la respuesta correcta de cada una.',
+								'When you finish the six questions, grade your answers. You will see the score and the correct answer for each one.',
+							)}
+						</p>
+					</div>
+					<div class="pd-steps">
+						<button class="pd-step-btn is-primary" type="button" data-grade>
+							{t('Calificar', 'Grade')}
+						</button>
+						<button class="pd-step-btn" type="button" data-regrade hidden>
+							{t('Responder de nuevo', 'Answer again')}
+						</button>
+					</div>
+					<p class="pd-score" data-score aria-live="polite" />
+					<ol class="pd-results" data-results-list />
+				</section>
+			</div>
+		</div>
+	</div>
+	<script is:inline type="application/json" id="pdData" set:html={JSON.stringify(data)} />
+</div>
+
+<style is:global>
+	.pd-shell {
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.pd-screen {
+		min-height: calc(100dvh - var(--site-header-height, 0px));
+		display: flex;
+		flex-direction: column;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font-family: var(--font-body);
+	}
+
+	.pd-viewport { display: flex; flex-direction: column; justify-content: center; }
+
+	@media (min-width: 1440px) { .pd-viewport { zoom: 1.08; } }
+	@media (min-width: 1680px) { .pd-viewport { zoom: 1.16; } }
+	@media (min-width: 1920px) { .pd-viewport { zoom: 1.25; } }
+
+	.pd-viewport { flex: 1; }
+
+	.pd-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+		padding: var(--space-3) var(--space-6);
+		background: var(--color-surface);
+	}
+
+	.pd-nav-group {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	/* Segmented control, ported from Organic/styles.css (.seg / .seg-opt). */
+	.pd-seg {
+		display: inline-flex;
+		overflow: hidden;
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+		background: var(--color-bg);
+	}
+
+	.pd-seg-opt {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.pd-seg-opt input {
+		position: absolute;
+		opacity: 0;
+		width: 0;
+		height: 0;
+		pointer-events: none;
+	}
+
+	.pd-seg-opt + .pd-seg-opt { border-left: 1px solid var(--color-divider); }
+	.pd-seg-opt:has(input:checked) { background: var(--color-accent); color: var(--color-bg); }
+	.pd-seg-opt:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+	.pd-seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+	.pd-btn,
+	.pd-step-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text);
+		background: var(--color-bg);
+		border: 1px solid var(--color-divider);
+		border-radius: 999px;
+		cursor: pointer;
+		transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+	}
+
+	.pd-btn:hover:not(:disabled),
+	.pd-step-btn:hover:not(:disabled) {
+		border-color: var(--color-accent);
+		color: var(--color-accent-700);
+	}
+
+	.pd-step-btn.is-primary {
+		background: var(--color-accent);
+		border-color: var(--color-accent);
+		color: var(--color-bg);
+	}
+
+	.pd-step-btn.is-primary:hover:not(:disabled) {
+		background: var(--color-accent-600);
+		border-color: var(--color-accent-600);
+		color: var(--color-bg);
+	}
+
+	.pd-step-btn.is-primary:active:not(:disabled) { background: var(--color-accent-700); }
+
+	.pd-btn:disabled,
+	.pd-step-btn:disabled,
+	.pd-option:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.pd-btn:focus-visible,
+	.pd-step-btn:focus-visible,
+	.pd-option:focus-visible,
+	.pd-choice:has(input:focus-visible) {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 2px;
+	}
+
+	.pd-screen ::selection { background: var(--color-accent); color: var(--color-bg); }
+
+	.pd-counter,
+	.pd-step-count {
+		font-size: 13px;
+		font-weight: 700;
+		color: color-mix(in srgb, var(--color-text) 60%, transparent);
+	}
+
+	.pd-mode[hidden] { display: none; }
+
+	.pd-slide {
+		display: none;
+		padding: var(--space-6) var(--space-8);
+		width: 100%;
+	}
+
+	.pd-slide.is-active {
+		display: block;
+		animation: pdFade 0.25s ease-out;
+	}
+
+	@keyframes pdFade {
+		from { opacity: 0; transform: translateY(6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.pd-head { margin-bottom: var(--space-4); }
+
+	.pd-kicker {
+		font-size: 12px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-accent-700);
+	}
+
+	.pd-title {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 28px;
+		line-height: 1.15;
+		margin: var(--space-1) 0 var(--space-2);
+	}
+
+	.pd-lead {
+		font-size: 15px;
+		line-height: 1.5;
+		margin: 0;
+		max-width: 72ch;
+		color: color-mix(in srgb, var(--color-text) 75%, transparent);
+	}
+
+	.pd-stage {
+		display: grid;
+		grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+		gap: var(--space-4);
+		align-items: start;
+	}
+
+	.pd-code {
+		list-style: none;
+		counter-reset: pdline;
+		margin: 0;
+		padding: var(--space-3) 0;
+		background: var(--color-surface);
+		border-radius: var(--radius-lg);
+		overflow-x: auto;
+		font-family: monospace;
+		font-size: 13px;
+		line-height: 1.6;
+	}
+
+	.pd-code li {
+		counter-increment: pdline;
+		display: flex;
+		gap: var(--space-3);
+		padding: 0 var(--space-4);
+		white-space: pre;
+		border-left: 4px solid transparent;
+		transition: background 0.25s ease, border-color 0.25s ease;
+	}
+
+	.pd-code li::before {
+		content: counter(pdline);
+		min-width: 2ch;
+		text-align: right;
+		color: color-mix(in srgb, var(--color-text) 40%, transparent);
+	}
+
+	.pd-code li.is-current {
+		background: var(--color-accent-100);
+		border-left-color: var(--color-accent);
+		color: var(--color-neutral-900);
+	}
+
+	.pd-mem {
+		background: var(--color-surface);
+		border-radius: var(--radius-lg);
+		padding: var(--space-3);
+	}
+
+	.pd-canvas {
+		display: block;
+		width: 100%;
+		height: auto;
+		font-family: var(--font-body);
+	}
+
+	.pd-out {
+		margin: var(--space-2) 0 0;
+		padding: var(--space-2) var(--space-3);
+		background: var(--color-bg);
+		border-radius: var(--radius-sm);
+		font-family: monospace;
+		font-size: 14px;
+	}
+
+	.pd-out[hidden] { display: none; }
+
+	.pd-explain {
+		margin-top: var(--space-4);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.pd-text,
+	.pd-feedback {
+		margin: 0;
+		font-size: 15px;
+		line-height: 1.55;
+		max-width: 80ch;
+		min-height: 3em;
+	}
+
+	.pd-feedback.is-right strong { color: var(--color-accent-2-700); }
+	.pd-feedback.is-wrong strong { color: var(--color-accent-700); }
+
+	.pd-steps {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+	}
+
+	.pd-step-btn[hidden] { display: none; }
+
+	.pd-question {
+		margin: 0;
+		font-weight: 700;
+		font-size: 16px;
+	}
+
+	.pd-options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+	}
+
+	.pd-option {
+		padding: var(--space-2) var(--space-4);
+		background: var(--color-bg);
+		color: var(--color-text);
+		border: 1px solid var(--color-divider);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		font-size: 14px;
+	}
+
+	.pd-option:hover:not(:disabled) { border-color: var(--color-accent); }
+	.pd-option.is-right { background: var(--color-accent-2-100); border-color: var(--color-accent-2); color: var(--color-neutral-900); opacity: 1; }
+	.pd-option.is-wrong { background: var(--color-accent-100); border-color: var(--color-accent); color: var(--color-neutral-900); opacity: 1; }
+
+	.pd-assess {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: var(--space-6);
+		align-items: start;
+	}
+
+	.pd-fieldset {
+		border: 0;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.pd-fieldset .pd-question { margin-bottom: var(--space-2); }
+
+	.pd-choice {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-2) var(--space-4);
+		background: var(--color-surface);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		font-size: 14px;
+	}
+
+	.pd-choice:has(input:checked) { background: var(--color-accent-100); color: var(--color-neutral-900); }
+	.pd-choice input { accent-color: var(--color-accent); }
+
+	.pd-score {
+		font-family: var(--font-heading);
+		font-weight: var(--font-heading-weight);
+		font-size: 24px;
+		margin: var(--space-4) 0 var(--space-2);
+	}
+
+	.pd-results {
+		margin: 0;
+		padding-left: var(--space-6);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		font-size: 14px;
+		line-height: 1.5;
+		max-width: 90ch;
+	}
+
+	.pd-results .is-right { color: var(--color-accent-2-700); font-weight: 700; }
+	.pd-results .is-wrong { color: var(--color-accent-700); font-weight: 700; }
+
+	/* SVG memory diagram, drawn by the script. */
+	.pd-frame { fill: var(--color-bg); stroke: var(--color-divider); stroke-width: 2; }
+	.pd-frame-label { fill: var(--color-text); font-size: 15px; font-weight: 700; font-family: monospace; }
+	.pd-cell rect { fill: var(--color-bg); stroke: var(--color-accent); stroke-width: 3; transition: fill 0.3s ease; }
+	.pd-cell.is-ptr rect { stroke: var(--color-accent-2); }
+	.pd-cell.is-hl rect { fill: var(--color-accent-100); }
+	.pd-cell.is-ptr.is-hl rect { fill: var(--color-accent-2-100); }
+	.pd-cell.is-bad rect { stroke: var(--color-accent-800); stroke-dasharray: 8 6; fill: var(--color-accent-100); }
+	.pd-cell.is-ghost rect { fill: none; stroke: var(--color-divider); stroke-dasharray: 6 6; }
+	.pd-cell .pd-divider { stroke: var(--color-divider); stroke-width: 1.5; }
+	.pd-cell-name { fill: var(--color-text); font-size: 15px; font-weight: 700; }
+	.pd-cell-addr { fill: color-mix(in srgb, var(--color-text) 60%, transparent); font-size: 12px; font-family: monospace; }
+	.pd-cell-val { fill: var(--color-text); font-size: 22px; font-family: monospace; font-weight: 700; }
+	.pd-cell.is-hl .pd-cell-val,
+	.pd-cell.is-bad .pd-cell-val { fill: var(--color-neutral-900); }
+	.pd-cell.is-changed .pd-cell-val { animation: pdPop 0.6s ease-out; transform-box: fill-box; transform-origin: center; }
+	.pd-arrow { fill: none; stroke: var(--color-accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+	.pd-arrow.is-new { stroke-dasharray: 600; animation: pdDraw 0.7s ease-out; }
+
+	@keyframes pdPop {
+		0% { transform: scale(0.6); opacity: 0.2; }
+		60% { transform: scale(1.2); opacity: 1; }
+		100% { transform: scale(1); }
+	}
+
+	@keyframes pdDraw {
+		from { stroke-dashoffset: 600; }
+		to { stroke-dashoffset: 0; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.pd-slide.is-active,
+		.pd-cell.is-changed .pd-cell-val,
+		.pd-arrow.is-new { animation: none; }
+	}
+
+	@media (max-width: 860px) {
+		.pd-slide { padding: var(--space-4); }
+		.pd-nav { padding: var(--space-3) var(--space-4); }
+		.pd-stage,
+		.pd-assess { grid-template-columns: minmax(0, 1fr); }
+		.pd-title { font-size: 22px; }
+	}
+</style>
+
+<script>
+	type Cell = { id: string; name: string; addr: string; x: number; y: number; w?: number; bytes?: number; ptr?: boolean };
+	type Frame = { id: string; label: string; x: number; y: number; w: number; h: number };
+	type State = {
+		line: number;
+		vals: Record<string, string>;
+		arrows?: [string, string][];
+		frames?: string[];
+		hl?: string[];
+		bad?: string[];
+		out?: string;
+		text?: string;
+	};
+	type Scene = { cells: Cell[]; frames?: Frame[]; ghost?: boolean; steps?: State[] };
+	type Practice = Scene & { before: State; after: State; options: string[]; correct: number; why: string };
+	type Assess = { question: string; options: string[]; correct: number; why: string };
+	type Data = {
+		learn: Scene[];
+		practice: Practice[];
+		assess: Assess[];
+		ui: Record<string, string>;
+	};
+
+	const screen = document.querySelector<HTMLElement>('.pd-screen');
+	const raw = document.getElementById('pdData')?.textContent;
+
+	if (screen && raw) {
+		const data = JSON.parse(raw) as Data;
+		const ui = data.ui;
+		const CELL_W = 140;
+		const CELL_H = 52;
+
+		const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+		const box = (c: Cell) => ({ x: c.x, y: c.y, w: c.w ?? CELL_W, h: CELL_H });
+
+		function edge(b: { x: number; y: number; w: number; h: number }, tx: number, ty: number) {
+			const cx = b.x + b.w / 2;
+			const cy = b.y + b.h / 2;
+			const dx = tx - cx;
+			const dy = ty - cy;
+			if (!dx && !dy) return { x: cx, y: cy };
+			const sx = dx ? b.w / 2 / Math.abs(dx) : Infinity;
+			const sy = dy ? b.h / 2 / Math.abs(dy) : Infinity;
+			const s = Math.min(sx, sy);
+			return { x: cx + dx * s, y: cy + dy * s };
+		}
+
+		function arrowPath(from: Cell, to: Cell) {
+			const a = box(from);
+			const b = box(to);
+			const start = edge(a, b.x + b.w / 2, b.y + b.h / 2);
+			const end = edge(b, a.x + a.w / 2, a.y + a.h / 2);
+			const mx = (start.x + end.x) / 2;
+			const my = (start.y + end.y) / 2;
+			const len = Math.hypot(end.x - start.x, end.y - start.y) || 1;
+			const nx = -(end.y - start.y) / len;
+			const ny = (end.x - start.x) / len;
+			const bend = Math.min(40, len / 6);
+			const qx = mx + nx * bend;
+			const qy = my + ny * bend;
+			const ux = (end.x - qx) / (Math.hypot(end.x - qx, end.y - qy) || 1);
+			const uy = (end.y - qy) / (Math.hypot(end.x - qx, end.y - qy) || 1);
+			const tip = { x: end.x - ux * 4, y: end.y - uy * 4 };
+			const left = { x: tip.x - ux * 14 - uy * 8, y: tip.y - uy * 14 + ux * 8 };
+			const right = { x: tip.x - ux * 14 + uy * 8, y: tip.y - uy * 14 - ux * 8 };
+			const f = (n: number) => n.toFixed(1);
+			return (
+				`M${f(start.x)} ${f(start.y)} Q${f(qx)} ${f(qy)} ${f(tip.x)} ${f(tip.y)} ` +
+				`M${f(left.x)} ${f(left.y)} L${f(tip.x)} ${f(tip.y)} L${f(right.x)} ${f(right.y)}`
+			);
+		}
+
+		function draw(svg: SVGSVGElement, scene: Scene, state: State, prev?: State) {
+			let html = '';
+			const frames = scene.frames ?? [];
+			for (const fr of frames) {
+				if (!state.frames?.includes(fr.id)) continue;
+				html += `<rect class="pd-frame" x="${fr.x}" y="${fr.y}" width="${fr.w}" height="${fr.h}" rx="24"/>`;
+				html += `<text class="pd-frame-label" x="${fr.x + 18}" y="${fr.y + 26}">${esc(fr.label)}</text>`;
+			}
+			for (const c of scene.cells) {
+				const b = box(c);
+				const visible = Object.prototype.hasOwnProperty.call(state.vals, c.id);
+				if (!visible) {
+					if (scene.ghost) {
+						html += `<g class="pd-cell is-ghost"><rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="14"/>`;
+						html += addresses(c, b);
+						html += '</g>';
+					}
+					continue;
+				}
+				const cls = ['pd-cell'];
+				if (c.ptr) cls.push('is-ptr');
+				if (state.hl?.includes(c.id)) cls.push('is-hl');
+				if (state.bad?.includes(c.id)) cls.push('is-bad');
+				if (prev && prev.vals[c.id] !== state.vals[c.id]) cls.push('is-changed');
+				html += `<g class="${cls.join(' ')}">`;
+				html += `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="14"/>`;
+				html += dividers(c, b);
+				html += `<text class="pd-cell-name" x="${b.x + 6}" y="${b.y - 10}">${esc(c.name)}</text>`;
+				html += `<text class="pd-cell-val" x="${b.x + b.w / 2}" y="${b.y + b.h / 2 + 8}" text-anchor="middle">${esc(state.vals[c.id])}</text>`;
+				html += addresses(c, b);
+				html += '</g>';
+			}
+			const byId = new Map(scene.cells.map((c) => [c.id, c]));
+			const before = new Set((prev?.arrows ?? []).map(([a, b]) => `${a}>${b}`));
+			for (const [from, to] of state.arrows ?? []) {
+				const a = byId.get(from);
+				const b = byId.get(to);
+				if (!a || !b) continue;
+				const isNew = prev && !before.has(`${from}>${to}`) ? ' is-new' : '';
+				html += `<path class="pd-arrow${isNew}" d="${arrowPath(a, b)}"/>`;
+			}
+			svg.innerHTML = html;
+		}
+
+		function dividers(c: Cell, b: { x: number; y: number; w: number; h: number }) {
+			if (!c.bytes || c.bytes < 2) return '';
+			let html = '';
+			const slot = b.w / c.bytes;
+			for (let i = 1; i < c.bytes; i++) {
+				html += `<line class="pd-divider" x1="${b.x + slot * i}" y1="${b.y + 6}" x2="${b.x + slot * i}" y2="${b.y + b.h - 6}"/>`;
+			}
+			return html;
+		}
+
+		function addresses(c: Cell, b: { x: number; y: number; w: number; h: number }) {
+			if (!c.bytes) {
+				return `<text class="pd-cell-addr" x="${b.x + 6}" y="${b.y + b.h + 18}">${esc(c.addr)}</text>`;
+			}
+			let html = '';
+			const base = parseInt(c.addr, 16);
+			const slot = b.w / c.bytes;
+			for (let i = 0; i < c.bytes; i++) {
+				html += `<text class="pd-cell-addr" x="${b.x + slot * i + slot / 2}" y="${b.y + b.h + 18}" text-anchor="middle">0x${(base + i).toString(16)}</text>`;
+			}
+			return html;
+		}
+
+		function markLine(slide: HTMLElement, line: number) {
+			slide.querySelectorAll<HTMLElement>('.pd-code li').forEach((li) => {
+				li.classList.toggle('is-current', Number(li.dataset.line) === line);
+			});
+		}
+
+		function showOut(slide: HTMLElement, out?: string) {
+			const el = slide.querySelector<HTMLElement>('[data-out]');
+			if (!el) return;
+			el.hidden = !out;
+			el.textContent = out ?? '';
+		}
+
+		// Learn mode: each slide walks its states with the step controls.
+		const learnSlides = screen.querySelectorAll<HTMLElement>('[data-learn]');
+		learnSlides.forEach((slide) => {
+			const scene = data.learn[Number(slide.dataset.learn)];
+			const steps = scene.steps ?? [];
+			const svg = slide.querySelector<SVGSVGElement>('.pd-canvas');
+			const text = slide.querySelector<HTMLElement>('[data-text]');
+			const count = slide.querySelector<HTMLElement>('[data-step-count]');
+			const prevBtn = slide.querySelector<HTMLButtonElement>('[data-step="prev"]');
+			const nextBtn = slide.querySelector<HTMLButtonElement>('[data-step="next"]');
+			let index = 0;
+
+			const render = (prev?: State) => {
+				const state = steps[index];
+				if (svg) draw(svg, scene, state, prev);
+				markLine(slide, state.line);
+				showOut(slide, state.out);
+				if (text) text.textContent = state.text ?? '';
+				if (count) count.textContent = `${ui.step} ${index + 1} / ${steps.length}`;
+				if (prevBtn) prevBtn.disabled = index === 0;
+				if (nextBtn) nextBtn.disabled = index === steps.length - 1;
+			};
+
+			const go = (target: number) => {
+				if (target < 0 || target >= steps.length) return;
+				const prev = steps[index];
+				index = target;
+				render(target > 0 ? prev : undefined);
+			};
+
+			prevBtn?.addEventListener('click', () => go(index - 1));
+			nextBtn?.addEventListener('click', () => go(index + 1));
+			slide.querySelector('[data-step="reset"]')?.addEventListener('click', () => go(0));
+			render();
+		});
+
+		// Practice mode: predict, get feedback, watch the transition.
+		const practiceSlides = screen.querySelectorAll<HTMLElement>('[data-practice]');
+		practiceSlides.forEach((slide) => {
+			const item = data.practice[Number(slide.dataset.practice)];
+			const svg = slide.querySelector<SVGSVGElement>('.pd-canvas');
+			const options = slide.querySelectorAll<HTMLButtonElement>('.pd-option');
+			const feedback = slide.querySelector<HTMLElement>('[data-feedback]');
+			const replay = slide.querySelector<HTMLButtonElement>('[data-replay]');
+			const retry = slide.querySelector<HTMLButtonElement>('[data-retry]');
+			let timer = 0;
+
+			const showBefore = () => {
+				if (svg) draw(svg, item, item.before);
+				markLine(slide, item.before.line);
+				showOut(slide, item.before.out);
+			};
+
+			const showAfter = () => {
+				if (svg) draw(svg, item, item.after, item.before);
+				markLine(slide, item.after.line);
+				showOut(slide, item.after.out);
+			};
+
+			const reset = () => {
+				window.clearTimeout(timer);
+				options.forEach((o) => {
+					o.disabled = false;
+					o.classList.remove('is-right', 'is-wrong');
+				});
+				if (feedback) {
+					feedback.textContent = '';
+					feedback.className = 'pd-feedback';
+				}
+				if (replay) replay.hidden = true;
+				if (retry) retry.hidden = true;
+				showBefore();
+			};
+
+			options.forEach((option) => {
+				option.addEventListener('click', () => {
+					const chosen = Number(option.dataset.option);
+					const right = chosen === item.correct;
+					options.forEach((o) => {
+						o.disabled = true;
+						if (Number(o.dataset.option) === item.correct) o.classList.add('is-right');
+					});
+					if (!right) option.classList.add('is-wrong');
+					if (feedback) {
+						feedback.className = `pd-feedback ${right ? 'is-right' : 'is-wrong'}`;
+						feedback.innerHTML = `<strong>${esc(right ? ui.correct : ui.wrong)}</strong> ${esc(item.why)}`;
+					}
+					if (replay) replay.hidden = false;
+					if (retry) retry.hidden = right;
+					showAfter();
+				});
+			});
+
+			replay?.addEventListener('click', () => {
+				window.clearTimeout(timer);
+				showBefore();
+				timer = window.setTimeout(showAfter, 700);
+			});
+			retry?.addEventListener('click', reset);
+			reset();
+		});
+
+		// Assess mode: no feedback until the student grades the whole set.
+		const resultsSlide = screen.querySelector<HTMLElement>('[data-results]');
+		const gradeBtn = resultsSlide?.querySelector<HTMLButtonElement>('[data-grade]');
+		const regradeBtn = resultsSlide?.querySelector<HTMLButtonElement>('[data-regrade]');
+		const scoreEl = resultsSlide?.querySelector<HTMLElement>('[data-score]');
+		const listEl = resultsSlide?.querySelector<HTMLElement>('[data-results-list]');
+
+		gradeBtn?.addEventListener('click', () => {
+			let score = 0;
+			let html = '';
+			data.assess.forEach((q, i) => {
+				const picked = screen.querySelector<HTMLInputElement>(`input[name="pdA${i}"]:checked`);
+				const chosen = picked ? Number(picked.value) : -1;
+				const right = chosen === q.correct;
+				if (right) score++;
+				const yours = chosen >= 0 ? q.options[chosen] : ui.none;
+				html +=
+					`<li><span class="${right ? 'is-right' : 'is-wrong'}">${esc(right ? ui.correct : ui.wrong)}</span> ` +
+					`${esc(q.question)}<br>${esc(ui.yours)}: <code>${esc(yours)}</code> · ${esc(ui.answer)}: <code>${esc(q.options[q.correct])}</code><br>${esc(q.why)}</li>`;
+			});
+			if (scoreEl) scoreEl.textContent = `${ui.score}: ${score} / ${data.assess.length}`;
+			if (listEl) listEl.innerHTML = html;
+			screen.querySelectorAll<HTMLInputElement>('[data-assess] input').forEach((input) => (input.disabled = true));
+			gradeBtn.disabled = true;
+			if (regradeBtn) regradeBtn.hidden = false;
+		});
+
+		regradeBtn?.addEventListener('click', () => {
+			screen.querySelectorAll<HTMLInputElement>('[data-assess] input').forEach((input) => {
+				input.disabled = false;
+				input.checked = false;
+			});
+			if (scoreEl) scoreEl.textContent = '';
+			if (listEl) listEl.innerHTML = '';
+			if (gradeBtn) gradeBtn.disabled = false;
+			regradeBtn.hidden = true;
+			goTo(1);
+		});
+
+		// Slide navigation inside the active mode.
+		const prevBtn = document.getElementById('pdPrevBtn') as HTMLButtonElement | null;
+		const nextBtn = document.getElementById('pdNextBtn') as HTMLButtonElement | null;
+		const counter = document.getElementById('pdSlideCounter');
+		const current: Record<string, number> = { learn: 1, practice: 1, assess: 1 };
+		let mode = 'learn';
+
+		const activePanel = () => screen.querySelector<HTMLElement>(`.pd-mode[data-mode="${mode}"]`);
+
+		function goTo(target: number) {
+			const panel = activePanel();
+			if (!panel) return;
+			const slides = panel.querySelectorAll<HTMLElement>('.pd-slide');
+			const total = slides.length;
+			if (target < 1 || target > total) return;
+			current[mode] = target;
+			slides.forEach((s) => s.classList.toggle('is-active', Number(s.dataset.slide) === target));
+			if (counter) counter.textContent = `${target} / ${total}`;
+			if (prevBtn) prevBtn.disabled = target === 1;
+			if (nextBtn) nextBtn.disabled = target === total;
+		}
+
+		prevBtn?.addEventListener('click', () => goTo(current[mode] - 1));
+		nextBtn?.addEventListener('click', () => goTo(current[mode] + 1));
+
+		screen.querySelectorAll<HTMLInputElement>('input[name="pdMode"]').forEach((input) => {
+			input.addEventListener('change', () => {
+				if (!input.checked) return;
+				mode = input.value;
+				screen.querySelectorAll<HTMLElement>('.pd-mode').forEach((panel) => {
+					panel.hidden = panel.dataset.mode !== mode;
+				});
+				goTo(current[mode]);
+			});
+		});
+
+		window.addEventListener('keydown', (e) => {
+			const target = e.target as HTMLElement | null;
+			if (target && (target.closest('input, textarea, select') || target.isContentEditable)) return;
+			if (e.altKey || e.ctrlKey || e.metaKey) return;
+			if (e.key === 'ArrowRight') goTo(current[mode] + 1);
+			if (e.key === 'ArrowLeft') goTo(current[mode] - 1);
+		});
+
+		goTo(1);
+	}
+</script>

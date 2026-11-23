@@ -1,0 +1,1211 @@
+---
+/**
+ * Scene for "Repeat while it holds" (lesson c/sentencia-while), a short film
+ * played on one persistent motion canvas. The captions and cues live in
+ * `src/data/animations/bucle-while-c.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: the
+ * program, with a bar that slides to the line being executed and the program
+ * output typed below it. The viewport on the right holds the camera: each while
+ * loop is an isometric track. A gate (the condition) stands on the track before
+ * the body; the body instructions are stations around the loop, each labelled
+ * with its editor line, and the variables are cells whose value on top changes
+ * in place on every pass. Light blue is the execution flow and the values it
+ * carries, violet is a check that lets the flow through, magenta is the gate
+ * closing, the sentinel, the missing update and the off-by-one.
+ *
+ * Two programs of the lesson run here, one after the other: the sentinel loop
+ * (`notas.c`, read before the loop and at the end of the block) on the upper
+ * track, and the count from 1 to 5 (`contar.c`) on the lower one, first without
+ * its update (an infinite loop) and then fixed.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/bucle-while-c';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── The programs shown in the editor ──────────────────────────────────────
+// Identifiers and strings are localized like the lesson does.
+const names = {
+	grade: t('nota', 'grade'),
+	count: t('cantidad', 'count'),
+	sum: t('suma', 'sum'),
+	fileA: t('notas.c', 'grades.c'),
+	fileB: t('contar.c', 'count.c'),
+	exeA: t('./notas', './grades'),
+	exeB: t('./contar', './count'),
+};
+// The lesson's sentinel loop, with its prompts left out: the input arrives on stdin.
+const programA = [
+	'#include <stdio.h>',
+	'',
+	'int main(void) {',
+	`    int ${names.grade};`,
+	`    int ${names.count} = 0;`,
+	`    int ${names.sum} = 0;`,
+	'',
+	`    if (scanf("%d", &${names.grade}) != 1) return 1;`,
+	`    while (${names.grade} != -1) {${isEs ? '            // -1 es el centinela' : '           // -1 is the sentinel'}`,
+	`        ${names.sum} = ${names.sum} + ${names.grade};`,
+	`        ${names.count} = ${names.count} + 1;`,
+	`        if (scanf("%d", &${names.grade}) != 1) return 1;`,
+	'    }',
+	`    if (${names.count} > 0) {`,
+	`        printf("${t('Promedio', 'Average')}: %.2f\\n", (double) ${names.sum} / ${names.count});`,
+	'    } else {',
+	`        printf("${t('No se ingresaron notas', 'No grades were entered')}\\n");`,
+	'    }',
+	'    return 0;',
+	'}',
+].join('\n');
+// The lesson's first loop: initial state, condition and update.
+const programB = [
+	'#include <stdio.h>',
+	'',
+	'int main(void) {',
+	`    int i = 1;              // ${t('estado inicial', 'initial state')}`,
+	'',
+	`    while (i <= 5) {        // ${t('condición', 'condition')}`,
+	'        printf("%d\\n", i);',
+	`        i = i + 1;          // ${t('actualización', 'update')}`,
+	'    }',
+	'',
+	`    printf("${t('Al salir, i vale %d', 'After the loop, i is %d')}\\n", i);`,
+	'    return 0;',
+	'}',
+].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const toLines = (source: string) =>
+	highlightCode(source, 'c').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+const linesA = toLines(programA);
+const linesB = toLines(programB);
+
+// What the console shows: the command with its input, then the real output.
+type Row = { id: string; row: number; text: string; cmd?: boolean };
+const outputs: Row[] = [
+	{ id: 'oa-1', row: 0, text: `$ echo "-1" | ${names.exeA}`, cmd: true },
+	{ id: 'oa-2', row: 1, text: t('No se ingresaron notas', 'No grades were entered') },
+	{ id: 'oa-3', row: 2, text: `$ echo "8 6 10 -1" | ${names.exeA}`, cmd: true },
+	{ id: 'oa-4', row: 3, text: `${t('Promedio', 'Average')}: 8.00` },
+	{ id: 'ob-1', row: 0, text: `$ ${names.exeB}`, cmd: true },
+	{ id: 'oi-1', row: 1, text: '1' },
+	{ id: 'oi-2', row: 2, text: '1' },
+	{ id: 'oi-3', row: 3, text: '1' },
+	{ id: 'oi-4', row: 4, text: '^C' },
+	{ id: 'ob-2', row: 0, text: `$ ${names.exeB}`, cmd: true },
+	{ id: 'oc-1', row: 1, text: '1' },
+	{ id: 'oc-2', row: 2, text: '2' },
+	{ id: 'oc-3', row: 3, text: '3' },
+	{ id: 'oc-4', row: 4, text: '4' },
+	{ id: 'oc-5', row: 5, text: '5' },
+	{ id: 'oc-6', row: 6, text: t('Al salir, i vale 6', 'After the loop, i is 6') },
+];
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 72;
+const GUTTER_X = 59;
+const CODE_TOP = 72;
+const LINE_H = 21;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (n: number) => CODE_TOP + (n - 1) * LINE_H;
+const lineMid = (n: number) => lineTop(n) + LINE_H / 2;
+const lineBase = (n: number) => lineMid(n) + 5;
+const CONSOLE_TOP = 506;
+const outY = (row: number) => 550 + row * 21;
+// The update of contar.c (line 8) struck out while it is missing.
+const STRIKE_FROM = CODE_X + 8 * 7.8;
+const STRIKE_TO = CODE_X + 18 * 7.8;
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right, +v down-left, z is up. The sentinel loop is the
+// upper track, the count from 1 to 5 the lower one.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 56;
+const EY = 32;
+const ORIGIN = { x: 640, y: 360 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+const line = (points: Point[]) => points.map((point, index) => `${index ? 'L' : 'M'}${point.x} ${point.y}`).join(' ');
+
+/** A box standing on the floor at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		face: faceCenter,
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+type Slab = ReturnType<typeof slab>;
+type Tone = 'flow' | 'violet' | 'magenta';
+
+// A loop track: an ellipse on the floor travelled from the gate (θ = 180°) onwards.
+type Track = { u: number; v: number; a: number; b: number };
+const A: Track = { u: -2.18, v: -2.82, a: 2.0, b: 1.1 };
+const B: Track = { u: 2.68, v: 2.32, a: 1.6, b: 0.9 };
+const onTrack = (track: Track, deg: number) => {
+	const rad = (deg * Math.PI) / 180;
+	return { u: track.u + track.a * Math.cos(rad), v: track.v + track.b * Math.sin(rad) };
+};
+const ringPath = (track: Track) => {
+	const points: Point[] = [];
+	for (let deg = 180; deg <= 540; deg += 7.5) {
+		const at = onTrack(track, deg);
+		points.push(pt(at.u, at.v));
+	}
+	return `${line(points)} Z`;
+};
+const off = (track: Track, du: number, dv: number) => ({ u: track.u + du, v: track.v + dv });
+
+// Instruction modules: one per instruction, labelled with its editor line.
+type Spot = { u: number; v: number };
+type Module = { id: string; line: number; anchor: string; g: Slab };
+const block = (spot: Spot) => slab(spot.u, spot.v, 0.22, 0.22, 16);
+const gateA = onTrack(A, 180);
+const gateB = onTrack(B, 180);
+const spotsA: [number, Spot][] = [
+	[8, off(A, -3.4, 0)],
+	[10, onTrack(A, 270)],
+	[11, onTrack(A, 360)],
+	[12, onTrack(A, 450)],
+	[14, off(A, -2.0, 1.9)],
+	[15, off(A, -1.4, 2.8)],
+	[17, off(A, -2.6, 2.8)],
+];
+const spotsB: [number, Spot][] = [
+	[7, onTrack(B, 300)],
+	[8, onTrack(B, 420)],
+	[11, off(B, -1.6, 1.7)],
+];
+const modules: Module[] = [
+	...spotsA.map(([n, spot]) => ({ id: `m-${n}`, line: n, anchor: `a-m${n}`, g: block(spot) })),
+	...spotsB.map(([n, spot]) => ({ id: `mb-${n}`, line: n, anchor: `a-mb${n}`, g: block(spot) })),
+];
+const moduleOf = (id: string) => modules.find((item) => item.id === id) as Module;
+const spotOf = (spots: [number, Spot][], n: number) => (spots.find(([k]) => k === n) as [number, Spot])[1];
+
+// Lanes: the way into each gate and the way out after the loop.
+const lanes = [
+	{ id: 'in-a', d: line([pt(spotOf(spotsA, 8).u, spotOf(spotsA, 8).v), pt(gateA.u, gateA.v)]) },
+	{
+		id: 'out-a',
+		d: `${line([pt(gateA.u, gateA.v), pt(spotOf(spotsA, 14).u, spotOf(spotsA, 14).v), pt(spotOf(spotsA, 15).u, spotOf(spotsA, 15).v)])} ${line([
+			pt(spotOf(spotsA, 14).u, spotOf(spotsA, 14).v),
+			pt(spotOf(spotsA, 17).u, spotOf(spotsA, 17).v),
+		])}`,
+	},
+	{ id: 'in-b', d: line([pt(off(B, -3.3, 0).u, off(B, -3.3, 0).v), pt(gateB.u, gateB.v)]) },
+	{ id: 'out-b', d: line([pt(gateB.u, gateB.v), pt(spotOf(spotsB, 11).u, spotOf(spotsB, 11).v)]) },
+];
+const tracks = [
+	{ id: 'trk-a', d: ringPath(A), plate: slab(A.u, A.v, A.a + 0.6, A.b + 0.6, 6, -6) },
+	{ id: 'trk-b', d: ringPath(B), plate: slab(B.u, B.v, B.a + 0.6, B.b + 0.6, 6, -6) },
+];
+
+// Gates: the condition of each loop, on the track before the body. The base is the
+// module of the `while` line; the bar is raised (open) or lowered (closed).
+function gate(spot: Spot, lineNo: number, id: string, sign: string) {
+	const base = slab(spot.u, spot.v, 0.55, 0.2, 10);
+	const postL = slab(spot.u - 0.45, spot.v, 0.07, 0.07, 40, 10);
+	const postR = slab(spot.u + 0.45, spot.v, 0.07, 0.07, 40, 10);
+	const pivot = pt(spot.u - 0.45, spot.v, 46);
+	return {
+		id,
+		line: lineNo,
+		sign,
+		base,
+		postL,
+		postR,
+		closed: line([pivot, pt(spot.u + 0.45, spot.v, 46)]),
+		open: line([pivot, lift(pivot, 56)]),
+		signAt: lift(pt(spot.u, spot.v), 92),
+	};
+}
+const gates = [
+	{ ...gate(gateA, 9, 'm-9', `${names.grade} != -1`), lit: 'a', anchor: 'a-m9' },
+	{ ...gate(gateB, 6, 'mb-6', 'i <= 5'), lit: 'b', anchor: 'a-mb6' },
+];
+const signWidth = (text: string) => Math.round(text.length * 8.4 + 30);
+
+// Variables: cells whose value changes in place. The front face shows the line
+// that declares them.
+const CELL = { a: 0.36, h: 16 };
+type Cell = { id: string; name: string; line: number; g: Slab };
+const cell = (id: string, name: string, lineNo: number, spot: Spot): Cell => ({
+	id,
+	name,
+	line: lineNo,
+	g: slab(spot.u, spot.v, CELL.a, CELL.a, CELL.h),
+});
+const cells: Cell[] = [
+	cell('nota', names.grade, 4, off(A, -0.9, -2.2)),
+	cell('cant', names.count, 5, off(A, 0.35, -2.2)),
+	cell('suma', names.sum, 6, off(A, 1.6, -2.2)),
+	cell('i', 'i', 4, off(B, -3.3, 0)),
+];
+const cellOf = (id: string) => cells.find((item) => item.id === id) as Cell;
+
+// Values: each state of a variable is its own text, swapped in place on the same cell.
+type Value = { id: string; cell: string; text: string; tone: Tone | 'plain' };
+const values: Value[] = [
+	{ id: 'v-nota-z', cell: 'nota', text: '-1', tone: 'magenta' },
+	{ id: 'v-nota-8', cell: 'nota', text: '8', tone: 'flow' },
+	{ id: 'v-nota-6', cell: 'nota', text: '6', tone: 'flow' },
+	{ id: 'v-nota-10', cell: 'nota', text: '10', tone: 'flow' },
+	{ id: 'v-nota-s', cell: 'nota', text: '-1', tone: 'magenta' },
+	{ id: 'v-cant-0', cell: 'cant', text: '0', tone: 'plain' },
+	{ id: 'v-cant-1', cell: 'cant', text: '1', tone: 'flow' },
+	{ id: 'v-cant-2', cell: 'cant', text: '2', tone: 'flow' },
+	{ id: 'v-cant-3', cell: 'cant', text: '3', tone: 'flow' },
+	{ id: 'v-suma-0', cell: 'suma', text: '0', tone: 'plain' },
+	{ id: 'v-suma-8', cell: 'suma', text: '8', tone: 'flow' },
+	{ id: 'v-suma-14', cell: 'suma', text: '14', tone: 'flow' },
+	{ id: 'v-suma-24', cell: 'suma', text: '24', tone: 'flow' },
+	...[1, 2, 3, 4, 5, 6].map((k): Value => ({ id: `v-i-${k}`, cell: 'i', text: String(k), tone: k === 1 ? 'plain' : k === 6 ? 'magenta' : 'flow' })),
+];
+
+// The input: a tray of values waiting on stdin, read one at a time.
+const TRAY = off(A, -4.0, 0.9);
+const tray = slab(TRAY.u, TRAY.v, 0.62, 0.26, 8);
+const queue = [-0.6, -0.2, 0.2, 0.6].map((du, index) => ({ id: `a-in-${index + 1}`, ...lift(pt(TRAY.u + du, TRAY.v), 22) }));
+
+// Where things stop: above a module, on a gate, on top of a cell.
+const anchors = [
+	...modules.map((module) => ({ id: module.anchor, ...lift(module.g.center, 16) })),
+	...gates.map((item) => ({ id: item.anchor, ...lift(item.base.center, 30) })),
+	...cells.map((item) => ({ id: `a-top-${item.id}`, ...lift(item.g.center, 2) })),
+	...queue,
+];
+const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0, y: 0 };
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shotAt = (id: string, center: Point, s: number) => ({
+	id,
+	x: round(center.x - 640 / s),
+	y: round(center.y - 360 / s),
+	w: round(1280 / s),
+	h: round(720 / s),
+});
+const shots = [
+	shotAt('shot-a', { x: 652, y: 190 }, 1.12),
+	shotAt('shot-ring', { x: 682, y: 200 }, 1.25),
+	shotAt('shot-exit', { x: 566, y: 180 }, 1.3),
+	shotAt('shot-b', { x: 640, y: 500 }, 1.2),
+	shotAt('shot-b-gate', { x: 604, y: 510 }, 1.35),
+];
+
+// Travelling chips: one identity for "a value on its way".
+type Packet = { id: string; text: string; from: string; tone: Tone };
+const packets: Packet[] = [
+	{ id: 'in-z', text: '-1', from: 'a-in-1', tone: 'magenta' },
+	{ id: 'in-8', text: '8', from: 'a-in-1', tone: 'flow' },
+	{ id: 'in-6', text: '6', from: 'a-in-2', tone: 'flow' },
+	{ id: 'in-10', text: '10', from: 'a-in-3', tone: 'flow' },
+	{ id: 'in-m1', text: '-1', from: 'a-in-4', tone: 'magenta' },
+	{ id: 'pk-8', text: '8', from: 'a-top-nota', tone: 'flow' },
+	{ id: 'pk-6', text: '6', from: 'a-top-nota', tone: 'flow' },
+	{ id: 'pk-10', text: '10', from: 'a-top-nota', tone: 'flow' },
+	{ id: 'inc-1', text: '+1', from: 'a-m11', tone: 'flow' },
+	{ id: 'inc-2', text: '+1', from: 'a-m11', tone: 'flow' },
+	{ id: 'inc-3', text: '+1', from: 'a-m11', tone: 'flow' },
+	{ id: 'sx', text: '-1', from: 'a-top-nota', tone: 'magenta' },
+];
+const packetWidth = (packet: Packet) => Math.round(packet.text.length * 7.8 + 24);
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = { id: string; text: string; x: number; y: number; align: 'start' | 'end' | 'middle'; tone: 'plain' | Tone; mono?: boolean };
+const RING_A = pt(A.u, A.v);
+const SIGN_B = gates[1].signAt;
+const evA = (id: string, text: string, tone: Tone): Chip => ({ id, text, x: RING_A.x, y: RING_A.y - 6, align: 'middle', tone, mono: true });
+const trace = (k: number, sum: number) => ({
+	id: `tr-${k}`,
+	text: t(`vuelta ${k}: suma ${sum}, cantidad ${k}`, `pass ${k}: sum ${sum}, count ${k}`),
+	x: 806,
+	y: 290 + (k - 1) * 26,
+	align: 'middle' as const,
+	tone: 'flow' as const,
+});
+const chips: Chip[] = [
+	evA('ev-a1', t('-1 != -1 → falso', '-1 != -1 → false'), 'magenta'),
+	evA('ev-a2', t('8 != -1 → verdadero', '8 != -1 → true'), 'violet'),
+	evA('ev-a3', t('6 != -1 → verdadero', '6 != -1 → true'), 'violet'),
+	evA('ev-a4', t('10 != -1 → verdadero', '10 != -1 → true'), 'violet'),
+	evA('ev-a5', t('-1 != -1 → falso', '-1 != -1 → false'), 'magenta'),
+	{ id: 'lb-zero', text: t('0 vueltas: el bloque no se ejecutó', '0 passes: the block never ran'), x: 560, y: 282, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-sent', text: t('el centinela no se suma', 'the sentinel is not added'), x: 560, y: 282, align: 'middle', tone: 'magenta' },
+	trace(1, 8),
+	trace(2, 14),
+	trace(3, 24),
+	{ id: 'lb-prime', text: t('lectura adelantada: líneas 8 y 12', 'priming read: lines 8 and 12'), x: 560, y: 282, align: 'middle', tone: 'flow' },
+	{ id: 'ev-b1', text: t('1 <= 5 → verdadero', '1 <= 5 → true'), x: SIGN_B.x + 62, y: SIGN_B.y, align: 'start', tone: 'violet', mono: true },
+	{ id: 'lb-same', text: t('i siempre vale 1', 'i is always 1'), x: 456, y: 502, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-four', text: t('i < 5: solo 4 vueltas, falta el 5', 'i < 5: only 4 passes, the 5 is missing'), x: 620, y: 596, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-first', text: t('primera vuelta: i = 1', 'first pass: i = 1'), x: 620, y: 596, align: 'middle', tone: 'flow' },
+	{ id: 'lb-last', text: t('última vuelta: i = 5', 'last pass: i = 5'), x: 620, y: 620, align: 'middle', tone: 'flow' },
+	{ id: 'lb-rule', text: t('desde a, con i <= b: b - a + 1 vueltas', 'from a, with i <= b: b - a + 1 passes'), x: 620, y: 644, align: 'middle', tone: 'violet' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.9) + 26);
+const chipLeft = (chip: Chip) =>
+	chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x;
+
+// Each evaluation of `i <= 5` leaves a tick beside the gate: six checks, five passes.
+const ticks = [1, 2, 3, 4, 5, 6].map((k) => ({ id: `tk-${k}`, x: SIGN_B.x + 64 + (k - 1) * 16, y: SIGN_B.y - 8, tone: k === 6 ? 'magenta' : 'violet' }));
+
+// Lit states: the two reads of the priming-read pattern.
+const litModules = [
+	{ id: 'on-8', module: 'm-8' },
+	{ id: 'on-12', module: 'm-12' },
+];
+// The missing update: a dashed outline where line 8 of contar.c should be.
+const GONE = moduleOf('mb-8').g;
+const INF = lift(pt(B.u, B.v), 8);
+
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="bw-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="bw-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="bw-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="bw-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="bw-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="bw-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: each loop as a track with a gate, seen through the camera -->
+			<g clip-path="url(#bw-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#bw-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#bw-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- Floor plates under each track -->
+						{
+							tracks.map((track) => (
+								<g data-el={`plate-${track.id.slice(-1)}`}>
+									<polygon class="xj-plate-shadow" points={track.plate.base} transform="translate(12 18)" />
+									<polygon class="xj-plate xj-plate--l" points={track.plate.leftFace} />
+									<polygon class="xj-plate xj-plate--r" points={track.plate.rightFace} />
+									<polygon class="xj-plate xj-plate--t" points={track.plate.top} fill="url(#bw-g-floor)" />
+								</g>
+							))
+						}
+
+						<!-- The tracks: the loop and the lanes into and out of it -->
+						{
+							tracks.map((track) => (
+								<g data-el={track.id} class="xj-track">
+									<path class="mg-stroke xj-track-bed" pathLength="1" d={track.d} />
+									<path class="mg-stroke xj-track-line" pathLength="1" d={track.d} />
+								</g>
+							))
+						}
+						{
+							lanes.map((lane) => (
+								<g data-el={lane.id} class="xj-track">
+									<path class="mg-stroke xj-track-bed" pathLength="1" d={lane.d} />
+									<path class="mg-stroke xj-track-line" pathLength="1" d={lane.d} />
+								</g>
+							))
+						}
+
+						<!-- The input waiting on stdin -->
+						<g data-el="stdin">
+							<polygon class="xj-shadow" points={tray.base} transform="translate(6 8)" />
+							<polygon class="xj-face xj-face--l" points={tray.leftFace} />
+							<polygon class="xj-face xj-face--r" points={tray.rightFace} />
+							<polygon class="xj-face xj-face--t" points={tray.top} fill="url(#bw-g-top)" />
+							<text class="xj-face-text" transform={tray.faceMatrix} text-anchor="middle" y="4">
+								stdin
+							</text>
+						</g>
+
+						<!-- Instruction modules: one per instruction, labelled with its editor line -->
+						{
+							modules.map((module) => (
+								<g data-el={module.id} class="xj-mod">
+									<polygon class="xj-shadow" points={module.g.base} transform="translate(6 8)" />
+									<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+									<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+									<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#bw-g-top)" />
+									<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+										{module.line}
+									</text>
+								</g>
+							))
+						}
+						{
+							litModules.map((lit) => (
+								<g data-el={lit.id} class="xj-lit xj-lit--flow">
+									<polygon class="xj-lit-halo" points={moduleOf(lit.module).g.top} />
+									<polygon class="xj-lit-top" points={moduleOf(lit.module).g.top} />
+								</g>
+							))
+						}
+						<g data-el="gone-8" class="xj-gone">
+							<polygon points={GONE.top}></polygon>
+							<polygon points={GONE.leftFace}></polygon>
+							<polygon points={GONE.rightFace}></polygon>
+						</g>
+
+						<!-- Gates: the condition, asked before every pass -->
+						{
+							gates.map((item) => (
+								<>
+									<g data-el={item.id} class="xj-gate">
+										<polygon class="xj-shadow" points={item.base.base} transform="translate(6 8)" />
+										<polygon class="xj-face xj-face--l" points={item.base.leftFace} />
+										<polygon class="xj-face xj-face--r" points={item.base.rightFace} />
+										<polygon class="xj-face xj-face--t" points={item.base.top} fill="url(#bw-g-top)" />
+										<text class="xj-face-text" transform={item.base.faceMatrix} text-anchor="middle" y="4">
+											{item.line}
+										</text>
+										<polygon class="xj-face xj-face--l" points={item.postL.leftFace} />
+										<polygon class="xj-face xj-face--r" points={item.postL.rightFace} />
+										<polygon class="xj-face xj-face--t" points={item.postL.top} />
+										<polygon class="xj-face xj-face--l" points={item.postR.leftFace} />
+										<polygon class="xj-face xj-face--r" points={item.postR.rightFace} />
+										<polygon class="xj-face xj-face--t" points={item.postR.top} />
+									</g>
+									<g data-el={`open-${item.lit}`} class="xj-bar xj-bar--open">
+										<polygon class="xj-bar-halo" points={item.base.top} />
+										<path class="xj-bar-glow" d={item.open} />
+										<path class="xj-bar-core" d={item.open} />
+									</g>
+									<g data-el={`shut-${item.lit}`} class="xj-bar xj-bar--shut">
+										<polygon class="xj-bar-halo" points={item.base.top} />
+										<path class="xj-bar-glow" d={item.closed} />
+										<path class="xj-bar-core" d={item.closed} />
+									</g>
+								</>
+							))
+						}
+						{
+							[
+								{ id: 'sign-a', text: gates[0].sign, at: gates[0].signAt, tone: 'violet' },
+								{ id: 'sign-b', text: gates[1].sign, at: gates[1].signAt, tone: 'violet' },
+								{ id: 'sign-lt', text: 'i < 5', at: gates[1].signAt, tone: 'magenta' },
+							].map((sign) => (
+								<g data-el={sign.id} class:list={['xj-sign', `xj-sign--${sign.tone}`]}>
+									<path class="xj-sign-post" d={`M${sign.at.x} ${sign.at.y + 15} v26`} />
+									<rect x={sign.at.x - signWidth(sign.text) / 2} y={sign.at.y - 15} width={signWidth(sign.text)} height="30" rx="10" />
+									<text x={sign.at.x} y={sign.at.y + 5} text-anchor="middle">
+										{sign.text}
+									</text>
+								</g>
+							))
+						}
+						{
+							ticks.map((tick) => (
+								<rect data-el={tick.id} class:list={['xj-tick', `xj-tick--${tick.tone}`]} x={tick.x} y={tick.y} width="10" height="16" rx="3" />
+							))
+						}
+
+						<!-- Variables: the value on top, the declaring line on the front edge -->
+						{
+							cells.map((item) => (
+								<g data-el={`c-${item.id}`} class="xj-cell">
+									<polygon class="xj-shadow" points={item.g.base} transform="translate(6 8)" />
+									<polygon class="xj-face xj-face--l" points={item.g.leftFace} />
+									<polygon class="xj-face xj-face--r" points={item.g.rightFace} />
+									<polygon class="xj-face xj-face--t" points={item.g.top} fill="url(#bw-g-top)" />
+									<text class="xj-face-text" transform={item.g.faceMatrix} text-anchor="middle" y="4">
+										{item.line}
+									</text>
+								</g>
+							))
+						}
+						{
+							cells.map((item) => (
+								<g data-el={`n-${item.id}`} class="xj-name">
+									<rect x={item.g.center.x - (item.name.length * 7.9 + 18) / 2} y={item.g.center.y - 48} width={item.name.length * 7.9 + 18} height="22" rx="11" />
+									<text x={item.g.center.x} y={item.g.center.y - 32.5} text-anchor="middle">
+										{item.name}
+									</text>
+								</g>
+							))
+						}
+						{
+							values.map((value) => (
+								<text
+									data-el={value.id}
+									class:list={['xj-val', `xj-val--${value.tone}`]}
+									x={cellOf(value.cell).g.center.x}
+									y={cellOf(value.cell).g.center.y + 5}
+									text-anchor="middle"
+								>
+									{value.text}
+								</text>
+							))
+						}
+
+						<!-- An infinite loop: the gate never closes -->
+						<g data-el="inf" class="xj-inf">
+							<circle cx={INF.x} cy={INF.y} r="17"></circle>
+							<svg x={INF.x - 11} y={INF.y - 11} width="22" height="22" viewBox="0 0 24 24" stroke-width="2.75">
+								<path d="M6 16c5 0 7-8 12-8a4 4 0 0 1 0 8c-5 0-7-8-12-8a4 4 0 1 0 0 8"></path>
+							</svg>
+						</g>
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									<text class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'} x={chipLeft(chip) + chipWidth(chip) / 2} y={chip.y + 4.5} text-anchor="middle">
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- Travelling chips. Placement lives on the inner group: the player resets data-el transforms. -->
+						{
+							packets.map((packet) => (
+								<g data-el={packet.id} data-x={at(packet.from).x} data-y={at(packet.from).y}>
+									<g class:list={['xj-packet', `xj-packet--${packet.tone}`]}>
+										<rect class="xj-packet-halo" x={-packetWidth(packet) / 2 - 5} y="-18" width={packetWidth(packet) + 10} height="36" rx="18" />
+										<rect class="xj-packet-card" x={-packetWidth(packet) / 2} y="-13" width={packetWidth(packet)} height="26" rx="13" />
+										<text class="xj-packet-text" x="0" y="4.5" text-anchor="middle">
+											{packet.text}
+										</text>
+									</g>
+								</g>
+							))
+						}
+
+						<!-- The execution flow -->
+						<g data-el="fx" class="xj-particle" data-x={at('a-m9').x} data-y={at('a-m9').y}>
+							<circle r="20" fill="url(#bw-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="450" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<path class="xj-legend-gate" d={`M${VP.x + 178} ${LEGEND_Y + 7} v-14 M${VP.x + 196} ${LEGEND_Y + 7} v-14 M${VP.x + 178} ${LEGEND_Y - 3} h18`}></path>
+				<text x={VP.x + 206} y={LEGEND_Y + 4}>{t('Condición', 'Condition')}</text>
+				<rect class="xj-legend-cell" x={VP.x + 296} y={LEGEND_Y - 7} width="18" height="14" rx="3"></rect>
+				<text x={VP.x + 322} y={LEGEND_Y + 4}>{t('Variable', 'Variable')}</text>
+			</g>
+
+			<!-- EDITOR: the program, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<text data-el="file-a" data-base="shown" class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.fileA}</text>
+				<text data-el="file-b" class="xj-file" x={ED.x + 76} y={ED.y + 25}>{names.fileB}</text>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<g data-el="mark-8" class="xj-mark">
+					<rect x={BAR.x} y={lineTop(8)} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${STRIKE_FROM} ${lineMid(8)} H${STRIKE_TO}`}></path>
+				</g>
+
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(4)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				{
+					[
+						{ id: 'ed-a', lines: linesA, base: 'shown' },
+						{ id: 'ed-b', lines: linesB, base: undefined },
+					].map((editor) => (
+						<g data-el={editor.id} data-base={editor.base} class="xj-code">
+							{editor.lines.map((item) => (
+								<g>
+									<text class="xj-gutter" x={GUTTER_X} y={lineBase(item.n)} text-anchor="end">
+										{item.n}
+									</text>
+									<text class="xj-mono" x={CODE_X} y={lineBase(item.n)} xml:space="preserve" set:html={item.html} />
+								</g>
+							))}
+						</g>
+					))
+				}
+
+				<!-- Console: the command with its input, then what the program prints -->
+				{
+					outputs.map((row) => (
+						<text data-el={row.id} class:list={['xj-out', row.cmd && 'xj-out--cmd']} x={ED.x + 20} y={outY(row.row)} xml:space="preserve">
+							{row.text}
+						</text>
+					))
+				}
+				{linesA.map((item) => <circle data-anchor={`ln-${item.n}`} cx={BAR_CX} cy={lineMid(item.n)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue execution flow, violet for a check that lets the flow through, and
+	   magenta for the closed gate, the sentinel, the missing update and the
+	   off-by-one. Every rule below reads these tokens; no other color is written
+	   in this file. */
+	:global(.anim-player[data-slug='bucle-while-c']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='bucle-while-c'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='bucle-while-c'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='bucle-while-c'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-gate {
+		fill: none;
+		stroke: var(--xj-violet);
+		stroke-width: 3;
+		stroke-linecap: round;
+	}
+
+	.xj-legend-cell {
+		fill: var(--xj-steel);
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+	}
+
+	/* Plates, tracks, modules and cells */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-track-bed,
+	.xj-track-line {
+		fill: none;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-track-bed {
+		stroke: var(--xj-edge);
+		stroke-width: 16;
+	}
+
+	.xj-track-line {
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.55;
+		stroke-width: 2.5;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-gone polygon {
+		fill: none;
+		stroke: var(--xj-magenta);
+		stroke-width: 2;
+		stroke-dasharray: 5 4;
+		stroke-linejoin: round;
+	}
+
+	.xj-name rect {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-name text {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-val {
+		font-family: monospace;
+		font-size: 15px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-val--flow {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-val--magenta {
+		fill: var(--xj-magenta-soft);
+	}
+
+	/* Gate bars: raised lets the flow through, lowered closes the loop */
+	.xj-bar {
+		--xj-line: var(--xj-violet);
+	}
+
+	.xj-bar--shut {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-bar-halo {
+		fill: var(--xj-line);
+		fill-opacity: 0.22;
+		stroke: var(--xj-line);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-bar-glow,
+	.xj-bar-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+	}
+
+	.xj-bar-glow {
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+	}
+
+	.xj-bar-core {
+		stroke-width: 4.5;
+	}
+
+	.xj-sign {
+		--xj-sign: var(--xj-violet);
+		--xj-sign-soft: var(--xj-violet-soft);
+	}
+
+	.xj-sign--magenta {
+		--xj-sign: var(--xj-magenta);
+		--xj-sign-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-sign rect {
+		fill: var(--xj-ink);
+		stroke: var(--xj-sign);
+		stroke-width: 2;
+	}
+
+	.xj-sign-post {
+		stroke: var(--xj-sign);
+		stroke-width: 2;
+		stroke-opacity: 0.6;
+	}
+
+	.xj-sign text {
+		font-family: monospace;
+		font-size: 14px;
+		font-weight: 700;
+		fill: var(--xj-sign-soft);
+	}
+
+	.xj-tick {
+		fill: var(--xj-violet);
+	}
+
+	.xj-tick--magenta {
+		fill: var(--xj-magenta);
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	/* The infinite loop */
+	.xj-inf circle {
+		fill: var(--xj-magenta-deep);
+		stroke: var(--xj-magenta);
+		stroke-width: 2;
+	}
+
+	.xj-inf svg {
+		fill: none;
+		stroke: var(--xj-white);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink);
+	}
+
+	/* Travelling chips and the flow */
+	.xj-packet {
+		--xj-pk: var(--xj-flow);
+		--xj-pk-soft: var(--xj-flow-soft);
+	}
+
+	.xj-packet--violet {
+		--xj-pk: var(--xj-violet);
+		--xj-pk-soft: var(--xj-violet-soft);
+	}
+
+	.xj-packet--magenta {
+		--xj-pk: var(--xj-magenta);
+		--xj-pk-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-packet-halo {
+		fill: var(--xj-pk);
+		fill-opacity: 0.16;
+	}
+
+	.xj-packet-card {
+		fill: var(--xj-ink);
+		stroke: var(--xj-pk);
+		stroke-width: 2;
+	}
+
+	.xj-packet-text {
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: 700;
+		fill: var(--xj-pk-soft);
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-out--cmd {
+		fill: var(--xj-dim);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type),
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-ann) {
+		fill: var(--xj-magenta-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-mark rect {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.16;
+		stroke: var(--xj-magenta);
+		stroke-width: 1.5;
+	}
+
+	.xj-mark path {
+		stroke: var(--xj-magenta);
+		stroke-width: 2;
+		stroke-linecap: round;
+	}
+</style>

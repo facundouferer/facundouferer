@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+	<text x="24" y="34" font-family="'Fira Code', monospace" font-size="12" font-weight="700" fill="#8c491a">cabeza -> 3 -> 7 -> 9</text>
+	<!-- Head pointer on the stack -->
+	<g transform="translate(24, 76)">
+		<rect width="64" height="48" rx="14" fill="#f5ead8"/>
+		<text x="10" y="29" font-family="'Fira Code', monospace" font-size="12" font-weight="700" fill="#201e1d">cabeza</text>
+	</g>
+	<path d="M 88 100 L 116 100" fill="none" stroke="#c67139" stroke-width="3" stroke-linecap="round"/>
+	<path d="M 108 94 L 116 100 L 108 106" fill="none" stroke="#c67139" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+	<!-- Node 3 -->
+	<g transform="translate(120, 70)">
+		<rect width="76" height="60" rx="14" fill="#f5ead8"/>
+		<rect x="8" y="10" width="34" height="40" rx="9" fill="#ebddc5"/>
+		<text x="25" y="37" text-anchor="middle" font-family="'Caprasimo', serif" font-size="20" fill="#201e1d">3</text>
+		<circle cx="58" cy="30" r="6" fill="#c67139"/>
+	</g>
+	<path d="M 178 100 L 214 100" fill="none" stroke="#7a8a5e" stroke-width="3" stroke-linecap="round"/>
+	<path d="M 206 94 L 214 100 L 206 106" fill="none" stroke="#7a8a5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+	<!-- Node 7 -->
+	<g transform="translate(218, 70)">
+		<rect width="76" height="60" rx="14" fill="#f5ead8"/>
+		<rect x="8" y="10" width="34" height="40" rx="9" fill="#ebddc5"/>
+		<text x="25" y="37" text-anchor="middle" font-family="'Caprasimo', serif" font-size="20" fill="#201e1d">7</text>
+		<circle cx="58" cy="30" r="6" fill="#c67139"/>
+	</g>
+	<path d="M 276 100 L 312 100" fill="none" stroke="#7a8a5e" stroke-width="3" stroke-linecap="round"/>
+	<path d="M 304 94 L 312 100 L 304 106" fill="none" stroke="#7a8a5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+	<!-- Node 9, last: next is NULL -->
+	<g transform="translate(316, 70)">
+		<rect width="64" height="60" rx="14" fill="#f5ead8"/>
+		<rect x="8" y="10" width="34" height="40" rx="9" fill="#ebddc5"/>
+		<text x="25" y="37" text-anchor="middle" font-family="'Caprasimo', serif" font-size="20" fill="#201e1d">9</text>
+		<rect x="47" y="24" width="10" height="12" rx="3" fill="#82796a"/>
+	</g>
+	<!-- Insert a node: bar with two pointer changes -->
+	<g transform="translate(24, 156)">
+		<rect width="140" height="10" rx="5" fill="#7a8a5e"/>
+		<rect x="148" width="64" height="10" rx="5" fill="#c67139" fill-opacity="0.35"/>
+		<circle cx="144" cy="5" r="8" fill="#c67139"/>
+	</g>
+</svg>

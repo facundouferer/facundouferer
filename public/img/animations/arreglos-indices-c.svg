@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" role="img" aria-label="Un arreglo de cinco celdas contiguas con índices del 0 al 4 y un límite que no se debe cruzar">
+  <rect width="400" height="200" fill="#f1e8d9"/>
+  <g stroke-width="2.5" stroke-linejoin="round">
+    <rect x="34" y="78" width="56" height="48" rx="10" fill="#faf5ec" stroke="#7d9a76"/>
+    <rect x="94" y="78" width="56" height="48" rx="10" fill="#faf5ec" stroke="#7d9a76"/>
+    <rect x="154" y="78" width="56" height="48" rx="10" fill="#faf5ec" stroke="#c0714a"/>
+    <rect x="214" y="78" width="56" height="48" rx="10" fill="#faf5ec" stroke="#7d9a76"/>
+    <rect x="274" y="78" width="56" height="48" rx="10" fill="#faf5ec" stroke="#7d9a76"/>
+    <rect x="334" y="78" width="44" height="48" rx="10" fill="none" stroke="#2e2b25" stroke-dasharray="5 5"/>
+  </g>
+  <path d="M332 62v80" stroke="#c0714a" stroke-width="3" stroke-linecap="round"/>
+  <g font-family="monospace" font-weight="700" text-anchor="middle" fill="#2e2b25">
+    <text x="62" y="108" font-size="16">8</text>
+    <text x="122" y="108" font-size="16">6</text>
+    <text x="182" y="108" font-size="16">10</text>
+    <text x="242" y="108" font-size="16">7</text>
+    <text x="302" y="108" font-size="16">9</text>
+  </g>
+  <g font-family="monospace" font-size="12" text-anchor="middle" fill="#2e2b25">
+    <text x="62" y="146">[0]</text>
+    <text x="122" y="146">[1]</text>
+    <text x="182" y="146">[2]</text>
+    <text x="242" y="146">[3]</text>
+    <text x="302" y="146">[4]</text>
+    <text x="356" y="146" fill="#c0714a">[5]</text>
+  </g>
+  <path d="M182 46l-14 22h28z" fill="none" stroke="#c0714a" stroke-width="3" stroke-linejoin="round"/>
+</svg>

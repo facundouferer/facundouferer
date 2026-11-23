@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" role="img" aria-label="El teclado llena el búfer de entrada y scanf devuelve cuántos valores leyó">
+  <rect width="400" height="200" fill="#f1e8d9"/>
+  <path d="M30 150l140-70 140 70-140 70z" fill="#faf5ec" stroke="#7d9a76" stroke-width="2.5" stroke-linejoin="round"/>
+  <g stroke-linejoin="round" stroke-width="2.5">
+    <path d="M52 132l30-15 30 15-30 15z" fill="#faf5ec" stroke="#2e2b25"/>
+    <path d="M118 100l22-11 22 11-22 11z" fill="#faf5ec" stroke="#7d9a76"/>
+    <path d="M160 121l22-11 22 11-22 11z" fill="#faf5ec" stroke="#c0714a"/>
+    <path d="M202 142l22-11 22 11-22 11z" fill="#faf5ec" stroke="#c0714a"/>
+  </g>
+  <g fill="none" stroke="#7d9a76" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M140 100l-40-22"/>
+  </g>
+  <circle cx="100" cy="78" r="7" fill="#7d9a76"/>
+  <g font-family="monospace" font-size="13" font-weight="700" text-anchor="middle">
+    <text x="140" y="104" fill="#2e2b25">4</text>
+    <text x="182" y="125" fill="#c0714a">a</text>
+    <text x="224" y="146" fill="#c0714a">b</text>
+  </g>
+  <rect x="226" y="26" width="148" height="34" rx="12" fill="#faf5ec" stroke="#c0714a" stroke-width="2.5"/>
+  <g font-family="monospace" font-size="13" font-weight="700" text-anchor="middle">
+    <text x="300" y="48" fill="#c0714a">scanf → 0</text>
+  </g>
+  <g font-family="monospace" font-size="11" font-weight="700" fill="#7d9a76">
+    <text x="226" y="82">[%5d] → [   42]</text>
+  </g>
+</svg>

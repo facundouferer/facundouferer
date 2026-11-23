@@ -37,6 +37,50 @@ import PullRequestsGit from '../../../components/animaciones/pull-requests-git.a
 import RebaseGit from '../../../components/animaciones/rebase-git.astro';
 import AlgoritmiaComplejidadJava from '../../../components/animaciones/algoritmia-complejidad-java.astro';
 import ArbolesNAriosJava from '../../../components/animaciones/arboles-n-arios-java.astro';
+import CompilacionEnlazadoC from '../../../components/animaciones/compilacion-enlazado-c.astro';
+import PunterosDireccionesC from '../../../components/animaciones/punteros-direcciones-c.astro';
+import DuracionCicloVidaC from '../../../components/animaciones/duracion-ciclo-vida-c.astro';
+import PasajePorValorC from '../../../components/animaciones/pasaje-por-valor-c.astro';
+import ErroresMemoriaC from '../../../components/animaciones/errores-memoria-c.astro';
+import TiposConversionesC from '../../../components/animaciones/tipos-conversiones-c.astro';
+import PunterosArreglosC from '../../../components/animaciones/punteros-arreglos-c.astro';
+import MemoriaDinamicaC from '../../../components/animaciones/memoria-dinamica-c.astro';
+import OperadorTernarioC from '../../../components/animaciones/operador-ternario-c.astro';
+import SwitchBloquesC from '../../../components/animaciones/switch-bloques-c.astro';
+import DecisionesIfElseC from '../../../components/animaciones/decisiones-if-else-c.astro';
+import BucleForC from '../../../components/animaciones/bucle-for-c.astro';
+import DatosSecuencialesC from '../../../components/animaciones/datos-secuenciales-c.astro';
+import ArreglosIndicesC from '../../../components/animaciones/arreglos-indices-c.astro';
+import OperacionesArreglosC from '../../../components/animaciones/operaciones-arreglos-c.astro';
+import CadenasTerminadorC from '../../../components/animaciones/cadenas-terminador-c.astro';
+import BucleDoWhileC from '../../../components/animaciones/bucle-do-while-c.astro';
+import BusquedaBinariaC from '../../../components/animaciones/busqueda-binaria-c.astro';
+import RefinamientoAnidadosC from '../../../components/animaciones/refinamiento-anidados-c.astro';
+import BucleWhileC from '../../../components/animaciones/bucle-while-c.astro';
+import BibliotecaErroresC from '../../../components/animaciones/biblioteca-errores-c.astro';
+import ProgramaEstructuraC from '../../../components/animaciones/programa-estructura-c.astro';
+import PilasLifoC from '../../../components/animaciones/pilas-lifo-c.astro';
+import ColasFifoC from '../../../components/animaciones/colas-fifo-c.astro';
+import ArchivosPersistenciaC from '../../../components/animaciones/archivos-persistencia-c.astro';
+import AlgoritmoEstadosC from '../../../components/animaciones/algoritmo-estados-c.astro';
+import FuncionesModulosC from '../../../components/animaciones/funciones-modulos-c.astro';
+import PruebasModulosC from '../../../components/animaciones/pruebas-modulos-c.astro';
+import DepuracionSanitizersC from '../../../components/animaciones/depuracion-sanitizers-c.astro';
+import ArbolBusquedaC from '../../../components/animaciones/arbol-busqueda-c.astro';
+import EntradaSalidaC from '../../../components/animaciones/entrada-salida-c.astro';
+import ListasEnlazadasC from '../../../components/animaciones/listas-enlazadas-c.astro';
+import C23NovedadesC from '../../../components/animaciones/c23-novedades-c.astro';
+import HilosAtomicsC from '../../../components/animaciones/hilos-atomics-c.astro';
+import RecursividadPilaC from '../../../components/animaciones/recursividad-pila-c.astro';
+import VariablesConstantesC from '../../../components/animaciones/variables-constantes-c.astro';
+import IdeasPooC from '../../../components/animaciones/ideas-poo-c.astro';
+import OperadoresEvaluacionC from '../../../components/animaciones/operadores-evaluacion-c.astro';
+import TipoOpacoC from '../../../components/animaciones/tipo-opaco-c.astro';
+import MetodosComposicionC from '../../../components/animaciones/metodos-composicion-c.astro';
+import TablaOperacionesC from '../../../components/animaciones/tabla-operaciones-c.astro';
+import EstructurasRegistrosC from '../../../components/animaciones/estructuras-registros-c.astro';
+import MacrosGenericosC from '../../../components/animaciones/macros-genericos-c.astro';
+import OrdenamientoComparadoC from '../../../components/animaciones/ordenamiento-comparado-c.astro';
 
 export function getStaticPaths() {
 	const paths: Array<{ params: { lang: Locale; slug: string } }> = [];
@@ -91,6 +135,50 @@ const componentMap: Record<string, any> = {
 	'rebase-git': RebaseGit,
 	'algoritmia-complejidad-java': AlgoritmiaComplejidadJava,
 	'arboles-n-arios-java': ArbolesNAriosJava,
+	'compilacion-enlazado-c': CompilacionEnlazadoC,
+	'punteros-direcciones-c': PunterosDireccionesC,
+	'duracion-ciclo-vida-c': DuracionCicloVidaC,
+	'pasaje-por-valor-c': PasajePorValorC,
+	'errores-memoria-c': ErroresMemoriaC,
+	'tipos-conversiones-c': TiposConversionesC,
+	'punteros-arreglos-c': PunterosArreglosC,
+	'memoria-dinamica-c': MemoriaDinamicaC,
+	'operador-ternario-c': OperadorTernarioC,
+	'switch-bloques-c': SwitchBloquesC,
+	'decisiones-if-else-c': DecisionesIfElseC,
+	'bucle-for-c': BucleForC,
+	'datos-secuenciales-c': DatosSecuencialesC,
+	'arreglos-indices-c': ArreglosIndicesC,
+	'operaciones-arreglos-c': OperacionesArreglosC,
+	'cadenas-terminador-c': CadenasTerminadorC,
+	'bucle-do-while-c': BucleDoWhileC,
+	'busqueda-binaria-c': BusquedaBinariaC,
+	'refinamiento-anidados-c': RefinamientoAnidadosC,
+	'bucle-while-c': BucleWhileC,
+	'biblioteca-errores-c': BibliotecaErroresC,
+	'programa-estructura-c': ProgramaEstructuraC,
+	'pilas-lifo-c': PilasLifoC,
+	'colas-fifo-c': ColasFifoC,
+	'archivos-persistencia-c': ArchivosPersistenciaC,
+	'algoritmo-estados-c': AlgoritmoEstadosC,
+	'funciones-modulos-c': FuncionesModulosC,
+	'pruebas-modulos-c': PruebasModulosC,
+	'depuracion-sanitizers-c': DepuracionSanitizersC,
+	'arbol-busqueda-c': ArbolBusquedaC,
+	'entrada-salida-c': EntradaSalidaC,
+	'listas-enlazadas-c': ListasEnlazadasC,
+	'c23-novedades-c': C23NovedadesC,
+	'hilos-atomics-c': HilosAtomicsC,
+	'recursividad-pila-c': RecursividadPilaC,
+	'variables-constantes-c': VariablesConstantesC,
+	'ideas-poo-c': IdeasPooC,
+	'operadores-evaluacion-c': OperadoresEvaluacionC,
+	'tipo-opaco-c': TipoOpacoC,
+	'metodos-composicion-c': MetodosComposicionC,
+	'tabla-operaciones-c': TablaOperacionesC,
+	'estructuras-registros-c': EstructurasRegistrosC,
+	'macros-genericos-c': MacrosGenericosC,
+	'ordenamiento-comparado-c': OrdenamientoComparadoC,
 };
 
 const AnimationComponent = componentMap[slug];

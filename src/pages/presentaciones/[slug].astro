@@ -1,9 +1,11 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getLangFromUrl } from '../../i18n/utils';
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
 import { presentations } from '../../data/presentations';
 import PresentationLessonLink from '../../components/PresentationLessonLink.astro';
 import FullscreenToggle from '../../components/FullscreenToggle.astro';
+import PresentationPractice from '../../components/PresentationPractice.astro';
+import type { PracticeSet } from '../../data/presentation-practice/types';
 
 import ArbolesBinarios from '../../components/presentaciones/arboles-binarios.astro';
 import ArreglosEnC from '../../components/presentaciones/arreglos-en-c.astro';
@@ -55,6 +57,14 @@ import SincronizacionRemotaPullPushGit from '../../components/presentaciones/sin
 import RamasMergeConflictosGit from '../../components/presentaciones/ramas-merge-conflictos-git.astro';
 import RebaseBuenasPracticasGit from '../../components/presentaciones/rebase-buenas-practicas-git.astro';
 import LoQueLaIaNoPuedeHacerPorNosotros from '../../components/presentaciones/lo-que-la-ia-no-puede-hacer-por-nosotros.astro';
+import CompilacionYEnlazadoC from '../../components/presentaciones/compilacion-y-enlazado-c.astro';
+import TiposSizeofConversionesC from '../../components/presentaciones/tipos-sizeof-conversiones-c.astro';
+import PunterosYDireccionesC from '../../components/presentaciones/punteros-y-direcciones-c.astro';
+import PunterosYArreglosC from '../../components/presentaciones/punteros-y-arreglos-c.astro';
+import StackYHeapC from '../../components/presentaciones/stack-y-heap-c.astro';
+import MemoriaDinamicaPasoAPaso from '../../components/presentaciones/memoria-dinamica-paso-a-paso.astro';
+import CicloDeVidaObjetosC from '../../components/presentaciones/ciclo-de-vida-objetos-c.astro';
+import EstructurasEnlazadasC from '../../components/presentaciones/estructuras-enlazadas-c.astro';
 
 export function getStaticPaths() {
 	return presentations.map((p) => ({
@@ -64,6 +74,7 @@ export function getStaticPaths() {
 
 const { slug } = Astro.params;
 const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 const pres = presentations.find((p) => p.slug === slug);
 
 if (!pres) {
@@ -121,9 +132,24 @@ const componentMap: Record<string, any> = {
 	'ramas-merge-conflictos-git': RamasMergeConflictosGit,
 	'rebase-buenas-practicas-git': RebaseBuenasPracticasGit,
 	'lo-que-la-ia-no-puede-hacer-por-nosotros': LoQueLaIaNoPuedeHacerPorNosotros,
+	'compilacion-y-enlazado-c': CompilacionYEnlazadoC,
+	'tipos-sizeof-conversiones-c': TiposSizeofConversionesC,
+	'punteros-y-direcciones-c': PunterosYDireccionesC,
+	'punteros-y-arreglos-c': PunterosYArreglosC,
+	'stack-y-heap-c': StackYHeapC,
+	'memoria-dinamica-paso-a-paso': MemoriaDinamicaPasoAPaso,
+	'ciclo-de-vida-objetos-c': CicloDeVidaObjetosC,
+	'estructuras-enlazadas-c': EstructurasEnlazadasC,
 };
 
 const PresentationComponent = componentMap[slug];
+
+// "Practicar" and "Evaluar" modes live in src/data/presentation-practice/<slug>.ts.
+const practiceModules = import.meta.glob('../../data/presentation-practice/*.ts', { eager: true }) as Record<
+	string,
+	{ practice?: PracticeSet }
+>;
+const practiceSet = practiceModules[`../../data/presentation-practice/${slug}.ts`]?.practice;
 ---
 
 <BaseLayout
@@ -139,9 +165,17 @@ const PresentationComponent = componentMap[slug];
 			<div class="presentation-lesson-link-wrap">
 				<PresentationLessonLink presentationSlug={pres.slug} locale={lang} />
 			</div>
+			{
+				practiceSet && (
+					<a class="btn btn-ghost presentation-practice-link" href="#practicar">
+						{t('presentationPractice.goTo')}
+					</a>
+				)
+			}
 			<FullscreenToggle lang={lang} class="presentation-fullscreen" />
 		</div>
 		<PresentationComponent lang={lang} />
+		{practiceSet && <PresentationPractice lang={lang} slug={slug} set={practiceSet} />}
 	</div>
 </BaseLayout>
 

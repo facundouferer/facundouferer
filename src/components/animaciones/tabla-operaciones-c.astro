@@ -1,0 +1,1081 @@
+---
+/**
+ * Scene for "A table of functions decides" (lesson
+ * c/polimorfismo-y-herencia-simulados-en-c, order: 44), a short film played on one
+ * persistent motion canvas. The captions and cues live in
+ * `src/data/animations/tabla-operaciones-c.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay: the lesson's
+ * code (four small programs, swapped as the story moves on), with a bar that slides
+ * to the line being executed and the program output typed below. The viewport on the
+ * right holds the camera and four layers, from back to front: the functions of each
+ * shape, the operation table of each shape (a row of cells: its name and its three
+ * slots), the objects on the heap (a plate whose FIRST cell is the base `Figura`
+ * holding `ops`) and one module per instruction labelled with its editor line. One
+ * identity for "a pointer": `ops` and every slot of a table are arrows; the
+ * execution flow follows a call through `ops`, the table and the slot.
+ * Magenta marks the exceptional (a wrong cast, undefined behavior, the limits);
+ * violet marks what makes the technique work (the table, the base as first field, the
+ * tagged union as the simpler alternative). Addresses are short and fictional; real
+ * ones vary.
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/tabla-operaciones-c';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── The programs shown in the editor ──────────────────────────────────────
+// The lesson's code, condensed to fit the editor. Identifiers are localized like the
+// lesson does.
+const n = {
+	fig: t('Figura', 'Shape'),
+	ops: t('FiguraOps', 'ShapeOps'),
+	area: 'area',
+	per: t('perimetro', 'perimeter'),
+	des: t('destruir', 'destroy'),
+	name: t('nombre', 'name'),
+	circ: t('Circulo', 'Circle'),
+	rect: t('Rectangulo', 'Rectangle'),
+	radius: t('radio', 'radius'),
+	width: t('ancho', 'width'),
+	height: t('alto', 'height'),
+	figArea: t('figura_area', 'shape_area'),
+	circArea: t('circulo_area', 'circle_area'),
+	circPer: t('circulo_perimetro', 'circle_perimeter'),
+	circDes: t('circulo_destruir', 'circle_destroy'),
+	rectArea: t('rectangulo_area', 'rectangle_area'),
+	rectPer: t('rectangulo_perimetro', 'rectangle_perimeter'),
+	rectDes: t('rectangulo_destruir', 'rectangle_destroy'),
+	circOps: t('CIRCULO_OPS', 'CIRCLE_OPS'),
+	rectOps: t('RECTANGULO_OPS', 'RECTANGLE_OPS'),
+	circName: t('circulo', 'circle'),
+	rectName: t('rectangulo', 'rectangle'),
+	circCreate: t('circulo_crear', 'circle_create'),
+	rectCreate: t('rectangulo_crear', 'rectangle_create'),
+	shapes: t('figuras', 'shapes'),
+	f: t('f', 's'),
+	bad: t('CirculoMal', 'BadCircle'),
+	kindEnum: t('TipoFigura', 'ShapeKind'),
+	kindC: t('FIG_CIRCULO', 'SHAPE_CIRCLE'),
+	kindR: t('FIG_RECTANGULO', 'SHAPE_RECTANGLE'),
+	simple: t('FiguraSimple', 'SimpleShape'),
+	simpleArea: t('figura_simple_area', 'simple_shape_area'),
+	kind: t('tipo', 'kind'),
+	data: t('datos', 'data'),
+};
+const createLine = `    ${n.fig} *${n.shapes}[2] = {${n.circCreate}(1.0),`;
+const mainLine = `    struct ${n.simple} r = {.${n.kind} = ${n.kindR},`;
+
+const progA = [
+	`typedef struct ${n.fig} ${n.fig};`,
+	'typedef struct {',
+	`    const char *${n.name};`,
+	`    double (*${n.area})(const ${n.fig} *self);`,
+	`    double (*${n.per})(const ${n.fig} *self);`,
+	`    void (*${n.des})(${n.fig} *self);`,
+	`} ${n.ops};`,
+	`struct ${n.fig} { const ${n.ops} *ops; };`,
+	'typedef struct {',
+	`    ${n.fig} base;   /* ${t('SIEMPRE el primer campo', 'ALWAYS the first field')} */`,
+	`    double ${n.radius};`,
+	`} ${n.circ};`,
+	'typedef struct {',
+	`    ${n.fig} base;`,
+	`    double ${n.width}, ${n.height};`,
+	`} ${n.rect};`,
+	`static const ${n.ops} ${n.circOps} = {"${n.circName}",`,
+	`    ${n.circArea}, ${n.circPer}, ${n.circDes}};`,
+	`static const ${n.ops} ${n.rectOps} = {"${n.rectName}",`,
+	`    ${n.rectArea}, ${n.rectPer}, ${n.rectDes}};`,
+].join('\n');
+const progB = [
+	`double ${n.figArea}(const ${n.fig} *${n.f}) {`,
+	`    return ${n.f}->ops->${n.area}(${n.f});`,
+	'}',
+	`static double ${n.circArea}(const ${n.fig} *self) {`,
+	`    const ${n.circ} *c = (const ${n.circ} *)self;`,
+	`    return PI * c->${n.radius} * c->${n.radius};`,
+	'}',
+	`static double ${n.rectArea}(const ${n.fig} *self) {`,
+	`    const ${n.rect} *r = (const ${n.rect} *)self;`,
+	`    return r->${n.width} * r->${n.height};`,
+	'}',
+	'int main(void) {',
+	createLine,
+	`${' '.repeat(createLine.indexOf('{') + 1)}${n.rectCreate}(3.0, 2.0)};`,
+	'    for (size_t i = 0; i < 2; i++) {',
+	`        printf("${n.shapes}[%zu] area %.2f\\n", i,`,
+	`               ${n.figArea}(${n.shapes}[i]));`,
+	'    }',
+	'}',
+].join('\n');
+const progC = [
+	`${n.fig} *${n.f} = ${n.rectCreate}(3.0, 2.0);`,
+	`const ${n.circ} *c = (const ${n.circ} *)${n.f};   /* ${t('¿y si no lo es?', 'what if it is not?')} */`,
+	`printf("%f\\n", c->${n.radius});   /* ${t('lee ancho como radio', 'reads width as radius')} */`,
+	'typedef struct {',
+	`    double ${n.radius};`,
+	`    ${n.fig} base;   /* ${t('la base NO es el primer campo', 'the base is NOT the first field')} */`,
+	`} ${n.bad};`,
+].join('\n');
+const progD = [
+	`enum ${n.kindEnum} { ${n.kindC}, ${n.kindR} };`,
+	`struct ${n.simple} {`,
+	`    enum ${n.kindEnum} ${n.kind};`,
+	'    union {',
+	`        double ${n.radius};`,
+	`        struct { double ${n.width}, ${n.height}; } rect;`,
+	`    } ${n.data};`,
+	'};',
+	`double ${n.simpleArea}(const struct ${n.simple} *${n.f}) {`,
+	`    switch (${n.f}->${n.kind}) {`,
+	`    case ${n.kindC}:`,
+	`        return PI * ${n.f}->${n.data}.${n.radius} * ${n.f}->${n.data}.${n.radius};`,
+	`    case ${n.kindR}:`,
+	`        return ${n.f}->${n.data}.rect.${n.width} * ${n.f}->${n.data}.rect.${n.height};`,
+	'    }',
+	'    return 0.0;',
+	'}',
+	'int main(void) {',
+	mainLine,
+	`${' '.repeat(mainLine.indexOf('{') + 1)}.${n.data}.rect = {3.0, 2.0}};`,
+	`    printf("area %.2f\\n", ${n.simpleArea}(&r));`,
+	'}',
+].join('\n');
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const toLines = (source: string) =>
+	highlightCode(source, 'c').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+const programs = [
+	{ id: 'ed-a', file: 'file-a', name: t('figuras.h', 'shapes.h'), lines: toLines(progA), base: 'shown' },
+	{ id: 'ed-b', file: 'file-b', name: t('despacho.c', 'dispatch.c'), lines: toLines(progB), base: undefined },
+	{ id: 'ed-c', file: 'file-c', name: t('conversion.c', 'cast.c'), lines: toLines(progC), base: undefined },
+	{ id: 'ed-d', file: 'file-d', name: t('simple.c', 'simple.c'), lines: toLines(progD), base: undefined },
+];
+
+// Real output, from compiling the lesson's code with `cc -std=c23` and running the
+// `main` of the second program (a circle of radius 1 and a rectangle of 3 by 2) and
+// the `main` of the last one.
+const outputs = [
+	{ id: 'o-b1', row: 0, text: `${n.shapes}[0] area 3.14` },
+	{ id: 'o-b2', row: 1, text: `${n.shapes}[1] area 6.00` },
+	{ id: 'o-d1', row: 0, text: 'area 6.00' },
+];
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 72;
+const GUTTER_X = 59;
+const CODE_TOP = 66;
+const LINE_H = 19;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (line: number) => CODE_TOP + (line - 1) * LINE_H;
+const lineMid = (line: number) => lineTop(line) + LINE_H / 2;
+const lineBase = (line: number) => lineMid(line) + 4.5;
+const CONSOLE_TOP = 516;
+const outY = (row: number) => 564 + row * 19;
+const MAX_LINES = 23;
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right, +v down-left, z is up. Every group of cells lies
+// along u, so a table or an object reads left to right as it recedes.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 50;
+const EY = 29;
+const ORIGIN = { x: 610, y: 350 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+/** The grid coordinates of a point of the floor given by its screen position. */
+const at = (x: number, y: number) => {
+	const sum = (y - ORIGIN.y) / EY;
+	const diff = (x - ORIGIN.x) / EX;
+	return { u: round((sum + diff) / 2), v: round((sum - diff) / 2) };
+};
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+
+/** A box standing at height `z`: half-extents `a` (along u) and `b` (along v), height `h`. */
+function slab(u: number, v: number, a: number, b: number, h: number, z = 0) {
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		corners: { back, right, front, left },
+		bottomFront: down(front),
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+type Slab = ReturnType<typeof slab>;
+type Tone = 'flow' | 'violet' | 'magenta';
+
+// Layers, back to front, and the columns of the two shapes.
+const COL = { c: 480, r: 840, m: 655 };
+const LAYER = { fn: 88, tb: 225, ob: 370, mod: 550 };
+const CELL = 0.34;
+const PITCH = 0.78;
+const CELL_H = 14;
+const FN_H = 16;
+
+type Kind = 'plain' | 'base' | 'tag' | 'slot' | 'fn';
+type Cell = { g: Slab; text: string; kind: Kind };
+type Label = { text: string; x: number; y: number; anchor: 'start' | 'end' | 'middle'; mono?: boolean };
+type Group = { id: string; plate: Slab; cells: Cell[]; label: Label };
+
+/** A row of cells on a plate, centered at the screen position (cx, cy) of the floor. */
+function group(id: string, cx: number, cy: number, specs: [string, Kind][], height: number, label: string, side: 'in-right' | 'in-left' | 'below'): Group {
+	const origin = at(cx, cy);
+	const count = specs.length;
+	const a = ((count - 1) * PITCH) / 2 + CELL + 0.12;
+	const b = CELL + 0.14;
+	const plate = slab(origin.u, origin.v, a, b, 10, -10);
+	const cells = specs.map(([text, kind], index) => ({
+		g: slab(round(origin.u + (index - (count - 1) / 2) * PITCH), origin.v, CELL, CELL, height, 0),
+		text,
+		kind,
+	}));
+	const { right, left } = plate.corners;
+	const place: Label =
+		side === 'in-right'
+			? { text: label, x: right.x + 8, y: right.y + 4, anchor: 'start' }
+			: side === 'in-left'
+				? { text: label, x: left.x - 8, y: left.y + 4, anchor: 'end' }
+				: { text: label, x: plate.corners.front.x, y: plate.bottomFront.y + 19, anchor: 'middle', mono: true };
+	return { id, plate, cells, label: place };
+}
+
+const funcs = (fnNames: string[]): [string, Kind][] => fnNames.map((name) => [name, 'fn']);
+const slots: [string, Kind][] = [
+	[n.area, 'slot'],
+	[n.per, 'slot'],
+	[n.des, 'slot'],
+];
+const groups: Group[] = [
+	group('fn-c', COL.c, LAYER.fn, funcs([n.area, n.per, n.des]), FN_H, `${n.circName}_*`, 'in-right'),
+	group('fn-r', COL.r, LAYER.fn, funcs([n.area, n.per, n.des]), FN_H, `${n.rectName}_*`, 'in-left'),
+	group('tb-c', COL.c, LAYER.tb, [[n.circName, 'plain'], ...slots], CELL_H, n.circOps, 'in-right'),
+	group('tb-r', COL.r, LAYER.tb, [[n.rectName, 'plain'], ...slots], CELL_H, n.rectOps, 'in-left'),
+	group('ob-c', COL.c, LAYER.ob, [['ops', 'base'], ['1.0', 'plain']], CELL_H, `${n.circ} 0x1000`, 'below'),
+	group('ob-r', COL.r, LAYER.ob, [['ops', 'base'], ['3.0', 'plain'], ['2.0', 'plain']], CELL_H, `${n.rect} 0x1020`, 'below'),
+	group('ob-bad', COL.m, LAYER.ob, [['1.0', 'plain'], ['ops', 'base']], CELL_H, `${n.bad} 0x1000`, 'below'),
+	group('ob-s', COL.m, LAYER.ob, [[n.kind, 'tag'], ['3.0', 'plain'], ['2.0', 'plain']], CELL_H, n.simple, 'below'),
+];
+const groupOf = (id: string) => groups.find((item) => item.id === id) ?? groups[0];
+const cellOf = (id: string, index: number) => groupOf(id).cells[index].g;
+const cellTop = (id: string, index: number) => cellOf(id, index).center;
+
+// The module floor and its modules.
+const modAt = at(COL.m, LAYER.mod);
+const MODS = slab(modAt.u, modAt.v, 1.5, 0.75, 10, -10);
+const MODS_LABEL = { x: MODS.corners.left.x - 8, y: MODS.corners.left.y + 4 };
+
+// Instruction modules: one per executed instruction, labelled with its editor line.
+const block = (u: number, v: number) => slab(u, v, 0.18, 0.18, 16, 0);
+type Module = { id: string; lit: string; line: number; g: Slab; tone: Tone };
+const moduleSets: Record<string, [number, Tone][]> = {
+	a: [[2, 'flow'], [8, 'flow'], [10, 'violet'], [14, 'violet'], [17, 'flow'], [19, 'flow']],
+	b: [[13, 'flow'], [14, 'flow'], [17, 'flow'], [2, 'violet'], [5, 'violet'], [6, 'flow'], [9, 'violet'], [10, 'flow']],
+	c: [[1, 'flow'], [2, 'magenta'], [3, 'magenta'], [6, 'magenta']],
+	d: [[19, 'flow'], [21, 'flow'], [10, 'violet'], [13, 'violet'], [14, 'flow']],
+};
+const modules: Module[] = Object.entries(moduleSets).flatMap(([prog, specs]) =>
+	specs.map(([line, tone], index) => {
+		const row = index < 4 ? 0 : 1;
+		const col = index % 4;
+		const u = round(modAt.u - 0.78 + col * 0.52);
+		const v = round(modAt.v + (row === 0 ? -0.3 : 0.3));
+		return { id: `m-${prog}${line}`, lit: `on-${prog}${line}`, line, tone, g: block(u, v) };
+	}),
+);
+
+// Pointers: arrows from a cell to a cell or to a function (one identity for "a pointer").
+type ArrowSpec = { id: string; from: Point; to: Point };
+function arrowPath(from: Point, to: Point, bow = 0.16) {
+	const distance = Math.hypot(to.x - from.x, to.y - from.y);
+	const control = { x: round((from.x + to.x) / 2 - distance * bow), y: round((from.y + to.y) / 2) };
+	const d = `M${from.x} ${from.y} Q${control.x} ${control.y} ${to.x} ${to.y}`;
+	const dx = to.x - control.x;
+	const dy = to.y - control.y;
+	const length = Math.hypot(dx, dy) || 1;
+	const ux = dx / length;
+	const uy = dy / length;
+	const base = { x: to.x - ux * 11, y: to.y - uy * 11 };
+	const head = poly([to, { x: round(base.x - uy * 6), y: round(base.y + ux * 6) }, { x: round(base.x + uy * 6), y: round(base.y - ux * 6) }]);
+	const mid = { x: round(0.25 * from.x + 0.5 * control.x + 0.25 * to.x), y: round(0.25 * from.y + 0.5 * control.y + 0.25 * to.y) };
+	return { d, head, mid };
+}
+const tail = (id: string, index: number) => lift(cellTop(id, index), 8);
+// Every arrow rises from below, so its head lands on the front face of its target.
+const tip = (id: string, index: number) => lift(cellTop(id, index), -16);
+const arrowSpecs: ArrowSpec[] = [
+	{ id: 'ar-oc', from: tail('ob-c', 0), to: tip('tb-c', 0) },
+	{ id: 'ar-or', from: tail('ob-r', 0), to: tip('tb-r', 0) },
+	{ id: 'ar-tc-a', from: tail('tb-c', 1), to: tip('fn-c', 0) },
+	{ id: 'ar-tc-p', from: tail('tb-c', 2), to: tip('fn-c', 1) },
+	{ id: 'ar-tc-d', from: tail('tb-c', 3), to: tip('fn-c', 2) },
+	{ id: 'ar-tr-a', from: tail('tb-r', 1), to: tip('fn-r', 0) },
+	{ id: 'ar-tr-p', from: tail('tb-r', 2), to: tip('fn-r', 1) },
+	{ id: 'ar-tr-d', from: tail('tb-r', 3), to: tip('fn-r', 2) },
+];
+const arrows = arrowSpecs.map((arrow) => ({ ...arrow, ...arrowPath(arrow.from, arrow.to) }));
+const midOf = (id: string) => (arrows.find((item) => item.id === id) ?? arrows[0]).mid;
+
+// Where the particle stops: just above a module or a cell of the path of a call.
+const anchors = [
+	...modules.map((module) => ({ id: `a-${module.id.replace('-', '')}`, ...lift(module.g.center, 16) })),
+	{ id: 'a-oc', ...lift(cellTop('ob-c', 0), 12) },
+	{ id: 'a-or', ...lift(cellTop('ob-r', 0), 12) },
+	{ id: 'a-tca', ...lift(cellTop('tb-c', 1), 12) },
+	{ id: 'a-tra', ...lift(cellTop('tb-r', 1), 12) },
+	{ id: 'a-fca', ...lift(cellTop('fn-c', 0), 14) },
+	{ id: 'a-fra', ...lift(cellTop('fn-r', 0), 14) },
+];
+const anchorOf = (id: string) => anchors.find((anchor) => anchor.id === id) ?? anchors[0];
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-all', c: { x: 655, y: 340 }, s: 0.92 },
+	{ id: 'shot-circ', c: { x: 500, y: 300 }, s: 1.0 },
+	{ id: 'shot-rect', c: { x: 800, y: 300 }, s: 1.0 },
+	{ id: 'shot-obj', c: { x: 560, y: 330 }, s: 1.4 },
+	{ id: 'shot-bad', c: { x: 655, y: 360 }, s: 1.3 },
+	{ id: 'shot-mid', c: { x: 655, y: 380 }, s: 1.1 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.c.x - 640 / item.s),
+	y: round(item.c.y - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Floating notes. `x` is the left edge, the right edge or the middle, as `align` says.
+type Chip = { id: string; text: string; x: number; y: number; align: 'start' | 'end' | 'middle'; tone: 'plain' | Tone; mono?: boolean };
+const OC_X = COL.c - 74;
+const R1 = midOf('ar-oc');
+const R2 = midOf('ar-tc-a');
+const R1R = midOf('ar-or');
+const R2R = midOf('ar-tr-a');
+const fnTop = (id: string) => cellTop(id, 0);
+const chips: Chip[] = [
+	{ id: 'lb-base', text: 'base', x: OC_X, y: LAYER.ob + 2, align: 'end', tone: 'violet', mono: true },
+	{ id: 'lb-a1', text: `(${n.circ}*) 0x1000`, x: 640, y: 350, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'lb-a2', text: `(${n.fig}*)  0x1000`, x: 640, y: 380, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'lb-cast2', text: `${n.circ}* <-> ${n.fig}*`, x: 640, y: 412, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'lb-f', text: `${n.f} = 0x1000`, x: OC_X, y: LAYER.ob - 26, align: 'end', tone: 'flow', mono: true },
+	{ id: 'lb-f2', text: `${n.f} = 0x1020`, x: COL.r - 96, y: LAYER.ob - 22, align: 'end', tone: 'flow', mono: true },
+	{ id: 'lb-route1', text: `${n.f}->ops`, x: R1.x - 56, y: R1.y, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'lb-route2', text: `->${n.area}`, x: R2.x - 50, y: R2.y, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'lb-route1r', text: `${n.f}->ops`, x: R1R.x + 56, y: R1R.y, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'lb-route2r', text: `->${n.area}`, x: R2R.x + 50, y: R2R.y, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'lb-fnc', text: n.circArea, x: fnTop('fn-c').x, y: fnTop('fn-c').y - 34, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'lb-fnr', text: n.rectArea, x: fnTop('fn-r').x, y: fnTop('fn-r').y - 34, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'lb-nocheck', text: t('el compilador no avisa', 'the compiler does not warn'), x: COL.m, y: LAYER.ob + 34, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-wrong', text: t(`¿${n.radius}? aquí hay ${n.width}`, `${n.radius}? this is ${n.width}`), x: COL.r - 92, y: LAYER.ob - 18, align: 'end', tone: 'magenta' },
+	{ id: 'lb-ub', text: t('comportamiento indefinido', 'undefined behavior'), x: COL.r, y: LAYER.ob + 112, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-bad', text: t('base 0x1008 ≠ objeto 0x1000', 'base 0x1008 ≠ object 0x1000'), x: COL.m, y: LAYER.ob - 60, align: 'middle', tone: 'magenta', mono: true },
+	{ id: 'lb-lim-types', text: t('sin seguridad de tipos', 'no type safety'), x: COL.m, y: 400, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-lim-manual', text: t('despacho manual', 'manual dispatch'), x: COL.m, y: 134, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-lim-tables', text: t('una tabla por tipo', 'one table per type'), x: COL.m, y: 304, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-lim-calls', text: t('dos punteros por llamada', 'two pointers per call'), x: COL.m, y: LAYER.ob + 70, align: 'middle', tone: 'magenta' },
+	{ id: 'lb-tag', text: `${n.kind} = ${n.kindR}`, x: COL.m, y: LAYER.ob - 66, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'lb-noheap', text: t('sin malloc, sin casts', 'no malloc, no casts'), x: COL.m, y: LAYER.ob + 82, align: 'middle', tone: 'violet' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + 24);
+const chipLeft = (chip: Chip) => (chip.align === 'end' ? chip.x - chipWidth(chip) : chip.align === 'middle' ? chip.x - chipWidth(chip) / 2 : chip.x);
+
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="to-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="to-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<linearGradient id="to-g-floor" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-deep-hi"></stop>
+					<stop offset="1" class="xj-stop-panel"></stop>
+				</linearGradient>
+				<radialGradient id="to-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="to-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="to-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: functions, tables, objects and instructions, seen through the camera -->
+			<g clip-path="url(#to-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#to-g-pool-flow)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#to-g-pool-violet)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- Groups of cells, back to front: functions, tables, objects -->
+						{
+							groups.map((item) => (
+								<g data-el={item.id}>
+									<polygon class="xj-plate-shadow" points={item.plate.base} transform="translate(10 14)" />
+									<polygon class="xj-plate xj-plate--l" points={item.plate.leftFace} />
+									<polygon class="xj-plate xj-plate--r" points={item.plate.rightFace} />
+									<polygon class="xj-plate xj-plate--t" points={item.plate.top} fill="url(#to-g-floor)" />
+									<text class:list={['xj-area-label', { 'xj-area-label--mono': item.label.mono }]} x={item.label.x} y={item.label.y} text-anchor={item.label.anchor}>
+										{item.label.text}
+									</text>
+									{item.cells.map((cell) => (
+										<g class="xj-cell">
+											<polygon class="xj-shadow" points={cell.g.base} transform="translate(5 7)" />
+											<polygon class="xj-face xj-face--l" points={cell.g.leftFace} />
+											<polygon class="xj-face xj-face--r" points={cell.g.rightFace} />
+											{cell.kind === 'fn' ? (
+												<polygon class="xj-face xj-face--t" points={cell.g.top} fill="url(#to-g-top)" />
+											) : (
+												<polygon class:list={['xj-cell-top', `xj-cell-top--${cell.kind}`]} points={cell.g.top} />
+											)}
+											<text class:list={['xj-val', `xj-val--${cell.kind}`]} x={cell.g.center.x} y={cell.g.center.y + 3.5} text-anchor="middle">
+												{cell.text}
+											</text>
+										</g>
+									))}
+								</g>
+							))
+						}
+
+						<!-- Lit states of the cells and plates -->
+						{
+							(
+								[
+									['on-tb-c', groupOf('tb-c').plate.top, 'violet'],
+									['on-tb-r', groupOf('tb-r').plate.top, 'violet'],
+									['on-ob-c', groupOf('ob-c').plate.top, 'violet'],
+									['on-ob-r', groupOf('ob-r').plate.top, 'violet'],
+									['on-tca', cellOf('tb-c', 1).top, 'flow'],
+									['on-tra', cellOf('tb-r', 1).top, 'flow'],
+									['on-fca', cellOf('fn-c', 0).top, 'flow'],
+									['on-fra', cellOf('fn-r', 0).top, 'flow'],
+									['on-base-c', cellOf('ob-c', 0).top, 'violet'],
+									['on-base-r', cellOf('ob-r', 0).top, 'violet'],
+									['on-wrong', cellOf('ob-r', 1).top, 'magenta'],
+									['on-bad-base', cellOf('ob-bad', 1).top, 'magenta'],
+									['on-s-tag', cellOf('ob-s', 0).top, 'violet'],
+								] as [string, string, Tone][]
+							).map(([id, points, tone]) => (
+								<g data-el={id} class:list={['xj-lit', `xj-lit--${tone}`]}>
+									<polygon class="xj-lit-halo" points={points} />
+									<polygon class:list={['xj-lit-top', { 'xj-lit-top--soft': id.startsWith('on-tb') || id.startsWith('on-ob') }]} points={points} />
+								</g>
+							))
+						}
+						<g data-el="on-s-data" class="xj-lit xj-lit--flow">
+							{
+								[1, 2].map((index) => (
+									<>
+										<polygon class="xj-lit-halo" points={cellOf('ob-s', index).top} />
+										<polygon class="xj-lit-top" points={cellOf('ob-s', index).top} />
+									</>
+								))
+							}
+						</g>
+
+						<!-- Instruction floor and modules, labelled with their editor line -->
+						<g data-el="fl-mod">
+							<polygon class="xj-plate-shadow" points={MODS.base} transform="translate(10 14)" />
+							<polygon class="xj-plate xj-plate--l" points={MODS.leftFace} />
+							<polygon class="xj-plate xj-plate--r" points={MODS.rightFace} />
+							<polygon class="xj-plate xj-plate--t" points={MODS.top} fill="url(#to-g-floor)" />
+							<text class="xj-area-label" x={MODS_LABEL.x} y={MODS_LABEL.y} text-anchor="end">{t('Instrucciones', 'Instructions')}</text>
+						</g>
+						{
+							modules.map((module) => (
+								<>
+									<g data-el={module.id} class="xj-mod">
+										<polygon class="xj-shadow" points={module.g.base} transform="translate(6 8)" />
+										<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+										<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+										<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#to-g-top)" />
+										<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+											{module.line}
+										</text>
+									</g>
+									<g data-el={module.lit} class:list={['xj-lit', `xj-lit--${module.tone}`]}>
+										<polygon class="xj-lit-halo" points={module.g.top} />
+										<polygon class="xj-lit-top" points={module.g.top} />
+										<polygon class="xj-lit-side" points={module.g.leftFace} />
+										<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4.5">
+											{module.line}
+										</text>
+									</g>
+								</>
+							))
+						}
+
+						<!-- Pointers: `ops` of each object and the slots of each table -->
+						{
+							arrows.map((arrow) => (
+								<g data-el={arrow.id} class="xj-ptr">
+									<path class="mg-stroke" pathLength="1" d={arrow.d} />
+									<polygon class="mg-head" points={arrow.head} />
+								</g>
+							))
+						}
+
+						{
+							chips.map((chip) => (
+								<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+									<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+									<text class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'} x={chipLeft(chip) + chipWidth(chip) / 2} y={chip.y + 4.5} text-anchor="middle">
+										{chip.text}
+									</text>
+								</g>
+							))
+						}
+
+						<!-- The execution flow. Placement lives on data-x/y: the player resets data-el transforms. -->
+						<g data-el="p" class="xj-particle" data-x={anchorOf('a-ma2').x} data-y={anchorOf('a-ma2').y}>
+							<circle r="20" fill="url(#to-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="500" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Flujo de ejecución', 'Execution flow')}</text>
+				<path class="xj-legend-ptr" d={`M${VP.x + 172} ${LEGEND_Y} H${VP.x + 190}`}></path>
+				<polygon class="xj-legend-head" points={`${VP.x + 196},${LEGEND_Y} ${VP.x + 188},${LEGEND_Y - 5} ${VP.x + 188},${LEGEND_Y + 5}`}></polygon>
+				<text x={VP.x + 204} y={LEGEND_Y + 4}>{t('Puntero', 'Pointer')}</text>
+				<rect class="xj-legend-cell" x={VP.x + 282} y={LEGEND_Y - 7} width="16" height="14" rx="3"></rect>
+				<text x={VP.x + 306} y={LEGEND_Y + 4}>{t('Celda', 'Cell')}</text>
+				<rect class="xj-legend-base" x={VP.x + 372} y={LEGEND_Y - 7} width="16" height="14" rx="3"></rect>
+				<text x={VP.x + 396} y={LEGEND_Y + 4}>{t('Base (primer campo)', 'Base (first field)')}</text>
+			</g>
+
+			<!-- EDITOR: the program, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				{
+					programs.map((program) => (
+						<g data-el={program.file} data-base={program.base}>
+							<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>
+								{program.name}
+							</text>
+						</g>
+					))
+				}
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 24}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(2)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				{
+					programs.map((program) => (
+						<g data-el={program.id} data-base={program.base} class="xj-code">
+							{program.lines.map((line) => (
+								<>
+									<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+										{line.n}
+									</text>
+									<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+								</>
+							))}
+						</g>
+					))
+				}
+
+				<!-- Console: what the program prints -->
+				{
+					outputs.map((row) => (
+						<g data-el={row.id}>
+							<text class="xj-out" x={ED.x + 20} y={outY(row.row)} xml:space="preserve">
+								{row.text}
+							</text>
+						</g>
+					))
+				}
+				{Array.from({ length: MAX_LINES }, (_, index) => <circle data-anchor={`ln-${index + 1}`} cx={BAR_CX} cy={lineMid(index + 1)} r="1" fill="none" />)}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue execution flow and pointers, magenta for the exceptional (a wrong cast,
+	   undefined behavior, the limits) and violet for what makes the technique work
+	   (the table, the base as first field, the tagged union).
+	   Every rule below reads these tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='tabla-operaciones-c']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='tabla-operaciones-c'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='tabla-operaciones-c'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='tabla-operaciones-c'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-deep-hi {
+		stop-color: var(--xj-deep-hi);
+	}
+
+	.xj-stop-panel {
+		stop-color: var(--xj-panel);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-ptr {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+	}
+
+	.xj-legend-head {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-cell {
+		fill: var(--xj-ink);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend-base {
+		fill: var(--xj-violet-deep);
+		stroke: var(--xj-violet);
+		stroke-width: 1.5;
+	}
+
+	/* Plates, cells and modules */
+	.xj-plate {
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-plate--l {
+		fill: var(--xj-panel);
+	}
+
+	.xj-plate--r {
+		fill: var(--xj-ink);
+	}
+
+	.xj-plate-shadow,
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-area-label {
+		font-family: var(--font-body);
+		font-size: 13px;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		fill: var(--xj-mist);
+	}
+
+	.xj-area-label--mono {
+		font-family: monospace;
+		font-size: 12px;
+		letter-spacing: 0;
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	.xj-cell-top {
+		fill: var(--xj-ink);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-cell-top--slot {
+		fill: var(--xj-panel);
+		stroke: var(--xj-flow-soft);
+	}
+
+	.xj-cell-top--base {
+		fill: var(--xj-violet-deep);
+		stroke: var(--xj-violet);
+		stroke-width: 2;
+	}
+
+	.xj-cell-top--tag {
+		fill: var(--xj-violet-deep);
+		stroke: var(--xj-violet-soft);
+		stroke-width: 2;
+	}
+
+	.xj-val {
+		font-family: monospace;
+		font-size: 12px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	.xj-val--slot,
+	.xj-val--fn {
+		font-size: 9.5px;
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-val--fn {
+		fill: var(--xj-white);
+	}
+
+	.xj-val--base,
+	.xj-val--tag {
+		font-size: 11px;
+		fill: var(--xj-violet-soft);
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top--soft {
+		fill-opacity: 0.16;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* Pointers */
+	.xj-ptr path {
+		fill: none;
+		stroke: var(--xj-flow);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+	}
+
+	.xj-ptr polygon {
+		fill: var(--xj-flow);
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 12.5px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 11.5px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+		font-weight: 700;
+	}
+
+	.mg-canvas .xj-code :global(.tok-type) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 700;
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-ann) {
+		fill: var(--xj-magenta-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+</style>

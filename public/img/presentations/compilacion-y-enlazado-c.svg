@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="100%" height="100%">
+	<rect width="400" height="200" fill="#ebddc5"/>
+	<text x="24" y="40" font-family="'Caprasimo', serif" font-size="20" fill="#201e1d">gcc</text>
+	<text x="70" y="40" font-family="'Fira Code', monospace" font-size="12" font-weight="700" fill="#8c491a">-E  -S  -c  -o</text>
+	<!-- Pipeline: source → preprocessor → compiler → assembler → linker → executable -->
+	<g transform="translate(24, 70)" font-family="'Fira Code', monospace" font-size="11" font-weight="700" text-anchor="middle">
+		<rect x="0" y="0" width="52" height="52" rx="14" fill="#f5ead8" stroke="#7a8a5e" stroke-width="2"/>
+		<text x="26" y="31" fill="#201e1d">.c</text>
+		<path d="M56 26h10" stroke="#a19786" stroke-width="2.75" stroke-linecap="round"/>
+		<rect x="70" y="0" width="52" height="52" rx="14" fill="#f5ead8" stroke="#7a8a5e" stroke-width="2"/>
+		<text x="96" y="31" fill="#201e1d">#</text>
+		<path d="M126 26h10" stroke="#a19786" stroke-width="2.75" stroke-linecap="round"/>
+		<rect x="140" y="0" width="52" height="52" rx="14" fill="#f5ead8" stroke="#7a8a5e" stroke-width="2"/>
+		<text x="166" y="31" fill="#201e1d">.s</text>
+		<path d="M196 26h10" stroke="#a19786" stroke-width="2.75" stroke-linecap="round"/>
+		<rect x="210" y="0" width="52" height="52" rx="14" fill="#f5ead8" stroke="#7a8a5e" stroke-width="2"/>
+		<text x="236" y="31" fill="#201e1d">.o</text>
+		<path d="M266 26h10" stroke="#a19786" stroke-width="2.75" stroke-linecap="round"/>
+		<rect x="280" y="0" width="72" height="52" rx="14" fill="#c67139"/>
+		<text x="316" y="31" fill="#f5ead8">a.out</text>
+		<text x="26" y="72" fill="#56633f" font-size="9">src</text>
+		<text x="96" y="72" fill="#56633f" font-size="9">-E</text>
+		<text x="166" y="72" fill="#56633f" font-size="9">-S</text>
+		<text x="236" y="72" fill="#56633f" font-size="9">-c</text>
+		<text x="316" y="72" fill="#8c491a" font-size="9">ld</text>
+	</g>
+	<text x="24" y="178" font-family="'Figtree', sans-serif" font-size="12" fill="#645c50">printf + libc → ld</text>
+</svg>
