@@ -175,7 +175,7 @@ const mainModules: Module[] = [14, 15, 16, 17, 18, 19, 20, 21].map((line, index)
 	tone: line === 17 ? 'violet' : 'flow',
 	g: block(-1.6 + index * 0.48, 0.55, 16),
 }));
-const topModule = (line: number, index: number, tone: Tone): Module => ({ line, tone, g: block(0.3 + index * 0.48, 0.5, TOP_Z) });
+const topModule = (line: number, index: number, tone: Tone): Module => ({ line, tone, g: block(0.3 + index * 0.48, 0.25, TOP_Z) });
 const frames = [
 	{
 		id: 'f-dup',
@@ -253,7 +253,7 @@ type Chip = {
 	mono?: boolean;
 	icon?: 'arrow' | 'map-pin';
 };
-const SIDE = { x: MAIN.center.x + 186, y: MAIN.center.y + 16 };
+const SIDE = { x: MAIN.center.x + 156, y: MAIN.center.y + 16 };
 const chips: Chip[] = [
 	{ id: 'stack-tag', text: t('Pila de llamadas', 'Call stack'), x: ORIGIN.x, y: 610, align: 'middle', tone: 'plain' },
 	{ id: 'lb-copy', text: t('una copia del valor', 'a copy of the value'), x: X.x, y: X.y - 52, align: 'middle', tone: 'flow' },

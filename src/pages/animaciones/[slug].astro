@@ -78,6 +78,9 @@ import OperadoresEvaluacionC from '../../components/animaciones/operadores-evalu
 import TipoOpacoC from '../../components/animaciones/tipo-opaco-c.astro';
 import MetodosComposicionC from '../../components/animaciones/metodos-composicion-c.astro';
 import TablaOperacionesC from '../../components/animaciones/tabla-operaciones-c.astro';
+import EstructurasRegistrosC from '../../components/animaciones/estructuras-registros-c.astro';
+import MacrosGenericosC from '../../components/animaciones/macros-genericos-c.astro';
+import OrdenamientoComparadoC from '../../components/animaciones/ordenamiento-comparado-c.astro';
 
 export function getStaticPaths() {
 	return animations.map((animation) => ({
@@ -169,6 +172,9 @@ const componentMap: Record<string, any> = {
 	'tipo-opaco-c': TipoOpacoC,
 	'metodos-composicion-c': MetodosComposicionC,
 	'tabla-operaciones-c': TablaOperacionesC,
+	'estructuras-registros-c': EstructurasRegistrosC,
+	'macros-genericos-c': MacrosGenericosC,
+	'ordenamiento-comparado-c': OrdenamientoComparadoC,
 };
 
 const AnimationComponent = componentMap[slug];

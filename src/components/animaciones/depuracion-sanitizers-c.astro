@@ -413,7 +413,9 @@ const varBoxes = [
 	{ key: 'n', label: `${n.grades}[i]`, values: ['7', '8', '10', '6', '-173653632'] },
 ];
 const BOX = { w: 136, h: 34, y: 640, gap: 10 };
-const boxX = (index: number) => HUD.x + 16 + index * (BOX.w + BOX.gap);
+const BOX_W = [96, 128, 120, 196];
+const boxW = (index: number) => BOX_W[index] ?? BOX.w;
+const boxX = (index: number) => HUD.x + 16 + BOX_W.slice(0, index).reduce((sum, width) => sum + width + BOX.gap, 0);
 const LEGEND_Y = VP.y + 22;
 ---
 
@@ -600,7 +602,7 @@ const LEGEND_Y = VP.y + 22;
 				{
 					varBoxes.map((box, index) => (
 						<>
-							<rect class="xj-var" x={boxX(index)} y={BOX.y} width={BOX.w} height={BOX.h} rx="10"></rect>
+							<rect class="xj-var" x={boxX(index)} y={BOX.y} width={boxW(index)} height={BOX.h} rx="10"></rect>
 							<text class="xj-var-label" x={boxX(index) + 12} y={BOX.y + 21}>{box.label}</text>
 						</>
 					))
@@ -621,7 +623,7 @@ const LEGEND_Y = VP.y + 22;
 					varBoxes.map((box, index) =>
 						box.values.map((value, k) => (
 							<g data-el={`hv-${box.key}-${k}`}>
-								<text class:list={['xj-var-value', box.key === 'n' && k === 4 && 'xj-var-value--bad']} x={boxX(index) + BOX.w - 12} y={BOX.y + 22} text-anchor="end">
+								<text class:list={['xj-var-value', box.key === 'n' && k === 4 && 'xj-var-value--bad']} x={boxX(index) + boxW(index) - 12} y={BOX.y + 22} text-anchor="end">
 									{value}
 								</text>
 							</g>

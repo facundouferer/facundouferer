@@ -367,7 +367,8 @@ export const script: AnimationScript = {
 			motion: {
 				cues: seq(
 					...clear(0, 'pg-3', 'tb-3', 'tk-x8', 'tk-y8b', 'fl-b1', 'fl-b2', 'lb-lost', ...lines(3, [1, 2, 4, 5])),
-					{ at: 500, do: 'enter', el: 'pg-4' },
+					shot(300, 'shot-swap', 1500),
+						{ at: 500, do: 'enter', el: 'pg-4' },
 					...park(500, 4, 1),
 					...modulesIn(600, 4, [1, 2, 3, 5, 6, 7], 100),
 					{ at: 900, do: 'enter', el: 'tb-4' },

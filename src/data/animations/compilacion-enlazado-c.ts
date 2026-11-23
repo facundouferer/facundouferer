@@ -274,6 +274,7 @@ export const script: AnimationScript = {
 					{ at: run.start(1) + 600, do: 'flow', el: 'fl-5' },
 					{ at: run.start(1) + 1200, do: 'enter', el: 'k-src' },
 					{ at: run.start(1) + 1900, do: 'enter', el: 'k-obj' },
+					{ at: run.start(1) + 2600, do: 'exit', el: 'exe-tag', dur: 300 },
 					{ at: run.start(1) + 2600, do: 'enter', el: 'k-exe' },
 				),
 			},

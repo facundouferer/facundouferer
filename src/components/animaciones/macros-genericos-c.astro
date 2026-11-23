@@ -1,0 +1,1257 @@
+---
+/**
+ * Scene for "Replaced text and generic code" (lesson
+ * c/preprocesador-y-programacion-generica, order: 39), a short film played on one
+ * persistent motion canvas. The captions and cues live in
+ * `src/data/animations/macros-genericos-c.ts`.
+ *
+ * The canvas has two halves. The editor on the left is a fixed overlay that shows the
+ * lesson's programs one at a time (the `MAXIMO(i++, j)` macro, the unparenthesized
+ * square, the `do { } while (0)` swap, the `static inline` maximum, the `_Generic`
+ * absolute value and the `#if` on the standard), each with a bar that slides to the
+ * running line and the real output typed in the console below. The viewport on the
+ * right holds the camera and an isometric world per program. Two stations stand side by
+ * side in all of them: the preprocessor, where a name is swapped for text, and the
+ * compiler, which only sees that text. Text is a dashed tile and a value is a plain
+ * pill; every instruction has a module on the rail that shows its editor line. The light
+ * blue particle is the flow of execution; magenta marks the trap (the second `i++`, the
+ * wrong 5, the branch that is dropped); violet marks what handles it (the preprocessor,
+ * the parentheses, `do { } while (0)`, the chosen branch).
+ *
+ * Palette: films are the approved exception to the Organic palette (DESIGN.md §8).
+ * The colors are the `--xj-*` tokens declared once in the style block; nothing
+ * else in the file uses a raw color.
+ */
+import AnimationPlayer from '../animations/AnimationPlayer.astro';
+import type { Animation } from '../../data/animations';
+import { script } from '../../data/animations/macros-genericos-c';
+import { resolveScript } from '../../utils/animations';
+import { highlightCode } from '../../utils/highlightCode';
+
+type Props = {
+	lang: 'es' | 'en';
+	animation: Animation;
+};
+
+const { lang, animation } = Astro.props;
+const isEs = lang === 'es';
+const resolved = resolveScript(script, lang);
+const t = (es: string, en: string) => (isEs ? es : en);
+
+// ── The programs shown in the editor ──────────────────────────────────────
+// All of them come from the lesson, with its identifiers localized like it does. The
+// `generic` program keeps the lesson's `ABSOLUTE` macro and its calls without the
+// `FORMAT` and `PRINT` helpers; `cond` keeps the lesson's `#if` on the standard.
+type Program = 'macro' | 'paren' | 'swap' | 'inline' | 'generic' | 'cond';
+const PROGRAMS: Program[] = ['macro', 'paren', 'swap', 'inline', 'generic', 'cond'];
+// Lines of each program, the lines that have a module on the rail, and console rows.
+const SHAPE = {
+	macro: { lines: 11, modules: [3, 6, 7, 8, 9], outputs: 1 },
+	paren: { lines: 8, modules: [3, 6], outputs: 1 },
+	swap: { lines: 19, modules: [3, 13, 14, 17], outputs: 1 },
+	inline: { lines: 12, modules: [3, 8, 9, 10], outputs: 1 },
+	generic: { lines: 16, modules: [5, 12, 13, 14], outputs: 3 },
+	cond: { lines: 13, modules: [3, 10, 11], outputs: 1 },
+};
+
+const n = {
+	max: t('MAXIMO', 'MAX'),
+	sqBad: t('CUADRADO_MAL', 'SQUARE_BAD'),
+	sq: t('CUADRADO', 'SQUARE'),
+	swap: t('INTERCAMBIAR_INT', 'SWAP_INT'),
+	order: t('ya estaban en orden', 'already in order'),
+	maxFn: t('maximo', 'max_int'),
+	abs: t('VALOR_ABSOLUTO', 'ABSOLUTE'),
+	nullp: t('PUNTERO_NULO', 'NULL_POINTER'),
+	isNull: t('p es nulo', 'p is null'),
+};
+const files: Record<Program, string> = {
+	macro: t('maximo.c', 'max.c'),
+	paren: t('cuadrado.c', 'square.c'),
+	swap: t('intercambiar.c', 'swap.c'),
+	inline: t('maximo-inline.c', 'max-inline.c'),
+	generic: t('generico.c', 'generic.c'),
+	cond: t('condicional.c', 'conditional.c'),
+};
+/** A macro line continued with a backslash on column `col`. */
+const cont = (code: string, col = 33) => `${code.padEnd(col)}\\`;
+
+const sources: Record<Program, string[]> = {
+	macro: [
+		'#include <stdio.h>',
+		'',
+		`#define ${n.max}(a, b) ((a) > (b) ? (a) : (b))`,
+		'',
+		'int main(void) {',
+		'    int i = 5;',
+		'    int j = 3;',
+		`    int m = ${n.max}(i++, j);`,
+		'    printf("m = %d, i = %d\\n", m, i);',
+		'    return 0;',
+		'}',
+	],
+	paren: [
+		'#include <stdio.h>',
+		'',
+		`#define ${n.sqBad}(x) x * x`,
+		'',
+		'int main(void) {',
+		`    printf("%d\\n", ${n.sqBad}(2 + 1));`,
+		'    return 0;',
+		'}',
+	],
+	swap: [
+		'#include <stdio.h>',
+		'',
+		cont(`#define ${n.swap}(a, b)`),
+		cont('    do {'),
+		cont('        int tmp_ = (a);'),
+		cont('        (a) = (b);'),
+		cont('        (b) = tmp_;'),
+		'    } while (0)',
+		'',
+		'int main(void) {',
+		'    int x = 8;',
+		'    int y = 3;',
+		'    if (x > y)',
+		`        ${n.swap}(x, y);`,
+		'    else',
+		`        puts("${n.order}");`,
+		'    printf("%d %d\\n", x, y);',
+		'    return 0;',
+		'}',
+	],
+	inline: [
+		'#include <stdio.h>',
+		'',
+		`static inline int ${n.maxFn}(int a, int b) {`,
+		'    return a > b ? a : b;',
+		'}',
+		'',
+		'int main(void) {',
+		'    int i = 5;',
+		`    int m = ${n.maxFn}(i++, 3);`,
+		'    printf("m = %d, i = %d\\n", m, i);',
+		'    return 0;',
+		'}',
+	],
+	generic: [
+		'#include <stdio.h>',
+		'#include <stdlib.h>',
+		'#include <math.h>',
+		'',
+		cont(`#define ${n.abs}(x) _Generic((x),`, 42),
+		cont('    int: abs,', 42),
+		cont('    long: labs,', 42),
+		cont('    double: fabs', 42),
+		')(x)',
+		'',
+		'int main(void) {',
+		`    printf("%d\\n", ${n.abs}(-4));`,
+		`    printf("%ld\\n", ${n.abs}(-7L));`,
+		`    printf("%g\\n", ${n.abs}(-2.5));`,
+		'    return 0;',
+		'}',
+	],
+	cond: [
+		'#include <stdio.h>',
+		'',
+		'#if __STDC_VERSION__ >= 202311L',
+		`    #define ${n.nullp} nullptr`,
+		'#else',
+		`    #define ${n.nullp} NULL`,
+		'#endif',
+		'',
+		'int main(void) {',
+		`    int *p = ${n.nullp};`,
+		`    printf("${n.isNull}: %d\\n", p == ${n.nullp});`,
+		'    return 0;',
+		'}',
+	],
+};
+for (const program of PROGRAMS) {
+	if (sources[program].length !== SHAPE[program].lines) throw new Error(`${program} has ${sources[program].length} lines`);
+}
+
+/** The tokenizer renders HTML spans; inside an SVG <text> they must be tspans. */
+const listing = (program: Program) =>
+	highlightCode(sources[program].join('\n'), 'c').map((html, index) => ({
+		n: index + 1,
+		html: html.replaceAll('<span', '<tspan').replaceAll('</span>', '</tspan>'),
+	}));
+
+// The real output of each program (compiled and run with cc -std=c23 -Wall -Wextra
+// -Wpedantic, without warnings).
+const outputs: Record<Program, string[]> = {
+	macro: ['m = 6, i = 7'],
+	paren: ['5'],
+	swap: ['3 8'],
+	inline: ['m = 5, i = 6'],
+	generic: ['4', '7', '2.5'],
+	cond: [`${n.isNull}: 1`],
+};
+
+// ── Editor geometry (canvas units, outside the camera) ────────────────────
+const ED = { x: 20, y: 20, w: 580, h: 680 };
+const CODE_X = 72;
+const GUTTER_X = 59;
+const CODE_TOP = 72;
+const LINE_H = 24;
+const BAR = { x: 28, w: 564 };
+const BAR_CX = BAR.x + BAR.w / 2;
+const lineTop = (line: number) => CODE_TOP + (line - 1) * LINE_H;
+const lineMid = (line: number) => lineTop(line) + LINE_H / 2;
+const lineBase = (line: number) => lineMid(line) + 5;
+const CONSOLE_TOP = 548;
+const outY = (row: number) => 598 + row * 24;
+
+// ── Isometric world (camera space) ────────────────────────────────────────
+// Grid axes: +u runs down-right, +v down-left, z is up. Things are placed by the
+// screen point of their footprint center (`ground`), converted back to the grid.
+type Point = { x: number; y: number };
+const VP = { x: 616, y: 20, w: 644, h: 680 };
+/** The camera centers its target on the canvas; this shift moves that center to the viewport. */
+const VIEW_SHIFT = VP.x + VP.w / 2 - 640;
+const EX = 50;
+const EY = 29;
+const ORIGIN = { x: 640, y: 330 };
+const round = (value: number) => Math.round(value * 10) / 10;
+const pt = (u: number, v: number, z = 0): Point => ({
+	x: round(ORIGIN.x + (u - v) * EX),
+	y: round(ORIGIN.y + (u + v) * EY - z),
+});
+const grid = (ground: Point) => {
+	const du = (ground.x - ORIGIN.x) / EX;
+	const dv = (ground.y - ORIGIN.y) / EY;
+	return { u: (du + dv) / 2, v: (dv - du) / 2 };
+};
+const lift = (point: Point, by: number): Point => ({ x: point.x, y: round(point.y - by) });
+const poly = (points: Point[]) => points.map((point) => `${point.x},${point.y}`).join(' ');
+
+/** A box whose footprint is centered on `ground`: half-extents `a` (u) and `b` (v), height `h`. */
+function slab(ground: Point, a: number, b: number, h: number, z = 0) {
+	const { u, v } = grid(ground);
+	const top = z + h;
+	const back = pt(u - a, v - b, top);
+	const right = pt(u + a, v - b, top);
+	const front = pt(u + a, v + b, top);
+	const left = pt(u - a, v + b, top);
+	const down = (point: Point): Point => ({ x: point.x, y: round(point.y + h) });
+	const faceCenter = { x: round((left.x + front.x) / 2), y: round((left.y + front.y) / 2 + h / 2) };
+	return {
+		top: poly([back, right, front, left]),
+		base: poly([back, right, front, left].map(down)),
+		leftFace: poly([left, front, down(front), down(left)]),
+		rightFace: poly([front, right, down(right), down(front)]),
+		center: pt(u, v, top),
+		faceMatrix: `matrix(0.866 0.5 0 1 ${faceCenter.x} ${faceCenter.y})`,
+	};
+}
+type Slab = ReturnType<typeof slab>;
+type Tone = 'flow' | 'violet' | 'magenta';
+
+// Modules: one per instruction, on the rail, labelled with its editor line.
+const RAIL_Y = 560;
+const RAIL_GAP = 52;
+const MODULE_TONE: Record<string, Tone> = {
+	'macro-3': 'violet',
+	'macro-8': 'magenta',
+	'paren-3': 'violet',
+	'paren-6': 'magenta',
+	'swap-3': 'violet',
+	'generic-5': 'violet',
+	'cond-3': 'violet',
+};
+const blockAt = (ground: Point): Slab => slab(ground, 0.2, 0.2, 14);
+const modules = PROGRAMS.flatMap((program) =>
+	SHAPE[program].modules.map((line, index, all) => ({
+		program,
+		line,
+		tone: (MODULE_TONE[`${program}-${line}`] ?? 'flow') as Tone,
+		g: blockAt({ x: round(640 + (index - (all.length - 1) / 2) * RAIL_GAP), y: RAIL_Y }),
+	})),
+);
+
+// The two stations, shared by every world: the preprocessor swaps names for text, the
+// compiler only sees the result. The type switch of `_Generic` is a third, in its own world.
+const STATION_PP = slab({ x: 470, y: 200 }, 0.75, 0.75, 34);
+const STATION_CC = slab({ x: 830, y: 200 }, 0.75, 0.75, 34);
+const SWITCH = slab({ x: 640, y: 236 }, 0.75, 0.75, 34);
+
+// Boxes: a variable of the macro and inline programs, and the three functions of `_Generic`.
+// The tag above each one says its type and its name.
+type BoxDef = { id: string; world: Program; ground: Point; type: string; name: string; tone: 'edge' | 'violet' | 'magenta' };
+const boxDefs: BoxDef[] = [
+	{ id: 'b-i', world: 'macro', ground: { x: 500, y: 462 }, type: 'int', name: 'i', tone: 'edge' },
+	{ id: 'b-j', world: 'macro', ground: { x: 640, y: 486 }, type: 'int', name: 'j', tone: 'edge' },
+	{ id: 'b-m', world: 'macro', ground: { x: 780, y: 462 }, type: 'int', name: 'm', tone: 'edge' },
+	{ id: 'b-ii', world: 'inline', ground: { x: 560, y: 462 }, type: 'int', name: 'i', tone: 'edge' },
+	{ id: 'b-mi', world: 'inline', ground: { x: 720, y: 462 }, type: 'int', name: 'm', tone: 'edge' },
+	{ id: 'f-abs', world: 'generic', ground: { x: 500, y: 440 }, type: 'int', name: 'abs', tone: 'violet' },
+	{ id: 'f-labs', world: 'generic', ground: { x: 640, y: 440 }, type: 'long', name: 'labs', tone: 'violet' },
+	{ id: 'f-fabs', world: 'generic', ground: { x: 780, y: 440 }, type: 'double', name: 'fabs', tone: 'violet' },
+];
+const BOX_H = 24;
+const boxes = boxDefs.map((box) => {
+	const tagWidth = Math.round(Math.max(box.type.length, box.name.length) * 7.2 + 22);
+	return { ...box, g: slab(box.ground, 0.55, 0.55, BOX_H), tagWidth, tagY: box.ground.y - 86 };
+});
+const boxOf = (id: string) => boxes.find((box) => box.id === id)!;
+
+// Text and value tokens: one identity for "text" (a dashed tile) and one for "a value"
+// (a plain pill). Tiles rest in a row where the preprocessor leaves them; the rest are born
+// at the module of their instruction or at a station.
+type Token = { id: string; world: Program; text: string; suffix?: string; tone: Tone | 'dim'; dashed?: boolean; pos?: Point; home?: string };
+const tokenWidth = (token: Pick<Token, 'text' | 'suffix'>) =>
+	Math.max(44, Math.round((token.text.length + (token.suffix?.length ?? 0)) * 9.2 + 26));
+/** Tiles side by side, centered on `cx`. */
+function rowOf(world: Program, tone: Tone | 'dim', cx: number, y: number, items: { id: string; text: string }[]): Token[] {
+	const widths = items.map((item) => tokenWidth(item));
+	const total = widths.reduce((sum, w) => sum + w, 0) + (items.length - 1) * 12;
+	let left = cx - total / 2;
+	return items.map((item, index) => {
+		const x = round(left + widths[index] / 2);
+		left += widths[index] + 12;
+		return { id: item.id, world, text: item.text, tone, dashed: true, pos: { x, y } };
+	});
+}
+const TILE_Y = 300;
+const tiles: Token[] = [
+	...rowOf('macro', 'violet', 640, TILE_Y, [
+		{ id: 'tx-1', text: '((i++) >' },
+		{ id: 'tx-2', text: '(j) ?' },
+		{ id: 'tx-3', text: '(i++)' },
+		{ id: 'tx-4', text: ': (j))' },
+	]),
+	...rowOf('paren', 'violet', 640, TILE_Y, [
+		{ id: 'tp-1', text: '2 + 1' },
+		{ id: 'tp-2', text: '*' },
+		{ id: 'tp-3', text: '2 + 1' },
+	]),
+	...rowOf('paren', 'violet', 640, TILE_Y, [
+		{ id: 'tq-1', text: '((2 + 1)' },
+		{ id: 'tq-2', text: '*' },
+		{ id: 'tq-3', text: '(2 + 1))' },
+	]),
+	...rowOf('swap', 'violet', 640, TILE_Y, [
+		{ id: 'ts-1', text: 'int tmp_ = (x);' },
+		{ id: 'ts-2', text: '(x) = (y);' },
+		{ id: 'ts-3', text: '(y) = tmp_;' },
+	]),
+	{ id: 'tc-a', world: 'cond', text: 'nullptr', tone: 'violet', dashed: true, pos: { x: 520, y: 340 } },
+	{ id: 'tc-b', world: 'cond', text: 'NULL', tone: 'dim', dashed: true, pos: { x: 680, y: 340 } },
+];
+
+// Where the particle stops and where tokens rest.
+const baseAnchors = [
+	...modules.map((module) => ({ id: `a-m-${module.program}-${module.line}`, ...lift(module.g.center, 16) })),
+	...boxes.map((box) => ({ id: `a-${box.id}`, ...lift(box.g.center, 4) })),
+	{ id: 'a-st', ...lift(STATION_PP.center, 4) },
+	{ id: 'a-cc', ...lift(STATION_CC.center, 4) },
+	{ id: 'a-sw', ...lift(SWITCH.center, 4) },
+];
+const tileAnchors = tiles.map((tile) => ({ id: `a-${tile.id}`, ...tile.pos! }));
+const anchors = [...baseAnchors, ...tileAnchors];
+const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0, y: 0 };
+
+const tokens: Token[] = [
+	...tiles,
+	{ id: 'tx-call', world: 'macro', text: `${n.max}(i++, j)`, tone: 'violet', dashed: true, home: 'a-m-macro-8' },
+	{ id: 'tx-sq', world: 'paren', text: `${n.sqBad}(2 + 1)`, tone: 'violet', dashed: true, home: 'a-m-paren-6' },
+	{ id: 'tx-sw', world: 'swap', text: `${n.swap}(x, y)`, tone: 'violet', dashed: true, home: 'a-m-swap-14' },
+	{ id: 'tc-ver', world: 'cond', text: '__STDC_VERSION__', tone: 'violet', dashed: true, home: 'a-m-cond-3' },
+	{ id: 'tc-use', world: 'cond', text: n.nullp, tone: 'violet', dashed: true, home: 'a-m-cond-10' },
+	{ id: 'tk-i5', world: 'macro', text: '5', tone: 'flow', home: 'a-m-macro-6' },
+	{ id: 'tk-j3', world: 'macro', text: '3', tone: 'flow', home: 'a-m-macro-7' },
+	{ id: 'tk-i6', world: 'macro', text: '6', tone: 'flow', home: 'a-tx-1' },
+	{ id: 'tk-i7', world: 'macro', text: '7', tone: 'magenta', home: 'a-tx-3' },
+	{ id: 'tk-m6', world: 'macro', text: '6', tone: 'magenta', home: 'a-tx-3' },
+	{ id: 'ti-5', world: 'inline', text: '5', tone: 'flow', home: 'a-m-inline-8' },
+	{ id: 'ti-arg', world: 'inline', text: 'i++', tone: 'flow', home: 'a-m-inline-9' },
+	{ id: 'ti-6', world: 'inline', text: '6', tone: 'flow', home: 'a-cc' },
+	{ id: 'ti-m5', world: 'inline', text: '5', tone: 'flow', home: 'a-cc' },
+	{ id: 'tk-a4', world: 'generic', text: '-4', tone: 'flow', home: 'a-m-generic-12' },
+	{ id: 'tk-a7', world: 'generic', text: '-7', suffix: 'L', tone: 'flow', home: 'a-m-generic-13' },
+	{ id: 'tk-a25', world: 'generic', text: '-2.5', tone: 'flow', home: 'a-m-generic-14' },
+];
+
+// Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
+const shots = [
+	{ id: 'shot-pipe', cx: 640, cy: 340, s: 1.0 },
+	{ id: 'shot-eval', cx: 640, cy: 400, s: 1.12 },
+	{ id: 'shot-paren', cx: 640, cy: 330, s: 1.1 },
+	{ id: 'shot-swap', cx: 640, cy: 330, s: 1.1 },
+	{ id: 'shot-inline', cx: 640, cy: 380, s: 1.1 },
+	{ id: 'shot-gen', cx: 640, cy: 340, s: 1.05 },
+	{ id: 'shot-cond', cx: 640, cy: 320, s: 1.05 },
+	{ id: 'shot-all', cx: 640, cy: 340, s: 0.9 },
+].map((item) => ({
+	id: item.id,
+	x: round(item.cx - 640 / item.s),
+	y: round(item.cy - 360 / item.s),
+	w: round(1280 / item.s),
+	h: round(720 / item.s),
+}));
+
+// Routes: an instruction writes into its box, the switch picks a function, the preprocessor
+// picks a branch.
+const arc = (from: Point, to: Point, rise: number) =>
+	`M${from.x} ${from.y} Q${round((from.x + to.x) / 2)} ${round(Math.min(from.y, to.y) - rise)} ${to.x} ${to.y}`;
+/** The point of the front edge of a box, where a wire reaches it without crossing its faces. */
+const frontOf = (id: string): Point => ({ x: boxOf(id).ground.x, y: boxOf(id).ground.y + 26 });
+const moduleAt = (program: Program, line: number) => at(`a-m-${program}-${line}`);
+const writes = (program: Program, line: number, id: string, rise = 30) => arc(lift(moduleAt(program, line), 4), frontOf(id), rise);
+type Route = { id: string; world: Program; tone: Tone; d: string };
+const routes: Route[] = [
+	{ id: 'fl-macro-6', world: 'macro', tone: 'flow', d: writes('macro', 6, 'b-i') },
+	{ id: 'fl-macro-7', world: 'macro', tone: 'flow', d: writes('macro', 7, 'b-j') },
+	{ id: 'fl-gen-int', world: 'generic', tone: 'flow', d: arc({ x: 610, y: 286 }, { x: 500, y: 330 }, 10) },
+	{ id: 'fl-gen-long', world: 'generic', tone: 'violet', d: arc({ x: 640, y: 286 }, { x: 640, y: 330 }, 0) },
+	{ id: 'fl-gen-double', world: 'generic', tone: 'flow', d: arc({ x: 670, y: 286 }, { x: 780, y: 330 }, 10) },
+	{ id: 'fl-cond-a', world: 'cond', tone: 'violet', d: arc({ x: 456, y: 262 }, { x: 520, y: 322 }, 8) },
+	{ id: 'fl-cond-b', world: 'cond', tone: 'magenta', d: arc({ x: 484, y: 262 }, { x: 680, y: 322 }, 30) },
+];
+
+// Frames: a dashed outline around the tiles of one statement (the `if` and `do { } while (0)`).
+const swapRow = tiles.filter((tile) => tile.id.startsWith('ts-'));
+const frameAround = (items: Token[], pad: number) => {
+	const left = Math.min(...items.map((tile) => tile.pos!.x - tokenWidth(tile) / 2)) - pad;
+	const right = Math.max(...items.map((tile) => tile.pos!.x + tokenWidth(tile) / 2)) + pad;
+	const top = TILE_Y - 14 - pad;
+	const bottom = TILE_Y + 14 + pad;
+	return `M${round(left)} ${top} H${round(right)} V${bottom} H${round(left)} Z`;
+};
+const frames = [
+	{ id: 'fr-bad', world: 'swap' as Program, tone: 'magenta' as Tone, d: frameAround(swapRow.slice(0, 1), 9) },
+	{ id: 'fr-do', world: 'swap' as Program, tone: 'violet' as Tone, d: frameAround(swapRow, 9) },
+];
+
+// Floating notes. `x` is the middle; `world` is 'all' for the ones every film shares.
+type Chip = {
+	id: string;
+	world: Program | 'all';
+	text: string;
+	x: number;
+	y: number;
+	tone: 'plain' | Tone;
+	mono?: boolean;
+	icon?: 'arrow';
+};
+const chips: Chip[] = [
+	{ id: 'lb-pp', world: 'all', text: t('preprocesador', 'preprocessor'), x: 470, y: 100, tone: 'violet' },
+	{ id: 'lb-cc', world: 'all', text: t('compilador', 'compiler'), x: 830, y: 100, tone: 'flow' },
+	{ id: 'lb-before', world: 'macro', text: t('el compilador solo ve texto', 'the compiler only sees text'), x: 650, y: 264, tone: 'violet' },
+	{ id: 'lb-recipe', world: 'macro', text: `${n.max}(a, b) → ((a) > (b) ? (a) : (b))`, x: 640, y: 338, tone: 'violet', mono: true },
+	{ id: 'lb-twice', world: 'macro', text: t('dos copias de i++', 'two copies of i++'), x: 640, y: 338, tone: 'magenta' },
+	{ id: 'lb-sq-bad', world: 'paren', text: `${n.sqBad}(x) → x * x`, x: 640, y: 338, tone: 'magenta', mono: true },
+	{ id: 'lb-prec', world: 'paren', text: '1 * 2 = 2,  2 + 2 + 1 = 5', x: 640, y: 380, tone: 'magenta', mono: true },
+	{ id: 'lb-sq-ok', world: 'paren', text: `${n.sq}(x) → ((x) * (x))`, x: 640, y: 338, tone: 'violet', mono: true },
+	{ id: 'lb-sq-nine', world: 'paren', text: '(2 + 1) * (2 + 1) = 9', x: 640, y: 380, tone: 'violet', mono: true },
+	{ id: 'lb-ifbad', world: 'swap', text: t('sin do/while, solo la primera queda en el if', 'without do/while, only the first stays in the if'), x: 640, y: 350, tone: 'magenta' },
+	{ id: 'lb-one', world: 'swap', text: t('una sola sentencia', 'a single statement'), x: 640, y: 350, tone: 'violet' },
+	{ id: 'lb-fn', world: 'inline', text: t('una función: tipos comprobados', 'a function: checked types'), x: 640, y: 338, tone: 'flow' },
+	{ id: 'lb-nopp', world: 'inline', text: t('sin texto que reemplazar', 'no text to replace'), x: 470, y: 282, tone: 'plain' },
+	{ id: 'lb-once', world: 'inline', text: t('se evalúa una vez', 'evaluated once'), x: 830, y: 282, tone: 'violet' },
+	{ id: 'lb-ctime', world: 'generic', text: t('se decide al compilar', 'decided at compile time'), x: 640, y: 504, tone: 'violet' },
+	{ id: 'ty-int', world: 'generic', text: t('tipo: int', 'type: int'), x: 640, y: 140, tone: 'flow', mono: true },
+	{ id: 'ty-long', world: 'generic', text: t('tipo: long', 'type: long'), x: 640, y: 140, tone: 'violet', mono: true },
+	{ id: 'ty-double', world: 'generic', text: t('tipo: double', 'type: double'), x: 640, y: 140, tone: 'flow', mono: true },
+	{ id: 'lb-typeonly', world: 'generic', text: t('solo cuenta el tipo de x', 'only the type of x counts'), x: 640, y: 532, tone: 'violet' },
+	{ id: 'lb-ifc', world: 'cond', text: '__STDC_VERSION__ >= 202311L', x: 640, y: 264, tone: 'violet', mono: true },
+	{ id: 'lb-keep', world: 'cond', text: t('rama elegida', 'chosen branch'), x: 520, y: 380, tone: 'violet' },
+	{ id: 'lb-drop', world: 'cond', text: t('se descarta', 'dropped'), x: 680, y: 380, tone: 'magenta' },
+	{ id: 'lb-end', world: 'cond', text: t('el preprocesador elige, el compilador compila', 'the preprocessor chooses, the compiler compiles'), x: 650, y: 450, tone: 'violet', icon: 'arrow' },
+];
+const chipWidth = (chip: Chip) => Math.round(chip.text.length * (chip.mono ? 7.9 : 6.7) + (chip.icon ? 42 : 24));
+const chipLeft = (chip: Chip) => chip.x - chipWidth(chip) / 2;
+
+// Failing lines of the editor are marked with a magenta bar.
+const marks = [
+	{ id: 'hx-macro-8', program: 'macro' as Program, line: 8 },
+	{ id: 'hx-paren-6', program: 'paren' as Program, line: 6 },
+];
+
+const LEGEND_Y = VP.y + VP.h - 22;
+---
+
+<AnimationPlayer lang={lang} slug={animation.slug} title={animation.title[lang]} steps={resolved.steps}>
+	<div slot="scene" data-scene="journey" data-motion class="scene-canvas">
+		<svg class="mg-canvas xj-canvas" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+			<defs>
+				<clipPath id="mg-clip-view">
+					<rect x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+				</clipPath>
+				<linearGradient id="mg-g-top" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0" class="xj-stop-steel-hi"></stop>
+					<stop offset="1" class="xj-stop-steel"></stop>
+				</linearGradient>
+				<radialGradient id="mg-g-pool-flow">
+					<stop offset="0" class="xj-stop-flow" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="mg-g-pool-violet">
+					<stop offset="0" class="xj-stop-violet" stop-opacity="0.2"></stop>
+					<stop offset="1" class="xj-stop-violet" stop-opacity="0"></stop>
+				</radialGradient>
+				<radialGradient id="mg-g-particle">
+					<stop offset="0" class="xj-stop-white"></stop>
+					<stop offset="0.28" class="xj-stop-flow"></stop>
+					<stop offset="1" class="xj-stop-flow" stop-opacity="0"></stop>
+				</radialGradient>
+			</defs>
+
+			<!-- VIEWPORT: the isometric world, seen through the camera -->
+			<g clip-path="url(#mg-clip-view)">
+				<rect class="xj-view" x={VP.x} y={VP.y} width={VP.w} height={VP.h}></rect>
+				<ellipse cx={VP.x + VP.w - 120} cy={VP.y + 120} rx="420" ry="320" fill="url(#mg-g-pool-violet)"></ellipse>
+				<ellipse cx={VP.x + 80} cy={VP.y + VP.h - 40} rx="400" ry="300" fill="url(#mg-g-pool-flow)"></ellipse>
+
+				<g transform={`translate(${VIEW_SHIFT} 0)`}>
+					<g class="mg-camera" data-camera>
+						<!-- The rail the instructions sit on -->
+						<path class="xj-track" d={`M380 ${RAIL_Y} H900`}></path>
+
+						<!-- The two stations: the preprocessor swaps text, the compiler reads it -->
+						<g data-el="st-pp">
+							<polygon class="xj-shadow" points={STATION_PP.base} transform="translate(8 11)" />
+							<polygon class="xj-station xj-station--l" points={STATION_PP.leftFace} />
+							<polygon class="xj-station xj-station--r" points={STATION_PP.rightFace} />
+							<polygon class="xj-station xj-station--t" points={STATION_PP.top} fill="url(#mg-g-top)" />
+							<text class="xj-face-text" transform={STATION_PP.faceMatrix} text-anchor="middle" y="4">#define</text>
+						</g>
+						<g data-el="on-st" class="xj-lit xj-lit--violet">
+							<polygon class="xj-lit-halo" points={STATION_PP.top} />
+							<polygon class="xj-lit-top" points={STATION_PP.top} />
+							<polygon class="xj-lit-side" points={STATION_PP.leftFace} />
+							<text class="xj-face-text xj-face-text--on" transform={STATION_PP.faceMatrix} text-anchor="middle" y="4">#define</text>
+						</g>
+						<g data-el="st-cc">
+							<polygon class="xj-shadow" points={STATION_CC.base} transform="translate(8 11)" />
+							<polygon class="xj-face xj-face--l" points={STATION_CC.leftFace} />
+							<polygon class="xj-face xj-face--r" points={STATION_CC.rightFace} />
+							<polygon class="xj-face xj-face--t" points={STATION_CC.top} fill="url(#mg-g-top)" />
+							<text class="xj-face-text" transform={STATION_CC.faceMatrix} text-anchor="middle" y="4">cc</text>
+						</g>
+						<g data-el="on-cc" class="xj-lit">
+							<polygon class="xj-lit-halo" points={STATION_CC.top} />
+							<polygon class="xj-lit-top" points={STATION_CC.top} />
+							<polygon class="xj-lit-side" points={STATION_CC.leftFace} />
+							<text class="xj-face-text xj-face-text--on" transform={STATION_CC.faceMatrix} text-anchor="middle" y="4">cc</text>
+						</g>
+						<g data-el="tr-flow" class="xj-link">
+							<path class="mg-stroke" pathLength="1" d="M560 222 H736"></path>
+							<polygon class="mg-head" points="736,215 736,229 750,222"></polygon>
+						</g>
+						{
+							chips
+								.filter((chip) => chip.world === 'all')
+								.map((chip) => (
+									<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+										<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+										<text class="xj-chip-text" x={chip.x} y={chip.y + 4.5} text-anchor="middle">{chip.text}</text>
+									</g>
+								))
+						}
+
+						<!-- One world per program: its boxes, modules, routes, notes and values -->
+						{
+							PROGRAMS.map((program) => (
+								<g data-el={`w-${program}`}>
+									{
+										program === 'generic' && (
+											<>
+												<g data-el="sw">
+													<polygon class="xj-shadow" points={SWITCH.base} transform="translate(8 11)" />
+													<polygon class="xj-station xj-station--l" points={SWITCH.leftFace} />
+													<polygon class="xj-station xj-station--r" points={SWITCH.rightFace} />
+													<polygon class="xj-station xj-station--t" points={SWITCH.top} fill="url(#mg-g-top)" />
+													<text class="xj-face-text" transform={SWITCH.faceMatrix} text-anchor="middle" y="4">_Generic</text>
+												</g>
+												<g data-el="on-sw" class="xj-lit xj-lit--violet">
+													<polygon class="xj-lit-halo" points={SWITCH.top} />
+													<polygon class="xj-lit-top" points={SWITCH.top} />
+													<polygon class="xj-lit-side" points={SWITCH.leftFace} />
+													<text class="xj-face-text xj-face-text--on" transform={SWITCH.faceMatrix} text-anchor="middle" y="4">_Generic</text>
+												</g>
+											</>
+										)
+									}
+									{
+										boxes
+											.filter((box) => box.world === program)
+											.map((box) => (
+												<g data-el={box.id} class={`xj-box xj-box--${box.tone}`}>
+													<polygon class="xj-shadow" points={box.g.base} transform="translate(6 9)" />
+													<polygon class="xj-cell xj-cell--l" points={box.g.leftFace} />
+													<polygon class="xj-cell xj-cell--r" points={box.g.rightFace} />
+													<polygon class="xj-cell xj-cell--t" points={box.g.top} />
+													<rect class="xj-tag-box" x={box.ground.x - box.tagWidth / 2} y={box.tagY - 18} width={box.tagWidth} height="36" rx="9" />
+													<text class="xj-tag-type" x={box.ground.x} y={box.tagY - 3} text-anchor="middle">{box.type}</text>
+													<text class="xj-tag-name" x={box.ground.x} y={box.tagY + 12} text-anchor="middle">{box.name}</text>
+												</g>
+											))
+									}
+									{
+										modules
+											.filter((module) => module.program === program)
+											.map((module) => (
+												<>
+													<g data-el={`m-${program}-${module.line}`} class="xj-mod">
+														<polygon class="xj-shadow" points={module.g.base} transform="translate(5 7)" />
+														<polygon class="xj-face xj-face--l" points={module.g.leftFace} />
+														<polygon class="xj-face xj-face--r" points={module.g.rightFace} />
+														<polygon class="xj-face xj-face--t" points={module.g.top} fill="url(#mg-g-top)" />
+														<text class="xj-face-text" transform={module.g.faceMatrix} text-anchor="middle" y="4">
+															{module.line}
+														</text>
+													</g>
+													<g data-el={`on-${program}-${module.line}`} class:list={['xj-lit', `xj-lit--${module.tone}`]}>
+														<polygon class="xj-lit-halo" points={module.g.top} />
+														<polygon class="xj-lit-top" points={module.g.top} />
+														<polygon class="xj-lit-side" points={module.g.leftFace} />
+														<text class="xj-face-text xj-face-text--on" transform={module.g.faceMatrix} text-anchor="middle" y="4">
+															{module.line}
+														</text>
+													</g>
+												</>
+											))
+									}
+									{
+										routes
+											.filter((route) => route.world === program)
+											.map((route) => (
+												<g data-el={route.id} class:list={['xj-flowline', `xj-flowline--${route.tone}`]}>
+													<path class="mg-stroke xj-flowline-halo" pathLength="1" d={route.d} />
+													<path class="mg-stroke xj-flowline-core" pathLength="1" d={route.d} />
+												</g>
+											))
+									}
+									{
+										frames
+											.filter((frame) => frame.world === program)
+											.map((frame) => (
+												<g data-el={frame.id} class:list={['xj-flowline', 'xj-fr', `xj-flowline--${frame.tone}`]}>
+													<path class="mg-stroke xj-flowline-core" pathLength="1" d={frame.d} />
+												</g>
+											))
+									}
+									{
+										chips
+											.filter((chip) => chip.world === program)
+											.map((chip) => (
+												<g data-el={chip.id} class:list={['xj-chip', `xj-chip--${chip.tone}`]}>
+													<rect x={chipLeft(chip)} y={chip.y - 12} width={chipWidth(chip)} height="24" rx="12" />
+													{chip.icon === 'arrow' && (
+														<svg class="xj-icon" x={chipLeft(chip) + 10} y={chip.y - 8} width="16" height="16" viewBox="0 0 24 24" stroke-width="2.75">
+															<path d="M5 12h14" />
+															<path d="m12 5 7 7-7 7" />
+														</svg>
+													)}
+													<text
+														class={chip.mono ? 'xj-chip-mono' : 'xj-chip-text'}
+														x={chip.x + (chip.icon ? 9 : 0)}
+														y={chip.y + 4.5}
+														text-anchor="middle"
+													>
+														{chip.text}
+													</text>
+												</g>
+											))
+									}
+									<!-- Tokens. Placement lives on the inner group: the player resets data-el transforms. -->
+									{
+										tokens
+											.filter((token) => token.world === program)
+											.map((token) => {
+												const w = tokenWidth(token);
+												const home = token.pos ?? at(token.home!);
+												return (
+													<g data-el={token.id} data-x={home.x} data-y={home.y}>
+														<g class:list={['xj-token', `xj-token--${token.tone}`, token.dashed && 'xj-token--text']}>
+															<rect class="xj-token-halo" x={-w / 2 - 5} y="-19" width={w + 10} height="38" rx="19" />
+															<rect class="xj-token-card" x={-w / 2} y="-14" width={w} height="28" rx="14" />
+															<text class={token.dashed ? 'xj-token-text xj-token-text--mono' : 'xj-token-text'} x="0" y="5.5" text-anchor="middle">
+																{token.text}{token.suffix && <tspan class="xj-token-suffix">{token.suffix}</tspan>}
+															</text>
+														</g>
+													</g>
+												);
+											})
+									}
+								</g>
+							))
+						}
+
+						<!-- The execution flow: it goes from module to module -->
+						<g data-el="p" class="xj-particle" data-x={moduleAt('macro', 3).x} data-y={moduleAt('macro', 3).y}>
+							<circle r="20" fill="url(#mg-g-particle)"></circle>
+							<circle class="xj-particle-core" r="4.5"></circle>
+						</g>
+
+						{anchors.map((anchor) => <circle data-anchor={anchor.id} cx={anchor.x} cy={anchor.y} r="1" fill="none" />)}
+						{shots.map((item) => <rect data-anchor={item.id} x={item.x} y={item.y} width={item.w} height={item.h} fill="none" />)}
+					</g>
+				</g>
+			</g>
+			<rect class="xj-frame" x={VP.x} y={VP.y} width={VP.w} height={VP.h} rx="18"></rect>
+			<g class="xj-legend">
+				<rect class="xj-legend-ground" x={VP.x + 10} y={LEGEND_Y - 14} width="330" height="28" rx="14"></rect>
+				<circle class="xj-legend-flow" cx={VP.x + 26} cy={LEGEND_Y} r="5"></circle>
+				<text x={VP.x + 38} y={LEGEND_Y + 4}>{t('Ejecución', 'Execution')}</text>
+				<rect class="xj-legend-text" x={VP.x + 128} y={LEGEND_Y - 7} width="20" height="14" rx="7"></rect>
+				<text x={VP.x + 156} y={LEGEND_Y + 4}>{t('Texto', 'Text')}</text>
+				<rect class="xj-legend-token" x={VP.x + 226} y={LEGEND_Y - 7} width="20" height="14" rx="7"></rect>
+				<text x={VP.x + 254} y={LEGEND_Y + 4}>{t('Un valor', 'A value')}</text>
+			</g>
+
+			<!-- EDITOR: the lesson's programs, with the running line highlighted -->
+			<g class="xj-editor">
+				<rect class="xj-panel" x={ED.x} y={ED.y} width={ED.w} height={ED.h} rx="18"></rect>
+				<path class="xj-rule" d={`M${ED.x} ${ED.y + 40} H${ED.x + ED.w}`}></path>
+				<circle class="xj-dot" cx={ED.x + 22} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 38} cy={ED.y + 20} r="4.5"></circle>
+				<circle class="xj-dot" cx={ED.x + 54} cy={ED.y + 20} r="4.5"></circle>
+				<path class="xj-rule" d={`M${ED.x} ${CONSOLE_TOP} H${ED.x + ED.w}`}></path>
+				<text class="xj-kicker" x={ED.x + 20} y={CONSOLE_TOP + 22}>{t('SALIDA', 'OUTPUT')}</text>
+
+				<g data-el="hl" class="xj-hl" data-x={BAR_CX} data-y={lineMid(3)}>
+					<rect x={-BAR.w / 2} y={-LINE_H / 2} width={BAR.w} height={LINE_H} rx="6"></rect>
+					<path d={`M${-BAR.w / 2 + 5} -5 l7 5 l-7 5 z`}></path>
+				</g>
+
+				{
+					PROGRAMS.map((program) => (
+						<>
+							<g data-el={`ed-${program}`} class="xj-code">
+								<text class="xj-file" x={ED.x + 76} y={ED.y + 25}>{files[program]}</text>
+								{
+									marks
+										.filter((mark) => mark.program === program)
+										.map((mark) => (
+											<g data-el={mark.id} class="xj-hx">
+												<rect x={BAR.x} y={lineTop(mark.line)} width={BAR.w} height={LINE_H} rx="6"></rect>
+											</g>
+										))
+								}
+								{
+									listing(program).map((line) => (
+										<g>
+											<text class="xj-gutter" x={GUTTER_X} y={lineBase(line.n)} text-anchor="end">
+												{line.n}
+											</text>
+											<text class="xj-mono" x={CODE_X} y={lineBase(line.n)} xml:space="preserve" set:html={line.html} />
+										</g>
+									))
+								}
+							</g>
+							<g data-el={`co-${program}`}>
+								{
+									outputs[program].map((row, index) => (
+										<text data-el={`out-${program}-${index + 1}`} class="xj-out" x={ED.x + 20} y={outY(index)} xml:space="preserve">
+											{row}
+										</text>
+									))
+								}
+							</g>
+						</>
+					))
+				}
+				{PROGRAMS.flatMap((program) => Array.from({ length: SHAPE[program].lines }, (_, index) => <circle data-anchor={`ln-${program}-${index + 1}`} cx={BAR_CX} cy={lineMid(index + 1)} r="1" fill="none" />))}
+			</g>
+		</svg>
+	</div>
+</AnimationPlayer>
+
+<style>
+	@import '../../styles/animation-scene.css';
+
+	/* Palette of this animation only (DESIGN.md §8): a deep blue ground, a light
+	   blue flow and values, magenta for the trap (the second i++, the wrong 5, the
+	   branch that is dropped) and violet for what handles it (the preprocessor, the
+	   parentheses, do while, the chosen branch). Every rule below reads these
+	   tokens; no other color is written in this file. */
+	:global(.anim-player[data-slug='macros-genericos-c']) {
+		--xj-ink: #000d1a;
+		--xj-panel: #011627;
+		--xj-deep: #00203a;
+		--xj-deep-hi: #063356;
+		--xj-edge: #124568;
+		--xj-steel: #0e3c60;
+		--xj-steel-hi: #1c6394;
+		--xj-flow: #5fd4ff;
+		--xj-flow-soft: #bdeeff;
+		--xj-magenta: #f7038a;
+		--xj-magenta-soft: #ff8fcb;
+		--xj-magenta-deep: #7d0447;
+		--xj-violet: #8b5cf6;
+		--xj-violet-soft: #c9b8ff;
+		--xj-violet-deep: #35257a;
+		--xj-white: #ffffff;
+		--xj-mist: #b4c9db;
+		--xj-dim: #6787a1;
+	}
+
+	/* The stage becomes the screen of the film; captions over it turn light. */
+	:global(.anim-player[data-slug='macros-genericos-c'] .anim-stage.card) {
+		background: var(--xj-ink);
+		border-color: var(--xj-edge);
+	}
+
+	@media (width >= 900px) {
+		:global(.anim-player[data-slug='macros-genericos-c'] .anim-subtitle) {
+			color: var(--xj-white);
+		}
+
+		:global(.anim-player[data-slug='macros-genericos-c'] .anim-subtitle code) {
+			background: color-mix(in srgb, var(--xj-flow) 18%, transparent);
+			color: var(--xj-flow-soft);
+		}
+	}
+
+	/* Gradient stops */
+	.xj-stop-steel {
+		stop-color: var(--xj-steel);
+	}
+
+	.xj-stop-steel-hi {
+		stop-color: var(--xj-steel-hi);
+	}
+
+	.xj-stop-flow {
+		stop-color: var(--xj-flow);
+	}
+
+	.xj-stop-violet {
+		stop-color: var(--xj-violet);
+	}
+
+	.xj-stop-white {
+		stop-color: var(--xj-white);
+	}
+
+	/* Viewport */
+	.xj-view {
+		fill: var(--xj-deep);
+	}
+
+	.xj-frame {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-track {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 3;
+		stroke-dasharray: 3 9;
+		stroke-linecap: round;
+	}
+
+	.xj-link path {
+		fill: none;
+		stroke: var(--xj-violet-soft);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+	}
+
+	.xj-link polygon {
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-legend text,
+	.xj-kicker {
+		font-family: var(--font-body);
+		font-size: 11.5px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		fill: var(--xj-dim);
+	}
+
+	.xj-legend text {
+		font-size: 12.5px;
+		letter-spacing: 0;
+		fill: var(--xj-mist);
+	}
+
+	.xj-legend-ground {
+		fill: var(--xj-panel);
+		fill-opacity: 0.88;
+	}
+
+	.xj-legend-flow {
+		fill: var(--xj-flow);
+	}
+
+	.xj-legend-token,
+	.xj-legend-text {
+		fill: var(--xj-ink);
+		stroke: var(--xj-flow);
+		stroke-width: 1.5;
+	}
+
+	.xj-legend-text {
+		stroke: var(--xj-violet);
+		stroke-dasharray: 4 3;
+	}
+
+	/* Modules and the compiler */
+	.xj-shadow {
+		fill: var(--xj-ink);
+		opacity: 0.5;
+	}
+
+	.xj-face {
+		stroke: var(--xj-steel-hi);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-face--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-face--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-face-text {
+		font-family: var(--font-body);
+		font-size: 11px;
+		font-weight: 700;
+		fill: var(--xj-mist);
+	}
+
+	.xj-face-text--on {
+		fill: var(--xj-ink);
+	}
+
+	/* The preprocessor and the type switch */
+	.xj-station {
+		stroke: var(--xj-violet);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-station--l {
+		fill: var(--xj-violet-deep);
+	}
+
+	.xj-station--r {
+		fill: var(--xj-deep);
+	}
+
+	/* Variables and functions: a box with its tag (type and name) */
+	.xj-box {
+		--xj-box: var(--xj-flow);
+	}
+
+	.xj-box--violet {
+		--xj-box: var(--xj-violet);
+	}
+
+	.xj-box--magenta {
+		--xj-box: var(--xj-magenta);
+	}
+
+	.xj-cell {
+		stroke: var(--xj-box);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.xj-cell--l {
+		fill: var(--xj-steel);
+	}
+
+	.xj-cell--r {
+		fill: var(--xj-deep);
+	}
+
+	.xj-cell--t {
+		fill: var(--xj-ink);
+	}
+
+	.xj-tag-box {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-box, var(--xj-edge));
+		stroke-width: 1.5;
+	}
+
+	.xj-tag-type {
+		font-family: monospace;
+		font-size: 10.5px;
+		fill: var(--xj-dim);
+	}
+
+	.xj-tag-name {
+		font-family: monospace;
+		font-size: 12.5px;
+		font-weight: 700;
+		fill: var(--xj-white);
+	}
+
+	/* Lit states */
+	.xj-lit {
+		--xj-lit: var(--xj-flow);
+		--xj-lit-soft: var(--xj-flow-soft);
+	}
+
+	.xj-lit--violet {
+		--xj-lit: var(--xj-violet);
+		--xj-lit-soft: var(--xj-violet-soft);
+	}
+
+	.xj-lit--magenta {
+		--xj-lit: var(--xj-magenta);
+		--xj-lit-soft: var(--xj-magenta-soft);
+	}
+
+	.xj-lit-halo {
+		fill: none;
+		stroke: var(--xj-lit);
+		stroke-width: 12;
+		stroke-opacity: 0.22;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-top {
+		fill: var(--xj-lit);
+		fill-opacity: 0.5;
+		stroke: var(--xj-lit-soft);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+
+	.xj-lit-side {
+		fill: var(--xj-lit-soft);
+		stroke: var(--xj-lit-soft);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	/* Routes and frames */
+	.xj-flowline {
+		--xj-line: var(--xj-flow);
+	}
+
+	.xj-flowline--violet {
+		--xj-line: var(--xj-violet);
+	}
+
+	.xj-flowline--magenta {
+		--xj-line: var(--xj-magenta);
+	}
+
+	.xj-flowline-halo,
+	.xj-flowline-core {
+		fill: none;
+		stroke: var(--xj-line);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.xj-flowline-halo {
+		stroke-width: 11;
+		stroke-opacity: 0.2;
+	}
+
+	.xj-flowline-core {
+		stroke-width: 3;
+	}
+
+	.xj-fr .xj-flowline-core {
+		stroke-width: 2.5;
+	}
+
+	/* Notes */
+	.xj-chip {
+		--xj-chip: var(--xj-edge);
+		--xj-chip-ink: var(--xj-mist);
+	}
+
+	.xj-chip--flow {
+		--xj-chip: var(--xj-flow);
+		--xj-chip-ink: var(--xj-flow-soft);
+	}
+
+	.xj-chip--magenta {
+		--xj-chip: var(--xj-magenta);
+		--xj-chip-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-chip--violet {
+		--xj-chip: var(--xj-violet);
+		--xj-chip-ink: var(--xj-violet-soft);
+	}
+
+	.xj-chip rect {
+		fill: var(--xj-panel);
+		fill-opacity: 0.94;
+		stroke: var(--xj-chip);
+		stroke-width: 1.5;
+	}
+
+	.xj-chip-text {
+		font-family: var(--font-body);
+		font-size: 12.5px;
+		font-weight: 600;
+		fill: var(--xj-chip-ink);
+	}
+
+	.xj-chip-mono {
+		font-family: monospace;
+		font-size: 12.5px;
+		fill: var(--xj-chip-ink, var(--xj-white));
+	}
+
+	.xj-icon {
+		fill: none;
+		stroke: var(--xj-chip-ink);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		overflow: visible;
+	}
+
+	/* Tokens (text tiles and value pills) and the flow */
+	.xj-token {
+		--xj-token: var(--xj-flow);
+		--xj-token-ink: var(--xj-flow-soft);
+	}
+
+	.xj-token--violet {
+		--xj-token: var(--xj-violet);
+		--xj-token-ink: var(--xj-violet-soft);
+	}
+
+	.xj-token--magenta {
+		--xj-token: var(--xj-magenta);
+		--xj-token-ink: var(--xj-magenta-soft);
+	}
+
+	.xj-token--dim {
+		--xj-token: var(--xj-dim);
+		--xj-token-ink: var(--xj-mist);
+	}
+
+	.xj-token-halo {
+		fill: var(--xj-token);
+		fill-opacity: 0.18;
+	}
+
+	.xj-token-card {
+		fill: var(--xj-ink);
+		stroke: var(--xj-token);
+		stroke-width: 2;
+	}
+
+	.xj-token--text .xj-token-card {
+		stroke-dasharray: 6 4;
+	}
+
+	.xj-token-text {
+		font-family: monospace;
+		font-size: 15px;
+		font-weight: 700;
+		fill: var(--xj-token-ink);
+	}
+
+	.xj-token-text--mono {
+		font-size: 13px;
+	}
+
+	.xj-token-suffix {
+		fill: var(--xj-violet-soft);
+	}
+
+	.xj-particle-core {
+		fill: var(--xj-white);
+	}
+
+	/* Editor */
+	.xj-panel {
+		fill: var(--xj-panel);
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-rule {
+		fill: none;
+		stroke: var(--xj-edge);
+		stroke-width: 1.5;
+	}
+
+	.xj-dot {
+		fill: var(--xj-edge);
+	}
+
+	.xj-file {
+		font-family: monospace;
+		font-size: 13px;
+		fill: var(--xj-mist);
+	}
+
+	.xj-mono,
+	.xj-out {
+		font-family: monospace;
+		font-size: 13px;
+		white-space: pre;
+		fill: var(--xj-mist);
+	}
+
+	.xj-out {
+		fill: var(--xj-flow-soft);
+	}
+
+	.xj-gutter {
+		font-family: monospace;
+		font-size: 12px;
+		fill: var(--xj-dim);
+	}
+
+	.mg-canvas .xj-code :global(.tok-kw) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-type),
+	.mg-canvas .xj-code :global(.tok-fn) {
+		fill: var(--xj-white);
+		font-weight: 400;
+	}
+
+	.mg-canvas .xj-code :global(.tok-ann) {
+		fill: var(--xj-violet-soft);
+	}
+
+	.mg-canvas .xj-code :global(.tok-str),
+	.mg-canvas .xj-code :global(.tok-num) {
+		fill: var(--xj-flow);
+	}
+
+	.mg-canvas .xj-code :global(.tok-punct),
+	.mg-canvas .xj-code :global(.tok-op),
+	.mg-canvas .xj-code :global(.tok-cmt) {
+		fill: var(--xj-dim);
+	}
+
+	.xj-hl rect {
+		fill: var(--xj-flow);
+		fill-opacity: 0.18;
+		stroke: var(--xj-flow);
+		stroke-opacity: 0.6;
+		stroke-width: 1.2;
+	}
+
+	.xj-hl path {
+		fill: var(--xj-flow);
+	}
+
+	.xj-hx rect {
+		fill: var(--xj-magenta);
+		fill-opacity: 0.16;
+		stroke: var(--xj-magenta);
+		stroke-opacity: 0.7;
+		stroke-width: 1.2;
+	}
+</style>

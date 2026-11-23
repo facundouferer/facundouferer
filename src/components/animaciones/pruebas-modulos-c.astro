@@ -330,7 +330,7 @@ const shots = [
 	{ id: 'shot-p1', u: 1.1, v: 0, z: 30, s: 1.4 },
 	{ id: 'shot-g7', u: 2.0, v: 0, z: 40, s: 1.3 },
 	{ id: 'shot-gates', u: 4.2, v: 0, z: 40, s: 1.3 },
-	{ id: 'shot-wide', u: 3.4, v: 0, z: 40, s: 1.1 },
+	{ id: 'shot-wide', u: 3.4, v: 0, z: 40, s: 1.0 },
 	{ id: 'shot-mk', u: 0.2, v: 0.9, z: 25, s: 1.35 },
 	{ id: 'shot-port', u: 4.1, v: -1.2, z: 30, s: 1.2 },
 ].map((item) => {
@@ -368,11 +368,11 @@ const MID = pt(3.8, 0, 0);
 const effect = `assert(fgets(${names.line}, sizeof ${names.line}, ${names.file}) != NULL);`;
 const chips: Chip[] = [
 	// What the machine under test answers.
-	{ id: 'r-sum', text: `${names.sum}(2, 3) → 5`, x: FN_TOP.x, y: FN_TOP.y - 84, align: 'middle', tone: 'flow', mono: true },
-	{ id: 'r-bad', text: `${names.div}(7, 2) → 4`, x: FN_TOP.x, y: FN_TOP.y - 84, align: 'middle', tone: 'magenta', mono: true },
-	{ id: 'r-ok', text: `${names.div}(7, 2) → 3`, x: FN_TOP.x, y: FN_TOP.y - 84, align: 'middle', tone: 'flow', mono: true },
-	{ id: 'bug', text: '(a + b - 1) / b', x: FN_TOP.x, y: FN_TOP.y - 112, align: 'middle', tone: 'magenta', mono: true },
-	{ id: 'fixc', text: 'a / b', x: FN_TOP.x, y: FN_TOP.y - 112, align: 'middle', tone: 'violet', mono: true },
+	{ id: 'r-sum', text: `${names.sum}(2, 3) → 5`, x: FN_TOP.x + 64, y: FN_TOP.y - 84, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'r-bad', text: `${names.div}(7, 2) → 4`, x: FN_TOP.x + 64, y: FN_TOP.y - 84, align: 'middle', tone: 'magenta', mono: true },
+	{ id: 'r-ok', text: `${names.div}(7, 2) → 3`, x: FN_TOP.x + 64, y: FN_TOP.y - 84, align: 'middle', tone: 'flow', mono: true },
+	{ id: 'bug', text: '(a + b - 1) / b', x: FN_TOP.x + 64, y: FN_TOP.y - 112, align: 'middle', tone: 'magenta', mono: true },
+	{ id: 'fixc', text: 'a / b', x: FN_TOP.x + 64, y: FN_TOP.y - 112, align: 'middle', tone: 'violet', mono: true },
 	{ id: 'msg', text: t('assert falló · código 134', 'assert failed · code 134'), x: g7.center.x, y: g7.peak - 60, align: 'middle', tone: 'magenta', icon: 'alert' },
 	// Boundary cases.
 	{ id: 'cs-zero', text: t('cero y vacío', 'zero and empty'), x: g9.center.x, y: g9.peak - 60, align: 'middle', tone: 'flow' },

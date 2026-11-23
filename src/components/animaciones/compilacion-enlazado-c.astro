@@ -307,8 +307,8 @@ const chips: Chip[] = [
 	{ id: 'k-obj', text: t(`${names.obj} · objeto`, `${names.obj} · object`), x: AS_TOP.x, y: AS_TOP.y - 75, align: 'middle', tone: 'plain' },
 	{ id: 'k-exe', text: t(`${names.exe} · ejecutable`, `${names.exe} · executable`), x: PAD_TOP.x, y: PAD_TOP.y + 50, align: 'middle', tone: 'flow' },
 	{ id: 'err', text: `${names.file}:4:5: error`, x: CC_TOP.x, y: CC_TOP.y - 96, align: 'middle', tone: 'magenta', mono: true },
-	{ id: 'no-o', text: t(`no se genera ${names.obj}`, `no ${names.obj} is produced`), x: AS_TOP.x, y: AS_TOP.y - 75, align: 'middle', tone: 'magenta' },
-	{ id: 'c89-note', text: 'C89: undefined reference', x: round((c89From.x + c89To.x) / 2) + 45, y: CC_TOP.y - 103, align: 'middle', tone: 'magenta', mono: true },
+	{ id: 'no-o', text: t(`no se genera ${names.obj}`, `no ${names.obj} is produced`), x: AS_TOP.x + 128, y: AS_TOP.y - 132, align: 'middle', tone: 'magenta' },
+	{ id: 'c89-note', text: 'C89: undefined reference', x: round((c89From.x + c89To.x) / 2) + 142, y: CC_TOP.y - 59, align: 'middle', tone: 'magenta', mono: true },
 	flagChip('w-1', '-std=c23', 0),
 	flagChip('w-2', '-Wall', 1),
 	flagChip('w-3', '-Wextra', 2),
@@ -383,8 +383,8 @@ const LIB_LABEL = t('biblioteca estándar', 'standard library');
 							<polygon class="xj-face xj-face--t" points={G.lib.top} fill="url(#ce-g-top)"></polygon>
 							<text class="xj-face-text" transform={G.lib.faceMatrix} text-anchor="middle" y="4.5">libc</text>
 							<g class="xj-chip xj-chip--violet">
-								<rect x={LIB_TOP.x - (LIB_LABEL.length * 6.7 + 24) / 2} y={LIB_TOP.y - 58} width={LIB_LABEL.length * 6.7 + 24} height="24" rx="12"></rect>
-								<text class="xj-chip-text" x={LIB_TOP.x} y={LIB_TOP.y - 41.5} text-anchor="middle">{LIB_LABEL}</text>
+								<rect x={LIB_TOP.x + 40 - (LIB_LABEL.length * 6.7 + 24) / 2} y={LIB_TOP.y - 58} width={LIB_LABEL.length * 6.7 + 24} height="24" rx="12"></rect>
+								<text class="xj-chip-text" x={LIB_TOP.x + 40} y={LIB_TOP.y - 41.5} text-anchor="middle">{LIB_LABEL}</text>
 							</g>
 						</g>
 						<g data-el="lib-on" class="xj-lit xj-lit--violet">
@@ -435,7 +435,7 @@ const LIB_LABEL = t('biblioteca estándar', 'standard library');
 							stations.map((item) => (
 								<>
 									<g data-el={item.id} class="xj-mod">
-										<text class="xj-floor-text" transform={labelMatrix(pt(item.u + 0.08, 1.78))}>
+										<text class="xj-floor-text xj-floor-text--stage" transform={labelMatrix(pt(item.u + 0.08, 1.9))}>
 											{item.label}
 										</text>
 										<polygon class="xj-shadow" points={item.g.base} transform="translate(7 9)" />
@@ -581,9 +581,12 @@ const LIB_LABEL = t('biblioteca estándar', 'standard library');
 								<polygon class="xj-piece xj-piece--l" points={inset.leftFace}></polygon>
 								<polygon class="xj-piece xj-piece--r" points={inset.rightFace}></polygon>
 								<polygon class="xj-piece xj-piece--t" points={inset.top}></polygon>
-								<g class="xj-tag-group xj-tag-group--ready">
-									<rect class="xj-tag" x={-tagW(names.exe) / 2} y={tagY(D.obj) - 11} width={tagW(names.exe)} height="22" rx="11"></rect>
-									<text class="xj-tag-text" y={tagY(D.obj) + 4.5} text-anchor="middle">{names.exe}</text>
+								<!-- Leaves when the pull-back labels take over, so it never covers the library. -->
+								<g data-el="exe-tag" data-base="shown">
+									<g class="xj-tag-group xj-tag-group--ready">
+										<rect class="xj-tag" x={-tagW(names.exe) / 2} y={tagY(D.obj) - 11} width={tagW(names.exe)} height="22" rx="11"></rect>
+										<text class="xj-tag-text" y={tagY(D.obj) + 4.5} text-anchor="middle">{names.exe}</text>
+									</g>
 								</g>
 							</g>
 							<g data-el="d-bad">
@@ -783,7 +786,7 @@ const LIB_LABEL = t('biblioteca estándar', 'standard library');
 	.xj-legend text,
 	.xj-kicker {
 		font-family: var(--font-body);
-		font-size: 11.5px;
+		font-size: 10.5px;
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		fill: var(--xj-dim);
@@ -842,6 +845,11 @@ const LIB_LABEL = t('biblioteca estándar', 'standard library');
 		letter-spacing: 0.04em;
 		fill: var(--xj-mist);
 		opacity: 0.85;
+	}
+
+	/* Stage names run from the front edge to the station: keep the longest one clear of the box. */
+	.xj-floor-text--stage {
+		font-size: 10.5px;
 	}
 
 	.xj-face {

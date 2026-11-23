@@ -312,7 +312,7 @@ const at = (id: string) => anchors.find((anchor) => anchor.id === id) ?? { x: 0,
 
 // Camera shots: a rectangle the size of the canvas at zoom `s`, centered on a point.
 const shots = [
-	{ id: 'shot-row', cx: 575, cy: 400, s: 1.25 },
+	{ id: 'shot-row', cx: 620, cy: 390, s: 1.05 },
 	{ id: 'shot-work', cx: 690, cy: 320, s: 1.3 },
 	{ id: 'shot-limit', cx: 730, cy: 350, s: 1.3 },
 	{ id: 'shot-wide', cx: 650, cy: 370, s: 1.05 },
@@ -352,7 +352,7 @@ const chips: Chip[] = [
 	{ id: 'lb-first', text: t('empieza en v[0]', 'starts at v[0]'), x: at('a-f').x - 52, y: at('a-f').y - 34, align: 'end', tone: 'flow' },
 	{ id: 'lb-right', text: t('desde el final', 'from the end'), x: C4.x + 34, y: C4.y - 70, align: 'start', tone: 'flow', icon: 'arrow-right' },
 	{ id: 'lb-copy', text: t('una copia de n', 'a copy of n'), x: at('a-f').x - 52, y: at('a-f').y - 34, align: 'end', tone: 'flow' },
-	{ id: 'lb-caller', text: t('el llamador actualiza n', 'the caller updates n'), x: at('a-n').x - 46, y: at('a-n').y + 54, align: 'middle', tone: 'violet' },
+	{ id: 'lb-caller', text: t('el llamador actualiza n', 'the caller updates n'), x: at('a-n').x + 34, y: at('a-n').y + 60, align: 'middle', tone: 'violet' },
 	{ id: 'lb-full', text: t('n == capacidad', 'n == capacity'), x: GHOST.center.x + 4, y: GHOST.center.y - 92, align: 'middle', tone: 'magenta', mono: true, icon: 'ban' },
 	{ id: 'lb-left', text: t('desde pos', 'from pos'), x: C0.x - 40, y: C0.y - 70, align: 'end', tone: 'flow', icon: 'arrow-left' },
 	{ id: 'lb-stale', text: t('ya no cuenta', 'no longer counts'), x: C4.x + 40, y: C4.y + 34, align: 'start', tone: 'plain' },
